@@ -2395,7 +2395,7 @@ oj.__registerWidget("oj.ojButtonset", $['oj']['baseComponent'],
          * @name value
          * @memberof oj.ojButtonsetOne
          * @instance
-         * @type {*}
+         * @type {any}
          * @default null
          * @ojwriteback
          * @ojshortdesc Indicates which oj-option in the buttonset is selected.
@@ -2423,7 +2423,7 @@ oj.__registerWidget("oj.ojButtonset", $['oj']['baseComponent'],
          * @name value
          * @memberof oj.ojButtonsetMany
          * @instance
-         * @type {Array.<*>|null}
+         * @type {Array.<any>|null}
          * @default null
          * @ojwriteback
          * @ojshortdesc Indicates which oj-options in the buttonset are selected.

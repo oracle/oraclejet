@@ -1178,6 +1178,9 @@ oj.Validation.__registerDefaultValidatorFactory(oj.ValidatorFactory.VALIDATOR_TY
  * Dual licensed under the MIT or GPL Version 2 licenses.
  * http://jquery.org/license
  */
+
+/* eslint-disable */
+
 /**
  * @constructor
  * 
@@ -1635,6 +1638,7 @@ OraNumberConverter = (function () {
         numberingSystemKey;
     var lenient = options['lenientParse'];
     numberSettings['lenientParse'] = lenient || 'full';
+    numberSettings['style'] = options['style'];
     //pattern passed in options
     if (options['pattern'] !== undefined && options['pattern'].length > 0) {
       pat = options['pattern'];
@@ -1642,7 +1646,7 @@ OraNumberConverter = (function () {
     else
     {
       var key;
-      switch (options['style'])
+      switch (numberSettings['style'])
       {
         case "decimal" :
           key = "decimalFormats-numberSystem-";
@@ -1665,7 +1669,7 @@ OraNumberConverter = (function () {
       if (decFormatLength === undefined)
         decFormatLength = options['currencyFormat'];
       //if either decimalFormat or currencyFormat is set, save it in number settings
-      if (decFormatLength !== undefined && (options['style'] === 'decimal' || options['style'] === 'currency')) {
+      if (decFormatLength !== undefined && (numberSettings['style'] === 'decimal' || numberSettings['style'] === 'currency')) {
         numberSettings['shortDecimalFormat'] = localeElementsMainNode['numbers']['decimalFormats-numberSystem-latn'][decFormatLength]['decimalFormat'];
       }
     }
@@ -1697,7 +1701,6 @@ OraNumberConverter = (function () {
       numberSettings['currencyCode'] = options['currency'].toUpperCase();
     if (options['unit'] !== undefined)
       numberSettings['unit'] = options['unit'].toLowerCase();
-    numberSettings['style'] = options['style'];
     _applyPatternImpl(options, pat, localeElementsMainNode, numberSettings);
     if (options['pattern'] === undefined) {
       numberSettings['minimumIntegerDigits'] = _getNumberOption(options,
@@ -1717,8 +1720,17 @@ OraNumberConverter = (function () {
       }
       if (numberSettings['maximumFractionDigits'] < numberSettings['minimumFractionDigits']) {
         numberSettings['maximumFractionDigits'] = numberSettings['minimumFractionDigits'];
-        oj.Logger.info(
-        "maximumFractionDigits is less than minimumFractionDigits, so maximumFractionDigits will be set to minimumFractionDigits");
+        oj.Logger.info("maximumFractionDigits is less than minimumFractionDigits, so maximumFractionDigits will be set to minimumFractionDigits");
+      }
+      //set currency fractions based on currencyData in root bundle
+      if (numberSettings['style'] === 'currency' && options['minimumFractionDigits'] === undefined) {
+        var currencyFractions =  localeElements['supplemental']['currencyData']['fractions'];
+        var specialCurrency = currencyFractions[options['currency']];
+        if(specialCurrency !== undefined) {
+          var fractionDigits = parseInt(specialCurrency['_digits'], 10);
+          numberSettings['minimumFractionDigits'] = fractionDigits;
+          numberSettings['maximumFractionDigits'] = fractionDigits;
+        }
       }
     }
   };
@@ -2152,7 +2164,7 @@ OraNumberConverter = (function () {
     }
     var number = Math.abs(value);
     if (numberSettings['isPercent'] === true ||
-        options['style'] === 'percent')
+        numberSettings['style'] === 'percent')
       number *= 100;
     else if (numberSettings['isPerMill'] === true)
       number *= 1000;
@@ -2160,7 +2172,7 @@ OraNumberConverter = (function () {
     var formatType = options['decimalFormat'];
     if (formatType === undefined)
       formatType = options['currencyFormat'];
-    var optStyle = options['style'];
+    var optStyle = numberSettings['style'];
     if ((optStyle === 'decimal' || optStyle === 'currency')
         && formatType !== undefined
         && formatType !== 'standard')
@@ -2243,7 +2255,7 @@ OraNumberConverter = (function () {
     }
     //if style is currency, remove currency symbol from prefix and suffix 
     //and try a match
-    else if (options['style'] === 'currency') {
+    else if (numberSettings['style'] === 'currency') {
       var code = numberSettings['currencyCode'], symbol = code;
       var posPrefix, posSuffix, negPrefix, negSuffix, repStr;
       if (localeElements['numbers']['currencies'][code] !== undefined) {
@@ -2296,7 +2308,7 @@ OraNumberConverter = (function () {
         ret[2] = true;
       }
       else {
-        _throwNaNException(options['style'], numberSettings, value)
+        _throwNaNException(numberSettings['style'], numberSettings, value)
       }
     }
     else
@@ -2427,9 +2439,9 @@ OraNumberConverter = (function () {
 
   _getParsedValue = function (ret, options, numberSettings, errStr) {
     if (isNaN(ret)) {
-      _throwNaNException(options['style'], numberSettings, errStr)
+      _throwNaNException(numberSettings['style'], numberSettings, errStr)
     }
-    if (numberSettings['isPercent'] === true || options['style'] ===
+    if (numberSettings['isPercent'] === true || numberSettings['style'] ===
         'percent')
       ret /= 100;
     else if (numberSettings['isPerMill'] === true)
@@ -2516,7 +2528,7 @@ OraNumberConverter = (function () {
         ret = parseFloat(p[0] + p[1]);
       }
       else {
-        _throwNaNException(options['style'], numberSettings, str);
+        _throwNaNException(numberSettings['style'], numberSettings, str);
       }
     }
     return  _getParsedValue(ret, options, numberSettings, str);
@@ -2704,7 +2716,7 @@ OraNumberConverter = (function () {
                   _throwMissingCurrency("style");
                 // Use lookahead to determine if the currency sign
                 // is doubled or not.
-                options['style'] = 'currency';
+                numberSettings['style'] = 'currency';
                 var doubled = (pos + 1) < pattern.length &&
                     pattern.charAt(pos + 1) === _CURRENCY;
                 if (doubled) { // Skip over the doubled character
@@ -2745,7 +2757,7 @@ OraNumberConverter = (function () {
 
               // Next handle characters which are appended directly.
               else if (ch === _PERCENT) {
-                options['style'] = 'percent';
+                numberSettings['style'] = 'percent';
                 if (multiplier !== 1) {
                   _throwSyntaxError(pattern);
                 }
@@ -2761,7 +2773,7 @@ OraNumberConverter = (function () {
                 if (multiplier !== 1) {
                   _throwSyntaxError(pattern);
                 }
-                options['style'] = 'perMill';
+                numberSettings['style'] = 'perMill';
                 numberSettings['isPerMill'] = true;
                 multiplier = 1000;
                 if (isPrefix)
@@ -2928,7 +2940,7 @@ OraNumberConverter = (function () {
     if (!gotNegative ||
         ((negPrefixPattern.localeCompare(posPrefixPattern) === 0)
             && (negSuffixPattern.localeCompare(posSuffixPattern) === 0))) {
-      if (options['style'] === 'currency' && numberSettings['lang'] === 'ar') {
+      if (numberSettings['style'] === 'currency' && numberSettings['lang'] === 'ar') {
         negSuffixPattern = posSuffixPattern + "'\u200f-";
         negPrefixPattern = posPrefixPattern;
       }
@@ -2963,20 +2975,20 @@ OraNumberConverter = (function () {
   _resolveOptions = function (numberSettings, options, locale) {
     var resOptions = {
       'locale': locale,
-      'style': (options['style'] === undefined) ? 'decimal' : options['style'],
+      'style': (numberSettings['style'] === undefined) ? 'decimal' : numberSettings['style'],
       'useGrouping': (options['useGrouping'] === undefined) ? true : options['useGrouping'],
       'numberingSystem': numberSettings['numberingSystemKey']
     };
     resOptions['minimumIntegerDigits'] = numberSettings['minimumIntegerDigits'];
     resOptions['minimumFractionDigits'] = numberSettings['minimumFractionDigits'];
     resOptions['maximumFractionDigits'] = numberSettings['maximumFractionDigits'];
-    if (options['style'] === 'decimal' && options['decimalFormat'] !== undefined) {
+    if (numberSettings['style'] === 'decimal' && options['decimalFormat'] !== undefined) {
       resOptions['decimalFormat'] = options['decimalFormat'];
     }
-    if (options['style'] === 'currency' && options['currencyFormat'] !== undefined) {
+    if (numberSettings['style'] === 'currency' && options['currencyFormat'] !== undefined) {
       resOptions['currencyFormat'] = options['currencyFormat'];
     }
-    if (options['style'] === 'currency') {
+    if (numberSettings['style'] === 'currency') {
       resOptions['currency'] = options['currency'];
       resOptions['currencyDisplay'] = (options['currencyDisplay'] ===
           undefined) ? 'symbol' : options['currencyDisplay'];

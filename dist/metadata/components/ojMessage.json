@@ -1,7 +1,7 @@
 {
   "name": "oj-message",
-  "version": "5.0.0",
-  "jetVersion": "5.0.0",
+  "version": "5.1.0",
+  "jetVersion": "5.1.0",
   "displayName": "Message",
   "preview": true,
   "description": "Displays a message",
@@ -22,7 +22,7 @@
       },
       "properties": {
         "autoTimeout": {
-          "description": "Specifies the number of milliseconds for which duration the message will be shown before it is \nclosed automatically.\nThis attribute can take the number of millisecond or special number values -1 and 0. If the \nvalue is set to \"-1\", auto-close will be turned off. If the value is set to \"0\", application wide \nvalue for autoTimeout as specified in a theming variable will be used.",
+          "description": "Specifies the number of milliseconds for which duration the message will be shown before it is\nclosed automatically.\nThis attribute can take the number of millisecond or special number values -1 and 0. If the\nvalue is set to \"-1\", auto-close will be turned off. If the value is set to \"0\", application wide\nvalue for autoTimeout as specified in a theming variable will be used.",
           "type": "number",
           "value": -1
         },
@@ -45,7 +45,7 @@
               "displayName": "Defaults"
             },
             "none": {
-              "description": "no UI affordance is provided to close the message. Application has to \ncall the close() method to dismiss the message",
+              "description": "no UI affordance is provided to close the message. Application has to\ncall the close() method to dismiss the message",
               "displayName": "None"
             }
           }
@@ -95,7 +95,7 @@
           }
         },
         "sound": {
-          "description": "Specifies the sound to be played when a message is opened. Sound is an accessibility feature \nrequired for low vision users who view a zoomed section of the UI. Because messages may be shown \noutside of the zoomed section, such users require sound to be played to notify of new messages.\n\nThis attribute can take a URL of the audio file for the custom sound to be played. The \nsupported formats are mp3, wav and ogg. Browser support should also be considered while choosing \nthe format of the audio file. Literal string values \n\"defaults\" and \"none\" can also \nbe used for this attribute. If the value is set to \"none\", then the sound will be disabled. If \nthe value is set to \"defaults\", then a default sound is played.\n\nThe default sound uses Web Audio APIs, which is not yet supported by some browsers, default \nsound will not be played in such browsers. Sound will not be played in browsers where auto play \nis not enabled. Some of the browsers do not allow auto play, while other browsers may provide a \nuser preference to enable it.",
+          "description": "Specifies the sound to be played when a message is opened. Sound is an accessibility feature\nrequired for low vision users who view a zoomed section of the UI. Because messages may be shown\noutside of the zoomed section, such users require sound to be played to notify of new messages.\n\nThis attribute can take a URL of the audio file for the custom sound to be played. The\nsupported formats are mp3, wav and ogg. Browser support should also be considered while choosing\nthe format of the audio file. Literal string values\n\"defaults\" and \"none\" can also\nbe used for this attribute. If the value is set to \"none\", then the sound will be disabled. If\nthe value is set to \"defaults\", then a default sound is played.\n\nThe default sound uses Web Audio APIs, which is not yet supported by some browsers, default\nsound will not be played in such browsers. Sound will not be played in browsers where auto play\nis not enabled. Some of the browsers do not allow auto play, while other browsers may provide a\nuser preference to enable it.",
           "type": "string",
           "value": "none"
         },
@@ -141,7 +141,7 @@
         {
           "name": "value",
           "description": "The new value to set the property to.",
-          "type": "*"
+          "type": "any"
         }
       ],
       "return": "void"
@@ -155,7 +155,7 @@
           "type": "string"
         }
       ],
-      "return": "*"
+      "return": "any"
     },
     "setProperties": {
       "description": "Performs a batch set of properties.",
@@ -182,7 +182,7 @@
       }
     },
     "ojAnimateStart": {
-      "description": "Triggered when the default animation is about to start for the open or close actions of the message .\nThe default animation can be cancelled by calling\nevent.preventDefault.\n\nIn order to override open animation, the ojAnimateStart event listener needs to be\nregistered before the component is created. This means that onOjAnimateStart\ncannot be used to register listener for 'open' action because it doesn't exist\nuntil the component is upgraded or created at which time it is open. For the 'open' action, use \nthe addEventListener method on the associated oj-message elements or\non-oj-animate-start attribute to register a listener instead.",
+      "description": "Triggered when the default animation is about to start for the open or close actions of the message .\nThe default animation can be cancelled by calling\nevent.preventDefault.\n\nIn order to override open animation, the ojAnimateStart event listener needs to be\nregistered before the component is created. This means that onOjAnimateStart\ncannot be used to register listener for 'open' action because it doesn't exist\nuntil the component is upgraded or created at which time it is open. For the 'open' action, use\nthe addEventListener method on the associated oj-message elements or\non-oj-animate-start attribute to register a listener instead.",
       "bubbles": true,
       "cancelable": true,
       "detail": {

@@ -1447,6 +1447,7 @@ oj.__registerWidget('oj.ojThematicMap', $['oj']['dvtBaseComponent'],
           }
           this._dataLayersToUpdate = [];
         }
+        this._MakeReady();
       } else {
         // Delegate to the super to call the shared JS component for actual rendering.
         this._super();

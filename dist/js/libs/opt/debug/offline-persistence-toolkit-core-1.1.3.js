@@ -803,6 +803,36 @@ define('impl/PersistenceXMLHttpRequest',['../persistenceUtils', './logger'], fun
       value: null,
       writable: true
     });
+    Object.defineProperty(this, 'onabort', {
+      value: null,
+      enumerable: true,
+      writable: true
+    });
+    Object.defineProperty(this, 'onerror', {
+      value: null,
+      enumerable: true,
+      writable: true
+    });
+    Object.defineProperty(this, 'onload', {
+      value: null,
+      enumerable: true,
+      writable: true
+    });
+    Object.defineProperty(this, 'onloadend', {
+      value: null,
+      enumerable: true,
+      writable: true
+    });
+    Object.defineProperty(this, 'onloadstart', {
+      value: null,
+      enumerable: true,
+      writable: true
+    });
+    Object.defineProperty(this, 'onprogress', {
+      value: null,
+      enumerable: true,
+      writable: true
+    });
     Object.defineProperty(this, 'onreadystatechange', {
       value: null,
       enumerable: true,
@@ -846,7 +876,7 @@ define('impl/PersistenceXMLHttpRequest',['../persistenceUtils', './logger'], fun
       writable: true
     });
     Object.defineProperty(this, '_responseText', {
-      value: null,
+      value: '',
       writable: true
     });
     Object.defineProperty(this, 'responseText', {
@@ -1080,7 +1110,9 @@ define('impl/PersistenceXMLHttpRequest',['../persistenceUtils', './logger'], fun
     function appendResponseHeader(responseHeader) {
       responseHeaders += responseHeader + ': ' + self._responseHeaders[responseHeader] + '\r\n';
     }
-    Object.keys(this._responseHeaders).forEach(appendResponseHeader);
+    if (this._responseHeaders) {
+      Object.keys(this._responseHeaders).forEach(appendResponseHeader);
+    }
 
     return responseHeaders;
   };
@@ -1125,17 +1157,54 @@ define('impl/PersistenceXMLHttpRequest',['../persistenceUtils', './logger'], fun
         listener.handleEvent(event);
       }
     });
+    switch(type) {
+      case 'abort':
+        if (this.onabort) {
+          this.onabort(event);
+        }
+        break;
+      case 'error':
+        if (this.onerror) {
+          this.onerror(event);
+        }
+        break;
+      case 'load':
+        if (this.onload) {
+          this.onload(event);
+        }
+        break;
+      case 'loadend':
+        if (this.onloadend) {
+          this.onloadend(event);
+        }
+        break;
+      case 'loadstart':
+        if (this.onloadstart) {
+          this.onloadstart(event);
+        }
+        break;
+      case 'progress':
+        if (this.onprogress) {
+          this.onprogress(event);
+        }
+        break;
+      case 'readystatechange':
+        if (this.onreadystatechange) {
+          this.onreadystatechange(event);
+        }
+        break;
+       case 'timeout':
+        if (this.ontimeout) {
+          this.ontimeout(event);
+        }
+        break;
+    }
 
     return !!event.defaultPrevented;
   };
 
   function _readyStateChange(self, state) {
     self._readyState = state;
-
-    if (typeof self.onreadystatechange == 'function') {
-      self.onreadystatechange(new PersistenceXMLHttpRequestEvent('readystatechange'));
-    }
-
     self.dispatchEvent(new PersistenceXMLHttpRequestEvent('readystatechange'));
 
     if (self._readyState == PersistenceXMLHttpRequest.DONE) {
@@ -1364,6 +1433,14 @@ define('persistenceStoreManager',['./impl/logger'], function (logger) {
       value: '_defaultFactory',
       writable: false
     });
+    // some pattern of store name (e.g. http://) will cause issues
+    // for the underlying storage system. We'll rename the store
+    // name to avoid such issue. This is to store the original store
+    // name to the system replaced name.
+    Object.defineProperty(this, '_storeNameMapping', {
+      value: {},
+      writable: true
+    });
   }
   
   /**
@@ -1387,11 +1464,12 @@ define('persistenceStoreManager',['./impl/logger'], function (logger) {
       throw TypeError("A valid name must be provided.");
     }
 
-    var oldFactory = this._factories[name];
+    var storeName = this._mapStoreName(name);
+    var oldFactory = this._factories[storeName];
     if (oldFactory && oldFactory !== factory) {
       throw TypeError("A factory with the same name has already been registered.");
     }
-    this._factories[name] = factory;
+    this._factories[storeName] = factory;
   };
 
   /**
@@ -1427,14 +1505,15 @@ define('persistenceStoreManager',['./impl/logger'], function (logger) {
    */
   PersistenceStoreManager.prototype.openStore = function (name, options) {
     logger.log("Offline Persistence Toolkit PersistenceStoreManager: openStore() for name: " + name);
-    var allVersions = this._stores[name];
+    var storeName = this._mapStoreName(name);
+    var allVersions = this._stores[storeName];
     var version = (options && options.version) || '0';
 
     if (allVersions && allVersions[version]) {
       return Promise.resolve(allVersions[version]);
     }
 
-    var factory = this._factories[name];
+    var factory = this._factories[storeName];
     if (!factory) {
       factory = this._factories[this._DEFAULT_STORE_FACTORY_NAME];
     }
@@ -1444,10 +1523,10 @@ define('persistenceStoreManager',['./impl/logger'], function (logger) {
 
     var self = this;
     logger.log("Offline Persistence Toolkit PersistenceStoreManager: Calling createPersistenceStore on factory");
-    return factory.createPersistenceStore(name, options).then(function (store) {
+    return factory.createPersistenceStore(storeName, options).then(function (store) {
       allVersions = allVersions || {};
       allVersions[version] = store;
-      self._stores[name] = allVersions;
+      self._stores[storeName] = allVersions;
       return store;
     });
   };
@@ -1469,7 +1548,8 @@ define('persistenceStoreManager',['./impl/logger'], function (logger) {
    *                   specific version, false otherwise.
    */
   PersistenceStoreManager.prototype.hasStore = function (name, options) {
-    var allVersions = this._stores[name];
+    var storeName = this._mapStoreName(name);
+    var allVersions = this._stores[storeName];
     if (!allVersions) {
       return false;
     } else if (!options || !options.version) {
@@ -1497,7 +1577,8 @@ define('persistenceStoreManager',['./impl/logger'], function (logger) {
    */
   PersistenceStoreManager.prototype.deleteStore = function (name, options) {
     logger.log("Offline Persistence Toolkit PersistenceStoreManager: deleteStore() for name: " + name);
-    var allversions = this._stores[name];
+    var storeName = this._mapStoreName(name);
+    var allversions = this._stores[storeName];
     if (!allversions) {
       return Promise.resolve(false);
     } else {
@@ -1523,10 +1604,22 @@ define('persistenceStoreManager',['./impl/logger'], function (logger) {
         var promises = Object.keys(allversions).map(mapcallback(allversions), this);
         var self = this;
         return Promise.all(promises).then(function () {
-          delete self._stores[name];
+          delete self._stores[storeName];
           return true;
         });
       }
+    }
+  };
+
+  PersistenceStoreManager.prototype._mapStoreName = function (name, options) {
+    var mappedName = this._storeNameMapping[name];
+    if (mappedName) {
+      return mappedName;
+    } else {
+      // remove '://' from the string. 
+      mappedName = name.replace(/(.*):\/\/(.*)/gi, '$1$2');
+      this._storeNameMapping[name] = mappedName;
+      return mappedName;
     }
   };
 

@@ -620,7 +620,7 @@ oj.Composite.register('oj-file-picker',
  *
  * @function setProperty
  * @param {string} property - The property name to set. Supports dot notation for subproperty access.
- * @param {*} value - The new value to set the property to.
+ * @param {any} value - The new value to set the property to.
  * @return {void}
  *
  * @expose
@@ -634,7 +634,7 @@ oj.Composite.register('oj-file-picker',
  * Retrieves a value for a property or a single subproperty for complex properties.
  * @function getProperty
  * @param {string} property - The property name to get. Supports dot notation for subproperty access.
- * @return {*}
+ * @return {any}
  *
  * @expose
  * @memberof oj.ojFilePicker

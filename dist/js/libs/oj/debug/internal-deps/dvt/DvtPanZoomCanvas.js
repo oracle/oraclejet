@@ -3904,6 +3904,7 @@ dvt.Obj.createSubclass(dvt.PanZoomCanvas, dvt.Container);
 dvt.PanZoomCanvas.DEFAULT_PAN_INCREMENT = 15;
 dvt.PanZoomCanvas.DEFAULT_ZOOM_INCREMENT = .05;
 dvt.PanZoomCanvas.DEFAULT_ANIMATION_DURATION = .5;
+dvt.PanZoomCanvas.DEFAULT_PADDING = 20;
 
 dvt.PanZoomCanvas.DEFAULT_DISPLAYED_CONTROLS = dvt.ControlPanel.CONTROLS_ALL;
 
@@ -3931,7 +3932,7 @@ dvt.PanZoomCanvas.prototype.Init = function(context, ww, hh, view)
   this._panIncrement = dvt.PanZoomCanvas.DEFAULT_PAN_INCREMENT;
   this._zoomIncrement = dvt.PanZoomCanvas.DEFAULT_ZOOM_INCREMENT;
   this._bTiltPanningEnabled = false;
-  this._zoomToFitPadding = 20;
+  this._zoomToFitPadding = dvt.PanZoomCanvas.DEFAULT_PADDING;
 
   this._controlPanel = null;
 

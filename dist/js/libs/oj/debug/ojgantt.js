@@ -197,6 +197,67 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
      */
     dependencies: null,
     /**
+     * Enables drag and drop functionality.
+     * @expose
+     * @name dnd
+     * @memberof oj.ojGantt
+     * @instance
+     * @type {Object}
+     * @default {"move": {"tasks": "disabled"}}
+     * 
+     * @example <caption>Initialize the Gantt with some <code class="prettyprint">dnd</code> functionality:</caption>
+     * &lt;!-- Using dot notation -->
+     * &lt;oj-gantt dnd.move.tasks='enabled'>&lt;/oj-gantt>
+     *
+     * &lt;!-- Using JSON notation -->
+     * &lt;oj-gantt dnd='{"move": {"tasks": "enabled"}}'>&lt;/oj-gantt>
+     *
+     * @example <caption>Get or set the <code class="prettyprint">dnd</code> property after initialization:</caption>
+     * // Get one
+     * var value = myGantt.dnd.move;
+     * 
+     * // Set one, leaving the others intact.
+     * myGantt.setProperty('dnd.move', {"tasks": "enabled"});
+     * 
+     * // Get all
+     * var values = myGantt.dnd;
+     *
+     * // Set all. Must list every dnd functionality, as those not listed are lost.
+     * myGantt.dnd = {
+     *     "move": {"tasks": "enabled"}
+     * };
+     */
+    dnd: {
+      /**
+       * Defines a subset of high level configurations for moving elements to another location of some row within the gantt.
+       * <br></br>See the <a href="#dnd">dnd</a> attribute for usage examples.
+       * @expose
+       * @name dnd.move
+       * @memberof! oj.ojGantt
+       * @instance
+       * @type {Object}
+       * @ojsignature {target: "Type", value: "?"}
+       * @default {"tasks": "disabled"}
+       */
+      move: {
+        /**
+         * Enable or disable moving the non-baseline portions of tasks to a different location of some row within the same gantt using drag and drop or equivalent keyboard actions (See <a href="#keyboard-section">Keyboard End User Information</a>).
+         * See also <a href="#event:move">ojMove</a>.
+         * <br></br>See the <a href="#dnd">dnd</a> attribute for usage examples.
+         * @expose
+         * @name dnd.move.tasks
+         * @memberof! oj.ojGantt
+         * @instance
+         * @type {string}
+         * @ojsignature {target: "Type", value: "?"}
+         * @ojvalue {string} "disabled" Disable moving tasks
+         * @ojvalue {string} "enabled" Enable moving tasks
+         * @default "disabled"
+         */
+        tasks: "disabled"
+      }
+    },
+    /**
      * The end time of the Gantt. A valid value is required in order for the Gantt to properly render. See <a href="#formats-section">Date and Time Formats</a> for more details on the required string formats.
      * @expose
      * @name end
@@ -494,8 +555,8 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
      * @memberof oj.ojGantt
      * @instance
      * @type {Object}
-     * @default {"rendered": "off", "maxWidth": "none"}
-     * 
+     * @default {"rendered": "off", "maxWidth": "none", "width": "max-content", "label": {"renderer": null}}
+     *
      * @example <caption>Initialize the Gantt with the <code class="prettyprint">row-axis</code> attribute specified:</caption>
      * &lt;!-- Using dot notation -->
      * &lt;oj-gantt row-axis.rendered='on' row-axis.max-width='50px'>&lt;/oj-gantt>
@@ -509,7 +570,7 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
      *
      * // Set one, leaving the others intact
      * myGantt.setProperty('rowAxis.rendered', 'on');
-     * 
+     *
      * // Get all
      * var values = myGantt.rowAxis;
      *
@@ -535,7 +596,7 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
        */
       rendered: "off",
       /**
-       * Defines the maximum width of the region in pixels (e.g. '50px') or percent (e.g. '15%') of the element width. If 'none' is specified, then the width has no maximum value. Labels will truncate to fit.
+       * Defines the maximum width of the region in pixels (e.g. '50px') or percent (e.g. '15%') of the element width. If 'none' is specified, then the width has no maximum value. Default labels will truncate to fit.
        * <br></br>See the <a href="#rowAxis">row-axis</a> attribute for usage examples.
        * @expose
        * @name rowAxis.maxWidth
@@ -545,7 +606,44 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
        * @ojsignature {target: "Type", value: "?"}
        * @default "none"
        */
-      maxWidth: "none"
+      maxWidth: "none",
+      /**
+       * Defines the width of the region in pixels (e.g. '50px') or percent (e.g. '15%') of the element width. If 'max-content' is specified, then the intrinsic width of the widest label content is used. Default labels will truncate to fit.
+       * <br></br>See the <a href="#rowAxis">row-axis</a> attribute for usage examples.
+       * @expose
+       * @name rowAxis.width
+       * @memberof! oj.ojGantt
+       * @instance
+       * @type {string}
+       * @ojsignature {target: "Type", value: "?"}
+       * @default "max-content"
+       */
+      width: "max-content",
+      /**
+       * An object defining the properties of the row labels.
+       * <br></br>See the <a href="#rowAxis">row-axis</a> attribute for usage examples.
+       * @expose
+       * @name rowAxis.label
+       * @memberof! oj.ojGantt
+       * @instance
+       * @type {Object}
+       * @ojsignature {target: "Type", value: "?"}
+       * @default {"renderer": null}
+       */
+      label: {
+        /**
+         * An optional function that returns custom content for the row label. The custom content must be an SVG element.
+         * <br></br>See the <a href="#rowAxis">row-axis</a> attribute for usage examples.
+         * @expose
+         * @name rowAxis.label.renderer
+         * @memberof! oj.ojGantt
+         * @instance
+         * @type {?(function(Object):Object)}
+         * @ojsignature {target: "Type", value: "((context: oj.ojGantt.RowAxisLabelRendererContext) => ({insert: Element}))", jsdocOverride: true}
+         * @default null
+         */
+        renderer: null
+      }
     },
     /**
      * An array of objects with the following properties, used to define rows and tasks within rows. Also accepts a Promise that will resolve with an array for deferred data rendering. No data will be rendered if the Promise is rejected.
@@ -1481,7 +1579,31 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
      * @instance
      * @ojbubbles
      */
-    viewportChange: null
+    viewportChange: null,
+    /**
+     * Triggered after tasks are moved to a different location of some row within the gantt via drag and drop or equivalent keyboard actions (See <a href="#keyboard-section">Keyboard End User Information</a>).
+     * See also the <a href="#dnd.move.tasks">dnd.move.tasks</a> attribute.
+     *
+     * @property {Object[]} taskContexts An array of dataContexts of the moved tasks. The first dataContext of the array corresponds to the source task where the move was initiated (e.g. the task directly under the mouse when drag started).
+     * @property {oj.ojGantt.RowTask} taskContexts.data The data object of the source task.
+     * @property {oj.ojGantt.Row} taskContexts.rowData The data for the row the source task belongs to.
+     * @property {string} taskContexts.color The color of the source task.
+     * @property {string} value The value at the target position the source task is moved to. See <a href="#formats-section">Date and Time Formats</a> for more details on the ISO string format.
+     * @property {string} start The start value of the task, if the source task were to move to the target position. See <a href="#formats-section">Date and Time Formats</a> for more details on the ISO string format.
+     * @property {string} end The end value of the task, if the source task were to move to the target position. See <a href="#formats-section">Date and Time Formats</a> for more details on the ISO string format.
+     * @property {string} baselineStart The start value of the baseline, if the source task were to move to the target position. This is null if baseline is not defined on the task. See <a href="#formats-section">Date and Time Formats</a> for more details on the ISO string format.
+     * @property {string} baselineEnd The end value of the baseline, if the source task were to move to the target position. This is null if baseline is not defined on the task. See <a href="#formats-section">Date and Time Formats</a> for more details on the ISO string format.
+     * @property {Object} rowContext The data context for the row at the target position.
+     * @property {oj.ojGantt.Row} rowContext.rowData The data for the target row.
+     * @property {Element} rowContext.componentElement The gantt element.
+     *
+     * @expose
+     * @event
+     * @memberof oj.ojGantt
+     * @instance
+     * @ojbubbles
+     */
+    move: null
   },
 
   // @inheritdoc
@@ -1523,6 +1645,7 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
     map['taskBar'] = "oj-gantt-task-bar";
     map['taskMilestone'] = "oj-gantt-task-milestone";
     map['taskSummary'] = "oj-gantt-task-summary";
+    map['taskDragImage'] = 'oj-gantt-task-drag-image';
     map['baseline'] = "oj-gantt-baseline";
     map['baselineBar'] = "oj-gantt-baseline-bar"
     map['baselineMilestone'] = "oj-gantt-baseline-milestone";
@@ -1535,8 +1658,16 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
     map['selected'] = "oj-selected";
     map['hover'] = "oj-hover";
     map['focus'] = "oj-focus";
+    map['draggable'] = 'oj-draggable';
+    map['activeDrop'] = 'oj-active-drop';
+    map['invalidDrop'] = 'oj-invalid-drop';
 
     return map;
+  },
+
+  // @inheritdoc
+  _IsDraggable: function () {
+    return this.options.dnd && this.options.dnd.move && this.options.dnd.move.tasks === 'enabled';
   },
 
   /**
@@ -1722,6 +1853,19 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
       this._UserOptionChange('minorAxis.scale', minorAxisScale);
       this._trigger('viewportChange', null, viewportChangePayload);
     }
+    else if (type === 'move')
+    {
+      var movePayload = {
+        taskContexts: event.taskContexts,
+        value: event.value,
+        start: event.start,
+        end: event.end,
+        baselineStart: event.baselineStart,
+        baselineEnd: event.baselineEnd,
+        rowContext: event.rowContext
+      };
+      this._trigger('move', null, movePayload);
+    }
     else
     {
       this._super(event);
@@ -1786,9 +1930,13 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  *   </thead>
  *   <tbody>
  *    <tr>
- *       <td rowspan="3">Task</td>
+ *       <td rowspan="4">Task</td>
  *       <td><kbd>Tap</kbd></td>
  *       <td>Select when <code class="prettyprint">selection-mode</code> is enabled.</td>
+ *     </tr>
+ *     <tr>
+ *       <td><kbd>Drag</kbd></td>
+ *       <td>Move when <code class="prettyprint">dnd.move.tasks</code> is enabled.</td>
  *     </tr>
  *     <tr>
  *       <td rowspan="2"><kbd>Press & Hold</kbd></td>
@@ -1800,7 +1948,7 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  *     <tr>
  *       <td rowspan="3">Chart Area</td>
  *       <td><kbd>Drag</kbd></td>
- *       <td>Paning: navigate forward and backward in time in horizontal/vertical orientation.</td>
+ *       <td>Pan.</td>
  *     </tr>
  *     <tr>
  *       <td><kbd>Pinch-close</kbd></td>
@@ -1852,7 +2000,12 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  *     </tr>
  *     <tr>
  *       <td><kbd>PageUp or PageDown</kbd></td>
- *       <td>Pan up / down.</td>
+ *       <td>
+ *         <ul>
+ *           <li>Pan up / down.</li>
+ *           <li>If currently in move mode (see <kbd>Ctrl + m</kbd>), select the amount of time greater / less than the current move by amount in the following ramp: years, quarters, months, weeks, days, hours, minutes, seconds, milliseconds. For example, if the current move by amount is weeks, <kbd>PageUp</kbd> or <kbd>PageDown</kbd> would change the amount to months or days respectively.</li>
+ *         </ul>
+ *       </td>
  *     </tr>
  *     <tr>
  *       <td><kbd>Shift + PageUp or PageDown</kbd></td>
@@ -1860,25 +2013,43 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  *     </tr>
  *     <tr>
  *       <td><kbd>LeftArrow</kbd></td>
- *       <td>When focus is on a task, move focus and selection to the task on the left within the same row.  In LTR reading direction, if this is the first task within the row, then move focus and selection to the last task in the previous row. In RTL reading direction, if this is the last task within the row, then move focus and selection to the first task in the next row.
- *           <br>When focus is on a dependency line (see <kbd>Alt + &lt;</kbd> and <kbd>Alt + &gt;</kbd>), move focus to the predecessor task (RTL: successor task).</td>
+ *       <td>
+ *         <ul>
+ *           <li>When focus is on a task, move focus and selection to the task on the left within the same row.  In LTR reading direction, if this is the first task within the row, then move focus and selection to the last task in the previous row. In RTL reading direction, if this is the last task within the row, then move focus and selection to the first task in the next row.</li>
+ *           <li>When focus is on a dependency line (see <kbd>Alt + &lt;</kbd> and <kbd>Alt + &gt;</kbd>), move focus to the predecessor task (RTL: successor task).</li>
+ *           <li>If currently in move mode (see <kbd>Ctrl + m</kbd>), move the candidate position to the left by some amount of time. Upon entering move mode, the amount of time is set to the scale of the minor axis. See <kbd>PageUp or PageDown</kbd> for information on changing the amount of time to move by.</li>
+ *         </ul>
+ *       </td>
  *     </tr>
  *     <tr>
  *       <td><kbd>RightArrow</kbd></td>
- *       <td>When focus is on a task, move focus and selection to the task on the right within the same row.  In LTR reading direction, if this is the last task within the row, then move focus and selection to the first task in the next row. In RTL reading direction, if this is the first task within the row, then move focus and selection to the last task in the previous row.
- *           <br>When focus is on a dependency line (see <kbd>Alt + &lt;</kbd> and <kbd>Alt + &gt;</kbd>), move focus to the successor task (RTL: predecessor task).</td>
+ *       <td>
+ *         <ul>
+ *           <li>When focus is on a task, move focus and selection to the task on the right within the same row.  In LTR reading direction, if this is the last task within the row, then move focus and selection to the first task in the next row. In RTL reading direction, if this is the first task within the row, then move focus and selection to the last task in the previous row.</li>
+ *           <li>When focus is on a dependency line (see <kbd>Alt + &lt;</kbd> and <kbd>Alt + &gt;</kbd>), move focus to the successor task (RTL: predecessor task).</li>
+ *           <li>If currently in move mode (see <kbd>Ctrl + m</kbd>), move the candidate position to the right by some amount of time. Upon entering move mode, the amount of time is set to the scale of the minor axis. See <kbd>PageUp or PageDown</kbd> for information on changing the amount of time to move by.</li>
+ *         </ul>
+ *       </td>
  *     </tr>
  *     <tr>
  *       <td><kbd>UpArrow</kbd></td>
- *       <td>When focus is on a task, move focus and selection to first task in the previous row.
- *           <br>When focus is on a dependency line (see <kbd>Alt + &lt;</kbd> and <kbd>Alt + &gt;</kbd>), move focus to the previous dependency line with the same
- *           predecessor/successor.</td>
+ *       <td>
+ *         <ul>
+ *           <li>When focus is on a task, move focus and selection to first task in the previous row.</li>
+ *           <li>When focus is on a dependency line (see <kbd>Alt + &lt;</kbd> and <kbd>Alt + &gt;</kbd>), move focus to the previous dependency line with the same predecessor/successor.</li>
+ *           <li>If currently in move mode (see <kbd>Ctrl + m</kbd>), move the candidate position to the row above, preserving current time position.</li>
+ *         </ul>
+ *       </td>
  *     </tr>
  *     <tr>
  *       <td><kbd>DownArrow</kbd></td>
- *       <td>When focus is on a task, move focus and selection to first task in the next row.
- *           <br>When focus is on a dependency line (see <kbd>Alt + &lt;</kbd> and <kbd>Alt + &gt;</kbd>), move focus to the next dependency line with the same
- *           predecessor/successor.</td>
+ *       <td>
+ *         <ul>
+ *           <li>When focus is on a task, move focus and selection to first task in the next row.</li>
+ *           <li>When focus is on a dependency line (see <kbd>Alt + &lt;</kbd> and <kbd>Alt + &gt;</kbd>), move focus to the next dependency line with the same predecessor/successor.</li>
+ *           <li>If currently in move mode (see <kbd>Ctrl + m</kbd>), move the candidate position to the row below, preserving current time position.</li>
+ *         </ul>
+ *       </td>
  *     </tr>
  *     <tr>
  *       <td><kbd>Ctrl + Space</kbd></td>
@@ -1893,12 +2064,12 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  *       <td>Move focus to a task but do not select.</td>
  *     </tr>
  *     <tr>
- *       <td><kbd>Alt + &lt;</kbd></td>
+ *       <td><kbd>Alt + &lt; or Alt + ,</kbd></td>
  *       <td>Move focus from a task to an associated dependency line connecting to a predecessor task (RTL: successor task). Note that the dependency line must have been 
  *        created referencing the task's ID in its predecessor/successorTask objects for an association to exist. Also note that when focus is on a dependency line, the <kbd>UpArrow</kbd> and <kbd>DownArrow</kbd> keys are used to move focus to the next dependency line with the same predecessor/successor.</td>
  *     </tr>
  *     <tr>
- *       <td><kbd>Alt + &gt;</kbd></td>
+ *       <td><kbd>Alt + &gt; or Alt + .</kbd></td>
  *       <td>Move focus from a task to an associated dependency line connecting to a successor task (RTL: predecessor task). Note that the dependency line must have been 
  *        created referencing the task's ID in its predecessor/successorTask objects for an association to exist. Also note that when focus is on a dependency line, the <kbd>UpArrow</kbd> and <kbd>DownArrow</kbd> keys are used to move focus to the next dependency line with the same predecessor/successor.</td>
  *     </tr>
@@ -1909,6 +2080,18 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
  *     <tr>
  *       <td><kbd>Ctrl + Mousewheel Down</kbd></td>
  *       <td>Zoom Out.</td>
+ *     </tr>
+ *     <tr>
+ *       <td><kbd>Ctrl + m</kbd></td>
+ *       <td>When focus is on a task and <code class="prettyprint">dnd.move.tasks</code> is enabled, enter move mode. See also the <kbd>UpArrow</kbd>, <kbd>DownArrow</kbd>, <kbd>LeftArrow</kbd>, <kbd>RightArrow</kbd>, <kbd>PageUp or PageDown</kbd>, <kbd>Esc</kbd>, and <kbd>Enter</kbd> sections for more information.</td>
+ *     </tr>
+ *     <tr>
+ *       <td><kbd>Esc</kbd></td>
+ *       <td>Cancel drag or exit move mode, if currently dragging or in move mode (see <kbd>Ctrl + m</kbd>).</td>
+ *     </tr>
+ *     <tr>
+ *       <td><kbd>Enter</kbd></td>
+ *       <td>Finalize move, if currently in move mode (see <kbd>Ctrl + m</kbd>).</td>
  *     </tr>
  *   </tbody>
  * </table>
@@ -2021,10 +2204,18 @@ oj.__registerWidget('oj.ojGantt', $['oj']['dvtTimeComponent'],
 /**
  * @typedef {Object} oj.ojGantt.TooltipContext
  * @property {Element} parentElement The tooltip element. This can be used to change the tooltip border or background color.
- * @property {Object} data The data object of the hovered task.
- * @property {Object} rowData The data for the row the hovered task belongs to.
+ * @property {oj.ojGantt.RowTask} data The data object of the hovered task.
+ * @property {oj.ojGantt.Row} rowData The data for the row the hovered task belongs to.
  * @property {Element} componentElement The gantt element.
  * @property {string} color The color of the hovered task.
+ */
+/**
+ * @typedef {Object} oj.ojGantt.RowAxisLabelRendererContext
+ * @property {Element} parentElement A parent group element that takes a custom SVG fragment as the row label content. Modifications of the parentElement are not supported.
+ * @property {oj.ojGantt.Row} rowData The data for the row.
+ * @property {Element} componentElement The gantt element.
+ * @property {number} maxWidth The maximum available width in px, as constrained by the row-axis.width and row-axis.max-width values. If row-axis.width is 'max-content' and row-axis.max-width is 'none', then this is -1, and the component will automatically allocate enough width space to accommodate the content.
+ * @property {number} maxHeight The maximum available height in px.
  */
 
 // KEEP FOR WIDGET SYNTAX
@@ -2108,6 +2299,20 @@ var ojGanttMeta = {
     "dependencies": {
       "type": "Array<object>|Promise"
     },
+    "dnd": {
+      "type": "object",
+      "properties": {
+        "move": {
+          "type": "object",
+          "properties": {
+            "tasks": {
+              "type": "string",
+              "enumValues": ["disabled", "enabled"]
+            }
+          }
+        }
+      }
+    },
     "end": {
       "type": "string"
     },
@@ -2182,8 +2387,17 @@ var ojGanttMeta = {
     "rowAxis": {
       "type": "object",
       "properties": {
+        "label": {
+          "type": 'object',
+          "properties": {
+            "renderer": {}
+          }
+        },
         "maxWidth": {
           "type": "string"
+        },
+        "width": {
+          "type": 'string'
         },
         "rendered": {
           "type": "string",
@@ -2554,6 +2768,7 @@ var ojGanttMeta = {
     "getContextByNode": {}
   },
   "events": {
+    "move": {},
     "viewportChange": {}
   },
   "extension": {

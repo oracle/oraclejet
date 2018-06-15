@@ -1631,7 +1631,8 @@ var ojTimelineMeta = {
       }
     },
     "orientation": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["horizontal", "vertical"]
     },
     "overview": {
       "type": "object",

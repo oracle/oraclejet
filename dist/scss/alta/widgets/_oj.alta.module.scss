@@ -2,20 +2,16 @@
 @import "../../utilities/oj.utilities";
 
 // ----- start dependencies ---------
-
-// set up include variables before importing dependencies
-@if $includeModuleClasses != false {
-  $includeModuleClasses: true !global;
-}
-
 // import dependencies
 @import "../../common/helpers/oj.common.helpers";
-
 // ----- end dependencies ---------
 
 // alta implementation currently in common
 @import "../../common/widgets/oj.common.module"; 
 
-@if $includeModuleClasses != false {
 
+@if $includeModuleClasses != false {
+  @include module-include-once("alta.module") {
+
+  }
 }

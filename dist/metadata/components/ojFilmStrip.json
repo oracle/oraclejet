@@ -1,7 +1,7 @@
 {
   "name": "oj-film-strip",
-  "version": "5.0.0",
-  "jetVersion": "5.0.0",
+  "version": "5.1.0",
+  "jetVersion": "5.1.0",
   "displayName": "Film Strip",
   "preview": true,
   "roles": [
@@ -78,6 +78,27 @@
         }
       }
     },
+    "looping": {
+      "description": "Specifies the navigation looping behavior",
+      "type": "string",
+      "displayName": "Looping",
+      "value": "off",
+      "preview": true,
+      "enumValues": [
+        "off",
+        "page"
+      ],
+      "propertyEditorValues": {
+        "off": {
+          "description": "Navigation is bounded between first and last page and can't go any further in the direction of navigation.",
+          "displayName": "Off"
+        },
+        "page": {
+          "description": "Navigation is not bounded between first and last page and can go further in the direction of navigation. This lets user to loop around from first page to last page or from last page to first page.",
+          "displayName": "Page"
+        }
+      }
+    },
     "maxItemsPerPage": {
       "description": "Specifies the maximum number of child items shown in a logical page.",
       "type": "number",
@@ -115,12 +136,17 @@
         "labelAccArrowNextPage": {
           "description": "Accessible label for the next page navigation arrow.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "Next Page"
+          "value": "Select Next to display next page"
         },
         "labelAccArrowPreviousPage": {
           "description": "Accessible label for the previous page navigation arrow.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "Previous Page"
+          "value": "Select Previous to display previous page"
+        },
+        "labelAccFilmStrip": {
+          "description": "Accessible page information label for the filmstrip element.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Displaying page {pageIndex} of {pageCount}"
         },
         "tipArrowNextPage": {
           "description": "Tooltip for the next page navigation arrow.\n\nSee the translations attribute for usage examples.",
@@ -159,7 +185,7 @@
         {
           "name": "value",
           "description": "The new value to set the property to.",
-          "type": "*"
+          "type": "any"
         }
       ],
       "return": "void"
@@ -173,7 +199,7 @@
           "type": "string"
         }
       ],
-      "return": "*"
+      "return": "any"
     },
     "setProperties": {
       "description": "Performs a batch set of properties.",

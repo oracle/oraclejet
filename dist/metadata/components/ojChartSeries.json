@@ -1,0 +1,516 @@
+{
+  "name": "oj-chart-series",
+  "version": "5.1.0",
+  "jetVersion": "5.1.0",
+  "displayName": "Chart Series",
+  "preview": true,
+  "description": "ojChartSeries",
+  "properties": {
+    "areaColor": {
+      "description": "The area color of the series. Only applies if series type is area or lineWithArea.",
+      "type": "string",
+      "displayName": "Area Color",
+      "value": null
+    },
+    "areaSvgClassName": {
+      "description": "The CSS style class to apply if series type is area or lineWithArea. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the color attribute.",
+      "type": "string",
+      "displayName": "Area Svg Class Name",
+      "value": null
+    },
+    "areaSvgStyle": {
+      "description": "The inline style to apply if series type is area or lineWithArea. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the color attribute.",
+      "type": "Object",
+      "displayName": "Area Svg Style",
+      "value": null
+    },
+    "assignedToY2": {
+      "description": "Defines whether the series is associated with the y2 axis. Only applies to Cartesian bar, line, area, and combo charts.",
+      "type": "string",
+      "displayName": "Assigned To Y2",
+      "value": "off",
+      "enumValues": [
+        "off",
+        "on"
+      ],
+      "propertyEditorValues": {
+        "off": {
+          "displayName": "Off"
+        },
+        "on": {
+          "displayName": "On"
+        }
+      }
+    },
+    "borderColor": {
+      "description": "The border color of the series.",
+      "type": "string",
+      "displayName": "Border Color",
+      "value": null
+    },
+    "borderWidth": {
+      "description": "The border width of the series.",
+      "type": "number",
+      "displayName": "Border Width",
+      "value": null,
+      "units": "pixels"
+    },
+    "boxPlot": {
+      "description": "An object containing the style properties of the box plot series.",
+      "type": "Object",
+      "displayName": "Box Plot",
+      "value": null,
+      "properties": {
+        "medianSvgClassName": {
+          "description": "The CSS style class to apply to the median line.",
+          "type": "string",
+          "value": null
+        },
+        "medianSvgStyle": {
+          "description": "The CSS inline style to apply to the median line.",
+          "type": "Object",
+          "value": null
+        },
+        "q2Color": {
+          "description": "The color of the Q2 segment of the box.",
+          "type": "string",
+          "value": null
+        },
+        "q2SvgClassName": {
+          "description": "The CSS style class to apply to the Q2 segment of the box. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the q2Color attribute.",
+          "type": "string",
+          "value": null
+        },
+        "q2SvgStyle": {
+          "description": "The CSS inline style to apply to the Q2 segment of the box. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the q2Color attribute.",
+          "type": "Object",
+          "value": null
+        },
+        "q3Color": {
+          "description": "The color of the Q3 segment of the box.",
+          "type": "string",
+          "value": null
+        },
+        "q3SvgClassName": {
+          "description": "The CSS style class to apply to the Q3 segment of the box. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the q3Color attribute.",
+          "type": "string",
+          "value": null
+        },
+        "q3SvgStyle": {
+          "description": "The CSS inline style to apply to the Q3 segment of the box. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the q3Color attribute.",
+          "type": "Object",
+          "value": null
+        },
+        "whiskerEndLength": {
+          "description": "Specifies the length of the whisker ends in pixels (e.g. '9px') or as a percentage of the box width (e.g. '50%').",
+          "type": "string",
+          "value": null
+        },
+        "whiskerEndSvgClassName": {
+          "description": "The CSS style class to apply to the whisker ends.",
+          "type": "string",
+          "value": null
+        },
+        "whiskerEndSvgStyle": {
+          "description": "The CSS inline style to apply to the whisker ends.",
+          "type": "Object",
+          "value": null
+        },
+        "whiskerSvgClassName": {
+          "description": "The CSS style class to apply to the whisker stems.",
+          "type": "string",
+          "value": null
+        },
+        "whiskerSvgStyle": {
+          "description": "The CSS inline style to apply to the whisker stems.",
+          "type": "Object",
+          "value": null
+        }
+      }
+    },
+    "categories": {
+      "description": "An optional array of category strings corresponding to this series. This allows highlighting and filtering of a series through interactions with legend sections. If not defined, the series id is used.",
+      "type": "Array<string>",
+      "displayName": "Categories",
+      "value": null
+    },
+    "color": {
+      "description": "The color of the series.",
+      "type": "string",
+      "displayName": "Color",
+      "value": null
+    },
+    "displayInLegend": {
+      "description": "Defines whether the series should be shown in the legend. When set to 'auto', the series will not be displayed in the legend if it has null data or if it is a stock, funnel, or pyramid series.",
+      "type": "string",
+      "displayName": "Display In Legend",
+      "value": "auto",
+      "enumValues": [
+        "auto",
+        "off",
+        "on"
+      ],
+      "propertyEditorValues": {
+        "auto": {
+          "displayName": "Auto"
+        },
+        "off": {
+          "displayName": "Off"
+        },
+        "on": {
+          "displayName": "On"
+        }
+      }
+    },
+    "drilling": {
+      "description": "Whether drilling is enabled on the series item. Drillable objects will show a pointer cursor on hover and fire an ojDrill event on click. To enable drilling for all series items at once, use the drilling attribute in the top level.",
+      "type": "string",
+      "displayName": "Drilling",
+      "value": "inherit",
+      "enumValues": [
+        "inherit",
+        "off",
+        "on"
+      ],
+      "propertyEditorValues": {
+        "inherit": {
+          "displayName": "Inherit"
+        },
+        "off": {
+          "displayName": "Off"
+        },
+        "on": {
+          "displayName": "On"
+        }
+      }
+    },
+    "lineStyle": {
+      "description": "The line style of the data line. Only applies to line, lineWithArea, scatter, and bubble series.",
+      "type": "string",
+      "displayName": "Line Style",
+      "value": "solid",
+      "enumValues": [
+        "dashed",
+        "dotted",
+        "solid"
+      ],
+      "propertyEditorValues": {
+        "dashed": {
+          "displayName": "Dashed"
+        },
+        "dotted": {
+          "displayName": "Dotted"
+        },
+        "solid": {
+          "displayName": "Solid"
+        }
+      }
+    },
+    "lineType": {
+      "description": "The line type of the data line or area. Only applies to line, area, scatter, and bubble series. centeredStepped and centeredSegmented are not supported for polar, scatter, and bubble charts.",
+      "type": "string",
+      "displayName": "Line Type",
+      "value": "auto",
+      "enumValues": [
+        "auto",
+        "centeredSegmented",
+        "centeredStepped",
+        "curved",
+        "none",
+        "segmented",
+        "stepped",
+        "straight"
+      ],
+      "propertyEditorValues": {
+        "auto": {
+          "displayName": "Auto"
+        },
+        "centeredSegmented": {
+          "displayName": "Centered Segmented"
+        },
+        "centeredStepped": {
+          "displayName": "Centered Stepped"
+        },
+        "curved": {
+          "displayName": "Curved"
+        },
+        "none": {
+          "displayName": "None"
+        },
+        "segmented": {
+          "displayName": "Segmented"
+        },
+        "stepped": {
+          "displayName": "Stepped"
+        },
+        "straight": {
+          "displayName": "Straight"
+        }
+      }
+    },
+    "lineWidth": {
+      "description": "The width of the data line. Only applies to line, lineWithArea, scatter, and bubble series.",
+      "type": "number",
+      "displayName": "Line Width",
+      "value": null,
+      "minimum": 0,
+      "units": "pixels"
+    },
+    "markerColor": {
+      "description": "The color of the data markers, if different from the series color.",
+      "type": "string",
+      "displayName": "Marker Color",
+      "value": null
+    },
+    "markerDisplayed": {
+      "description": "Defines whether the data markers should be displayed. Only applies to line, area, scatter, and bubble series. If auto, the markers will be displayed whenever the data points are not connected by a line.",
+      "type": "string",
+      "displayName": "Marker Displayed",
+      "value": "auto",
+      "enumValues": [
+        "auto",
+        "off",
+        "on"
+      ],
+      "propertyEditorValues": {
+        "auto": {
+          "displayName": "Auto"
+        },
+        "off": {
+          "displayName": "Off"
+        },
+        "on": {
+          "displayName": "On"
+        }
+      }
+    },
+    "markerShape": {
+      "description": "The shape of the data markers. In addition to the built-in shapes, it may also take SVG path commands to specify a custom shape. The chart will style the custom shapes the same way as built-in shapes, supporting properties like color and borderColor and applying hover and selection effects. Only 'auto' is supported for range series.",
+      "type": "string",
+      "displayName": "Marker Shape",
+      "value": "auto",
+      "enumValues": [
+        "auto",
+        "circle",
+        "diamond",
+        "human",
+        "plus",
+        "square",
+        "star",
+        "triangleDown",
+        "triangleUp"
+      ],
+      "propertyEditorValues": {
+        "auto": {
+          "displayName": "Auto"
+        },
+        "circle": {
+          "displayName": "Circle"
+        },
+        "diamond": {
+          "displayName": "Diamond"
+        },
+        "human": {
+          "displayName": "Human"
+        },
+        "plus": {
+          "displayName": "Plus"
+        },
+        "square": {
+          "displayName": "Square"
+        },
+        "star": {
+          "displayName": "Star"
+        },
+        "triangleDown": {
+          "displayName": "Triangle Down"
+        },
+        "triangleUp": {
+          "displayName": "Triangle Up"
+        }
+      }
+    },
+    "markerSize": {
+      "description": "The size of the data markers.",
+      "type": "number",
+      "displayName": "Marker Size",
+      "value": null,
+      "units": "pixels"
+    },
+    "markerSvgClassName": {
+      "description": "The CSS style class to apply to the data markers.The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the marker color attribute.",
+      "type": "string",
+      "displayName": "Marker Svg Class Name",
+      "value": null
+    },
+    "markerSvgStyle": {
+      "description": "The inline style to apply to the data markers. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the marker color attribute.",
+      "type": "Object",
+      "displayName": "Marker Svg Style",
+      "value": null
+    },
+    "name": {
+      "description": "The name of the series, displayed in the legend and tooltips.",
+      "type": "string",
+      "displayName": "Name",
+      "value": null
+    },
+    "pattern": {
+      "description": "The pattern used to fill the series. A solid fill is used by default, unless the seriesEffect is 'pattern'.",
+      "type": "string",
+      "displayName": "Pattern",
+      "value": "auto",
+      "enumValues": [
+        "auto",
+        "largeChecker",
+        "largeCrosshatch",
+        "largeDiagonalLeft",
+        "largeDiagonalRight",
+        "largeDiamond",
+        "largeTriangle",
+        "smallChecker",
+        "smallCrosshatch",
+        "smallDiagonalLeft",
+        "smallDiagonalRight",
+        "smallDiamond",
+        "smallTriangle"
+      ],
+      "propertyEditorValues": {
+        "auto": {
+          "displayName": "Auto"
+        },
+        "largeChecker": {
+          "displayName": "Large Checker"
+        },
+        "largeCrosshatch": {
+          "displayName": "Large Crosshatch"
+        },
+        "largeDiagonalLeft": {
+          "displayName": "Large Diagonal Left"
+        },
+        "largeDiagonalRight": {
+          "displayName": "Large Diagonal Right"
+        },
+        "largeDiamond": {
+          "displayName": "Large Diamond"
+        },
+        "largeTriangle": {
+          "displayName": "Large Triangle"
+        },
+        "smallChecker": {
+          "displayName": "Small Checker"
+        },
+        "smallCrosshatch": {
+          "displayName": "Small Crosshatch"
+        },
+        "smallDiagonalLeft": {
+          "displayName": "Small Diagonal Left"
+        },
+        "smallDiagonalRight": {
+          "displayName": "Small Diagonal Right"
+        },
+        "smallDiamond": {
+          "displayName": "Small Diamond"
+        },
+        "smallTriangle": {
+          "displayName": "Small Triangle"
+        }
+      }
+    },
+    "pieSliceExplode": {
+      "description": "A number from 0 to 1 indicating the amount to explode the pie slice. Only applies to pie charts.",
+      "type": "number",
+      "displayName": "Pie Slice Explode",
+      "value": 0,
+      "maximum": 1,
+      "minimum": 0
+    },
+    "shortDesc": {
+      "description": "The description of this series. This is used for accessibility and for customizing the tooltip text on the corressponding legend item for the series.",
+      "type": "string",
+      "displayName": "Short Desc",
+      "value": null,
+      "translatable": true
+    },
+    "source": {
+      "description": "The URI of the custom image. If specified, it takes precedence over shape.",
+      "type": "string",
+      "displayName": "Source",
+      "value": null
+    },
+    "sourceHover": {
+      "description": "The optional URI for the hover state. If not specified, the source image will be used.",
+      "type": "string",
+      "displayName": "Source Hover",
+      "value": null
+    },
+    "sourceHoverSelected": {
+      "description": "The optional URI for the hover selected state. If not specified, the source image will be used.",
+      "type": "string",
+      "displayName": "Source Hover Selected",
+      "value": null
+    },
+    "sourceSelected": {
+      "description": "The optional URI for the selected state. If not specified, the source image will be used.",
+      "type": "string",
+      "displayName": "Source Selected",
+      "value": null
+    },
+    "stackCategory": {
+      "description": "In stacked charts, groups series together for stacking. All series without a stackCategory will be assigned to the same stack.",
+      "type": "string",
+      "displayName": "Stack Category",
+      "value": null
+    },
+    "svgClassName": {
+      "description": "The CSS style class to apply to the series. For series of type lineWithArea, this style will only be applied to the line if areaClassName is also specified. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the color attribute.",
+      "type": "string",
+      "displayName": "Svg Class Name",
+      "value": null
+    },
+    "svgStyle": {
+      "description": "The inline style to apply to the series. For series of type lineWithArea, this style will only be applied to the line if areaStyle is also specified.The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the color attribute.",
+      "type": "Object",
+      "displayName": "Svg Style",
+      "value": null
+    },
+    "type": {
+      "description": "The type of data objects to display for this series. Only applies to bar, line, area, stock, box plot, and combo charts.",
+      "type": "string",
+      "displayName": "Type",
+      "value": "auto",
+      "enumValues": [
+        "area",
+        "auto",
+        "bar",
+        "boxPlot",
+        "candlestick",
+        "line",
+        "lineWithArea"
+      ],
+      "propertyEditorValues": {
+        "area": {
+          "displayName": "Area"
+        },
+        "auto": {
+          "displayName": "Auto"
+        },
+        "bar": {
+          "displayName": "Bar"
+        },
+        "boxPlot": {
+          "displayName": "Box Plot"
+        },
+        "candlestick": {
+          "displayName": "Candlestick"
+        },
+        "line": {
+          "displayName": "Line"
+        },
+        "lineWithArea": {
+          "displayName": "Line With Area"
+        }
+      }
+    }
+  }
+}

@@ -621,24 +621,35 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'ojs/ojoptgroup', 'ojs/oj
     // - need to be able to specify the initial value of select components bound to dprv
     //traversal using depth first search
     //return an oj.Option object if found otherwise return null
-    findOption: function (arOpts, value)
-    {
-      for (var i = 0, len = arOpts.length; i < len; i++)
-      {
-        var ojOption = arOpts[i];
-        if (ojOption['children'])
-        {
-          var result = _ComboUtils.findOption(ojOption['children'], value);
-          if (result)
-            return result;
+    _findOption: function (ojOption, value) {
+      if (ojOption.children) {
+        var result = _ComboUtils._findOption(ojOption.children, value);
+        if (result) {
+          return result;
         }
-        else if (oj.Object.compareValues(value, ojOption['value']))
-        {
-          return ojOption;
-        }
+      } else if (oj.Object.compareValues(value, ojOption.value)) {
+        return ojOption;
       }
-      //not found
+      // not found
       return null;
+    },
+
+    findOption: function (arOpts, value) {
+      var ojOption;
+      // - create selectone with a valueoption and a value of object datatype doesn't work
+      //need to check if arOpts is an array
+      if (Array.isArray(arOpts)) {
+        for (var i = 0, len = arOpts.length; i < len; i++) {
+          var result = _ComboUtils._findOption(arOpts[i], value);
+          if (result) {
+            return result;
+          }
+        }
+        // not found
+        return null;
+      } else {
+        return _ComboUtils._findOption(arOpts, value);
+      }
     },
 
     findOptions: function (ojOptgroup, values)
@@ -1085,16 +1096,19 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'ojs/ojoptgroup', 'ojs/oj
       };
 
       //check if data provider support filtering?
-      var filters = dataProvider.getCapability("filter");
+      var filterCapability = dataProvider.getCapability('filter');
       var $co = oj.AttributeFilterOperator.AttributeOperator.$co;
       var filterThruDataProvider = false;
 
-      //only filter thru data provider if it supports contains($co) operator
-      if (filters && filters.length > 0) {
-        for (var f = 0; f < filters.length; f++) {
-          if (filters[f] == $co) {
-            filterThruDataProvider = true;
-            break;
+      // only filter thru data provider if it supports contains($co) operator
+      if (filterCapability) {
+        var filters = filterCapability.operators;
+        if (filters && filters.length > 0) {
+          for (var f = 0; f < filters.length; f++) {
+            if (filters[f] === $co) {
+              filterThruDataProvider = true;
+              break;
+            }
           }
         }
       }
@@ -3171,7 +3185,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'ojs/ojoptgroup', 'ojs/oj
             this.context = (!data || data.context === undefined) ? null : data.context;
             // create a default choice and prepend it to the list
 
-            if ((!data || (data.results && data.results.length === 0) || this._isDataSelected(data)) 
+            if ((!data || (data.results && data.results.length === 0) || 
+                (this._isDataSelected(data) && this.ojContext.isValid())) 
                 && _ComboUtils.checkFormatter(self.ojContext, opts.formatNoMatches, "formatNoMatches"))
             {
               var transtr = opts.formatNoMatches(self.ojContext, search.val());
@@ -4362,7 +4377,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'ojs/ojoptgroup', 'ojs/oj
         var valueItem = null;
         var val = this.getVal();
         
-        if (val) {
+        // value supports any type including boolean, so a simple if (val) check will not work
+        if (val !== null && val !== undefined) {
           if (!this.ojContext._IsCustomElement() && val.length)
             valueItem = val[0];
           else
@@ -4964,6 +4980,11 @@ var _OjSingleSelect = _ComboUtils.clazz(_AbstractSingleChoice,
       {
         if (this.text.text() == "")
         {
+          // In the case when the selected option or oj-option has empty text for label
+          // but has valid value, we don't want to clear the value out -- see 
+          if (this.datalist && this.selection.data(this._elemNm).value)
+            return false;
+
           this._clear(event);
           return true;
         }
@@ -6730,6 +6751,7 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
        * @expose
        * @instance
        * @memberof oj.ojComboboxOne
+       * @type {string}
        * @since 4.2.0
        * @ojstatus preview
        * @ojvalue {string} "none"  Show all available options without filtering on open.
@@ -6758,7 +6780,7 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
        * @access public
        * @instance
        * @memberof oj.ojComboboxOne
-       * @type {string|null|undefined}
+       * @type {string|null}
        * @default null
        */
       /**
@@ -6781,7 +6803,7 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
        * @access public
        * @instance
        * @memberof oj.ojComboboxMany
-       * @type {string|null|undefined}
+       * @type {string|null}
        * @default null
        */
       placeholder: null,
@@ -6831,7 +6853,7 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
        * }; 
        * var dataMapping = {'mapFields': mapFields};
        *
-       * var arrayDataProvider = new oj.ArrayDataProvider(dataArray, {idAttribute: 'id'});
+       * var arrayDataProvider = new oj.ArrayDataProvider(dataArray, {keyAttributes: 'id'});
        * var dataProvider = new oj.ListDataProviderView(arrayDataProvider, {'dataMapping': dataMapping});
        */
       /**
@@ -6878,7 +6900,7 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
        * }; 
        * var dataMapping = {'mapFields': mapFields};
        *
-       * var arrayDataProvider = new oj.ArrayDataProvider(dataArray, {idAttribute: 'id'});
+       * var arrayDataProvider = new oj.ArrayDataProvider(dataArray, {keyAttributes: 'id'});
        * var dataProvider = new oj.ListDataProviderView(arrayDataProvider, {'dataMapping': dataMapping});
        */
       /**
@@ -7195,7 +7217,7 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
        * @access public
        * @instance
        * @memberof! oj.ojCombobox
-       * @type {string|undefined}
+       * @type {string}
        * @since 1.2.1
        * @readonly
        * @ojwriteback
@@ -7388,12 +7410,19 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
       * @type {Array|undefined}
       */
       /** 
-       * List of validators used by element when performing validation. Each item is either an 
+       * List of validators used by element  along with the implicit component validators 
+       * when performing validation. Each item is either an
        * instance that duck types {@link oj.Validator}, or is an Object literal containing the 
-       * properties listed below. Implicit validators created by a element when certain options 
-       * are present (e.g. <code class="prettyprint">required</code> attribute), are separate from 
-       * validators specified through this attribute. At runtime when the element runs validation, it 
-       * combines the implicit validators with the list specified through this attribute. 
+       * properties listed below.       
+       * <p>
+       * Implicit validators are created by the element when certain attributes are present. 
+       * For example, if the <code class="prettyprint">required</code>
+       * attribute is set, an implicit {@link oj.RequiredValidator} is created.
+       * At runtime when the component runs validation, it
+       * combines all the implicit validators with all the validators 
+       * specified through this <code class="prettyprint">validators</code> attribute, and
+       * runs all of them.
+       * </p>
        * <p>
        * Hints exposed by validators are shown in the notewindow by default, or as determined by the 
        * 'validatorHint' property set on the <code class="prettyprint">display-options</code> 
@@ -7554,7 +7583,7 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
        * @access public
        * @instance
        * @memberof oj.ojComboboxOne
-       * @type {*}
+       * @type {any}
        * @ojwriteback
        */
       /**
@@ -7577,7 +7606,7 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
        * @access public
        * @instance
        * @memberof oj.ojComboboxMany
-       * @type {Array.<*>}
+       * @type {Array.<any>}
        */
        
       /**
@@ -7601,8 +7630,8 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
        * @since 4.2.0
        * @ojstatus preview
        * @instance
-       * @property {*} value the current value
-       * @property {*} previousValue the previous value
+       * @property {any} value the current value
+       * @property {any} previousValue the previous value
        */
       valueUpdated: null
     },
@@ -7989,6 +8018,17 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
       this._superApply(arguments);
       this.combobox.close();
     },
+
+      /**
+       * Override to do the delay connect/disconnect
+       * @memberof oj.ojCombobox
+       * @override
+       * @protected
+       */
+      _VerifyConnectedForSetup: function () {
+        //  - temp moving oj-select from one elem to another should not cause fetch
+        return true;
+      },
 
     /**
      * Updates display value of combobox.
@@ -8521,9 +8561,9 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
    *       <td>Tap on an option item in the drop down list to add to selection.</td>
    *     </tr>
 	 *     <tr>
-	 *       <td>Selected Item with Clear Entry Button</td>
+	 *       <td>Selected item with remove icon</td>
    *       <td><kbd>Tap</kbd></td>
-   *       <td>Remove item from the selected items list by taping on the clear button next to the data item.</td>
+   *       <td>Remove item from the selected items list by tapping on the remove icon.</td>
    *     </tr>
    *   </tbody>
    *  </table>
@@ -8611,6 +8651,11 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
    *      <td>Combobox</td>
    *       <td><kbd>LeftArrow or RightArrow</kbd></td>
    *       <td> Move focus to the previous or next selected item.</td>
+   *     </tr>
+   *     <tr>
+   *       <td>Selected item with remove icon</td>
+   *       <td><kbd>Backspace or Delete</kbd></td>
+   *       <td>Remove the selected item having focus.</td>
    *     </tr>
    *     <tr>
    *      <td>Drop down</td>
@@ -10233,7 +10278,7 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
        * @access public
        * @instance
        * @memberof oj.ojSelectOne
-       * @type {string|null|undefined}
+       * @type {string|null}
        * @default null
        */
       /**
@@ -10256,7 +10301,7 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
        * @access public
        * @instance
        * @memberof oj.ojSelectMany
-       * @type {string|null|undefined}
+       * @type {string|null}
        * @default null
        */
       placeholder: null,
@@ -10401,7 +10446,7 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
        * }; 
        * var dataMapping = {'mapFields': mapFields};
        *
-       * var arrayDataProvider = new oj.ArrayDataProvider(dataArray, {idAttribute: 'id'});
+       * var arrayDataProvider = new oj.ArrayDataProvider(dataArray, {keyAttributes: 'id'});
        * var dataProvider = new oj.ListDataProviderView(arrayDataProvider, {'dataMapping': dataMapping});
        */
       /**
@@ -10449,7 +10494,7 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
        * }; 
        * var dataMapping = {'mapFields': mapFields};
        *
-       * var arrayDataProvider = new oj.ArrayDataProvider(dataArray, {idAttribute: 'id'});
+       * var arrayDataProvider = new oj.ArrayDataProvider(dataArray, {keyAttributes: 'id'});
        * var dataProvider = new oj.ListDataProviderView(arrayDataProvider, {'dataMapping': dataMapping});
        */
       /**
@@ -10879,7 +10924,7 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
        * @instance
        * @default When the value attribute is not set, the first option is used as its initial value if it exists.
        * @memberof oj.ojSelectOne
-       * @type {*}
+       * @type {any}
        * @ojwriteback
        */
       /**
@@ -10902,7 +10947,7 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
        * @access public
        * @instance
        * @memberof oj.ojSelectMany
-       * @type {Array.<*>}
+       * @type {Array.<any>}
        */
     },
 
@@ -11345,6 +11390,17 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
     },
 
     /**
+       * Override to do the delay connect/disconnect
+       * @memberof oj.ojSelect
+       * @override
+       * @protected
+       */
+      _VerifyConnectedForSetup: function () {
+        //  - temp moving oj-select from one elem to another should not cause fetch
+        return true;
+      },
+
+    /**
      * Set the placeholder.
      * @override
      * @protected
@@ -11511,42 +11567,53 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
       {
         //if displayValue is null, let it default to 1st option or placeholder
         //see demo pages: disable and placeholder
-        if (displayValue == null)
-        {
+        var opts;
+        if (displayValue == null) {
           if (this._HasPlaceholderSet()) {
             this.element[0].selectedIndex = 0;
-            this.element.addClass("oj-select-default");
+            this.element.addClass('oj-select-default');
           }
-        }
-        else {
-          this.element.val(displayValue);
-        }
-        //update valueOptions
-        if (this._resolveValueOptionsLater) {
-          this._resolveValueOptionsLater = false;
-          var opts;
-          if (displayValue == null) {
-            opts = {"value": "", "label": this.options.placeholder};
-            if (this.multiple)
+          // update valueOptions
+          if (this._resolveValueOptionsLater) {
+            opts = { value: '', label: this.options.placeholder };
+            if (this.multiple) {
               opts = [opts];
+            }
             _ComboUtils.setValueOptions(this, opts);
           }
-          else {
+        } else {
+          //  - oj-select-one throws exception for mobile when selectedindex = -1 on refresh
+          var label = this._nativeFindLabel(displayValue);
+          if (label === null && !this.multiple) {
+            oj.Logger.warn('JET select: selected value not found');
+            // default to 1st option if exists
+            if (this.element[0].options && this.element[0].options.length > 0) {
+              this.element[0].selectedIndex = 0;
+              displayValue = this.element[0].value;
+              label = this.element[0].text;
+            } else {
+              label = String(displayValue);
+              this.element.val(displayValue);
+            }
+          } else {
+            this.element.val(displayValue);
+          }
+          // update valueOptions
+          if (this._resolveValueOptionsLater) {
             if (this.multiple) {
               var options = this.element[0].selectedOptions;
               opts = [];
               for (var i = 0; i < options.length; i++) {
-                opts.push({"value": displayValue[i], "label": options[i].text});
+                opts.push({ "value": displayValue[i], "label": options[i].text });
               }
-            }
-            else {
-              var label = this.element[0].options[this.element[0].selectedIndex].text;
-              opts = {"value": displayValue, "label": label};
+            } else {
+              opts = { "value": displayValue, "label": label };
             }
 
             _ComboUtils.setValueOptions(this, opts);
           }
         }
+        this._resolveValueOptionsLater = false;
       }
     },
     
@@ -11662,6 +11729,20 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
       return narr;
     },
 
+    //  - oj-select-one throws exception for mobile when selectedindex = -1 on refresh
+    // return label if found otherwise null
+    _nativeFindLabel: function (value) {
+      var options = this.element[0].options;
+      if (options && options.length > 0) {
+        for (var i = 0; i < options.length; i++) {
+          if (options[i].value === value) {
+            return $(options[i]).text();
+          }
+        }
+      }
+      return null;
+    },
+
     /**
      * Handles options specific to select.
      * @override
@@ -11715,8 +11796,9 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
         if (dataProvider && value) {
           var self = this;
           var selfSuper = this._super;
-          this.select.opts.options = dataProvider;
-
+          if (this.select) {
+            this.select.opts.options = dataProvider;
+          }
           _ComboUtils.validateFromDataProvider(
             this._isNative()? this.element : this.select.container, 
             dataProvider, value).then(
@@ -12407,9 +12489,9 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
      *       <td>Tap on a option item in the drop down list to add to selection.</td>
      *     </tr>
      *     <tr>
-     *       <td>Selected Item with Clear Entry Button</td>
+     *       <td>Selected item with remove icon</td>
      *       <td><kbd>Tap</kbd></td>
-     *       <td>Remove item from the selected items list by taping on the clear button next to the data item.</td>
+     *       <td>Remove item from the selected items list by tapping on the remove icon.</td>
      *     </tr>
      *     <tr>
      *       <td>Drop down</td>
@@ -12492,6 +12574,11 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
      *      <td>Select box</td>
      *       <td><kbd>LeftArrow or RightArrow</kbd></td>
      *       <td> Move focus to the previous or next selected item.</td>
+     *     </tr>
+     *     <tr>
+     *       <td>Selected item with remove icon</td>
+     *       <td><kbd>Backspace or Delete</kbd></td>
+     *       <td>Remove the selected item having focus.</td>
      *     </tr>
      *     <tr>
      *       <td>Drop down</td>

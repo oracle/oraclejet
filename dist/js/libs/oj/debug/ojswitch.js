@@ -418,7 +418,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue'],
           // Set the aria-label of the thumb to the returned string
           target.attr('aria-label', ariaLabelString);
           // And remove it from the component
-          component.removeAttr('aria-label');
+          component.removeAttribute('aria-label');
         }
       }
     },

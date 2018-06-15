@@ -1,7 +1,7 @@
 {
   "name": "oj-validation-group",
-  "version": "5.0.0",
-  "jetVersion": "5.0.0",
+  "version": "5.1.0",
+  "jetVersion": "5.1.0",
   "displayName": "Validation Group",
   "preview": true,
   "description": "ojValidationGroup",
@@ -50,7 +50,7 @@
         {
           "name": "value",
           "description": "The new value to set the property to.",
-          "type": "*"
+          "type": "any"
         }
       ],
       "return": "void"
@@ -64,7 +64,7 @@
           "type": "string"
         }
       ],
-      "return": "*"
+      "return": "any"
     },
     "setProperties": {
       "description": "Performs a batch set of properties.",

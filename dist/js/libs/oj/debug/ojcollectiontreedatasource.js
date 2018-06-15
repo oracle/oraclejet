@@ -17,7 +17,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojdatasource-common', 'ojs/ojmodel'], funct
  * @implements oj.NodeSet
  * @constructor
  * @since 1.0
- * @param {*} parentKey the key of the parent node
+ * @param {any} parentKey the key of the parent node
  * @param {oj.Collection} collection the Collection associated with this NodeSet
  * @param {Array.<oj.Model>} models a set of Model objects associated with this NodeSet
  * @param {oj.CollectionTreeDataSource} treeDataSource the TreeDataSource associated with this NodeSet
@@ -110,7 +110,7 @@ oj.CollectionNodeSet.prototype._getCollection = function() {
 
 /**
 * Gets the parent key for this result set.  
-* @return {*} the parent key for this result set. 
+* @return {any} the parent key for this result set. 
 * @export
 * @memberof oj.CollectionNodeSet
 */
@@ -145,7 +145,7 @@ oj.CollectionNodeSet.prototype.getCount = function()
 * Gets the data of the specified index.  An error is throw when 1) the range is not yet available and
 * 2) the index specified is out of bounds. 
 * @param {number} index the index of the node/row in which we want to retrieve the data from.  
-* @return {*} the data for the specified index.  oj.RowData should be returned for data that represents a row
+* @return {any} the data for the specified index.  oj.RowData should be returned for data that represents a row
 *         with a number of columns.
 * @export
 * @memberof oj.CollectionNodeSet
@@ -271,7 +271,7 @@ oj.CollectionTreeDataSource.prototype.Init = function()
 /**
  * Returns the number of children for a specified parent.  If the value returned is not >= 0 then it is automatically assumed
  * that the child count is unknown.
- * @param {*} parent the parent key.  Specify null if inquiring child count of the root.
+ * @param {any} parent the parent key.  Specify null if inquiring child count of the root.
  * @return {number} the number of children for the specified parent.
  * @export
  * @memberof oj.CollectionTreeDataSource
@@ -293,7 +293,7 @@ oj.CollectionTreeDataSource.prototype.getChildCount = function(parent)
 
 /**
  * Gets a collection representing the specified parent key's children.
- * @param {*} key the parent key in which to create an OJ collection for.
+ * @param {any} key the parent key in which to create an OJ collection for.
  * @param {Object} callbacks success and error callbacks.  The success callback will provide the child collection as the first argument
  * @property {function(oj.Collection):void} callbacks.success the callback to invoke when child collection is fetched successfully.
  * @property {function({status: *})=} callbacks.error the callback to invoke when the fetch failed.
@@ -309,7 +309,7 @@ oj.CollectionTreeDataSource.prototype.getChildCollection = function(key, callbac
 
 /**
  * Fetch the children
- * @param {*} parent the parent key.  Specify null if fetching children from the root.
+ * @param {any} parent the parent key.  Specify null if fetching children from the root.
  * @param {Object} range information about the range, it must contain the following properties: start, count
  * @property {number} range.start the start index of the range in which the children are fetched
  * @property {number} range.count the size of the range in which the children are fetched
@@ -819,7 +819,7 @@ oj.CollectionTreeDataSource.prototype._fetch = function(collectionCacheObj, star
 
 /**
  * Fetch all children and their children recursively from a specified parent.
- * @param {*} parent the parent key.  Specify null to fetch everything from the root (i.e. expand all)
+ * @param {any} parent the parent key.  Specify null to fetch everything from the root (i.e. expand all)
  * @param {Object} callbacks the callbacks to be invoke when fetch children operation is completed.  The valid callback types are "success" and "error".
  * @property {function(oj.CollectionNodeSet):void} callbacks.success the callback to invoke when fetch completed successfully.
  * @property {function({status: *})=} callbacks.error the callback to invoke when fetch children failed.
@@ -867,7 +867,7 @@ oj.CollectionTreeDataSource.prototype.fetchDescendants = function(parent, callba
 /**
  * Performs a sort operation on the tree data.
  * @param {Object} criteria the sort criteria.  It must contain the following properties: key, direction
- * @param {*} criteria.key the key identifying the attribute (column) to sort on
+ * @param {any} criteria.key the key identifying the attribute (column) to sort on
  * @param {'ascending'|'descending'|'none'} criteria.direction the sort direction, valid values are "ascending", "descending", "none" (default)
  * @param {Object} callbacks callbacks for the sort operation
  * @property {function():void} callbacks.success the callback to invoke when the sort completed successfully
@@ -934,8 +934,8 @@ oj.CollectionTreeDataSource.prototype.getSortCriteria = function()
 
 /**
  * Moves a row from one location to another (different position within the same parent or a completely different parent)
- * @param {*} rowToMove the key of the row to move
- * @param {*} referenceRow the key of the reference row which combined with position are used to determine 
+ * @param {any} rowToMove the key of the row to move
+ * @param {any} referenceRow the key of the reference row which combined with position are used to determine 
  *        the destination of where the row should moved to.
  * @param {number|string} position The position of the moved row relative to the reference row.  
  *        This can be a string: "before", "after", "inside", "first", "last", or the zero based index to position 
@@ -954,8 +954,8 @@ oj.CollectionTreeDataSource.prototype.move = function(rowToMove, referenceRow, p
 
 /**
  * Checks whether a move operation is valid.
- * @param {*} rowToMove the key of the row to move
- * @param {*} referenceRow the key of the reference row which combined with position are used to determine 
+ * @param {any} rowToMove the key of the row to move
+ * @param {any} referenceRow the key of the reference row which combined with position are used to determine 
  *        the destination of where the row should moved to.
  * @param {number|string} position The position of the moved row relative to the reference row.  
  *        This can be a string: "before", "after", "inside", "first", "last", or the zero based index to position 

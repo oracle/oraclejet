@@ -978,12 +978,23 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
 
     // DOCLETS
     /**
-     * List of validators used by element when performing validation. Each item is either an
+     * List of validators used by element along with the implicit component validators
+     * when performing validation. Each item is either an
      * instance that duck types {@link oj.Validator}, or is an Object literal containing the
-     * properties listed below. Implicit validators created by an element when certain attributes
-     * are present (e.g. <code class="prettyprint">required</code> property), are separate from
-     * validators specified through this property. At runtime when the element runs validation, it
-     * combines the implicit validators with the list specified through this property.
+     * properties listed below. 
+     * <p>
+     * Implicit validators are created by the element when certain attributes are present. 
+     * For example, if the <code class="prettyprint">required</code> 
+     * attribute is set, an implicit {@link oj.RequiredValidator} is created. If the 
+     * <code class="prettyprint">min</code> and/or <code class="prettyprint">max</code> attribute
+     * is set, an implicit {@link oj.DateTimeRangeValidator} is created. If the 
+     * <code class="prettyprint">dayFormatter</code> attribute is set, 
+     * an implicit {@link oj.DateRestrictionValidator} is created.
+     * At runtime when the component runs validation, it
+     * combines all the implicit validators with all the validators 
+     * specified through this <code class="prettyprint">validators</code> attribute, and runs
+     * all of them.
+     * </p>
      * <p>
      * Hints exposed by validators are shown in the notewindow by default, or as determined by the
      * 'validatorHint' property set on the <code class="prettyprint">displayOptions</code>
@@ -1044,8 +1055,6 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
      *     }
      *   }];
      *
-     * NOTE: oj.Validation.validatorFactory('dateTimeRange') returns the validator factory that is used
-     * to instantiate a range validator for dateTime.
      *
      * @example <caption>Initialize the element with multiple validator instances:</caption>
      * var validator1 = new MyCustomValidator({'foo': 'A'});
@@ -1058,7 +1067,9 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
      * @name validators
      * @instance
      * @memberof oj.ojInputDate
-     * @ojsignature  { target: "Type", value: "Array<oj.Validator<string>|oj.Validation.FactoryRegisteredValidatorOrConverter>|null"}
+     * @ojsignature  { target: "Type", 
+     *   value: "Array<oj.Validator<string>|oj.Validation.FactoryRegisteredValidatorOrConverter>|null",
+     *   jsdocOverride: true}
      * @type {Array|undefined}
      */
 
@@ -1281,11 +1292,7 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
       if(this._inputContainer && label && label.length === 1) {
         var LId = label.attr("id");
 
-        if(!LId) {
-          LId = this["uuid"] + "_Label";
-          label.attr("id", LId);
-        }
-
+        // The label should always have a generated ID, so no need to check here.
         this._inputContainer.attr("aria-labelledby", LId);
       }     
     }
@@ -1810,12 +1817,7 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
         default : ;
       }
     }
-    else if (event.keyCode === kc.HOME && event.ctrlKey)
-    {
-      // display the date picker on ctrl+home
-      this.show();
-      handled = true;
-    }
+    // Removed Ctrl-HOME keyboard logic because it is impossible if the calendar is not showing
 
     if (handled)
     {
@@ -1941,12 +1943,7 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
         default : ;
       }
     }
-    else if (event.keyCode === kc.HOME && event.ctrlKey)
-    {
-      // display the date picker on ctrl+home
-      this.show();
-      handled = true;
-    }
+    // Removed Ctrl-HOME keyboard logic because it is impossible if the calendar is not showing
 
     if (handled)
     {
@@ -2032,12 +2029,7 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
         default : ;
       }
     }
-    else if (event.keyCode === kc.HOME && event.ctrlKey)
-    {
-      // display the date picker on ctrl+home
-      this.show();
-      handled = true;
-    }
+    // Removed Ctrl-HOME keyboard logic because it is impossible if the calendar is not showing
 
     if (handled)
     {
@@ -4925,12 +4917,21 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
     // DOCLETS
 
     /**
-     * List of validators used by element when performing validation. Each item is either an
+     * List of validators used by element along with the implicit component validators 
+     * when performing validation. Each item is either an
      * instance that duck types {@link oj.Validator}, or is an Object literal containing the
-     * properties listed below. Implicit validators created by an element when certain attributes
-     * are present (e.g. <code class="prettyprint">required</code> attribute), are separate from
-     * validators specified through this attribute. At runtime when the element runs validation, it
-     * combines the implicit validators with the list specified through this attribute.
+     * properties listed below. 
+     * <p> 
+     * Implicit validators are created by the element when certain attributes are present. 
+     * For example, if the <code class="prettyprint">required</code> 
+     * attribute is set, an implicit {@link oj.RequiredValidator} is created. If the 
+     * <code class="prettyprint">min</code> and/or <code class="prettyprint">max</code> attribute
+     * is set, an implicit {@link oj.DateTimeRangeValidator} may be created.
+     * At runtime when the component runs validation, it
+     * combines all the implicit validators with all the validators 
+     * specified through this <code class="prettyprint">validators</code> attribute, and runs
+     * all of them.
+     * </p>
      * <p>
      * Hints exposed by validators are shown in the notewindow by default, or as determined by the
      * 'validatorHint' property set on the <code class="prettyprint">displayOptions</code>
@@ -4991,8 +4992,6 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
      *     }
      *   }];
      *
-     * NOTE: oj.Validation.validatorFactory('dateTimeRange') returns the validator factory that is used
-     * to instantiate a range validator for dateTime.
      *
      * @example <caption>Initialize the element with multiple validator instances:</caption>
      * var validator1 = new MyCustomValidator({'foo': 'A'});
@@ -5004,7 +5003,9 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
      * @name validators
      * @instance
      * @memberof oj.ojInputTime
-     * @ojsignature  { target: "Type", value: "Array<oj.Validator<string>|oj.Validation.FactoryRegisteredValidatorOrConverter>|null"}
+     * @ojsignature  { target: "Type", 
+     *   value: "Array<oj.Validator<string>|oj.Validation.FactoryRegisteredValidatorOrConverter>|null",
+     *   jsdocOverride: true}
      * @type {Array|undefined}
      */
 
@@ -5194,14 +5195,9 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
       if (!this._IsCustomElement()) {
         var label = this.$label;
         if (this._inputContainer && label && label.length === 1) {
-          var icId = this._inputContainer.attr("id");
           var LId = label.attr("id");
 
-          if (!LId) {
-            LId = this["uuid"] + "_Label";
-            label.attr("id", LId);
-          }
-
+          // The label should always have a generated ID, so no need to check here.
           this._inputContainer.attr("aria-labelledby", LId);
         }
       }
@@ -5680,19 +5676,6 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
     this.element.after(triggerContainer); //@HTMLUpdateOK
   },
 
-  /**
-   * Returns a boolean of whether the date is in the min + max range
-   *
-   * @private
-   */
-  _notInMinMaxRange : function (dateIso, minDateIso, maxDateIso)
-  {
-    var converter = this._GetConverter();
-
-    return ((minDateIso && converter.compareISODates(dateIso, minDateIso) < 0)
-          || (maxDateIso && converter.compareISODates(dateIso, maxDateIso) > 0));
-  },
-
   _getValue : function ()
   {
     //need to use ojInputDateTime's value when created internally [i.e. for min + max and etc].
@@ -6156,26 +6139,6 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
     // hide sets focus to the input, so we want to call super after hide. If we didn't, then
     // the messaging popup will reopen and we don't want that.
     this._superApply(arguments);
-  },
-
-  /**
-   * Return true if the element is in the timepicker popup
-   *
-   * @param {?Element} element
-   * @return {boolean}
-   *
-   * @memberof! oj.ojInputTime
-   * @instance
-   * @protected
-   */
-  _InPopup: function(element)
-  {
-    if (!element)
-      return false;
-
-    var picker = this._wheelPicker;
-    
-    return $.contains(picker[0], element);
   },
 
   /**
@@ -7699,7 +7662,7 @@ function createWheel(model, isNumber, classList)
   {
     _wheel.focus();
     var tapY = event["gesture"]["center"].y;
-    var wheelTop = $wheel.offset().top;
+    var wheelTop = _wheel.getBoundingClientRect().top;
     var wheelHeight = $wheel.height();
     var tapFraction = (tapY - wheelTop) / wheelHeight;
     var tapZone = 0;
@@ -8985,10 +8948,20 @@ oj.__registerWidget("oj.ojInputDateTime", $['oj']['ojInputDate'],
     /** 
      * List of validators used by element when performing validation. Each item is either an 
      * instance that duck types {@link oj.Validator}, or is an Object literal containing the 
-     * properties listed below. Implicit validators created by an element when certain properties 
-     * are present (e.g. <code class="prettyprint">required</code> property), are separate from 
-     * validators specified through this property. At runtime when the element runs validation, it 
-     * combines the implicit validators with the list specified through this property. 
+     * properties listed below. 
+     * <p>
+     * Implicit validators are created by the element when certain attributes are present. 
+     * For example, if the <code class="prettyprint">required</code> 
+     * attribute is set, an implicit {@link oj.RequiredValidator} is created. If the 
+     * <code class="prettyprint">min</code> and/or <code class="prettyprint">max</code> attribute
+     * is set, an implicit {@link oj.DateTimeRangeValidator} is created. If the 
+     * <code class="prettyprint">dayFormatter</code> attribute is set, 
+     * an implicit {@link oj.DateRestrictionValidator} is created.
+     * At runtime when the component runs validation, it
+     * combines all the implicit validators with all the validators 
+     * specified through this <code class="prettyprint">validators</code> attribute, and runs
+     * all of them.
+     * </p> 
      * <p>
      * Hints exposed by validators are shown in the notewindow by default, or as determined by the 
      * 'validatorHint' property set on the <code class="prettyprint">displayOptions</code> 
@@ -9062,7 +9035,9 @@ oj.__registerWidget("oj.ojInputDateTime", $['oj']['ojInputDate'],
      * @name validators
      * @instance
      * @memberof oj.ojInputDateTime
-     * @ojsignature  { target: "Type", value: "Array<oj.Validator<string>|oj.Validation.FactoryRegisteredValidatorOrConverter>|null"}
+     * @ojsignature  { target: "Type", 
+     *   value: "Array<oj.Validator<string>|oj.Validation.FactoryRegisteredValidatorOrConverter>|null",
+     *   jsdocOverride: true}
      * @type {Array|undefined}
      */
     
@@ -9268,11 +9243,15 @@ oj.__registerWidget("oj.ojInputDateTime", $['oj']['ojInputDate'],
   _ComponentCreate : function ()
   {
     var ret = this._super();
-    var timeConverter = this._getTimePickerConverter(this._GetConverter());
+    var timeConverter = null;
     
-    if (timeConverter === null)
-    {
-      throw new Error("Please use ojInputDate if you do not have time portion");
+    try {
+      timeConverter = this._getTimePickerConverter(this._GetConverter());
+    }
+    finally {
+      if (timeConverter === null) {
+        throw new Error("Please use ojInputDate if your converter doesn't specify a time format.");
+      }
     }
     
     if (this._isInLine)

@@ -1540,7 +1540,8 @@ var ojTreemapMeta = {
       }
     },
     "touchResponse": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["touchStart", "auto"]
     },
     "translations": {
       "type": "Object",

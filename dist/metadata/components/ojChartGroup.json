@@ -1,0 +1,51 @@
+{
+  "name": "oj-chart-group",
+  "version": "5.1.0",
+  "jetVersion": "5.1.0",
+  "displayName": "Chart Group",
+  "preview": true,
+  "description": "ojChartGroup",
+  "properties": {
+    "drilling": {
+      "description": "Whether drilling is enabled on the group label. Drillable objects will show a pointer cursor on hover and fire an ojDrill event on click. To enable drilling for all group labels at once, use the drilling attribute in the top level.",
+      "type": "string",
+      "displayName": "Drilling",
+      "value": "inherit",
+      "enumValues": [
+        "inherit",
+        "off",
+        "on"
+      ],
+      "propertyEditorValues": {
+        "inherit": {
+          "displayName": "Inherit"
+        },
+        "off": {
+          "displayName": "Off"
+        },
+        "on": {
+          "displayName": "On"
+        }
+      }
+    },
+    "labelStyle": {
+      "description": "The CSS style object defining the style of the group label text. Supports color, fontFamily, fontSize, fontStyle, fontWeight, textDecoration, cursor, backgroundColor, borderColor, borderRadius, and borderWidth properties. Only applies to a categorical axis.",
+      "type": "Object",
+      "displayName": "Label Style",
+      "value": null
+    },
+    "name": {
+      "description": "The name of the group.",
+      "type": "string",
+      "displayName": "Name",
+      "value": null
+    },
+    "shortDesc": {
+      "description": "The description of the group. This is used for customizing the tooltip text and only applies to a categorical axis.",
+      "type": "string",
+      "displayName": "Short Desc",
+      "value": null,
+      "translatable": true
+    }
+  }
+}

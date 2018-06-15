@@ -1,7 +1,7 @@
 {
   "name": "oj-tree-view",
-  "version": "5.0.0",
-  "jetVersion": "5.0.0",
+  "version": "5.1.0",
+  "jetVersion": "5.1.0",
   "displayName": "Tree View",
   "preview": true,
   "roles": [
@@ -11,7 +11,7 @@
   "properties": {
     "currentItem": {
       "description": "The key of the item that has the browser focus.\nThis is a read-only attribute so page authors cannot set or change it directly.",
-      "type": "*",
+      "type": "any",
       "displayName": "Current Item",
       "writeback": true,
       "readOnly": true
@@ -104,7 +104,7 @@
     },
     "item": {
       "description": "The item attribute contains a subset of attributes for items.",
-      "type": "",
+      "type": "Object",
       "displayName": "Item",
       "properties": {
         "focusable": {
@@ -126,7 +126,7 @@
     },
     "selection": {
       "description": "The current selections in the TreeView. An empty array indicates nothing is selected.",
-      "type": "Array<*>",
+      "type": "Array<any>",
       "displayName": "Selection",
       "value": [],
       "writeback": true
@@ -190,7 +190,7 @@
         {
           "name": "value",
           "description": "The new value to set the property to.",
-          "type": "*"
+          "type": "any"
         }
       ],
       "return": "void"
@@ -204,7 +204,7 @@
           "type": "string"
         }
       ],
-      "return": "*"
+      "return": "any"
     },
     "setProperties": {
       "description": "Performs a batch set of properties.",
@@ -255,7 +255,7 @@
       "detail": {
         "key": {
           "description": "The key of the item to be collapsed.",
-          "type": "*"
+          "type": "any"
         },
         "item": {
           "description": "The item to be collapsed.",
@@ -269,7 +269,7 @@
       "detail": {
         "previousKey": {
           "description": "The key of the previous item.",
-          "type": "*"
+          "type": "any"
         },
         "previousItem": {
           "description": "The previous item.",
@@ -277,7 +277,7 @@
         },
         "key": {
           "description": "The key of the new current item.",
-          "type": "*"
+          "type": "any"
         },
         "item": {
           "description": "The new current item.",
@@ -291,7 +291,7 @@
       "detail": {
         "key": {
           "description": "The key of the item to be expanded.",
-          "type": "*"
+          "type": "any"
         },
         "item": {
           "description": "The item to be expanded.",
@@ -304,7 +304,7 @@
       "detail": {
         "key": {
           "description": "The key of the item that was just collapsed.",
-          "type": "*"
+          "type": "any"
         },
         "item": {
           "description": "The item that was just collapsed.",
@@ -317,7 +317,7 @@
       "detail": {
         "key": {
           "description": "The key of the item that was just expanded.",
-          "type": "*"
+          "type": "any"
         },
         "item": {
           "description": "The item that was just expanded.",

@@ -222,7 +222,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojs/o
        *
        * @expose
        * @public
-       * @type {*}
+       * @type {any}
        * @instance
        * @memberof! oj.ojTreeView
        * @readonly
@@ -391,6 +391,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojs/o
        *
        * @expose
        * @memberof! oj.ojTreeView
+       * @type {Object}
        * @instance
        */
       item: {
@@ -493,7 +494,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojs/o
        * @expose
        * @memberof! oj.ojTreeView
        * @instance
-       * @type {Array.<*>}
+       * @type {Array.<any>}
        * @default []
        * @ojwriteback
        * @ojsignature {target:"Type", value:"Array<K>"}
@@ -558,7 +559,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojs/o
        * @ojcancelable
        * @memberof oj.ojTreeView
        * @instance
-       * @property {*} key The key of the item to be collapsed.
+       * @property {any} key The key of the item to be collapsed.
        * @property {Element} item The item to be collapsed.
        */
       beforeCollapse: null,
@@ -572,9 +573,9 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojs/o
        * @ojcancelable
        * @memberof oj.ojTreeView
        * @instance
-       * @property {*} previousKey The key of the previous item.
+       * @property {any} previousKey The key of the previous item.
        * @property {Element} previousItem The previous item.
-       * @property {*} key The key of the new current item.
+       * @property {any} key The key of the new current item.
        * @property {Element} item The new current item.
        */
       beforeCurrentItem: null,
@@ -588,7 +589,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojs/o
        * @ojcancelable
        * @memberof oj.ojTreeView
        * @instance
-       * @property {*} key The key of the item to be expanded.
+       * @property {any} key The key of the item to be expanded.
        * @property {Element} item The item to be expanded.
        */
       beforeExpand: null,
@@ -600,7 +601,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojs/o
        * @event
        * @memberof oj.ojTreeView
        * @instance
-       * @property {*} key The key of the item that was just collapsed.
+       * @property {any} key The key of the item that was just collapsed.
        * @property {Element} item The item that was just collapsed.
        */
       collapse: null,
@@ -612,7 +613,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojs/o
        * @event
        * @memberof oj.ojTreeView
        * @instance
-       * @property {*} key The key of the item that was just expanded.
+       * @property {any} key The key of the item that was just expanded.
        * @property {Element} item The item that was just expanded.
        */
       expand: null
@@ -1992,8 +1993,11 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojs/o
       var targetItem = $(event.target).closest('.oj-treeview-item');
 
       // Position drop effects based on the spacer (disclosure icon) because it takes up the entire item height
-      var spacerRect = targetItem.children('.oj-treeview-spacer')[0].getBoundingClientRect();
-      var middleY = (spacerRect.top + spacerRect.bottom) / 2;
+      var spacer = targetItem.children('.oj-treeview-spacer')[0];
+      var spacerRect = spacer.getBoundingClientRect();
+      var spacerTop = spacer.offsetTop;
+      var spacerLeft = spacer.offsetLeft;
+      var middleY = spacerTop + (spacerRect.height / 2);
 
       var position = 'inside';
       var relativeY = event.pageY - spacerRect.top;
@@ -2021,11 +2025,14 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojs/o
 
         // Draw the drop target effect on dragEnter and dragOver
         var dropLineTop = middleY;
-        var dropLineLeft = isRTL ? (spacerRect.left - this._dropLineRect.width) : spacerRect.right;
+        var dropLineLeft = isRTL ?
+          (spacerLeft - this._dropLineRect.width) :
+          spacerLeft + spacerRect.width;
 
         // Align the drop marker with the disclosure icon (spacer)
-        var dropMarkerTop = middleY - this._dropMarkerRect.height / 2;
-        var dropMarkerLeft = spacerRect.left + spacerRect.width / 2 - this._dropMarkerRect.width / 2;
+        var dropMarkerTop = middleY - (this._dropMarkerRect.height / 2);
+        var dropMarkerLeft = (spacerLeft + (spacerRect.width / 2)) -
+          (this._dropMarkerRect.width / 2);
 
         if (position == 'before')
         {

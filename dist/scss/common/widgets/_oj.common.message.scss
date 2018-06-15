@@ -24,6 +24,7 @@
       display: inline-flex;
       justify-content: space-between;
       align-items: center;
+      height: $messageHeaderHeight;
     }
     
     .oj-message-leading-header {
@@ -105,6 +106,11 @@
     .oj-message-close {
       @include oj-bidi-property($property: 'float', $startOrEnd: end);
       display: $messageCloseIconDisplay;
+    }
+    
+    // button adds bottom margin of 4px, we dont want that when inside message
+    .oj-message-close .oj-button {
+      margin-bottom: 0;
     }
     
     // Theme defaults for properties

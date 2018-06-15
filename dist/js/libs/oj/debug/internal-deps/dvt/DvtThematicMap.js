@@ -4999,7 +4999,7 @@ DvtMapDataLayer.prototype.getAnimationDuration = function() {
 DvtMapDataLayer.prototype.setSelectionMode = function(mode) {
   this._selectionMode = mode;
   if (this._selectionMode) {
-    this._selectionHandler = new dvt.SelectionHandler(this._selectionMode);
+    this._selectionHandler = new dvt.SelectionHandler(this._tmap.getCtx(), this._selectionMode);
     this._eventHandler.setSelectionHandler(this._clientId, this._selectionHandler);
   }
 };

@@ -106,13 +106,14 @@ define(['ojs/ojcore', 'ojs/ojcomponentcore', 'ojs/ojcomposite'],
  * @ojshortdesc Specifies the size of the avatar.
  * @instance
  * @type {string}
- * @ojvalue {string} "xxs" extra, extra small avatar
- * @ojvalue {string} "xs" extra small avatar
- * @ojvalue {string} "sm" small avatar
- * @ojvalue {string} "md" medium avatar, default value
- * @ojvalue {string} "lg" large avatar
- * @ojvalue {string} "xl" extra large avatar
- * @ojvalue {string} "xxl" extra, extra large avatar
+ * @ojvalue {string} "xxs" {"description": "extra, extra small avatar", "displayName": "XXS"}
+ * @ojvalue {string} "xs" {"description": "extra small avatar", "displayName": "XS"}
+ * @ojvalue {string} "sm" {"description": "small avatar", "displayName": "SM"}
+ * @ojvalue {string} "md" {"description": "medium avatar, default value", "displayName": "MD"}
+ * @ojvalue {string} "lg" {"description": "large avatar", "displayName": "LG"}
+ * @ojvalue {string} "xl" {"description": "extra large avatar", "displayName": "XL"}
+ * @ojvalue {string} "xxl" {"description": "extra, extra large avatar", "displayName": "XXL"}
+ * @ojvalueskeeporder
  * @default "md"
  * @example <caption>Renders avatar displaying default placeholder image with <code class="prettyprint">size</code>
  * attribute set to large</caption>
@@ -240,7 +241,7 @@ oj.Composite.register('oj-avatar',
  *
  * @function setProperty
  * @param {string} property - The property name to set. Supports dot notation for subproperty access.
- * @param {*} value - The new value to set the property to.
+ * @param {any} value - The new value to set the property to.
  *
  * @expose
  * @memberof oj.ojAvatar
@@ -254,7 +255,7 @@ oj.Composite.register('oj-avatar',
  * Retrieves a value for a property or a single subproperty for complex properties.
  * @function getProperty
  * @param {string} property - The property name to get. Supports dot notation for subproperty access.
- * @return {*}
+ * @return {any}
  *
  * @expose
  * @memberof oj.ojAvatar

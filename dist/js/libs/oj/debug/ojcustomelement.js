@@ -204,7 +204,7 @@ oj.BaseCustomElementBridge.proto =
    * An early property set is any set that occurs before the component is created.
    * These sets do not trigger [property]Changed events.
    * @param {string} prop
-   * @param {*} value
+   * @param {any} value
    * @return {boolean}
    */
   SaveEarlyPropertySet: function(prop, value)
@@ -275,8 +275,8 @@ oj.BaseCustomElementBridge.proto =
         }
 
         // Property change events for top level properties will be triggered by ValidateAndSetProperty so avoid firing twice
-        if (prop.indexOf('.') !== -1)
-        {
+        var isSubprop = prop.indexOf('.') !== -1;
+        if (isSubprop) {
           var subprop = {};
           subprop['path'] = prop;
           subprop['value'] = value;
@@ -285,8 +285,12 @@ oj.BaseCustomElementBridge.proto =
           var updatedFrom = bOuter ? 'external' : 'internal';
           oj.BaseCustomElementBridge.__FirePropertyChangeEvent(element, topProp, props[topProp], topPropPrevValue, updatedFrom, subprop);
         }
+        return { property: topProp, propertySet: true, isSubproperty: isSubprop };
       }
     }
+    // We return true if a component property is updated with a different value and false
+    // for other cases like on[Event] property updates
+    return { property: null, propertySet: false, isSubproperty: false };
   },
 
   ValidateAndSetProperty: function(propNameFun, componentProps, property, value, element)
@@ -635,11 +639,9 @@ oj.BaseCustomElementBridge._getAttributesFromProperties = function(propName, pro
       if (!propMeta['readOnly']) 
       {
         var concatName = propName + prop;
-        attrs.push(oj.__AttributeUtils.propertyNameToAttribute(concatName));
-        var type = propMeta['type'];
-        if (type && type.toLowerCase() === 'object')
-        {
-          oj.BaseCustomElementBridge._getAttributesFromProperties(concatName + '.', propMeta['properties'], attrs);
+        attrs.push(oj.__AttributeUtils.propertyNameToAttribute(concatName));        
+        if (propMeta.properties) {
+          oj.BaseCustomElementBridge._getAttributesFromProperties(concatName + '.', propMeta.properties, attrs);
         }
       }
     }
@@ -1307,6 +1309,7 @@ oj.BaseCustomElementBridge.__DelayedPromise = function()
 
 /** 
  * @ojoverviewdoc CustomElementOverview - JET Custom Elements
+ * @since 4.1.0
  * @classdesc
  * {@ojinclude "name":"customElementOverviewDoc"}
  */ 
@@ -1394,9 +1397,9 @@ oj.BaseCustomElementBridge.__DelayedPromise = function()
  *            <a class="bookmarkable-link" title="Bookmarkable Link" href="#ce-attrs-any-section"></a>
  *        </h5>
  *        <p>
- *          Attributes that support any type are documented with type {*} in the API doc and will be coerced as
- *          Objects, Arrays, or strings. This limitation is due to the fact that we cannot determine whether value='2' 
- *          for a property supporting any type should be parsed as a string or a number. The application should use 
+ *          Attributes that support any type are documented with type {any} in the API doc and will be coerced as
+ *          Objects, Arrays, or strings. This limitation is due to the fact that we cannot determine whether value='2'
+ *          for a property supporting any type should be parsed as a string or a number. The application should use
  *          data binding for all other value types.
  *        </p>
  *        <h4 id="ce-properties-section" class="subsection-title">Properties

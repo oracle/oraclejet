@@ -122,9 +122,9 @@ dvt.NBox.prototype.SetOptions = function(options) {
   // Initialize the selection handler
   var selectionMode = this.Options[dvt.NBoxConstants.SELECTION_MODE];
   if (selectionMode == 'single')
-    this._selectionHandler = new dvt.SelectionHandler(dvt.SelectionHandler.TYPE_SINGLE);
+    this._selectionHandler = new dvt.SelectionHandler(this.getCtx(), dvt.SelectionHandler.TYPE_SINGLE);
   else if (selectionMode == 'multiple')
-    this._selectionHandler = new dvt.SelectionHandler(dvt.SelectionHandler.TYPE_MULTIPLE);
+    this._selectionHandler = new dvt.SelectionHandler(this.getCtx(), dvt.SelectionHandler.TYPE_MULTIPLE);
   else
     this._selectionHandler = null;
 

@@ -90,6 +90,10 @@
       box-sizing: border-box;
       // grow the input using the flex property
       @include oj-flex-property(1);
+      // needed for the input to be able to shrink smaller than the browser
+      // default width.  Because this has flex-grow of 1, it will always grow
+      // to the available space of the parent container, which is what we want.
+      width: 1em;
       // needed or else the input could overflow the container
       min-width: 1em;
       font-family: inherit;

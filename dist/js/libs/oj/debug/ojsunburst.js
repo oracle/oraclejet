@@ -4,7 +4,7 @@
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
-define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/internal-deps/dvt/DvtTreeView', 'ojs/ojkeyset'], function(oj, $, comp, base, dvt)
+define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/internal-deps/dvt/DvtTreeView'], function(oj, $, comp, base, dvt)
 {
 
 /**
@@ -1378,7 +1378,8 @@ var ojSunburstMeta = {
       }
     },
     "touchResponse": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["touchStart", "auto"]
     },
     "translations": {
       "type": "Object",

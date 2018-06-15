@@ -73,7 +73,7 @@ oj.SwipeToRevealUtils = {};
  */
 oj.SwipeToRevealUtils.setupSwipeActions = function(elem, options)
 {
-    var drawer, direction, offcanvas, outerWrapper, threshold, minimum, drawerShown, evt, checkpoint, defaultAction, distance;
+    var drawer, direction, offcanvas, outerWrapper, threshold, minimum, drawerShown, busyContext, evt, checkpoint, defaultAction, distance;
 
     drawer = $(elem);
     // checks if it's already registered
@@ -88,6 +88,7 @@ oj.SwipeToRevealUtils.setupSwipeActions = function(elem, options)
 
     offcanvas = {};
     offcanvas["selector"] = drawer;
+    offcanvas._animateWrapperSelector = 'oj-offcanvas-inner-wrapper';
     oj.OffcanvasUtils.setupPanToReveal(offcanvas);
 
     outerWrapper = oj.OffcanvasUtils._getOuterWrapper(drawer);
@@ -121,39 +122,44 @@ oj.SwipeToRevealUtils.setupSwipeActions = function(elem, options)
         }
         else
         {
-            // figure out the threshold for default action and the minimum distance
-            // to keep the offcanvas open
-            if (minimum == null)
+            busyContext = oj.Context.getContext(outerWrapper.get(0)).getBusyContext();
+            busyContext.whenReady().then(function() 
             {
-                if (options != null)
-                {
-                    threshold = options['threshold'];
-                }
+                // setup default style class, must be done before outerWidth is calculated
+                drawer.children().addClass("oj-swipetoreveal-action")
+                                 .css('min-width', '');
 
-                if (threshold != null)
-                {
-                    threshold = parseInt(threshold, 10);
+                // find if there's any default action item specified
+                defaultAction = drawer.children(".oj-swipetoreveal-default").get(0);
 
-                    // check if it's percentage value
-                    if (/%$/.test(options['threshold']))
+                // figure out the threshold for default action and the minimum distance
+                // to keep the offcanvas open
+                if (minimum == null)
+                {
+                    if (options != null)
                     {
-                        threshold = (threshold / 100) * outerWrapper.outerWidth();
+                        threshold = options['threshold'];
                     }
-                }
-                else
-                {
-                    // by default it will be 55% of the outer wrapper
-                    threshold = outerWrapper.outerWidth() * 0.55;
-                }
-                // by default the minimum will be the lesser of the width of the offcanvas and half of the outer wrapper
-                minimum = Math.min(outerWrapper.outerWidth() * 0.3, drawer.outerWidth());
-            }
 
-            // setup default style class
-            drawer.children().addClass("oj-swipetoreveal-action");
+                    if (threshold != null)
+                    {
+                        threshold = parseInt(threshold, 10);
 
-            // find if there's any default action item specified
-            defaultAction = drawer.children(".oj-swipetoreveal-default").get(0);
+                        // check if it's percentage value
+                        if (/%$/.test(options['threshold']))
+                        {
+                            threshold = (threshold / 100) * outerWrapper.outerWidth();
+                        }
+                    }
+                    else
+                    {
+                        // by default it will be 55% of the outer wrapper
+                        threshold = outerWrapper.outerWidth() * 0.55;
+                    }
+                    // by default the minimum will be the lesser of the width of the offcanvas and half of the outer wrapper
+                    minimum = Math.min(outerWrapper.outerWidth() * 0.3, drawer.outerWidth());
+                }
+            });
 
             // used to determine if it's a quick swipe
             checkpoint = (new Date()).getTime();
@@ -161,6 +167,11 @@ oj.SwipeToRevealUtils.setupSwipeActions = function(elem, options)
     })
     .on("ojpanmove", function(event, ui)
     {
+        if (!drawerShown) 
+        {
+            drawer.children().css('min-width', 0);
+        }
+
         drawerShown = true;
 
         // check if pan pass the threshold position, the default action item gets entire space.

@@ -232,6 +232,7 @@ $messageNotificationOverlayBorderStyle:     solid !default;
 $messageNotificationOverlayBorderWidth:     $windowBorderWidth !default;
 $messageNotificationOverlayBorderColor:     $neutralColor9 !default;
 
+$messageHeaderHeight:                       36px !default;
 $messageCloseIconDisplay:                   block !default;
 $messageCategoryTextColor:                  $formControlLabelColor !default;
 $messageCategoryFontSize:                   oj-px-to-rem(11px, $baseFontSize: 14px)  !default;

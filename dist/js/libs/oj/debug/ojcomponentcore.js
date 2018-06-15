@@ -437,7 +437,7 @@ function _getComponentElementByNode(node, mtAccessCompositeInternals){
  * {subId: subIdOfNode}
  * @param {?Element} componentElement - JET component element
  * @param {?Element} node - DOM node
- * @return {*} locator - object with at least a subId
+ * @return {any} locator - object with at least a subId
  * or null if the node does not have a subId
  * @export
 */
@@ -453,7 +453,7 @@ oj.Components.getSubIdByNode = function(componentElement, node)
  * @param {Object} locator - Object containing, at minimum,
  * a subId property, whose value is a string that identifies
  * a particular DOM node in this component.
- * @return {*} node - The DOM node located by
+ * @return {any} node - The DOM node located by
  * the locator, or null if none is found
  * @export
 */
@@ -467,7 +467,7 @@ oj.Components.getNodeBySubId = function(componentElement, locator)
  * the specified JET component element
  * @param {?Element} componentElement - JET component element
  * @param {string} option - option to retrieve
- * @return {*} value of option
+ * @return {any} value of option
  * @export
 */
 oj.Components.getComponentOption = function(componentElement, option)
@@ -492,7 +492,7 @@ oj.Components.getComponentOption = function(componentElement, option)
  * JET component element to the specified value
  * @param {?Element} componentElement - JET component element
  * @param {string} option - option to set
- * @param {*} value - value to set option to
+ * @param {any} value - value to set option to
  * @return {void}
  * @export
 */
@@ -519,7 +519,7 @@ oj.Components.setComponentOption = function(componentElement, option, value)
  * @param {?Element} componentElement - JET component element
  * @param {string} method - name of JET component element method to call
  * @param {...*} methodArguments - list of arguments to pass to method call
- * @return {*}
+ * @return {any}
  * @export
 */
 oj.Components.callComponentMethod = function(componentElement, method, methodArguments)
@@ -788,6 +788,8 @@ var _OJ_PENDING_SUBTREE_HIDDEN_CLASS = "oj-pending-subtree-hidden";
  * @private
  */
 var _BASE_COMPONENT = 'baseComponent';
+var _STATE_CONNECTED = 0;
+var _STATE_DISCONNECTED = 1;
 
 /**
  * @ojcomponent oj.baseComponent
@@ -3572,6 +3574,17 @@ $.widget('oj.' + _BASE_COMPONENT,
   },
 
   /**
+   * Whether special handling is needed for connected and disconnected ops
+   * @return {boolean} returns true if the component wants to suppress disconnect and connect operations that happened
+   *                   in quick succession, since they can be very expensive.  Returns false otherwise, which is the default.
+   * @memberof oj.baseComponent
+   * @protected
+   */
+  _VerifyConnectedForSetup: function() {
+    return false;
+  },
+
+  /**
    * Called by the CustomElementBridge when the custom element is attached
    * to the DOM.
    * @memberof oj.baseComponent
@@ -3580,7 +3593,9 @@ $.widget('oj.' + _BASE_COMPONENT,
    */
   __handleConnected: function() {
     this._NotifyAttached();
-    this._SetupResources();
+    if (!this.__delayConnectDisconnect(_STATE_CONNECTED)) {
+      this._SetupResources();      
+    }
   },
 
   /**
@@ -3591,8 +3606,40 @@ $.widget('oj.' + _BASE_COMPONENT,
    * @private
    */
   __handleDisconnected: function() {
-    this._ReleaseResources();
+    // note that when it is delayed, then NotifyDetached would be called before ReleaseResources
+    // this is fine for all the components that will use delayed disconnect, will need to re-visit if that is not the case.
+    if (!this.__delayConnectDisconnect(_STATE_DISCONNECTED)) {
+      this._ReleaseResources();
+    }
     this._NotifyDetached();
+  },
+
+  /**
+   * Delay the call to SetupResources and ReleaseResources as part of connected and disconnected.
+   * See _verifyConnectedForSetup method for details.
+   * @return {boolean} true if SetupResources/ReleaseResources has been delayed, false otherwise.
+   * @memberof oj.baseComponent
+   * @instance
+   * @private
+   */
+  __delayConnectDisconnect: function(state)
+  {
+    if (!this._VerifyConnectedForSetup()) {
+      return false;
+    }
+
+    if (this.connectedState === undefined) {
+      var self = this;
+      Promise.resolve().then(function() {
+        if (self.connectedState === state) {
+          state === _STATE_CONNECTED ? self._SetupResources() : self._ReleaseResources();
+          self.connectedState = undefined;
+        }
+      });
+    }
+    this.connectedState = state;
+
+    return true;
   },
 
   /**
@@ -4100,7 +4147,7 @@ function _mergeObjectsWithExclusions(target, input, ignoreSubkeys, basePath)
  * @function setProperty
  * @since 4.0.0
  * @param {string} property - The property name to set. Supports dot notation for subproperty access.
- * @param {*} value - The new value to set the property to.
+ * @param {any} value - The new value to set the property to.
  * @return {void}
  * 
  * @expose
@@ -4115,7 +4162,7 @@ function _mergeObjectsWithExclusions(target, input, ignoreSubkeys, basePath)
  * @function getProperty
  * @since 4.0.0
  * @param {string} property - The property name to get. Supports dot notation for subproperty access.
- * @return {*}
+ * @return {any}
  * 
  * @expose
  * @memberof oj.baseComponent
@@ -5286,10 +5333,13 @@ oj.CollectionUtils.copyInto(oj.CustomElementBridge.proto,
       if (bridge._WIDGET_INSTANCE)
       {
         var focusElem = bridge._WIDGET_INSTANCE.__getFocusElement();
-        if (focusElem !== this)
-          focusElem.focus();
-        else
-          HTMLElement.prototype.focus.call(this);
+        if (focusElem)
+        {
+          if (focusElem !== this)
+            focusElem.focus();
+          else
+            HTMLElement.prototype.focus.call(this);
+        }
       }
       else
       {
@@ -5302,10 +5352,13 @@ oj.CollectionUtils.copyInto(oj.CustomElementBridge.proto,
       if (bridge._WIDGET_INSTANCE)
       {
         var focusElem = bridge._WIDGET_INSTANCE.__getFocusElement();
-        if (focusElem !== this)
-          focusElem.blur();
-        else
-          HTMLElement.prototype.blur.call(this);
+        if (focusElem)
+        {
+          if (focusElem !== this)
+            focusElem.blur();
+          else
+            HTMLElement.prototype.blur.call(this);
+        }
       }
       else
       {
@@ -5380,19 +5433,6 @@ oj.CollectionUtils.copyInto(oj.CustomElementBridge.proto,
       }
 
       this._copyProperties();
-
-      // Setup blur/focus listeners on inner element so we can trigger on the root custom element for 
-      var getFocusEventPropagator = function(type) {
-        return function() {
-          // Ensure that the target is the custom element, not the inner element, so create
-          // a new event and dispatch on the custom element.
-          var focusEvent = document.createEvent('UIEvent');
-          focusEvent.initEvent(type, false, false);
-          element.dispatchEvent(focusEvent);
-        };
-      }
-      this._WIDGET_ELEM.addEventListener("focus", getFocusEventPropagator("focus"));
-      this._WIDGET_ELEM.addEventListener("blur", getFocusEventPropagator("blur"));
     }
 
     oj.Components.unmarkPendingSubtreeHidden(element);
@@ -5407,11 +5447,26 @@ oj.CollectionUtils.copyInto(oj.CustomElementBridge.proto,
     if (this._WRITEBACK_PROPS)
       this._WIDGET_INSTANCE.__saveWritebackOptions(this._WRITEBACK_PROPS);
 
-
     // After parsing the DOM attribute values and initializing properties, remove the disabled
     // property if it exists due to 
     if (element.hasAttribute('disabled') && !this._disabledProcessed)
       oj.CustomElementBridge._removeDisabledAttribute(element);
+
+    // Setup blur/focus listeners on inner element so we can trigger on the root custom element for 
+    var getFocusEventPropagator = function(type) {
+      return function() {
+        // Ensure that the target is the custom element, not the inner element, so create
+        // a new event and dispatch on the custom element.
+        var focusEvent = document.createEvent('UIEvent');
+        focusEvent.initEvent(type, false, false);
+        element.dispatchEvent(focusEvent);
+      };
+    }
+    var focusElem = this._WIDGET_INSTANCE.__getFocusElement();
+    if (focusElem && focusElem !== element) {
+      focusElem.addEventListener('focus', getFocusEventPropagator('focus'));
+      focusElem.addEventListener('blur', getFocusEventPropagator('blur'));
+    }
 
     // Set flag when we can fire property change events
     this.__READY_TO_FIRE = true;
@@ -5597,8 +5652,8 @@ oj.CollectionUtils.copyInto(oj.CustomElementBridge.proto,
         var propName = oj.__AttributeUtils.attributeToPropertyName(attr);
         if (this._PROPS.hasOwnProperty(propName))
         {
-
-          this._WIDGET_ELEM.setAttribute(attr, this._PROPS[propName]);
+          var value = this._PROPS[propName];
+          this._setCopyProperty(attr, value);
           // Delete the attribute we just copied from the options that we 
           // instantiate the widget with
           delete this._PROPS[propName];
@@ -5662,6 +5717,16 @@ oj.CollectionUtils.copyInto(oj.CustomElementBridge.proto,
     }
   },
 
+  _setCopyProperty: function(attribute, value)
+  {
+    if (value == null || value === false)
+      this._WIDGET_ELEM.removeAttribute(attribute);
+    else if (value === true)
+      this._WIDGET_ELEM.setAttribute(attribute, '');
+    else
+      this._WIDGET_ELEM.setAttribute(attribute, value);
+  },
+
   _setupPropertyAccumulator: function(element, widgetOptions)
   {
     // Add an element function that will track property values until expressions are all evaluated.
@@ -5706,13 +5771,7 @@ oj.CollectionUtils.copyInto(oj.CustomElementBridge.proto,
           propMeta = oj.BaseCustomElementBridge.__GetPropertyMetadata(prop, oj.BaseCustomElementBridge.getProperties(this, elem));
 
         var previousValue = this._getCopyProperty(elem, prop, propMeta);
-        if (value == null || value === false)
-          this._WIDGET_ELEM.removeAttribute(attrName);
-        else if (value === true)
-          this._WIDGET_ELEM.setAttribute(attrName, '');
-        else
-          this._WIDGET_ELEM.setAttribute(attrName, value);
-
+        this._setCopyProperty(attrName, value);
         // Fire a property change event for the copy properties since we don't actually pass
         // these to the widget. The widget will never update these properties themselves so 
         // all updates are external.
@@ -7131,7 +7190,7 @@ oj.DomUtils._LOGICAL_PARENT_DATA = "oj-logical-parent";
  * Returns undefined otherwise.
  *
  * @param {jQuery} element jquery element
- * @returns {*}
+ * @returns {any}
  * @see #setLogicalParent
  */
 oj.DomUtils.getLogicalParent = function(element)
@@ -7971,7 +8030,7 @@ oj.Test.ready = false;
  * @param {Object|string} locator A locator which is either a JSON string (to be parsed using $.parseJSON), or an Object with the following properties:
  *                                             element: the component's selector, determined by the test author when laying out the page
  *                                             subId: the string, documented by the component, that the component expects in getNodeBySubId to locate a particular subcomponent
- *  @returns {*} the subcomponent located by the subId string passed in locator, if found.
+ *  @returns {any} the subcomponent located by the subId string passed in locator, if found.
  */
 oj.Test.domNodeForLocator = function (locator) {
   var locObj = locator;

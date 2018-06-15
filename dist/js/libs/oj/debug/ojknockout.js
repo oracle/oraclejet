@@ -4,7 +4,7 @@
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
-define(['ojs/ojcore', 'jquery', 'knockout', 'jqueryui-amd/widget', 'ojs/ojkoshared'], function(oj, $, ko)
+define(['ojs/ojcore', 'jquery', 'knockout', 'jqueryui-amd/widget', 'ojs/ojkoshared', 'ojs/ojkeyset'], function(oj, $, ko)
 {
 /**
  * @private
@@ -3483,12 +3483,12 @@ function isVirtualNode(node) {
 function makeTemplateNode(sourceNode) {
   var container = document.createElement("div");
   var parentNode;
-  if(sourceNode['_templateNode'] && sourceNode['_templateNode'].content) 
+  if(sourceNode['_templateNode'] && sourceNode['_templateNode'].content)
   {
     // For e.g. <template> tags
     parentNode = sourceNode['_templateNode'].content; //parentNode = sourceNode.content;
   }
-  else if (sourceNode['_templateNode']) 
+  else if (sourceNode['_templateNode'])
   {
     parentNode = sourceNode['_templateNode'];
   }
@@ -3498,7 +3498,7 @@ function makeTemplateNode(sourceNode) {
     var scripts = sourceNode.parentNode.getElementsByTagName('SCRIPT');
     parentNode = scripts && scripts.length > 0 ? ko.utils.parseHtmlFragment(scripts[0].text) : sourceNode;
   }
-  
+
   var nodes = Array.isArray(parentNode) ? parentNode : ko.virtualElements.childNodes(parentNode);
   ko.utils.arrayForEach(nodes, function (child) {
     // FIXME - This cloneNode could be expensive; we may prefer to iterate over the
@@ -3512,10 +3512,20 @@ function makeTemplateNode(sourceNode) {
 }
 
 // Mimic a KO change item 'add'
-function valueToChangeAddItem(value, index) {
+function valueToChangeAddItem(value, index, key) {
   return {
     status: 'added',
     value: value,
+    index: index,
+    key: key
+  };
+}
+
+// Mimic a KO change item 'delete'
+function valueToChangeDeleteItem(index) {
+  return {
+    status: 'deleted',
+    value: {},
     index: index
   };
 }
@@ -3550,11 +3560,11 @@ var PENDING_DELETE_INDEX_KEY = createSymbolOrString("_ko_ffe_pending_delete_inde
  */
 function OjForEach(element, value, context) {
   this.element = value.element || element;
-  this.container = isVirtualNode(this.element) ?
-                   this.element.parentNode : this.element;
   this.$context = context;
   this.data = value['data'];
   this.as = value['as'];
+  // Check to see if the template node overrides the as attribute
+  this.templateAlias = this.element['_templateNode'] ? this.element['_templateNode'].getAttribute('data-oj-as') : null;
   this.templateNode = makeTemplateNode(this.element);
   this.changeQueue = [];
   this.firstLastNodesList = [];
@@ -3565,9 +3575,14 @@ function OjForEach(element, value, context) {
   // Remove existing content.
   ko.virtualElements.emptyNode(this.element);
 
-  // Prime content
-  var primeData = ko.unwrap(this.data);
-  this.onArrayChange(arrayMap(primeData, valueToChangeAddItem));
+  if (this.data.fetchFirst) { //the data is a DataProvider object
+    this.fetchData();
+  }
+  else {
+    // Prime content
+    var primeData = ko.unwrap(this.data);
+    this.onArrayChange(arrayMap(primeData, valueToChangeAddItem));
+  }
   this.addSubscriptions();
 }
 
@@ -3582,25 +3597,223 @@ OjForEach.prototype.addSubscriptions = function () {
     }
     this.changeSubs = this.data['subscribe'](this.onArrayChange, this, 'arrayChange');
   }
+  else if (this.data.fetchFirst) { // add listener to handle DataProvider events
+    this.dataMutateHandler = this.handleDataMutateEvent.bind(this);
+    this.dataRefreshHandler = this.handleDataRefreshEvent.bind(this);
+    this.data.addEventListener('mutate', this.dataMutateHandler);
+    this.data.addEventListener('refresh', this.dataRefreshHandler);
+  }
 };
 
 OjForEach.prototype.removeSubscriptions = function () {
   if (this.changeSubs) {
     this.changeSubs['dispose']();
   }
+  else if (this.data.removeEventListener) {
+    this.data.removeEventListener('mutate', this.dataMutateHandler);
+    this.data.removeEventListener('refresh', this.dataRefreshHandler);
+  }
 };
 
+OjForEach.prototype.registerBusyState = function () {
+  var containerElement = this.element.parentNode;
+  var busyContext = oj.Context.getContext(containerElement).getBusyContext();
+  return busyContext.addBusyState(
+    { description: 'oj-bind-for-each binding on a node with the Id ' + containerElement.id + 'is loading data.'});
+};
+
+// This function is used to retrieve data from data provider - on initial update and
+// to handle refresh operation
+OjForEach.prototype.fetchData = function () {
+
+  var self = this;
+  var busyStateCallback = this.registerBusyState();
+  var iterator = this.data.fetchFirst({size: -1})[Symbol.asyncIterator]();
+
+  // function passed to iterator.next() promise, until result.done is set to true
+  var getProcessResultsFunc = function(changeSet, onArrayChangeCallback, callbackObj) {
+    return function(result) {
+      var value = result.value;
+      var entryIndex = changeSet.length;
+      for (var i = 0; i < value.metadata.length && i < value.data.length; i++) {
+        changeSet.push(valueToChangeAddItem(value.data[i], entryIndex++, value.metadata[i].key));
+      }
+      if (result.done) {
+        onArrayChangeCallback.call(callbackObj, changeSet);
+        busyStateCallback();
+      }
+      else {
+        var successFunc = getProcessResultsFunc(changeSet, onArrayChangeCallback, callbackObj);
+        iterator.next().then(
+            successFunc,
+            function(){
+              busyStateCallback();
+            });
+      }
+    };
+  };
+
+  var successFunc = getProcessResultsFunc([], this.onArrayChange, this);
+  iterator.next().then(
+      successFunc,
+      function(){
+        busyStateCallback();
+      });
+};
+
+// This function populates an array of indexes either from event indexes or
+// from event keys
+OjForEach.prototype.getIndexesForEvent = function (eventIndexes, eventKeys) {
+  var dataIndexes = [];
+  if (Array.isArray(eventIndexes)) { // use indexes if possible
+    for (var i = 0; i < eventIndexes.length; i++) {
+      dataIndexes.push(eventIndexes[i]);
+    }
+  }
+  else if (eventKeys){ // retrieve indexes from keys
+    var eventKeySet = new oj.KeySetImpl(eventKeys);
+    var keyIndexMap = new Map();
+    var count = 0;
+    for (var i = 0; i < this.firstLastNodesList.length && count < eventKeys.size; i++) {
+      var nodeKey = this.firstLastNodesList[i].key;
+      var eventKey = eventKeySet.get(nodeKey);
+      if (eventKey != null) {
+        keyIndexMap.set(eventKey, i);
+        count++;
+      }
+    }
+
+    eventKeys.forEach(function(keyValue){
+      dataIndexes.push(keyIndexMap.get(keyValue));
+    });
+  }
+  return dataIndexes;
+};
+
+//Handler that processes "mutate" event from DataProvider
+OjForEach.prototype.handleDataMutateEvent = function (event) {
+  var addDetail = event.detail.add;
+  var removeDetail = event.detail.remove;
+  var updateDetail = event.detail.update;
+  var changes = [];
+
+  if (addDetail) {
+
+    var eventData = addDetail.data;
+    var eventKeys = addDetail.keys;
+    var dataIndexes = this.getIndexesForEvent(addDetail.indexes, addDetail.afterKeys);
+    var getCurrentIndex = function(entryIndex) {
+      var currentIndex = dataIndexes.length > entryIndex ? dataIndexes[entryIndex] :
+                  this.firstLastNodesList.length + entryIndex; //add entry to the end
+      if (currentIndex === undefined)
+        return this.firstLastNodesList.length;
+      return currentIndex;
+    }
+
+    if (!Array.isArray(eventData)) { // data were not sent, should fetch data using keys
+      var self = this;
+      var busyStateCallback = this.registerBusyState();
+      this.data.fetchByKeys({'keys':eventKeys}).then(function(keyResult){
+        // got map of keys to oj.Item - each item is an object with data and metadata props
+        if (keyResult.results.size > 0) {
+          var dataIndex = 0;
+          eventKeys.forEach(function(keyValue){
+            var dataItem = keyResult.results.get(keyValue).data;
+            changes.push(valueToChangeAddItem(dataItem, getCurrentIndex(dataIndex), keyValue));
+            dataIndex++;
+          });
+          self.onArrayChange(changes);
+        }
+        busyStateCallback();
+      },
+      function(){
+        busyStateCallback();
+      });
+    }
+    else { // data were sent with the event, don't have to fetch them
+      var dataIndex = 0; //used to iterate trough eventData
+      eventKeys.forEach(function(keyValue){
+        changes.push(valueToChangeAddItem(eventData[dataIndex], getCurrentIndex(dataIndex), keyValue));
+        dataIndex++;
+      }, this);
+    }
+
+  }
+  else if (removeDetail) {
+
+    // get indexes to delete using either indexes or given keys
+    var dataIndexes = this.getIndexesForEvent(removeDetail.indexes, removeDetail.keys);
+    dataIndexes = dataIndexes.filter(function(value){return value !== undefined;});
+    changes = dataIndexes.map(valueToChangeDeleteItem);
+
+  }
+  else if (updateDetail) {
+
+    var eventKeys = updateDetail.keys;
+    var dataIndexes = this.getIndexesForEvent(updateDetail.indexes, eventKeys);
+
+    if (!Array.isArray(updateDetail.data)) { // data were not sent, need to fetch data
+      var self = this;
+      var busyStateCallback = this.registerBusyState();
+      this.data.fetchByKeys({'keys':eventKeys}).then(function(keyResult){
+        var dataIndex = 0;
+        if (keyResult.results.size > 0) {
+          eventKeys.forEach(function(keyValue){
+            if (dataIndexes[dataIndex] !== undefined) {
+              var dataItem = keyResult.results.get(keyValue).data;
+              changes.push(valueToChangeDeleteItem(dataIndexes[dataIndex]));
+              changes.push(valueToChangeAddItem(dataItem, dataIndexes[dataIndex], keyValue));
+            }
+            dataIndex++;
+          });
+          self.onArrayChange(changes);
+        }
+        busyStateCallback();
+      },
+      function(){
+        busyStateCallback();
+      });
+    }
+    else { // got event data, don't have to fetch them
+      var dataIndex = 0;
+      eventKeys.forEach(function(keyValue){
+        if (dataIndexes[dataIndex] !== undefined) {
+          changes.push(valueToChangeDeleteItem(dataIndexes[dataIndex]));
+          changes.push(valueToChangeAddItem(updateDetail.data[dataIndex], dataIndexes[dataIndex], keyValue));
+        }
+        dataIndex++;
+      });
+    }
+
+  }
+  // perform changes using specified changes set
+  if (changes.length > 0)
+    this.onArrayChange(changes);
+};
+
+//Handler that processes "refresh" event from DataProvider
+OjForEach.prototype.handleDataRefreshEvent = function (event) {
+  // clean up existing content
+  this.changeQueue = [];
+  this.firstLastNodesList = [];
+  this.indexesToDelete = [];
+  this.rendering_queued = false;
+  this.pendingDeletes = [];
+  ko.virtualElements.emptyNode(this.element);
+  // refetch data and recreate the child nodes
+  this.fetchData();
+};
 
 // If the array changes we register the change.
 OjForEach.prototype.onArrayChange = function (changeSet) {
-  
+
   var self = this;
   var changeMap = {
     'added': [],
     'deleted': []
   };
   var statusAdded = 'added', statusDeleted = 'deleted';
-  
+
   // knockout array change notification index handling:
   // - sends the original array indexes for deletes
   // - sends the new array indexes for adds
@@ -3618,11 +3831,13 @@ OjForEach.prototype.onArrayChange = function (changeSet) {
             isBatch: true,
             status: statusAdded,
             index: lastAdd.index,
-            values: [lastAdd.value]
+            values: [lastAdd.value],
+            keys: [lastAdd.key]
           };
           changeMap[statusAdded].splice(changeMap[statusAdded].length - 1, 1, lastAdd);
         }
         lastAdd.values.push(changeSet[i].value);
+        lastAdd.keys.push(changeSet[i].key);
         continue;
       }
     }
@@ -3669,22 +3884,24 @@ OjForEach.prototype.processQueue = function () {
 // Process a changeItem with {status: 'added', ...}
 /**
  * @expose
- * @ignore 
+ * @ignore
  */
 OjForEach.prototype.added = function (changeItem) {
   var index = changeItem.index;
   var valuesToAdd = changeItem.isBatch ? changeItem.values : [changeItem.value];
+  var keysToAdd = changeItem.isBatch ? changeItem.keys : [changeItem.key];
   var referenceElement = this.getLastNodeBeforeIndex(index);
   // gather all childnodes for a possible batch insertion
   var allChildNodes = [];
 
   for (var i = 0, len = valuesToAdd.length; i < len; ++i) {
-    var childNodes;
+    var childNodes, childContext;
 
     // we check if we have a pending delete with reusable nodesets for this data, and if yes, we reuse one nodeset
     var pendingDelete = this.getPendingDeleteFor(valuesToAdd[i]);
     if (pendingDelete && pendingDelete.nodesets.length) {
       childNodes = pendingDelete.nodesets.pop();
+      childContext = pendingDelete.childContext;
     } else {
       var templateClone = this.templateNode.cloneNode(true);
       var current = {
@@ -3692,7 +3909,7 @@ OjForEach.prototype.added = function (changeItem) {
           'index': index + i,
           'observableIndex': ko.observable()
         };
-      var childContext = this.$context['extend']({
+      childContext = this.$context['extend']({
         '$root': undefined,
         '$parent': undefined,
         '$parents': undefined,
@@ -3700,6 +3917,9 @@ OjForEach.prototype.added = function (changeItem) {
       });
       if (this.as) {
         childContext[this.as] = current;
+      }
+      if (this.templateAlias) {
+        childContext[this.templateAlias] = current;
       }
 
       // apply bindings first, and then process child nodes, because bindings can add childnodes
@@ -3710,7 +3930,8 @@ OjForEach.prototype.added = function (changeItem) {
 
     // Note discussion at https://github.com/angular/angular.js/issues/7851
     allChildNodes.push.apply(allChildNodes, Array.prototype.slice.call(childNodes));
-    this.firstLastNodesList.splice(index + i, 0, { first: childNodes[0], last: childNodes[childNodes.length - 1] });
+    this.firstLastNodesList.splice(index + i, 0,
+      { first: childNodes[0], last: childNodes[childNodes.length - 1], key: keysToAdd ? keysToAdd[i] : null, childContext: childContext });
   }
 
   this.insertAllAfter(allChildNodes, referenceElement);
@@ -3738,14 +3959,7 @@ OjForEach.prototype.insertAllAfter = function (nodeOrNodeArrayToInsert, insertAf
   var frag, len, i,
     containerNode = this.element;
 
-  // poor man's node and array check, should be enough for this
-  if (nodeOrNodeArrayToInsert.nodeType === undefined && nodeOrNodeArrayToInsert.length === undefined) {
-    throw new Error("Expected a single node or a node array");
-  }
-  if (nodeOrNodeArrayToInsert.nodeType !== undefined) {
-    ko.virtualElements.insertAfter(containerNode, nodeOrNodeArrayToInsert, insertAfterNode); // @HTMLUpdateOK
-    return [nodeOrNodeArrayToInsert];
-  } else if (nodeOrNodeArrayToInsert.length === 1) {
+  if (nodeOrNodeArrayToInsert.length === 1) {
     ko.virtualElements.insertAfter(containerNode, nodeOrNodeArrayToInsert[0], insertAfterNode); // @HTMLUpdateOK
   } else if (supportsDocumentFragment) {
     frag = document.createDocumentFragment();
@@ -3803,6 +4017,7 @@ OjForEach.prototype.deleted = function (changeItem) {
   if (this.shouldDelayDeletion(changeItem.value)) {
     var pd = this.getOrCreatePendingDeleteFor(changeItem.value);
     pd.nodesets.push(this.getNodesForIndex(changeItem.index));
+    pd.childContext = this.firstLastNodesList[changeItem.index].childContext;
   } else { // simple data, just remove the nodes
     this.removeNodes(this.getNodesForIndex(changeItem.index));
   }
@@ -3842,7 +4057,7 @@ OjForEach.prototype.flushPendingDeletes = function () {
 // See brianmhunt/knockout-fast-foreach#6/#8
 /**
  * @expose
- * @ignore 
+ * @ignore
  */
 OjForEach.prototype.clearDeletedIndexes = function () {
   // We iterate in reverse on the presumption (following the unit tests) that KO's diff engine
@@ -3853,33 +4068,23 @@ OjForEach.prototype.clearDeletedIndexes = function () {
   this.indexesToDelete = [];
 };
 
-
-OjForEach.prototype.getContextStartingFrom = function (node) {
-  var ctx;
-  while (node) {
-    ctx = ko.contextFor(node);
-    if (ctx) { return ctx; }
-    node = node.nextSibling;
-  }
-};
-
-
+// Updates observableIndex property for the data
 OjForEach.prototype.updateIndexes = function (fromIndex) {
   var ctx;
   for (var i = fromIndex, len = this.firstLastNodesList.length; i < len; ++i) {
-    ctx = this.getContextStartingFrom(this.firstLastNodesList[i].first);
+    ctx = this.firstLastNodesList[i].childContext;
     if (ctx && ctx['$current']) {
       ctx['$current']['observableIndex'](i);
     }
   }
 };
 
-// Getter used in ko.computed callback that monitors array replacements 
+// Getter used in ko.computed callback that monitors array replacements
 OjForEach.prototype.getData = function () {
   return this.data;
 };
 
-// Setter used in ko.computed callback that monitors array replacements 
+// Setter used in ko.computed callback that monitors array replacements
 OjForEach.prototype.setData = function (data) {
   this.removeSubscriptions();
   this.data = data;
@@ -3890,9 +4095,9 @@ ko['bindingHandlers']['_ojBindForEach_'] = {
   // Valid valueAccessors:
   //    {data: array, as: string}
   'init': function init(element, valueAccessor, bindings, vm, context) {
-    
+
     var ffe, value;
-    
+
     ko.computed(function() {
       //: watch for array modifications, that are not covered by addSubscriptions() call:
       //- non-observable array replacement triggered by CCA
@@ -3902,7 +4107,7 @@ ko['bindingHandlers']['_ojBindForEach_'] = {
         var updatedValues = value['data'];
         var currentValues = ffe.getData();
         var currentArray, updatedArray;
-        //retrive the array data that might be defined as an observable 
+        //retrive the array data that might be defined as an observable
         ko.ignoreDependencies(function() {
           currentArray = ko.unwrap(currentValues);
           updatedArray = ko.unwrap(updatedValues);
@@ -3915,7 +4120,7 @@ ko['bindingHandlers']['_ojBindForEach_'] = {
         ffe.onArrayChange(changeSet);
       }
     });
-    
+
     ffe = new OjForEach(element, value, context);
 
     ko.utils.domNodeDisposal.addDisposeCallback(element, function () {
@@ -4141,27 +4346,6 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes(
  * &lt;oj-bind-for-each&gt; requires the application to specify a single &lt;template&gt; element 
  * as its direct child.  The markup being stamped out should be placed inside of this &lt;template&gt; element. 
  * </p>
- * <p>During iteration, each item will have access to the same binding context that is applied to the 
- * &lt;oj-bind-for-each&gt; element. 
- * In addition the binding context will contain the following properties:
- *  <ul>
- *   <li><code>$current</code> - An object that contains information for the current array item being rendered.</li>
- *    <ul>
- *       <li><code>data</code> - The current array item being rendered.</li>
- *       <li><code>index</code> - Zero-based index of the current array item being rendered.
- *                                The index value is not updated in response to array additions and removals and
- *                                is only recommended for static arrays.</li>
- *       <li><code>observableIndex</code> - An observable that refers to the zero-based index of the current array item being rendered. 
- *                                          The <code>observableIndex</code> value is updated in response to array additions and removals
- *                                          and can be used for both static and dynamic arrays.</li>
- *    </ul>
- *   <li>alias - If <b>as</b> attribute was specified, the value will be used to provide an 
- *        application-named alias for <code>$current</code>. This can be especially useful 
- *        if multiple oj-bind-for-each elements are nested to provide access to the data 
- *        for each level of iteration.
- *   </li>
- *  </ul>
- * </p>
  * <p>Note that the &lt;oj-bind-for-each&gt; element will be removed from the DOM after binding is applied.
  * For slotting, applications need to wrap the oj-bind-for-each element inside another HTML element (e.g. &lt;span&gt;) with the slot attribute.
  * The oj-bind-for-each element does not support the slot attribute.</p>
@@ -4184,13 +4368,14 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes(
  */
 
 /**
- * The array that you wish to iterate over. Required property. Note that the &lt;oj-bind-for-each&gt; will 
- * dynamically update the generated DOM in response to changes if the value is an observableArray.
+ * The array or an oj.DataProvider that you wish to iterate over. Required property. 
+ * Note that the &lt;oj-bind-for-each&gt; will dynamically update the generated 
+ * DOM in response to changes if the value is an observableArray.
  * @expose
  * @name data
  * @memberof oj.ojBindForEach
  * @instance
- * @type {array}
+ * @type {array|oj.DataProvider}
  */
  
  /**
@@ -4202,6 +4387,27 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes(
  * @memberof oj.ojBindForEach
  * @instance
  * @type {string}
+ */
+//default slot
+/**
+ * <p>The <code class="prettyprint">oj-bind-for-each</code> default slot is used to specify the template for binding items of an array if 
+ * no named slots were defined by the application. The slot must be a &lt;template> element.</p> 
+ * <p>When the template is executed for each item, it will have access to the same binding context that is applied to the &lt;oj-bind-for-each&gt; element. 
+ * In addition the binding context will contain the following properties:</p>
+ * <ul>
+ *   <li>$current - An object that contains information for the current item. (See the table below for a list of properties available on $current) </li>
+ *   <li>alias - If <b>as</b> attribute was specified, the value will be used to provide an application-named alias for <code>$current</code>. 
+ *               This can be especially useful if multiple oj-bind-for-each elements are nested to provide access to the data for each level of iteration.
+ *   </li>
+ * </ul>
+ * @ojstatus preview
+ * @ojchild Default
+ * @memberof oj.ojBindForEach
+ * @property {Object} data The current array item being rendered. 
+ * @property {number} index Zero-based index of the current array item being rendered. The index value is not updated in response to array additions and removals and is only recommended for static arrays.
+ * @property {number} observableIndex An observable that refers to the zero-based index of the current array item being rendered. The <code>observableIndex</code> value is updated in response to array additions and removals and can be used for both static and dynamic arrays.
+ * @instance
+ * @expose
  */
 
 /**

@@ -11,12 +11,23 @@
 
 @if $includeFormLayoutElementClasses != false {
   @include module-include-once("common.formlayout.element") {
+    // default custom element to block
+    oj-form-layout {
+      display: block;
+    }
+    
     @include common-formlayout-selectors();
 
     // Generate the style classes for oj-form-layout custom element component.
     // Currently, we only have the common cases, but in the future, we may add
     // oj-form-layout element specific selectors here.
     @include oj-form-layout-common($selectorPrefix: "oj-formlayout");
+    
+    // When labels are inline, we shouldn't ever wrap as it produces difficult
+    // to understand layouts.
+    .oj-formlayout-labels-inline > .oj-flex  {
+      @include oj-flex-wrap-property(nowrap);
+    }
   }
   
   // This is to prevent the flash of unstyled content before the html becomes JET components.

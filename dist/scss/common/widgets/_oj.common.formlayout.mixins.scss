@@ -203,6 +203,25 @@
     .oj-label-nocomp:not(.oj-label-for-non-control) {
     line-height: 1.6em;
   }
+
+  // in the 'across' case where you have multiple fields in the same row you need padding between the first field and the second label
+  .#{$selectorPrefix}-form-across > .oj-flex > .oj-flex-item:nth-child(2n+3) {
+     @include oj-ltr {
+       padding-left: $labelInlineGutter;
+     }
+     @include oj-rtl(){
+       padding-right: $labelInlineGutter;
+     }
+  }
+
+  .#{$selectorPrefix}-form-across > .oj-flex > .oj-flex-item:nth-child(even) {
+     @include oj-ltr {
+       padding-right: $labelInlineGutter;
+     }
+     @include oj-rtl(){
+       padding-left: $labelInlineGutter;
+     }
+  }
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -295,25 +314,6 @@
         float: none;
       }
     }  
-
-  // in the 'across' case where you have multiple fields in the same row you need padding between the first field and the second label
-  .#{$selectorPrefix}-form-across > .oj-flex > .oj-flex-item:nth-child(2n+3) {
-     @include oj-ltr {
-       padding-left: $labelInlineGutter;
-     }
-     @include oj-rtl(){
-       padding-right: $labelInlineGutter;
-     }
-  }
-
-  .#{$selectorPrefix}-form-across > .oj-flex > .oj-flex-item:nth-child(even) {
-     @include oj-ltr {
-       padding-right: $labelInlineGutter;
-     }
-     @include oj-rtl(){
-       padding-left: $labelInlineGutter;
-     }
-  }
 }
 
 // changes for when the column drops to one column

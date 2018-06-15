@@ -1,7 +1,7 @@
 {
   "name": "oj-radioset",
-  "version": "5.0.0",
-  "jetVersion": "5.0.0",
+  "version": "5.1.0",
+  "jetVersion": "5.1.0",
   "displayName": "Radioset",
   "preview": true,
   "roles": [
@@ -94,7 +94,7 @@
     },
     "help": {
       "description": "Form component help information.\n\nThe properties supported on the help option are:",
-      "type": "Object.<string, string>",
+      "type": "Object",
       "displayName": "Help",
       "value": {
         "help": {
@@ -110,7 +110,7 @@
     },
     "helpHints": {
       "description": "Represents hints for oj-form-layout element to \nrender help information on the label of the editable component.",
-      "type": "Object.<string, string>",
+      "type": "Object",
       "displayName": "Help Hints",
       "value": {
         "definition": "",
@@ -232,7 +232,7 @@
     },
     "value": {
       "description": "The value of the component. When value option changes due to programmatic intervention, the component always clears all messages and runs deferred validation, and always refreshes UI display value. Clearing Messages All messages are cleared. This includes messagesCustom property. Running Validation component always runs deferred validation ",
-      "type": "*",
+      "type": "any",
       "displayName": "Value",
       "value": null,
       "writeback": true
@@ -246,7 +246,7 @@
     "validate": {
       "description": "Validates the component's display value using all validators registered on the component and updates the value option by performing the following steps. All messages are cleared, including custom messages added by the app. The implicit required validator is run if the component is marked required. At the end of validation if there are errors, the messages are shown. If there were no errors, then the value property is updated. ",
       "preview": true,
-      "return": "Promise.<string>"
+      "return": "Promise<string>"
     },
     "reset": {
       "description": "Resets the component by clearing all messages and messages attributes - \nmessagesCustom -\nand updates the component's display value using the attribute value. User entered values will be \nerased when this method is called.",
@@ -267,7 +267,7 @@
         {
           "name": "value",
           "description": "The new value to set the property to.",
-          "type": "*"
+          "type": "any"
         }
       ],
       "return": "void"
@@ -281,7 +281,7 @@
           "type": "string"
         }
       ],
-      "return": "*"
+      "return": "any"
     },
     "setProperties": {
       "description": "Performs a batch set of properties.",

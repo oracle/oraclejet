@@ -1,7 +1,7 @@
 {
   "name": "oj-legend",
-  "version": "5.0.0",
-  "jetVersion": "5.0.0",
+  "version": "5.1.0",
+  "jetVersion": "5.1.0",
   "displayName": "Legend",
   "preview": true,
   "roles": [
@@ -147,7 +147,349 @@
       "description": "An array of objects with the following properties defining the legend sections.",
       "type": "Array<Object>|null",
       "displayName": "Sections",
-      "value": null
+      "value": null,
+      "extension": {
+        "vbcs": {
+          "itemProperties": {
+            "collapsible": {
+              "description": "Whether the section is collapsible. Only applies if the legend orientation is vertical.",
+              "type": "string",
+              "value": "off",
+              "enumValues": [
+                "off",
+                "on"
+              ],
+              "propertyEditorValues": {
+                "off": {
+                  "displayName": "Off"
+                },
+                "on": {
+                  "displayName": "On"
+                }
+              }
+            },
+            "expanded": {
+              "description": "Whether the section is initially expanded. Only applies if the section is collapsible.",
+              "type": "string",
+              "value": "on",
+              "enumValues": [
+                "off",
+                "on"
+              ],
+              "propertyEditorValues": {
+                "off": {
+                  "displayName": "Off"
+                },
+                "on": {
+                  "displayName": "On"
+                }
+              }
+            },
+            "items": {
+              "description": "An array of objects with the following properties defining the legend items. Also accepts a Promise for deferred data rendering. No data will be rendered if the Promise is rejected.",
+              "type": "Array<Object>|Promise",
+              "value": null,
+              "properties": {
+                "borderColor": {
+                  "description": "The border color of the marker. Only applies if symbolType is \"marker\" or \"lineWithMarker\".",
+                  "type": "string",
+                  "value": null
+                },
+                "categories": {
+                  "description": "An array of categories for the legend item. Legend items currently only support a single category. If no category is specified, this defaults to the id or text of the legend item.",
+                  "type": "Array<string>",
+                  "value": null
+                },
+                "categoryVisibility": {
+                  "description": "Defines whether the legend item corresponds to visible data items. A hollow symbol is shown if the value is \"hidden\".",
+                  "type": "string",
+                  "value": "visible",
+                  "enumValues": [
+                    "hidden",
+                    "visible"
+                  ],
+                  "propertyEditorValues": {
+                    "hidden": {
+                      "displayName": "Hidden"
+                    },
+                    "visible": {
+                      "displayName": "Visible"
+                    }
+                  }
+                },
+                "color": {
+                  "description": "The color of the legend symbol (line or marker). When symbolType is \"lineWithMarker\", this attribute defines the line color and the markerColor attribute defines the marker color.",
+                  "type": "string",
+                  "value": null
+                },
+                "drilling": {
+                  "description": "Whether drilling is enabled on the legend item. Drillable objects will show a pointer cursor on hover and fire ojDrill event on click. To enable drilling for all legend items at once, use the drilling attribute in the top level.",
+                  "type": "string",
+                  "value": "inherit",
+                  "enumValues": [
+                    "inherit",
+                    "off",
+                    "on"
+                  ],
+                  "propertyEditorValues": {
+                    "inherit": {
+                      "displayName": "Inherit"
+                    },
+                    "off": {
+                      "displayName": "Off"
+                    },
+                    "on": {
+                      "displayName": "On"
+                    }
+                  }
+                },
+                "id": {
+                  "description": "The id of the legend item, which is provided as part of the context for events fired by the legend. If not specified, the id defaults to the text of the legend item.",
+                  "type": "string",
+                  "value": null
+                },
+                "lineStyle": {
+                  "description": "The line style. Only applies when the symbolType is \"line\" or \"lineWithMarker\".",
+                  "type": "string",
+                  "value": "solid",
+                  "enumValues": [
+                    "dashed",
+                    "dotted",
+                    "solid"
+                  ],
+                  "propertyEditorValues": {
+                    "dashed": {
+                      "displayName": "Dashed"
+                    },
+                    "dotted": {
+                      "displayName": "Dotted"
+                    },
+                    "solid": {
+                      "displayName": "Solid"
+                    }
+                  }
+                },
+                "lineWidth": {
+                  "description": "The line width in pixels. Only applies when the symbolType is \"line\" or \"lineWithMarker\".",
+                  "type": "number",
+                  "value": null
+                },
+                "markerColor": {
+                  "description": "The color of the marker, if different than the line color. Only applies if the symbolType is \"lineWithMarker\".",
+                  "type": "string",
+                  "value": null
+                },
+                "markerShape": {
+                  "description": "The shape of the marker. Only applies if symbolType is \"marker\" or \"lineWithMarker\". Can take the name of a built-in shape or the svg path commands for a custom shape. Does not apply if a custom image is specified.",
+                  "type": "string",
+                  "value": "square",
+                  "enumValues": [
+                    "circle",
+                    "diamond",
+                    "ellipse",
+                    "human",
+                    "plus",
+                    "rectangle",
+                    "square",
+                    "star",
+                    "triangleDown",
+                    "triangleUp"
+                  ],
+                  "propertyEditorValues": {
+                    "circle": {
+                      "displayName": "Circle"
+                    },
+                    "diamond": {
+                      "displayName": "Diamond"
+                    },
+                    "ellipse": {
+                      "displayName": "Ellipse"
+                    },
+                    "human": {
+                      "displayName": "Human"
+                    },
+                    "plus": {
+                      "displayName": "Plus"
+                    },
+                    "rectangle": {
+                      "displayName": "Rectangle"
+                    },
+                    "square": {
+                      "displayName": "Square"
+                    },
+                    "star": {
+                      "displayName": "Star"
+                    },
+                    "triangleDown": {
+                      "displayName": "Triangle Down"
+                    },
+                    "triangleUp": {
+                      "displayName": "Triangle Up"
+                    }
+                  }
+                },
+                "markerSvgClassName": {
+                  "description": "The CSS style class to apply to the marker. The style class and inline style will override any other styling specified through the options. For tooltips and hover interactivity, it's recommended to also pass a representative color to the markerColor attribute.",
+                  "type": "string",
+                  "value": null
+                },
+                "markerSvgStyle": {
+                  "description": "The inline style to apply to the marker. The style class and inline style will override any other styling specified through the options. For tooltips and hover interactivity, it's recommended to also pass a representative color to the markerColor attribute.",
+                  "type": "Object",
+                  "value": null
+                },
+                "pattern": {
+                  "description": "The pattern used to fill the marker. Only applies if symbolType is \"marker\" or \"lineWithMarker\".",
+                  "type": "string",
+                  "value": "none",
+                  "enumValues": [
+                    "largeChecker",
+                    "largeCrosshatch",
+                    "largeDiagonalLeft",
+                    "largeDiagonalRight",
+                    "largeDiamond",
+                    "largeTriangle",
+                    "none",
+                    "smallChecker",
+                    "smallCrosshatch",
+                    "smallDiagonalLeft",
+                    "smallDiagonalRight",
+                    "smallDiamond",
+                    "smallTriangle"
+                  ],
+                  "propertyEditorValues": {
+                    "largeChecker": {
+                      "displayName": "Large Checker"
+                    },
+                    "largeCrosshatch": {
+                      "displayName": "Large Crosshatch"
+                    },
+                    "largeDiagonalLeft": {
+                      "displayName": "Large Diagonal Left"
+                    },
+                    "largeDiagonalRight": {
+                      "displayName": "Large Diagonal Right"
+                    },
+                    "largeDiamond": {
+                      "displayName": "Large Diamond"
+                    },
+                    "largeTriangle": {
+                      "displayName": "Large Triangle"
+                    },
+                    "none": {
+                      "displayName": "None"
+                    },
+                    "smallChecker": {
+                      "displayName": "Small Checker"
+                    },
+                    "smallCrosshatch": {
+                      "displayName": "Small Crosshatch"
+                    },
+                    "smallDiagonalLeft": {
+                      "displayName": "Small Diagonal Left"
+                    },
+                    "smallDiagonalRight": {
+                      "displayName": "Small Diagonal Right"
+                    },
+                    "smallDiamond": {
+                      "displayName": "Small Diamond"
+                    },
+                    "smallTriangle": {
+                      "displayName": "Small Triangle"
+                    }
+                  }
+                },
+                "shortDesc": {
+                  "description": "The description of this legend item. This is used for accessibility and for customizing the tooltip text.",
+                  "type": "string",
+                  "value": null
+                },
+                "source": {
+                  "description": "The URI of the image of the legend symbol.",
+                  "type": "string",
+                  "value": null
+                },
+                "svgClassName": {
+                  "description": "The CSS style class to apply to the legend item. The style class and inline style will override any other styling specified through the options. For tooltips and hover interactivity, it's recommended to also pass a representative color to the color attribute.",
+                  "type": "string",
+                  "value": null
+                },
+                "svgStyle": {
+                  "description": "The inline style to apply to the legend item. The style class and inline style will override any other styling specified through the options. For tooltips and hover interactivity, it's recommended to also pass a representative color to the color attribute.",
+                  "type": "Object",
+                  "value": null
+                },
+                "symbolType": {
+                  "description": "The type of legend symbol to display.",
+                  "type": "string",
+                  "value": "marker",
+                  "enumValues": [
+                    "image",
+                    "line",
+                    "lineWithMarker",
+                    "marker"
+                  ],
+                  "propertyEditorValues": {
+                    "image": {
+                      "displayName": "Image"
+                    },
+                    "line": {
+                      "displayName": "Line"
+                    },
+                    "lineWithMarker": {
+                      "displayName": "Line With Marker"
+                    },
+                    "marker": {
+                      "displayName": "Marker"
+                    }
+                  }
+                },
+                "text": {
+                  "description": "The legend item text.",
+                  "type": "string",
+                  "value": null
+                }
+              }
+            },
+            "sections": {
+              "description": "An array of nested legend sections.",
+              "type": "Array<Object>",
+              "value": null
+            },
+            "title": {
+              "description": "The title of the legend section.",
+              "type": "string",
+              "value": null
+            },
+            "titleHalign": {
+              "description": "The horizontal alignment of the section title. If the section is collapsible or nested, only start alignment is supported.",
+              "type": "string",
+              "value": "start",
+              "enumValues": [
+                "center",
+                "end",
+                "start"
+              ],
+              "propertyEditorValues": {
+                "center": {
+                  "displayName": "Center"
+                },
+                "end": {
+                  "displayName": "End"
+                },
+                "start": {
+                  "displayName": "Start"
+                }
+              }
+            },
+            "titleStyle": {
+              "description": "The CSS style object defining the style of the section title.",
+              "type": "Object",
+              "value": null
+            }
+          }
+        }
+      }
     },
     "symbolHeight": {
       "description": "The height of the legend symbol (line or marker) in pixels. If the value is 0, it will take the same value as symbolWidth. If both symbolWidth and symbolHeight are 0, then it will use a default value that may vary based on theme.",
@@ -367,7 +709,7 @@
         {
           "name": "value",
           "description": "The new value to set the property to.",
-          "type": "*"
+          "type": "any"
         }
       ],
       "return": "void"
@@ -381,7 +723,7 @@
           "type": "string"
         }
       ],
-      "return": "*"
+      "return": "any"
     },
     "setProperties": {
       "description": "Performs a batch set of properties.",

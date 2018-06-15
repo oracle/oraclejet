@@ -1,7 +1,7 @@
 {
   "name": "oj-gantt",
-  "version": "5.0.0",
-  "jetVersion": "5.0.0",
+  "version": "5.1.0",
+  "jetVersion": "5.1.0",
   "displayName": "Gantt",
   "preview": true,
   "roles": [
@@ -68,6 +68,46 @@
       "type": "Array<Object>|Promise",
       "displayName": "Dependencies",
       "value": null
+    },
+    "dnd": {
+      "description": "Enables drag and drop functionality.",
+      "type": "Object",
+      "displayName": "Dnd",
+      "value": {
+        "move": {
+          "tasks": "disabled"
+        }
+      },
+      "properties": {
+        "move": {
+          "description": "Defines a subset of high level configurations for moving elements to another location of some row within the gantt. See the dnd attribute for usage examples.",
+          "type": "Object",
+          "value": {
+            "tasks": "disabled"
+          },
+          "properties": {
+            "tasks": {
+              "description": "Enable or disable moving the non-baseline portions of tasks to a different location of some row within the same gantt using drag and drop or equivalent keyboard actions (See Keyboard End User Information). See also ojMove. See the dnd attribute for usage examples.",
+              "type": "string",
+              "value": "disabled",
+              "enumValues": [
+                "disabled",
+                "enabled"
+              ],
+              "propertyEditorValues": {
+                "disabled": {
+                  "description": "Disable moving tasks",
+                  "displayName": "Disabled"
+                },
+                "enabled": {
+                  "description": "Enable moving tasks",
+                  "displayName": "Enabled"
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "end": {
       "description": "The end time of the Gantt. A valid value is required in order for the Gantt to properly render. See Date and Time Formats for more details on the required string formats.",
@@ -258,11 +298,29 @@
       "displayName": "Row Axis",
       "value": {
         "rendered": "off",
-        "maxWidth": "none"
+        "maxWidth": "none",
+        "width": "max-content",
+        "label": {
+          "renderer": null
+        }
       },
       "properties": {
+        "label": {
+          "description": "An object defining the properties of the row labels. See the row-axis attribute for usage examples.",
+          "type": "Object",
+          "value": {
+            "renderer": null
+          },
+          "properties": {
+            "renderer": {
+              "description": "An optional function that returns custom content for the row label. The custom content must be an SVG element. See the row-axis attribute for usage examples.",
+              "type": "function",
+              "value": null
+            }
+          }
+        },
         "maxWidth": {
-          "description": "Defines the maximum width of the region in pixels (e.g. '50px') or percent (e.g. '15%') of the element width. If 'none' is specified, then the width has no maximum value. Labels will truncate to fit. See the row-axis attribute for usage examples.",
+          "description": "Defines the maximum width of the region in pixels (e.g. '50px') or percent (e.g. '15%') of the element width. If 'none' is specified, then the width has no maximum value. Default labels will truncate to fit. See the row-axis attribute for usage examples.",
           "type": "string",
           "value": "none"
         },
@@ -282,6 +340,11 @@
               "displayName": "On"
             }
           }
+        },
+        "width": {
+          "description": "Defines the width of the region in pixels (e.g. '50px') or percent (e.g. '15%') of the element width. If 'max-content' is specified, then the intrinsic width of the widest label content is used. Default labels will truncate to fit. See the row-axis attribute for usage examples.",
+          "type": "string",
+          "value": "max-content"
         }
       }
     },
@@ -635,6 +698,11 @@
           "type": "string",
           "value": "Label"
         },
+        "labelMoveBy": {
+          "description": "Used for the default tooltip label for task move scale change.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Move By"
+        },
         "labelNoData": {
           "description": "Text shown when the component receives no data.\n\nSee the translations attribute for usage examples.",
           "type": "string",
@@ -714,6 +782,31 @@
           "description": "Used to describe the visible state for accessibility.\n\nSee the translations attribute for usage examples.",
           "type": "string",
           "value": "Visible"
+        },
+        "taskMoveCancelled": {
+          "description": "Used to indicate task move is finalized for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Task move cancelled"
+        },
+        "taskMoveFinalized": {
+          "description": "Used to indicate task move is finalized for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Task move finalized"
+        },
+        "taskMoveInitiated": {
+          "description": "Used to indicate task move is initiated for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Task move initiated"
+        },
+        "taskMoveInitiatedInstruction": {
+          "description": "Used to indicate task move is initiated for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "Use the arrow keys to move"
+        },
+        "taskMoveSelectionInfo": {
+          "description": "Used to indicate task move is initiated for accessibility.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "value": "{0} others selected"
         },
         "tooltipZoomIn": {
           "description": "Used for the zoom in tooltip.\n\nSee the translations attribute for usage examples.",
@@ -1093,7 +1186,7 @@
         {
           "name": "value",
           "description": "The new value to set the property to.",
-          "type": "*"
+          "type": "any"
         }
       ],
       "return": "void"
@@ -1107,7 +1200,7 @@
           "type": "string"
         }
       ],
-      "return": "*"
+      "return": "any"
     },
     "setProperties": {
       "description": "Performs a batch set of properties.",
@@ -1141,6 +1234,68 @@
         "minorAxisScale": {
           "description": "the time scale of the minorAxis",
           "type": "string"
+        }
+      }
+    },
+    "ojMove": {
+      "description": "Triggered after tasks are moved to a different location of some row within the gantt via drag and drop or equivalent keyboard actions (See Keyboard End User Information). See also the dnd.move.tasks attribute.",
+      "bubbles": true,
+      "detail": {
+        "taskContexts": {
+          "description": "An array of dataContexts of the moved tasks. The first dataContext of the array corresponds to the source task where the move was initiated (e.g. the task directly under the mouse when drag started).",
+          "type": "Array<Object>",
+          "extension": {
+            "vbcs": {
+              "itemProperties": {
+                "data": {
+                  "description": "The data object of the source task.",
+                  "type": "oj.ojGantt.RowTask"
+                },
+                "rowData": {
+                  "description": "The data for the row the source task belongs to.",
+                  "type": "oj.ojGantt.Row"
+                },
+                "color": {
+                  "description": "The color of the source task.",
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "value": {
+          "description": "The value at the target position the source task is moved to. See Date and Time Formats for more details on the ISO string format.",
+          "type": "string"
+        },
+        "start": {
+          "description": "The start value of the task, if the source task were to move to the target position. See Date and Time Formats for more details on the ISO string format.",
+          "type": "string"
+        },
+        "end": {
+          "description": "The end value of the task, if the source task were to move to the target position. See Date and Time Formats for more details on the ISO string format.",
+          "type": "string"
+        },
+        "baselineStart": {
+          "description": "The start value of the baseline, if the source task were to move to the target position. This is null if baseline is not defined on the task. See Date and Time Formats for more details on the ISO string format.",
+          "type": "string"
+        },
+        "baselineEnd": {
+          "description": "The end value of the baseline, if the source task were to move to the target position. This is null if baseline is not defined on the task. See Date and Time Formats for more details on the ISO string format.",
+          "type": "string"
+        },
+        "rowContext": {
+          "description": "The data context for the row at the target position.",
+          "type": "Object",
+          "properties": {
+            "rowData": {
+              "description": "The data for the target row.",
+              "type": "oj.ojGantt.Row"
+            },
+            "componentElement": {
+              "description": "The gantt element.",
+              "type": "Element"
+            }
+          }
         }
       }
     }

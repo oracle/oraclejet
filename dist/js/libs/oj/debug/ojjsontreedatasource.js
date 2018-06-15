@@ -26,7 +26,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojdatasource-common'], function(oj, $)
  * @param {number} startNode the index of the first node in this NodeSet relative to its parent
  * @param {number} endNode the index of the last node in this NodeSet
  * @param {Object} data the JSON data
- * @param {*} currKey the key of the parent node
+ * @param {any} currKey the key of the parent node
  * @param {number} depth the depth of the nodes in this NodeSet
  * @export
  */
@@ -45,7 +45,7 @@ oj.JsonNodeSet = function(startNode, endNode, data, currKey, depth)
 
 /**
  * Gets the parent key for this result set.  
- * @return {*} the parent key for this result set. 
+ * @return {any} the parent key for this result set. 
  * @export
  */
 oj.JsonNodeSet.prototype.getParent = function()
@@ -77,7 +77,7 @@ oj.JsonNodeSet.prototype.getCount = function()
  * Gets the data of the specified index.  An error is throw when 1) the range is not yet available and
  * 2) the index specified is out of bounds. 
  * @param {number} index the index of the node/row in which we want to retrieve the data from.  
- * @return {*} the data for the specified index.  oj.RowData should be returned for data that represents a row
+ * @return {any} the data for the specified index.  oj.RowData should be returned for data that represents a row
  *         with a number of columns.
  * @export
  */
@@ -431,7 +431,7 @@ oj.JsonTreeDataSource.prototype._createTreeDataSource = function(c, target, sour
 /**
  * Returns the number of children for a specified parent.  If the value returned is not >= 0 then it is automatically assumed
  * that the child count is unknown.
- * @param {*} parentKey the parent key.  Specify null if inquiring child count of the root.
+ * @param {any} parentKey the parent key.  Specify null if inquiring child count of the root.
  * @return {number} the number of children for the specified parent.
  * @export
  */
@@ -458,7 +458,7 @@ oj.JsonTreeDataSource.prototype.getChildCount = function(parentKey)
 
 /**
  * Fetch the children
- * @param {*} parentKey the parent key.  Specify null if fetching children from the root.
+ * @param {any} parentKey the parent key.  Specify null if fetching children from the root.
  * @param {Object} range information about the range, it must contain the following properties: start, count.
  * @param {number} range.start the start index of the range in which the children are fetched.
  * @param {number} range.count the size of the range in which the children are fetched.  
@@ -558,7 +558,7 @@ oj.JsonTreeDataSource.prototype.fetchChildren = function(parentKey, range, callb
 
 /**
  * Fetch all children and their children recursively from a specified parent.
- * @param {*} parentKey the parent key.  Specify null to fetch everything from the root (i.e. expand all)
+ * @param {any} parentKey the parent key.  Specify null to fetch everything from the root (i.e. expand all)
  * @param {Object} callbacks the callbacks to be invoke when fetch children operation is completed.  The valid callback
  *        types are "success" and "error".
  * @param {function(oj.JsonNodeSet)} callbacks.success the callback to invoke when fetch completed successfully.
@@ -621,8 +621,8 @@ oj.JsonTreeDataSource.prototype.fetchDescendants = function(parentKey, callbacks
 
 /**
  * Checks whether a move operation is valid.
- * @param {*} rowToMove the key of the row to move
- * @param {*} referenceRow the key of the reference row which combined with position are used to determine 
+ * @param {any} rowToMove the key of the row to move
+ * @param {any} referenceRow the key of the reference row which combined with position are used to determine 
  *        the destination of where the row should moved to.
  * @param {number|string} position The position of the moved row relative to the reference row.  
  *        This can be a string: "before", "after", "inside", "first", "last", or the zero based index to position 
@@ -640,8 +640,8 @@ oj.JsonTreeDataSource.prototype.moveOK = function(rowToMove, referenceRow, posit
 
 /**
  * Moves a node from one location to another (different position within the same parent or a completely different parent)
- * @param {*} nodeToMove the key of the node to move
- * @param {*} referenceNode the key of the reference node which combined with position are used to determine 
+ * @param {any} nodeToMove the key of the node to move
+ * @param {any} referenceNode the key of the reference node which combined with position are used to determine 
  *        the destination of where the node should moved to.
  * @param {number|string} position The position of the moved node relative to the reference node.  
  *        This can be a string: "before", "after", "inside", "first", "last", or the zero based index to position 
@@ -747,7 +747,7 @@ oj.JsonTreeDataSource.prototype.move = function(nodeToMove, referenceNode, posit
 /**
  * Performs a sort operation on the tree data.
  * @param {Object} criteria the sort criteria.  It must contain the following properties: key, direction
- * @param {*} criteria.key the key identifying the attribute (column) to sort on
+ * @param {any} criteria.key the key identifying the attribute (column) to sort on
  * @param {'ascending'|'descending'|'none'} criteria.direction the sort direction, valid values are "ascending", "descending", "none" (default)
  * @param {Object} callbacks the callbacks for the move function
  * @param {function():void} callbacks.success the callback to invoke when the sort completed successfully.  
@@ -788,7 +788,7 @@ oj.JsonTreeDataSource.prototype.getSortCriteria = function()
 };
 
 /**
- * @param {*} refNodeKey
+ * @param {any} refNodeKey
  * @param {Object=} currNode
  * @return {Object|null} the node with required key value.
  * @private
@@ -839,7 +839,7 @@ oj.JsonTreeDataSource.prototype._getParentById = function(refNodeKey, currNode)
 /**
  * Helper method to traverse through the tree and return the node with required key.
  * @param {Object|null} currChild the start tree node.
- * @param {*|null} parentKey the node key for search.
+ * @param {any|null} parentKey the node key for search.
  * @return {Object|null} the node with required key value.
  * @private
  */

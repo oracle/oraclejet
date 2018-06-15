@@ -191,7 +191,15 @@ oj.__registerWidget("oj.inputBase", $['oj']['editableValue'],
     /** 
      * Dictates component's autocomplete state. 
      * This attribute indicates whether the value of the control can be automatically 
-     * completed by the browser.
+     * completed by the browser. The common values are "on" and "off".
+     * <p>Since this attribute passes through to the input element
+     * unchanged, you can look at the html specs for detailed information for how browsers behave
+     * and what values besides "on" and "off" you can set. The html spec says the default is "on",
+     * so when autocomplete is not explicitly set, the browsers treat it as "on".
+     * </p>
+     * @see {@link https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input}
+     * @see {@link https://caniuse.com/#feat=input-autocomplete-onoff}
+     * @see {@link https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#autofilling-form-controls:-the-autocomplete-attribute}
      * 
      * @example <caption>Initialize component with <code class="prettyprint">autocomplete</code> attribute:</caption>
      * &lt;oj-some-element autocomplete="on">&lt;/oj-some-element>
@@ -202,12 +210,10 @@ oj.__registerWidget("oj.inputBase", $['oj']['editableValue'],
      *
      * // setter
      * myComp.autocomplete = "on";
-     * 
+     * @ojshortdesc Dictates component's autocomplete state.
      * @expose 
      * @type {string}
-     * @ojvalue {string} "on" enable autofill
-     * @ojvalue {string} "off" disable autofill
-     * @alias autocomplete
+     * @ojsignature {target: "Type", value: "'on'|'off'|string", jsdocOverride: true}
      * @default "on"
      * @instance
      * @since 4.0.0
@@ -412,13 +418,20 @@ oj.__registerWidget("oj.inputBase", $['oj']['editableValue'],
     required: false,
 
     /** 
-     * List of validators used by component when performing validation. Each item is either an 
+       * List of validators used by component  along with the implicit component validators 
+       * when performing validation. Each item is either an
      * instance that duck types {@link oj.Validator}, or is an Object literal containing the 
-     * properties listed below. Implicit validators created by a component when certain attributes 
-     * are present (e.g. <code class="prettyprint">required</code> attribute), are separate from 
-     * validators specified through this attribute. At runtime when the component runs validation, it 
-     * combines the implicit validators with the list specified through this attribute. 
-     * <p>
+       * properties listed below.
+       * <p> 
+       * Implicit validators are created by the element when certain attributes are present. 
+       * For example, if the <code class="prettyprint">required</code> attribute
+       * is set, an implicit {@link oj.RequiredValidator} is created.
+       * At runtime when the component runs validation, it
+       * combines all the implicit validators with all the validators 
+       * specified through this <code class="prettyprint">validators</code> attribute, and 
+       * runs all of them.
+       * </p>
+       * <p>
      * Hints exposed by validators are shown in the notewindow by default, or as determined by the 
      * 'validatorHint' property set on the <code class="prettyprint">display-options</code> 
      * attribute. 
@@ -501,8 +514,10 @@ oj.__registerWidget("oj.inputBase", $['oj']['editableValue'],
      * @access public
      * @instance
      * @memberof oj.inputBase
-     * @ojsignature  { target: "Type", value: "Array<oj.Validator<V>|oj.Validation.FactoryRegisteredValidatorOrConverter>|null"}
-     * @type {Array|null}
+     * @ojsignature  { target: "Type", 
+     *   value: "Array<oj.Validator<V>|oj.Validation.FactoryRegisteredValidatorOrConverter>|null",
+     *  jsdocOverride: true}
+     * @type {Array.<Object>|null}
      */    
     validators: undefined
   },
@@ -1860,6 +1875,7 @@ oj.__registerWidget("oj.ojInputText", $['oj']['inputBase'],
      * @default false
      * @type {boolean}
      * @public
+     * @deprecated {since: "5.1.0", description: "This attribute is deprecated, instead use the global html attribute."}
      * @ojextension {_ATTRIBUTE_ONLY: true, _COPY_TO_INNER_ELEM: true}
      */
     spellcheck: false,
@@ -2485,6 +2501,7 @@ oj.__registerWidget("oj.ojTextArea", $['oj']['inputBase'],
      * @instance
      * @memberof! oj.ojTextArea
      * @default false
+     * @deprecated {since: "5.1.0", description: "This attribute is deprecated, instead use the global html attribute."}
      * @type {boolean}
      * @ojextension {_ATTRIBUTE_ONLY: true, _COPY_TO_INNER_ELEM: true}
      */
@@ -2623,7 +2640,6 @@ var inputBaseMeta = {
   "properties": {
     "autocomplete": {
       "type": "string",
-      "enumValues": ["off", "on"],
       "extension": {
         _COPY_TO_INNER_ELEM: true
       }

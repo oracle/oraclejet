@@ -31,6 +31,36 @@ define(['../persistenceUtils', './logger'], function (persistenceUtils, logger) 
       value: null,
       writable: true
     });
+    Object.defineProperty(this, 'onabort', {
+      value: null,
+      enumerable: true,
+      writable: true
+    });
+    Object.defineProperty(this, 'onerror', {
+      value: null,
+      enumerable: true,
+      writable: true
+    });
+    Object.defineProperty(this, 'onload', {
+      value: null,
+      enumerable: true,
+      writable: true
+    });
+    Object.defineProperty(this, 'onloadend', {
+      value: null,
+      enumerable: true,
+      writable: true
+    });
+    Object.defineProperty(this, 'onloadstart', {
+      value: null,
+      enumerable: true,
+      writable: true
+    });
+    Object.defineProperty(this, 'onprogress', {
+      value: null,
+      enumerable: true,
+      writable: true
+    });
     Object.defineProperty(this, 'onreadystatechange', {
       value: null,
       enumerable: true,
@@ -74,7 +104,7 @@ define(['../persistenceUtils', './logger'], function (persistenceUtils, logger) 
       writable: true
     });
     Object.defineProperty(this, '_responseText', {
-      value: null,
+      value: '',
       writable: true
     });
     Object.defineProperty(this, 'responseText', {
@@ -308,7 +338,9 @@ define(['../persistenceUtils', './logger'], function (persistenceUtils, logger) 
     function appendResponseHeader(responseHeader) {
       responseHeaders += responseHeader + ': ' + self._responseHeaders[responseHeader] + '\r\n';
     }
-    Object.keys(this._responseHeaders).forEach(appendResponseHeader);
+    if (this._responseHeaders) {
+      Object.keys(this._responseHeaders).forEach(appendResponseHeader);
+    }
 
     return responseHeaders;
   };
@@ -353,17 +385,54 @@ define(['../persistenceUtils', './logger'], function (persistenceUtils, logger) 
         listener.handleEvent(event);
       }
     });
+    switch(type) {
+      case 'abort':
+        if (this.onabort) {
+          this.onabort(event);
+        }
+        break;
+      case 'error':
+        if (this.onerror) {
+          this.onerror(event);
+        }
+        break;
+      case 'load':
+        if (this.onload) {
+          this.onload(event);
+        }
+        break;
+      case 'loadend':
+        if (this.onloadend) {
+          this.onloadend(event);
+        }
+        break;
+      case 'loadstart':
+        if (this.onloadstart) {
+          this.onloadstart(event);
+        }
+        break;
+      case 'progress':
+        if (this.onprogress) {
+          this.onprogress(event);
+        }
+        break;
+      case 'readystatechange':
+        if (this.onreadystatechange) {
+          this.onreadystatechange(event);
+        }
+        break;
+       case 'timeout':
+        if (this.ontimeout) {
+          this.ontimeout(event);
+        }
+        break;
+    }
 
     return !!event.defaultPrevented;
   };
 
   function _readyStateChange(self, state) {
     self._readyState = state;
-
-    if (typeof self.onreadystatechange == 'function') {
-      self.onreadystatechange(new PersistenceXMLHttpRequestEvent('readystatechange'));
-    }
-
     self.dispatchEvent(new PersistenceXMLHttpRequestEvent('readystatechange'));
 
     if (self._readyState == PersistenceXMLHttpRequest.DONE) {

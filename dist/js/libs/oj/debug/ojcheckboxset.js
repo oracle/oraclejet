@@ -330,7 +330,7 @@ oj.__registerWidget("oj.ojCheckboxset", $['oj']['editableValue'],
      * @access public
      * @instance
      * @memberof oj.ojCheckboxset
-     * @type {Array.<*>}
+     * @type {Array.<any>}
      */
     value: []
   },
@@ -580,10 +580,11 @@ oj.__registerWidget("oj.ojCheckboxset", $['oj']['editableValue'],
    * @protected
    * @since 5.0.0
    */
-  GetFocusElement : function ()
-  {
-    // We need :focusable here so that we don't try to focus on an element that isn't focusable.
-    return this._GetContentElement().filter(":focusable").first()[0];
+  GetFocusElement: function () {
+    // We need :disabled here so that we don't try to focus on an element that isn't focusable.
+    // :focusable doesn't work because this is called before the custom element is fully upgraded
+    // and is still hidden in the DOM.
+    return this._GetContentElement().not(':disabled').first()[0];
   },
   /**
    * Sets the disabled option onto the dom.
@@ -708,6 +709,8 @@ oj.__registerWidget("oj.ojCheckboxset", $['oj']['editableValue'],
       label = document.createElement("label");
       span.setAttribute("class", "oj-choice-item");
       checkbox.setAttribute("type", "checkbox");
+      // The value is needed for accessibiliy of the image used for the checkbox
+      checkbox.setAttribute('value', ojoption.value);
       checkbox.setAttribute("id", checkboxId);
       label.setAttribute("for", checkboxId);
       
@@ -1124,7 +1127,7 @@ oj.__registerWidget("oj.ojCheckboxset", $['oj']['editableValue'],
    * @override
    * @protected
    * @memberof oj.ojCheckboxset
-   * @return {*} Returns the value property of the associated oj-option, or the value attribute of the checkbox element.
+   * @return {any} Returns the value property of the associated oj-option, or the value attribute of the checkbox element.
    */
   _GetOptionValue : function (checkboxElem)
   {

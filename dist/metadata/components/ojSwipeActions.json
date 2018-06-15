@@ -1,0 +1,131 @@
+{
+  "name": "oj-swipe-actions",
+  "version": "5.1.0",
+  "jetVersion": "5.1.0",
+  "displayName": "Swipe Actions",
+  "preview": true,
+  "styleClasses": [
+    {
+      "styleGroup": [
+        "oj-swipeactions-container"
+      ],
+      "description": "Designed for use with item in oj-list-view that contains the oj-swipe-actions element, specifically this will remove the padding around the content of the item so that the swipe actions can take the full height.\nIs applied to the root of each item in oj-list-view containing the oj-swipe-actions element."
+    },
+    {
+      "styleGroup": [
+        "oj-swipeactions-neutral"
+      ],
+      "description": "Designed for use with an action item that shows more available actions that users can perform.\nIs applied to the \"oj-option\" element that represents the action item."
+    },
+    {
+      "styleGroup": [
+        "oj-swipeactions-attention"
+      ],
+      "description": "Designed for use with an action item that tags the associated item in oj-list-view.\nIs applied to the \"oj-option\" element that represents the action item."
+    },
+    {
+      "styleGroup": [
+        "oj-swipeactions-danger"
+      ],
+      "description": "Designed for use with an action item that performs an explicit action like deleting the associated item in oj-list-view.\nIs applied to the \"oj-option\" element that represents the action item."
+    },
+    {
+      "styleGroup": [
+        "oj-swipeactions-default"
+      ],
+      "description": "Designed for use with an action item that should get all the space when user swipes pass the threshold distance. This is usually the last item within the template.\nIs applied to the \"oj-option\" element that represents the default action item."
+    }
+  ],
+  "description": "Adds swipe-to-reveal functionality to elements such as items in ListView.",
+  "properties": {
+    "translations": {
+      "description": "A collection of translated resources from the translation bundle, or null if this\ncomponent has no resources. Resources may be accessed and overridden individually or collectively, as seen in the examples. If the component does not contain any translatable resource, the default value of this attribute will be \nnull. If not, an object containing all resources relevant to the component.\n\nIf this component has translations, their documentation immediately follows this doc entry.",
+      "type": "Object|null",
+      "displayName": "Translations",
+      "translatable": true,
+      "properties": {
+        "ariaHideActionsDescription": {
+          "description": "Label assigned to an anchor tag used for hidding start/end swipe actions using keyboard or accessibility agents such as VoiceOver.",
+          "type": "string",
+          "value": "Hide actions"
+        },
+        "ariaShowEndActionsDescription": {
+          "description": "Label assigned to an anchor tag used for showing end swipe actions using keyboard or accessibility agents such as VoiceOver.",
+          "type": "string",
+          "value": "Show end actions"
+        },
+        "ariaShowStartActionsDescription": {
+          "description": "Label assigned to an anchor tag used for showing start swipe actions using keyboard or accessibility agents such as VoiceOver.",
+          "type": "string",
+          "value": "Show start actions"
+        }
+      }
+    }
+  },
+  "methods": {
+    "refresh": {
+      "description": "Re-initialize the swipe actions.",
+      "return": "void"
+    },
+    "setProperty": {
+      "description": "Sets a property or a single subproperty for complex properties and notifies the component\nof the change, triggering a [property]Changed event.",
+      "params": [
+        {
+          "name": "property",
+          "description": "The property name to set. Supports dot notation for subproperty access.",
+          "type": "string"
+        },
+        {
+          "name": "value",
+          "description": "The new value to set the property to.",
+          "type": "any"
+        }
+      ],
+      "return": "void"
+    },
+    "getProperty": {
+      "description": "Retrieves a value for a property or a single subproperty for complex properties.",
+      "params": [
+        {
+          "name": "property",
+          "description": "The property name to get. Supports dot notation for subproperty access.",
+          "type": "string"
+        }
+      ],
+      "return": "any"
+    },
+    "setProperties": {
+      "description": "Performs a batch set of properties.",
+      "params": [
+        {
+          "name": "properties",
+          "description": "An object containing the property and value pairs to set.",
+          "type": "Object"
+        }
+      ],
+      "return": "void"
+    }
+  },
+  "events": {
+    "ojAction": {
+      "description": "Triggered when an action item is selected or when the default action is triggered."
+    }
+  },
+  "slots": {
+    "": {
+      "description": "When using SwipeActions within ListView, any content for the item in ListView should be added as child element in SwipeActions.",
+      "displayName": "default"
+    },
+    "contextMenu": {
+      "description": "The contextMenu slot is set on the oj-menu within this element. \nThis is used to designate the JET Menu that this component should launch as a context menu on right-click, Shift-F10, Press & Hold, or component-specific gesture. \nIf specified, the browser's native context menu will be replaced by the JET Menu specified in this slot.\n\nThe application can register a listener for the Menu's ojBeforeOpen event. The listener can cancel the launch via event.preventDefault(), \nor it can customize the menu contents by editing the menu DOM directly, and then calling refresh() on the Menu.\n\nTo help determine whether it's appropriate to cancel the launch or customize the menu, the ojBeforeOpen listener can use component API's to determine which \ntable cell, chart item, etc., is the target of the context menu. See the JSDoc and demos of the individual components for details. \n\nKeep in mind that any such logic must work whether the context menu was launched via right-click, Shift-F10, Press & Hold, or component-specific touch gesture."
+    },
+    "end": {
+      "description": "The end slot is used to specify the action bar that appears when user swipes from end to start on its container. The slot must be a <template> element. \n\nWhen the template is executed, it will have access to the parent binding context. For example, in the case of ListView, $current should return the data of the row containing the swipe actions.",
+      "preview": true
+    },
+    "start": {
+      "description": "The start slot is used to specify the options to appears when user swipes from start to end on its container. The slot must be a <template> element. \n\nWhen the template is executed, it will have access to the parent binding context. For example, in the case of ListView, $current should return the data of the row containing the swipe actions.",
+      "preview": true
+    }
+  }
+}

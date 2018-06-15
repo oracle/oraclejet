@@ -1386,7 +1386,7 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
      * @memberof oj.editableValue
      * @instance
      * @public
-     * @type {Object.<string, string>}
+     * @type {Object}
      * @default {'help' : {'instruction': null}}
      * @since 0.7
      */
@@ -1472,7 +1472,7 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
      * @memberof oj.editableValue
      * @ojtranslatable
      * @instance
-     * @type {Object.<string, string>}
+     * @type {Object}
      * @default {'definition': "", 'source': ""}
      * @since 4.1.0
      */

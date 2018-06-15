@@ -3167,6 +3167,13 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
       if(item.hasClass(this.getRemovableStyleClass()))
         this._fireRemoveEvent(event, item);
     },
+    _wrapInner: function (ele, wrapper) {
+      var children = ele.childNodes;
+      while (children.length > 0) {
+        wrapper.appendChild(children[0]);
+      }
+      ele.appendChild(wrapper);
+    },
     /**
      * Called by content handler once the content of an item is rendered
      * @param {Element} elem the item element
@@ -3174,6 +3181,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
      */
     itemRenderComplete: function (elem, context) {
       var $item = $(elem);
+      
       if ($item.hasClass(this.getCategoryDividerStyleClass())) {
         $item.removeClass(this.getItemElementStyleClass());
         $item.removeClass(this.getFocusedElementStyleClass());
@@ -3183,12 +3191,14 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
         $item.attr('role', 'separator');
         return;
       }
+      
       var groupItemClass = this.getGroupItemStyleClass();
       var collapseIconClass = this.getCollapseIconStyleClass();
       var expandIconClass = this.getExpandIconStyleClass();
       var itemIconClass = this.getItemIconStyleClass();
       var groupItem = $item.children('.' + groupItemClass);
       var itemContent;
+      
       if (groupItem.length > 0) {
         //Adding oj-navigationlist-item class on group node. Listview does't add this any more.
         groupItem.addClass(this.getItemStyleClass());
@@ -3205,26 +3215,32 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
       } else {
         itemContent = $item.children().first();
       }
-      itemContent.addClass(this.getItemContentStyleClass());
-      var icon = itemContent.wrapInner('<span class="' + this.getItemLabelStyleClass() + '"></span>').find('.' + itemIconClass); //@HTMLUpdateOK
-      if (icon.length > 0) {
-        icon.insertBefore(icon.parent()); // @HTMLUpdateOK
+      
+      if(itemContent.length > 0) {
+        itemContent.addClass(this.getItemContentStyleClass());
+        var icon = itemContent.find('.' + itemIconClass); //@HTMLUpdateOK
+        var itemLabelElement = document.createElement('span');
+        itemLabelElement.classList.add(this.getItemLabelStyleClass());
+        this._wrapInner(itemContent[0], itemLabelElement);
+        
+        if (icon.length > 0) {
+          icon.insertBefore(itemLabelElement); // @HTMLUpdateOK
+          if (icon.attr('title')) { // preserve the title to restore it after destroy.
+            icon.data(this._NAVLIST_ITEM_ICON_HAS_TITLE, icon.attr('title'));
+          }
 
-        if (icon.attr('title')) { // preserve the title to restore it after destroy.
-          icon.data(this._NAVLIST_ITEM_ICON_HAS_TITLE, icon.attr('title'));
+          if (this.ojContext.options['display'] === 'icons') {
+            this.ojContext.element.addClass(this.getIconOnlyStyleClass());
+            var itemLabel = this.getItemLabel($item);
+            icon.attr('aria-label', itemLabel);
+            icon.attr('role', 'img');
+            this._setToolTipOnIcon(icon, itemLabel);
+          }
+
+          $item.closest('ul').addClass(this.getHasIconsStyleClass());
+        } else {
+          itemContent.addClass(this.getHasNoIconStyleClass());
         }
-
-        if (this.ojContext.options['display'] === 'icons') {
-          this.ojContext.element.addClass(this.getIconOnlyStyleClass());
-          var itemLabel = this.getItemLabel($item);
-          icon.attr('aria-label', itemLabel);
-          icon.attr('role', 'img');
-          this._setToolTipOnIcon(icon, itemLabel);
-        }
-
-        $item.closest('ul').addClass(this.getHasIconsStyleClass());
-      } else {
-        itemContent.addClass(this.getHasNoIconStyleClass());
       }
 
       if ($item.hasClass('oj-disabled')) {
@@ -3246,11 +3262,25 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
         $item.append(removableLink); // @HTMLUpdateOK
         itemContent.attr('aria-describedby', removableLink.uniqueId().attr('id'));
       }
+      
       this.m_listHandler.ModifyListItem($item, itemContent);
       _ojNavigationListView.superclass.itemRenderComplete.apply(this, arguments);
 
     },
-    
+    /**
+     * Destroy the content handler
+     * @protected
+     * @override
+     */
+    DestroyContentHandler: function ()
+    {
+        var data = this.GetOption("data");
+        if (data === null)
+        {
+           this._restoreContent(this.element);
+        }
+        _ojNavigationListView.superclass.DestroyContentHandler.apply(this, arguments);
+    },    
     /**
      * Return node for given locator
      *
@@ -3767,7 +3797,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
        * @public
        * @instance
        * @memberof! oj.ojNavigationList
-       * @type {*}
+       * @type {any}
        * @ojsignature {target:"Type", value:"K"}
        * @default null
        * @ojwriteback
@@ -3904,7 +3934,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
        *   </tbody>
        * </table>  
        * @ojshortdesc Gets and sets the key of the selected item.
-       * @type {*}
+       * @type {any}
        * @ojsignature {target:"Type", value:"K"}
        * @default null
        * @expose
@@ -4157,7 +4187,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
        * @ojcancelable
        * @memberof oj.ojNavigationList
        * @instance
-       * @property {*} key Selected list item <a href="#key-section">Key</a>.
+       * @property {any} key Selected list item <a href="#key-section">Key</a>.
        * @property {Element} item Selected list item.
        */
       beforeSelect: null,
@@ -4172,7 +4202,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
        * @memberof oj.ojNavigationList
        * @instance
        * @ojcancelable
-       * @property {*} key the <a href="#key-section">Key</a> of the item to be collapse
+       * @property {any} key the <a href="#key-section">Key</a> of the item to be collapse
        * @property {Element} item the item to be collapse
        */
       beforeCollapse: null,
@@ -4186,9 +4216,9 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
        * @memberof oj.ojNavigationList
        * @instance
        * @ojcancelable
-       * @property {*} previousKey the <a href="#key-section">Key</a> of the previous item
+       * @property {any} previousKey the <a href="#key-section">Key</a> of the previous item
        * @property {Element} previousItem the previous item
-       * @property {*} key the <a href="#key-section">Key</a> of the new current item
+       * @property {any} key the <a href="#key-section">Key</a> of the new current item
        * @property {Element} item the new current item
        */
       beforeCurrentItem: null,
@@ -4202,7 +4232,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
        * @event
        * @memberof oj.ojNavigationList
        * @instance
-       * @property {*} key The <a href="#key-section">Key</a> of the item that was just collapsed.
+       * @property {any} key The <a href="#key-section">Key</a> of the item that was just collapsed.
        * @property {Element} item The list item that was just collapsed.
        */
       collapse: null,
@@ -4218,7 +4248,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
        * @memberof oj.ojNavigationList
        * @instance
        * @ojcancelable
-       * @property {*} key the <a href="#key-section">Key</a> of the item to be expand
+       * @property {any} key the <a href="#key-section">Key</a> of the item to be expand
        * @property {Element} item the item to be expand
        */
       beforeExpand: null,
@@ -4231,7 +4261,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
        * @event
        * @memberof oj.ojNavigationList
        * @instance
-       * @property {*} key The <a href="#key-section">Key</a> of the item that was just expanded.
+       * @property {any} key The <a href="#key-section">Key</a> of the item that was just expanded.
        * @property {Element} item The list item that was just expanded.
        */
       expand: null,
@@ -4489,6 +4519,16 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
      */
     _NotifyShown: function () {
       this.navlist.notifyShown();
+    },
+    /**
+     * Override to do the delay connect/disconnect
+     * @memberof oj.ojNavigationList
+     * @override
+     * @protected
+     */
+    _VerifyConnectedForSetup: function() 
+    {
+        return true;
     },
     /**
      * Refreshes the visual state of the Navigation List. JET components require a <code class="prettyprint">refresh()</code> after the DOM is
@@ -5265,7 +5305,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
    * @instance
    * @name currentItem
    * @memberof oj.ojTabBar
-   * @type {*}
+   * @type {any}
    * @default null
    * @ojshortdesc Gets and sets the key of the item that should have keyboard focus.
    * @ojwriteback
@@ -5362,7 +5402,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
    *     </tr>
    *   </tbody>
    * </table>
-   * @type {*}
+   * @type {any}
    * @name selection
    * @ojshortdesc Gets and sets the key of the selected item.
    * @default null
@@ -5565,7 +5605,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
    * @name beforeSelect
    * @memberof oj.ojTabBar
    * @instance
-   * @property {*} key Selected list item <a href="#key-section">Key</a>.
+   * @property {any} key Selected list item <a href="#key-section">Key</a>.
    * @property {Element} item Selected list item.
    */
 
@@ -5580,9 +5620,9 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
    * @ojcancelable
    * @name beforeCurrentItem
    * @instance
-   * @property {*} previousKey the <a href="#key-section">Key</a> of the previous item
+   * @property {any} previousKey the <a href="#key-section">Key</a> of the previous item
    * @property {Element} previousItem the previous item
-   * @property {*} key the <a href="#key-section">Key</a> of the new current item
+   * @property {any} key the <a href="#key-section">Key</a> of the new current item
    * @property {Element} item the new current item
    */
   /**
@@ -5597,9 +5637,9 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
    * @ojstatus preview
    * @since 4.1.0
    * @instance
-   * @property {*} fromKey the <a href="#key-section">Key</a> of the tab item being navigated from
+   * @property {any} fromKey the <a href="#key-section">Key</a> of the tab item being navigated from
    * @property {Element} fromItem the tab item being navigated from
-   * @property {*} toKey the <a href="#key-section">Key</a> of the tab item being navigated to
+   * @property {any} toKey the <a href="#key-section">Key</a> of the tab item being navigated to
    * @property {Element} toItem the tab item being navigated to
    */
   /**
@@ -5612,9 +5652,9 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
    * @ojstatus preview
    * @since 4.1.0
    * @instance
-   * @property {*} fromKey the <a href="#key-section">Key</a> of the tab item being navigated from
+   * @property {any} fromKey the <a href="#key-section">Key</a> of the tab item being navigated from
    * @property {Element} fromItem the tab item being navigated from
-   * @property {*} toKey the <a href="#key-section">Key</a> of the tab item being navigated to
+   * @property {any} toKey the <a href="#key-section">Key</a> of the tab item being navigated to
    * @property {Element} toItem the tab item being navigated to
    */
   /**
@@ -5630,7 +5670,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
    * @since 4.1.0
    * @instance
    * @property {Element} item Item being removed
-   * @property {*} key <a href="#key-section">Key</a> of the item being removed
+   * @property {any} key <a href="#key-section">Key</a> of the item being removed
    */
   /**
    * Triggered immediately after a tab is removed. This should be used to remove item from dom or from data source.
@@ -5643,7 +5683,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
    * @since 4.1.0
    * @instance
    * @property {Element} item Item removed
-   * @property {*} key <a href="#key-section">Key</a> of the item removed
+   * @property {any} key <a href="#key-section">Key</a> of the item removed
    */
   /**
    * Triggered after reordering items within tabbar via drag and drop or cut and paste. This should be used to reorder item in dom or data source.

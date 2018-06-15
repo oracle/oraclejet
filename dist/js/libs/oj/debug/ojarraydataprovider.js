@@ -29,6 +29,7 @@ var ArrayDataProvider = /** @class */ (function () {
         this._SIZE = 'size';
         this._IDATTRIBUTE = 'idAttribute';
         this._IMPLICITSORT = 'implicitSort';
+        this._KEYATTRIBUTES = 'keyAttributes';
         this._SORTCOMPARATORS = 'sortComparators';
         this._COMPARATORS = 'comparators';
         this._COMPARATOR = 'comparator';
@@ -313,93 +314,124 @@ var ArrayDataProvider = /** @class */ (function () {
             // subscribe to observableArray arrayChange event to get individual updates
             var self = this;
             data['subscribe'](function (changes) {
-                var i, id, dataArray = [], keyArray = [], indexArray = [], metadataArray = [], afterKeyArray = [];
-                // first see if we have deletes and adds. If we do then just do a refresh
-                var foundDelete = false;
-                var foundAdd = false;
-                var dispatchRefreshEvent = false;
+                var i, j, id, index, status, dataArray = [], keyArray = [], indexArray = [], metadataArray = [], afterKeyArray = [];
+                var updatedIndexes = [];
+                var operationUpdateEventDetail = null;
+                var operationAddEventDetail = null;
+                var operationRemoveEventDetail = null;
+                // squash deletes and adds into updates
+                var removeDuplicate = [];
                 for (i = 0; i < changes.length; i++) {
-                    if (changes[i]['status'] === 'deleted') {
-                        foundDelete = true;
-                        break;
-                    }
-                }
-                for (i = 0; i < changes.length; i++) {
-                    if (changes[i]['status'] === 'added') {
-                        foundAdd = true;
-                        break;
-                    }
-                }
-                if (foundAdd && foundDelete) {
-                    dispatchRefreshEvent = true;
-                }
-                if (foundDelete) {
-                    for (i = 0; i < changes.length; i++) {
-                        if (changes[i]['status'] === 'deleted') {
-                            keyArray.push(self._getKeys()[changes[i].index]);
-                            dataArray.push(changes[i].value);
-                            indexArray.push(changes[i].index);
+                    index = changes[i].index;
+                    status = changes[i].status;
+                    for (j = 0; j < changes.length; j++) {
+                        if (j != i &&
+                            index === changes[j].index &&
+                            status !== changes[j]['status'] &&
+                            updatedIndexes.indexOf(i) < 0 &&
+                            removeDuplicate.indexOf(i) < 0) {
+                            if (status === 'deleted') {
+                                removeDuplicate.push(i);
+                                updatedIndexes.push(j);
+                            }
+                            else {
+                                removeDuplicate.push(j);
+                                updatedIndexes.push(i);
+                            }
                         }
                     }
-                    if (keyArray.length > 0) {
-                        keyArray.map(function (key) {
-                            var keyIndex = self._getKeys().indexOf(key);
-                            self._keys.splice(keyIndex, 1);
-                        });
-                    }
-                    if (keyArray.length > 0 && !dispatchRefreshEvent) {
-                        metadataArray = keyArray.map(function (value) {
-                            return new self.ItemMetadata(self, value);
-                        });
-                        var keySet_1 = new Set();
-                        keyArray.map(function (key) {
-                            keySet_1.add(key);
-                        });
-                        var operationEventDetail = new self.DataProviderOperationEventDetail(self, keySet_1, metadataArray, dataArray, indexArray);
-                        var mutationEventDetail = new self.DataProviderMutationEventDetail(self, null, operationEventDetail, null);
-                        self._mutationEvent = new oj.DataProviderMutationEvent(mutationEventDetail);
-                    }
                 }
-                if (foundAdd) {
-                    for (i = 0; i < changes.length; i++) {
-                        if (changes[i]['status'] === 'added') {
-                            self._generateKeysIfNeeded();
-                            id = self._getId(changes[i].value);
-                            if (id == null) {
-                                id = self._getKeys()[changes[i].index];
-                            }
-                            if (id == null) {
-                                id = self._sequenceNum++;
-                                self._keys.splice(changes[i].index, 0, id);
-                            }
-                            if (self._getKeys().indexOf(id) == -1) {
-                                self._keys.splice(changes[i].index, 0, id);
-                            }
-                            keyArray.push(id);
-                            var afterKey = self._getKeys()[changes[i].index + 1];
-                            afterKey = afterKey == null ? '' : afterKey;
-                            afterKeyArray.push(afterKey);
-                            dataArray.push(changes[i].value);
-                            indexArray.push(changes[i].index);
+                for (i = 0; i < changes.length; i++) {
+                    if (updatedIndexes.indexOf(i) >= 0) {
+                        var key = self._getKeys()[changes[i].index];
+                        var updatedKey = self._getId(changes[i].value);
+                        if (updatedKey != null &&
+                            !oj.Object.compareValues(updatedKey, key)) {
+                            key = updatedKey;
+                            self._getKeys()[changes[i].index] = key;
                         }
-                    }
-                    if (keyArray.length > 0 && !dispatchRefreshEvent) {
-                        metadataArray = keyArray.map(function (value) {
-                            return new self.ItemMetadata(self, value);
-                        });
-                        var keySet_2 = new Set();
-                        keyArray.map(function (key) {
-                            keySet_2.add(key);
-                        });
-                        var afterKeySet_1 = new Set();
-                        afterKeyArray.map(function (key) {
-                            afterKeySet_1.add(key);
-                        });
-                        var operationEventDetail = new self.DataProviderAddOperationEventDetail(self, keySet_2, afterKeySet_1, metadataArray, dataArray, indexArray);
-                        var mutationEventDetail = new self.DataProviderMutationEventDetail(self, operationEventDetail, null, null);
-                        self._mutationEvent = new oj.DataProviderMutationEvent(mutationEventDetail);
+                        keyArray.push(key);
+                        dataArray.push(changes[i].value);
+                        indexArray.push(changes[i].index);
                     }
                 }
+                if (keyArray.length > 0) {
+                    metadataArray = keyArray.map(function (value) {
+                        return new self.ItemMetadata(self, value);
+                    });
+                    var keySet_1 = new Set();
+                    keyArray.map(function (key) {
+                        keySet_1.add(key);
+                    });
+                    operationUpdateEventDetail = new self.DataProviderOperationEventDetail(self, keySet_1, metadataArray, dataArray, indexArray);
+                }
+                dataArray = [], keyArray = [], indexArray = [];
+                for (i = 0; i < changes.length; i++) {
+                    if (changes[i]['status'] === 'deleted' &&
+                        updatedIndexes.indexOf(i) < 0 &&
+                        removeDuplicate.indexOf(i) < 0) {
+                        keyArray.push(self._getKeys()[changes[i].index]);
+                        dataArray.push(changes[i].value);
+                        indexArray.push(changes[i].index);
+                    }
+                }
+                if (keyArray.length > 0) {
+                    keyArray.map(function (key) {
+                        var keyIndex = self._getKeys().indexOf(key);
+                        self._keys.splice(keyIndex, 1);
+                    });
+                }
+                if (keyArray.length > 0) {
+                    metadataArray = keyArray.map(function (value) {
+                        return new self.ItemMetadata(self, value);
+                    });
+                    var keySet_2 = new Set();
+                    keyArray.map(function (key) {
+                        keySet_2.add(key);
+                    });
+                    operationRemoveEventDetail = new self.DataProviderOperationEventDetail(self, keySet_2, metadataArray, dataArray, indexArray);
+                }
+                dataArray = [], keyArray = [], indexArray = [];
+                for (i = 0; i < changes.length; i++) {
+                    if (changes[i]['status'] === 'added' &&
+                        updatedIndexes.indexOf(i) < 0 &&
+                        removeDuplicate.indexOf(i) < 0) {
+                        self._generateKeysIfNeeded();
+                        id = self._getId(changes[i].value);
+                        if (id == null) {
+                            id = self._getKeys()[changes[i].index];
+                        }
+                        if (id == null) {
+                            id = self._sequenceNum++;
+                            self._keys.splice(changes[i].index, 0, id);
+                        }
+                        if (self._getKeys().indexOf(id) == -1) {
+                            self._keys.splice(changes[i].index, 0, id);
+                        }
+                        keyArray.push(id);
+                        var afterKey = self._getKeys()[changes[i].index + 1];
+                        afterKey = afterKey == null ? '' : afterKey;
+                        afterKeyArray.push(afterKey);
+                        dataArray.push(changes[i].value);
+                        indexArray.push(changes[i].index);
+                    }
+                }
+                if (keyArray.length > 0) {
+                    metadataArray = keyArray.map(function (value) {
+                        return new self.ItemMetadata(self, value);
+                    });
+                    var keySet_3 = new Set();
+                    keyArray.map(function (key) {
+                        keySet_3.add(key);
+                    });
+                    var afterKeySet_1 = new Set();
+                    afterKeyArray.map(function (key) {
+                        afterKeySet_1.add(key);
+                    });
+                    operationAddEventDetail = new self.DataProviderAddOperationEventDetail(self, keySet_3, afterKeySet_1, metadataArray, dataArray, indexArray);
+                }
+                var mutationEventDetail = new self.DataProviderMutationEventDetail(self, operationAddEventDetail, operationRemoveEventDetail, operationUpdateEventDetail);
+                self._mutationEvent = new oj.DataProviderMutationEvent(mutationEventDetail);
             }, null, 'arrayChange');
             data['subscribe'](function (changes) {
                 if (self._mutationEvent) {
@@ -423,13 +455,13 @@ var ArrayDataProvider = /** @class */ (function () {
      */
     ArrayDataProvider.prototype._generateKeysIfNeeded = function () {
         if (this._keys == null) {
-            var idAttribute = this.options != null ? this.options[this._IDATTRIBUTE] : null;
+            var keyAttributes = this.options != null ? (this.options[this._KEYATTRIBUTES] || this.options[this._IDATTRIBUTE]) : null;
             this._keys = [];
             var rowData = this._getRowData();
             var id = void 0, i = 0;
             for (i = 0; i < rowData.length; i++) {
                 id = this._getId(rowData[i]);
-                if (id == null || idAttribute == '@index') {
+                if (id == null || keyAttributes == '@index') {
                     id = this._sequenceNum++;
                 }
                 this._keys[i] = id;
@@ -443,20 +475,20 @@ var ArrayDataProvider = /** @class */ (function () {
      */
     ArrayDataProvider.prototype._getId = function (row) {
         var id;
-        var idAttribute = this.options != null ? this.options[this._IDATTRIBUTE] : null;
-        if (idAttribute != null) {
-            if (Array.isArray(idAttribute)) {
+        var keyAttributes = this.options != null ? (this.options[this._KEYATTRIBUTES] || this.options[this._IDATTRIBUTE]) : null;
+        if (keyAttributes != null) {
+            if (Array.isArray(keyAttributes)) {
                 var i;
                 id = [];
-                for (i = 0; i < idAttribute.length; i++) {
-                    id[i] = this._getVal(row, idAttribute[i]);
+                for (i = 0; i < keyAttributes.length; i++) {
+                    id[i] = this._getVal(row, keyAttributes[i]);
                 }
             }
-            else if (idAttribute == '@value') {
+            else if (keyAttributes == '@value') {
                 id = this._getAllVals(row);
             }
             else {
-                id = this._getVal(row, idAttribute);
+                id = this._getVal(row, keyAttributes);
             }
             return id;
         }
@@ -546,7 +578,7 @@ var ArrayDataProvider = /** @class */ (function () {
         var self = this;
         return function (x, y) {
             var sortComparators = self.options != null ? self.options[self._SORTCOMPARATORS] : null;
-            var i, direction, attribute, comparator;
+            var i, direction, attribute, comparator, xval, yval;
             for (i = 0; i < sortCriteria.length; i++) {
                 direction = sortCriteria[i][self._DIRECTION];
                 attribute = sortCriteria[i][self._ATTRIBUTE];
@@ -554,17 +586,19 @@ var ArrayDataProvider = /** @class */ (function () {
                 if (sortComparators != null) {
                     comparator = sortComparators[self._COMPARATORS].get(attribute);
                 }
+                xval = self._getVal(x.value, attribute);
+                yval = self._getVal(y.value, attribute);
                 if (comparator != null) {
                     var descendingResult = direction == 'descending' ? -1 : 1;
-                    var comparatorResult = comparator(x.value[attribute], y.value[attribute]) * descendingResult;
+                    var comparatorResult = comparator(xval, yval) * descendingResult;
                     if (comparatorResult != 0) {
                         return comparatorResult;
                     }
                 }
                 else {
                     var compareResult = 0;
-                    var strX = (typeof x.value[attribute] === 'string') ? x.value[attribute] : new String(x.value[attribute]);
-                    var strY = (typeof y.value[attribute] === 'string') ? y.value[attribute] : new String(y.value[attribute]);
+                    var strX = (typeof xval === 'string') ? xval : (new String(xval)).toString();
+                    var strY = (typeof yval === 'string') ? yval : (new String(yval)).toString();
                     if (direction == 'ascending') {
                         compareResult = strX.localeCompare(strY, undefined, { 'numeric': true, 'sensitivity': 'base' });
                     }
@@ -673,8 +707,13 @@ oj.EventTargetMixin.applyMixin(ArrayDataProvider);
  * @param {Object=} options Options for the ArrayDataProvider
  * @param {oj.SortComparators=} options.sortComparators Optional {@link oj.sortComparator} to use for sort.
  * @param {Array.<oj.SortCriterion>=} options.implicitSort Optional array of {@link oj.sortCriterion} used to specify sort information when the data loaded into the dataprovider is already sorted.
- * @param {(Array|function():Array)=} options.keys Optional keys for the data. If not supplied, then the keys are generated according options.idAttribute. If that is also not supplied then index is used as key. 
- * @param {(string | Array.<string>)=} options.idAttribute Optionally the field name which stores the id in the data. Can be a string denoting a single key attribute or an array
+ * @param {(Array|function():Array)=} options.keys Optional keys for the data. If not supplied, then the keys are generated according options.keyAttributes. If that is also not supplied then index is used as key. 
+ * @param {(string | Array.<string>)=} options.idAttribute <span class="important">Deprecated: this option is deprecated and will be removed in the future.
+ *                                                  Please use the keyAttributes option instead.</span><br><br>
+ *                                                  Optionally the field name which stores the id in the data. Can be a string denoting a single key attribute or an array
+ *                                                  of strings for multiple key attributes. @index causes ArrayDataProvider to use index as key and @value will cause ArrayDataProvider to
+ *                                                  use all attributes as key. @index is the default.
+ * @param {(string | Array.<string>)=} options.keyAttributes Optionally the field name which stores the key in the data. Can be a string denoting a single key attribute or an array
  *                                                  of strings for multiple key attributes. @index causes ArrayDataProvider to use index as key and @value will cause ArrayDataProvider to
  *                                                  use all attributes as key. @index is the default.
  * @ojsignature [{target: "Type",
@@ -691,7 +730,7 @@ oj.EventTargetMixin.applyMixin(ArrayDataProvider);
  *                  {DepartmentId: 20, DepartmentName: 'Marketing', LocationId: 200},
  *                  {DepartmentId: 30, DepartmentName: 'Purchasing', LocationId: 200}];
  * // Then create an ArrayDataProvider object with the array
- * var dataprovider = new oj.ArrayDataProvider(deptArray, {idAttribute: 'DepartmentId'});
+ * var dataprovider = new oj.ArrayDataProvider(deptArray, {keyAttributes: 'DepartmentId'});
  */
 
 /**

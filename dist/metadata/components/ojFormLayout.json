@@ -1,10 +1,10 @@
 {
   "name": "oj-form-layout",
-  "version": "5.0.0",
-  "jetVersion": "5.0.0",
+  "version": "5.1.0",
+  "jetVersion": "5.1.0",
   "displayName": "Form Layout",
   "preview": true,
-  "description": "Used to group child input controls in an organized layout that can be optimized for multiple display sizes.",
+  "description": "Used to group child elements in an organized layout that can be optimized for multiple display sizes.",
   "properties": {
     "direction": {
       "description": "Specifies the layout direction of the form layout children.",
@@ -91,7 +91,7 @@
         {
           "name": "value",
           "description": "The new value to set the property to.",
-          "type": "*"
+          "type": "any"
         }
       ],
       "return": "void"
@@ -105,7 +105,7 @@
           "type": "string"
         }
       ],
-      "return": "*"
+      "return": "any"
     },
     "setProperties": {
       "description": "Performs a batch set of properties.",

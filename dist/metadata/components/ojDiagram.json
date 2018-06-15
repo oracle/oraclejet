@@ -1,7 +1,7 @@
 {
   "name": "oj-diagram",
-  "version": "5.0.0",
-  "jetVersion": "5.0.0",
+  "version": "5.1.0",
+  "jetVersion": "5.1.0",
   "displayName": "Diagram",
   "preview": true,
   "roles": [
@@ -409,33 +409,79 @@
       "displayName": "Node Properties",
       "value": null,
       "properties": {
+        "showDisclosure": {
+          "description": "Determines when to display the expand/collapse button.Supported values are \"on\", \"off\". Default value is \"on\".",
+          "type": "string"
+        },
         "labelStyle": {
-          "description": "The CSS style object defining the style of the link label. The CSS max-width property can be used to truncate labels.",
+          "description": "The CSS style object defining the style of the node label.",
           "type": "object"
         },
-        "color": {
-          "description": "Link color.",
-          "type": "string"
-        },
-        "svgStyle": {
-          "description": "The SVG CSS style object defining link style. The style class and style object will be applied directly on the link and override any other styling specified through the properties.",
-          "type": "object"
-        },
-        "svgClassName": {
-          "description": "The SVG CSS style class defining link style. The style class and style object will be applied directly on the link and override any other styling specified through the properties.",
-          "type": "string"
-        },
-        "width": {
-          "description": "Link width in pixels.",
-          "type": "number"
-        },
-        "startConnectorType": {
-          "description": "Specifies the type of start connector on the link. Supported values are \"arrowOpen\", \"arrow\", \"arrowConcave\", \"circle\", \"rectangle\", \"rectangleRounded\", \"none\". Default value is \"none\".",
-          "type": "string"
-        },
-        "endConnectorType": {
-          "description": "Specifies the type of end connector on the link. Supported values are \"arrowOpen\", \"arrow\", \"arrowConcave\", \"circle\", \"rectangle\", \"rectangleRounded\", \"none\". Default value is \"none\".",
-          "type": "string"
+        "icon": {
+          "description": "Specifies an icon to be used as a graphical element for the node",
+          "type": "object",
+          "properties": {
+            "borderColor": {
+              "description": "The border color of the icon.",
+              "type": "string"
+            },
+            "borderRadius": {
+              "description": "The border radius of the icon. CSS border-radius values accepted. Note that non-% values (including unitless) get interpreted as 'px'.",
+              "type": "string"
+            },
+            "borderWidth": {
+              "description": "The border width in pixels.",
+              "type": "number"
+            },
+            "color": {
+              "description": "The fill color of the icon.",
+              "type": "string"
+            },
+            "pattern": {
+              "description": "The fill pattern of the icon.Supported values are \"smallChecker\", \"smallCrosshatch\", \"smallDiagonalLeft\", \"smallDiagonalRight\", \"smallDiamond\", \"smallTriangle\", \"largeChecker\", \"largeCrosshatch\", \"largeDiagonalLeft\", \"largeDiagonalRight\", \"largeDiamond\", \"largeTriangle\", \"none\".Default value is \"none\".",
+              "type": "string"
+            },
+            "opacity": {
+              "description": "The opacity of the icon.",
+              "type": "number"
+            },
+            "shape": {
+              "description": "The shape of the icon. Can take the name of a built-in shape or the svg path commands for a custom shape.Supported built-in shapes:\"ellipse\", \"square\", \"plus\", \"diamond\", \"triangleUp\", \"triangleDown\", \"human\", \"rectangle\", \"star\", \"circle\".Default value is \"circle\".",
+              "type": "string"
+            },
+            "source": {
+              "description": "The URI of the node image.",
+              "type": "string"
+            },
+            "sourceHover": {
+              "description": "The optional URI of the node hover image. If not defined, the source image will be used.",
+              "type": "string"
+            },
+            "sourceHoverSelected": {
+              "description": "The optional URI of the selected image on hover. If not defined, the sourceSelected image will be used. If the sourceSelected image is not defined, the source image will be used.",
+              "type": "string"
+            },
+            "sourceSelected": {
+              "description": "The optional URI of the selected image. If not defined, the source image will be used.",
+              "type": "string"
+            },
+            "width": {
+              "description": "The width of the icon.",
+              "type": "number"
+            },
+            "height": {
+              "description": "The height of the icon.",
+              "type": "number"
+            },
+            "svgStyle": {
+              "description": "The CSS style object defining the style of the icon. The style class and style object will be applied directly on the icon and override any other styling specified through the properties.",
+              "type": "object"
+            },
+            "svgClassName": {
+              "description": "The CSS style class defining the style of the icon. The style class and style object will be applied directly on the icon and override any other styling specified through the properties.",
+              "type": "object"
+            }
+          }
         }
       }
     },
@@ -1249,7 +1295,7 @@
         {
           "name": "value",
           "description": "The new value to set the property to.",
-          "type": "*"
+          "type": "any"
         }
       ],
       "return": "void"
@@ -1263,7 +1309,7 @@
           "type": "string"
         }
       ],
-      "return": "*"
+      "return": "any"
     },
     "setProperties": {
       "description": "Performs a batch set of properties.",

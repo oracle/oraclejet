@@ -1052,8 +1052,9 @@ oj.Validation._CONTRACTS = {'converter' : {name: "oj.ConverterFactory",  type: o
  * RelativeDateTimeConverterFactory = (function () {
  *  function _createRelativeDateTimeConverter(options)
  *  {
- *    // this is a custom converter (code not shown here) that formats the datetime into "Today" or 
- *    // "Tomorrow", or "This Week"/"Next Week", etc.
+ *    // this is a custom converter that formats the datetime into "Today" or 
+ *    // "Tomorrow", or "This Week"/"Next Week", etc. See the Converter API or
+ *    // the Custom Converter demos for how to create a custom converter.
  *    return new RelativeDateTimeConverter(options);
  *  }
  *  return {
@@ -1149,6 +1150,19 @@ oj.Validation.converterFactory = function (type, instance)
  * var vf = oj.Validation.validatorFactory(oj.ValidatorFactory.VALIDATOR_TYPE_REQUIRED);
  * var requiredValidator = vf.createValidator(reqValOptions);
  * var isValid = validator.validate(value);
+ * @example <caption>Create and register your own factory</caption>
+ * MyOwnNumberRangeValidatorFactory = (function () {
+ *   function _createNumberRangeValidator(options) {
+ *     return new MyOwnNumberRangeValidator(options);
+ *   }
+ *  
+ *   return {
+ *     'createValidator': function(options) {
+ *       return _createNumberRangeValidator(options);
+ *   }
+ *   };
+ * }());
+ * oj.Validation.validatorFactory(oj.ValidatorFactory.VALIDATOR_TYPE_NUMBERRANGE, MyOwnNumberRangeValidatorFactory);
  * @export
  * @since 0.6
  * @see oj.ValidatorFactory
@@ -1346,11 +1360,47 @@ oj.Validation._registerFactory = function(name, instance, factories, contractDef
 
 /**
  * Contract for a ConverterFactory that provides a factory method to create a converter instance for 
- * the requested type. JET provides three factory implementations for number and datetime 
- * and color types that 
- * implement this contract. Customers can register custom converter factories for the supported 
+ * the requested type. Factories handle the details of object creation.
+ * It allows the consumers of the factory to create specific converters
+ * without knowing the internals of the converter creation.
+ * <p>
+ * JET provides three factory implementations for number and datetime 
+ * and color types that implement this contract. 
+ * </p>
+ * <p>
+ * Customers can register custom converter factories for the supported 
  * types or create and register factories for new types altogether.
+ * </p>
+ * @example <caption>Get the ConverterFactory for 'datetime', and create
+ * a JET dateTime converter with specific options. 
+ * See {@link oj.DateTimeConverterFactory} for what to set for options
+ * for the DateTime Converter. </caption>
+ * var dateTimeCvtr = oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME);
+ * var dateOptions = {day: 'numeric', month: 'numeric'};
+ * var dayMonthConverter = dateTimeCvtr.createConverter(dateOptions);
+ * @example <caption>Create a custom ConverterFactory with a new type and register that ConverterFactory.</caption>
+ * // Define a new ConverterFactory for relative datetimes, like Today, Yesterday, Tomorrow
+ * RelativeDateTimeConverterFactory = (function () {
+ *   function _createRelativeDateTimeConverter(options)
+ *   {
+ *     // this is a custom converter 
+ *     // See the Custom Converter JET demo for details on how to create 
+ *     // your own Converter. Or see the Converter jsdoc.
+ *     return new RelativeDateTimeConverter(options);
+ *   }
+ *   return {
+ *     'createConverter': function (options) {
+ *       return _createRelativeDateTimeConverter(options);
+ *     }
+ *   };
+ * }());
  * 
+ * // Register the custom factory with the new "relativeDate" type
+ * oj.Validation.converterFactory("relativeDate", RelativeDateTimeConverterFactory);
+ * 
+ * // Get the custom factory using the new type.
+ * var rdConverter =  oj.Validation.converterFactory("relativeDate")
+ * .createConverter({relativeField: 'day', year: "numeric", month: "numeric", day: "numeric"});
  * @name oj.ConverterFactory
  * @abstract
  * @class
@@ -1432,29 +1482,29 @@ oj.ConverterFactory =
    * var dateOptions = {day: 'numeric', month: 'numeric'};
    * var dayMonthConverter = dateTimeCvtr.createConverter(dateOptions);
    * @example <caption>Create your own ConverterFactory and Converter, register the Converter on your
-   * ConverterFactory, and use it when displaying information
+   * ConverterFactory, and use it when displaying relative date information
    * on the page to the user.</caption>
    * ----- Javascript -----
+   * // Define new ConverterFactory
    * RelativeDateTimeConverterFactory = (function () {
-   *  function _createRelativeDateTimeConverter(options)
-   *  {
-   *    // this is a custom converter (code not shown here) that formats the datetime into "Today" or 
-   *    // "Tomorrow", or "This Week"/"Next Week", etc.
-   *    return new RelativeDateTimeConverter(options);
-   *  }
-   *  return {
-   *    'createConverter': function (options) {
-   *      return _createRelativeDateTimeConverter(options);
-   *    }
-   *  };
-   *  }());
+   *   function _createRelativeDateTimeConverter(options)
+   *   {
+   *     // this is a custom converter See the Converter API or
+   *     // Custom Converter JET demo for details on
+   *     // how to create a custom converter.
+   *     return new RelativeDateTimeConverter(options);
+   *   }
+   *   return {
+   *     'createConverter': function (options) {
+   *       return _createRelativeDateTimeConverter(options);
+   *     }
+   *   };
+   * }());
+   * // Register the custom factory with the new type
    * oj.Validation.converterFactory("relativeDate", RelativeDateTimeConverterFactory);
-   *  // Use our custom relativeDate converter.
-   *  // In this demo, we want to see in the Schedule For column the words 
-   *  // Today or Tomorrow so we set the relativeField option's value
-   *  // to 'day'. If we want to see This Week, we'd set it to 'week', etc.
-   *  var rdConverter =  oj.Validation.converterFactory("relativeDate")
-   *  .createConverter({relativeField: 'day', year: "numeric", month: "numeric", day: "numeric"});
+   * // Get the custom factory using the new type.
+   * var rdConverter =  oj.Validation.converterFactory("relativeDate")
+   * .createConverter({relativeField: 'day', year: "numeric", month: "numeric", day: "numeric"});
    *  ...
    *  // Our custom converter's format function returns an object with 'value' and 'title'.
    *  // We put the 'value' in innerHTML so the user can read it. E.g., Today or Tomorrow.
@@ -1471,10 +1521,36 @@ oj.ConverterFactory =
 /**
  * Contract for a ValidatorFactory that provides a factory method to create a validator instance for 
  * the requested type. JET provides several factory implementations that implement this contract - 
- * for example dateRestriction, dateTimeRange, numberRange, length, required, regexp. Customers can 
+ * for example dateRestriction, dateTimeRange, numberRange, length, required, regexp.
+ * <p> Customers can 
  * register custom validator factories for the supported types or create and register factories for 
  * new types altogether.
+ * </p>
+ * @example <caption>Create a JET regexp validator</caption>
+ * var validatorFactory = 
+ *   oj.Validation.validatorFactory(oj.ValidatorFactory.VALIDATOR_TYPE_REGEXP);
+ *   
+ * var options =  
+ *   {pattern: '[a-zA-Z0-9]{3,}', 
+ *   hint: 'enter at least 3 letters or numbers.',
+ *   messageDetail: 'You must enter at least 3 letters or numbers.'}
+ *   
+ * var validator = validatorFactory.createValidator(options);
+ * @example <caption>Create and register your own ValidatorFactory</caption>
+ * MyOwnNumberRangeValidatorFactory = (function () {
+ *   function _createNumberRangeValidator(options) {
+ *     // See Validator api or Custom Validator demos for how to create your own Validator
+ *     return new MyOwnNumberRangeValidator(options);
+ *   }
+ *  
+ *   return {
+ *     'createValidator': function(options) {
+ *       return _createNumberRangeValidator(options);
+ *   }
+ *   };
+ * }());
  * 
+ * oj.Validation.validatorFactory(oj.ValidatorFactory.VALIDATOR_TYPE_NUMBERRANGE, MyOwnNumberRangeValidatorFactory);
  * @name oj.ValidatorFactory
  * @abstract
  * @class
@@ -1699,7 +1775,7 @@ oj.Converter.prototype.getOptions = function ()
  * Parses a String value using the options provided. 
  * @method parse
  * @param {string} value to parse
- * @return {*} the parsed value. 
+ * @return {any} the parsed value. 
  * @ojsignature [
  *                {target: "Type", value: "V", for: "returns"}
  *              ]
@@ -1711,7 +1787,7 @@ oj.Converter.prototype.getOptions = function ()
 /**
  * Formats the value using the options provided. 
  * 
- * @param {*} value the value to be formatted for display
+ * @param {any} value the value to be formatted for display
  * @return {(string|null)} the localized and formatted value suitable for display
  * @throws {Error} if formatting fails.
  * @method format
@@ -1922,8 +1998,8 @@ oj.Validator.prototype.Init = function(options)
  *  -- HTML --
  *  &lt;oj-input-date id="nextday" value="{{endDate}}" 
  *  validators="{{[weekendDateValidator, endDateValidator]}}">&lt;/oj-input-date>
- * @param {*} value to be validated
- * @return {*} a boolean true or the original value if validation passes.
+ * @param {any} value to be validated
+ * @return {any} a boolean true or the original value if validation passes.
  * @throws {Error} if validation fails
  * @method validate
  * @ojsignature [{target: "Type", 
@@ -2657,6 +2733,10 @@ oj.IntlConverterUtils.getConverterInstance = function (converterOption)
       {
         // if we are passed a string get registered type. 
         cf = oj.Validation.converterFactory(cTypeStr);
+        if(cf === null)
+        {
+          oj.Logger.error("Converter of type " + cTypeStr + " cannot be found. Make sure the correct converter/validation module is included.");    
+        }    
         converterInstance = cf.createConverter(cOptions);
       }
     }

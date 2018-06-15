@@ -4,7 +4,7 @@
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
-define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/internal-deps/dvt/DvtDiagram', 'ojs/ojkeyset', 'ojs/ojdatasource-common'], function(oj, $, comp, base, dvt)
+define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/internal-deps/dvt/DvtDiagram', 'ojs/ojdatasource-common'], function(oj, $, comp, base, dvt)
 {
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
@@ -2360,16 +2360,27 @@ oj.__registerWidget('oj.ojDiagram', $['oj']['dvtBaseComponent'],
     linkProperties: null,
     /**
      * Optional callback that provides a way to customize an appearance of the specific node, the function maps node data into node styles.
-     * The function takes a data object for the node provided by the diagram. 
+     * The function takes a data object for the node provided by the diagram.
      * The following properties are supported on the return object:
-     * @property {object} labelStyle The CSS style object defining the style of the link label. The CSS max-width property can be used to truncate labels.
-     * @property {string} color Link color.
-     * @property {object} svgStyle The SVG CSS style object defining link style. The style class and style object will be applied directly on the link and override any other styling specified through the properties.
-     * @property {string} svgClassName The SVG CSS style class defining link style. The style class and style object will be applied directly on the link and override any other styling specified through the properties.
-     * @property {number} width Link width in pixels.
-     * @property {string} startConnectorType Specifies the type of start connector on the link. <br/>Supported values are "arrowOpen", "arrow", "arrowConcave", "circle", "rectangle", "rectangleRounded", "none". <br/>Default value is <code class="prettyprint">"none"</code>.
-     * @property {string} endConnectorType Specifies the type of end connector on the link. <br/>Supported values are "arrowOpen", "arrow", "arrowConcave", "circle", "rectangle", "rectangleRounded", "none". <br/>Default value is <code class="prettyprint">"none"</code>.
-     * 
+     * @property {string} showDisclosure Determines when to display the expand/collapse button.<br/>Supported values are "on", "off". <br/>Default value is <code class="prettyprint">"on"</code>.
+     * @property {object} labelStyle The CSS style object defining the style of the node label.
+     * @property {object} icon Specifies an icon to be used as a graphical element for the node
+     * @property {string} icon.borderColor The border color of the icon.
+     * @property {string} icon.borderRadius The border radius of the icon. CSS border-radius values accepted. Note that non-% values (including unitless) get interpreted as 'px'.
+     * @property {number} icon.borderWidth The border width in pixels.
+     * @property {string} icon.color The fill color of the icon.
+     * @property {string} icon.pattern The fill pattern of the icon.<br/>Supported values are "smallChecker", "smallCrosshatch", "smallDiagonalLeft", "smallDiagonalRight", "smallDiamond", "smallTriangle", "largeChecker", "largeCrosshatch", "largeDiagonalLeft", "largeDiagonalRight", "largeDiamond", "largeTriangle", "none".<br/>Default value is <code class="prettyprint">"none"</code>.
+     * @property {number} icon.opacity The opacity of the icon.
+     * @property {string} icon.shape The shape of the icon. Can take the name of a built-in shape or the svg path commands for a custom shape.<br/>Supported built-in shapes:"ellipse", "square", "plus", "diamond", "triangleUp", "triangleDown", "human", "rectangle", "star", "circle".<br/>Default value is <code class="prettyprint">"circle"</code>.
+     * @property {string} icon.source The URI of the node image.
+     * @property {string} icon.sourceHover The optional URI of the node hover image. If not defined, the source image will be used.
+     * @property {string} icon.sourceHoverSelected The optional URI of the selected image on hover. If not defined, the sourceSelected image will be used. If the sourceSelected image is not defined, the source image will be used.
+     * @property {string} icon.sourceSelected The optional URI of the selected image. If not defined, the source image will be used.
+     * @property {number} icon.width The width of the icon.
+     * @property {number} icon.height The height of the icon.
+     * @property {object} icon.svgStyle The CSS style object defining the style of the icon. The style class and style object will be applied directly on the icon and override any other styling specified through the properties.
+     * @property {object} icon.svgClassName The CSS style class defining the style of the icon. The style class and style object will be applied directly on the icon and override any other styling specified through the properties.
+     *
      * @example <caption>Customizing node icon color using <code class="prettyprint">customColor</code> property defined on the node data object</caption>
      * &lt;oj-diagram
      *    layout = '{{layoutFunc}}'
@@ -3193,9 +3204,13 @@ oj.__registerWidget('oj.ojDiagram', $['oj']['dvtBaseComponent'],
     }
   },
 
-  //** @inheritdoc */
-  _setOptions : function(options, flags) {
-    if (options['expanded']) {
+  //* * @inheritdoc */
+  // eslint-disable-next-line no-unused-vars
+  _setOptions: function (options, flags) {
+    var hasProperty = function (property) {
+      return Object.prototype.hasOwnProperty.call(options, property);
+    };
+    if (hasProperty('expanded') || hasProperty('data')) {
       this._component.clearDisclosedState();
     }
     // Call the super to update the property values

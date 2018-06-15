@@ -1,7 +1,7 @@
 {
   "name": "oj-avatar",
-  "version": "5.0.0",
-  "jetVersion": "5.0.0",
+  "version": "5.1.0",
+  "jetVersion": "5.1.0",
   "displayName": "Avatar",
   "preview": true,
   "styleClasses": [
@@ -27,42 +27,42 @@
       "displayName": "Size",
       "value": "md",
       "enumValues": [
-        "lg",
-        "md",
-        "sm",
-        "xl",
+        "xxs",
         "xs",
-        "xxl",
-        "xxs"
+        "sm",
+        "md",
+        "lg",
+        "xl",
+        "xxl"
       ],
       "propertyEditorValues": {
-        "lg": {
-          "description": "large avatar",
-          "displayName": "Lg"
-        },
-        "md": {
-          "description": "medium avatar, default value",
-          "displayName": "Md"
-        },
-        "sm": {
-          "description": "small avatar",
-          "displayName": "Sm"
-        },
-        "xl": {
-          "description": "extra large avatar",
-          "displayName": "Xl"
+        "xxs": {
+          "description": "extra, extra small avatar",
+          "displayName": "XXS"
         },
         "xs": {
           "description": "extra small avatar",
-          "displayName": "Xs"
+          "displayName": "XS"
+        },
+        "sm": {
+          "description": "small avatar",
+          "displayName": "SM"
+        },
+        "md": {
+          "description": "medium avatar, default value",
+          "displayName": "MD"
+        },
+        "lg": {
+          "description": "large avatar",
+          "displayName": "LG"
+        },
+        "xl": {
+          "description": "extra large avatar",
+          "displayName": "XL"
         },
         "xxl": {
           "description": "extra, extra large avatar",
-          "displayName": "Xxl"
-        },
-        "xxs": {
-          "description": "extra, extra small avatar",
-          "displayName": "Xxs"
+          "displayName": "XXL"
         }
       }
     },
@@ -85,7 +85,7 @@
         {
           "name": "value",
           "description": "The new value to set the property to.",
-          "type": "*"
+          "type": "any"
         }
       ],
       "return": "void"
@@ -99,7 +99,7 @@
           "type": "string"
         }
       ],
-      "return": "*"
+      "return": "any"
     },
     "setProperties": {
       "description": "Performs a batch set of properties.",

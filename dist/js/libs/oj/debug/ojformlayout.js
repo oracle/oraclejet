@@ -19,7 +19,7 @@ define(['ojs/ojcore', 'ojs/ojcomponentcore', 'ojs/ojlabel'],
 /**
  * @ojcomponent oj.ojFormLayout
  * @since 4.1.0
- * @ojshortdesc Used to group child input controls in an organized layout that can be optimized for multiple display sizes.
+ * @ojshortdesc Used to group child elements in an organized layout that can be optimized for multiple display sizes.
  * @ojstatus preview
  * @ojsignature {target: "Type", value:"class ojFormLayout extends JetElement<ojFormLayoutSettableProperties>"}
  *
@@ -28,11 +28,18 @@ define(['ojs/ojcore', 'ojs/ojcomponentcore', 'ojs/ojlabel'],
  *   JET FormLayout
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#optionOverview-section"></a>
  * </h3>
- * <p>The oj-form-layout element is used to group custom element children in an organized layout that
- * can be optimized for multiple display sizes.  Legal child components are: oj-checkboxset, oj-color-palette
- * oj-color-spectrum, oj-input-date, oj-input-date-time, oj-input-time, oj-input-number, oj-input-text,
- * oj-text-area, oj-input-password, oj-combobox-one, oj-combobox-many, oj-radioset, oj-select-one, oj-select-many,
- * oj-slider, oj-switch
+ * <p>The oj-form-layout element is used to layout groups of label/value pairs in an organized layout that
+ * can be optimized for multiple display sizes via attribute value settings.  The following describes how child
+ * elements are handled:<br><br>
+ * - The following JET components have a label-hint attribute that allows them to be treated as a 
+ * label/value pair with an oj-label element dynamically created from the label-hint and help-hints:<br>
+ * oj-checkboxset, oj-color-palette, oj-color-spectrum, oj-input-date, oj-input-date-time, oj-input-time,
+ * oj-input-number, oj-input-text, oj-text-area, oj-input-password, oj-combobox-one, oj-combobox-many,
+ * oj-radioset, oj-select-one, oj-select-many, oj-slider, oj-switch<br>
+ * - An oj-label element, followed by any element. The oj-label element will be in the label area
+ * and the next element will be in the value area<br>
+ * - An oj-label-value child component allows the developer to place elements in the label and/or value area as 'label' and 'value' slot chilren.<br>
+ * - All other elements will span the entire width of a single label/value pair.
  * 
  * <p>For example:
  * <pre class="prettyprint">
@@ -42,7 +49,16 @@ define(['ojs/ojcore', 'ojs/ojcomponentcore', 'ojs/ojlabel'],
  *   &lt;oj-text-area id="textareacontrol" value='text' rows="6" label-hint="textarea">&lt;/oj-text-area>
  *   &lt;oj-input-text id="inputcontrol2" value="text" label-hint="input 2">&lt;/oj-input-text>
  *   &lt;oj-input-text id="inputcontrol3" value="text" label-hint="input 3 longer label">&lt;/oj-input-text>
- * &lt;/oj-form-layout> 
+ *   &lt;oj-label>oj-label in label area&lt;/oj-label>
+ *   &lt;p>Next element in value area&lt;/p>
+ *   &lt;oj-label-value id="labelonly">
+ *     &lt;p slot="label">Some text in the label area&lt;/p>
+ *   &lt;/oj-label-value>
+ *   &lt;oj-label-value id="valueonly">
+ *     &lt;p slot="value">Some text in the value area&lt;/p>
+ *   &lt;/oj-label-value>
+ *   &lt;p>Some text that spans the label/value area&lt;/p>
+ * &lt;/oj-form-layout>
  * </code></pre>
  *
  * <p>The oj-form-layout element currently supports custom element children that support the label-hint 
@@ -59,7 +75,7 @@ define(['ojs/ojcore', 'ojs/ojcomponentcore', 'ojs/ojlabel'],
  * @memberof oj.ojFormLayout
  * @instance
  * @type {string}
- * @default <code class="prettyprint">"column"</code>
+ * @default "column"
  * @ojvalue {string} "column" Components are laid out in columns
  * @ojvalue {string} "row" Components are laid out in rows
  * @desc Specifies the layout direction of the form layout children.
@@ -136,7 +152,7 @@ define(['ojs/ojcore', 'ojs/ojcomponentcore', 'ojs/ojlabel'],
  * @memberof oj.ojFormLayout
  * @instance
  * @type {string}
- * @default <code class="prettyprint">"wrap"</code>
+ * @default "wrap"
  * @ojvalue {string} "truncate" Label will trunctate if needed
  * @ojvalue {string} "wrap" Label will wrap if needed
  * @desc Specifies if the label text should wrap or truncate.
@@ -185,7 +201,7 @@ define(['ojs/ojcore', 'ojs/ojcomponentcore', 'ojs/ojlabel'],
  * 
  * @function setProperty
  * @param {string} property - The property name to set. Supports dot notation for subproperty access.
- * @param {*} value - The new value to set the property to.
+ * @param {any} value - The new value to set the property to.
  * @return {void}
  * 
  * @expose
@@ -199,8 +215,8 @@ define(['ojs/ojcore', 'ojs/ojcomponentcore', 'ojs/ojlabel'],
  * Retrieves a value for a property or a single subproperty for complex properties.
  * @function getProperty
  * @param {string} property - The property name to get. Supports dot notation for subproperty access.
- * @return {*}
- * 
+ * @return {any}
+ *
  * @expose
  * @memberof oj.ojFormLayout
  * @instance
@@ -290,6 +306,7 @@ function ojFormLayout(context) {
   var isInitialRender = true;
   var unresolvedChildren;
   var labelWidth;
+  var labelFlexItemWidth;
 
   // Our version of GCC has a bug where the second param of MutationObserver.observe must be of 
   // type MutationObserverInit which isn't a real class that we can instantiate. Work around is to
@@ -380,9 +397,11 @@ function ojFormLayout(context) {
 
     unresolvedChildren = []; // start with an empty list
     
-    labelWidth = element["labelEdge"] === "start" ? element["labelWidth"] : "100%";
+    labelFlexItemWidth = null;
+    labelWidth = element.labelEdge === 'start' ? element.labelWidth : '100%';
+    
 
-    // Wait until child elements have finished upgrading before performing DOM 
+    // Wait until child elements have finished upgrading before performing DOM
     // manipulations so we can access child properties, like label-hint and help-hints.
     // The new oj-form div element has a data-oj-context attribute so we can get 
     // the correctly scoped busy context  for the oj-form div subtree. When custom 
@@ -503,10 +522,15 @@ function ojFormLayout(context) {
 
     // When direction === "row", we need to set the columns to 1, as we use the
     // oj-flex and oj-flex-item divs to control the number of columns.
-    if (element["direction"] === "row")
+    // Also, we need to add the 'oj-formlayout-form-across' class to get the buffer between the
+    // label/value pairs.
+    if (element.direction === 'row') {
       maxCols = 1;
-    else
-      maxCols = element["maxColumns"];
+      ojForm.classList.add('oj-formlayout-form-across');
+    } else {
+      maxCols = element.maxColumns;
+      ojForm.classList.remove('oj-formlayout-form-across');
+    }
 
     ojForm["style"]["columnCount"] = maxCols;
     ojForm["style"]["webkitColumnCount"] = maxCols;
@@ -533,16 +557,16 @@ function ojFormLayout(context) {
     {
       var bonusDomElem = bonusDomElems[i];
       
-      if (bonusDomElem.tagName === "OJ-LABEL")
-      {
-        // For the oj-label elements we create, we can just remove them safely
-        // as none of their children are the original child elements we are preserving
-        bonusDomElem.parentElement.removeChild(bonusDomElem);
-      }
-      else
-      {
-        // for all other elements, remove the element preserving the children
-        _removeElementAndReparentChildren(bonusDomElem);
+      // don't remove bonus dom elems owned by child oj-form-layouts
+      if (_isNodeOfThisFormLayout(bonusDomElem)) {
+        if (bonusDomElem.tagName === 'OJ-LABEL') {
+          // For the oj-label elements we create, we can just remove them safely
+          // as none of their children are the original child elements we are preserving
+          bonusDomElem.parentElement.removeChild(bonusDomElem);
+        } else {
+          // for all other elements, remove the element preserving the children
+          _removeElementAndReparentChildren(bonusDomElem);
+        }
       }
     }
   }
@@ -562,11 +586,10 @@ function ojFormLayout(context) {
 
     // for all of the direct children, add a label for any child element supports "labelHint"
     while (child) {
+      var tagName = child.tagName.toLowerCase();
       // check for custom element
-      if (child.tagName.indexOf("-") !== -1)
-      {
-        if (child.tagName.toLowerCase() === "oj-label")
-        {
+      if (tagName.indexOf('-') !== -1) {
+        if (tagName === 'oj-label') {
           // if we find an oj-label component, then skip it and the next sibling element.
           // If there is no next sibling element, throw an error.  We don't need to know
           // if they are completely upgraded as we are excepting all element types for the child
@@ -588,9 +611,12 @@ function ojFormLayout(context) {
             throw new Error("oj-form-layout component with id='"+element.id+"' has an oj-label child element with id='"+label.id+
                     "' but has no next sibling element that it is associated with.");
           }
-        }
-        else if (child.classList.contains("oj-complete"))
-        {
+        } else if (tagName === "oj-label-value") {
+          // if were are being re-rendered, then we need to refresh any oj-label-value children.
+          if (!isInitialRender) {
+            child.refresh();
+          }      
+        } else if (child.classList.contains('oj-complete')) {
           _addLabelFromHint(child);
         }
         else
@@ -604,8 +630,6 @@ function ojFormLayout(context) {
           unresolvedChildren.push(child);
         }
       }
-      else
-        _unsupportedChildType(child);
       
       childCnt++;
       child = child.nextElementSibling; // move to the next child element
@@ -656,8 +680,6 @@ function ojFormLayout(context) {
       // We add them to the component themselves.
       _addChildEventListeners(child);
     }
-    else
-      _unsupportedChildType(child);
         
     return ojLabel;
   }
@@ -973,26 +995,99 @@ function ojFormLayout(context) {
     var pairCnt = 0; // counter of label/element count
     _appendChildrenToArray(ojForm.children, childArray);
     
+    var currentRow;
+
     // each iteration should process a label/input pair
     while(j < arrayLength) {
       label = childArray[j];
       
       // if the current child element is on the unresolvedChildren list, skip it
-      if (unresolvedChildren.indexOf(label) === -1)
-      {
-        j++; // skip to the next element
-        elem = childArray[j];
-        
-        // for direction === "row", we only render the oj-flex div once per row.
-        _addFlexDivs(label, elem, directionIsColumn || pairCnt%element["maxColumns"] === 0);
+      if (unresolvedChildren.indexOf(label) === -1) {
+        var tagName = label.tagName.toLowerCase();
+        if (tagName === "oj-label") {
+          j++; // skip to the next element
+          elem = childArray[j];
+          
+          // for direction === "row", we only render the oj-flex div once per row.
+          currentRow = _addFlexDivs(label, elem, directionIsColumn || pairCnt%element["maxColumns"] === 0);
+        } else {
+          // handle oj-label-value child
+          
+          currentRow = _addFlexDivs(label, null, directionIsColumn || pairCnt%element["maxColumns"] === 0);          
+        }
       }
       pairCnt++;
       j++;
-    }   
+    }
+    _addMissingFlexItems(currentRow, pairCnt);   
+  }
+        
+  function _getFullFlexItemWidth() {
+    // For direction === 'column', we want the width to be 100%.  For 'row', we want it to be
+    // the 100% divided by the number of columns.
+    if (element.direction === 'column')
+      return "100%";
+    
+    return (Math.floor(100000 / element.maxColumns) / 1000) + "%";
   }
 
-  function _addFlexDivs(label, elem, createOjFlex)
-  {
+  // for direction=='row' && labelEdge=='start', use labelWidth/max-columns for any relative units,
+  // otherwise labelWidth
+  function _getLabelFlexItemWidth() {
+    
+    // Is value cached?
+    if (!labelFlexItemWidth) {
+      labelFlexItemWidth = labelWidth;
+      
+      // no need to adjust labelEdge == 'top', it will always be '100%'
+      // no need to adjust direction == 'column'
+      if (element.labelEdge === 'start' && element.direction === 'row') {
+        // We need to split apart the number and unit parts of the css unit
+        var CssUnitsRegex = /^([+-]?(?:\d+|\d*\.\d+))([a-z]*|%)$/;
+        var parts = element.labelWidth.match(CssUnitsRegex);
+
+        // only adjust for units that are (or can be) relative to horizontal screen size.
+        switch (parts[2]) {
+          case "vw":
+          case "vmin":
+          case "vmax":
+          case "%":
+            labelFlexItemWidth = (parts[1] / element.maxColumns) + parts[2];
+            break;      
+        }
+      }
+    }
+    
+    return labelFlexItemWidth;
+  }
+
+  function _addEmptyFlexItem(flexContainer) {
+    _addEmptyFlexItem(flexContainer, _getFullFlexItemWidth());
+  }
+  
+  function _addEmptyFlexItem(flexContainer, width) {
+    var flexItem = _createDivElement("oj-flex-item");
+
+    flexItem.style.webkitFlex = "0 1 " + width;
+    flexItem.style.flex = "0 1 " + width;
+    flexItem.style.maxWidth = width;
+    flexItem.style.width = width;
+
+    flexContainer.appendChild(flexItem);
+  }
+
+  function _addMissingFlexItems(flexContainer, count) {
+    var cols = element.maxColumns
+    var last = count % cols;
+    
+    if (element["direction"] != "column" && flexContainer && last > 0) {
+      for (var i = last; i < cols; i++) {
+        _addEmptyFlexItem(flexContainer);
+      }
+    }
+  }
+
+  function _addFlexDivs(label, elem, createOjFlex) {
     var ojFlex;
     var labelOjFlexItem;
     var elementOjFlexItem;
@@ -1002,22 +1097,39 @@ function ojFormLayout(context) {
     else
       ojFlex = label.previousElementSibling; // This will be the oj-flex div for a row
 
-    labelOjFlexItem = _createDivElement("oj-flex-item");
+    var slotWidth = elem ? _getLabelFlexItemWidth() : _getFullFlexItemWidth();
+
+    if (!elem) {
+      // We need this zero width flex-item because we need to have pairs of flex-items
+      // or the scss selectors for inline labels won't get picked up correctly.
+      _addEmptyFlexItem(ojFlex, "0px"); // create a zero width label flex-item div
+    }
+
+    labelOjFlexItem = _createDivElement('oj-flex-item');
     ojFlex.appendChild(labelOjFlexItem); // @HTMLUpdateOK append div containing trusted content.
 
+    label.parentElement.insertBefore(ojFlex, label); // @HTMLUpdateOK insert div containing trusted content.
     labelOjFlexItem.appendChild(label); // @HTMLUpdateOK append oj-label containing trusted content.
 
     // set the width of the label flex item
-    labelOjFlexItem.style.webkitFlex = "0 1 "+labelWidth;
-    labelOjFlexItem.style.flex = "0 1 "+labelWidth;
-    labelOjFlexItem.style.maxWidth = labelWidth;
-    labelOjFlexItem.style.width = labelWidth;
+    labelOjFlexItem.style.flex = "0 0 "+slotWidth;
+    labelOjFlexItem.style.maxWidth = slotWidth;
+    labelOjFlexItem.style.width = slotWidth;
 
     // create the component flex-item and append the element as a child
-    elementOjFlexItem = _createDivElement("oj-flex-item");
-    ojFlex.appendChild(elementOjFlexItem); // @HTMLUpdateOK append div containing trusted content.
-    elem.parentElement.insertBefore(ojFlex, elem); // @HTMLUpdateOK insert div containing trusted content.
-    elementOjFlexItem.appendChild(elem); // @HTMLUpdateOK append element containing trusted content.
+    if (elem) {
+      elementOjFlexItem = _createDivElement("oj-flex-item");
+      ojFlex.appendChild(elementOjFlexItem); // @HTMLUpdateOK append div containing trusted content.
+      elementOjFlexItem.appendChild(elem); // @HTMLUpdateOK append element containing trusted content.
+
+      // Set the flex style of the value flex item.
+      // Set a flex-grow factor of 1 and a flex-basis of 0 so that all "value" flex items share the 
+      // remaining space left over by "label" flex items equally.  
+      elementOjFlexItem.style.webkitFlex = "1 1 0";
+      elementOjFlexItem.style.flex = "1 1 0";
+    }
+
+    return ojFlex;
   }
 
   /**
@@ -1078,10 +1190,9 @@ function ojFormLayout(context) {
     for (var i = 0; i < mutationsLength; i++)
     {
       var mutation = mutations[i];
-      
-      if (mutation.type === "childList" && _isBonusDomDivOrSelf(mutation.target)
-                                        && _isMutationOfThisFormLayout(mutation.target))
-      {
+
+      if (mutation.type === 'childList' && _isBonusDomDivOrSelf(mutation.target)
+                                        && _isNodeOfThisFormLayout(mutation.target)) {
         ignore = false;
         break;
       }
@@ -1104,12 +1215,12 @@ function ojFormLayout(context) {
                                 node.hasAttribute(BONUS_DOM_ATTR));
   }
   /**
-   * Checks to make sure that this mutation belongs to this oj-form-layout rather than a nested -oj-form-layout
+   * Checks to make sure that this node belongs to this oj-form-layout rather than a nested -oj-form-layout
    * @param {Node} node
    * @returns {boolean}
    */
-  function _isMutationOfThisFormLayout(node)
-  {
+  function _isNodeOfThisFormLayout(_node) {
+    var node = _node;
     var result = true;
     
     while (node !== element)

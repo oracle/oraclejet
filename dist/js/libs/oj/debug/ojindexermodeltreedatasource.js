@@ -26,7 +26,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojindexer', 'ojs/ojdatasource-common'],
  *            associated [ListView]{@link oj.ojListView}.<br><br> 
  *            See the <a href="../jetCookbook.html?component=indexer&demo=characterIndexer">Indexer - Basic</a> demo for an example.<br><br>
  *            Refer to {@link oj.TreeDataSource} for other data sources that represent hierarachical data.
- * @param {Array.<*>} data an array of data used for Indexer and ListView 
+ * @param {Array.<any>} data an array of data used for Indexer and ListView 
  * @param {string} idAttribute the id attribute of the data
  * @param {function(Object)|function(string)} listener a callback function that handles when a section becomes current (user clicks on the section in the Indexer).
  *                   the function takes the current section and must return a Promise which when resolve returns the section in which the ListView
@@ -238,7 +238,7 @@ oj.IndexerModelTreeDataSource.prototype.setSection = function(section)
 /**
  * Returns the number of children for a specified parent.  If the value returned is not >= 0 then it is automatically assumed
  * that the child count is unknown.
- * @param {*} parentKey the parent key.  Specify null if inquiring child count of the root.
+ * @param {any} parentKey the parent key.  Specify null if inquiring child count of the root.
  * @return {number} the number of children for the specified parent.
  * @export
  * @expose
@@ -294,7 +294,7 @@ oj.IndexerModelTreeDataSource.prototype.getChildCount = function(parentKey)
 
 /**
  * Fetch the children
- * @param {*} parentKey the parent key.  Specify null if fetching children from the root.
+ * @param {any} parentKey the parent key.  Specify null if fetching children from the root.
  * @param {Object} range information about the range, it must contain the following properties: start, count.
  * @param {number} range.start the start index of the range in which the children are fetched.
  * @param {number} range.count the size of the range in which the children are fetched.  

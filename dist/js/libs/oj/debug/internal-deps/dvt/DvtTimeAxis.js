@@ -834,13 +834,25 @@ dvt.TimeAxis.prototype.adjustDate = function(date)
 };
 
 /**
- * Gets the next date an interval away from specified time based on current scale.
+ * Gets the next date an interval away from the specified time based on current scale.
  * @param {number} time The time in question in milliseconds
  * @return {Date} The next date
  */
 dvt.TimeAxis.prototype.getNextDate = function(time)
 {
-  return this._calendar.getNextDate(time, this._scale);
+  return this.getAdjacentDate(time, this._scale, 'next');
+};
+
+/**
+ * Gets the next or previous date an interval away from the specified time based on a given scale.
+ * @param {number} time The time in question in milliseconds
+ * @param {string} scale
+ * @param {string} direction Either 'next' or 'previous'
+ * @return {Date} The adjacent date
+ */
+dvt.TimeAxis.prototype.getAdjacentDate = function(time, scale, direction)
+{
+  return this._calendar.getAdjacentDate(time, scale, direction);
 };
 
 /**
@@ -1084,34 +1096,50 @@ DvtTimeAxisCalendar.prototype.adjustDate = function(date, scale)
 
 DvtTimeAxisCalendar.prototype.getNextDate = function(time, scale)
 {
-  if (scale == 'seconds')
-    return new Date(time + 1000);
+  return this.getAdjacentDate(time, scale, 'next');
+};
+
+/**
+ * Gets the next or previous date an interval away from the specified time based on a given scale.
+ * @param {number} time The time in question in milliseconds
+ * @param {string} scale
+ * @param {string} direction Either 'next' or 'previous'
+ * @return {Date} The adjacent date
+ */
+DvtTimeAxisCalendar.prototype.getAdjacentDate = function(time, scale, direction)
+{
+  var directionSign = direction == 'next' ? 1 : -1;
+
+  if (scale == 'milliseconds')
+    return new Date(time + directionSign * 1);
+  else if (scale == 'seconds')
+    return new Date(time + directionSign * 1000);
   else if (scale == 'minutes')
-    return new Date(time + 60000);
+    return new Date(time + directionSign * 60000);
   else if (scale == 'hours')
-    return new Date(time + 3600000);
+    return new Date(time + directionSign * 3600000);
   // for larger scales, no set amount of time can be added
-  var _nextDate = new Date(time);
+  var _adjacentDate = new Date(time);
   if (scale == 'days')
-    _nextDate.setDate(_nextDate.getDate() + 1);
+    _adjacentDate.setDate(_adjacentDate.getDate() + directionSign * 1);
   else if (scale == 'weeks')
-    _nextDate.setDate(_nextDate.getDate() + 7);
+    _adjacentDate.setDate(_adjacentDate.getDate() + directionSign * 7);
   else if (scale == 'months')
-    _nextDate.setMonth(_nextDate.getMonth() + 1);
+    _adjacentDate.setMonth(_adjacentDate.getMonth() + directionSign * 1);
   else if (scale == 'quarters')
-    _nextDate.setMonth(_nextDate.getMonth() + 3);
+    _adjacentDate.setMonth(_adjacentDate.getMonth() + directionSign * 3);
   else if (scale == 'halfyears')
-    _nextDate.setMonth(_nextDate.getMonth() + 6);
+    _adjacentDate.setMonth(_adjacentDate.getMonth() + directionSign * 6);
   else if (scale == 'years')
-    _nextDate.setFullYear(_nextDate.getFullYear() + 1);
+    _adjacentDate.setFullYear(_adjacentDate.getFullYear() + directionSign * 1);
   else if (scale == 'twoyears')
-    _nextDate.setFullYear(_nextDate.getFullYear() + 2);
+    _adjacentDate.setFullYear(_adjacentDate.getFullYear() + directionSign * 2);
   else
   {
     // circuit breaker
-    _nextDate.setYear(_nextDate.getYear() + 1);
+    _adjacentDate.setYear(_adjacentDate.getYear() + directionSign * 1);
   }
-  return _nextDate;
+  return _adjacentDate;
 };
 
 var DvtTimeAxisDefaults = function()

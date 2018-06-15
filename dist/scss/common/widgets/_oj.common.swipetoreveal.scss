@@ -33,6 +33,7 @@
       transition: max-width $swipeActionsAnimationDuration;
       @include oj-transition-timing-function-property(ease-in-out);
       background-color: $swipeActionsDefaultBgColor;
+      min-width: $swipeActionsItemWidth;
     }
 
     /*

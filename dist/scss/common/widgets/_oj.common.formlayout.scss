@@ -11,7 +11,7 @@
 @if $includeFormLayoutClasses != false {
   @include module-include-once("common.formlayout") {
     @include common-formlayout-selectors();
-    
+
     @if $responsiveQuerySmallUp and $responsiveQuerySmallUp != none {
       @media #{$responsiveQuerySmallUp} 
       {

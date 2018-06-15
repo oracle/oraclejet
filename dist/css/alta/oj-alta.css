@@ -2892,6 +2892,14 @@ oj-film-strip:not(.oj-complete) {
   -webkit-transition-timing-function: ease-in-out;
   transition-timing-function: ease-in-out; }
 
+.oj-filmstrip-transition-display-as-firstpage {
+  -webkit-order: -1;
+  order: -1; }
+
+.oj-filmstrip-transition-display-as-lastpage {
+  -webkit-order: 1;
+  order: 1; }
+
 html:not([dir="rtl"]) .oj-filmstrip:not(.oj-filmstrip-vertical) .oj-filmstrip-transition-next-oldpage-to, html:not([dir="rtl"])
 .oj-filmstrip:not(.oj-filmstrip-vertical) .oj-filmstrip-transition-next-newpage-to {
   -webkit-transform: translate3d(-100%, 0, 0);
@@ -7005,7 +7013,8 @@ oj-message:not(.oj-complete) {
 .oj-message-header {
   display: inline-flex;
   justify-content: space-between;
-  align-items: center; }
+  align-items: center;
+  height: 36px; }
 
 .oj-message-leading-header {
   align-items: center;
@@ -7061,6 +7070,9 @@ oj-message:not(.oj-complete) {
   display: block; }
   html[dir="rtl"] .oj-message-close {
     float: left; }
+
+.oj-message-close .oj-button {
+  margin-bottom: 0; }
 
 .oj-message-option-defaults {
   font-family: '{"autoTimeout":4000}'; }
@@ -7595,7 +7607,8 @@ html[dir="rtl"] .oj-progress-bar-overlay {
   transition: max-width 0.4s;
   -webkit-transition-timing-function: ease-in-out;
   transition-timing-function: ease-in-out;
-  background-color: #027bc7; }
+  background-color: #027bc7;
+  min-width: 75px; }
 
 /*
      * Applied to action items that should be hidden when full trigger occurs
@@ -7620,6 +7633,58 @@ html[dir="rtl"] .oj-progress-bar-overlay {
      */
 .oj-swipetoreveal .oj-swipetoreveal-alert {
   background-color: #BA0006; }
+
+/* Styling for the swipeactions root element */
+.oj-swipeactions {
+  display: block; }
+
+/* Styling for the neutral action item. */
+.oj-swipeactions-neutral {
+  background-color: #707375; }
+
+/* Styling for the attention action item. */
+.oj-swipeactions-attention {
+  background-color: #BF552E; }
+
+/* Styling for the danger action item. */
+.oj-swipeactions-danger {
+  background-color: #BA0006; }
+
+/* Styling for the text within action item. */
+.oj-swipeactions-action-text {
+  padding-top: swipeActionsIconToTextPadding; }
+
+/* Styling for the panel of an action item. */
+.oj-swipeactions-action-panel {
+  height: 100%; }
+
+/* styling on focused action item. */
+.oj-swipeactions-action-panel.oj-focus-highlight {
+  outline: 2px dotted #000;
+  outline: -webkit-focus-ring-color solid;
+  outline-offset: -2px; }
+
+/* Styling for the listview item when it is the container of the swipeactions root element. */
+.oj-listview-item.oj-swipeactions-container {
+  padding: 0; }
+
+/* Styling for the content inside swipe actions when it is hosted within a listview item. */
+.oj-listview-item .oj-swipeactions-content {
+  padding: 0.85714rem; }
+
+/* Styling for the accessible link that displays the swipe actions when activate. */
+.oj-swipeactions-accessible-link {
+  position: absolute;
+  top: calc(100% - 20px); }
+
+/* Styling for the accessible link that closes the swipe actions when activate. */
+.oj-swipeactions-hide-actions-link {
+  position: absolute;
+  right: 0px; }
+
+/* Styling for the content of the accessible link that closes the swipe actions. */
+.oj-swipeactions-hide-actions-link:after {
+  content: "[X]"; }
 
 oj-switcher:not(.oj-complete) {
   visibility: hidden; }
@@ -9160,6 +9225,7 @@ oj-data-grid:not(.oj-complete) {
 .oj-datagrid:focus,
 .oj-datagrid-cell:focus,
 .oj-datagrid-header-cell:focus,
+.oj-datagrid-header-label:focus,
 .oj-datagrid-end-header-cell:focus,
 .oj-datagrid-scrollers:focus,
 .oj-datagrid-databody:focus {
@@ -9236,6 +9302,7 @@ html[dir="rtl"] .oj-datagrid-column-header-spacer.oj-datagrid-small-content-bord
   border-left-width: 1px; }
 
 /* Styling on header cells both for rows and columns, start and end */
+.oj-datagrid-header-label,
 .oj-datagrid-header-cell,
 .oj-datagrid-end-header-cell {
   position: absolute;
@@ -9249,6 +9316,8 @@ html[dir="rtl"] .oj-datagrid-column-header-spacer.oj-datagrid-small-content-bord
   display: flex; }
 
 /* Styling on the cells in the column and column end header, the default column header height should be set here*/
+.oj-datagrid-column-header-label,
+.oj-datagrid-column-end-header-label,
 .oj-datagrid-column-header-cell,
 .oj-datagrid-column-end-header-cell {
   height: 2.28571rem;
@@ -9259,24 +9328,45 @@ html[dir="rtl"] .oj-datagrid-column-header-spacer.oj-datagrid-small-content-bord
   text-align: center;
   -webkit-align-items: center;
   align-items: center; }
+  .oj-datagrid-column-header-label.oj-datagrid-depth-2,
+  .oj-datagrid-column-end-header-label.oj-datagrid-depth-2,
   .oj-datagrid-column-header-cell.oj-datagrid-depth-2,
   .oj-datagrid-column-end-header-cell.oj-datagrid-depth-2 {
     height: 64px; }
+  .oj-datagrid-column-header-label.oj-datagrid-depth-3,
+  .oj-datagrid-column-end-header-label.oj-datagrid-depth-3,
   .oj-datagrid-column-header-cell.oj-datagrid-depth-3,
   .oj-datagrid-column-end-header-cell.oj-datagrid-depth-3 {
     height: 96px; }
+  .oj-datagrid-column-header-label.oj-datagrid-depth-4,
+  .oj-datagrid-column-end-header-label.oj-datagrid-depth-4,
   .oj-datagrid-column-header-cell.oj-datagrid-depth-4,
   .oj-datagrid-column-end-header-cell.oj-datagrid-depth-4 {
     height: 128px; }
+  .oj-datagrid-column-header-label.oj-datagrid-depth-5,
+  .oj-datagrid-column-end-header-label.oj-datagrid-depth-5,
   .oj-datagrid-column-header-cell.oj-datagrid-depth-5,
   .oj-datagrid-column-end-header-cell.oj-datagrid-depth-5 {
     height: 160px; }
+  .oj-datagrid-column-header-label.oj-datagrid-depth-6,
+  .oj-datagrid-column-end-header-label.oj-datagrid-depth-6,
   .oj-datagrid-column-header-cell.oj-datagrid-depth-6,
   .oj-datagrid-column-end-header-cell.oj-datagrid-depth-6 {
     height: 192px; }
+  .oj-datagrid-column-header-label.oj-datagrid-depth-7,
+  .oj-datagrid-column-end-header-label.oj-datagrid-depth-7,
   .oj-datagrid-column-header-cell.oj-datagrid-depth-7,
   .oj-datagrid-column-end-header-cell.oj-datagrid-depth-7 {
     height: 224px; }
+
+.oj-datagrid-column-header-label,
+.oj-datagrid-column-end-header-label {
+  -webkit-justify-content: flex-end;
+  justify-content: flex-end;
+  text-align: right; }
+  html[dir="rtl"] .oj-datagrid-column-header-label, html[dir="rtl"]
+  .oj-datagrid-column-end-header-label {
+    text-align: left; }
 
 /* Styling on the cells in the column header */
 html:not([dir="rtl"]) .oj-datagrid-column-header-cell {
@@ -9286,13 +9376,17 @@ html[dir="rtl"] .oj-datagrid-column-header-cell {
   border-width: 0 0 1px 1px; }
 
 /* Styling on the cells in the column end header */
-html:not([dir="rtl"]) .oj-datagrid-column-end-header-cell {
+html:not([dir="rtl"]) .oj-datagrid-column-end-header-cell, html:not([dir="rtl"])
+.oj-datagrid-row-header-label {
   border-width: 1px 1px 0 0; }
 
-html[dir="rtl"] .oj-datagrid-column-end-header-cell {
+html[dir="rtl"] .oj-datagrid-column-end-header-cell, html[dir="rtl"]
+.oj-datagrid-row-header-label {
   border-width: 1px 0 0 1px; }
 
 /* Styling on row and row end header cells, the default row header width should be set here */
+.oj-datagrid-row-header-label,
+.oj-datagrid-row-end-header-label,
 .oj-datagrid-row-header-cell,
 .oj-datagrid-row-end-header-cell {
   -webkit-justify-content: flex-start;
@@ -9305,27 +9399,56 @@ html[dir="rtl"] .oj-datagrid-column-end-header-cell {
   border-color: #e0e1e1;
   border-style: solid;
   padding: 0.5em; }
-  html[dir="rtl"] .oj-datagrid-row-header-cell, html[dir="rtl"]
+  html[dir="rtl"] .oj-datagrid-row-header-label, html[dir="rtl"]
+  .oj-datagrid-row-end-header-label, html[dir="rtl"]
+  .oj-datagrid-row-header-cell, html[dir="rtl"]
   .oj-datagrid-row-end-header-cell {
     text-align: right; }
+  .oj-datagrid-row-header-label.oj-datagrid-depth-2,
+  .oj-datagrid-row-end-header-label.oj-datagrid-depth-2,
   .oj-datagrid-row-header-cell.oj-datagrid-depth-2,
   .oj-datagrid-row-end-header-cell.oj-datagrid-depth-2 {
     width: 116px; }
+  .oj-datagrid-row-header-label.oj-datagrid-depth-3,
+  .oj-datagrid-row-end-header-label.oj-datagrid-depth-3,
   .oj-datagrid-row-header-cell.oj-datagrid-depth-3,
   .oj-datagrid-row-end-header-cell.oj-datagrid-depth-3 {
     width: 174px; }
+  .oj-datagrid-row-header-label.oj-datagrid-depth-4,
+  .oj-datagrid-row-end-header-label.oj-datagrid-depth-4,
   .oj-datagrid-row-header-cell.oj-datagrid-depth-4,
   .oj-datagrid-row-end-header-cell.oj-datagrid-depth-4 {
     width: 232px; }
+  .oj-datagrid-row-header-label.oj-datagrid-depth-5,
+  .oj-datagrid-row-end-header-label.oj-datagrid-depth-5,
   .oj-datagrid-row-header-cell.oj-datagrid-depth-5,
   .oj-datagrid-row-end-header-cell.oj-datagrid-depth-5 {
     width: 290px; }
+  .oj-datagrid-row-header-label.oj-datagrid-depth-6,
+  .oj-datagrid-row-end-header-label.oj-datagrid-depth-6,
   .oj-datagrid-row-header-cell.oj-datagrid-depth-6,
   .oj-datagrid-row-end-header-cell.oj-datagrid-depth-6 {
     width: 348px; }
+  .oj-datagrid-row-header-label.oj-datagrid-depth-7,
+  .oj-datagrid-row-end-header-label.oj-datagrid-depth-7,
   .oj-datagrid-row-header-cell.oj-datagrid-depth-7,
   .oj-datagrid-row-end-header-cell.oj-datagrid-depth-7 {
     width: 406px; }
+
+.oj-datagrid-row-header-label,
+.oj-datagrid-row-end-header-label {
+  -webkit-justify-content: center;
+  justify-content: center;
+  text-align: center; }
+
+html:not([dir="rtl"]) .oj-datagrid-row-end-header-label {
+  border-width: 0 0 0 1px; }
+
+html[dir="rtl"] .oj-datagrid-row-end-header-label {
+  border-width: 0 1px 0 0; }
+
+.oj-datagrid-column-end-header-label {
+  border-width: 1px 0 0 0; }
 
 /* Styling on row header cells */
 html:not([dir="rtl"]) .oj-datagrid-row-header-cell {
@@ -9335,10 +9458,12 @@ html[dir="rtl"] .oj-datagrid-row-header-cell {
   border-width: 0 0 1px 1px; }
 
 /* Styling on row end header cells */
-html:not([dir="rtl"]) .oj-datagrid-row-end-header-cell {
+html:not([dir="rtl"]) .oj-datagrid-row-end-header-cell, html:not([dir="rtl"])
+.oj-datagrid-column-header-label {
   border-width: 0 0 1px 1px; }
 
-html[dir="rtl"] .oj-datagrid-row-end-header-cell {
+html[dir="rtl"] .oj-datagrid-row-end-header-cell, html[dir="rtl"]
+.oj-datagrid-column-header-label {
   border-width: 0 1px 1px 0; }
 
 /* Styling on databody cells */
@@ -9368,6 +9493,7 @@ html[dir="rtl"] .oj-datagrid-row-end-header-cell {
 /* Base styling on databody cell outlines when they are focused/edited */
 .oj-datagrid-cell.oj-focus::after,
 .oj-datagrid-header-cell.oj-focus::after,
+.oj-datagrid-header-label.oj-focus::after,
 .oj-datagrid-end-header-cell.oj-focus::after,
 .oj-datagrid-cell.oj-selected.oj-datagrid-selected-top::before,
 .oj-datagrid-cell.oj-selected.oj-datagrid-selected-bottom::before {
@@ -9380,12 +9506,14 @@ html[dir="rtl"] .oj-datagrid-row-end-header-cell {
   top: 0; }
   html:not([dir="rtl"]) .oj-datagrid-cell.oj-focus::after, html:not([dir="rtl"])
   .oj-datagrid-header-cell.oj-focus::after, html:not([dir="rtl"])
+  .oj-datagrid-header-label.oj-focus::after, html:not([dir="rtl"])
   .oj-datagrid-end-header-cell.oj-focus::after, html:not([dir="rtl"])
   .oj-datagrid-cell.oj-selected.oj-datagrid-selected-top::before, html:not([dir="rtl"])
   .oj-datagrid-cell.oj-selected.oj-datagrid-selected-bottom::before {
     left: 0; }
   html[dir="rtl"] .oj-datagrid-cell.oj-focus::after, html[dir="rtl"]
   .oj-datagrid-header-cell.oj-focus::after, html[dir="rtl"]
+  .oj-datagrid-header-label.oj-focus::after, html[dir="rtl"]
   .oj-datagrid-end-header-cell.oj-focus::after, html[dir="rtl"]
   .oj-datagrid-cell.oj-selected.oj-datagrid-selected-top::before, html[dir="rtl"]
   .oj-datagrid-cell.oj-selected.oj-datagrid-selected-bottom::before {
@@ -9489,6 +9617,7 @@ html[dir="rtl"] .oj-datagrid .oj-datagrid-cell.oj-datagrid-cell-no-padding {
 
 /* Styling on focused row and cell outlines, to use a background color don't use the after psuedo class */
 .oj-datagrid.oj-focus.oj-read-only .oj-datagrid-cell.oj-focus-highlight::after,
+.oj-datagrid.oj-focus .oj-datagrid-header-label.oj-focus-highlight::after,
 .oj-datagrid.oj-focus .oj-datagrid-header-cell.oj-focus-highlight::after,
 .oj-datagrid.oj-focus .oj-datagrid-end-header-cell.oj-focus-highlight::after {
   top: 1px;
@@ -9497,10 +9626,12 @@ html[dir="rtl"] .oj-datagrid .oj-datagrid-cell.oj-datagrid-cell-no-padding {
   outline: dotted 1px #000;
   outline: -webkit-focus-ring-color auto; }
   html:not([dir="rtl"]) .oj-datagrid.oj-focus.oj-read-only .oj-datagrid-cell.oj-focus-highlight::after, html:not([dir="rtl"])
+  .oj-datagrid.oj-focus .oj-datagrid-header-label.oj-focus-highlight::after, html:not([dir="rtl"])
   .oj-datagrid.oj-focus .oj-datagrid-header-cell.oj-focus-highlight::after, html:not([dir="rtl"])
   .oj-datagrid.oj-focus .oj-datagrid-end-header-cell.oj-focus-highlight::after {
     left: 1px; }
   html[dir="rtl"] .oj-datagrid.oj-focus.oj-read-only .oj-datagrid-cell.oj-focus-highlight::after, html[dir="rtl"]
+  .oj-datagrid.oj-focus .oj-datagrid-header-label.oj-focus-highlight::after, html[dir="rtl"]
   .oj-datagrid.oj-focus .oj-datagrid-header-cell.oj-focus-highlight::after, html[dir="rtl"]
   .oj-datagrid.oj-focus .oj-datagrid-end-header-cell.oj-focus-highlight::after {
     right: 1px; }
@@ -9550,6 +9681,7 @@ html[dir="rtl"] .oj-datagrid .oj-datagrid-cell.oj-datagrid-cell-no-padding {
   perspective: 1000; }
 
 /* Styling on header cells when hovered both for rows and columns */
+.oj-datagrid-header-label.oj-hover,
 .oj-datagrid-header-cell.oj-hover,
 .oj-datagrid-end-header-cell.oj-hover {
   background-color: #e0e1e1; }
@@ -10566,6 +10698,10 @@ oj-gantt:not(.oj-complete) {
 .oj-gantt-row {
   fill: #ffffff; }
 
+/* Styling related to rows as drop targets */
+.oj-gantt-row.oj-active-drop {
+  fill: #d9f4fa; }
+
 /* Styling for all row labels */
 .oj-gantt-row-label {
   fill: rgba(0, 0, 0, 0.85);
@@ -10600,6 +10736,18 @@ oj-gantt:not(.oj-complete) {
 .oj-gantt-task-summary {
   fill: #8a8d8f;
   filter: none; }
+
+/* Styling related to tasks as drag sources */
+.oj-gantt-task.oj-draggable,
+.oj-gantt-task-label.oj-draggable,
+.oj-gantt-task-progress.oj-draggable {
+  cursor: move; }
+
+.oj-gantt-task-drag-image {
+  fill-opacity: 0;
+  stroke: rgba(0, 0, 0, 0.8);
+  stroke-width: 1px;
+  stroke-dasharray: 5,2; }
 
 /* Styling for all task labels */
 .oj-gantt-task-label {
@@ -11335,6 +11483,7 @@ oj-timeline:not(.oj-complete) {
      * 1. allow summary text to wrap normally.
      */
 .oj-message-content .oj-message-summary {
+  white-space: normal;
   vertical-align: top; }
   html:not([dir="rtl"]) .oj-message-content .oj-message-summary {
     padding: 0 0 0 10px; }
@@ -11345,11 +11494,12 @@ oj-timeline:not(.oj-complete) {
      * message detail text 
      * 1. allow detail text to wrap normally.
      */
-html:not([dir="rtl"]) .oj-message-content .oj-message-detail {
-  padding: 7px 0 0 10px; }
-
-html[dir="rtl"] .oj-message-content .oj-message-detail {
-  padding: 7px 10px 0 0; }
+.oj-message-content .oj-message-detail {
+  white-space: normal; }
+  html:not([dir="rtl"]) .oj-message-content .oj-message-detail {
+    padding: 7px 0 0 10px; }
+  html[dir="rtl"] .oj-message-content .oj-message-detail {
+    padding: 7px 10px 0 0; }
 
 /**
      * wraps all hints
@@ -11556,6 +11706,9 @@ html .oj-form-control {
   width: 0;
   height: 0; }
 
+oj-form-layout {
+  display: block; }
+
 .oj-form-cols-labels-inline {
   -webkit-column-width: 22rem;
   -moz-column-width: 22rem;
@@ -11682,6 +11835,22 @@ html[dir="rtl"] .oj-formlayout-labels-inline > .oj-flex > .oj-flex-item:nth-chil
 .oj-formlayout-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) >
 .oj-label-nocomp:not(.oj-label-for-non-control) {
   line-height: 1.6em; }
+
+html:not([dir="rtl"]) .oj-formlayout-form-across > .oj-flex > .oj-flex-item:nth-child(2n+3) {
+  padding-left: 0.5em; }
+
+html[dir="rtl"] .oj-formlayout-form-across > .oj-flex > .oj-flex-item:nth-child(2n+3) {
+  padding-right: 0.5em; }
+
+html:not([dir="rtl"]) .oj-formlayout-form-across > .oj-flex > .oj-flex-item:nth-child(even) {
+  padding-right: 0.5em; }
+
+html[dir="rtl"] .oj-formlayout-form-across > .oj-flex > .oj-flex-item:nth-child(even) {
+  padding-left: 0.5em; }
+
+.oj-formlayout-labels-inline > .oj-flex {
+  -webkit-flex-wrap: nowrap;
+  flex-wrap: nowrap; }
 
 oj-form-layout:not(.oj-complete) {
   visibility: hidden; }
@@ -11958,6 +12127,7 @@ oj-input-number:not(.oj-complete) {
   border-width: 1px;
   -webkit-flex: 1;
   flex: 1;
+  width: 1em;
   min-width: 1em;
   outline: 0;
   box-sizing: border-box;
@@ -12126,6 +12296,10 @@ html[dir="rtl"] .oj-buttonset-multi.oj-button-full-chrome .oj-inputnumber-button
     border-right-width: 0; }
   html[dir="rtl"] .oj-inputnumber .oj-inputnumber-button.oj-buttonset-last {
     border-left-width: 0; }
+
+.oj-inputnumber.oj-disabled .oj-buttonset,
+.oj-inputnumber.oj-disabled .oj-inputnumber-button {
+  border-color: #ededee; }
 
 .oj-inputnumber .oj-buttonset {
   border-color: #e5e6e6;
@@ -12597,6 +12771,7 @@ oj-calendar:not(.oj-complete) {
   box-sizing: border-box;
   -webkit-flex: 1;
   flex: 1;
+  width: 1em;
   min-width: 1em;
   font-family: inherit;
   font-weight: normal;
@@ -13561,6 +13736,8 @@ oj-combobox:not(.oj-complete) {
   box-shadow: none;
   -webkit-flex: 1;
   flex: 1;
+  width: 1em;
+  min-width: 1em;
   border: 0;
   outline: 0;
   padding: 0;
@@ -15350,6 +15527,9 @@ html[dir="rtl"] .oj-flex-bar-end {
   .oj-sm-flex-initial {
     -webkit-flex: 0 1 auto;
     flex: 0 1 auto; }
+  .oj-sm-justify-content-flex-start {
+    -webkit-justify-content: flex-start;
+    justify-content: flex-start; }
   .oj-sm-justify-content-flex-end {
     -webkit-justify-content: flex-end;
     justify-content: flex-end; }
@@ -15421,6 +15601,9 @@ html[dir="rtl"] .oj-flex-bar-end {
   .oj-md-order-5 {
     -webkit-order: 5;
     order: 5; }
+  .oj-md-justify-content-flex-start {
+    -webkit-justify-content: flex-start;
+    justify-content: flex-start; }
   .oj-md-justify-content-flex-end {
     -webkit-justify-content: flex-end;
     justify-content: flex-end; }
@@ -15492,6 +15675,9 @@ html[dir="rtl"] .oj-flex-bar-end {
   .oj-lg-order-5 {
     -webkit-order: 5;
     order: 5; }
+  .oj-lg-justify-content-flex-start {
+    -webkit-justify-content: flex-start;
+    justify-content: flex-start; }
   .oj-lg-justify-content-flex-end {
     -webkit-justify-content: flex-end;
     justify-content: flex-end; }
@@ -15563,6 +15749,9 @@ html[dir="rtl"] .oj-flex-bar-end {
   .oj-xl-order-5 {
     -webkit-order: 5;
     order: 5; }
+  .oj-xl-justify-content-flex-start {
+    -webkit-justify-content: flex-start;
+    justify-content: flex-start; }
   .oj-xl-justify-content-flex-end {
     -webkit-justify-content: flex-end;
     justify-content: flex-end; }
@@ -15616,6 +15805,9 @@ html[dir="rtl"] .oj-flex-bar-end {
   .oj-sm-only-flex-initial {
     -webkit-flex: 0 1 auto;
     flex: 0 1 auto; }
+  .oj-sm-only-justify-content-flex-start {
+    -webkit-justify-content: flex-start;
+    justify-content: flex-start; }
   .oj-sm-only-justify-content-flex-end {
     -webkit-justify-content: flex-end;
     justify-content: flex-end; }
@@ -15669,6 +15861,9 @@ html[dir="rtl"] .oj-flex-bar-end {
   .oj-md-only-flex-initial {
     -webkit-flex: 0 1 auto;
     flex: 0 1 auto; }
+  .oj-md-only-justify-content-flex-start {
+    -webkit-justify-content: flex-start;
+    justify-content: flex-start; }
   .oj-md-only-justify-content-flex-end {
     -webkit-justify-content: flex-end;
     justify-content: flex-end; }
@@ -15722,6 +15917,9 @@ html[dir="rtl"] .oj-flex-bar-end {
   .oj-lg-only-flex-initial {
     -webkit-flex: 0 1 auto;
     flex: 0 1 auto; }
+  .oj-lg-only-justify-content-flex-start {
+    -webkit-justify-content: flex-start;
+    justify-content: flex-start; }
   .oj-lg-only-justify-content-flex-end {
     -webkit-justify-content: flex-end;
     justify-content: flex-end; }
@@ -17986,6 +18184,14 @@ html[dir="rtl"] .oj-flex-bar-end {
   .oj-sm-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) >
 .oj-label-nocomp:not(.oj-label-for-non-control) {
     line-height: 1.6em; }
+  html:not([dir="rtl"]) .oj-sm-form-across > .oj-flex > .oj-flex-item:nth-child(2n+3) {
+    padding-left: 0.5em; }
+  html[dir="rtl"] .oj-sm-form-across > .oj-flex > .oj-flex-item:nth-child(2n+3) {
+    padding-right: 0.5em; }
+  html:not([dir="rtl"]) .oj-sm-form-across > .oj-flex > .oj-flex-item:nth-child(even) {
+    padding-right: 0.5em; }
+  html[dir="rtl"] .oj-sm-form-across > .oj-flex > .oj-flex-item:nth-child(even) {
+    padding-left: 0.5em; }
   html:not([dir="rtl"]) .oj-form-layout:not(.oj-sm-only-flex-direction-column) > .oj-flex-item:not(:first-child) {
     margin-left: 0.5em; }
   html[dir="rtl"] .oj-form-layout:not(.oj-sm-only-flex-direction-column) > .oj-flex-item:not(:first-child) {
@@ -18037,15 +18243,7 @@ html[dir="rtl"] .oj-flex-bar-end {
   html:not([dir="rtl"]) .oj-sm-label-inline.oj-label label {
     float: none; }
   html[dir="rtl"] .oj-sm-label-inline.oj-label label {
-    float: none; }
-  html:not([dir="rtl"]) .oj-sm-form-across > .oj-flex > .oj-flex-item:nth-child(2n+3) {
-    padding-left: 0.5em; }
-  html[dir="rtl"] .oj-sm-form-across > .oj-flex > .oj-flex-item:nth-child(2n+3) {
-    padding-right: 0.5em; }
-  html:not([dir="rtl"]) .oj-sm-form-across > .oj-flex > .oj-flex-item:nth-child(even) {
-    padding-right: 0.5em; }
-  html[dir="rtl"] .oj-sm-form-across > .oj-flex > .oj-flex-item:nth-child(even) {
-    padding-left: 0.5em; } }
+    float: none; } }
 
 @media print, screen and (min-width: 768px) {
   .oj-form > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-md-label-nowrap,
@@ -18111,6 +18309,14 @@ html[dir="rtl"] .oj-flex-bar-end {
   .oj-md-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) >
 .oj-label-nocomp:not(.oj-label-for-non-control) {
     line-height: 1.6em; }
+  html:not([dir="rtl"]) .oj-md-form-across > .oj-flex > .oj-flex-item:nth-child(2n+3) {
+    padding-left: 0.5em; }
+  html[dir="rtl"] .oj-md-form-across > .oj-flex > .oj-flex-item:nth-child(2n+3) {
+    padding-right: 0.5em; }
+  html:not([dir="rtl"]) .oj-md-form-across > .oj-flex > .oj-flex-item:nth-child(even) {
+    padding-right: 0.5em; }
+  html[dir="rtl"] .oj-md-form-across > .oj-flex > .oj-flex-item:nth-child(even) {
+    padding-left: 0.5em; }
   html:not([dir="rtl"]) .oj-form-layout:not(.oj-md-only-flex-direction-column) > .oj-flex-item:not(:first-child) {
     margin-left: 0.5em; }
   html[dir="rtl"] .oj-form-layout:not(.oj-md-only-flex-direction-column) > .oj-flex-item:not(:first-child) {
@@ -18162,15 +18368,7 @@ html[dir="rtl"] .oj-flex-bar-end {
   html:not([dir="rtl"]) .oj-md-label-inline.oj-label label {
     float: none; }
   html[dir="rtl"] .oj-md-label-inline.oj-label label {
-    float: none; }
-  html:not([dir="rtl"]) .oj-md-form-across > .oj-flex > .oj-flex-item:nth-child(2n+3) {
-    padding-left: 0.5em; }
-  html[dir="rtl"] .oj-md-form-across > .oj-flex > .oj-flex-item:nth-child(2n+3) {
-    padding-right: 0.5em; }
-  html:not([dir="rtl"]) .oj-md-form-across > .oj-flex > .oj-flex-item:nth-child(even) {
-    padding-right: 0.5em; }
-  html[dir="rtl"] .oj-md-form-across > .oj-flex > .oj-flex-item:nth-child(even) {
-    padding-left: 0.5em; } }
+    float: none; } }
 
 @media print and (orientation: landscape), screen and (min-width: 1024px) {
   .oj-form > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-lg-label-nowrap,
@@ -18236,6 +18434,14 @@ html[dir="rtl"] .oj-flex-bar-end {
   .oj-lg-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) >
 .oj-label-nocomp:not(.oj-label-for-non-control) {
     line-height: 1.6em; }
+  html:not([dir="rtl"]) .oj-lg-form-across > .oj-flex > .oj-flex-item:nth-child(2n+3) {
+    padding-left: 0.5em; }
+  html[dir="rtl"] .oj-lg-form-across > .oj-flex > .oj-flex-item:nth-child(2n+3) {
+    padding-right: 0.5em; }
+  html:not([dir="rtl"]) .oj-lg-form-across > .oj-flex > .oj-flex-item:nth-child(even) {
+    padding-right: 0.5em; }
+  html[dir="rtl"] .oj-lg-form-across > .oj-flex > .oj-flex-item:nth-child(even) {
+    padding-left: 0.5em; }
   html:not([dir="rtl"]) .oj-form-layout:not(.oj-lg-only-flex-direction-column) > .oj-flex-item:not(:first-child) {
     margin-left: 0.5em; }
   html[dir="rtl"] .oj-form-layout:not(.oj-lg-only-flex-direction-column) > .oj-flex-item:not(:first-child) {
@@ -18287,15 +18493,7 @@ html[dir="rtl"] .oj-flex-bar-end {
   html:not([dir="rtl"]) .oj-lg-label-inline.oj-label label {
     float: none; }
   html[dir="rtl"] .oj-lg-label-inline.oj-label label {
-    float: none; }
-  html:not([dir="rtl"]) .oj-lg-form-across > .oj-flex > .oj-flex-item:nth-child(2n+3) {
-    padding-left: 0.5em; }
-  html[dir="rtl"] .oj-lg-form-across > .oj-flex > .oj-flex-item:nth-child(2n+3) {
-    padding-right: 0.5em; }
-  html:not([dir="rtl"]) .oj-lg-form-across > .oj-flex > .oj-flex-item:nth-child(even) {
-    padding-right: 0.5em; }
-  html[dir="rtl"] .oj-lg-form-across > .oj-flex > .oj-flex-item:nth-child(even) {
-    padding-left: 0.5em; } }
+    float: none; } }
 
 @media screen and (min-width: 1281px) {
   .oj-form > .oj-flex > .oj-flex-item:nth-child(odd) > .oj-xl-label-nowrap,
@@ -18361,6 +18559,14 @@ html[dir="rtl"] .oj-flex-bar-end {
   .oj-xl-labels-inline > .oj-flex > .oj-flex-item:nth-child(odd) >
 .oj-label-nocomp:not(.oj-label-for-non-control) {
     line-height: 1.6em; }
+  html:not([dir="rtl"]) .oj-xl-form-across > .oj-flex > .oj-flex-item:nth-child(2n+3) {
+    padding-left: 0.5em; }
+  html[dir="rtl"] .oj-xl-form-across > .oj-flex > .oj-flex-item:nth-child(2n+3) {
+    padding-right: 0.5em; }
+  html:not([dir="rtl"]) .oj-xl-form-across > .oj-flex > .oj-flex-item:nth-child(even) {
+    padding-right: 0.5em; }
+  html[dir="rtl"] .oj-xl-form-across > .oj-flex > .oj-flex-item:nth-child(even) {
+    padding-left: 0.5em; }
   html:not([dir="rtl"]) .oj-form-layout:not(.oj-xl-only-flex-direction-column) > .oj-flex-item:not(:first-child) {
     margin-left: 0.5em; }
   html[dir="rtl"] .oj-form-layout:not(.oj-xl-only-flex-direction-column) > .oj-flex-item:not(:first-child) {
@@ -18412,15 +18618,7 @@ html[dir="rtl"] .oj-flex-bar-end {
   html:not([dir="rtl"]) .oj-xl-label-inline.oj-label label {
     float: none; }
   html[dir="rtl"] .oj-xl-label-inline.oj-label label {
-    float: none; }
-  html:not([dir="rtl"]) .oj-xl-form-across > .oj-flex > .oj-flex-item:nth-child(2n+3) {
-    padding-left: 0.5em; }
-  html[dir="rtl"] .oj-xl-form-across > .oj-flex > .oj-flex-item:nth-child(2n+3) {
-    padding-right: 0.5em; }
-  html:not([dir="rtl"]) .oj-xl-form-across > .oj-flex > .oj-flex-item:nth-child(even) {
-    padding-right: 0.5em; }
-  html[dir="rtl"] .oj-xl-form-across > .oj-flex > .oj-flex-item:nth-child(even) {
-    padding-left: 0.5em; } }
+    float: none; } }
 
 .oj-applayout-fixed-top, .oj-hybrid-applayout-navbar-fixed-top,
 .oj-applayout-fixed-bottom,

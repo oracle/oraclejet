@@ -275,9 +275,9 @@ oj.FlattenedTreeCellSet.prototype.getExtent = function(indexes)
  * The DataGrid specific implementation of the FlattenedTreeDataSource class.
  * @param {Object} treeDataSource the instance of TreeDataSource to flattened
  * @param {Object=} options the options set on this data source
- * @property {(Array.<*>|string)=} options.expanded an array of the initial row keys that should be expanded, if all rows are expanded to start, specify the string 'all'
- * @property {Array.<*>=} options.columns an array of columns to return as column headers
- * @property {*} options.rowHeader the key of the attribute designated as the row header
+ * @property {(Array.<any>|string)=} options.expanded an array of the initial row keys that should be expanded, if all rows are expanded to start, specify the string 'all'
+ * @property {Array.<any>=} options.columns an array of columns to return as column headers
+ * @property {any} options.rowHeader the key of the attribute designated as the row header
  * @constructor
  * @since 1.0
  * @export
@@ -485,8 +485,8 @@ oj.FlattenedTreeDataGridDataSource.prototype.keys = function(indexes)
 /**
  * Returns the row and column index based on the keys.
  * @param {Object} keys the key for each axis
- * @param {*} keys.row the key for the row axis
- * @param {*} keys.column the key for the column axis
+ * @param {any} keys.row the key for the row axis
+ * @param {any} keys.column the key for the column axis
  * @return {Promise.<Object>} a promise object containing the index for each axis, or null if not found
  * @export
  * @method
@@ -531,7 +531,7 @@ oj.FlattenedTreeDataGridDataSource.prototype.indexes = function(keys)
  * Performs a sort on the data source.
  * @param {Object|null} criteria the sort criteria. 
  * @property {string} criteria.axis The axis in which the sort is performed, valid values are "row", "column"
- * @property {*} criteria.key The key that identifies which header to sort
+ * @property {any} criteria.key The key that identifies which header to sort
  * @property {string} criteria.direction the sort direction, valid values are "ascending", "descending", "none" (default)
  * @param {Object=} callbacks the callbacks to be invoke upon completion of the sort operation.
  * @property {function():undefined=} callbacks.success the callback to invoke when the sort completed successfully.  
@@ -578,8 +578,8 @@ oj.FlattenedTreeDataGridDataSource.prototype._handleSortSuccess = function(callb
 
 /**
  * Moves a row from one location to another (different position within the same parent or a completely different parent)
- * @param {*} rowToMove the key of the row to move
- * @param {*} referenceRow the key of the reference row which combined with position are used to determine 
+ * @param {any} rowToMove the key of the row to move
+ * @param {any} referenceRow the key of the reference row which combined with position are used to determine 
  *        the destination of where the row should moved to.
  * @param {number|string} position The position of the moved row relative to the reference row.  Valid values are: "before", "after".
  * @param {Object=} callbacks the callbacks to be invoke upon completion of the move operation.
@@ -626,7 +626,7 @@ oj.FlattenedTreeDataGridDataSource.prototype.getCapability = function(feature)
 
 /**
  * A hook for FlattenedTreeDataSource to inject additional metadata into the NodeSet
- * @param {*} key the row key identifying the row
+ * @param {any} key the row key identifying the row
  * @param {Object} metadata the existing metadata to inject into
  * @protected
  */
@@ -791,7 +791,7 @@ oj.FlattenedTreeDataGridDataSource.prototype._handleRowHeaderFetchSuccess = func
 /**
  * Implementation of abstract method to insert a set of rows into the DataGrid
  * @param {number} insertAtIndex the flattened index of the node where the rows are inserted.
- * @param {*} insertAtRowKey the key of the node where the rows are inserted (the parent key)
+ * @param {any} insertAtRowKey the key of the node where the rows are inserted (the parent key)
  * @param {Object} nodeSet the node set containing data/metadata of inserted rows
  * @protected
  */
@@ -832,7 +832,7 @@ oj.FlattenedTreeDataGridDataSource.prototype.insertRows = function(insertAtIndex
 
 /**
  * Implementation of abstract method to remove the specified rows in the DataGrid
- * @param {Array.<*>} rowKeys an array of keys of the rows to be remove.
+ * @param {Array.<any>} rowKeys an array of keys of the rows to be remove.
  * @protected
  */
 oj.FlattenedTreeDataGridDataSource.prototype.removeRows = function(rowKeys)
@@ -906,7 +906,7 @@ oj.FlattenedTreeHeaderSet = function(start, end, headers, nodeSet, rowHeader)
  * 2) the index specified is out of bounds. 
  * @param {number} index the absolute index of the header in which we want to retrieve the header from.  
  * @param {number=} level the level of the header, 0 is the outermost header and increments by 1 moving inward
- * @return {*} the data object for the specific index.
+ * @return {any} the data object for the specific index.
  * @export
  * @expose
  * @method
@@ -1068,4 +1068,19 @@ oj.FlattenedTreeHeaderSet.prototype.getDepth = function(index, level)
     
     return 1;
 };
+
+/**
+ * Gets the label for the level along the axis of that header. Specify null to have no header labels.
+ * @param {number} level the header level to retrieve the label data for
+ * @return {*} the data for the header label
+ * @export
+ * @expose
+ * @method
+ * @instance
+ * @memberof oj.FlattenedTreeHeaderSet
+ */
+oj.FlattenedTreeHeaderSet.prototype.getLabel = function () {
+  return null;
+};
+
 });

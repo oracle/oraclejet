@@ -1,7 +1,7 @@
 {
   "name": "oj-data-grid",
-  "version": "5.0.0",
-  "jetVersion": "5.0.0",
+  "version": "5.1.0",
+  "jetVersion": "5.1.0",
   "displayName": "Data Grid",
   "preview": true,
   "roles": [
@@ -11,15 +11,21 @@
   "styleClasses": [
     {
       "styleGroup": [
-        "oj-helper-justify-content-[direction]"
+        "oj-[size]-justify-content-[flexjustify]"
       ],
-      "description": "Use this class on cells' and headers' className property to align your content horizontally. By default the alignment is flex-end on cells and varies on headers, see other possibilities in the flex layout justify section."
+      "description": "Use this class on cells' and headers' className property to align your content horizontally. By default the alignment is flex-end on cells and varies on headers, see other possibilities in the [Flex Layout]{@link FlexLayout} justify section for size and flexjustify options."
     },
     {
       "styleGroup": [
-        "oj-helper-align-items-[direction]"
+        "oj-[size]-align-items-[flexalign]"
       ],
-      "description": "Use this class on cells' and headers' className property to align your content vertically. By default the alignment is center on cells and headers, see other possibilities in the flex layout align section."
+      "description": "Use this class on cells' and headers' className property to align your content vertically. By default the alignment is center on cells and headers, see other possibilities in the [Flex Layout]{@link FlexLayout} align section for size and flexalign options."
+    },
+    {
+      "styleGroup": [
+        "oj-helper-justify-content-[direction]"
+      ],
+      "description": "Direction can be left or right. Use this class on cells' and headers' className align your content horizontally to the left or right. See the [Helpers]{@link Helpers} section for details. This handles the always one direction case that flexjustify does not."
     },
     {
       "styleGroup": [
@@ -35,7 +41,7 @@
     },
     {
       "styleGroup": [
-        "oj-datagrid-depth-[number]"
+        "oj-datagrid-depth-[1-7]"
       ],
       "description": "Used to style the default header widths and heights. By default the datagrid supports up to depth 7. If you have headers width depth greater than 7 specify the defaults using the class name description or use apply custom style rules to the headers."
     }
@@ -44,7 +50,7 @@
   "properties": {
     "bandingInterval": {
       "description": "Specifies the data body row and column banding intervals.",
-      "type": "Object.<string, number>",
+      "type": "Object",
       "displayName": "Banding Interval",
       "value": {
         "row": 0,
@@ -91,11 +97,11 @@
       "writeback": true,
       "properties": {
         "type": {
-          "description": "designates whether a header or databody cell is the current cell, valid values are: 'cell', 'header'",
+          "description": "designates whether a header or databody cell is the current cell, valid values are: 'cell', 'header', 'label'",
           "type": "string"
         },
         "axis": {
-          "description": "header axis, available if type is header, valid values are: 'row', 'column', 'rowEnd', 'columnEnd'",
+          "description": "header axis, available if type is header or label, valid values are: 'row', 'column', 'rowEnd', 'columnEnd'",
           "type": "string"
         },
         "index": {
@@ -103,7 +109,7 @@
           "type": "number"
         },
         "level": {
-          "description": "header level, available if type is header",
+          "description": "header level, available if type is header or label",
           "type": "number"
         },
         "key": {
@@ -196,7 +202,7 @@
     },
     "gridlines": {
       "description": "Specifies the visibility of the grid body vertical and horizontal gridlines.",
-      "type": "Object.<string, string>",
+      "type": "Object",
       "displayName": "Gridlines",
       "value": {
         "horizontal": "visible",
@@ -215,17 +221,38 @@
     },
     "header": {
       "description": "Specifies attributes on the headers.",
-      "type": "",
+      "type": "Object",
       "displayName": "Header",
       "properties": {
         "column": {
           "description": "Specifies attributes on the column headers.",
-          "type": "",
+          "type": "Object",
           "properties": {
             "className": {
               "description": "CSS class names to apply to column headers.",
               "type": "function|string|null",
               "value": null
+            },
+            "label": {
+              "description": "Specifies attributes on the column header labels.",
+              "type": "Object",
+              "properties": {
+                "className": {
+                  "description": "CSS class names to apply to column header labels.",
+                  "type": "function|string|null",
+                  "value": null
+                },
+                "renderer": {
+                  "description": "Specifies what renders is the column header labels.",
+                  "type": "function|null",
+                  "value": null
+                },
+                "style": {
+                  "description": "Inline style to apply to column header labels.",
+                  "type": "function|string|null",
+                  "value": null
+                }
+              }
             },
             "renderer": {
               "description": "Specifies what renders is the column headers.",
@@ -234,7 +261,7 @@
             },
             "resizable": {
               "description": "Specifies resizing width or height on the column headers.",
-              "type": "Object.<string, string>|Object.<string, function(Object)>|null",
+              "type": "Object<string, string>|Object<string, function(Object)>|null",
               "value": {
                 "width": "disable",
                 "height": "disable"
@@ -283,12 +310,33 @@
         },
         "columnEnd": {
           "description": "Specifies attributes on the column end headers.",
-          "type": "",
+          "type": "Object",
           "properties": {
             "className": {
               "description": "CSS class names to apply to column end headers.",
               "type": "function|string|null",
               "value": null
+            },
+            "label": {
+              "description": "Specifies attributes on the columnEnd header labels.",
+              "type": "Object",
+              "properties": {
+                "className": {
+                  "description": "CSS class names to apply to columnEnd header labels.",
+                  "type": "function|string|null",
+                  "value": null
+                },
+                "renderer": {
+                  "description": "Specifies what renders is the columnEnd header labels.",
+                  "type": "function|null",
+                  "value": null
+                },
+                "style": {
+                  "description": "Inline style to apply to columnEnd header labels.",
+                  "type": "function|string|null",
+                  "value": null
+                }
+              }
             },
             "renderer": {
               "description": "Specifies what renders is the column end headers.",
@@ -297,7 +345,7 @@
             },
             "resizable": {
               "description": "Specifies resizing width or height on the column end headers.",
-              "type": "Object.<string, string>|Object.<string, function(Object)>|null",
+              "type": "Object<string, string>|Object<string, function(Object)>|null",
               "value": {
                 "width": "disable",
                 "height": "disable"
@@ -322,12 +370,33 @@
         },
         "row": {
           "description": "Specifies attributes on the row headers.",
-          "type": "",
+          "type": "Object",
           "properties": {
             "className": {
               "description": "CSS class names to apply to row headers.",
               "type": "function|string|null",
               "value": null
+            },
+            "label": {
+              "description": "Specifies attributes on the row header labels.",
+              "type": "Object",
+              "properties": {
+                "className": {
+                  "description": "CSS class names to apply to row header labels.",
+                  "type": "function|string|null",
+                  "value": null
+                },
+                "renderer": {
+                  "description": "Specifies what renders is the row header labels.",
+                  "type": "function|null",
+                  "value": null
+                },
+                "style": {
+                  "description": "Inline style to apply to row header labels.",
+                  "type": "function|string|null",
+                  "value": null
+                }
+              }
             },
             "renderer": {
               "description": "Specifies what renders is the row headers.",
@@ -336,7 +405,7 @@
             },
             "resizable": {
               "description": "Specifies resizing width or height on the row headers.",
-              "type": "Object.<string, string>|Object.<string, function(Object)>|null",
+              "type": "Object<string, string>|Object<string, function(Object)>|null",
               "value": {
                 "width": "disable",
                 "height": "disable"
@@ -385,12 +454,33 @@
         },
         "rowEnd": {
           "description": "Specifies attributes on the row end headers.",
-          "type": "",
+          "type": "Object",
           "properties": {
             "className": {
               "description": "CSS class names to apply to row end headers.",
               "type": "function|string|null",
               "value": null
+            },
+            "label": {
+              "description": "Specifies attributes on the rowEnd header labels.",
+              "type": "Object",
+              "properties": {
+                "className": {
+                  "description": "CSS class names to apply to rowEnd header labels.",
+                  "type": "function|string|null",
+                  "value": null
+                },
+                "renderer": {
+                  "description": "Specifies what renders is the rowEnd header labels.",
+                  "type": "function|null",
+                  "value": null
+                },
+                "style": {
+                  "description": "Inline style to apply to rowEnd header labels.",
+                  "type": "function|string|null",
+                  "value": null
+                }
+              }
             },
             "renderer": {
               "description": "Specifies what renders is the row end headers.",
@@ -399,7 +489,7 @@
             },
             "resizable": {
               "description": "Specifies resizing width or height on the row end headers.",
-              "type": "Object.<string, string>|Object.<string, function(Object)>|null",
+              "type": "Object<string, string>|Object<string, function(Object)>|null",
               "value": {
                 "width": "disable",
                 "height": "disable"
@@ -451,7 +541,7 @@
     },
     "scrollPolicyOptions": {
       "description": "Gets and sets the fetch options for scrolling behaviors that triggers data fetches.",
-      "type": "Object.<number>|null",
+      "type": "Object|null",
       "displayName": "Scroll Policy Options",
       "value": {
         "maxRowCount": 500,
@@ -495,11 +585,11 @@
         },
         "rowKey": {
           "description": "the row key of the cell at the origin of the grid. If DataGridDataSource is used for data and the key does not exist in the DataGridDataSource, then the value is ignored. If it is unknown in the data source then the grid will fetch and scroll until the item is found or the end of the axis is reached and there's no more items to fetch.",
-          "type": "*"
+          "type": "any"
         },
         "columnKey": {
           "description": "the column key of the cell at the origin of the grid. If DataGridDataSource is used for data and the key does not exist in the DataGridDataSource, then the value is ignored. If it is unknown in the data source then the grid will fetch and scroll until the item is found or the end of the axis is reached and there's no more items to fetch.",
-          "type": "*"
+          "type": "any"
         },
         "offsetX": {
           "description": "the horizontal offset in pixel relative to the cell identified by key/index.",
@@ -520,7 +610,7 @@
     },
     "selectionMode": {
       "description": "Specifies row or cell selection.",
-      "type": "Object.<string, string>",
+      "type": "Object",
       "displayName": "Selection Mode",
       "value": {
         "cell": "none",
@@ -756,7 +846,7 @@
         {
           "name": "value",
           "description": "The new value to set the property to.",
-          "type": "*"
+          "type": "any"
         }
       ],
       "return": "void"
@@ -770,7 +860,7 @@
           "type": "string"
         }
       ],
-      "return": "*"
+      "return": "any"
     },
     "setProperties": {
       "description": "Performs a batch set of properties.",

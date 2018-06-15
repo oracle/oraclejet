@@ -330,7 +330,7 @@ oj.__registerWidget("oj.ojRadioset", $['oj']['editableValue'],
      * @ojwriteback
      * @default null
      * @memberof oj.ojRadioset
-     * @type {*}
+     * @type {any}
      */
     value: undefined
   },
@@ -563,10 +563,11 @@ oj.__registerWidget("oj.ojRadioset", $['oj']['editableValue'],
    * @protected
    * @since 5.0.0
    */
-  GetFocusElement : function ()
-  {
-    // We need :focusable here so that we don't try to focus on an element that isn't focusable.
-    return this._GetContentElement().filter(":focusable").first()[0];
+  GetFocusElement: function () {
+    // We need :disabled here so that we don't try to focus on an element that isn't focusable.
+    // :focusable doesn't work because this is called before the custom element is fully upgraded
+    // and is still hidden in the DOM.
+    return this._GetContentElement().not(':disabled').first()[0];
   },
   /**
    * Whether the component is required.
@@ -694,6 +695,8 @@ oj.__registerWidget("oj.ojRadioset", $['oj']['editableValue'],
       label = document.createElement("label");
       span.setAttribute("class", "oj-choice-item");
       radio.setAttribute("type", "radio");
+      // The value is needed for accessibiliy of the image used for the radio
+      radio.setAttribute('value', ojoption.value);
       radio.setAttribute("id", radioId);
       label.setAttribute("for", radioId);
       ojoption.parentElement.insertBefore(span, ojoption);//@HTMLUpdateOK
@@ -974,7 +977,7 @@ oj.__registerWidget("oj.ojRadioset", $['oj']['editableValue'],
    * @override
    * @protected
    * @memberof oj.ojRadioset
-   * @return {*} The value of the selected radio, or null if no selection.
+   * @return {any} The value of the selected radio, or null if no selection.
    */
   _GetElementValue : function () 
   {
@@ -995,7 +998,7 @@ oj.__registerWidget("oj.ojRadioset", $['oj']['editableValue'],
    * @override
    * @protected
    * @memberof oj.ojRadioset
-   * @return {*} Returns the value property of the associated oj-option, or the value attribute of the radio element.
+   * @return {any} Returns the value property of the associated oj-option, or the value attribute of the radio element.
    */
   _GetOptionValue : function (radioElem)
   {

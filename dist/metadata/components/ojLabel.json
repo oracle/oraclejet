@@ -1,7 +1,7 @@
 {
   "name": "oj-label",
-  "version": "5.0.0",
-  "jetVersion": "5.0.0",
+  "version": "5.1.0",
+  "jetVersion": "5.1.0",
   "displayName": "Label",
   "preview": true,
   "styleClasses": [
@@ -16,6 +16,24 @@
         "oj-label-accesskey"
       ],
       "description": "Use this in a span around a single text character in the oj-label's text. It styles the character in a way that indicates to the user that this character is the accesskey. Use this in conjunction with the HTML accesskey attribute on the oj-label element."
+    },
+    {
+      "styleGroup": [
+        "oj-label-nowrap"
+      ],
+      "description": "place on the oj-label element to have it not wrap when you don't want to use the responsive design classes (e.g., oj-md-labels-nowrap or oj-md-label-nowrap)."
+    },
+    {
+      "styleGroup": [
+        "oj-label-inline"
+      ],
+      "description": "place on the oj-label element to inline the label with the sibling dom element when you don't want to use the responsive design classes (e.g., oj-md-labels-inline)."
+    },
+    {
+      "styleGroup": [
+        "oj-label-inline-top"
+      ],
+      "description": "place on a label element or oj-label element to inline the label with the sibling dom element and have zero margin-top."
     }
   ],
   "description": "Provides support for 'required' and 'help' icons on form field labels.",
@@ -28,7 +46,7 @@
     },
     "help": {
       "description": "The help information that goes on the oj-label. The help attributes are:\n\ndefinition - this is the help definition text. \nIt is what shows up\nwhen the user hovers over the help icon, or tabs into the help icon, or press\nand holds the help icon on a mobile device. No formatted text is available for\nhelp definition attribute.\nsource - this is the help source url.\nIf present, a help icon will\nrender next to the label. For security reasons we only support urls with protocol http: or https:.\nIf the url doesn't comply we ignore it and throw an error.\nPass in an encoded URL since we do not encode the URL.\n",
-      "type": "Object.<string, string>|null",
+      "type": "Object|null",
       "displayName": "Help",
       "value": {
         "definition": null,
@@ -92,7 +110,7 @@
         {
           "name": "value",
           "description": "The new value to set the property to.",
-          "type": "*"
+          "type": "any"
         }
       ],
       "return": "void"
@@ -106,7 +124,7 @@
           "type": "string"
         }
       ],
-      "return": "*"
+      "return": "any"
     },
     "setProperties": {
       "description": "Performs a batch set of properties.",

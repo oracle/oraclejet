@@ -2203,7 +2203,7 @@ oj.Router.prototype.go = function(stateIdPath, options) {
  * Internal go used by _executeTransition
  * @private
  * @param  {Object} transition An object with properties describing the transition
- * @return {*} A Promise that resolves when the routing is done
+ * @return {any} A Promise that resolves when the routing is done
  */
 oj.Router.prototype._go = function(transition) {
    var path,
@@ -2354,7 +2354,7 @@ oj.Router.prototype.store = function(data) {
 
 /**
  * Retrieve the additional data stored in the URL.
- * @return {*} the content stored in the URL
+ * @return {any} the content stored in the URL
  * @export
  * @example <caption>Retrieve the value of the background color stored in the URL:</caption>
  *  oj.Router.sync().then(
@@ -3419,7 +3419,7 @@ var stateParamExp = /^{(\w+)}$/;
    * @typedef {object} oj.RouterState.ConfigOptions
    * @property {string=} label the string to be displayed in the command component.
    * See the {@link oj.RouterState#label} property.
-   * @property {*=} value the object associated with this state.
+   * @property {any=} value the object associated with this state.
    * See the {@link oj.RouterState#value} property.
    * @property {boolean=} isDefault true if this state is the default.
    * See the {@link oj.Router#defaultStateId|defaultStateId} property.
@@ -3454,7 +3454,7 @@ var stateParamExp = /^{(\w+)}$/;
     * @param {!Object=} options an object defining the state.
     * @param {string=} options.label the string to be displayed in the command component.
     * See the {@link oj.RouterState#label} property.
-    * @param {*=} options.value the object associated with this state.
+    * @param {any=} options.value the object associated with this state.
     * See the {@link oj.RouterState#value} property.
     * @param {boolean=} options.isDefault true if this state is the default.
     * See the {@link oj.Router#defaultStateId|defaultStateId} property.
@@ -3620,7 +3620,7 @@ var stateParamExp = /^{(\w+)}$/;
        * The value associated with this state. When this state is the current state of the
        * router, it is the value returned by the observable {@link oj.Router#currentValue}.
        * @name oj.RouterState#value
-       * @type {*}
+       * @type {any}
        */
       this._value = options['value'];
 

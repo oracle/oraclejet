@@ -1,7 +1,7 @@
 {
   "name": "oj-bind-slot",
-  "version": "5.0.0",
-  "jetVersion": "5.0.0",
+  "version": "5.1.0",
+  "jetVersion": "5.1.0",
   "displayName": "Bind Slot",
   "preview": true,
   "description": "A placeholder for child DOM to appear in a specified slot.",
@@ -13,7 +13,7 @@
     },
     "name": {
       "description": "The name of the slot.",
-      "type": "boolean",
+      "type": "string",
       "displayName": "Name"
     }
   }

@@ -48,6 +48,7 @@
         .oj-datagrid:focus,
         .oj-datagrid-cell:focus,
         .oj-datagrid-header-cell:focus,
+        .oj-datagrid-header-label:focus,
         .oj-datagrid-end-header-cell:focus,
         .oj-datagrid-scrollers:focus,
         .oj-datagrid-databody:focus,{
@@ -139,6 +140,7 @@
         }
 
         /* Styling on header cells both for rows and columns, start and end */
+        .oj-datagrid-header-label,
         .oj-datagrid-header-cell,
         .oj-datagrid-end-header-cell {
             //sizing and position
@@ -155,6 +157,8 @@
         }
 
         /* Styling on the cells in the column and column end header, the default column header height should be set here*/
+        .oj-datagrid-column-header-label,
+        .oj-datagrid-column-end-header-label,
         .oj-datagrid-column-header-cell,
         .oj-datagrid-column-end-header-cell {
             //match the row height
@@ -166,6 +170,12 @@
             @include oj-align-items-property($collectionColumnHeaderAlignItems);
             // Styling to provide default heights for column and columnEnd headers with depth greater than 1, depth 2 spans 2 header levels.
             @include oj-property-multiplier($selectorName: 'oj-datagrid-depth', $propertyName: 'height', $propertyMultiplicand: $collectionHeaderHeight, $minMultiplier: 2, $maxMultiplier: 7);
+        }
+        
+        .oj-datagrid-column-header-label,
+        .oj-datagrid-column-end-header-label {
+            @include oj-justify-content-property(flex-end);
+            @include oj-justify-content-to-text-align(flex-end);
         }
 
         /* Styling on the cells in the column header */
@@ -180,7 +190,8 @@
         }
 
         /* Styling on the cells in the column end header */
-        .oj-datagrid-column-end-header-cell {
+        .oj-datagrid-column-end-header-cell,
+        .oj-datagrid-row-header-label {
             @include oj-ltr() {
                 border-width: 1px 1px 0 0;
             }
@@ -191,6 +202,8 @@
         }
 
         /* Styling on row and row end header cells, the default row header width should be set here */
+        .oj-datagrid-row-header-label,
+        .oj-datagrid-row-end-header-label,
         .oj-datagrid-row-header-cell,
         .oj-datagrid-row-end-header-cell {
             @include oj-justify-content-property($collectionRowHeaderJustifyContent);
@@ -205,6 +218,27 @@
             @include oj-property-multiplier($selectorName: 'oj-datagrid-depth', $propertyName: 'width', $propertyMultiplicand: $collectionColumnWidth, $minMultiplier: 2, $maxMultiplier: 7);
         }
         
+        
+        .oj-datagrid-row-header-label,
+        .oj-datagrid-row-end-header-label {
+            @include oj-justify-content-property(center);
+            @include oj-justify-content-to-text-align(center);
+        }
+        
+        .oj-datagrid-row-end-header-label {
+            @include oj-ltr() {
+                border-width: 0 0 0 1px;
+            }
+
+            @include oj-rtl() {
+                border-width: 0 1px 0 0;
+            }
+        }
+        
+        .oj-datagrid-column-end-header-label {
+            border-width: 1px 0 0 0;
+        }
+        
         /* Styling on row header cells */
         .oj-datagrid-row-header-cell {
             @include oj-ltr() {
@@ -217,7 +251,8 @@
         }
 
         /* Styling on row end header cells */
-        .oj-datagrid-row-end-header-cell {
+        .oj-datagrid-row-end-header-cell,
+        .oj-datagrid-column-header-label {
             @include oj-ltr() {
                 border-width: 0 0 1px 1px;
             }
@@ -256,6 +291,7 @@
         /* Base styling on databody cell outlines when they are focused/edited */
         .oj-datagrid-cell.oj-focus::after,
         .oj-datagrid-header-cell.oj-focus::after,
+        .oj-datagrid-header-label.oj-focus::after,
         .oj-datagrid-end-header-cell.oj-focus::after,
         .oj-datagrid-cell.oj-selected.oj-datagrid-selected-top::before,
         .oj-datagrid-cell.oj-selected.oj-datagrid-selected-bottom::before {
@@ -384,6 +420,7 @@
 
         /* Styling on focused row and cell outlines, to use a background color don't use the after psuedo class */
         .oj-datagrid.oj-focus.oj-read-only .oj-datagrid-cell.oj-focus-highlight::after,
+        .oj-datagrid.oj-focus .oj-datagrid-header-label.oj-focus-highlight::after,
         .oj-datagrid.oj-focus .oj-datagrid-header-cell.oj-focus-highlight::after,
         .oj-datagrid.oj-focus .oj-datagrid-end-header-cell.oj-focus-highlight::after {
             top: 1px;
@@ -449,6 +486,7 @@
         }
 
         /* Styling on header cells when hovered both for rows and columns */
+        .oj-datagrid-header-label.oj-hover,
         .oj-datagrid-header-cell.oj-hover,
         .oj-datagrid-end-header-cell.oj-hover {
             background-color: $collectionHeaderBgColorHover;

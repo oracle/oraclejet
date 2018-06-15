@@ -56,6 +56,11 @@
       fill: $dvtGanttRowBgColor;
     }
 
+    /* Styling related to rows as drop targets */
+    .oj-gantt-row.oj-active-drop {
+      fill: $dropTarget1Color;
+    }
+
     /* Styling for all row labels */
     .oj-gantt-row-label {
       fill: $headerTextColor;
@@ -97,6 +102,20 @@
     .oj-gantt-task-summary {
       fill: $dvtGanttSummaryBgColor;
       filter: none;
+    }
+
+    /* Styling related to tasks as drag sources */
+    .oj-gantt-task.oj-draggable,
+    .oj-gantt-task-label.oj-draggable,
+    .oj-gantt-task-progress.oj-draggable {
+      cursor: move;
+    }
+
+    .oj-gantt-task-drag-image {
+      fill-opacity: 0;
+      stroke: $dvtGanttTaskDragImageBorderColor;
+      stroke-width: 1px;
+      stroke-dasharray: 5,2;
     }
 
     /* Styling for all task labels */

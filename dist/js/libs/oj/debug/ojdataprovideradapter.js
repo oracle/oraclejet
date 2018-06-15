@@ -201,9 +201,12 @@ var TableDataSourceAdapter = /** @class */ (function () {
             }
             return class_14;
         }());
-        this._addTableDataSourceEventListeners(tableDataSource);
+        this._addTableDataSourceEventListeners();
         this[this._OFFSET] = 0;
     }
+    TableDataSourceAdapter.prototype.destroy = function () {
+        this._removeTableDataSourceEventListeners();
+    };
     TableDataSourceAdapter.prototype.containsKeys = function (params) {
         var self = this;
         var resultsPromiseArray = [];
@@ -213,7 +216,9 @@ var TableDataSourceAdapter = /** @class */ (function () {
         return Promise.all(resultsPromiseArray).then(function (resultsArray) {
             var results = new Set();
             resultsArray.map(function (value) {
-                results.add(value[self._KEY]);
+                if (value != null) {
+                    results.add(value[self._KEY]);
+                }
             });
             return Promise.resolve(new self.ContainsKeysResults(self, params, results));
         });
@@ -240,17 +245,20 @@ var TableDataSourceAdapter = /** @class */ (function () {
         var sortCriteria = params != null ? params[this._SORTCRITERIA] : null;
         var offset = params != null ? params[this._OFFSET] > 0 ? params[this._OFFSET] : 0 : 0;
         var fetchParams = new this.FetchListParameters(this, size, sortCriteria);
-        var iteratorResults = this._getFetchFunc(fetchParams, offset);
-        var value = iteratorResults[this._VALUE];
-        var done = iteratorResults[this._DONE];
-        var data = value[this._DATA];
-        var keys = value[this._METADATA].map(function (value) {
-            return value[self._KEY];
+        this._startIndex = 0;
+        return this._getFetchFunc(fetchParams, offset)(fetchParams, true).then(function (iteratorResults) {
+            var value = iteratorResults[self._VALUE];
+            var done = iteratorResults[self._DONE];
+            var data = value[self._DATA];
+            var keys = value[self._METADATA].map(function (value) {
+                return value[self._KEY];
+            });
+            var resultsArray = new Array();
+            data.map(function (value, index) {
+                resultsArray.push(new self.Item(self, new self.ItemMetadata(self, keys[index]), data[index]));
+            });
+            return new self.FetchByOffsetResults(self, params, resultsArray, done);
         });
-        var resultsArray = data.map(function (value, index) {
-            return new self.Item(self, value, keys[index]);
-        });
-        return Promise.resolve(new this.FetchByOffsetResults(this, params, resultsArray, done));
     };
     TableDataSourceAdapter.prototype.fetchFirst = function (params) {
         if (!this._isPagingModelTableDataSource()) {
@@ -420,133 +428,180 @@ var TableDataSourceAdapter = /** @class */ (function () {
             });
         };
     };
+    TableDataSourceAdapter.prototype._handleSync = function (event) {
+        var self = this;
+        self._startIndex = null;
+        if (event[self._STARTINDEX] > 0) {
+            self._startIndex = event[self._STARTINDEX];
+            self[self._OFFSET] = self._startIndex;
+        }
+        if (self._fetchResolveFunc && event[self._KEYS] != null) {
+            self._isFetching = false;
+            var resultMetadata = event[self._KEYS].map(function (value) {
+                return new self.ItemMetadata(self, value);
+            });
+            var done = false;
+            if (self.tableDataSource.totalSizeConfidence() == 'actual' &&
+                self.tableDataSource.totalSize() > 0 &&
+                self._startIndex >= self.tableDataSource.totalSize()) {
+                done = true;
+            }
+            self._fetchResolveFunc(new self.AsyncIteratorResult(self, new self.FetchListResult(self, self._fetchParams, event[self._DATA], resultMetadata), done));
+            self._fetchResolveFunc = null;
+            self._fetchParams = null;
+        }
+        else if (!self._requestEventTriggered) {
+            self.dispatchEvent(new oj.DataProviderRefreshEvent());
+        }
+        self._requestEventTriggered = false;
+    };
+    TableDataSourceAdapter.prototype._handleAdd = function (event) {
+        var self = this;
+        var metadataArray = event[self._KEYS].map(function (value) {
+            return new self.ItemMetadata(self, value);
+        });
+        var keySet = new Set();
+        event[self._KEYS].map(function (key) {
+            keySet.add(key);
+        });
+        var operationEventDetail = new self.DataProviderAddOperationEventDetail(self, keySet, null, metadataArray, event[self._DATA], event[self._INDEXES]);
+        var mutationEventDetail = new self.DataProviderMutationEventDetail(self, operationEventDetail, null, null);
+        self.dispatchEvent(new oj.DataProviderMutationEvent(mutationEventDetail));
+    };
+    TableDataSourceAdapter.prototype._handleRemove = function (event) {
+        var self = this;
+        var metadataArray = event[self._KEYS].map(function (value) {
+            return new self.ItemMetadata(self, value);
+        });
+        var keySet = new Set();
+        event[self._KEYS].map(function (key) {
+            keySet.add(key);
+        });
+        var operationEventDetail = new self.DataProviderOperationEventDetail(self, keySet, metadataArray, event[self._DATA], event[self._INDEXES]);
+        var mutationEventDetail = new self.DataProviderMutationEventDetail(self, null, operationEventDetail, null);
+        self.dispatchEvent(new oj.DataProviderMutationEvent(mutationEventDetail));
+    };
+    TableDataSourceAdapter.prototype._handleReset = function (event) {
+        var self = this;
+        // Dispatch a dataprovider refresh event except for the following situations:
+        // 1. If a datasource request event was triggered, a dataprovider refresh event has been dispatched;
+        // 2. If the datasource is a paging datasource, the pagingcontrol reset handler will indirectly trigger
+        //    a datasource request event, which in turn will dispatch a dataprovider refresh event.
+        //
+        if (!self._requestEventTriggered && !self._isPagingModelTableDataSource()) {
+            self._startIndex = 0;
+            self.dispatchEvent(new oj.DataProviderRefreshEvent());
+        }
+    };
+    TableDataSourceAdapter.prototype._handleSort = function (event) {
+        var self = this;
+        if (!self._ignoreSortEvent) {
+            self._startIndex = null;
+            self.dispatchEvent(new oj.DataProviderRefreshEvent());
+        }
+    };
+    TableDataSourceAdapter.prototype._handleChange = function (event) {
+        var self = this;
+        var metadataArray = event[self._KEYS].map(function (value) {
+            return new self.ItemMetadata(self, value);
+        });
+        var keySet = new Set();
+        event[self._KEYS].map(function (key) {
+            keySet.add(key);
+        });
+        var operationEventDetail = new self.DataProviderOperationEventDetail(self, keySet, metadataArray, event[self._DATA], event[self._INDEXES]);
+        var mutationEventDetail = new self.DataProviderMutationEventDetail(self, null, null, operationEventDetail);
+        self.dispatchEvent(new oj.DataProviderMutationEvent(mutationEventDetail));
+    };
+    TableDataSourceAdapter.prototype._handleRefresh = function (event) {
+        var self = this;
+        if (!self._isFetching &&
+            !self._requestEventTriggered) {
+            if (event[self._OFFSET] != null) {
+                self._startIndex = event[self._OFFSET];
+            }
+            else {
+                self._startIndex = null;
+            }
+            self.dispatchEvent(new oj.DataProviderRefreshEvent());
+        }
+        self._requestEventTriggered = false;
+    };
+    TableDataSourceAdapter.prototype._handleRequest = function (event) {
+        var self = this;
+        if (typeof oj.Model !== "undefined" &&
+            event instanceof oj.Model) {
+            // ignore request events by oj.Model. Those will be followed by row
+            // mutation events anyway
+            return;
+        }
+        if (!self._isFetching) {
+            if (event[self._STARTINDEX] > 0 &&
+                self.getStartItemIndex() == 0) {
+                self._startIndex = event[self._STARTINDEX];
+            }
+            // dispatch a refresh event which will trigger a the component to
+            // do a fetchFirst. However, the fact that we are receiving a request
+            // event means that a fetch was already done on the underlying TableDataSource.
+            // So we don't need to do another fetch once a fetchFirst comes in, we can
+            // just resolve with the results from the paired sync event.
+            self._requestEventTriggered = true;
+            self.dispatchEvent(new oj.DataProviderRefreshEvent());
+        }
+    };
+    TableDataSourceAdapter.prototype._handleError = function (event) {
+        var self = this;
+        if (self._fetchRejectFunc) {
+            self._fetchRejectFunc(event);
+        }
+        self._isFetching = false;
+        self._requestEventTriggered = false;
+    };
+    TableDataSourceAdapter.prototype._handlePage = function (event) {
+        var self = this;
+        self._isFetching = false;
+        self._requestEventTriggered = false;
+        var options = {};
+        options['detail'] = event;
+        self.dispatchEvent(new oj.GenericEvent(oj.PagingModel.EventType['PAGE'], options));
+    };
+    TableDataSourceAdapter.prototype._addListener = function (eventType, eventHandler) {
+        this._eventHandlerFuncs[eventType] = eventHandler.bind(this);
+        this.tableDataSource.on(eventType, this._eventHandlerFuncs[eventType]);
+    };
+    TableDataSourceAdapter.prototype._removeListener = function (eventType) {
+        this.tableDataSource.off(eventType, this._eventHandlerFuncs[eventType]);
+    };
     /**
      * Add event listeners to TableDataSource
      */
-    TableDataSourceAdapter.prototype._addTableDataSourceEventListeners = function (tableDataSource) {
-        var self = this;
-        tableDataSource.on('sync', function (event) {
-            self._startIndex = null;
-            if (event[self._STARTINDEX] > 0) {
-                self._startIndex = event[self._STARTINDEX];
-                self[self._OFFSET] = self._startIndex;
-            }
-            if (self._fetchResolveFunc && event[self._KEYS] != null) {
-                self._isFetching = false;
-                var resultMetadata = event[self._KEYS].map(function (value) {
-                    return new self.ItemMetadata(self, value);
-                });
-                var done = false;
-                if (self.tableDataSource.totalSizeConfidence() == 'actual' &&
-                    self.tableDataSource.totalSize() > 0 &&
-                    self._startIndex >= self.tableDataSource.totalSize()) {
-                    done = true;
-                }
-                self._fetchResolveFunc(new self.AsyncIteratorResult(self, new self.FetchListResult(self, self._fetchParams, event[self._DATA], resultMetadata), done));
-                self._fetchResolveFunc = null;
-                self._fetchParams = null;
-            }
-            else if (!self._requestEventTriggered) {
-                self.dispatchEvent(new oj.DataProviderRefreshEvent());
-            }
-            self._requestEventTriggered = false;
-        });
-        tableDataSource.on('add', function (event) {
-            var metadataArray = event[self._KEYS].map(function (value) {
-                return new self.ItemMetadata(self, value);
-            });
-            var keySet = new Set();
-            event[self._KEYS].map(function (key) {
-                keySet.add(key);
-            });
-            var operationEventDetail = new self.DataProviderAddOperationEventDetail(self, keySet, null, metadataArray, event[self._DATA], event[self._INDEXES]);
-            var mutationEventDetail = new self.DataProviderMutationEventDetail(self, operationEventDetail, null, null);
-            self.dispatchEvent(new oj.DataProviderMutationEvent(mutationEventDetail));
-        });
-        tableDataSource.on('remove', function (event) {
-            var metadataArray = event[self._KEYS].map(function (value) {
-                return new self.ItemMetadata(self, value);
-            });
-            var keySet = new Set();
-            event[self._KEYS].map(function (key) {
-                keySet.add(key);
-            });
-            var operationEventDetail = new self.DataProviderOperationEventDetail(self, keySet, metadataArray, event[self._DATA], event[self._INDEXES]);
-            var mutationEventDetail = new self.DataProviderMutationEventDetail(self, null, operationEventDetail, null);
-            self.dispatchEvent(new oj.DataProviderMutationEvent(mutationEventDetail));
-        });
-        tableDataSource.on('reset', function (event) {
-            if (!self._requestEventTriggered) {
-                self._startIndex = 0;
-                self.dispatchEvent(new oj.DataProviderRefreshEvent());
-            }
-        });
-        tableDataSource.on(this._SORT, function (event) {
-            if (!self._ignoreSortEvent) {
-                self._startIndex = null;
-                self.dispatchEvent(new oj.DataProviderRefreshEvent());
-            }
-        });
-        tableDataSource.on('change', function (event) {
-            var metadataArray = event[self._KEYS].map(function (value) {
-                return new self.ItemMetadata(self, value);
-            });
-            var keySet = new Set();
-            event[self._KEYS].map(function (key) {
-                keySet.add(key);
-            });
-            var operationEventDetail = new self.DataProviderOperationEventDetail(self, keySet, metadataArray, event[self._DATA], event[self._INDEXES]);
-            var mutationEventDetail = new self.DataProviderMutationEventDetail(self, null, null, operationEventDetail);
-            self.dispatchEvent(new oj.DataProviderMutationEvent(mutationEventDetail));
-        });
-        tableDataSource.on(this._REFRESH, function (event) {
-            if (!self._isFetching &&
-                !self._requestEventTriggered) {
-                if (event[self._OFFSET] != null) {
-                    self._startIndex = event[self._OFFSET];
-                }
-                else {
-                    self._startIndex = null;
-                }
-                self.dispatchEvent(new oj.DataProviderRefreshEvent());
-            }
-            self._requestEventTriggered = false;
-        });
-        tableDataSource.on('request', function (event) {
-            if (typeof oj.Model !== "undefined" &&
-                event instanceof oj.Model) {
-                // ignore request events by oj.Model. Those will be followed by row
-                // mutation events anyway
-                return;
-            }
-            if (!self._isFetching) {
-                if (event[self._STARTINDEX] > 0 &&
-                    self.getStartItemIndex() == 0) {
-                    self._startIndex = event[self._STARTINDEX];
-                }
-                // dispatch a refresh event which will trigger a the component to
-                // do a fetchFirst. However, the fact that we are receiving a request
-                // event means that a fetch was already done on the underlying TableDataSource.
-                // So we don't need to do another fetch once a fetchFirst comes in, we can
-                // just resolve with the results from the paired sync event.
-                self._requestEventTriggered = true;
-                self.dispatchEvent(new oj.DataProviderRefreshEvent());
-            }
-        });
-        tableDataSource.on('error', function (event) {
-            if (self._fetchRejectFunc) {
-                self._fetchRejectFunc(event);
-            }
-            self._isFetching = false;
-            self._requestEventTriggered = false;
-        });
-        tableDataSource.on('page', function (event) {
-            self._isFetching = false;
-            self._requestEventTriggered = false;
-            var options = {};
-            options['detail'] = event;
-            self.dispatchEvent(new oj.GenericEvent(oj.PagingModel.EventType['PAGE'], options));
-        });
+    TableDataSourceAdapter.prototype._addTableDataSourceEventListeners = function () {
+        this._eventHandlerFuncs = {};
+        this._addListener('sync', this._handleSync);
+        this._addListener('add', this._handleAdd);
+        this._addListener('remove', this._handleRemove);
+        this._addListener('reset', this._handleReset);
+        this._addListener('sort', this._handleSort);
+        this._addListener('change', this._handleChange);
+        this._addListener('refresh', this._handleRefresh);
+        this._addListener('request', this._handleRequest);
+        this._addListener('error', this._handleError);
+        this._addListener('page', this._handlePage);
+    };
+    /**
+     * Remove event listeners to TableDataSource
+     */
+    TableDataSourceAdapter.prototype._removeTableDataSourceEventListeners = function () {
+        this._removeListener('sync');
+        this._removeListener('add');
+        this._removeListener('remove');
+        this._removeListener('reset');
+        this._removeListener('sort');
+        this._removeListener('change');
+        this._removeListener('refresh');
+        this._removeListener('request');
+        this._removeListener('error');
+        this._removeListener('page');
     };
     /**
      * Check if it's a PagingModel TableDataSource

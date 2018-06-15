@@ -4,7 +4,7 @@
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
-define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojvalidation-number', 'ojs/internal-deps/dvt/DvtToolkit', 'ojdnd', 'promise'], function(oj, $, comp, val, dvt)
+define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojvalidation-number', 'ojs/internal-deps/dvt/DvtToolkit', 'ojdnd', 'promise', 'ojs/ojkeyset'], function(oj, $, comp, val, dvt)
 {
 /**
  * Creates an attribute group handler that will generate stylistic attribute values such as colors or shapes based on data set categories.
@@ -15,6 +15,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojvalidation-number'
  * @export
  * @constructor
  * @since 1.0
+ * @ojmodule none
  */
 oj.AttributeGroupHandler = function(matchRules) {
   this.Init(matchRules);
@@ -34,7 +35,7 @@ oj.AttributeGroupHandler.prototype.Init = function(matchRules) {
 
 /**
  * Returns the array of possible attribute values for this attribute group handler.
- * @returns {Array.<*>} The array of attribute values
+ * @returns {Array.<any>} The array of attribute values
  * @export
  */
 oj.AttributeGroupHandler.prototype.getValueRamp = function() {
@@ -44,7 +45,7 @@ oj.AttributeGroupHandler.prototype.getValueRamp = function() {
 /**
  * Assigns the given category an attribute value.  Will consistently return the same attribute value for equal categories.
  * @param {string} category The category to assign
- * @returns {*} The attribute value for the category
+ * @returns {any} The attribute value for the category
  * @export
  */
 oj.AttributeGroupHandler.prototype.getValue = function(category) {
@@ -83,7 +84,7 @@ oj.AttributeGroupHandler.prototype.getCategoryAssignments  = function() {
  * Reserves an attribute value for the given category.  All match rules should be added before any category
  * assignments are done with the <a href="#getValue">getValue</a> API.
  * @param {string} category Used for checking inputs to getAttributeValue against when assigning an attribute value
- * @param {*} attributeValue The attribute value to assign for inputs matching the given category e.g. "square" or "circle"
+ * @param {any} attributeValue The attribute value to assign for inputs matching the given category e.g. "square" or "circle"
  * @return {void}
  * @export
  */
@@ -104,6 +105,7 @@ oj.AttributeGroupHandler.prototype.addMatchRule = function(category, attributeVa
  * @constructor
  * @since 1.2
  * @extends {oj.AttributeGroupHandler}
+ * @ojmodule none
  */
 oj.ColorAttributeGroupHandler = function(matchRules) {
   // Create the array of colors for this instance.
@@ -658,6 +660,7 @@ DvtStyleProcessor._hasUncachedProperty = function(styleClass, definitions)
  * @constructor
  * @since 1.0
  * @extends {oj.AttributeGroupHandler}
+ * @ojmodule none
  */
 oj.ShapeAttributeGroupHandler = function(matchRules) {
   this.Init(matchRules);
@@ -702,16 +705,16 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
      * @ojvalue {string} "on"
      * @ojvalue {string} "off"
      * @default "on"
-     * 
-     * @example <caption>Initialize the data visualization element with the 
+     *
+     * @example <caption>Initialize the data visualization element with the
      * <code class="prettyprint">track-resize</code> attribute specified:</caption>
      * &lt;oj-some-dvt track-resize='off'>&lt;/oj-some-dvt>
-     * 
-     * @example <caption>Get or set the <code class="prettyprint">trackResize</code> 
+     *
+     * @example <caption>Get or set the <code class="prettyprint">trackResize</code>
      * property after initialization:</caption>
      * // getter
      * var value = myComponent.trackResize;
-     * 
+     *
      * // setter
      * myComponent.trackResize="off";
      */
@@ -782,7 +785,7 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
 
     // Load component resources
     this._LoadResources();
-    
+
     // Initialize array to store data provider listeners
     this._dataProviderEventListeners = [];
 
@@ -977,6 +980,11 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
     return ret;
   },
 
+  //* * @inheritdoc */
+  _VerifyConnectedForSetup: function () {
+    return true;
+  },
+
   /**
    * Sets up resources needed by the component
    * @instance
@@ -986,11 +994,10 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
    */
   _SetupResources: function() {
     this._super();
-    /* DataProvider Uptake : Commented out for code coverage. Uncomment for supporting DVTs
     this._addDataProviderEventListeners();
-    */
+
   },
-  
+
   /**
    * Release resources held by the component
    * @instance
@@ -1000,11 +1007,10 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
    */
   _ReleaseResources: function() {
     this._super();
-    /* DataProvider Uptake : Commented out for code coverage. Uncomment for supporting DVTs
     this._removeDataProviderEventListeners();
-    */
+
   },
-  
+
   /**
    * Called to process the translated strings for this widget.
    * @private
@@ -1060,6 +1066,7 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
   _destroy : function() {
     // Hide all component tooltips and remove references to the DvtContext
     this._context.hideTooltips();
+    this._context.destroy();
     this._context = null;
 
     var parentElement = this.element[0].parentElement;
@@ -1075,7 +1082,7 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
     this._removeResizeListener();
 
     this._CleanAllTemplates();
-    
+
     // Remove children and clean up DOM changes
     this.element.children().remove();
     this.element.removeAttr('role').removeAttr('tabIndex').removeAttr('aria-activedescendant');
@@ -1085,7 +1092,7 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
     for(var i=0; i<componentStyles.length; i++) {
       this.element.removeClass(componentStyles[i]);
     }
-    
+
     // Remove any pending busy states
     this._MakeReady();
 
@@ -1266,7 +1273,7 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
       // If flowing layout is supported, don't pass width and height to the component render method
       this._width = this._IsFlowingLayoutSupported() ? null : this.element.width();
       this._height = this._IsFlowingLayoutSupported() ? null : this.element.height();
-      
+
       // Set the root font-family
       this._context.setDefaultFontFamily(this._referenceDiv.css('font-family'));
 
@@ -1302,7 +1309,7 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
       this._renderNeeded = false;
     }
   },
-  
+
   /**
    * Check needed for setting draggable attribute on the component.
    * @protected
@@ -1329,21 +1336,21 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
   },
 
   //** @inheritdoc */
-  _NotifyDetached : function() 
+  _NotifyDetached : function()
   {
     this._super();
     this._notifyHiddenDetached();
   },
 
   //** @inheritdoc */
-  _NotifyHidden : function() 
+  _NotifyHidden : function()
   {
     this._super();
     this._notifyHiddenDetached();
   },
 
   /**
-   * Helper method to perform common logic for when 
+   * Helper method to perform common logic for when
    * a DVT is hidden or detached from the DOM.
    * @memberof oj.dvtBaseComponent
    * @instance
@@ -1356,13 +1363,13 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
   },
 
   /**
-   * Helper method to perform common logic for when 
+   * Helper method to perform common logic for when
    * a DVT is shown or detached from the DOM.
    * @memberof oj.dvtBaseComponent
    * @instance
    * @private
    */
-  _notifyHiddenDetached: function() 
+  _notifyHiddenDetached: function()
   {
     this._context.hideTooltips();
 
@@ -1398,7 +1405,7 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
     else if (eventType === "keyboard") {
       var compElementRect = this.element[0].getBoundingClientRect(),
         focusElementRect = this._component.getKeyboardFocus() ? this._component.getKeyboardFocus().getBoundingClientRect() : null;
-      var position = focusElementRect ? 
+      var position = focusElementRect ?
         "left+" + (focusElementRect.left + focusElementRect.width*.5 - compElementRect.left) + " top+" + (focusElementRect.top + focusElementRect.height*.5 - compElementRect.top) : "center";
       this._OpenContextMenu(event, eventType, {"position": {"at": position}});
     }
@@ -1548,7 +1555,7 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
       subpaths.forEach(function(subpath) {
         if (path === 'root') {
           self._resolveDeferredDataItem.bind(self)(self.options, self._optionsCopy, subpath);
-        } else {        
+        } else {
           var suboptions = self.options[path];
           // Deal with arrays suboptions that are arrays like legend's options['sections']
           if (suboptions && suboptions instanceof Array) {
@@ -1583,33 +1590,38 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
       optionValue = Promise.resolve(optionValue(this._GetDataContext(optionsFrom)));
     }
     else if (this._IsCustomElement() && Array.isArray(optionValue)) {
-      // For custom elements, the getter always should return a Promise for 
+      // For custom elements, the getter always should return a Promise for
       // data options so we just always convert arrays to Promises in the setter
       optionValue = Promise.resolve(optionValue);
       optionPath.setValue(optionValue, true);
     }
-    
-    /* DataProvider Uptake : Commented out for code coverage. Uncomment for supporting DVTs
+
     if (optionValue && oj.DataProviderFeatureChecker.isIteratingDataProvider(optionValue)) {
-      optionValue = new Promise(function(resolve, reject) 
-      {
-        optionValue['fetchFirst']({size: -1})[Symbol.asyncIterator]()['next']()
-        .then(function(finalResult) {
-          resolve(finalResult['value']['data']);
-        });      
-      });     
-    };
-    */
-    
+      var self = this;
+      optionValue = new Promise(function (resolve, reject) {
+        var templateEnginePromise = self._getTemplateEngine();
+        var dataProviderPromise = self._fetchAllData(optionValue);
+        Promise.all([templateEnginePromise, dataProviderPromise]).then(function(values) {
+          self._dataObjects = values[1];
+          var pathsValuesMap = self._ProcessTemplates(values[1], values[0]);
+          resolve(pathsValuesMap);
+        });
+      });
+    }
+
+
     if (optionValue instanceof Promise) {
       var renderCount = this._renderCount;
       var self = this;
       optionValue.then(
         function(value) {
-          self._renderDeferredData(renderCount, optionsTo, path, value);
+          if (value.paths)
+            self._renderDeferredData(renderCount, optionsTo, value.paths, value.values);
+          else
+            self._renderDeferredData(renderCount, optionsTo, [path], [value]);
         },
         function(reason) {
-          self._renderDeferredData(renderCount, optionsTo, path, []);
+          self._renderDeferredData(renderCount, optionsTo, [path], [[]]);
         }
       );
       this._numDeferredObjs++;
@@ -1621,21 +1633,185 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
    * updates the options copy with the resolved value and renders the component when ready.
    * @param {number} renderCount The render count when this Promise was evaluated
    * @param {Object} optionsTo The option object to copy to
-   * @param {string} path  The option path to use
-   * @param {Object} value The value to update the option path with
+   * @param {Array<string>} paths  The option path to use
+   * @param {Array<object>} values The value to update the option path with
    * @private
    * @instance
    * @memberof oj.dvtBaseComponent
    */
-  _renderDeferredData : function(renderCount, optionsTo, path, value) {
+  _renderDeferredData : function(renderCount, optionsTo, paths, values) {
     if (renderCount === this._renderCount) {
       this._numDeferredObjs--;
-      (new DvtJsonPath(optionsTo, path)).setValue(value, true);
+      for (var i = 0; i < paths.length; i++) {
+        (new DvtJsonPath(optionsTo, paths[i])).setValue(values[i], true);
+      }
+
       if (this._numDeferredObjs === 0) {
         this._RenderComponent(this._optionsCopy);
         this._optionsCopy = null;
       }
+
     }
+  },
+
+  /**
+   * Returns a promise that resolves into all the fetched data from the data provider.
+   * @return {Promise} Returns a promise that resolves into the results of the data fetch
+   * @private
+   * @instance
+   * @memberof oj.dvtBaseComponent
+   */
+  _fetchAllData : function (dataProvider) {
+    var finalData = {data: [], keys: []};
+    var iterator = dataProvider['fetchFirst']({size: -1})[Symbol.asyncIterator]();
+
+    // Helper function to handle case where fetch parameter -1 doesn't return all the data
+    var chunkDataFetch = function (result) {
+      for (var i = 0; i < result.value.data.length; i++) {
+        finalData.data.push(result.value.data[i]);
+        finalData.keys.push(result.value.metadata[i].key);
+      }
+
+      if (!result.done) {
+        return iterator.next().then(chunkDataFetch);
+      }
+      else {
+        return Promise.resolve(finalData);
+      }
+    }
+
+    // create a Promise that will resolve to the fetched data
+    return iterator.next().then(chunkDataFetch);
+  },
+
+  /**
+   * Returns a promise that resolves into a template engine
+   * @return {Promise} Returns a promise that resoves into a template engine
+   * @private
+   * @instance
+   * @memberof oj.dvtBaseComponent
+   */
+  _getTemplateEngine: function () {
+    if (this._templateEnginePromise)
+      return this._templateEnginePromise;
+
+    this._templateEnginePromise = new Promise(function(resolve, reject) {
+      oj.Config.__getTemplateEngine().then(
+          function(engine) {
+              resolve(engine);
+          },
+          function(reason) {
+              throw "Error loading template engine: "+reason;
+          }
+      );
+    });
+
+    return this._templateEnginePromise;
+  },
+
+  /**
+   * Gets the inline template elements of the component
+   * @return {Object} Returns an object containing the inline template elements of the custom element component.
+   * @public
+   * @ignore
+   * @instance
+   * @memberof oj.dvtBaseComponent
+   */
+  getTemplates: function () {
+    return oj.BaseCustomElementBridge.getSlotMap(this.element[0]);
+  },
+
+  /**
+   * Processes the templates using the data provider's data and returns a map of values to options to be updated.
+   * To use the default behaviour the component should override the _GetSimpleDataProviderConfig. The returns data has a _itemData that has the data for that item from the data provider.
+   * Otherwise a component's class inheriting from this can override this function.
+   * @param {Object} data The fetch results of the data provider. Contains the data and keys
+   * @param {Object} templateEngine The template engine to be used to process templates
+   * @return {Promise} A promise that resolves into an object with paths of components options to be updated and their corresponding values.eg: {paths: [], values: []}
+   * @protected
+   * @instance
+   * @memberof oj.dvtBaseComponent
+   */
+  _ProcessTemplates : function (data, templateEngine) {
+    var config = this._GetSimpleDataProviderConfig();
+    var templateName = config.templateName;
+    var templateElementName = config.templateElementName;
+    var resultPath = config.resultPath;
+
+    if (templateName && templateElementName && resultPath) {
+      var alias = this.options.as;
+      var defaultTemplate = this.getTemplates()[templateName];
+      var templateTopProperties = Object.keys(oj.CustomElementBridge.getMetadata(templateElementName).properties);
+      var parentElement = this.element[0];
+      var rowData = data['data'];
+      var rowKeys = data['keys'];
+
+      var nodes = [];
+      var nodeContainer = document.createElement("div");
+      nodeContainer.setAttribute("data-oj-context", "");
+      var fragment = document.createDocumentFragment();
+      for (var i = 0; i < rowData.length; i++) {
+        var rowItem = rowData[i];
+        var rowKey = rowKeys[i];
+        var context = {'data': rowItem, 'key': rowKey, 'index': i, 'componentElement' : parentElement};
+        var node;
+        try {
+          var templateNodes = templateEngine.execute(parentElement, defaultTemplate[0], context, alias);
+          for (var j = 0; j < templateNodes.length;j++) {
+            if (templateNodes[j].tagName && templateNodes[j].tagName.toLowerCase() === templateElementName) {
+              node = templateNodes[j];
+              break;
+            }
+          }
+        }
+        catch (error) {
+          oj.Logger.error(error);
+        }
+        nodes.push(node);
+        fragment.appendChild(node);
+      }
+      // add to document for properties to be evaluated into attributes
+      nodeContainer.appendChild(fragment);
+      document.body.appendChild(nodeContainer);
+
+      var self = this;
+      var processedDataPromise = oj.Context.getContext(nodeContainer).getBusyContext().whenReady().then(function () {
+        var processedData = [];
+        for (var i = 0; i < rowData.length; i++) {
+          var node = nodes[i];
+          var processedDatum = {id: rowKeys[i], _itemData: rowData[i]};
+
+          for (var j = 0; j < templateTopProperties.length; j++) {
+            var propertyValue = node.getProperty(templateTopProperties[j]); // safe to read off properties at this point
+            if (propertyValue !== undefined)
+              processedDatum[templateTopProperties[j]] = propertyValue;
+          }
+
+          processedData.push(processedDatum);
+        }
+
+        templateEngine.clean(nodeContainer);
+        document.body.removeChild(nodeContainer);
+        nodeContainer = null;
+
+        return {paths: [resultPath], values: [processedData]};
+      });
+
+      return processedDataPromise;
+    }
+    else
+      return Promise.resolve({paths: [], values: []});
+  },
+
+  /**
+   * Returns an object that has templateName, templateElementName and resultPath which are used to process dataProvider data with templates.
+   * @return {object} Object of shape {templateName: '', templateElementName: '', resultPath: ''}
+   * @protected
+   * @instance
+   * @memberof oj.dvtBaseComponent
+   */
+  _GetSimpleDataProviderConfig : function () {
+     return {};
   },
 
   /**
@@ -1679,9 +1855,9 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
         this.element.attr("tabindex", 0);
     }
   },
-  
+
   /**
-   * Returns a function that will handle events triggered on the component's 
+   * Returns a function that will handle events triggered on the component's
    * dataProvider(s) and update the component
    * @protected
    * @instance
@@ -1689,36 +1865,129 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
    * @return {function(Event):void} A function that takes an event and updates a component
    * using the data from the data provider it is binded to.
    */
-  /* DataProvider Uptake : Commented out for code coverage. Uncomment for supporting DVTs
   _GetDataProviderEventHandler : function(component, optionPath) {
+    var self = this;
     // subclasses may override
-    return function(event) {
-      if (event.type === "refresh" || event.type === "mutate") {
-        var dataProvider = this;      
-        // create a Promise that will resolve to the newly modified data
-        var dataPromise = new Promise(function(resolve, reject) {
-          dataProvider['fetchFirst']({size: -1})[Symbol.asyncIterator]()['next']()
-          .then(function(finalResult) {
-            resolve(finalResult['value']['data']);
-          });      
-        });     
-        
-        var newOptions = optionPath[0] == "root" ? {} : component.options[optionPath[0]];
-        newOptions[optionPath[1]] = dataPromise;
-        
-        component._setOptions(newOptions);
+
+    // returns indices corresponding to the data with the given keys
+    var keysToIndices = function (data, keys) {
+      if (!keys)
+        return [];
+
+      var keySet = new oj.KeySetImpl(keys);
+      var keyIndexMap = new Map();
+      for (var i = 0; i < data.keys.length; i++) {
+        var key = data.keys[i];
+        var eventKey = keySet.get(key);
+        if (eventKey != null) {
+          keyIndexMap.set(eventKey, i);
+        }
       }
-    };  
+
+      var matchingIndices = [];
+      keys.forEach(function(keyValue){
+          matchingIndices.push(keyIndexMap.get(keyValue));
+      });
+
+      return matchingIndices;
+    }
+
+    // will update the component option with the data provider with a promise that resolves to the updated data
+    var updateOptions =  function (dataPromise) {
+      Promise.all([dataPromise, self._getTemplateEngine()]).then(function (values) {
+        self._dataObjects = values[0];
+        var pathsValuesMap = self._ProcessTemplates(values[0], values[1]);
+        var newOptions = optionPath[0] == "root" ? {} : component.options[optionPath[0]];
+        newOptions[optionPath[1]] = pathsValuesMap;
+        component._setOptions(newOptions);
+      });
+    }
+
+    return function(event) {
+      // create a Promise that will resolve to the newly modified data
+      if (event.type === "refresh")
+        updateOptions(self._fetchAllData(this));
+      else if (event.type === "mutate") {
+        var addDetail = event.detail.add;
+        var removeDetail = event.detail.remove;
+        var updateDetail = event.detail.update;
+        var componentData = self._dataObjects;
+
+        // used by add and update to update the component's data
+        var updateComponentData = function (indices, detail, isUpdate) {
+          var spliceDeleteCount = isUpdate ? 1 : 0;
+          var index = 0;
+
+          detail.keys.forEach(function (keyValue) {
+            componentData.data.splice(indices[index], spliceDeleteCount, detail.data[index]);
+            componentData.keys.splice(indices[index], spliceDeleteCount, keyValue);
+            index++;
+          });
+
+          updateOptions(Promise.resolve(componentData));
+        }
+
+        if (addDetail) {
+          var indices = addDetail.indexes || keysToIndices(componentData, addDetail.afterKeys);
+
+          // if no indices or keys are given, add to the end
+          if (indices.length == 0)
+            indices.push(componentData.data.length);
+
+          if (!Array.isArray(addDetail.data)) { // data was not sent and should be fetched
+            this.fetchByKeys({'keys': addDetail.keys}).then(function (keyResult) {
+              if (keyResult.results.size > 0) {
+                var fetchedData = [];
+                addDetail.keys.forEach(function (keyValue) {
+                  fetchedData.push(keyResult.results.get(keyValue).data);
+                });
+
+                addDetail.data = fetchedData; // update details
+                updateComponentData(indices, addDetail, false);
+              }
+            });
+          }
+          else
+            updateComponentData(indices, addDetail, false);
+        }
+        else if (removeDetail) {
+          var indexes = removeDetail.indexes || keysToIndices(componentData, removeDetail.keys);
+          for (var i = 0; i < indexes.length; i++) {
+            componentData.data.splice(indexes[i], 1);
+            componentData.keys.splice(indexes[i], 1);
+          }
+          updateOptions(Promise.resolve(componentData));
+        }
+        else if (updateDetail) {
+          var indices = updateDetail.indexes || keysToIndices(componentData, updateDetail.keys);
+
+          if (!Array.isArray(updateDetail.data)) { // data was not sent and should be fetched
+            this.fetchByKeys({'keys': updateDetail.keys}).then(function (keyResult) {
+              if (keyResult.results.size > 0) {
+                var fetchedData = [];
+                updateDetail.keys.forEach(function (keyValue) {
+                  fetchedData.push(keyResult.results.get(keyValue).data);
+                });
+
+                updateDetail.data = fetchedData; // update details
+                updateComponentData(indices, updateDetail, true);
+              }
+            });
+          }
+          else
+            updateComponentData(indices, updateDetail, true);
+        }
+      }
+    };
   },
-  */
-  
+
+
   /**
    * Checks for all potential dataProviders on the component and attaches event listeners
    * @private
    * @instance
    * @memberof oj.dvtBaseComponent
    */
-  /* DataProvider Uptake : Commented out for code coverage. Uncomment for supporting DVTs
   _addDataProviderEventListeners: function()
   {
     var component = this;
@@ -1735,21 +2004,20 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
           var dataProviderEventHandler = component._GetDataProviderEventHandler(component, [path, subpath]);
           optionValue.addEventListener("mutate", dataProviderEventHandler);
           optionValue.addEventListener("refresh", dataProviderEventHandler);
-          
+
           component._dataProviderEventListeners.push({dataProvider: optionValue, listener:  dataProviderEventHandler});
         }
       };
     }
   },
-  */
-  
+
+
   /**
-   * Checks for all potential dataProviders on the component and removes event listeners 
+   * Checks for all potential dataProviders on the component and removes event listeners
    * @private
    * @instance
    * @memberof oj.dvtBaseComponent
    */
-  /* DataProvider Uptake : Commented out for code coverage. Uncomment for supporting DVTs 
   _removeDataProviderEventListeners: function()
   {
     for (var i = 0; i < this._dataProviderEventListeners.length; i++) {
@@ -1761,8 +2029,8 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
     }
     this._dataProviderEventListeners = [];
   },
-  */
-  
+
+
   /**
    * Returns the data context passed to data function callbacks.
    * @param {Object} options The options to retrieve the data context for
@@ -1823,7 +2091,7 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
     this._ready = false;
 
     // For page level BusyContext
-    // Only decrement ready state when there's no deferred data. Otherwise rendering will be blocked 
+    // Only decrement ready state when there's no deferred data. Otherwise rendering will be blocked
     // until all deferred data are resolved and we will only get one ready state increment.
     if (this._numDeferredObjs === 0) {
       // If we've already registered a busy state with the page's busy context, don't need to do anything further
@@ -1874,7 +2142,7 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
 
   /**
    * Returns a wrapper function for custom elements that converts an object
-   * returned by a custom renderer into an old format supported by widgets 
+   * returned by a custom renderer into an old format supported by widgets
    * and toolkit code.
    * @param {Function} origRenderer Renderer function called to create custom content
    * @return {Function} A wrapper function that will used to convert result into toolkit format
@@ -1885,14 +2153,14 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
     var self = this;
     var customRenderer = function (context) {
       //add dvt context for the knockout template rendering
-      context['_dvtcontext'] = self._context; 
+      context['_dvtcontext'] = self._context;
       var obj = origRenderer(context);
-      
+
       // template cleanup section - template name and cleanup function are passed through context
       if (context['_templateName'] && context['_templateCleanup']) {
         self._AddTemplate(context['_templateName'], context['_templateCleanup']);
       }
-      
+
       //tooltip case: don't check 'insert' property, if 'preventDefault' is set to true
       if (obj && obj['preventDefault'] !== true && obj['insert'] ) {
         var insertObj = obj['insert'];
@@ -1910,7 +2178,7 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
   },
 
   /**
-   * Iterates through custom renderer options and replaces them with wrapper  
+   * Iterates through custom renderer options and replaces them with wrapper
    * functions that supports format accepted by DVT Toolkit components
    * @param {Object} options Options for rendering the component
    * @protected
@@ -1931,7 +2199,7 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
   },
 
   /**
-   * Returns an array of options that contain custom renderer paths 
+   * Returns an array of options that contain custom renderer paths
    * for the given component.
    * @return {Array}
    * @protected
@@ -1961,7 +2229,7 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
 
       var elem = dummyDiv.children[0];
       if (elem) {
-        // Save a reference to cleanup function for the dummyDiv 
+        // Save a reference to cleanup function for the dummyDiv
         // for ko cleanup to prevent memory leaks
         self._AddTemplate(templateName, function(){$(dummyDiv).remove();});
 
@@ -1999,7 +2267,7 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
 
       var elem = dummyDiv.children[0];
       if (elem) {
-        // Save a reference to cleanup function for the dummyDiv 
+        // Save a reference to cleanup function for the dummyDiv
         // for ko cleanup to prevent memory leaks
         self._AddTemplate(templateName, function(){$(dummyDiv).remove();});
 
@@ -2026,7 +2294,7 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
   _CleanAllTemplates: function() {
     for (var templateName in this._templateMap) {
       this._CleanTemplate(templateName);
-    }    
+    }
     this._templateMap = {};
   },
 
@@ -2047,7 +2315,7 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
   },
 
   /**
-   * Adds a cleanup function that should be used to cleanup a specific template. 
+   * Adds a cleanup function that should be used to cleanup a specific template.
    * @param {string} templateName The name of the template to clean
    * @param {Function} cleanupCallback A callback function to cleanup the template
    * @protected
@@ -2057,7 +2325,7 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
     if (!this._templateMap[templateName]) {
       this._templateMap[templateName] = [];
     }
-    this._templateMap[templateName].push(cleanupCallback);    
+    this._templateMap[templateName].push(cleanupCallback);
   },
 
   //** @inheritdoc */
@@ -2147,7 +2415,8 @@ oj.__registerWidget('oj.dvtBaseComponent', $['oj']['baseComponent'], {
 var dvtBaseComponentMeta = {
   "properties": {
     "trackResize": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["on", "off"]
     },
     "translations": {
       "properties": {

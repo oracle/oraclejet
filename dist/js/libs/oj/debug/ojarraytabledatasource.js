@@ -121,7 +121,7 @@ oj.ArrayTableDataSource.prototype.comparator = null;
  * @export
  * 
  * @type {Object} 
- * @property {*} criteria.key The key that identifies which field to sort
+ * @property {any} criteria.key The key that identifies which field to sort
  * @property {'ascending'|'descending'|'none'} criteria.direction the sort direction, valid values are "ascending", "descending", "none" (default)
  *
  * @desc The sort criteria. Whenever sort() is called with the criteria parameter, that value is copied to this
@@ -424,7 +424,7 @@ oj.ArrayTableDataSource.prototype.reset = function(data, options)
 /**
  * Performs a sort on the data source.
  * @param {Object|null} [criteria] the sort criteria.
- * @param {*} criteria.key The key that identifies which field to sort
+ * @param {any} criteria.key The key that identifies which field to sort
  * @param {'ascending'|'descending'|'none'} criteria.direction the sort direction, valid values are "ascending", "descending", "none" (default)
  * @return {Promise.<null>} promise object triggering done when complete.
  * @export

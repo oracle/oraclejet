@@ -33,6 +33,7 @@
 @import "widgets/oj.alta.android.animation";
 @import "widgets/oj.alta.android.progress";
 @import "widgets/oj.alta.android.pulltorefresh";
+@import "widgets/oj.alta.android.swipeactions";
 @import "widgets/oj.alta.android.swipetoreveal";
 @import "widgets/oj.alta.android.switcher";
 
@@ -115,3 +116,6 @@
 //icon
 @import "widgets/oj.alta.android.avatar";
 @import "widgets/oj.alta.android.iconcircle";
+
+// ojModule binding
+@import "widgets/oj.alta.android.module";

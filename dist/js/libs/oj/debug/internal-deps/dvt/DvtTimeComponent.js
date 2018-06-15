@@ -45,6 +45,7 @@ dvt.TimeComponent.WHEEL_UNITS_PER_LINE = 40;
 dvt.TimeComponent.prototype.Init = function(context, callback, callbackObj) 
 {
   dvt.TimeComponent.superclass.Init.call(this, context, callback, callbackObj);
+  this.SetPanningEnabled(true); // enable panning
   this._virtualize = false;
 };
 
@@ -564,6 +565,24 @@ dvt.TimeComponent.prototype.endPinchZoom = function()
 };
 
 /**
+ * Sets whether panning is enabled.
+ * @param {boolean} panningEnabled true if panning enabled
+ * @protected
+ */
+dvt.TimeComponent.prototype.SetPanningEnabled = function(panningEnabled) {
+  this._panningEnabled = panningEnabled;
+};
+
+/**
+ * Gets whether panning is enabled
+ * @return {boolean} true if panning enabled
+ * @protected
+ */
+dvt.TimeComponent.prototype.IsPanningEnabled = function() {
+  return this._panningEnabled;
+};
+
+/**
  * Pans the Timeline by the specified amount.
  * @param {number} delta The number of pixels to pan the canvas.
  */
@@ -898,6 +917,42 @@ dvt.TimeComponent.prototype.createViewportChangeEvent = function()
   return null;
 };
 
+/**
+ * Gets the current viewport start time
+ * @return {number} the viewport start time
+ */
+dvt.TimeComponent.prototype.getViewportStartTime = function()
+{
+  return this._viewStartTime;
+};
+
+/**
+ * Sets the current viewport start time
+ * @param {number} viewportStartTime The viewport start time
+ */
+dvt.TimeComponent.prototype.setViewportStartTime = function(viewportStartTime)
+{
+  this._viewStartTime = viewportStartTime;
+};
+
+/**
+ * Gets the current viewport end time
+ * @return {number} the viewport end time
+ */
+dvt.TimeComponent.prototype.getViewportEndTime = function()
+{
+  return this._viewEndTime;
+};
+
+/**
+ * Sets the current viewport end time
+ * @param {number} viewportEndTime The viewport end time
+ */
+dvt.TimeComponent.prototype.setViewportEndTime = function(viewportEndTime)
+{
+  this._viewEndTime = viewportEndTime;
+};
+
 //////////// event handlers, called by TimeComponentEventManager ////////////////////////////
 dvt.TimeComponent.prototype.HandleKeyDown = function(event)
 {
@@ -941,6 +996,82 @@ dvt.TimeComponent.prototype.beginDragPan = function(compX, compY)
 dvt.TimeComponent.prototype.endDragPan = function()
 {
   this.endPan();
+};
+
+/**
+ * Sets the cursor to pan down
+ */
+dvt.TimeComponent.prototype.setPanCursorDown = function()
+{
+  // IE doesn't support cursor image with custom positioning
+  if (dvt.Agent.isPlatformIE())
+    this.setCursor('move');
+  else
+    this.setCursor('url(' + this.getOptions()['_resources']['grabbingCursor'] + ') 8 8, move');
+};
+
+/**
+ * Sets the cursor to pan up
+ */
+dvt.TimeComponent.prototype.setPanCursorUp = function()
+{
+  // IE doesn't support cursor image with custom positioning
+  if (dvt.Agent.isPlatformIE())
+    this.setCursor('move');
+  else
+    this.setCursor('url(' + this.getOptions()['_resources']['grabCursor'] + ') 8 8, move');
+};
+
+/**
+ * Setup and creates (but not add to the DOM yet) a glass pane over the component.
+ * Calling this method also registers the operation to the usage stack, which keeps track of how many
+ * operations currently depend on the glass pane being up.
+ */
+dvt.TimeComponent.prototype.registerAndConstructGlassPane = function()
+{
+  if (!this._glassPaneUsageStack)
+  {
+    this._glassPaneUsageStack = [];
+  }
+  if (!this._glassPane)
+  {
+    var glassPaneBounds = this.getGraphicalAreaBounds();
+    this._glassPane = new dvt.Rect(this.getCtx(), glassPaneBounds.x, glassPaneBounds.y, glassPaneBounds.w, glassPaneBounds.h);
+    this._glassPane.setInvisibleFill();
+  }
+
+  this._glassPaneUsageStack.push(1); // register the caller
+};
+
+/**
+ * Adds the glass pane over the component
+ * @return {boolean} Whether the glass pane is added, or not (i.e. because it's already there)
+ */
+dvt.TimeComponent.prototype.installGlassPane = function()
+{
+  if (!this._glassPaneDrawn)
+  {
+    this.addChild(this._glassPane);
+    this._glassPaneDrawn = true;
+    return true;
+  }
+  return false;
+};
+
+/**
+ * Unregister, and removes the glass pane if nothing else is currently dependent on it.
+ */
+dvt.TimeComponent.prototype.unregisterAndDestroyGlassPane = function()
+{
+  // caller is done with the glass pane; unregister
+  this._glassPaneUsageStack.pop();
+
+  // If stack is empty, then nothing is currently dependent on the glass pane, so it's safe to remove
+  if (this._glassPaneDrawn && this._glassPaneUsageStack.length === 0)
+  {
+    this.removeChild(this._glassPane);
+    this._glassPaneDrawn = false;
+  }
 };
 
 dvt.TimeComponent.prototype.HandleTouchEnd = function(event)
@@ -1026,6 +1157,13 @@ dvt.TimeComponentEventManager.GECKO_MOUSEWHEEL = 'wheel';
 /**
  * @override
  */
+dvt.TimeComponentEventManager.prototype.getComponent = function() {
+  return this._comp;
+};
+
+/**
+ * @override
+ */
 dvt.TimeComponentEventManager.prototype.addListeners = function(displayable)
 {
   dvt.TimeComponentEventManager.superclass.addListeners.call(this, displayable);
@@ -1086,9 +1224,6 @@ dvt.TimeComponentEventManager.prototype.OnKeyDown = function(event)
  */
 dvt.TimeComponentEventManager.prototype.OnClick = function(event)
 {
-  if (this._isDragPanning)
-    return;
-
   dvt.TimeComponentEventManager.superclass.OnClick.call(this, event);
   this._comp.HandleMouseClick(event);
 };
@@ -1098,7 +1233,6 @@ dvt.TimeComponentEventManager.prototype.OnClick = function(event)
  */
 dvt.TimeComponentEventManager.prototype.PreOnMouseDown = function(event)
 {
-  this._isDragPanning = false;
   dvt.TimeComponentEventManager.superclass.PreOnMouseDown.call(this, event);
   this._comp.HandleMouseDown(event);
 };
@@ -1143,13 +1277,14 @@ dvt.TimeComponentEventManager.prototype.OnTouchEndBubble = function(event)
  */
 dvt.TimeComponentEventManager.prototype._onDragStart = function(event)
 {
-  if (this._comp.hasValidOptions())
+  if (this._comp.hasValidOptions() && this._comp.IsPanningEnabled())
   {
     if (dvt.Agent.isTouchDevice())
       return this._onTouchDragStart(event);
     else
       return this._onMouseDragStart(event);
   }
+  return false;
 };
 
 /**
@@ -1160,10 +1295,14 @@ dvt.TimeComponentEventManager.prototype._onDragStart = function(event)
  */
 dvt.TimeComponentEventManager.prototype._onDragMove = function(event)
 {
-  if (dvt.Agent.isTouchDevice())
-    return this._onTouchDragMove(event);
-  else
-    return this._onMouseDragMove(event);
+  if (this._comp.IsPanningEnabled())
+  {
+    if (dvt.Agent.isTouchDevice())
+      return this._onTouchDragMove(event);
+    else
+      return this._onMouseDragMove(event);
+  }
+  return false;
 };
 
 /**
@@ -1174,10 +1313,14 @@ dvt.TimeComponentEventManager.prototype._onDragMove = function(event)
  */
 dvt.TimeComponentEventManager.prototype._onDragEnd = function(event)
 {
-  if (dvt.Agent.isTouchDevice())
-    return this._onTouchDragEnd(event);
-  else
-    return this._onMouseDragEnd(event);
+  if (this._comp.IsPanningEnabled())
+  {
+    if (dvt.Agent.isTouchDevice())
+      return this._onTouchDragEnd(event);
+    else
+      return this._onMouseDragEnd(event);
+  }
+  return false;
 };
 
 /**
@@ -1215,9 +1358,15 @@ dvt.TimeComponentEventManager.prototype._onMouseDragStart = function(event)
   {
     var relPos = this._getRelativePosition(event.pageX, event.pageY);
     // only drag pan if inside chart/graphical area
-    if (this._comp.getGraphicalAreaBounds().containsPoint(relPos.x, relPos.y))
+    if (this._comp.getGraphicalAreaBounds().containsPoint(relPos.x, relPos.y) && !this._isDragPanning)
     {
+      // Hide any tooltip (from keyboard move) and put up a glass pane (for cursor change). Note that these are only relevant for mouse dragging.
+      this.hideTooltip();
+      this._comp.registerAndConstructGlassPane();
+      
+      this._comp.setPanCursorDown();
       this._comp.beginDragPan(relPos.x, relPos.y);
+      this._isDragPanning = true;
       return true;
     }
   }
@@ -1232,8 +1381,10 @@ dvt.TimeComponentEventManager.prototype._onMouseDragStart = function(event)
 dvt.TimeComponentEventManager.prototype._onMouseDragMove = function(event)
 {
   var relPos = this._getRelativePosition(event.pageX, event.pageY);
-  if (this._comp.contDragPan(relPos.x, relPos.y))
-    this._isDragPanning = true;
+  if (this._comp.contDragPan(relPos.x, relPos.y) && this._isDragPanning)
+  {
+    this._comp.installGlassPane();
+  }
 };
 
 /**
@@ -1243,9 +1394,44 @@ dvt.TimeComponentEventManager.prototype._onMouseDragMove = function(event)
  */
 dvt.TimeComponentEventManager.prototype._onMouseDragEnd = function(event)
 {
-  this._comp.endDragPan();
-  // Clear the stage absolute position cache
-  this._stageAbsolutePosition = null;
+  if (this._isDragPanning)
+  {
+    this._isDragPanning = false;
+
+    this._comp.endDragPan();
+    // Clear the stage absolute position cache
+    this._stageAbsolutePosition = null;
+
+    // No longer need the glass pane
+    this._comp.unregisterAndDestroyGlassPane();
+
+    // Update cursor
+    var relPos = this._getRelativePosition(event.pageX, event.pageY);
+    if (this._comp.getGraphicalAreaBounds().containsPoint(relPos.x, relPos.y))
+      this._comp.setPanCursorUp();
+    else
+      this._comp.setCursor('inherit');
+  }
+};
+
+/**
+ * @override
+ */
+dvt.TimeComponentEventManager.prototype.OnMouseMove = function(event)
+{
+  dvt.TimeComponentEventManager.superclass.OnMouseMove.call(this, event);
+
+  // Update the cursor
+  var relPos = this._getRelativePosition(event.pageX, event.pageY);
+  if (this._comp.getGraphicalAreaBounds().containsPoint(relPos.x, relPos.y))
+  {
+    if (this._isDragPanning)
+      this._comp.setPanCursorDown();
+    else
+      this._comp.setPanCursorUp();
+  }
+  else
+    this._comp.setCursor('inherit');
 };
 
 /**

@@ -10,7 +10,7 @@ define(['ojs/ojcore', 'jquery', 'knockout', 'ojs/ojknockout', 'ojs/ojcomposite',
 {
 
 
-/*jslint browser: true*/
+/* jslint browser: true*/
 /*
  ** Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
  */
@@ -33,7 +33,7 @@ define(['ojs/ojcore', 'jquery', 'knockout', 'ojs/ojknockout', 'ojs/ojcomposite',
  * <p>Manages the layout and display of one or more messages. The only supported component child
  * element of <code class="prettyprint">oj-messages</code> is
  * <code class="prettyprint">oj-message</code>.
- * 
+ *
  * <h4 id="messages-layout-section">Layouts
  * <a class="bookmarkable-link" title="Bookmarkable Link" href="#messages-layout-section"></a></h4>
  * <p>Messages can be shown in these layouts
@@ -42,32 +42,32 @@ define(['ojs/ojcore', 'jquery', 'knockout', 'ojs/ojknockout', 'ojs/ojcomposite',
  * <li>Overlayed on the page content, positioned to the top of the page by default</li>
  * <li>As notifications, positioned to the top-end corner of the page by default</li>
  * </ul>
- * Inlined messages will push the page contents when a new message is shown and could scroll out of 
- * the view when user scrolls the page. Overlayed or notification style messages are usually 
- * positioned relative to the window, will assume a fixed position and will remain 
+ * Inlined messages will push the page contents when a new message is shown and could scroll out of
+ * the view when user scrolls the page. Overlayed or notification style messages are usually
+ * positioned relative to the window, will assume a fixed position and will remain
  * visible when the user scrolls the page. Overlayed or notification messages can be positioned
  * relative to another element in the page, in which case the messages follow that element upon
- * page scroll. Inline and overlay layouts are suitable for messages pertaining to the page or 
+ * page scroll. Inline and overlay layouts are suitable for messages pertaining to the page or
  * region of the page, or relating to the task the user performed on the page. Notification layout is
- * suitable for messages that arrive asynchronously to the application or to communicate alerts to 
+ * suitable for messages that arrive asynchronously to the application or to communicate alerts to
  * users. Examples below shows the three layouts.
- * 
+ *
  * <pre class="prettyprint">
  * <code>
  * &lt;!-- Inline: Do not specify the 'position', set 'display' to 'general' -->
  * &lt;oj-messages id="inlineMessages" messages="[[serviceRequestMessages]]" display="general">
  * &lt;/oj-messages>
- * 
+ *
  * &lt;!-- Overlay: Set 'position' to an empty or a structured object, set 'display' to 'general' -->
  * &lt;oj-messages id="overlayMessages" messages="[[serviceRequestMessages]]" position="{}" display="general">
  * &lt;/oj-messages>
- * 
+ *
  * &lt;!-- Notification: Set 'position' to an empty or a structured object, set 'display' to 'notification' -->
  * &lt;oj-messages id="notificationMessages" messages="[[emailMessages]]" position="{}" display="notification">
  * &lt;/oj-messages>
  * </code>
  * </pre>
- * 
+ *
  * <h4 id="messages-syntax-section">Syntaxes
  * <a class="bookmarkable-link" title="Bookmarkable Link" href="#messages-syntax-section"></a></h4>
  * <p>Messages can be defined as below followed by examples
@@ -79,7 +79,7 @@ define(['ojs/ojcore', 'jquery', 'knockout', 'ojs/ojknockout', 'ojs/ojcomposite',
  * <li>Use the simple syntax to directly bind a collection to the 'messages' attribute of oj-messages.
  * This is a convenient syntax and suitable when a single message source is used</li>
  * </ul>
- * 
+ *
  * <pre class="prettyprint">
  * <code>
  * &lt;!-- Including oj-message children -->
@@ -189,7 +189,7 @@ define(['ojs/ojcore', 'jquery', 'knockout', 'ojs/ojknockout', 'ojs/ojcomposite',
  *     <tr>
  *       <td>oj-messages-inline-remove-bottom-border</td>
  *       <td>Inline messages will include a bottom border so that the messages section is demarcated
- *            from the contents below it. If this border is not desirable for certain page layouts, 
+ *            from the contents below it. If this border is not desirable for certain page layouts,
  *            it can be removed by setting this marker class on oj-messages.
   *       </td>
  *     </tr>
@@ -208,7 +208,7 @@ define(['ojs/ojcore', 'jquery', 'knockout', 'ojs/ojknockout', 'ojs/ojcomposite',
  * Instead of providing multiple oj-message as children, this property can be used to conveniently
  * specify the required data as a single collection. Individual message will be automatically
  * created based on this data. See {@link oj.ojMessage.Message} for message values.</p>
- *<p> More information about the structured 'Message' data can be found in documentation for 
+ *<p> More information about the structured 'Message' data can be found in documentation for
  *'message' attribute of <code class="prettyprint">oj-message</code> element.</p>
  *
  * @example <caption>Initialize component with <code class="prettyprint">messages</code> attribute:</caption>
@@ -241,7 +241,7 @@ define(['ojs/ojcore', 'jquery', 'knockout', 'ojs/ojknockout', 'ojs/ojcomposite',
  * <p>Specifies the display purpose of messages. The valid values for display are
  * <code class="prettyprint">general</code> and <code class="prettyprint">notification</code>.
  * General messages are commonly rendered at the page level or section level, relating to the task
- * the user performed. Notification messages are typically used for reporting asynchronous events, 
+ * the user performed. Notification messages are typically used for reporting asynchronous events,
  * or to communicate some background activity.</p>
  *
  * The presentation of the message is inline by default.  However, when a
@@ -514,13 +514,13 @@ define(['ojs/ojcore', 'jquery', 'knockout', 'ojs/ojknockout', 'ojs/ojcomposite',
 /**
  * Closes the specified message regardless of the {@link oj.ojMessage#message.autoTimeout} or
  * {@link oj.ojMessage#message.closeAffordance} properties. The <code>message</code> argument
- * is a required argument, must be of type {@link oj.ojMessage#message}, and must be the same object 
+ * is a required argument, must be of type {@link oj.ojMessage#message}, and must be the same object
  * instance that was used to create and show the oj-message.
  *
  * <p>Closing a message changes the visibility to hidden. If the message is defined by an instance
  * in the {@link oj.ojMessages#messages} collection, the close operation will not remove the item
- * from the backing model. Application logic needs to listen for the 
- * {@link oj.ojMessage#event:close} event bubbling up from the underlying oj-message child to remove 
+ * from the backing model. Application logic needs to listen for the
+ * {@link oj.ojMessage#event:close} event bubbling up from the underlying oj-message child to remove
  * from the backing collection.</p>
  *
  * @expose
@@ -542,15 +542,15 @@ define(['ojs/ojcore', 'jquery', 'knockout', 'ojs/ojknockout', 'ojs/ojcomposite',
 /**
  * Closes child messages matching the <code>closeFilter</code> callback criteria.
  * The <code>closeFilter</code> callback is an optional argument. If not specified, all child
- * messages will be closed. If filter is specified, object of type {@link oj.ojMessage#message} 
- * corresponding to each child will be passed to the <code>closeFilter</code> function. A return 
- * value of <code>true</code> will result in calling {@link oj.ojMessage#close} for the message. 
+ * messages will be closed. If filter is specified, object of type {@link oj.ojMessage#message}
+ * corresponding to each child will be passed to the <code>closeFilter</code> function. A return
+ * value of <code>true</code> will result in calling {@link oj.ojMessage#close} for the message.
  * Otherwise, the message will remain in its current state.
  *
  * <p>Closing a message changes the visibility to hidden. If the message is defined by an instance
  * in the {@link oj.ojMessages#messages} collection, the close operation will not remove the item
- * from the backing model. Application logic needs to listen for the 
- * {@link oj.ojMessage#event:close} event bubbling up from the underlying oj-message child to remove 
+ * from the backing model. Application logic needs to listen for the
+ * {@link oj.ojMessage#event:close} event bubbling up from the underlying oj-message child to remove
  * from the backing collection.</p>
  *
  * @expose
@@ -584,7 +584,7 @@ define(['ojs/ojcore', 'jquery', 'knockout', 'ojs/ojknockout', 'ojs/ojcomposite',
  *
  * @function setProperty
  * @param {string} property - The property name to set. Supports dot notation for subproperty access.
- * @param {*} value - The new value to set the property to.
+ * @param {any} value - The new value to set the property to.
  * @return {void}
  * @expose
  * @memberof! oj.ojMessages
@@ -599,7 +599,7 @@ define(['ojs/ojcore', 'jquery', 'knockout', 'ojs/ojknockout', 'ojs/ojcomposite',
  * Retrieves a value for a property or a single subproperty for complex properties.
  * @function getProperty
  * @param {string} property - The property name to get. Supports dot notation for subproperty access.
- * @return {*}
+ * @return {any}
  * @expose
  * @memberof! oj.ojMessages
  * @instance
@@ -674,102 +674,102 @@ define(['ojs/ojcore', 'jquery', 'knockout', 'ojs/ojknockout', 'ojs/ojcomposite',
 
 var _MESSAGES_METADATA =
   {
-    "name" : "oj-messages",
-    "displayName" : "oj-messages",
-    "version" : "1.0.0",
-    "jetVersion" : "^5.0.0",
-    "properties" : {
-      "messages" : {
-        "type" : "Array<object>",
-        "writeback" : false,
-        "value": null
+    name: 'oj-messages',
+    displayName: 'oj-messages',
+    version: '1.0.0',
+    jetVersion: '^5.0.0',
+    properties: {
+      messages: {
+        type: 'Array<object>',
+        writeback: false,
+        value: null
       },
 
-      "display" : {
-        "type" : "string",
-        "enumValues" : ["general", "notification"],
-        "translatable" : false,
-        "value": "general"
+      display: {
+        type: 'string',
+        enumValues: ['general', 'notification'],
+        translatable: false,
+        value: 'general'
       },
 
-      "position" : {
-        "type" : "object",
-        "translatable" : false,
-        "properties" : {
-          "my" : {
-            "type" : "object|string",
-            "properties" : {
-              "horizontal" : {
-                "type" : "string",
-                "enumValues" : ["start", "end", "left", "center", "right"]
+      position: {
+        type: 'object',
+        translatable: false,
+        properties: {
+          my: {
+            type: 'object|string',
+            properties: {
+              horizontal: {
+                type: 'string',
+                enumValues: ['start', 'end', 'left', 'center', 'right']
               },
-              "vertical" : {
-                "type" : "string",
-                "enumValues" : ["top", "center", "bottom"]
+              vertical: {
+                type: 'string',
+                enumValues: ['top', 'center', 'bottom']
               }
             }
           },
-          "at" : {
-            "type" : "object|string",
-            "properties" : {
-              "horizontal" : {
-                "type" : "string",
-                "enumValues" : ["start", "end", "left", "center", "right"]
+          at: {
+            type: 'object|string',
+            properties: {
+              horizontal: {
+                type: 'string',
+                enumValues: ['start', 'end', 'left', 'center', 'right']
               },
-              "vertical" : {
-                "type" : "string",
-                "enumValues" : ["top", "center", "bottom"]
+              vertical: {
+                type: 'string',
+                enumValues: ['top', 'center', 'bottom']
               }
             }
           },
-          "offset" : {
-            "type" : "object",
-            "properties" : {
-              "x" : {
-                "type" : "number"
+          offset: {
+            type: 'object',
+            properties: {
+              x: {
+                type: 'number'
               },
-              "y" : {
-                "type" : "number"
+              y: {
+                type: 'number'
               }
             }
           },
-          "of" : {
-            "type" : "string|object"
+          of: {
+            type: 'string|object'
           },
-          "collision" : {
-            "type" : "string",
-            "enumValues" : ["flip", "fit", "flipfit", "flipcenter", "none"]
+          collision: {
+            type: 'string',
+            enumValues: ['flip', 'fit', 'flipfit', 'flipcenter', 'none']
           }
         }
       },
 
-      "translations" : {
-        "type" : "object",
-        "writeback" : false,
-        "value": {"labelLandmark": ""},
-        "properties" : {
-          "labelLandmark" : {
-            "type" : "string",
-            "translatable" : true
+      translations: {
+        type: 'object',
+        writeback: false,
+        value: { labelLandmark: '' },
+        properties: {
+          labelLandmark: {
+            type: 'string',
+            translatable: true
           }
         }
       }
     },
 
-    "methods" : {
-      "close" : {
-        "params" : [
+    methods: {
+      close: {
+        params: [
           {
-            "name" : "message",
-            "type" : "object"
+            name: 'message',
+            type: 'object'
           }
         ]
       },
-      "closeAll" : {
-        "params" : [
+      closeAll: {
+        params: [
           {
-            "name" : "filter",
-            "type" : "function"
+            name: 'filter',
+            type: 'function'
           }
         ]
       }
@@ -778,8 +778,7 @@ var _MESSAGES_METADATA =
   };
 
 var _MESSAGES_VIEW =
-  '<div role="presentation" aria-hidden="true" ' +
-  '     :id="[[containerId]]" :class="[[containerSelectors]]" ' +
+  '<div role="presentation" :id="[[containerId]]" :class="[[containerSelectors]]" ' +
   '     on-oj-open="[[handleOpen]]" on-oj-close="[[handleClose]]" ' +
   '     on-oj-animate-start="[[handleAnimateStart]]">' +
   '  <oj-bind-slot>' +
@@ -797,198 +796,167 @@ var _MESSAGES_VIEW =
   '    <!-- /ko -->' +
   '</div>';
 
-function MessagesViewModel(context)
-{
-  this._composite = context['element'];
+function MessagesViewModel(context) {
+  this._composite = context.element;
 
   // Anything used by the view bindings or component methods can't be obfuscated
   // and is why it's defined in quotes.
-  this._messagesContainerId = this["containerId"] = [context['unique'], "mc"].join("_");
-  this["handleOpen"] = this._handleOpen.bind(this);
-  this["handleClose"] = this._handleClose.bind(this);
-  this["handleAnimateStart"] = this._handleAnimateStart.bind(this);
-  this["bindingsApplied"] = this._bindingsApplied.bind(this);
-  this["disconnected"] = this._disconnected.bind(this);
-  this["connected"] = this._connected.bind(this);
-  this["close"] = this._close.bind(this);
-  this["closeAll"] = this._closeAll.bind(this);
-  this["propertyChanged"] = this._propertyChanged.bind(this);
+  this.containerId = [context.unique, 'mc'].join('_');
+  this._messagesContainerId = this.containerId;
+  this.handleOpen = this._handleOpen.bind(this);
+  this.handleClose = this._handleClose.bind(this);
+  this.handleAnimateStart = this._handleAnimateStart.bind(this);
+  this.bindingsApplied = this._bindingsApplied.bind(this);
+  this.disconnected = this._disconnected.bind(this);
+  this.connected = this._connected.bind(this);
+  this.close = this._close.bind(this);
+  this.closeAll = this._closeAll.bind(this);
+  this.propertyChanged = this._propertyChanged.bind(this);
 
-  this._properties = context['properties'];
+  this._properties = context.properties;
   this._createObservables();
-  this._initDefaultTranslations();
-};
+  this._updateLandmark();
+}
 
-MessagesViewModel.prototype._bindingsApplied = function (context)
-{
+MessagesViewModel.prototype._bindingsApplied = function () {
   // detects F6 navigation to the body content
   var messagesContainerDiv = document.getElementById(this._messagesContainerId);
-  messagesContainerDiv.addEventListener("ojFocus", this._navigationEventListener.bind(this), false);
+  messagesContainerDiv.addEventListener('ojFocus', this._navigationEventListener.bind(this), false);
 
   // Shows the message container before animation of the first disclosed message.  The ojOpen
   // event is fired after animation.
-  messagesContainerDiv.addEventListener("ojBeforeOpen", this._handleBeforeOpen.bind(this), false);
-
+  messagesContainerDiv.addEventListener('ojBeforeOpen', this._handleBeforeOpen.bind(this), false);
 };
 
-MessagesViewModel.prototype._disconnected = function (element)
-{
+MessagesViewModel.prototype._disconnected = function () {
   MessagesViewModel.NAVIGATION_TRACKER.remove(this._messagesContainerId);
 
   // detaching an open message overlay results in implicit dismissal
-  if (oj.ZOrderUtils.getStatus(this._composite) === oj.ZOrderUtils.STATUS.OPEN)
-  {
+  if (oj.ZOrderUtils.getStatus(this._composite) === oj.ZOrderUtils.STATUS.OPEN) {
     this._closeOverlay();
   }
-}
+};
 
-MessagesViewModel.prototype._connected = function (element)
-{
+MessagesViewModel.prototype._connected = function () {
   MessagesViewModel.NAVIGATION_TRACKER.add(this._messagesContainerId);
-}
+};
 
-MessagesViewModel.prototype._closeAll = function (closeFilter)
-{
-  if (this._isMessagesShown())
-  {
+MessagesViewModel.prototype._closeAll = function (closeFilter) {
+  if (this._isMessagesShown()) {
     var messageChildren = this._getDefaultSlotMessageElements();
-    for (var i = 0; i < messageChildren.length; i++)
-    {
-      var message = messageChildren[i]["message"];
+    for (var i = 0; i < messageChildren.length; i++) {
+      var message = messageChildren[i].message;
       var closeable = true;
-      if (closeFilter)
-      {
+      if (closeFilter) {
         closeable = closeFilter(message);
       }
-      if (closeable)
-      {
-        messageChildren[i]['close']();
+      if (closeable) {
+        messageChildren[i].close();
       }
     }
   }
 };
 
-MessagesViewModel.prototype._propertyChanged = function (detail)
-{
-  if ("external" === detail["updatedFrom"] && detail["property"] === "position")
-  {
-    if (detail.previousValue && detail.value)
-    {
+MessagesViewModel.prototype._propertyChanged = function (detail) {
+  if (detail.updatedFrom === 'external' && detail.property === 'position') {
+    if (detail.previousValue && detail.value) {
       // re-evaluate overlay position
       this._refresh();
-    }
-    else if (!detail.previousValue && detail.value)
-    {
+    } else if (!detail.previousValue && detail.value) {
       // inline to overlay
-      if (this._getDefaultSlotMessageElements().length > 0)
-      {
-        if (this._isMessagesShown())
+      if (this._getDefaultSlotMessageElements().length > 0) {
+        if (this._isMessagesShown()) {
           this._hideMessages();
+        }
 
         this._openOverlay();
       }
-    }
-    else if (detail.previousValue && !detail.value)
-    {
+    } else if (detail.previousValue && !detail.value) {
       // overlay to inline
-      if (this._getDefaultSlotMessageElements().length > 0)
-      {
-        if (this._isOverlayOpen())
+      if (this._getDefaultSlotMessageElements().length > 0) {
+        if (this._isOverlayOpen()) {
           this._closeOverlay();
+        }
 
         this._showMessages();
       }
     }
-  }
-  else if ("external" === detail["updatedFrom"] && detail["property"] === "display")
-  {
-    if (this._getDefaultSlotMessageElements().length > 0)
-    {
-      if (this._isOverlayOpen())
-      {
+  } else if (detail.updatedFrom === 'external' && detail.property === 'display') {
+    if (this._getDefaultSlotMessageElements().length > 0) {
+      if (this._isOverlayOpen()) {
         this._closeOverlay();
         this._openOverlay();
         this._refresh();
-      }
-      else if (this._isMessagesShown())
-      {
+      } else if (this._isMessagesShown()) {
         this._hideMessages();
         this._showMessages();
       }
     }
-  }
-  else if ("external" === detail["updatedFrom"] && detail["property"] === "translations")
-  {
+  } else if (detail.updatedFrom === 'external' && detail.property === 'translations') {
     this._updateLandmark();
   }
 };
 
-MessagesViewModel.prototype._close = function (message)
-{
-  if (message && this._isMessagesShown())
-  {
+MessagesViewModel.prototype._close = function (message) {
+  if (message && this._isMessagesShown()) {
     var messageChildren = this._getDefaultSlotMessageElements();
-    for (var i = 0; i < messageChildren.length; i++)
-    {
+    for (var i = 0; i < messageChildren.length; i++) {
       /** @type {?} */
-      var childMessage = $(messageChildren[i]).prop("message");
-      if (childMessage === message)
-      {
-        messageChildren[i]["close"]();
+      var childMessage = $(messageChildren[i]).prop('message');
+      if (childMessage === message) {
+        messageChildren[i].close();
       }
     }
   }
 };
 
-MessagesViewModel.prototype._isEventPertaining = function (event)
-{
+MessagesViewModel.prototype._isEventPertaining = function (event) {
   // verify the event is from a child message
   var target = event.target;
   var messagesContainerDiv = document.getElementById(this._messagesContainerId);
-  if (target.nodeName !== "OJ-MESSAGE" || !oj.DomUtils.isAncestor(messagesContainerDiv, target))
+  if (target.nodeName !== 'OJ-MESSAGE' || !oj.DomUtils.isAncestor(messagesContainerDiv, target)) {
     return false;
-  else
-    return true;
+  }
+  return true;
 };
 
-MessagesViewModel.prototype._handleBeforeOpen = function (event)
-{
-  if (!event.defaultPrevented && this._isEventPertaining(event) && !this._isMessagesShown())
-  {
-    if (!this._isPresentationInline())
+MessagesViewModel.prototype._handleBeforeOpen = function (event) {
+  if (!event.defaultPrevented && this._isEventPertaining(event) && !this._isMessagesShown()) {
+    if (!this._isPresentationInline()) {
       this._openOverlay();
-    else
+    } else {
       this._showMessages();
+    }
   }
 };
 
-MessagesViewModel.prototype._handleOpen = function (event)
-{
+MessagesViewModel.prototype._handleOpen = function (event) {
   // verify the event is from a child message
-  if (event.defaultPrevented || !this._isEventPertaining(event))
+  if (event.defaultPrevented || !this._isEventPertaining(event)) {
     return;
+  }
 
   /** @type {{icon: string, category: string, severity:string, timestamp:string, summary:string,
       detail:string, autoTimeout:number, closeAffordance: string, sound: string}} */
-  var message = event.detail["message"];
+  var message = event.detail.message;
 
-  var translations = oj.Translations.getComponentTranslations("oj-ojMessage")["categories"];
-  var category = !message['category'] ? translations[message['severity']] : message['category'];
-  var options = {"category": category, "summary": message['summary']};
+  var translations = oj.Translations.getComponentTranslations('oj-ojMessage').categories;
+  var category = !message.category ? translations[message.severity] : message.category;
+  var options = { category: category, summary: message.summary };
 
   var liveRegion = this._getLiveRegion();
-  var text = oj.Translations.getTranslatedString("oj-ojMessages.ariaLiveRegion.newMessage",
+  var text = oj.Translations.getTranslatedString('oj-ojMessages.ariaLiveRegion.newMessage',
                  options);
   liveRegion.announce(text);
 
   this._refresh();  // re-evaluate the position as the overlay size can change.
 };
 
-MessagesViewModel.prototype._handleClose = function (event)
-{
+MessagesViewModel.prototype._handleClose = function (event) {
   // verify the event is from a child message
-  if (event.defaultPrevented || !this._isEventPertaining(event))
+  if (event.defaultPrevented || !this._isEventPertaining(event)) {
     return;
+  }
 
   // look for next focus
   var closeMessageElement = event.target;
@@ -997,11 +965,13 @@ MessagesViewModel.prototype._handleClose = function (event)
   // If the event was triggered from the close icon, the originalEvent will be populated
   // Next focus is only needed when closure was from the close icon.  autoTimeout closure
   // shouldn't insist on focus handling.
-  if (event["_originalEvent"])
+  if (event._originalEvent) {
     nextFocusElement = this._getNextFocus(closeMessageElement);
+  }
 
-  if (nextFocusElement)
+  if (nextFocusElement) {
     nextFocusElement.focus();
+  }
 
   // remove the oj-message from DOM. Note that we are not calling 'oj.Components.subtreeHidden'
   //  because it is not required if we use jquery remove() as per the doc there
@@ -1009,167 +979,159 @@ MessagesViewModel.prototype._handleClose = function (event)
 
   // if we do not have any "default" slot children, then the message being closed is the last one,
   //  close/hide the containers hence
-  if (this._getDefaultSlotMessageElements().length === 0)
-  {
+  if (this._getDefaultSlotMessageElements().length === 0) {
     MessagesViewModel.NAVIGATION_TRACKER.togglePreviousFocus(this._messagesContainerId);
 
-    if (this._isOverlayOpen())
+    if (this._isOverlayOpen()) {
       this._closeOverlay();
-    else
+    } else {
       this._hideMessages();
+    }
   }
 };
 
-MessagesViewModel.prototype._getNextFocus = function (target)
-{
+MessagesViewModel.prototype._getNextFocus = function (target) {
   var messageElements = this._getDefaultSlotMessageElements();
   var n = messageElements.indexOf(target);
   var nextFocusMessage;
-  if (n - 1 > -1)
+  if (n - 1 > -1) {
     nextFocusMessage = messageElements[n - 1];
-  else if (n + 1 <= messageElements.length - 1)
+  } else if (n + 1 <= messageElements.length - 1) {
     nextFocusMessage = messageElements[n + 1];
+  }
 
   var nextFocusElement;
-  if (nextFocusMessage)
+  if (nextFocusMessage) {
     nextFocusElement = nextFocusMessage.querySelector('.oj-message-category[tabindex="-1"]');
+  }
 
   return nextFocusElement;
 };
 
-MessagesViewModel.prototype._handleAnimateStart = function (event)
-{
-
-  if (event.defaultPrevented || !this._isEventPertaining(event))
+MessagesViewModel.prototype._handleAnimateStart = function (event) {
+  if (event.defaultPrevented || !this._isEventPertaining(event)) {
     return; // animateStart already overridden on the individual oj-message.
+  }
 
   // eat the event bubbling up from a child oj-message component
   event.preventDefault();
-  //event.stopPropagation();
+  // event.stopPropagation();
 
   // override animation
-  var messageElement = event.detail["element"];
-  var action = event.detail["action"];
-  var display = this._isPresentationInline() ? "general" : this._computeDisplay();
+  var messageElement = event.detail.element;
+  var action = event.detail.action;
+  var display = this._isPresentationInline() ? 'general' : this._computeDisplay();
   var options = this._getThemedAnimateOptions(display, action);
-  //var component = this._composite;
-  var endCallback = event.detail["endCallback"];
+  // var component = this._composite;
+  var endCallback = event.detail.endCallback;
 
   // oj-messages doesn't publish animateStart/animateEnd so use the simpler syntax for now and allow
   // the event to bubble.
   //
   // oj.AnimationUtils.startAnimation(messageElement, action, options, component).then(endCallback);
-  oj.AnimationUtils[options['effect']](messageElement, options).then(endCallback);
+  oj.AnimationUtils[options.effect](messageElement, options).then(endCallback);
 };
 
 MessagesViewModel._DEFAULTS = {
-  "general": {
-    "animation": {
-      "open":  {"effect":"expand","duration":"300ms"},
-      "close": {"effect":"collapse","duration":"300ms"}
+  general: {
+    animation: {
+      open: { effect: 'expand', duration: '300ms' },
+      close: { effect: 'collapse', duration: '300ms' }
     },
-    "position": {
-      "my" : {"horizontal" : "center", "vertical" : "top"},
-      "at" : {"horizontal" : "center", "vertical" : "top"},
-      "of" : "window",
-      "collision": "none"
+    position: {
+      my: { horizontal: 'center', vertical: 'top' },
+      at: { horizontal: 'center', vertical: 'top' },
+      of: 'window',
+      collision: 'none'
     }
   },
-  "notification": {
-    "animation": {
-      "open":  {"effect":"slideIn","duration":"300ms"},
-      "close": {"effect":"slideOut","duration":"300ms", "direction": "end"}
+  notification: {
+    animation: {
+      open: { effect: 'slideIn', duration: '300ms' },
+      close: { effect: 'slideOut', duration: '300ms', direction: 'end' }
     },
-    "position": {
-      "my" : {"horizontal" : "end", "vertical" : "top"},
-      "at" : {"horizontal" : "end", "vertical" : "top"},
-      "of" : "window",
-      "collision": "none"
+    position: {
+      my: { horizontal: 'end', vertical: 'top' },
+      at: { horizontal: 'end', vertical: 'top' },
+      of: 'window',
+      collision: 'none'
     }
   }
 };
 
-MessagesViewModel.prototype._getThemedAnimateOptions = function (display, action)
-{
+MessagesViewModel.prototype._getThemedAnimateOptions = function (display, action) {
   var themedDefaults = oj.ThemeUtils.parseJSONFromFontFamily('oj-messages-option-defaults');
-  if (themedDefaults && themedDefaults[display] && themedDefaults[display]["animation"] &&
-      themedDefaults[display]["animation"][action])
-    return themedDefaults[display]["animation"][action];
-  else
-    return MessagesViewModel._DEFAULTS[display]["animation"][action];
+  if (themedDefaults && themedDefaults[display] && themedDefaults[display].animation &&
+      themedDefaults[display].animation[action]) {
+    return themedDefaults[display].animation[action];
+  }
+  return MessagesViewModel._DEFAULTS[display].animation[action];
 };
 
-MessagesViewModel.prototype._computeDisplay = function ()
-{
-  var display = this._properties['display'];
+MessagesViewModel.prototype._computeDisplay = function () {
+  var display = this._properties.display;
   return display;
 };
 
-MessagesViewModel.prototype._isPresentationInline = function ()
-{
-  return !this._properties['position'] ? true : false;
+MessagesViewModel.prototype._isPresentationInline = function () {
+  return !this._properties.position;
 };
 
-MessagesViewModel.prototype._computeContainerSelectors = function ()
-{
+MessagesViewModel.prototype._computeContainerSelectors = function () {
   var display = this._computeDisplay();
   var composite = $(this._composite);
 
   // something about the layout changed, take this opp. to update classes on the root element
-  composite.removeClass("oj-messages-general oj-messages-notification oj-messages-inline");
+  composite.removeClass('oj-messages-general oj-messages-notification oj-messages-inline');
 
-  if (this._isPresentationInline())
-    composite.addClass("oj-messages-inline")
-  else
-    composite.addClass(["oj-messages", display].join("-"));
+  if (this._isPresentationInline()) {
+    composite.addClass('oj-messages-inline');
+  } else {
+    composite.addClass(['oj-messages', display].join('-'));
+  }
 
   // a bogus binding on the view, and we return a literal here, but provides a convenient way to be
   //  able to set classes on the root element when the underlying observables change
-  return "oj-messages-container";
+  return 'oj-messages-container';
 };
 
-MessagesViewModel.prototype._getThemedPosition = function()
-{
+MessagesViewModel.prototype._getThemedPosition = function () {
   var display = this._computeDisplay();
   var themedDefaults = oj.ThemeUtils.parseJSONFromFontFamily('oj-messages-option-defaults');
-  if (themedDefaults[display] && themedDefaults[display]["position"])
-    return themedDefaults[display]["position"];
-  else
-    return MessagesViewModel._DEFAULTS[display]["position"];
+  if (themedDefaults[display] && themedDefaults[display].position) {
+    return themedDefaults[display].position;
+  }
+  return MessagesViewModel._DEFAULTS[display].position;
 };
 
- MessagesViewModel.prototype._getPositionAsJqUi =  function ()
- {
-    var position = oj.PositionUtils.coerceToJqUi(this._computePosition());
-    var isRtl = oj.DomUtils.getReadingDirection() === "rtl";
-    position = oj.PositionUtils.normalizeHorizontalAlignment(position, isRtl);
-    return position;
+MessagesViewModel.prototype._getPositionAsJqUi = function () {
+  var position = oj.PositionUtils.coerceToJqUi(this._computePosition());
+  var isRtl = oj.DomUtils.getReadingDirection() === 'rtl';
+  position = oj.PositionUtils.normalizeHorizontalAlignment(position, isRtl);
+  return position;
 };
 
-MessagesViewModel.prototype._computePosition = function ()
-{
-  var position = this._properties['position'];
+MessagesViewModel.prototype._computePosition = function () {
+  var position = this._properties.position;
   return oj.PositionUtils.coerceToJet(position, this._getThemedPosition());
 };
 
-MessagesViewModel.prototype._getDefaultSlotMessageElements = function ()
-{
-  function toSelector(node)
-  {
-    var selector = "";
-    if (node)
-    {
-      if (node.id && node.id.length > 0)
-        selector = "#" + node.id;
-      else
-      {
+MessagesViewModel.prototype._getDefaultSlotMessageElements = function () {
+  function toSelector(node) {
+    var selector = '';
+    if (node) {
+      if (node.id && node.id.length > 0) {
+        selector = '#' + node.id;
+      } else {
         selector = node.nodeName;
-        var clazz = node.getAttribute("class");
-        if (clazz)
-          selector += "." + clazz.split(" ").join(".");
+        var clazz = node.getAttribute('class');
+        if (clazz) {
+          selector += '.' + clazz.split(' ').join('.');
+        }
 
-        if (node.parentNode)
-          return toSelector(node.parentNode) + " > " + selector;
+        if (node.parentNode) {
+          return toSelector(node.parentNode) + ' > ' + selector;
+        }
       }
     }
 
@@ -1182,19 +1144,14 @@ MessagesViewModel.prototype._getDefaultSlotMessageElements = function ()
   var messageElements = [];
 
   // we just need to deal with "default" slot
-  var body = slotMap[""];  // default slot
-  for (var i = 0; body && i < body.length; i++)
-  {
+  var body = slotMap[''];  // default slot
+  for (var i = 0; body && i < body.length; i++) {
     // any element child node of oj-messages must be a oj-message. Do this validation at times.
-    if (body[i].nodeName !== "OJ-MESSAGE")
-    {
+    if (body[i].nodeName !== 'OJ-MESSAGE') {
       oj.Logger.error(["JET oj-messages id='", toSelector(this._composite),
-                          "': can contain only oj-message children in its default slot. ",
-                          "Found a child element id='", toSelector(body[i]), "'."].join(""));
-      continue;
-    }
-    else
-    {
+        "': can contain only oj-message children in its default slot. ",
+        "Found a child element id='", toSelector(body[i]), "'."].join(''));
+    } else {
       messageElements.push(body[i]);
     }
   }
@@ -1202,49 +1159,41 @@ MessagesViewModel.prototype._getDefaultSlotMessageElements = function ()
   return messageElements;
 };
 
-MessagesViewModel.prototype._isMessagesShown = function ()
-{
-  return $(this._composite).is(":visible");
+MessagesViewModel.prototype._isMessagesShown = function () {
+  return $(this._composite).is(':visible');
 };
 
-MessagesViewModel.prototype._showMessages = function()
-{
-  if (!this._isMessagesShown())
-  {
+MessagesViewModel.prototype._showMessages = function () {
+  if (!this._isMessagesShown()) {
     // unhide the oj-messages root and notify
     $(this._composite).show();
     oj.Components.subtreeShown($(this._composite));
-
-    var messagesContainerDiv = document.getElementById(this._messagesContainerId);
-    messagesContainerDiv.removeAttribute("aria-hidden");
-    
-    MessagesViewModel.NAVIGATION_TRACKER.add(this._messagesContainerId);
-    this._announceNavigation();
   }
+
+  // When messages are shown in popup, popup.open() will call popup_elem.show(), which is a deep
+  //  show() call in its subtree, so behind the scenes, our composite will have 'display:block'
+  //  inline style set quietly. For this case _isMessagesShown() check is not reliable. Hence
+  //  the accessibility enabling code below is outside of this check, when showing the messages.
+  // This is not an issue when hiding the messages though, because the popup effect kicks in later.
+  MessagesViewModel.NAVIGATION_TRACKER.add(this._messagesContainerId);
+  this._announceNavigation();
 };
 
-MessagesViewModel.prototype._hideMessages = function()
-{
-  if (this._isMessagesShown())
-  {
-    var messagesContainerDiv = document.getElementById(this._messagesContainerId);
-    messagesContainerDiv.setAttribute("aria-hidden", "true");
-
+MessagesViewModel.prototype._hideMessages = function () {
+  if (this._isMessagesShown()) {
     // hide the oj-messages node root and notify
     $(this._composite).hide();
     oj.Components.subtreeHidden(this._composite);
-    
+
     MessagesViewModel.NAVIGATION_TRACKER.remove(this._messagesContainerId);
-    if (this._liveRegion)
-    {
+    if (this._liveRegion) {
       this._liveRegion.destroy();
       delete this._liveRegion;
     }
   }
 };
 
-MessagesViewModel.prototype._openOverlay = function()
-{
+MessagesViewModel.prototype._openOverlay = function () {
   var composite = $(this._composite);
   var psOptions = {};
   psOptions[oj.PopupService.OPTION.POPUP] = composite;
@@ -1252,7 +1201,7 @@ MessagesViewModel.prototype._openOverlay = function()
   psOptions[oj.PopupService.OPTION.POSITION] = this._getPositionAsJqUi();
   psOptions[oj.PopupService.OPTION.EVENTS] = this._getPopupServiceEvents();
 
-  psOptions[oj.PopupService.OPTION.LAYER_SELECTORS] = ["oj","messages","layer"].join("-");
+  psOptions[oj.PopupService.OPTION.LAYER_SELECTORS] = ['oj', 'messages', 'layer'].join('-');
   psOptions[oj.PopupService.OPTION.MODALITY] = oj.PopupService.MODALITY.MODELESS;
   psOptions[oj.PopupService.OPTION.CUSTOM_ELEMENT] = true;
   oj.PopupService.getInstance().open(psOptions);
@@ -1262,11 +1211,10 @@ MessagesViewModel.prototype._openOverlay = function()
   this._overlayEventsCallback = MessagesViewModel._overlayEventsListener.bind(this, composite);
 
   // snap on tab key handler
-  composite[0].addEventListener("keydown", this._overlayEventsCallback, false);
+  composite[0].addEventListener('keydown', this._overlayEventsCallback, false);
 };
 
-MessagesViewModel.prototype._closeOverlay = function()
-{
+MessagesViewModel.prototype._closeOverlay = function () {
   this._hideMessages();
 
   var composite = $(this._composite);
@@ -1279,11 +1227,10 @@ MessagesViewModel.prototype._closeOverlay = function()
   // remove tab key handler
   var overlayEventsCallback = this._overlayEventsCallback;
   delete this._overlayEventsCallback;
-  composite[0].removeEventListener("keydown", overlayEventsCallback, false);
+  composite[0].removeEventListener('keydown', overlayEventsCallback, false);
 };
 
-MessagesViewModel.prototype._isOverlayOpen = function()
-{
+MessagesViewModel.prototype._isOverlayOpen = function () {
   var composite = this._composite;
   var status = oj.ZOrderUtils.getStatus(composite);
   return (status === oj.ZOrderUtils.STATUS.OPENING ||
@@ -1291,38 +1238,29 @@ MessagesViewModel.prototype._isOverlayOpen = function()
           status === oj.ZOrderUtils.STATUS.CLOSING);
 };
 
-MessagesViewModel._overlayEventsListener = function(element, event)
-{
-  if (event.defaultPrevented)
+MessagesViewModel._overlayEventsListener = function (element, event) {
+  if (event.defaultPrevented) {
     return;
+  }
 
-  if (event.keyCode === $.ui.keyCode.TAB)
-  {
+  if (event.keyCode === $.ui.keyCode.TAB) {
     var target = event.target;
-    var nodes = element.find(":tabbable");
-    if (nodes.length > 0)
-    {
+    var nodes = element.find(':tabbable');
+    if (nodes.length > 0) {
       var firstNode = nodes[0];
       var lastNode = nodes[nodes.length - 1];
-      if (firstNode === lastNode && target === firstNode)
-      {
+      if (firstNode === lastNode && target === firstNode) {
         // only one tabstop and key event is on the last/first, eat the event
         event.preventDefault();
-      }
-      else if (firstNode === target && event.shiftKey)
-      {
-        //tabbing backwards, cycle focus to last node
+      } else if (firstNode === target && event.shiftKey) {
+        // tabbing backwards, cycle focus to last node
         event.preventDefault();
-        lastNode.focus();  //tabbing backwards, cycle focus to last node
-      }
-      else if (lastNode === target && !event.shiftKey)
-      {
+        lastNode.focus();  // tabbing backwards, cycle focus to last node
+      } else if (lastNode === target && !event.shiftKey) {
         event.preventDefault();
-        firstNode.focus(); //tabbing forwards, cycle to the first node
+        firstNode.focus(); // tabbing forwards, cycle to the first node
       }
-    }
-    else
-    {
+    } else {
       // no tab stops, eat tab event
       event.preventDefault();
     }
@@ -1338,13 +1276,11 @@ MessagesViewModel._overlayEventsListener = function(element, event)
  * @instance
  * @param {Event|CustomEvent} event
  */
-MessagesViewModel.prototype._navigationEventListener = function (event)
-{
+MessagesViewModel.prototype._navigationEventListener = function (event) {
   // The extra id check to to make sure the event is not from ojDialog or ojPopup
   // The dialog and popup raise ojFocus events but the ojFocus raised from the
   // messages navigation tracker is dispatched on the container and doesn't bubble.
-  if (event.target.id === this._messagesContainerId)
-  {
+  if (event.target.id === this._messagesContainerId) {
     event.preventDefault();
     this._announceNavigation(true);
   }
@@ -1358,33 +1294,31 @@ MessagesViewModel.prototype._navigationEventListener = function (event)
  * @instance
  * @param {boolean=} isFocusWithin true if focus navigation is to the messages container
  */
-MessagesViewModel.prototype._announceNavigation = function (isFocusWithin)
-{
-  var isVOSupported = (oj.AgentUtils.getAgentInfo()['os'] === oj.AgentUtils.OS.IOS ||
-                       oj.AgentUtils.getAgentInfo()['os'] === oj.AgentUtils.OS.ANDROID);
+MessagesViewModel.prototype._announceNavigation = function (isFocusWithin) {
+  var isVOSupported = (oj.AgentUtils.getAgentInfo().os === oj.AgentUtils.OS.IOS ||
+                       oj.AgentUtils.getAgentInfo().os === oj.AgentUtils.OS.ANDROID);
   var key;
-  if (isFocusWithin)
-    key = isVOSupported ? undefined : "ariaLiveRegion.navigationFromKeyboard";
-  else
-    key = isVOSupported ? "ariaLiveRegion.navigationToTouch" : "ariaLiveRegion.navigationToKeyboard";
+  if (isFocusWithin) {
+    key = isVOSupported ? undefined : 'ariaLiveRegion.navigationFromKeyboard';
+  } else {
+    key = isVOSupported ? 'ariaLiveRegion.navigationToTouch' : 'ariaLiveRegion.navigationToKeyboard';
+  }
 
   var liveRegion = this._getLiveRegion();
-  var message = oj.Translations.getTranslatedString(["oj-ojMessages", key].join("."));
+  var message = oj.Translations.getTranslatedString(['oj-ojMessages', key].join('.'));
   liveRegion.announce(message);
-
 };
 
-MessagesViewModel.prototype._getLiveRegion = function ()
-{
+MessagesViewModel.prototype._getLiveRegion = function () {
   var id = this._messagesContainerId;
-  if (!this._liveRegion)
+  if (!this._liveRegion) {
     this._liveRegion = new LiveRegion(id);
+  }
 
   return this._liveRegion;
 };
 
-MessagesViewModel.prototype._getPopupServiceEvents = function ()
-{
+MessagesViewModel.prototype._getPopupServiceEvents = function () {
   var events = {};
   events[oj.PopupService.EVENT.POPUP_CLOSE] = this._closeOverlay.bind(this);
   events[oj.PopupService.EVENT.POPUP_REMOVE] = this._surrogateRemoveHandler.bind(this);
@@ -1393,48 +1327,40 @@ MessagesViewModel.prototype._getPopupServiceEvents = function ()
   return events;
 };
 
-MessagesViewModel.prototype._refresh = function ()
-{
-  if (this._isOverlayOpen())
-  {
+MessagesViewModel.prototype._refresh = function () {
+  if (this._isOverlayOpen()) {
     var position = this._getPositionAsJqUi();
 
     var composite = $(this._composite);
-    composite["position"](position);
+    composite.position(position);
   }
 };
 
-MessagesViewModel.prototype._surrogateRemoveHandler = function ()
-{
- this._closeOverlay();
- this._composite.parentElement.removeChild(this._composite);
+MessagesViewModel.prototype._surrogateRemoveHandler = function () {
+  this._closeOverlay();
+  this._composite.parentElement.removeChild(this._composite);
 };
 
-MessagesViewModel.prototype._createObservables = function()
-{
+MessagesViewModel.prototype._createObservables = function () {
   // this can't be obfuscated by the closure compiler
-  this["containerSelectors"] = ko.pureComputed(this._computeContainerSelectors.bind(this), this);
+  this.containerSelectors = ko.pureComputed(this._computeContainerSelectors.bind(this), this);
 };
 
-MessagesViewModel.prototype._initDefaultTranslations = function()
-{
+MessagesViewModel.prototype._computeLabelLandmark = function () {
   var properties = this._properties;
-
-  if (oj.StringUtils.isEmptyOrUndefined(properties['translations']['labelLandmark']))
-  {
-    var label = oj.Translations.getTranslatedString("oj-ojMessages.labelLandmark");
-    properties['translations']['labelLandmark'] = label;
-  }
-
-  this._updateLandmark();
+  
+  if (oj.StringUtils.isEmptyOrUndefined(properties.translations.labelLandmark)) {
+    return oj.Translations.getTranslatedString('oj-ojMessages.labelLandmark');
+  };
+  
+  return properties.translations.labelLandmark;
 };
 
-MessagesViewModel.prototype._updateLandmark = function()
-{
-  var labelLandmark = this._properties['translations']['labelLandmark'];
-  this._composite.setAttribute("aria-label", labelLandmark);
-  this._composite.setAttribute("role", "complementary");
-}
+MessagesViewModel.prototype._updateLandmark = function () {
+  var labelLandmark = this._computeLabelLandmark();
+  this._composite.setAttribute('aria-label', labelLandmark);
+  this._composite.setAttribute('role', 'complementary');
+};
 
 /**
  * Tracks all visible instances of oj-messages and handles F6 navigation to the the most
@@ -1456,8 +1382,7 @@ MessagesViewModel.NAVIGATION_TRACKER = {
   /**
    * @param {string} id
    */
-  add: function (id)
-  {
+  add: function (id) {
     // adds tracking of the messages container when it becomes disclosed.
 
     this.remove(id);
@@ -1467,22 +1392,21 @@ MessagesViewModel.NAVIGATION_TRACKER = {
   /**
    * @param {string} id
    */
-  remove: function (id)
-  {
+  remove: function (id) {
     // disabled tracking the message container when it's not disclosed
 
     var messagesContainerIds = this._messagesContainerIds;
     var i = messagesContainerIds.indexOf(id);
-    if (i > -1)
+    if (i > -1) {
       messagesContainerIds.splice(i, 1);
+    }
 
     this._stop(id);
   },
   /**
    * @param {string} id
    */
-  togglePreviousFocus: function(id)
-  {
+  togglePreviousFocus: function (id) {
     // Restore focus from the messages container to what had focus prior to establishing
     // focus within the messages container. Invoked from press F6 within the messages
     // container.
@@ -1490,10 +1414,9 @@ MessagesViewModel.NAVIGATION_TRACKER = {
     var priorFocusCache = this._priorFocusCache;
 
     /** @type {Element} */
-    var target =  priorFocusCache[id];
+    var target = priorFocusCache[id];
 
-    if (target && $(target).is(":visible") && oj.ZOrderUtils.isAboveTopModalLayer(target))
-    {
+    if (target && $(target).is(':visible') && oj.ZOrderUtils.isAboveTopModalLayer(target)) {
       target.focus();
       delete priorFocusCache[id];
       return true;
@@ -1504,8 +1427,7 @@ MessagesViewModel.NAVIGATION_TRACKER = {
    * @param {string} id
    * @param {Element|undefined} target
    */
-  _addPriorFocusCache: function (id, target)
-  {
+  _addPriorFocusCache: function (id, target) {
     // Captures the element that had focus prior to navigation to a messages container.
     // navigation can be via F6 or mouse.
 
@@ -1514,74 +1436,72 @@ MessagesViewModel.NAVIGATION_TRACKER = {
   /**
    * @param {string} id
    */
-  _start: function (id)
-  {
+  _start: function (id) {
     // Establishes listeners on the message container.  Adds the document listeners if
     // it's the first messages container shown.
 
     var messagesContainerDiv = document.getElementById(id);
-    if (!messagesContainerDiv)
+    if (!messagesContainerDiv) {
       return;
+    }
 
     // establish capture focus and keydown bubble listener on the container
     var messageContainerCallback = this._messageContainerListener.bind(this, id);
-    messagesContainerDiv.addEventListener("focus", messageContainerCallback, true);
-    messagesContainerDiv.addEventListener("keydown", messageContainerCallback, false);
-    messagesContainerDiv.addEventListener("click", messageContainerCallback, false);
-    $(messagesContainerDiv).data("oj_messages_nmtl", messageContainerCallback);
+    messagesContainerDiv.addEventListener('focus', messageContainerCallback, true);
+    messagesContainerDiv.addEventListener('keydown', messageContainerCallback, false);
+    messagesContainerDiv.addEventListener('click', messageContainerCallback, false);
+    $(messagesContainerDiv).data('oj_messages_nmtl', messageContainerCallback);
 
     // return if already listening
-    if (this._documentCallback)
+    if (this._documentCallback) {
       return;
+    }
 
     this._documentCallback = this._documentListener.bind(this);
     var docElement = document.documentElement;
-    docElement.addEventListener("keydown", this._documentCallback, false);
-    docElement.addEventListener("blur", this._documentCallback, true);
+    docElement.addEventListener('keydown', this._documentCallback, false);
+    docElement.addEventListener('blur', this._documentCallback, true);
   },
   /**
    * @param {string} id
    */
-  _stop: function (id)  {
-
+  _stop: function (id) {
     // Removes message container listeners when the messages container is hidden.
     // Hidding the last message container will remove the listeners on the document.
 
     var messagesContainerDiv = document.getElementById(id);
-    if (messagesContainerDiv)
-    {
+    if (messagesContainerDiv) {
       /** @type {?} */
-      var messageContainerCallback = $(messagesContainerDiv).data("oj_messages_nmtl");
-      if (messageContainerCallback)
-      {
-        messagesContainerDiv.removeEventListener("focus", messageContainerCallback, true);
-        messagesContainerDiv.removeEventListener("keydown", messageContainerCallback, false);
-        messagesContainerDiv.removeEventListener("click", messageContainerCallback, false);
+      var messageContainerCallback = $(messagesContainerDiv).data('oj_messages_nmtl');
+      if (messageContainerCallback) {
+        messagesContainerDiv.removeEventListener('focus', messageContainerCallback, true);
+        messagesContainerDiv.removeEventListener('keydown', messageContainerCallback, false);
+        messagesContainerDiv.removeEventListener('click', messageContainerCallback, false);
       }
     }
 
-    if (!this._documentCallback || this._messagesContainerIds.length > 0)
+    if (!this._documentCallback || this._messagesContainerIds.length > 0) {
       return;
+    }
 
     var docElement = document.documentElement;
-    docElement.removeEventListener("keydown", this._documentCallback, false);
-    docElement.removeEventListener("blur", this._documentCallback, true);
+    docElement.removeEventListener('keydown', this._documentCallback, false);
+    docElement.removeEventListener('blur', this._documentCallback, true);
     delete this._documentCallback;
   },
   /**
    * @param {!Element} target
    * @return {number}
    */
-  _indexOfFocusWithin: function (target)
-  {
+  _indexOfFocusWithin: function (target) {
     // checks if the target of the F6 keydown is within a messages container.
     var messagesContainerIds = this._messagesContainerIds;
-    for (var i = 0; i < messagesContainerIds.length; i++)
-    {
+    for (var i = 0; i < messagesContainerIds.length; i++) {
       var messagesContainerDiv = document.getElementById(messagesContainerIds[i]);
       if (messagesContainerDiv &&
-          oj.DomUtils.isAncestorOrSelf(messagesContainerDiv, target))
+          oj.DomUtils.isAncestorOrSelf(messagesContainerDiv, target)) {
         return i;
+      }
     }
 
     return -1;
@@ -1589,10 +1509,10 @@ MessagesViewModel.NAVIGATION_TRACKER = {
   /**
    * @param {Event} event
    */
-  _documentListener: function (event)
-  {
-    if (event.defaultPrevented)
+  _documentListener: function (event) {
+    if (event.defaultPrevented) {
       return;
+    }
 
     // Listeners for F6 navigation to the messages region from any element in the document.  The
     // listener is a bubble keydown.  If the event has been prevented, it's ignored.  If
@@ -1601,44 +1521,39 @@ MessagesViewModel.NAVIGATION_TRACKER = {
 
     var messagesContainerIds = this._messagesContainerIds;
     // F6 keypress
-    if ("keydown" === event.type && event.keyCode === 117 && messagesContainerIds.length > 0)
-    {
+    if (event.type === 'keydown' && event.keyCode === 117 && messagesContainerIds.length > 0) {
       // Look to see if the event target is already within a message area.  If focus is within
       // do nothing as the F6 listener on the mesage area will handle.
       var s = this._indexOfFocusWithin(event.target);
-      if (s > -1)
+      if (s > -1) {
         return;  // @see #_messageContainerListener
-      else
-        s = messagesContainerIds.length - 1;
+      }
+      s = messagesContainerIds.length - 1;
 
       // target the most recently disclosed
-      for (var i = s; i > -1; i++)
-      {
+      for (var i = s; i > -1; i++) {
         var messagesContainerDiv = document.getElementById(messagesContainerIds[i]);
 
         // if the container doesn't exist or is not visible continue to the next most recently used
-        if (!messagesContainerDiv || !$(messagesContainerDiv).is(":visible") ||
-            !oj.ZOrderUtils.isAboveTopModalLayer(messagesContainerDiv))
-          continue;
+        if (messagesContainerDiv && $(messagesContainerDiv).is(':visible') &&
+            oj.ZOrderUtils.isAboveTopModalLayer(messagesContainerDiv)) {
+          var element = messagesContainerDiv.querySelector('.oj-message-category[tabindex="-1"]');
 
-        var element = messagesContainerDiv.querySelector('.oj-message-category[tabindex="-1"]');
+          event.preventDefault();
 
-        event.preventDefault();
+          // captrue what had focus prior to pressing F6
+          this._addPriorFocusCache(messagesContainerIds[i], event.target);
 
-        // captrue what had focus prior to pressing F6
-        this._addPriorFocusCache(messagesContainerIds[i], event.target);
+          element.focus();
 
-        element.focus();
-
-        // Use a custom message to signal navigation to the messages container. The event doesn't
-        // bubble. The event is used to announce navigation instructions.
-        var customEvent = new CustomEvent("ojFocus", {"bubbles" : false, "cancelable" : true});
-        messagesContainerDiv.dispatchEvent(customEvent);
-        break;
+          // Use a custom message to signal navigation to the messages container. The event doesn't
+          // bubble. The event is used to announce navigation instructions.
+          var customEvent = new CustomEvent('ojFocus', { bubbles: false, cancelable: true });
+          messagesContainerDiv.dispatchEvent(customEvent);
+          break;
+        }
       }
-    }
-    else if ("blur" === event.type)
-    {
+    } else if (event.type === 'blur') {
       // capture blur listener used to keep track of what last had focus
       this._prevActiveElement = event.target;
     }
@@ -1647,37 +1562,34 @@ MessagesViewModel.NAVIGATION_TRACKER = {
    * @param {string} id
    * @param {Event} event
    */
-  _messageContainerListener: function (id, event)
-  {
+  _messageContainerListener: function (id, event) {
     // capture focus and bubble keydown event listener attached to visible message containers
 
-    if (event.defaultPrevented)
+    if (event.defaultPrevented) {
       return;
+    }
 
-    if ("focus" === event.type || "click" === event.type)
-    {
+    if (event.type === 'focus' || event.type === 'click') {
        // if prior focus was outside the messgaes container and new focus is within, capture
        // what had prior focus. This is the best attempt to capture F2 navigation when using
        // mouse or touch to navigate to the message container versus F2 keyboard.
 
        /** @type {?} */
-       var messagesContainerDiv = document.getElementById(id);
-       var prevActiveElement = this._prevActiveElement;
-       if (prevActiveElement && messagesContainerDiv &&
-           !oj.DomUtils.isAncestorOrSelf(messagesContainerDiv, prevActiveElement))
-       {
+      var messagesContainerDiv = document.getElementById(id);
+      var prevActiveElement = this._prevActiveElement;
+      if (prevActiveElement && messagesContainerDiv &&
+           !oj.DomUtils.isAncestorOrSelf(messagesContainerDiv, prevActiveElement)) {
         // attached to visible message components.  Tracks previous focus.
         this._addPriorFocusCache(id, prevActiveElement);
-       }
-    }
-    else if ("keydown" === event.type &&
-            (event.keyCode === 117 || event.keyCode === $.ui.keyCode.ESCAPE))
-    {
+      }
+    } else if (event.type === 'keydown' &&
+            (event.keyCode === 117 || event.keyCode === $.ui.keyCode.ESCAPE)) {
       // F6 or ESC keypress from within the content of the messages container will toggle focus back
       // to to what had prior focus. An attempt is made to fixup the navigate even if arriving
       // using the mouse or touch.
-      if (this.togglePreviousFocus(id))
+      if (this.togglePreviousFocus(id)) {
         event.preventDefault();
+      }
     }
   }
 };
@@ -1695,18 +1607,16 @@ MessagesViewModel.NAVIGATION_TRACKER = {
  * @ojtsignore
  * @param {string} id of the messages container
  */
-function LiveRegion (id)
-{
+function LiveRegion(id) {
   this.Init(id);
-};
+}
 
 /**
  * Adds one to the reference counter instance.
  * @instance
  * @protected
  */
-LiveRegion.prototype.Init = function (id)
-{
+LiveRegion.prototype.Init = function (id) {
   this._id = id;
 };
 
@@ -1716,18 +1626,18 @@ LiveRegion.prototype.Init = function (id)
  * @instance
  * @public
  */
-LiveRegion.prototype.destroy = function ()
-{
+LiveRegion.prototype.destroy = function () {
   var liveRegion = $(document.getElementById(LiveRegion._LIVE_REGION_ID));
 
-  //remove all the messages per messages container
+  // remove all the messages per messages container
   var id = this._id;
   delete this._id;
 
-  liveRegion.find('div[data-container-id="' + id + '"]' ).remove();
+  liveRegion.find('div[data-container-id="' + id + '"]').remove();
 
-  if (liveRegion.children("div").length < 1)
+  if (liveRegion.children('div').length < 1) {
     liveRegion.remove();
+  }
 };
 
 /**
@@ -1736,11 +1646,10 @@ LiveRegion.prototype.destroy = function ()
  * @public
  * @param {string} message to be announce in the live region
  */
-LiveRegion.prototype.announce = function (message)
-{
+LiveRegion.prototype.announce = function (message) {
   var liveRegion = LiveRegion._getLiveRegion();
   var id = this._id;
-  $("<div>").attr("data-container-id", id).text(message).appendTo(liveRegion);
+  $('<div>').attr('data-container-id', id).text(message).appendTo(liveRegion);// @HTMLUpdateOK
 };
 
 
@@ -1749,28 +1658,28 @@ LiveRegion.prototype.announce = function (message)
  * @returns {jQuery} aria live region
  * @private
  */
-LiveRegion._getLiveRegion = function ()
-{
+LiveRegion._getLiveRegion = function () {
   var liveRegion = $(document.getElementById(LiveRegion._LIVE_REGION_ID));
-  if (liveRegion.length === 0)
-  {
+  if (liveRegion.length === 0) {
     // only tracks additions
-    liveRegion = $("<div>");
-    liveRegion.attr({"id" : LiveRegion._LIVE_REGION_ID, "role" : "log", "aria-live"
-        : "polite", "aria-relevant" : "additions"});
-    liveRegion.addClass("oj-helper-hidden-accessible");
-    liveRegion.appendTo(document.body);
+    liveRegion = $('<div>');
+    liveRegion.attr({ id: LiveRegion._LIVE_REGION_ID,
+      role: 'log',
+      'aria-live': 'polite',
+      'aria-relevant': 'additions' });
+    liveRegion.addClass('oj-helper-hidden-accessible');
+    liveRegion.appendTo(document.body);// @HTMLUpdateOK
   }
   return liveRegion;
 };
 
-LiveRegion._LIVE_REGION_ID = "__oj_messages_arialiveregion";
+LiveRegion._LIVE_REGION_ID = '__oj_messages_arialiveregion';
 
-oj.Composite.register("oj-messages",
+oj.Composite.register('oj-messages',
   {
-    "view" : _MESSAGES_VIEW,
-    "viewModel" : MessagesViewModel,
-    "metadata" : _MESSAGES_METADATA
+    view: _MESSAGES_VIEW,
+    viewModel: MessagesViewModel,
+    metadata: _MESSAGES_METADATA
   });
 
 });

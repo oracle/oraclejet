@@ -126,6 +126,7 @@
      */
     
     .oj-message-content .oj-message-summary {
+      white-space: normal;
       vertical-align: top;
       @include oj-ltr() {
         padding: 0 0 0 10px;
@@ -140,6 +141,7 @@
      * 1. allow detail text to wrap normally.
      */
     .oj-message-content .oj-message-detail { 
+      white-space: normal;
       @include oj-ltr() {
         padding: 7px 0 0 10px;
       }

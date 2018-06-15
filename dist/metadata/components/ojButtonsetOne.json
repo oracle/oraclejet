@@ -1,7 +1,7 @@
 {
   "name": "oj-buttonset-one",
-  "version": "5.0.0",
-  "jetVersion": "5.0.0",
+  "version": "5.1.0",
+  "jetVersion": "5.1.0",
   "displayName": "Buttonset One",
   "preview": true,
   "roles": [
@@ -102,7 +102,7 @@
     },
     "value": {
       "description": "Indicates which oj-option in the buttonset is selected.",
-      "type": "*",
+      "type": "any",
       "displayName": "Value",
       "value": null,
       "writeback": true
@@ -124,7 +124,7 @@
         {
           "name": "value",
           "description": "The new value to set the property to.",
-          "type": "*"
+          "type": "any"
         }
       ],
       "return": "void"
@@ -138,7 +138,7 @@
           "type": "string"
         }
       ],
-      "return": "*"
+      "return": "any"
     },
     "setProperties": {
       "description": "Performs a batch set of properties.",

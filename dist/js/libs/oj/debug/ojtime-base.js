@@ -111,6 +111,10 @@ oj.__registerWidget('oj.dvtTimeComponent', $['oj']['dvtBaseComponent'],
 
     var resources = this.options['_resources'];
 
+    // Add cursors
+    resources['grabbingCursor'] = oj.Config.getResourceUrl('resources/internal-deps/dvt/chart/hand-closed.cur');
+    resources['grabCursor'] = oj.Config.getResourceUrl('resources/internal-deps/dvt/chart/hand-open.cur');
+
     // Create default converters
     var converterFactory = oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME);
     var secondsConverter = converterFactory.createConverter({'hour': 'numeric', 'minute': '2-digit', 'second': '2-digit'});

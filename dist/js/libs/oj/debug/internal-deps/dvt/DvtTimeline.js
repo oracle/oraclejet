@@ -2536,9 +2536,9 @@ dvt.Timeline.prototype._applyParsedProperties = function(props)
   this._viewEndTime = props.viewEnd;
   this._selectionMode = props.selectionMode;
   if (this._selectionMode == 'single')
-    this.SelectionHandler = new dvt.SelectionHandler(dvt.SelectionHandler.TYPE_SINGLE);
+    this.SelectionHandler = new dvt.SelectionHandler(this.getCtx(), dvt.SelectionHandler.TYPE_SINGLE);
   else if (this._selectionMode == 'multiple')
-    this.SelectionHandler = new dvt.SelectionHandler(dvt.SelectionHandler.TYPE_MULTIPLE);
+    this.SelectionHandler = new dvt.SelectionHandler(this.getCtx(), dvt.SelectionHandler.TYPE_MULTIPLE);
   else
     this.SelectionHandler = null;
 
@@ -8134,6 +8134,8 @@ DvtTimelineSeriesRenderer.renderSeries = function(series, width, height)
     block.feelers.removeChildren();
 
   DvtTimelineSeriesRenderer._renderItems(series._items, series, block, series._fetchStartPos, series._fetchEndPos, overflowOffset, series._frAnimationElems, series._mvAnimator);
+  if (series._callbackObj.SelectionHandler)
+    block.setCursor(dvt.SelectionEffectUtils.getSelectingCursor());
 
   //todo: make these update call unnecessary.... although not sure how to put them behind items...
   DvtTimelineSeriesRenderer._updateReferenceObjects(series);
@@ -8173,7 +8175,6 @@ DvtTimelineSeriesRenderer._renderBackground = function(series, width, height)
   }
   series._background.setCSSStyle(series._style);
   series._background.setPixelHinting(true);
-  series._background.setCursor('move');
 
   if (addBackground)
     series.addChild(series._background);

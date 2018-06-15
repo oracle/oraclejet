@@ -1,7 +1,7 @@
 {
   "name": "oj-slider",
-  "version": "5.0.0",
-  "jetVersion": "5.0.0",
+  "version": "5.1.0",
+  "jetVersion": "5.1.0",
   "displayName": "Slider",
   "preview": true,
   "roles": [
@@ -68,7 +68,7 @@
     },
     "help": {
       "description": "Form component help information.\n\nThe properties supported on the help option are:",
-      "type": "Object.<string, string>",
+      "type": "Object",
       "displayName": "Help",
       "value": {
         "help": {
@@ -84,7 +84,7 @@
     },
     "helpHints": {
       "description": "Represents hints for oj-form-layout element to \nrender help information on the label of the editable component.",
-      "type": "Object.<string, string>",
+      "type": "Object",
       "displayName": "Help Hints",
       "value": {
         "definition": "",
@@ -286,7 +286,7 @@
         {
           "name": "value",
           "description": "The new value to set the property to.",
-          "type": "*"
+          "type": "any"
         }
       ],
       "return": "void"
@@ -300,7 +300,7 @@
           "type": "string"
         }
       ],
-      "return": "*"
+      "return": "any"
     },
     "setProperties": {
       "description": "Performs a batch set of properties.",

@@ -62,6 +62,28 @@ oj.DataSourceContentHandler.prototype.notifyAttached = function()
 };
 
 /**
+ * Cleanse all items under the root node
+ */
+oj.DataSourceContentHandler.prototype.cleanItems = function(templateEngine)
+{
+    var children, i;
+
+    if (templateEngine === undefined)
+    {
+        templateEngine = this.getTemplateEngine();
+    }
+
+    if (templateEngine && this.m_root)
+    {
+        children = this.m_root.childNodes;
+        for (i = 0; i < children.length; i++) 
+        {
+            templateEngine.clean(children[i]);
+        }
+    }
+};
+
+/**
  * Destroy the content handler
  * @protected
  */
@@ -73,6 +95,7 @@ oj.DataSourceContentHandler.prototype.Destroy = function()
         this.m_root = this.m_superRoot;
     }
 
+    this.cleanItems();
     $(this.m_root).empty(); // @HTMLUpdateOK
     this.m_widget = null;
     this.m_root = null;
@@ -283,6 +306,13 @@ oj.DataSourceContentHandler.prototype.replaceItem = function(item, index, data, 
     parentElement = item.parentNode;
     position = $(parentElement).children().index(item);
     newItem = document.createElement("li");
+
+    // explicit clean when inline template is used
+    if (templateEngine)
+    {
+        templateEngine.clean(item);
+    }
+ 
     // this should trigger ko.cleanNode if applicable
     $(item).replaceWith(newItem); //@HTMLUpdateOK; newItem is constructed by the component and not yet manipulated by the application
 
@@ -295,14 +325,14 @@ oj.DataSourceContentHandler.prototype.replaceItem = function(item, index, data, 
  */
 oj.DataSourceContentHandler.prototype._addOrReplaceItem = function(item, position, parentElement, index, data, metadata, templateEngine, callback)
 {
-    var contentContainer, context, inlineStyle, styleClass, renderer, templateElement, content, textWrapper, componentElement, bindingContext, nodes;
+    var contentContainer, context, inlineStyle, styleClass, renderer, templateElement, content, textWrapper, componentElement, bindingContext, nodes, i;
 
     if (callback == undefined)
     {
         callback = this.afterRenderItem.bind(this);
     }
 
-    context = this.createContext(index, data, metadata, item);
+    context = this.createContext(position, data, metadata, item);
     renderer = this.m_widget._getItemRenderer();
     templateElement = this.m_widget.getItemTemplate();
     if (renderer != null)
@@ -334,13 +364,20 @@ oj.DataSourceContentHandler.prototype._addOrReplaceItem = function(item, positio
     {
         componentElement = this.m_widget.getRootElement()[0];
         bindingContext = this.GetBindingContext(context);
-        nodes = templateEngine.execute(componentElement, templateElement, bindingContext);
-        nodes.forEach(
-            function(node)
+        nodes = templateEngine.execute(componentElement, templateElement, bindingContext, this.m_widget.GetOption("as"));
+
+        for (i=0; i<nodes.length; i++)
+        {
+            if (nodes[i].tagName === "LI")
             {
-                item.appendChild(node);
+                parentElement.replaceChild(nodes[i], item);
+                break;
             }
-        );
+            else
+            {
+                item.appendChild(nodes[i]);
+            }
+        }
     }
     else
     {
@@ -392,23 +429,13 @@ oj.DataSourceContentHandler.prototype._getItemFromDocumentFragment = function(fr
  */
 oj.DataSourceContentHandler.prototype.GetBindingContext = function(context)
 {
-    var current, as, ret;
-
-    current = {};
+    var current = {};
     current['data'] = context['data'];
     current['index'] = context['index'];
     current['key'] = context['key'];
     current['componentElement'] = context['componentElement'];
 
-    ret = {'$current': current};
-
-    as = this.m_widget.GetOption("as");
-    if (as != null && as.length > 0)
-    {
-        ret[as] = current;
-    }
-
-    return ret;
+    return current;
 };
 
 oj.DataSourceContentHandler.prototype.afterRenderItem = function(item, context)
@@ -715,14 +742,10 @@ oj.TreeDataSourceContentHandler.prototype._handleFetchSuccess = function(nodeSet
  */
 oj.TreeDataSourceContentHandler.prototype.GetBindingContext = function(context)
 {
-    var bindingContext, current;
-
-    bindingContext = oj.TreeDataSourceContentHandler.superclass.GetBindingContext.call(this, context);
-    current = bindingContext['$current'];
-
-    current['depth'] = context['depth'];
-    current['leaf'] = context['leaf'];
-    current['parentKey'] = context['parentKey'];
+    var bindingContext = oj.TreeDataSourceContentHandler.superclass.GetBindingContext.call(this, context);
+    bindingContext['depth'] = context['depth'];
+    bindingContext['leaf'] = context['leaf'];
+    bindingContext['parentKey'] = context['parentKey'];
 
     return bindingContext;
 };
@@ -847,6 +870,13 @@ oj.TreeDataSourceContentHandler.prototype.Expand = function(item, successCallbac
 
 oj.TreeDataSourceContentHandler.prototype.Collapse = function(item)
 {
+    // template engine should have already been loaded
+    var templateEngine = this.getTemplateEngine();
+    if (templateEngine)
+    {
+        templateEngine.clean(item.get(0));
+    }
+
     // remove all children nodes
     item.empty(); //@HTMLUpdateOK
 };
@@ -1638,7 +1668,7 @@ oj._ojListView = _ListViewUtils.clazz(Object,
     {
         this.ojContext.document.bind("touchend.ojlistview touchcancel.ojlistview", this.HandleTouchEndOrCancel.bind(this));
 
-        this._initContentHandler();
+        this.InitContentHandler();
         // register a resize listener        
         this._registerResizeListener(this._getListContainer()[0]);
     },
@@ -1650,7 +1680,7 @@ oj._ojListView = _ListViewUtils.clazz(Object,
     {
         this.ojContext.document.off(".ojlistview");
 
-        this._destroyContentHandler();
+        this.DestroyContentHandler();
         this._unregisterResizeListener(this._getListContainer());
     },
     /**
@@ -1677,7 +1707,7 @@ oj._ojListView = _ListViewUtils.clazz(Object,
         this.SetAriaProperties();
 
         // recreate the content handler
-        this._initContentHandler();
+        this.InitContentHandler();
 
         // reattach scroll listener if neccessary
         this._registerScrollHandler();
@@ -1737,17 +1767,12 @@ oj._ojListView = _ListViewUtils.clazz(Object,
 
         this.UnsetAriaProperties();
         this._cleanupTabbableElementProperties(this.element);
-        this._destroyContentHandler();
+        this.DestroyContentHandler();
 
         this.m_active = null;
         this.m_isExpandAll = null;
         this.m_disclosing = null;
         this.m_itemHeight = null;
-
-        this.readyPromise = new Promise(function(resolve, reject)
-        {
-            self.readyResolve = resolve;
-        });
 
         this.ClearCache();
 
@@ -1943,10 +1968,10 @@ oj._ojListView = _ListViewUtils.clazz(Object,
      * Invoked by widget
      *
      * @param {Object} context the context of the item to retrieve raw data.
-     * @param {*=} context.key The key of the item.  If both index and key are specified, then key takes precedence.
+     * @param {any=} context.key The key of the item.  If both index and key are specified, then key takes precedence.
      * @param {number=} context.index the index of the item relative to its parent.
      * @param {Element=} context.parent the parent node, not required if parent is the root.
-     * @returns {*} data for the item.  Returns null if the item is not available locally.  Returns the item element if static HTML is used as data.
+     * @returns {any} data for the item.  Returns null if the item is not available locally.  Returns the item element if static HTML is used as data.
      */
     getDataForVisibleItem: function(context)
     {
@@ -1990,7 +2015,7 @@ oj._ojListView = _ListViewUtils.clazz(Object,
     /**
      * Retrieve data stored in dom
      * @param {Element} item
-     * @return {*} data for item
+     * @return {any} data for item
      * @private
      */
     _getDataForItem: function(item)
@@ -2455,9 +2480,9 @@ oj._ojListView = _ListViewUtils.clazz(Object,
 
     /**
      * Destroy the content handler
-     * @private
+     * @protected
      */
-    _destroyContentHandler: function()
+    DestroyContentHandler: function()
     {
         if (this.m_contentHandler != null)
         {
@@ -2472,9 +2497,9 @@ oj._ojListView = _ListViewUtils.clazz(Object,
 
     /**
      * Initialize the content handler based on data type
-     * @private
+     * @protected
      */
-    _initContentHandler: function()
+    InitContentHandler: function()
     {
         var data, fetchSize;
 
@@ -3165,6 +3190,12 @@ oj._ojListView = _ListViewUtils.clazz(Object,
         // clear items cache
         this.m_items = null;
         this.m_groupItems = null;
+        
+        // if grid role and card layout and non-heirarchical and presentation div is empty, remove presentation div to clear out the element
+        if (this._isEmptyGrid())
+        {
+            this.element[0].removeChild(this.element[0].children[0])
+        }
 
         // check if it's empty
         if (this.element[0].childElementCount == 0)
@@ -3240,6 +3271,16 @@ oj._ojListView = _ListViewUtils.clazz(Object,
 
         // fire ready event
         this.Trigger("ready", null, {});
+    },
+
+    /**
+     * Returns whether or not the li presentation div is present and empty.
+     * @private
+     * @returns {boolean} true if li presentation div is present and empty.
+     */
+    _isEmptyGrid: function()
+    {
+        return (this.ShouldUseGridRole() && this.isCardLayout() && !this.m_contentHandler.IsHierarchical() && this.element[0].children[0] && this.element[0].children[0].children[0].childElementCount == 0)
     },
 
     /**
@@ -5512,7 +5553,7 @@ oj._ojListView = _ListViewUtils.clazz(Object,
      * @param {Object} newValue the new value for selection option
      * @param {Event|null} event the DOM event
      * @param {Array.<Element>=} selectedElems an array of DOM Elements 
-     * @param {*=} firstSelectedItemData the data for first selected item
+     * @param {any=} firstSelectedItemData the data for first selected item
      * @private
      */
     _setSelectionOption: function(newValue, event, selectedElems, firstSelectedItemData)
@@ -8053,7 +8094,7 @@ oj.__registerWidget('oj.ojListView', $['oj']['baseComponent'],
                 * @public
                 * @instance
                 * @memberof! oj.ojListView
-                * @type {*}
+                * @type {any}
                 * @ojsignature {target:"Type", value:"K"}
                 * @default null
                 * @ojwriteback
@@ -8232,8 +8273,8 @@ oj.__registerWidget('oj.ojListView', $['oj']['baseComponent'],
                  * @memberof! oj.ojListView
                  * @instance
                  * @default {'key': null, 'data': null}
-                 * @property {*} key The key of the first selected item
-                 * @property {*} data The data of the first selected item
+                 * @property {any} key The key of the first selected item
+                 * @property {any} data The data of the first selected item
                  * @type {Object}
                  * @ojsignature {target:"Type", value:"{key: K, data: D}"}
                  *
@@ -8254,6 +8295,7 @@ oj.__registerWidget('oj.ojListView', $['oj']['baseComponent'],
                  * @memberof! oj.ojListView
                  * @instance
                  * @default "sticky"
+                 * @type {string}
                  * @ojvalue {string} "static" The group header position updates as user scrolls.
                  * @ojvalue {string} "sticky" The group header is fixed at the top when user scrolls.
                  *
@@ -8274,6 +8316,7 @@ oj.__registerWidget('oj.ojListView', $['oj']['baseComponent'],
                  * @ojshortdesc Customize the functionalities of each item on the list.  
                  * @expose
                  * @memberof! oj.ojListView
+                 * @type {Object}
                  * @instance
                  */
                 item: {
@@ -8504,8 +8547,8 @@ oj.__registerWidget('oj.ojListView', $['oj']['baseComponent'],
                  * @property {number=} index the zero-based index of the item.  If <a href="#scrollPolicy">scrollPolicy</a> is set to 'loadMoreOnScroll' 
                  * and the index is greater than maxCount set in <a href="#scrollPolicyOptions">scrollPolicyOptions</a>, then it will scroll and fetch
                  * until the end of the list is reached and there's no more items to fetch.
-                 * @property {*=} parent the key of the parent where the index is relative to.  If not specified, then the root is assumed
-                 * @property {*=} key the key of the item.  If DataProvider is used for <a href="data">data</a> and the key does not exists in the 
+                 * @property {any=} parent the key of the parent where the index is relative to.  If not specified, then the root is assumed
+                 * @property {any=} key the key of the item.  If DataProvider is used for <a href="#data">data</a> and the key does not exists in the 
                  * DataProvider, then the value is ignored.  If DataProvider is not used then ListView will fetch and scroll until the item is found
                  * or the end of the list is reached and there's no more items to fetch.
                  * @property {number=} offsetX the horizontal offset in pixel relative to the item identified by key/index.
@@ -8555,7 +8598,7 @@ oj.__registerWidget('oj.ojListView', $['oj']['baseComponent'],
                  * @expose
                  * @memberof! oj.ojListView
                  * @instance
-                 * @type {Array.<*>}
+                 * @type {Array.<any>}
                  * @ojsignature {target:"Type", value:"Array<K>"}
                  * @default []
                  * @ojwriteback
@@ -8656,9 +8699,9 @@ oj.__registerWidget('oj.ojListView', $['oj']['baseComponent'],
                  * @event
                  * @memberof oj.ojListView
                  * @instance
-                 * @property {*} previousKey the key of the previous item
+                 * @property {any} previousKey the key of the previous item
                  * @property {Element} previousItem the previous item
-                 * @property {*} key the key of the new current item
+                 * @property {any} key the key of the new current item
                  * @property {Element} item the new current item
                  * @ojsignature [{target:"Type", value:"<K>", for:"genericTypeParameters"},
                  *               {target:"Type", value:"K", for:"previousKey"},
@@ -8675,7 +8718,7 @@ oj.__registerWidget('oj.ojListView', $['oj']['baseComponent'],
                  * @event
                  * @memberof oj.ojListView
                  * @instance
-                 * @property {*} key the key of the item to be expanded
+                 * @property {any} key the key of the item to be expanded
                  * @property {Element} item the item to be expanded
                  * @ojsignature [{target:"Type", value:"<K>", for:"genericTypeParameters"},
                  *               {target:"Type", value:"K", for:"key"}]
@@ -8691,7 +8734,7 @@ oj.__registerWidget('oj.ojListView', $['oj']['baseComponent'],
                  * @event
                  * @memberof oj.ojListView
                  * @instance
-                 * @property {*} key the key of the item to be collapsed
+                 * @property {any} key the key of the item to be collapsed
                  * @property {Element} item the item to be collapsed
                  * @ojsignature [{target:"Type", value:"<K>", for:"genericTypeParameters"}, 
                  *               {target:"Type", value:"K", for:"key"}]
@@ -8706,7 +8749,7 @@ oj.__registerWidget('oj.ojListView', $['oj']['baseComponent'],
                  * @event
                  * @memberof oj.ojListView
                  * @instance
-                 * @property {*} key The key of the item that was just collapsed.
+                 * @property {any} key The key of the item that was just collapsed.
                  * @property {Element} item The list item that was just collapsed.
                  * @ojsignature [{target:"Type", value:"<K>", for:"genericTypeParameters"},
                  *               {target:"Type", value:"K", for:"key"}]
@@ -8743,7 +8786,7 @@ oj.__registerWidget('oj.ojListView', $['oj']['baseComponent'],
                  * @event
                  * @memberof oj.ojListView
                  * @instance
-                 * @property {*} key The key of the item that was just expanded.
+                 * @property {any} key The key of the item that was just expanded.
                  * @property {Element} item The list item that was just expanded.
                  * @ojsignature [{target:"Type", value:"<K>", for:"genericTypeParameters"},
                  *               {target:"Type", value:"K", for:"key"}]
@@ -9037,6 +9080,17 @@ oj.__registerWidget('oj.ojListView', $['oj']['baseComponent'],
         this.listview.notifyShown();
     },
 
+    /**
+     * Override to do the delay connect/disconnect
+     * @memberof oj.ojListView
+     * @override
+     * @protected
+     */
+    _VerifyConnectedForSetup: function() 
+    {
+        return true;
+    },
+
     /********************************* public methods **************************************/
     /**
      * Returns a jQuery object containing the root dom element of the listview.
@@ -9137,10 +9191,10 @@ oj.__registerWidget('oj.ojListView', $['oj']['baseComponent'],
     /**
      * Return the raw data for an item in ListView.  The item must have been already fetched.
      * @param {Object} context The context of the item to retrieve raw data.
-     * @param {*=} context.key The key of the item.  If both index and key are specified, then key takes precedence.
+     * @param {any=} context.key The key of the item.  If both index and key are specified, then key takes precedence.
      * @param {number=} context.index The index of the item relative to its parent.
      * @param {Element=} context.parent The parent node, not required if parent is the root.
-     * @returns {*} data of the item.  If the item is not found or not yet fetched, returns null.  Also,
+     * @returns {any} data of the item.  If the item is not found or not yet fetched, returns null.  Also,
      * if static HTML is used as data (data attribute is not specified), then the element for the item is returned.
      * @ojshortdesc Gets the raw data of an item.
      * @export
@@ -9256,32 +9310,25 @@ oj.__registerWidget('oj.ojListView', $['oj']['baseComponent'],
     // Slots
 
     /**
-     * <p>The <code class="prettyprint">itemTemplate</code> slot is used to specify the template for rendering each item in the list. The slot must be a &lt;template> element.</p>  
-     *
+     * <p>The <code class="prettyprint">itemTemplate</code> slot is used to specify the template for rendering each item in the list. The slot must be a &lt;template> element.
+     * The content of the template could either include the &lt;li> element, in which case that will be used as
+     * the root of the item.  Or it can be just the content which excludes the &lt;li> element.</p>
      * <p>When the template is executed for each item, it will have access to the binding context containing the following properties:</p>
      * <ul>
-     * <li>$current - an object that contains information for the current item being rendered
-     *   <ul>
-     *     <li>componentElement - the &lt;oj-list-view> custom element</li>
-     *     <li>data - the data for the current item being rendered</li>
-     *     <li>index - the zero-based index of the current item being rendered</li>
-     *     <li>key - the key of the current item being rendered</li>
-     *     <li>depth (available when hierarchical data is provided) - the depth of the current item being rendered.  The depth of the first level children under the invisible root is 1</li>
-     *     <li>leaf (available when hierarchical data is provided) - whether the current item is a leaf node or not</li>
-     *     <li>parentKey (available when hierarchical data is provided) - the key of the parent item.  The parent key is null for root nodes</li>
-     *   </ul>
-     * </li>
-     * <li>alias - if as attribute was specified, the value will be used to provide an application-named alias for $current.
-     * </li>
-     * </ul>
-     *
-     * <p>The content of the template should not include the &lt;li> element, only what's inside it.</p>
-     * <p>When both template and item.renderer are specified, the item.renderer takes precedence.</p>
-     *
+     *   <li>$current - an object that contains information for the current item. (See the table below for a list of properties available on $current)</li>
+     *  <li>alias - if as attribute was specified, the value will be used to provide an application-named alias for $current.</li>
+     * </ul> 
      * @ojstatus preview
      * @ojslot itemTemplate
      * @memberof oj.ojListView
-     *
+     * @property {Element} componentElement The &lt;oj-list-view> custom element
+     * @property {Object} data The data for the current item being rendered
+     * @property {number} index The zero-based index of the curent item
+     * @property {any} key The key of the current item being rendered     
+     * @property {number} depth The depth of the current item (available when hierarchical data is provided) being rendered. The depth of the first level children under the invisible root is 1.
+     * @property {boolean} leaf True if the current item is a leaf node (available when hierarchical data is provided).
+     * @property {any} parentkey The key of the parent item (available when hierarchical data is provided). The parent key is null for root nodes.
+     * 
      * @example <caption>Initialize the ListView with an inline item template specified:</caption>
      * &lt;oj-list-view>
      *   &lt;template slot='itemTemplate'>
@@ -10179,6 +10226,12 @@ oj.IteratingDataProviderContentHandler.prototype.fetchRows = function(forceFetch
 
                          if (offset == 0)
                          {
+                            if (templateEngine)
+                            {
+                                // clean nodes generated by templateengine before
+                                self.cleanItems(templateEngine);
+                            }
+
                              // empty content now that we have data
                              $(self.m_root).empty();
                          }
@@ -10584,6 +10637,8 @@ oj.IteratingDataProviderContentHandler.prototype._removeItem = function(elem)
  */
 oj.IteratingDataProviderContentHandler.prototype._handleRemoveTransitionEnd = function(elem, restoreFocus)
 {
+    var parent, templateEngine;
+
     // this could have been called after listview is destroyed
     if (this.m_widget == null)
     {
@@ -10592,7 +10647,7 @@ oj.IteratingDataProviderContentHandler.prototype._handleRemoveTransitionEnd = fu
     }
 
     elem = $(elem);
-    var parent = elem.parent();
+    parent = elem.parent();
     // could happen if there is a reset right after model update, the content has already been cleared out
     if (parent.length == 0)
     {
@@ -10602,6 +10657,13 @@ oj.IteratingDataProviderContentHandler.prototype._handleRemoveTransitionEnd = fu
 
     // invoke hook before actually removing the item
     this.m_widget.itemRemoveComplete(elem.get(0));
+
+    // template engine should have already been loaded
+    templateEngine = this.getTemplateEngine();
+    if (templateEngine)
+    {
+        templateEngine.clean(elem.get(0));
+    }
 
     elem.remove();
 

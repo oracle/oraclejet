@@ -1,7 +1,7 @@
 {
   "name": "oj-option",
-  "version": "5.0.0",
-  "jetVersion": "5.0.0",
+  "version": "5.1.0",
+  "jetVersion": "5.1.0",
   "displayName": "Option",
   "preview": true,
   "roles": [
@@ -17,7 +17,7 @@
     },
     "value": {
       "description": "The value of the option.",
-      "type": "*",
+      "type": "any",
       "displayName": "Value",
       "required": true
     }
@@ -34,7 +34,7 @@
         {
           "name": "value",
           "description": "The new value to set the property to.",
-          "type": "*"
+          "type": "any"
         }
       ],
       "return": "void"
@@ -48,7 +48,7 @@
           "type": "string"
         }
       ],
-      "return": "*"
+      "return": "any"
     },
     "refresh": {
       "description": "Refreshes the visual state of the component.",

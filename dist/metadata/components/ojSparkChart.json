@@ -1,7 +1,7 @@
 {
   "name": "oj-spark-chart",
-  "version": "5.0.0",
-  "jetVersion": "5.0.0",
+  "version": "5.1.0",
+  "jetVersion": "5.1.0",
   "displayName": "Spark Chart",
   "preview": true,
   "roles": [
@@ -114,7 +114,120 @@
       "description": "An array of objects with the following properties that defines the data for the spark chart. Also accepts a Promise for deferred data rendering.",
       "type": "Array<Object>|Array<number>|Promise|null",
       "displayName": "Items",
-      "value": null
+      "value": null,
+      "extension": {
+        "vbcs": {
+          "itemProperties": {
+            "borderColor": {
+              "description": "The default border color for the data items.",
+              "type": "string",
+              "value": null
+            },
+            "color": {
+              "description": "The color of the bar or marker for the data item. This override can be used to highlight important values or thresholds.",
+              "type": "string",
+              "value": null
+            },
+            "date": {
+              "description": "The date for the data item. The date should only be specified if the interval between data items is irregular.",
+              "type": "string",
+              "value": null
+            },
+            "high": {
+              "description": "The high value for range bar/area. Define 'low' and 'high' instead of 'value' to create a range bar/area spark chart.",
+              "type": "number",
+              "value": null
+            },
+            "low": {
+              "description": "The low value for range bar/area. Define 'low' and 'high' instead of 'value' to create a range bar/area spark chart.",
+              "type": "number",
+              "value": null
+            },
+            "markerDisplayed": {
+              "description": "Defines whether a marker should be displayed for the data item. Only applies to line and area spark charts.",
+              "type": "string",
+              "value": "off",
+              "enumValues": [
+                "off",
+                "on"
+              ],
+              "propertyEditorValues": {
+                "off": {
+                  "displayName": "Off"
+                },
+                "on": {
+                  "displayName": "On"
+                }
+              }
+            },
+            "markerShape": {
+              "description": "The shape of the data markers. Can take the name of a built-in shape or the svg path commands for a custom shape. Only applies to line and area spark charts.",
+              "type": "string",
+              "value": "auto",
+              "enumValues": [
+                "auto",
+                "circle",
+                "diamond",
+                "human",
+                "plus",
+                "square",
+                "star",
+                "triangleDown",
+                "triangleUp"
+              ],
+              "propertyEditorValues": {
+                "auto": {
+                  "displayName": "Auto"
+                },
+                "circle": {
+                  "displayName": "Circle"
+                },
+                "diamond": {
+                  "displayName": "Diamond"
+                },
+                "human": {
+                  "displayName": "Human"
+                },
+                "plus": {
+                  "displayName": "Plus"
+                },
+                "square": {
+                  "displayName": "Square"
+                },
+                "star": {
+                  "displayName": "Star"
+                },
+                "triangleDown": {
+                  "displayName": "Triangle Down"
+                },
+                "triangleUp": {
+                  "displayName": "Triangle Up"
+                }
+              }
+            },
+            "markerSize": {
+              "description": "The size of the data markers in pixels. Only applies to line and area spark charts.",
+              "type": "number",
+              "value": null
+            },
+            "svgClassName": {
+              "description": "The CSS style class to apply to the data item. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the item color attribute.",
+              "type": "string",
+              "value": null
+            },
+            "svgStyle": {
+              "description": "The inline style to apply to the data item. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the item color attribute.",
+              "type": "object",
+              "value": null
+            },
+            "value": {
+              "description": "The value of the data item.",
+              "type": "number",
+              "value": null
+            }
+          }
+        }
+      }
     },
     "lastColor": {
       "description": "The color of the last data item.",
@@ -252,7 +365,99 @@
       "description": "An array of objects with the following properties defining the reference objects associated with the y axis of the spark chart.",
       "type": "Array<Object>",
       "displayName": "Reference Objects",
-      "value": []
+      "value": [],
+      "extension": {
+        "vbcs": {
+          "itemProperties": {
+            "color": {
+              "description": "The color of the reference object.",
+              "type": "string",
+              "value": null
+            },
+            "high": {
+              "description": "The high value of a reference area.",
+              "type": "number",
+              "value": null
+            },
+            "lineStyle": {
+              "description": "The line style of a reference line.",
+              "type": "string",
+              "value": null,
+              "enumValues": [
+                "dashed",
+                "dotted"
+              ],
+              "propertyEditorValues": {
+                "dashed": {
+                  "displayName": "Dashed"
+                },
+                "dotted": {
+                  "displayName": "Dotted"
+                }
+              }
+            },
+            "lineWidth": {
+              "description": "The width of a reference line.",
+              "type": "number",
+              "value": null
+            },
+            "location": {
+              "description": "The location of the reference object relative to the data items.",
+              "type": "string",
+              "value": "back",
+              "enumValues": [
+                "back",
+                "front"
+              ],
+              "propertyEditorValues": {
+                "back": {
+                  "displayName": "Back"
+                },
+                "front": {
+                  "displayName": "Front"
+                }
+              }
+            },
+            "low": {
+              "description": "The low value of a reference area.",
+              "type": "number",
+              "value": null
+            },
+            "svgClassName": {
+              "description": "The CSS style class to apply to the reference object. The style class and inline style will override any other styling specified through the properties.",
+              "type": "string",
+              "value": null
+            },
+            "svgStyle": {
+              "description": "The inline style to apply to the reference object. The style class and inline style will override any other styling specified through the properties.",
+              "type": "object",
+              "value": null
+            },
+            "type": {
+              "description": "The type of reference object being shown.",
+              "type": "string",
+              "value": "line",
+              "enumValues": [
+                "area",
+                "line"
+              ],
+              "propertyEditorValues": {
+                "area": {
+                  "displayName": "Area"
+                },
+                "line": {
+                  "displayName": "Line"
+                }
+              }
+            },
+            "value": {
+              "description": "The value of a reference line.",
+              "type": "number",
+              "value": null
+            }
+          }
+        }
+      }
     },
     "svgClassName": {
       "description": "The CSS style class to apply to the data items. For type lineWithArea, this style will only be applied to the line if areaClassName is also specified. The style class and inline style will override any other styling specified through the properties. For tooltips, it's recommended to also pass a representative color to the color attribute.",
@@ -463,7 +668,7 @@
         {
           "name": "value",
           "description": "The new value to set the property to.",
-          "type": "*"
+          "type": "any"
         }
       ],
       "return": "void"
@@ -477,7 +682,7 @@
           "type": "string"
         }
       ],
-      "return": "*"
+      "return": "any"
     },
     "setProperties": {
       "description": "Performs a batch set of properties.",

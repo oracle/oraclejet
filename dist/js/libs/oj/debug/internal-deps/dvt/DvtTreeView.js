@@ -522,7 +522,7 @@ DvtTreeView.prototype.ApplyParsedProperties = function(props) {
     this._nodeSelection = dvt.SelectionHandler.TYPE_MULTIPLE;
 
   if (this._nodeSelection) {
-    this._selectionHandler = new dvt.SelectionHandler(this._nodeSelection);
+    this._selectionHandler = new dvt.SelectionHandler(this.getCtx(), this._nodeSelection);
     this._initialSelection = options['selection'];
   }
   else

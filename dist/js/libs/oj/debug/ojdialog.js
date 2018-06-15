@@ -22,8 +22,6 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
  * http://jquery.org/license
  */
 
-// retrieved from https://raw.github.com/jquery/jquery-ui/1-10-stable/ui/jquery.ui.dialog.js on 09/03/2013, and then modified
-
 //
 // Note that one of the main differences between JET Dialog and the jQueryUI dialog
 // is the reparenting approach:
@@ -32,23 +30,18 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
 //   - jQueryUI dialog reparents to the appendTo() container on CREATE
 //
 
-// Notes:
-//  - $.uiBackCompat has been deprecated
-//
-
 /*!
  *
  * Depends:
- *	jquery.ui.core.js
- *	jquery.ui.widget.js
- *	jquery.ui.draggable.js
- *	jquery.ui.mouse.js
- *	jquery.ui.position.js
+ *      jquery.ui.core.js
+ *      jquery.ui.widget.js
+ *      jquery.ui.draggable.js
+ *      jquery.ui.mouse.js
+ *      jquery.ui.position.js
  */
 
 
-(function() {
-
+(function () {
   // class name constants
   var /** @const */ OJD_BODY = 'oj-dialog-body';
   var /** @const */ OJD_CONTENT = 'oj-dialog-content';
@@ -69,6 +62,12 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
 
   var /** @const */ OJ_DRAGGABLE = 'oj-draggable';
 
+  var /** @const */ SLOT_BODY = 'body';
+  var /** @const */ SLOT_DEFAULT = '';
+  var /** @const */ SLOT_HEADER = 'header';
+  var /** @const */ SLOT_FOOTER = 'footer';
+  var /** @const */ SLOT_CONTEXTMENU = 'contextMenu';
+
   /**
    * @typedef {Object} oj.ojDialog.PositionAlign
    * @property {"top"|"bottom"|"center"} [vertical] Vertical alignment.
@@ -77,7 +76,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
    *  <li><b>"start"</b> evaluates to "left" in LTR mode and "right" in RTL mode.</li>
    *  <li><b>"end"</b> evaluates to "right" in LTR mode and "left" in RTL mode.</li>
    * </ul>
-   * 
+   *
    */
 
   /**
@@ -92,7 +91,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
    * @property {oj.ojDialog.PositionAlign} [at] Defines which position on the target element ("of") to align the positioned element
    *                                  against.
    * @property {oj.ojDialog.PositionPoint} [offset] Defines a point offset in pixels from the ("my") alignment.
-   * @property {string|oj.ojDialog.PositionPoint} [of] Which element to position the popup against. 
+   * @property {string|oj.ojDialog.PositionPoint} [of] Which element to position the popup against.
    *
    * If the value is a string, it should be a selector or the literal string value
    * of <code class="prettyprint">window</code>.  Otherwise, a point of x,y.  When a point
@@ -100,7 +99,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
    * scroll offsets need to be factored into this point - see UIEvent
    * <a href="https://developer.mozilla.org/en-US/docs/Web/API/UIEvent/pageX">pageX</a>,
    * <a href="https://developer.mozilla.org/en-US/docs/Web/API/UIEvent/pageY">pageY</a>.
-   * 
+   *
    * @property {"flip"|"fit"|"flipfit"|"none"} [collision] Rule for alternate alignment. <p>
    * <ul>
    *  <li><b>"flip"</b> the element to the opposite side of the target and the
@@ -312,11 +311,11 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
    * </code></pre>
    */
 
-  oj.__registerWidget("oj.ojDialog", $['oj']['baseComponent'], {
-    version: "1.0.0",
-    widgetEventPrefix: "oj",
+  oj.__registerWidget('oj.ojDialog', $.oj.baseComponent, {
+    version: '1.0.0',
+    widgetEventPrefix: 'oj',
     options:
-      {
+    {
         /**
          * Specifies the cancel behavior of the dialog. The following are valid values:
          *
@@ -353,7 +352,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
          * $dialogCancelBehaviorOptionDefault: none !default;
          *
          */
-        cancelBehavior: "icon",
+      cancelBehavior: 'icon',
         /**
          * Specifies the drag affordance.
          * If set to <code class="prettyprint">"title-bar"</code> (the default) the dialog will be draggable by the title bar.
@@ -375,7 +374,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
          * // setter
          * myDialog.dragAffordance = "none";
          */
-        dragAffordance: "title-bar",
+      dragAffordance: 'title-bar',
         /**
          * <p> Set the initial visibility of the dialog.
          * If set to <code class="prettyprint">"show"</code>, the dialog will automatically open upon initialization.
@@ -398,7 +397,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
          * // setter
          * myDialog.initialVisibility = "show";
          */
-        initialVisibility: "hide",
+      initialVisibility: 'hide',
         /**
          *
          * The modality of the dialog. Valid values are:
@@ -427,7 +426,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
          * // setter
          * myDialog.modality = "modeless";
          */
-        modality: "modal",
+      modality: 'modal',
         /**
            * <p>Position object is used to establish the location the dialog will appear relative to
            * another element. {@link oj.ojDialog.Position} defines "my" alignment "at" the alignment
@@ -438,7 +437,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
            * represents the other element that can be identified by "of". The values of these properties
            * describe horizontal and vertical alignments.</p>
            *
-           * 
+           *
            * <b>Deprecated v3.0.0 jQuery UI position syntax; Use of a percent unit with
            * "my" or "at" is not supported.</b>
            *
@@ -469,8 +468,8 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
            *     "at": {"horizontal": "end", "vertical": "top" },
            *     "offset": {"x": 0, "y":5}};
            */
-        position :
-            {
+      position:
+      {
               /**
                * Defines which edge on the dialog to align with the target ("of") element.
                *
@@ -481,7 +480,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
                * @name position.my
                * @type {{horizontal:string, vertical:string}}
                */
-              my : {
+        my: {
                 /**
                  * @expose
                  * @memberof! oj.ojDialog
@@ -495,7 +494,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
                  * @ojvalue {string} "center"
                  * @ojvalue {string} "right"
                  */
-                horizontal: 'center',
+          horizontal: 'center',
                 /**
                  * @expose
                  * @memberof! oj.ojDialog
@@ -507,8 +506,8 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
                  * @ojvalue {string} "center"
                  * @ojvalue {string} "bottom"
                  */
-                vertical: 'center'
-              },
+          vertical: 'center'
+        },
               /**
                * Defines a point offset in pixels from the ("my") alignment.
                * @expose
@@ -518,7 +517,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
                * @name position.offset
                * @type {{x:number, y:number}}
                */
-              offset: {
+        offset: {
                 /**
                  * Horizontal aligment offset.
                  * @expose
@@ -528,7 +527,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
                  * @name position.offset.x
                  * @type {number}
                  */
-                x: 0,
+          x: 0,
                 /**
                  * Vertical alignment offset.
                  * @expose
@@ -538,8 +537,8 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
                  * @name position.offset.y
                  * @type {number}
                  */
-                y: 0
-              },
+          y: 0
+        },
               /**
                * Defines which position on the target element ("of") to align the positioned element
                * against.
@@ -551,7 +550,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
                * @name position.at
                * @type {{horizontal:string, vertical:string}}
                */
-              at : {
+        at: {
                 /**
                  * @expose
                  * @memberof! oj.ojDialog
@@ -565,7 +564,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
                  * @ojvalue {string} "center"
                  * @ojvalue {string} "right"
                  */
-                horizontal: 'center',
+          horizontal: 'center',
                 /**
                  * @expose
                  * @memberof! oj.ojDialog
@@ -577,8 +576,8 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
                  * @ojvalue {string} "center"
                  * @ojvalue {string} "bottom"
                  */
-                vertical: 'center'
-              },
+          vertical: 'center'
+        },
               /**
                * Which element to position the dialog against.
                * If the value is a string, it should be a selector or the literal string value
@@ -599,7 +598,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
                * @name position.of
                * @type {string|{x: number, y: number}}
                */
-              of : 'window',
+        of: 'window',
               /**
                * Rule for alternate alignment.
                *
@@ -618,15 +617,15 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
                *  is applied to ensure as much of the element is visible as possible.
                * @ojvalue {string} "none" no collision detection.
                */
-              collision : 'fit',
+        collision: 'fit',
               // Ensure the titlebar is always visible
-              using: function(pos) {
-                  var topOffset = $(this).css(pos).offset().top;
-                  if (topOffset < 0) {
-                    $(this).css("top", pos.top - topOffset);
-                  }
-               }
-            },
+        using: function (pos) {
+          var topOffset = $(this).css(pos).offset().top;
+          if (topOffset < 0) {
+            $(this).css('top', pos.top - topOffset);
+          }
+        }
+      },
         /**
          *
          * The resizeBehavior of the dialog. "resizable" (default) makes the dialog resizable.
@@ -651,7 +650,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
          * @example <caption>Set the default in the theme (SCSS) :</caption>
          * $dialogResizeBehaviorOptionDefault: none !default;
          */
-        resizeBehavior: "resizable",
+      resizeBehavior: 'resizable',
         /**
          *
          * The WAI-ARIA role of the dialog. By default, role="dialog" is added to the generated HTML markup that surrounds the dialog.
@@ -673,7 +672,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
          * // setter
          * myDialog.role = "alertdialog";
          */
-        role: "dialog",
+      role: 'dialog',
         /**
          *
          * Specify the title of the dialog. null is the default.
@@ -694,10 +693,10 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
          * // setter
          * myDialog.title = "Title of Dialog";
          */
-        title: null,
-        ///////////////////////////////////////////////////////
+      title: null,
+        // /////////////////////////////////////////////////////
         // events
-        ///////////////////////////////////////////////////////
+        // /////////////////////////////////////////////////////
 
           /**
            * Triggered before the dialog is dismissed via the
@@ -712,7 +711,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
            * @ojbubbles
            * @property {Event} event a custom event
            */
-        beforeClose: null,
+      beforeClose: null,
           /**
            * Triggered before the dialog is launched via the <code class="prettyprint">open()</code>
            * method. The open can be cancelled by calling
@@ -726,7 +725,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
            * @ojbubbles
            * @property {Event} event a custom event
            */
-        beforeOpen: null,
+      beforeOpen: null,
           /**
            * Triggered after the dialog is dismissed via the
            * <code class="prettyprint">close()</code> method.
@@ -738,7 +737,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
            * @ojbubbles
            * @property {Event} event a custom event
            */
-        close: null,
+      close: null,
           /**
            * Triggered after focus has been transfered to the dialog.
            *
@@ -749,7 +748,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
            * @ojbubbles
            * @property {Event} event a custom event
            */
-        focus: null,
+      focus: null,
           /**
            * Triggered after the dialog is launched via the <code class="prettyprint">open()</code>
            * method.
@@ -762,7 +761,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
            * @ojbubbles
            * @property {Event} event a custom event
            */
-        open: null,
+      open: null,
         /**
          * Triggered when the dialog is being resized.
          *
@@ -774,7 +773,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
          * @property {Event} event a custom event
 
          */
-        resize: null,
+      resize: null,
         /**
          * Triggered when the user starts resizing the dialog.
          *
@@ -827,7 +826,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
          * </li>
          * </ul>
          */
-        resizeStart: null,
+      resizeStart: null,
         /**
          * Triggered when the user stops resizing the dialog.
          *
@@ -881,7 +880,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
          * </ul>
          *
          */
-        resizeStop: null,
+      resizeStop: null,
           /**
            * Triggered when a default animation is about to start, such as when the component is
            * being opened/closed or a child item is being added/removed. The default animation can
@@ -925,7 +924,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
            * $dialogCloseAnimation: ((effect: "zoomOut", persist: "all"), "fadeOut")  !default;
            */
 
-        animateStart: null,
+      animateStart: null,
           /**
            * Triggered when a default animation has ended, such as when the component is being
            * opened/closed or a child item is being added/removed. This event is not triggered if
@@ -962,8 +961,8 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
            * $dialogOpenAnimation: (effect: "zoomIn", fade: true)  !default;
            * $dialogCloseAnimation: (effect: "zoomOut", fade: true)  !default;
            */
-        animateEnd: null
-      },
+      animateEnd: null
+    },
       /**
        * @memberof oj.ojDialog
        * @instance
@@ -971,7 +970,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
        * @override
        * @return {void}
        */
-    _ComponentCreate: function() {
+    _ComponentCreate: function () {
       this._super();
 
       this.originalCss = {
@@ -985,39 +984,37 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
       };
 
       // pull the title attribute from the root element moving to an option
-      this.originalTitle = this.element.attr("title");
+      this.originalTitle = this.element.attr('title');
       this.options.title = this.options.title || this.originalTitle;
-      this.element.removeAttr("title");
+      this.element.removeAttr('title');
 
       this.element.hide();
       this.element.uniqueId();
-      this.element.addClass("oj-dialog oj-component");
+      this.element.addClass('oj-dialog oj-component');
       this.element.attr({
           // Setting tabIndex makes the div focusable
-          'tabIndex': -1
-        });
+        tabIndex: -1
+      });
 
-      if (!this._IsCustomElement() || !this.element[0].hasAttribute["role"])
-        this.element.attr("role", this.options.role)
+      if (!this._IsCustomElement() || !this.element[0].hasAttribute('role')) {
+        this.element.attr('role', this.options.role);
+      }
 
-     this._on(this.element, {"keydown": this._keydownHandler.bind(this)});
+      this._on(this.element, { keydown: this._keydownHandler.bind(this) });
 
      // fixup references to header, body and footer.  assumption is they will be immediate children
      // of the root node.
-     this.userDefinedDialogHeader = false;
+      this.userDefinedDialogHeader = false;
 
-     if (!this._IsCustomElement()) {
-
+      if (!this._IsCustomElement()) {
         var children = this.element.children();
         for (var i = 0; i < children.length; i++) {
           var child = $(children[i]);
-          if (child.is(".oj-dialog-header")) {
+          if (child.is('.oj-dialog-header')) {
             this.userDefinedDialogHeader = true;
             this._userDefinedHeader = child;
             this._userDefinedHeaderDiv = children[i];
-          }
-          else if (child.is(".oj-dialog-body")) {
-
+          } else if (child.is('.oj-dialog-body')) {
             this._createContentDiv();
             this._uiDialogContent = $(this._contentDiv);
             //
@@ -1037,57 +1034,42 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
 
             this._uiDialogBody = child;
             this._uiDialogBodyDiv = children[i];
-          }
-          else if (child.is(".oj-dialog-footer")) {
+          } else if (child.is('.oj-dialog-footer')) {
             this._uiDialogFooter = child;
             this._uiDialogFooterDiv = children[i];
           }
         }
-     }
+      }
 
-     if (this._IsCustomElement()) {
-       this._processSlottedChildren();
-     }
+      if (this._IsCustomElement()) {
+        this._processSlottedChildren();
+      }
 
      // fixup dialog header
-     if (this.userDefinedDialogHeader) {
-       this._userDefinedTitleDiv = this._userDefinedHeaderDiv.querySelector('.oj-dialog-title');
-       this._userDefinedTitle = $(this._userDefinedTitleDiv);
+      if (this.userDefinedDialogHeader) {
+        this._userDefinedTitleDiv = this._userDefinedHeaderDiv.querySelector('.oj-dialog-title');
+        this._userDefinedTitle = $(this._userDefinedTitleDiv);
 
-       if (this.options.cancelBehavior === "icon") {
-         this._createCloseButton(this._userDefinedHeaderDiv);
-       }
-
-       if (this._userDefinedTitleDiv != null) {
+        if (this._userDefinedTitleDiv !== null && this._userDefinedTitleDiv !== undefined) {
          // create an id for the user-defined title
-         this._userDefinedTitle.uniqueId();
+          this._userDefinedTitle.uniqueId();
          // to meet accessibility requirements for user-defined headers,
           // associate the title id with the .oj-dialog aria-labelledby.
-          this.element.attr({"aria-labelledby": this._userDefinedTitle.attr("id")});
+          this.element.attr({ 'aria-labelledby': this._userDefinedTitle.attr('id') });
         }
-     } else {
-       this._createTitlebar();
-     }
-
-      if (this.options.dragAffordance === "title-bar" && $.fn.draggable) {
-        this._makeDraggable();
+      } else {
+        this._createTitlebar();
       }
 
       // body was not provided. insert the content between the header and footer
       if (!this._uiDialogContent) {
-
         this._createContentDiv();
         this._uiDialogContent = $(this._contentDiv);
-        var content =  $(this._contentDiv);
 
         if (this._userDefinedHeader) {
           this.element[0].insertBefore(this._contentDiv, this._userDefinedHeaderDiv); // @HTMLUpdateOK
-        } else if (this._uiDialogTitlebar) {
-          this.element[0].insertBefore(this._contentDiv, this._uiDialogTitlebarDiv); // @HTMLUpdateOK
-        } else if (this._uiDialogFooter) {
-          this.element[0].insertBefore(this._uiDialogFooterDiv, this._contentDiv); // @HTMLUpdateOK
         } else {
-          this.element[0].appendChild(this._contentDiv); // @HTMLUpdateOK
+          this.element[0].insertBefore(this._contentDiv, this._uiDialogTitlebarDiv); // @HTMLUpdateOK
         }
         oj.Components.subtreeAttached(this._contentDiv);
       }
@@ -1096,16 +1078,13 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
 
       // fixup the position option set via the widget constructor
       var options = this.options;
-      options["position"] = oj.PositionUtils.coerceToJet(options["position"]);
+      options.position = oj.PositionUtils.coerceToJet(options.position);
     },
 
 
     // Create the header slot element
-    _createHeaderSlot: function() {
-
-      if (this._userDefinedHeader) return;
-
-      this._headerSlot = document.createElement("div");
+    _createHeaderSlot: function () {
+      this._headerSlot = document.createElement('div');
       this._headerSlot.classList.add(OJD_HEADER);
 
       this.element[0].appendChild(this._headerSlot); // @HTMLUpdateOK
@@ -1114,40 +1093,31 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
       this.userDefinedDialogHeader = true;
       this._userDefinedHeaderDiv = this._headerSlot;
       this._userDefinedHeader = $(this._headerSlot);
-
     },
 
     // Create the footer slot element.
-    _createFooterSlot: function() {
-
-      if (this._uiDialogFooter) return;
-
-      this._footerSlot = document.createElement("div");
+    _createFooterSlot: function () {
+      this._footerSlot = document.createElement('div');
 
       this.element[0].appendChild(this._footerSlot); // @HTMLUpdateOK
       oj.Components.subtreeAttached(this._footerSlot);
       this._uiDialogFooterDiv = this._footerSlot;
       this._uiDialogFooter = $(this._footerSlot);
-
     },
 
-    _createContentDiv: function() {
-      this._contentDiv = document.createElement("div");
-      this._contentDiv.classList.add(OJD_CONTENT, "oj-dialog-default-content");
+    _createContentDiv: function () {
+      this._contentDiv = document.createElement('div');
+      this._contentDiv.classList.add(OJD_CONTENT, 'oj-dialog-default-content');
     },
 
     // Create the body slot element
-    _createBodySlot: function() {
-
-      // only create the wrapper once.
-      if (this._uiDialogBody) return;
-
+    _createBodySlot: function () {
       this._createContentDiv();
 
       this.element[0].appendChild(this._contentDiv);  // @HTMLUpdateOK
       oj.Components.subtreeAttached(this._contentDiv);
 
-      this._bodySlot = document.createElement("div");
+      this._bodySlot = document.createElement('div');
 
       this._contentDiv.appendChild(this._bodySlot); // @HTMLUpdateOK
       this._uiDialogContent = $(this._contentDiv);
@@ -1156,10 +1126,19 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
       this._uiDialogBody = $(this._bodySlot);
     },
 
+    // override in order to return the reparented location of the context menu slot
+    _GetContextMenu: function () {
+      if (this._IsCustomElement()) {
+        if (this._contextmenuSlot && this._contextmenuSlot.length > 0) {
+          return this._contextmenuSlot[0];
+        }
+        return this._super();
+      }
+      return null;
+    },
 
     // Process any slotted children and move them into the correct location
-    _processSlottedChildren: function() {
-
+    _processSlottedChildren: function () {
       if (this._footerSlot != null) {
         this.element[0].removeChild(this._footerSlot);
       }
@@ -1169,65 +1148,81 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
       if (this._bodySlot != null) {
         this.element[0].removeChild(this._bodySlot);
       }
+      if (this._contextmenuSlot != null) {
+        this.element[0].removeChild(this._contextmenuSlot);
+      }
 
       var slotMap = oj.BaseCustomElementBridge.getSlotMap(this.element[0]);
-      for (var slot in slotMap) {
-        if (slotMap.hasOwnProperty(slot)) {
-          if (slot != "header" && slot != "footer" && slot != "body" && slot != "") {
-            // silently remove as per custom component slot behavior
-            slotMap[slot].parentNode.removeChild(slotMap[slot]);
-          }
+      var slots = Object.keys(slotMap);
+      var slot;
+      var s;
+
+      for (s = 0; s < slots.length; s++) {
+        slot = slots[s];
+        if (slot !== SLOT_HEADER && slot !== SLOT_FOOTER && slot !== SLOT_BODY &&
+            slot !== SLOT_DEFAULT && slot !== SLOT_CONTEXTMENU) {
+          // silently remove as per custom component slot behavior
+          slotMap[slot].parentNode.removeChild(slotMap[slot]);
         }
       }
 
-      if (slotMap.hasOwnProperty("header")) {
+      var hasOwnProperty = Object.prototype.hasOwnProperty;
+      if (hasOwnProperty.call(slotMap, SLOT_HEADER)) {
         this._createHeaderSlot();
       }
 
       // Note that the default slot is the body slot.
-      if (slotMap.hasOwnProperty("body") || slotMap.hasOwnProperty("")) {
+      if (hasOwnProperty.call(slotMap, SLOT_BODY) || hasOwnProperty.call(slotMap, SLOT_DEFAULT)) {
         this._createBodySlot();
       }
 
-      if (slotMap.hasOwnProperty("footer")) {
+      if (hasOwnProperty.call(slotMap, SLOT_FOOTER)) {
         this._createFooterSlot();
       }
 
+      // save the location of the context menu slot.
+      if (hasOwnProperty.call(slotMap, SLOT_CONTEXTMENU)) {
+        this._contextmenuSlot = slotMap[SLOT_CONTEXTMENU];
+      }
+
       var slotParent = this._bodySlot;
-      for (var slot in slotMap) {
-        if (slotMap.hasOwnProperty(slot)) {
-          switch (slot) {
-          case "header":
+      for (s = 0; s < slots.length; s++) {
+        slot = slots[s];
+        switch (slot) {
+          case SLOT_HEADER:
             // Note - the header is wrapped with the title for accessibility,
             // so we add the oj-dialog-header class during wrap process.
             slotParent = this._headerSlot;
             break;
-          case "footer":
+          case SLOT_FOOTER:
             slotParent = this._footerSlot;
             break;
-          case "body":
-          case "":
+          case SLOT_BODY:
+          case SLOT_DEFAULT:
             slotParent = this._bodySlot;
             break;
-          }
+          default:
+            break;
+        }
 
-          var slotElements = slotMap[slot];
-          if (slotElements != null) {
-            for (var i = 0; i < slotElements.length; i++) {
-              slotParent.appendChild(slotElements[i]); // @HTMLUpdateOK
-              switch (slot) {
-              case "header":
+        var slotElements = slotMap[slot];
+        if (slotElements != null) {
+          for (var i = 0; i < slotElements.length; i++) {
+            slotParent.appendChild(slotElements[i]); // @HTMLUpdateOK
+            switch (slot) {
+              case SLOT_HEADER:
                 break;
-              case "footer":
+              case SLOT_FOOTER:
                 slotParent = this._footerSlot;
                 slotMap[slot][i].classList.add(OJD_FOOTER);
                 break;
-              case "body":
-              case "":
+              case SLOT_BODY:
+              case SLOT_DEFAULT:
                 slotParent = this._bodySlot;
                 slotMap[slot][i].classList.add(OJD_BODY);
                 break;
-              }
+              default:
+                break;
             }
           }
         }
@@ -1240,12 +1235,10 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
      * @protected
      * @override
      */
-    _AfterCreateEvent: function() {
-
-      if (this.options.initialVisibility === "show") {
+    _AfterCreateEvent: function () {
+      if (this.options.initialVisibility === 'show') {
         this.open();
       }
-
     },
     /**
      * @memberof oj.ojDialog
@@ -1253,21 +1246,23 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
      * @protected
      * @override
      */
-    _destroy: function() {
+    _destroy: function () {
+      this._off(this.element, 'keydown');
 
-      this._off(this.element, "keydown");
-
-      if (oj.ZOrderUtils.getStatus(this.element) === oj.ZOrderUtils.STATUS.OPEN)
+      if (oj.ZOrderUtils.getStatus(this.element) === oj.ZOrderUtils.STATUS.OPEN) {
         this._closeImplicitly();
+      }
 
-      this._setWhenReady("none");
+      this._setWhenReady('none');
 
-      var isDraggable = this.element.hasClass(OJ_DRAGGABLE);
-
-      if (this._resizableComponent) {
-        if (this._resizableComponent("instance"))
-          this._resizableComponent("destroy");
+      if (this._resizableComponent && this._resizableComponent('instance')) {
+        this._resizableComponent('destroy');
         this._resizableComponent = null;
+      }
+
+      if (this.element.hasClass(OJ_DRAGGABLE)) {
+        this.element.draggable('destroy');
+        this.element.removeClass(OJ_DRAGGABLE);
       }
 
       this._destroyCloseButton();
@@ -1277,32 +1272,24 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
         this._userDefinedTitle.removeUniqueId();
       }
 
-      if (this.uiDialogTitle) {
-        this.uiDialogTitle.remove();
-        this.uiDialogTitle = null;
+      if (this._uiDialogBody) {
+        // unwrap the dialog body from the content element.
+        this._uiDialogBody.insertAfter(this._uiDialogContent);  // @HTMLUpdateOK safe manipulation
       }
-
-      if (this._uiDialogContent) {
-        if (this._uiDialogBody) {
-          // unwrap the dialog body from the content element.
-          this._uiDialogBody.insertAfter(this._uiDialogContent);  // @HTMLUpdateOK safe manipulation
-        }
-        this._uiDialogContent.remove();
-        this._uiDialogBody = this._uiDialogContent = null;
-      }
+      this._uiDialogContent.remove();
+      this._uiDialogBody = null;
+      this._uiDialogContent = null;
 
       this.element
         .removeUniqueId()
-        .removeClass("oj-dialog oj-component")
+        .removeClass('oj-dialog oj-component')
         .css(this.originalCss);
 
       this.element.stop(true, true);
 
       if (this.originalTitle) {
-        this.element.attr("title", this.originalTitle);
+        this.element.attr('title', this.originalTitle);
       }
-
-      // causes testing problems.
 
       if (this._uiDialogTitlebar) {
         this._uiDialogTitlebar.remove();
@@ -1331,21 +1318,23 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
      * @example <caption>Invoke the <code class="prettyprint">close</code> method:</caption>
      * myDialog.close();
      */
-    close: function(event) {
-      if (this._isOperationPending("close", [event]))
-        return;
-
-      if (oj.ZOrderUtils.getStatus(this.element) !== oj.ZOrderUtils.STATUS.OPEN)
-        return;
-
-      if (this._trigger("beforeClose", event) === false && !this._ignoreBeforeCloseResultant) {
+    close: function (event) {
+      if (this._isOperationPending('close', [event])) {
         return;
       }
 
-      this._setWhenReady("close");
+      if (oj.ZOrderUtils.getStatus(this.element) !== oj.ZOrderUtils.STATUS.OPEN) {
+        return;
+      }
+
+      if (this._trigger('beforeClose', event) === false && !this._ignoreBeforeCloseResultant) {
+        return;
+      }
+
+      this._setWhenReady('close');
       this._focusedElement = null;
 
-      if (!this.opener.filter(":focusable").focus().length) {
+      if (!this.opener.filter(':focusable').focus().length) {
         // Hiding a focused element doesn't trigger blur in WebKit
         // so in case we have nothing to focus on, explicitly blur the active element
         // https://bugs.webkit.org/show_bug.cgi?id=47182
@@ -1354,26 +1343,26 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
 
       // if dialog modality is modal, check if we need
       // to restore the disabled accesskey attributes
-      if (this.options.modality === 'modal'){
-         var forEach = Array.prototype.forEach;
+      if (this.options.modality === 'modal') {
+        var forEach = Array.prototype.forEach;
          // Find elements within dialog that have accesskey and remove marker added during open
-         var elementsInDialogWithAccesskey = this.element[0].getElementsByClassName('oj-helper-element-in-dialog-with-accesskey');
-         forEach.call(elementsInDialogWithAccesskey, function(element){
-            element.classList.remove('oj-helper-element-in-dialog-with-accesskey');
-         });
-         //Find elements with oj-helper-element-with-accesskey class, get accesskey value from data attr, set accesskey attr, remove class
-         var elementsInDOMWithAccesskey = document.getElementsByClassName('oj-helper-element-with-accesskey');
-         forEach.call(elementsInDOMWithAccesskey, function(element){
-            element.setAttribute('accesskey', element.getAttribute('data-ojAccessKey'));
-            element.removeAttribute('data-ojAccessKey');
-            element.classList.remove('oj-helper-element-with-accesskey');
-         });
+        var elementsInDialogWithAccesskey = this.element[0].getElementsByClassName('oj-helper-element-in-dialog-with-accesskey');
+        forEach.call(elementsInDialogWithAccesskey, function (element) {
+          element.classList.remove('oj-helper-element-in-dialog-with-accesskey');
+        });
+         // Find elements with oj-helper-element-with-accesskey class, get accesskey value from data attr, set accesskey attr, remove class
+        var elementsInDOMWithAccesskey = document.getElementsByClassName('oj-helper-element-with-accesskey');
+        forEach.call(elementsInDOMWithAccesskey, function (element) {
+          element.setAttribute('accesskey', element.getAttribute('data-ojAccessKey'));
+          element.removeAttribute('data-ojAccessKey');
+          element.classList.remove('oj-helper-element-with-accesskey');
+        });
       }
 
       /** @type {!Object.<oj.PopupService.OPTION, ?>} */
       var psOptions = {};
       psOptions[oj.PopupService.OPTION.POPUP] = this.element;
-      psOptions[oj.PopupService.OPTION.CONTEXT] = {"closeEvent" : event};
+      psOptions[oj.PopupService.OPTION.CONTEXT] = { closeEvent: event };
       oj.PopupService.getInstance().close(psOptions);
     },
     /**
@@ -1385,29 +1374,24 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
      * @param {!Object.<oj.PopupService.OPTION, ?>} psOptions property bag for closing the popup
      * @return {Promise|void}
      */
-    _beforeCloseHandler : function (psOptions)
-    {
+    _beforeCloseHandler: function (psOptions) {
       var rootElement = psOptions[oj.PopupService.OPTION.POPUP];
 
       var animationOptions = (oj.ThemeUtils.parseJSONFromFontFamily(OJD_OPTION_DEFAULTS)
-        || {})["animation"];
-      if (!this._ignoreBeforeCloseResultant && animationOptions && animationOptions["close"])
-      {
-        var style = rootElement.attr("style");
+        || {}).animation;
+      if (!this._ignoreBeforeCloseResultant && animationOptions && animationOptions.close) {
+        var style = rootElement.attr('style');
         /** @type {?} */
-        var promise = oj.AnimationUtils.startAnimation(rootElement[0], "close",
-          animationOptions["close"], this).then(function ()
-        {
-          rootElement.attr("style", style);
-          rootElement.hide();
-        });
+        var promise = oj.AnimationUtils.startAnimation(rootElement[0], 'close',
+          animationOptions.close, this).then(function () {
+            rootElement.attr('style', style);
+            rootElement.hide();
+          });
         return promise;
       }
-      else
-      {
-        rootElement.hide();
-        return void(0);
-      }
+
+      rootElement.hide();
+      return undefined;
     },
     /**
      * Close finalization callback.
@@ -1418,14 +1402,14 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
      * @param {!Object.<oj.PopupService.OPTION, ?>} psOptions property bag for closing the popup
      * @return {void}
      */
-    _afterCloseHandler : function (psOptions)
-    {
+    _afterCloseHandler: function (psOptions) {
       var context = psOptions[oj.PopupService.OPTION.CONTEXT];
       var event;
-      if (context)
-        event = context["closeEvent"];
+      if (context) {
+        event = context.closeEvent;
+      }
 
-      this._trigger("close", event);
+      this._trigger('close', event);
     },
     /**
      * <p>Returns true if the dialog is currently open. This method does not accept any arguments.
@@ -1444,7 +1428,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
      * @example <caption>Invoke the <code class="prettyprint">isOpen</code> method:</caption>
      * var isOpen = myDialog.isOpen();
      */
-    isOpen: function() {
+    isOpen: function () {
       var status = oj.ZOrderUtils.getStatus(this.element);
       return (status === oj.ZOrderUtils.STATUS.OPENING ||
               status === oj.ZOrderUtils.STATUS.OPEN ||
@@ -1467,13 +1451,12 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
      * @example <caption>Invoke the <code class="prettyprint">open</code> method:</caption>
      * var open = myDialog.open();
      */
-    open: function(event) {
-      if (this._isOperationPending("open", [event]))
+    open: function (event) {
+      if (this._isOperationPending('open', [event])) {
         return;
+      }
 
-      // this.$element.on('click.ojDialog', $.proxy(this.uiDialog.hide, this));
-
-      if (this._trigger("beforeOpen", event) === false) {
+      if (this._trigger('beforeOpen', event) === false) {
         return;
       }
 
@@ -1482,37 +1465,50 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
         return;
       }
 
-      this._setWhenReady("open");
+      this._setWhenReady('open');
+
+      if (this.userDefinedDialogHeader) {
+        // Add close button to user-defined header
+        if ((this.closeButton === undefined || this.closeButton === null) &&
+            this.options.cancelBehavior === 'icon') {
+          this._createCloseButton(this._userDefinedHeaderDiv);
+        }
+      } else {
+        this._createTitlebarCloseButton();
+      }
 
       this.opener = $(this.document[0].activeElement);
 
-      if (this.options.resizeBehavior === "resizable") {
+      if (this.options.dragAffordance === 'title-bar' && $.fn.draggable) {
+        this._makeDraggable();
+      }
+      if (this.options.resizeBehavior === 'resizable') {
         this._makeResizable();
       }
 
       // normalize alignments, so that start and end keywords work as expected.
-      var isRtl = this._GetReadingDirection() === "rtl";
-      var position = oj.PositionUtils.coerceToJqUi(this.options["position"]);
+      var isRtl = this._GetReadingDirection() === 'rtl';
+      var position = oj.PositionUtils.coerceToJqUi(this.options.position);
       position = oj.PositionUtils.normalizeHorizontalAlignment(position, isRtl);
 
       // if modality is set to modal, prevent accesskey events
       // from being triggered while dialog is open
-      if (this.options.modality === 'modal'){
-         var forEach = Array.prototype.forEach
+      if (this.options.modality === 'modal') {
+        var forEach = Array.prototype.forEach;
          // Mark elements within the dialog that have an accesskey attr. Those shouldn't have accesskey attr removed
-         var elementsInDialogWithAccesskey = this.element[0].querySelectorAll('[accesskey]');
-         forEach.call(elementsInDialogWithAccesskey, function(element){
-            element.classList.add('oj-helper-element-in-dialog-with-accesskey');
-         });
+        var elementsInDialogWithAccesskey = this.element[0].querySelectorAll('[accesskey]');
+        forEach.call(elementsInDialogWithAccesskey, function (element) {
+          element.classList.add('oj-helper-element-in-dialog-with-accesskey');
+        });
          // Mark elements with accesskey attr, move accesskey value to data attr, remove accesskey attr from elements
-         var elementsInDOMWithAccesskey = document.querySelectorAll('[accesskey]');
-         forEach.call(elementsInDOMWithAccesskey, function(element){
-            if (!element.classList.contains("oj-helper-element-in-dialog-with-accesskey")){
-               element.classList.add('oj-helper-element-with-accesskey');
-               element.setAttribute('data-ojAccessKey', element.getAttribute('accesskey'));
-               element.removeAttribute('accesskey');
-            }
-         });
+        var elementsInDOMWithAccesskey = document.querySelectorAll('[accesskey]');
+        forEach.call(elementsInDOMWithAccesskey, function (element) {
+          if (!element.classList.contains('oj-helper-element-in-dialog-with-accesskey')) {
+            element.classList.add('oj-helper-element-with-accesskey');
+            element.setAttribute('data-ojAccessKey', element.getAttribute('accesskey'));
+            element.removeAttribute('accesskey');
+          }
+        });
       }
 
       /** @type {!Object.<oj.PopupService.OPTION, ?>} */
@@ -1522,7 +1518,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
       psOptions[oj.PopupService.OPTION.POSITION] = position;
       psOptions[oj.PopupService.OPTION.MODALITY] = this.options.modality;
       psOptions[oj.PopupService.OPTION.EVENTS] = this._getPopupServiceEvents();
-      psOptions[oj.PopupService.OPTION.LAYER_SELECTORS] = "oj-dialog-layer";
+      psOptions[oj.PopupService.OPTION.LAYER_SELECTORS] = 'oj-dialog-layer';
       psOptions[oj.PopupService.OPTION.LAYER_LEVEL] = oj.PopupService.LAYER_LEVEL.TOP_LEVEL;
       psOptions[oj.PopupService.OPTION.CUSTOM_ELEMENT] = this._IsCustomElement();
       oj.PopupService.getInstance().open(psOptions);
@@ -1536,29 +1532,25 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
      * @param {!Object.<oj.PopupService.OPTION, ?>} psOptions property bag for opening the popup
      * @return {Promise|void}
      */
-    _beforeOpenHandler : function (psOptions)
-    {
+    _beforeOpenHandler: function (psOptions) {
       var rootElement = psOptions[oj.PopupService.OPTION.POPUP];
       var position = psOptions[oj.PopupService.OPTION.POSITION];
 
       rootElement.show();
-      rootElement["position"](position);
+      rootElement.position(position);
 
       // We add .oj-animate-open when the dialog is animating on open.
       // This supports maintaing the visibility of a nested dialog during animation open.
       rootElement.parent().addClass('oj-animate-open');
 
       var animationOptions = (oj.ThemeUtils.parseJSONFromFontFamily(OJD_OPTION_DEFAULTS) ||
-        {})["animation"];
-      if (animationOptions && animationOptions["open"])
-      {
-        return oj.AnimationUtils.startAnimation(rootElement[0], "open",
-          animationOptions["open"], this);
+        {}).animation;
+      if (animationOptions && animationOptions.open) {
+        return oj.AnimationUtils.startAnimation(rootElement[0], 'open',
+          animationOptions.open, this);
       }
-      else
-      {
-        return void(0);
-      }
+
+      return undefined;
     },
     /**
      * Called after the dialog is shown. Perform open finalization.
@@ -1568,38 +1560,34 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
      * @param {!Object.<oj.PopupService.OPTION, ?>} psOptions property bag for opening the popup
      * @return {void}
      */
-    _afterOpenHandler : function (psOptions)
-    {
+    _afterOpenHandler: function (psOptions) {
       var rootElement = psOptions[oj.PopupService.OPTION.POPUP];
       rootElement.parent().removeClass('oj-animate-open');
-      this._trigger("open");
+      this._trigger('open');
       this._focusTabbable();
     },
-    /**     
+    /**
      * Refresh the dialog.
      * Typically used after dynamic content is added to a dialog.
      * @expose
      * @method
      * @name oj.ojDialog#refresh
      * @memberof oj.ojDialog
-     * @instance     
-     * @return {void}          
+     * @instance
+     * @return {void}
      * @example <caption>Invoke the <code class="prettyprint">refresh</code> method:</caption>
      * myDialog.refresh();
      */
-    refresh: function()
-    {
+    refresh: function () {
       this._super();
     },
-    _focusTabbable: function() {
-
+    _focusTabbable: function () {
       var hasFocus = this._focusedElement;
-      if (hasFocus && hasFocus.length > 0)
-      {
+      if (hasFocus && hasFocus.length > 0) {
         // if dialog already has focus then return
-          if (oj.DomUtils.isAncestorOrSelf(this.element[0], hasFocus[0])) {
-              return;
-          }
+        if (oj.DomUtils.isAncestorOrSelf(this.element[0], hasFocus[0])) {
+          return;
+        }
       }
 
       // Set focus to the first match:
@@ -1610,19 +1598,20 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
       // 5. The dialog itself
 
       if (!hasFocus) {
-        hasFocus = this.element.find("[autofocus]");
+        hasFocus = this.element.find('[autofocus]');
       }
       if (!hasFocus.length) {
-        hasFocus = this._uiDialogContent.find(":tabbable");
+        hasFocus = this._uiDialogContent.find(':tabbable');
       }
       if (!hasFocus.length) {
         if (this._uiDialogFooter && this._uiDialogFooter.length) {
-          hasFocus = this._uiDialogFooter.find(":tabbable");
+          hasFocus = this._uiDialogFooter.find(':tabbable');
         }
       }
       if (!hasFocus.length) {
-        if (this.closeButton)
-          hasFocus = this.closeButton.filter(":focusable");
+        if (this.closeButton) {
+          hasFocus = this.closeButton.filter(':focusable');
+        }
       }
       if (!hasFocus.length) {
         hasFocus = this.element;
@@ -1630,31 +1619,12 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
 
       if (hasFocus.length > 0) {
         hasFocus.eq(0).focus();
-        this._trigger("focus");
+        this._trigger('focus');
       }
     },
 
-    '_keepFocus': function(event) {
-      function checkFocus() {
-        var activeElement = this.document[0].activeElement,
-            // isActive = this._uiDialogContent[0] === activeElement || $.contains(this._uiDialogContent[0], activeElement);
-          isActive = this.element === activeElement || $.contains(this.element, activeElement);
-        if (!isActive) {
-          this._focusTabbable();
-        }
-      }
-      event.preventDefault();
-      checkFocus.call(this);
-    },
-
-    _isNumber: function(value) {
-      return !isNaN(parseInt(value, 10));
-    },
-
-    _keydownHandler: function (event)
-    {
-
-      if (this.options.cancelBehavior !== "none" && !event.isDefaultPrevented() && event.keyCode &&
+    _keydownHandler: function (event) {
+      if (this.options.cancelBehavior !== 'none' && !event.isDefaultPrevented() && event.keyCode &&
           event.keyCode === $.ui.keyCode.ESCAPE) {
         event.preventDefault();
         event.stopImmediatePropagation();
@@ -1668,17 +1638,13 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
 
       // prevent tabbing out of dialogs
       // var tabbables = this._uiDialogContent.find(":tabbable"),
-      var tabbables = this.element.find(":tabbable"),
-          first = tabbables.filter(":first"),
-          last = tabbables.filter(":last");
+      var tabbables = this.element.find(':tabbable');
+      var first = tabbables.filter(':first');
+      var last = tabbables.filter(':last');
 
       var index;
 
-      if (!event.shiftKey)
-      {
-
-        // if (event.target === last[0] || event.target === this._uiDialogContent[0]) {
-
+      if (!event.shiftKey) {
         // Check document.activeElement instead of event.target since descendant
         // elements such as ojTable may change focus when handling Tab key.
         // This aligns with browser behavior because it determines next tabstop
@@ -1687,7 +1653,6 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
           first.focus();
           event.preventDefault();
         } else {
-
           //
           // Make sure the first dialog tabbable (the header icon)
           // does not tab out of the dialog.
@@ -1701,8 +1666,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
             }
           }
         }
-      }
-      else if (event.shiftKey) {
+      } else if (event.shiftKey) {
         //
         // For SHIFT-TAB, we reverse the tab order.
         //
@@ -1735,27 +1699,25 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
     // Called on two distinct elements - the outer dialog,
     // and the closeWrapper (assuming that there is an x-icon in the dialog)
     //
-    _setupFocus: function(elem) {
-
-        var self = this;
-        this._focusable({
-            'applyHighlight': true,
-            'setupHandlers': function( focusInHandler, focusOutHandler) {
-                self._on( elem, {
-                    focus: function( event ) {
-                        focusInHandler($( event.currentTarget ));
-                    },
-                    blur: function( event ) {
-                        focusOutHandler($( event.currentTarget ));
-                    }
-                });
+    _setupFocus: function (elem) {
+      var self = this;
+      this._focusable({
+        applyHighlight: true,
+        setupHandlers: function (focusInHandler, focusOutHandler) {
+          self._on(elem, {
+            focus: function (event) {
+              focusInHandler($(event.currentTarget));
+            },
+            blur: function (event) {
+              focusOutHandler($(event.currentTarget));
             }
-        });
+          });
+        }
+      });
     },
 
-    _destroyCloseButton: function() {
-
-      if (this.closeButtonDiv != null) {
+    _destroyCloseButton: function () {
+      if (this.closeButtonDiv !== null && this.closeButtonDiv !== undefined) {
         if (this.closeButtonDiv.parentElement) {
           oj.Components.subtreeDetached(this.closeButtonDiv);
           this.closeButtonDiv.parentElement.removeChild(this.closeButtonDiv); // @HTMLUpdateOK
@@ -1764,27 +1726,26 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
         this.closeButton = null;
       }
 
-      if (this._headerSlot)
+      if (this._headerSlot) {
         this._headerSlot.classList.remove(OJD_HEADER_CLOSE);
-      if (this._uiDialogTitlebarDiv)
+      }
+      if (this._uiDialogTitlebarDiv) {
         this._uiDialogTitlebarDiv.classList.remove(OJD_HEADER_CLOSE);
-
+      }
     },
 
     //
     // Create a close button.
     // Needed for user-defined headers.
     //
-    _createCloseButton: function(divParentElement) {
-
+    _createCloseButton: function (divParentElement) {
       // use oj-button for custom element implementations
       if (this._IsCustomElement()) {
-
         this.closeButtonDiv = document.createElement('oj-button');
         this.closeButtonDiv.classList.add(OJD_HEADER_CLOSE_WRAPPER);
-        this.closeButtonDiv.setAttribute('data-oj-binding-provider', 'none')
-        this.closeButtonDiv.setAttribute('display', 'icons')
-        this.closeButtonDiv.setAttribute('chroming', 'half')
+        this.closeButtonDiv.setAttribute('data-oj-binding-provider', 'none');
+        this.closeButtonDiv.setAttribute('display', 'icons');
+        this.closeButtonDiv.setAttribute('chroming', 'half');
 
         var closeButtonLabel = document.createElement('span');
         closeButtonLabel.textContent = this.getTranslatedString('labelCloseIcon');
@@ -1800,28 +1761,25 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
         oj.Components.subtreeAttached(this.closeButtonDiv);
 
         this.closeButton = $(this.closeButtonDiv);
-
       }
 
       if (!this._IsCustomElement()) {
-
-        this.closeButton = $("<button><\button>")
+        this.closeButton = $('<button><\button>')
           .addClass(OJD_HEADER_CLOSE_WRAPPER);
 
         this.closeButton.ojButton(
-          {display: 'icons',
-           chroming: 'half',
-           label: this.getTranslatedString('labelCloseIcon'),
-           icons: {start: 'oj-component-icon oj-fwk-icon-cross'}})
-          .attr("tabindex", "1")
+          { display: 'icons',
+            chroming: 'half',
+            label: this.getTranslatedString('labelCloseIcon'),
+            icons: { start: 'oj-component-icon oj-fwk-icon-cross' } })
+          .attr('tabindex', '1')
           .appendTo(divParentElement); // @HTMLUpdateOK
 
         this.closeButtonDiv = this.closeButton[0];
-
       }
 
       this._on(this.closeButton, {
-        click: function(event) {
+        click: function (event) {
           event.preventDefault();
           event.stopImmediatePropagation();
           this.close(event);
@@ -1830,32 +1788,33 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
 
       // When the close button is present, add a class to the title bar.
       // This is used to conditionally apply style changes to the title div.
-      if (this._headerSlot)
+      if (this._headerSlot) {
         this._headerSlot.classList.add(OJD_HEADER_CLOSE);
-      if (this._uiDialogTitlebarDiv)
+      }
+      if (this._uiDialogTitlebarDiv) {
         this._uiDialogTitlebarDiv.classList.add(OJD_HEADER_CLOSE);
+      }
 
       // no need to do this - buttons handle focus on their own.
       // var hasFocus = this.closeButton;
       // this._setupFocus(hasFocus);
-
     },
 
-    _createTitlebar: function() {
-
-      this._uiDialogTitlebarDiv = document.createElement("div");
-      this._uiDialogTitlebarDiv.classList.add(OJD_HEADER);
-      this.element[0].insertBefore(this._uiDialogTitlebarDiv, this.element[0].firstChild);  // @HTMLUpdateOK
-      oj.Components.subtreeAttached(this._uiDialogTitlebarDiv);
-
-      this._uiDialogTitlebar = $(this._uiDialogTitlebarDiv);
+    //
+    // Create the close button and the titlebar's mousedown handler.
+    //
+    _createTitlebarCloseButton: function () {
+      if ((this.closeButton === undefined || this.closeButton === null) &&
+          this.options.cancelBehavior === 'icon') {
+        this._createCloseButton(this._uiDialogTitlebarDiv);
+      }
 
       this._on(this._uiDialogTitlebar, {
-        mousedown: function(event) {
+        mousedown: function (event) {
           // Don't prevent click on close button (#8838)
           // Focusing a dialog that is partially scrolled out of view
           // causes the browser to scroll it into view, preventing the click event
-          // Note that the implementation will search for the dialog close wrapper class 
+          // Note that the implementation will search for the dialog close wrapper class
           // in parent, grandparent, etc., in order to handle custom element vs. widget syntax,
           // as well as handle the differences in browser event implementions (e.g. IE reports
           // a shallower button stack for button click events).
@@ -1867,34 +1826,40 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
           }
         }
       });
+    },
 
-      var uiDialogTitleDiv = document.createElement("div");
-      uiDialogTitleDiv.classList.add("oj-dialog-title");
+    _createTitlebar: function () {
+      this._uiDialogTitlebarDiv = document.createElement('div');
+      this._uiDialogTitlebarDiv.classList.add(OJD_HEADER);
+      this.element[0].insertBefore(this._uiDialogTitlebarDiv, this.element[0].firstChild);  // @HTMLUpdateOK
+      oj.Components.subtreeAttached(this._uiDialogTitlebarDiv);
+
+      this._uiDialogTitlebar = $(this._uiDialogTitlebarDiv);
+
+      var uiDialogTitleDiv = document.createElement('div');
+      uiDialogTitleDiv.classList.add('oj-dialog-title');
       $(uiDialogTitleDiv).uniqueId();
-      this._uiDialogTitlebarDiv.appendChild(uiDialogTitleDiv) // @HTMLUpdateOK
+      this._uiDialogTitlebarDiv.appendChild(uiDialogTitleDiv); // @HTMLUpdateOK
       oj.Components.subtreeAttached(uiDialogTitleDiv);
 
       this._title(uiDialogTitleDiv);
 
       this.element.attr({
-        "aria-labelledby": uiDialogTitleDiv.id
+        'aria-labelledby': uiDialogTitleDiv.id
       });
-
-      if (this.options.cancelBehavior === "icon") {
-        this._createCloseButton(this._uiDialogTitlebarDiv);
-      }
     },
 
-    _title: function(title) {
+    _title: function (_title) {
+      var title = _title;
       if (!this.options.title) {
-        title.innerHTML = "&#160;";  // @HTMLUpdateOK
+        title.innerHTML = '&#160;';  // @HTMLUpdateOK
       }
       title.textContent = this.options.title;
     },
 
-    _makeDraggable: function() {
-      var that = this,
-        options = this.options;
+    _makeDraggable: function () {
+      var that = this;
+      var options = this.options;
 
       function filteredUi(ui) {
         return {
@@ -1905,225 +1870,206 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
 
       this.element.draggable({
         addClasses: false,
-        handle: ".oj-dialog-header",
-        containment: "document",
-        start: function(event, ui) {
-          $(this).addClass("oj-dialog-dragging");
+        handle: '.oj-dialog-header',
+        containment: 'document',
+        start: function (event, ui) {
+          $(this).addClass('oj-dialog-dragging');
           that._positionDescendents();
-          that._trigger("dragStart", event, filteredUi(ui));
+          that._trigger('dragStart', event, filteredUi(ui));
         },
-        drag: function(event, ui) {
+        drag: function (event, ui) {
           //
           // call positionDescendents so that any descendents,
           // such as a pulldown menu, will be repositioned as the dialog is dragged.
           //
           that._positionDescendents();
-          that._trigger("drag", event, filteredUi(ui));
+          that._trigger('drag', event, filteredUi(ui));
         },
-        stop: function(event, ui) {
+        stop: function (event, ui) {
           var left = ui.offset.left - that.document.scrollLeft();
           var top = ui.offset.top - that.document.scrollTop();
 
           options.position = {
-            "my": {"horizontal": "left", "vertical": "top"},
-            "at": {"horizontal": "left", "vertical": "top"},
-            "offset": {"x": left >= 0 ? left : 0, "y": top >= 0 ? top : 0},
-            "of": window
+            my: { horizontal: 'left', vertical: 'top' },
+            at: { horizontal: 'left', vertical: 'top' },
+            offset: { x: left >= 0 ? left : 0, y: top >= 0 ? top : 0 },
+            of: window
           };
 
-          $(this).removeClass("oj-dialog-dragging");
+          $(this).removeClass('oj-dialog-dragging');
           that._positionDescendents();
-          that._trigger("dragStop", event, filteredUi(ui));
+          that._trigger('dragStop', event, filteredUi(ui));
         }
       });
 
       this.element.addClass(OJ_DRAGGABLE);
-
     },
-    _makeResizable: function() {
-
-      var that = this,
-        options = this.options,
-        // handles = options.resizable,
-        position = this.element.css("position"),
-        // resizeHandles = typeof handles === "string" ? handles : "n,e,s,w,se,sw,ne,nw";
-
-        resizeHandles = "n,e,s,w,se,sw,ne,nw";
+    _makeResizable: function () {
+      var that = this;
+      var resizeHandles = 'n,e,s,w,se,sw,ne,nw';
 
       function filteredUi(ui) {
         return {
-          'originalPosition': ui.originalPosition,
-          'originalSize': ui.originalSize,
+          originalPosition: ui.originalPosition,
+          originalSize: ui.originalSize,
           position: ui.position,
           size: ui.size
         };
       }
 
-      this._resizableComponent = this.element['ojResizable'].bind(this.element);
+      this._resizableComponent = this.element.ojResizable.bind(this.element);
 
       this._resizableComponent({
-        cancel: ".oj-dialog-content",
-        containment: "document",
+        cancel: '.oj-dialog-content',
+        containment: 'document',
         handles: resizeHandles,
-        start: function(event, ui) {
-
+        start: function (event, ui) {
           that._isResizing = true;
 
-          $(this).addClass("oj-dialog-resizing");
+          $(this).addClass('oj-dialog-resizing');
           // fire resizestart
-          that._trigger("resizeStart", event, filteredUi(ui));
-
+          that._trigger('resizeStart', event, filteredUi(ui));
         },
-        resize: function(event, ui) {
-          that._trigger("resize", event, filteredUi(ui));
+        resize: function (event, ui) {
+          that._trigger('resize', event, filteredUi(ui));
         },
-        stop: function(event, ui) {
-
+        stop: function (event, ui) {
           that._isResizing = false;
 
-          $(this).removeClass("oj-dialog-resizing");
-          that._trigger("resizeStop", event, filteredUi(ui));
+          $(this).removeClass('oj-dialog-resizing');
+          that._trigger('resizeStop', event, filteredUi(ui));
         }
       });
-
     },
-    _position: function() {
-
+    _position: function () {
       //
       // Extended position objects with better names to support RTL.
       //
-      var isRtl = this._GetReadingDirection() === "rtl";
-      var position = oj.PositionUtils.coerceToJqUi(this.options["position"]);
+      var isRtl = this._GetReadingDirection() === 'rtl';
+      var position = oj.PositionUtils.coerceToJqUi(this.options.position);
       position = oj.PositionUtils.normalizeHorizontalAlignment(position, isRtl);
       this.element.position(position);
 
       this._positionDescendents();
     },
-    _positionDescendents: function() {
-
+    _positionDescendents: function () {
       // trigger refresh of descendents
-      oj.PopupService.getInstance().triggerOnDescendents(this.element, oj.PopupService.EVENT.POPUP_REFRESH);
+      oj.PopupService.getInstance().triggerOnDescendents(this.element,
+                                                         oj.PopupService.EVENT.POPUP_REFRESH);
     },
-    _setOption: function(key, value, flags) {
-      /*jshint maxcomplexity:15*/
-      var isDraggable, isResizable;
+    _setOption: function (key, value, flags) {
+      /* jshint maxcomplexity:15*/
+      var isDraggable;
+      var isResizable;
 
       // don't allow a dialog to be disabled.
-      if (key === "disabled") {
+      if (key === 'disabled') {
         return;
       }
 
       this._super(key, value, flags);
 
       switch (key) {
-      case "dragAffordance":
+        case 'dragAffordance':
 
         // isDraggable = uiDialog.is(":data(oj-draggable)");
-        isDraggable = this.element.hasClass(OJ_DRAGGABLE);
+          isDraggable = this.element.hasClass(OJ_DRAGGABLE);
 
-        if (isDraggable && value === "none") {
-          this.element.draggable("destroy");
-          this.element.removeClass(OJ_DRAGGABLE);
-        }
+          if (isDraggable && value === 'none') {
+            this.element.draggable('destroy');
+            this.element.removeClass(OJ_DRAGGABLE);
+          }
 
-        if (!isDraggable && value === "title-bar") {
-          this._makeDraggable();
-        }
+          if (!isDraggable && value === 'title-bar') {
+            this._makeDraggable();
+          }
 
-        break;
+          break;
 
-      case "position":
+        case 'position':
         // convert to the internal position format and reevaluate the position.
-        var options = this.options;
-        options["position"] = oj.PositionUtils.coerceToJet(value, options["position"]);
-        this._position();
+          var options = this.options;
+          options.position = oj.PositionUtils.coerceToJet(value, options.position);
+          this._position();
 
         // setting the option is handled here.  don't call on super.
-        return;
+          return;
 
-      case "resizeBehavior":
+        case 'resizeBehavior':
 
-        isResizable = false;
-        if (this._resizableComponent)
-          isResizable = true;
+          isResizable = false;
+          if (this._resizableComponent) {
+            isResizable = true;
+          }
 
         // currently resizable, becoming non-resizable
-        if (isResizable && value !== "resizable") {
+          if (isResizable && value !== 'resizable') {
           // uiDialog._resizableComponent("destroy");
-          if (this._resizableComponent("instance"))
-            this._resizableComponent("destroy");
-          this._resizableComponent = null;
-        }
+            if (this._resizableComponent('instance')) {
+              this._resizableComponent('destroy');
+            }
+            this._resizableComponent = null;
+          }
 
         // currently non-resizable, becoming resizable
-        if (!isResizable && value === "resizable") {
-          this._makeResizable();
-        }
+          if (!isResizable && value === 'resizable') {
+            this._makeResizable();
+          }
 
-        break;
+          break;
 
-      case "title":
-
-        if (this.userDefinedDialogHeader) {
-          this._title(this._userDefinedHeaderDiv.querySelector('.oj-dialog-title'));
-        } else {
-          this._title(this._uiDialogTitlebarDiv.querySelector(".oj-dialog-title"));
-        }
-        break;
-
-      case "role":
-        this.element.attr("role", value);
-        break;
-
-      case "modality":
-        if (oj.ZOrderUtils.getStatus(this.element) === oj.ZOrderUtils.STATUS.OPEN)
-        {
-          /** @type {!Object.<oj.PopupService.OPTION, ?>} */
-          var psOptions = {};
-          psOptions[oj.PopupService.OPTION.POPUP] = this.element;
-          psOptions[oj.PopupService.OPTION.MODALITY] = value;
-          oj.PopupService.getInstance().changeOptions(psOptions);
-        }
-        break;
-
-      case "cancelBehavior":
-
-        if (value === "none" || value === "escape") {
-
-          // we may need additional code here
-          // if (this.userDefinedDialogHeader) {   }
-
-          this._destroyCloseButton();
-
-        }
-        else if (value === "icon") {
+        case 'title':
 
           if (this.userDefinedDialogHeader) {
+            this._title(this._userDefinedHeaderDiv.querySelector('.oj-dialog-title'));
+          } else {
+            this._title(this._uiDialogTitlebarDiv.querySelector('.oj-dialog-title'));
+          }
+          break;
 
+        case 'role':
+          this.element.attr('role', value);
+          break;
+
+        case 'modality':
+          if (oj.ZOrderUtils.getStatus(this.element) === oj.ZOrderUtils.STATUS.OPEN) {
+          /** @type {!Object.<oj.PopupService.OPTION, ?>} */
+            var psOptions = {};
+            psOptions[oj.PopupService.OPTION.POPUP] = this.element;
+            psOptions[oj.PopupService.OPTION.MODALITY] = value;
+            oj.PopupService.getInstance().changeOptions(psOptions);
+          }
+          break;
+
+        case 'cancelBehavior':
+
+          if (value === 'none' || value === 'escape') {
             this._destroyCloseButton();
-            this._createCloseButton(this._userDefinedHeaderDiv);
+          } else if (value === 'icon') {
+            if (this.userDefinedDialogHeader) {
+              this._destroyCloseButton();
+              this._createCloseButton(this._userDefinedHeaderDiv);
 
             //
             // Insert oj-dialog-title between oj-dialog-header and oj-dialog-header-close-wrapper
             //
-            this._userDefinedTitleDiv = this._userDefinedHeaderDiv.querySelector('.oj-dialog-title');
-            this._userDefinedTitle = $(this._userDefinedTitleDiv);
+              this._userDefinedTitleDiv = this._userDefinedHeaderDiv.querySelector('.oj-dialog-title');
+              this._userDefinedTitle = $(this._userDefinedTitleDiv);
+            } else {
+              this._destroyCloseButton();
+              this._createCloseButton(this._uiDialogTitlebarDiv);
 
-          } else {
-
-            this._destroyCloseButton();
-            this._createCloseButton(this._uiDialogTitlebarDiv);
-
-            this.standardTitleDiv = this._uiDialogTitlebarDiv.querySelector(".oj-dialog-title");
-            this.standardTitle = $(this.standardTitleDiv);
-
+              this.standardTitleDiv = this._uiDialogTitlebarDiv.querySelector('.oj-dialog-title');
+              this.standardTitle = $(this.standardTitleDiv);
+            }
           }
-        }
-        break;
+          break;
+        default:
+          break;
       }
     },
 
-    getNodeBySubId: function(locator) {
+    getNodeBySubId: function (locator) {
       if (locator === null) {
         return this.element ? this.element[0] : null;
       }
@@ -2134,15 +2080,16 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
 
         for (var i = 0; i < id.length; i++) {
           var c = id.substring(i, i + 1);
-          if (regex.test(c))
+          if (regex.test(c)) {
             targetId.push(c);
-          else
-            targetId.push("\\" + c);
+          } else {
+            targetId.push('\\' + c);
+          }
         }
-        return targetId.join("");
+        return targetId.join('');
       }
 
-      var subId = locator['subId'];
+      var subId = locator.subId;
 
       //
       // Use slot structure to return body and footer subids.
@@ -2150,105 +2097,103 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
       if (this._IsCustomElement() && (subId === OJD_FOOTER || subId === OJD_BODY)) {
         if (subId === OJD_BODY) {
           return this._uiDialogBodyDiv.querySelector('.oj-dialog-body');
-        }
-        else if (subId === OJD_FOOTER) {
+        } else if (subId === OJD_FOOTER) {
           return this._uiDialogFooterDiv.querySelector('.oj-dialog-footer');
         }
       } else {
-
         // General case
+        var selector;
+        var node;
+
         switch (subId) {
 
-        case OJD_HEADER:
-        case OJD_FOOTER:
-        case OJD_CONTENT:
-        case OJ_RESIZABLE_N:
-        case OJ_RESIZABLE_E:
-        case OJ_RESIZABLE_S:
-        case OJ_RESIZABLE_W:
-        case OJ_RESIZABLE_SE:
-        case OJ_RESIZABLE_SW:
-        case OJ_RESIZABLE_NE:
-        case OJ_RESIZABLE_NW:
+          case OJD_HEADER:
+          case OJD_FOOTER:
+          case OJD_CONTENT:
+          case OJ_RESIZABLE_N:
+          case OJ_RESIZABLE_E:
+          case OJ_RESIZABLE_S:
+          case OJ_RESIZABLE_W:
+          case OJ_RESIZABLE_SE:
+          case OJ_RESIZABLE_SW:
+          case OJ_RESIZABLE_NE:
+          case OJ_RESIZABLE_NW:
 
-          var selector = this.element[0].nodeName + '[id="' + _escapeId(this.element.attr("id")) + '"] > ';
-          selector +=  "." + subId;
-          var node = this.element.parent().find(selector);
-          if (!node || node.length === 0)
-            return null;
+            selector = this.element[0].nodeName + '[id="' + _escapeId(this.element.attr('id')) + '"] > ';
+            selector += '.' + subId;
+            node = this.element.parent().find(selector);
+            if (!node || node.length === 0) {
+              return null;
+            }
 
-          return (node[0]);
-          break;
+            return (node[0]);
 
           // "oj-dialog-close-icon" is deprecated as of 1.2
           // use "oj-dialog-close" instead.
           // "oj-dialog-close" is deprecated as of 2.1.*
-        case "oj-dialog-close-icon":
-        case "oj-dialog-close":
-          return null;
-          break;
+          case 'oj-dialog-close-icon':
+          case 'oj-dialog-close':
+            return null;
 
           // "oj-dialog-body" is deprecated as of 1.2
-        case OJD_BODY:
-          var selector = this.element[0].nodeName + '[id="' + _escapeId(this.element.attr("id")) + '"] > ';
-          selector += ".oj-dialog-content > ";
-          selector +=  "." + subId;
-          var node = this.element.parent().find(selector);
-          if (!node || node.length === 0)
-            return null;
+          case OJD_BODY:
+            selector = this.element[0].nodeName + '[id="' + _escapeId(this.element.attr('id')) + '"] > ';
+            selector += '.oj-dialog-content > ';
+            selector += '.' + subId;
+            node = this.element.parent().find(selector);
+            if (!node || node.length === 0) {
+              return null;
+            }
 
-          return (node[0]);
-          break;
+            return (node[0]);
 
-        case OJD_HEADER_CLOSE_WRAPPER:
-          var selector = this.element[0].nodeName + '[id="' + _escapeId(this.element.attr("id")) + '"] > ';
-          selector += ".oj-dialog-header > ";
-          selector +=  "." + subId;
-          var node = this.element.parent().find(selector);
-          if (!node || node.length === 0)
-            return null;
+          case OJD_HEADER_CLOSE_WRAPPER:
+            selector = this.element[0].nodeName + '[id="' + _escapeId(this.element.attr('id')) + '"] > ';
+            selector += '.oj-dialog-header > ';
+            selector += '.' + subId;
+            node = this.element.parent().find(selector);
+            if (!node || node.length === 0) { return null; }
 
-          return (node[0]);
-          break;
+            return (node[0]);
 
+          default:
+            break;
         }
       }
 
       // Non-null locators have to be handled by the component subclasses
       return null;
     },
-    //** @inheritdoc */
-    getSubIdByNode: function(node)
-    {
-
+    //* * @inheritdoc */
+    getSubIdByNode: function (node) {
       if (node != null) {
-
         var nodeCached = $(node);
 
-        if (nodeCached.hasClass(OJD_HEADER))
-          return {'subId': OJD_HEADER};
-        else if (nodeCached.hasClass(OJD_FOOTER))
-          return {'subId': OJD_FOOTER};
-        else if (nodeCached.hasClass(OJD_CONTENT))
-          return {'subId': OJD_CONTENT};
-        else if (nodeCached.hasClass(OJD_HEADER_CLOSE_WRAPPER))
-          return {'subId': OJD_HEADER_CLOSE_WRAPPER};
-        else if (nodeCached.hasClass(OJ_RESIZABLE_N))
-          return {'subId': OJ_RESIZABLE_N};
-        else if (nodeCached.hasClass(OJ_RESIZABLE_E))
-          return {'subId': OJ_RESIZABLE_E};
-        else if (nodeCached.hasClass(OJ_RESIZABLE_S))
-          return {'subId': OJ_RESIZABLE_S};
-        else if (nodeCached.hasClass(OJ_RESIZABLE_W))
-          return {'subId': OJ_RESIZABLE_W};
-        else if (nodeCached.hasClass(OJ_RESIZABLE_SE))
-          return {'subId': OJ_RESIZABLE_SE};
-        else if (nodeCached.hasClass(OJ_RESIZABLE_SW))
-          return {'subId': OJ_RESIZABLE_SW};
-        else if (nodeCached.hasClass(OJ_RESIZABLE_NE))
-          return {'subId': OJ_RESIZABLE_NE};
-        else if (nodeCached.hasClass(OJ_RESIZABLE_NW))
-          return {'subId': OJ_RESIZABLE_NW};
+        if (nodeCached.hasClass(OJD_HEADER)) {
+          return { subId: OJD_HEADER };
+        } else if (nodeCached.hasClass(OJD_FOOTER)) {
+          return { subId: OJD_FOOTER };
+        } else if (nodeCached.hasClass(OJD_CONTENT)) {
+          return { subId: OJD_CONTENT };
+        } else if (nodeCached.hasClass(OJD_HEADER_CLOSE_WRAPPER)) {
+          return { subId: OJD_HEADER_CLOSE_WRAPPER };
+        } else if (nodeCached.hasClass(OJ_RESIZABLE_N)) {
+          return { subId: OJ_RESIZABLE_N };
+        } else if (nodeCached.hasClass(OJ_RESIZABLE_E)) {
+          return { subId: OJ_RESIZABLE_E };
+        } else if (nodeCached.hasClass(OJ_RESIZABLE_S)) {
+          return { subId: OJ_RESIZABLE_S };
+        } else if (nodeCached.hasClass(OJ_RESIZABLE_W)) {
+          return { subId: OJ_RESIZABLE_W };
+        } else if (nodeCached.hasClass(OJ_RESIZABLE_SE)) {
+          return { subId: OJ_RESIZABLE_SE };
+        } else if (nodeCached.hasClass(OJ_RESIZABLE_SW)) {
+          return { subId: OJ_RESIZABLE_SW };
+        } else if (nodeCached.hasClass(OJ_RESIZABLE_NE)) {
+          return { subId: OJ_RESIZABLE_NE };
+        } else if (nodeCached.hasClass(OJ_RESIZABLE_NW)) {
+          return { subId: OJ_RESIZABLE_NW };
+        }
       }
 
       return null;
@@ -2259,7 +2204,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
      * @private
      * @return {void}
      */
-    _surrogateRemoveHandler: function() {
+    _surrogateRemoveHandler: function () {
       var element = this.element;
       element.remove();
     },
@@ -2269,10 +2214,11 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
      * @private
      * @return {!Object.<oj.PopupService.EVENT, function(...)>}
      */
-    _getPopupServiceEvents: function() {
+    _getPopupServiceEvents: function () {
       if (!this._popupServiceEvents) {
         /** @type {!Object.<oj.PopupService.EVENT, function(...)>} **/
-        var events = this._popupServiceEvents = {};
+        var events = {};
+
         events[oj.PopupService.EVENT.POPUP_CLOSE] = this._closeImplicitly.bind(this);
         events[oj.PopupService.EVENT.POPUP_REMOVE] = this._surrogateRemoveHandler.bind(this);
         events[oj.PopupService.EVENT.POPUP_REFRESH] = this._positionDescendents.bind(this);
@@ -2280,6 +2226,8 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
         events[oj.PopupService.EVENT.POPUP_AFTER_OPEN] = this._afterOpenHandler.bind(this);
         events[oj.PopupService.EVENT.POPUP_BEFORE_CLOSE] = this._beforeCloseHandler.bind(this);
         events[oj.PopupService.EVENT.POPUP_AFTER_CLOSE] = this._afterCloseHandler.bind(this);
+
+        this._popupServiceEvents = events;
       }
       return this._popupServiceEvents;
     },
@@ -2288,7 +2236,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
      * @instance
      * @private
      */
-    _closeImplicitly: function() {
+    _closeImplicitly: function () {
       this._ignoreBeforeCloseResultant = true;
       this.close();
       delete this._ignoreBeforeCloseResultant;
@@ -2302,21 +2250,20 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
      * @instance
      * @private
      */
-    _setWhenReady : function (operation) {
-
+    _setWhenReady: function (operation) {
       /** @type {oj.PopupWhenReadyMediator} */
       var mediator = this._whenReadyMediator;
-      if (mediator)
-      {
+      if (mediator) {
         mediator.destroy();
         delete this._whenReadyMediator;
       }
 
       // operation === none
-      if (["open", "close"].indexOf(operation) < 0)
+      if (['open', 'close'].indexOf(operation) < 0) {
         return;
+      }
 
-      this._whenReadyMediator = new oj.PopupWhenReadyMediator(this.element, operation, "ojDialog",
+      this._whenReadyMediator = new oj.PopupWhenReadyMediator(this.element, operation, 'ojDialog',
         this._IsCustomElement());
     },
 
@@ -2336,10 +2283,10 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
     _isOperationPending: function (operation, args) {
       /** @type {oj.PopupWhenReadyMediator} **/
       var mediator = this._whenReadyMediator;
-      if (mediator)
+      if (mediator) {
         return mediator.isOperationPending(this, operation, operation, args);
-      else
-        return false;
+      }
+      return false;
     },
     /**
      * Notifies the component that its subtree has been removed from the document
@@ -2350,14 +2297,14 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
      * @protected
      * @override
      */
-     _NotifyDetached: function()
-     {
+    _NotifyDetached: function () {
        // detaching an open popup results in implicit dismissal
-       if (oj.ZOrderUtils.getStatus(this.element) === oj.ZOrderUtils.STATUS.OPEN)
-         this._closeImplicitly();
+      if (oj.ZOrderUtils.getStatus(this.element) === oj.ZOrderUtils.STATUS.OPEN) {
+        this._closeImplicitly();
+      }
 
-       this._super();
-     }
+      this._super();
+    }
 
     /**
      * <p>The default slot is the dialog's body. The <code class="prettyprint">&lt;oj-dialog></code>
@@ -2527,7 +2474,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
      * @memberof oj.ojDialog
      */
 
-    //////////////////     SUB-IDS     //////////////////
+    // ////////////////     SUB-IDS     //////////////////
     /**
      * <p>Sub-ID for the dialog header.</p>
      *
@@ -2684,26 +2631,25 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
 
   oj.Components.setDefaultOptions(
     {
-      'ojDialog':
-        {
-          'resizeBehavior': oj.Components.createDynamicPropertyGetter(
-            function()
-            {
-                return (oj.ThemeUtils.parseJSONFromFontFamily(OJD_OPTION_DEFAULTS) || {})["resizeBehavior"];
+      ojDialog:
+      {
+        resizeBehavior: oj.Components.createDynamicPropertyGetter(
+            function () {
+              return (oj.ThemeUtils.parseJSONFromFontFamily(OJD_OPTION_DEFAULTS) || {})
+                .resizeBehavior;
             }),
-          'cancelBehavior': oj.Components.createDynamicPropertyGetter(
-            function()
-            {
-                return (oj.ThemeUtils.parseJSONFromFontFamily(OJD_OPTION_DEFAULTS) || {})["cancelBehavior"];
+        cancelBehavior: oj.Components.createDynamicPropertyGetter(
+            function () {
+              return (oj.ThemeUtils.parseJSONFromFontFamily(OJD_OPTION_DEFAULTS) || {})
+                .cancelBehavior;
             }),
-          'dragAffordance': oj.Components.createDynamicPropertyGetter(
-            function()
-            {
-                return (oj.ThemeUtils.parseJSONFromFontFamily(OJD_OPTION_DEFAULTS) || {})["dragAffordance"];
+        dragAffordance: oj.Components.createDynamicPropertyGetter(
+            function () {
+              return (oj.ThemeUtils.parseJSONFromFontFamily(OJD_OPTION_DEFAULTS) || {})
+                .dragAffordance;
             })
-        }
+      }
     });
-
 }());
 
 /**
@@ -3883,10 +3829,7 @@ $.widget("oj.ojResizable", {
       "focus" : {},
       "resize" : {},
       "resizeStart" : {},
-      "resizeStop" : {},
-      "drag" : {},
-      "dragStart" : {},
-      "dragStop" : {}
+      "resizeStop" : {}
     },
     "methods" : {
       "close" : {},

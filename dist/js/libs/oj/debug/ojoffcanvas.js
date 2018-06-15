@@ -183,6 +183,16 @@ oj.OffcanvasUtils.SURROGATE_KEY = '_surrogate';
 /**
  * @private
  */
+oj.OffcanvasUtils.ANIMATE_WRAPPER_KEY = '_animateWrapper';
+
+/**
+ * @private
+ */
+oj.OffcanvasUtils.ANIMATE_KEY = '_animate';
+
+/**
+ * @private
+ */
 oj.OffcanvasUtils.SURROGATE_ATTR = 'data-oj-offcanvas-surrogate-id';
 
 /**
@@ -280,7 +290,12 @@ oj.OffcanvasUtils._getAnimateWrapper = function (offcanvas) {
     return drawer;
   }
 
-  return drawer.parent();
+  if (offcanvas[oj.OffcanvasUtils.ANIMATE_WRAPPER_KEY]) {
+    return drawer.closest("." + offcanvas[oj.OffcanvasUtils.ANIMATE_WRAPPER_KEY]);
+  }
+  else {
+    return drawer.parent();
+  }
 };
 
 
@@ -384,7 +399,9 @@ oj.OffcanvasUtils._toggleClass = function (offcanvas, wrapper, isOpen) {
   // toggle offcanvas and inner wrapper classes
   if (isOpen) {
     drawer.addClass(drawerClass);
-    wrapper.addClass(wrapperClass);
+    if (offcanvas[oj.OffcanvasUtils.ANIMATE_KEY] === undefined) {
+      wrapper.addClass(wrapperClass);
+    }
   } else {
     // remove oj-focus-highlight
     if (offcanvas.makeFocusable) {
@@ -845,7 +862,12 @@ oj.OffcanvasUtils._openPush = function (offcanvas, resolve, reject, edge) {
       pending = false;
     } else {
       //  - opening offcanvas automatically scrolls to the top
-      oj.OffcanvasUtils._setFocus(offcanvas);
+      //  - perf: fif jank: nav drawer and list view items
+      // Moving the focus before animation works fine with the "start" and "top" drawers, but not 
+      // with the "end" and "bottom" drawers. (There may be a browser bug causing problems) 
+      if (edge === oj.OffcanvasUtils.EDGE_END || edge === oj.OffcanvasUtils.EDGE_BOTTOM) {
+        oj.OffcanvasUtils._setFocus(offcanvas);
+      }
 
       // fire after open event
       drawer.trigger('ojopen', offcanvas);
@@ -902,6 +924,14 @@ oj.OffcanvasUtils._openPush = function (offcanvas, resolve, reject, edge) {
 
   // insert a glassPane if offcanvas is modal
   oj.OffcanvasUtils._applyModality(offcanvas, drawer);
+
+  //  - opening offcanvas automatically scrolls to the top
+  //  - perf: fif jank: nav drawer and list view items
+  // Moving the focus before animation works fine with the "start" and "top" drawers, but not with 
+  // the "end" and "bottom" drawers. (There may be a browser bug causing problems) 
+  if (edge === oj.OffcanvasUtils.EDGE_START || edge === oj.OffcanvasUtils.EDGE_TOP) {
+    oj.OffcanvasUtils._setFocus(offcanvas);
+  }
 };
 
 oj.OffcanvasUtils._openOverlay = function (offcanvas, resolve, reject, edge) {
@@ -929,6 +959,14 @@ oj.OffcanvasUtils._openOverlay = function (offcanvas, resolve, reject, edge) {
   // insert a glassPane if offcanvas is modal
   oj.OffcanvasUtils._applyModality(offcanvas, drawer);
 
+  //  - opening offcanvas automatically scrolls to the top
+  //  - perf: fif jank: nav drawer and list view items
+  // Moving the focus before animation works fine with the "start" and "top" drawers, but not with 
+  // the "end" and "bottom" drawers. (There may be a browser bug causing problems) 
+  if (edge === oj.OffcanvasUtils.EDGE_START || edge === oj.OffcanvasUtils.EDGE_TOP) {
+    oj.OffcanvasUtils._setFocus(offcanvas);
+  }
+
   // add transition end listener
   oj.OffcanvasUtils._onTransitionEnd(drawer,
     function () {
@@ -936,8 +974,12 @@ oj.OffcanvasUtils._openOverlay = function (offcanvas, resolve, reject, edge) {
       drawer.removeClass(oj.OffcanvasUtils.TRANSITION_SELECTOR);
 
       //  - opening offcanvas automatically scrolls to the top
-      oj.OffcanvasUtils._setFocus(offcanvas);
-
+      //  - perf: fif jank: nav drawer and list view items
+      // Moving the focus before animation works fine with the "start" and "top" drawers, but not 
+      // with the "end" and "bottom" drawers. (There may be a browser bug causing problems) 
+      if (edge === oj.OffcanvasUtils.EDGE_END || edge === oj.OffcanvasUtils.EDGE_BOTTOM) {
+        oj.OffcanvasUtils._setFocus(offcanvas);
+      }
       // fire after open event
       drawer.trigger('ojopen', offcanvas);
 
@@ -990,14 +1032,27 @@ oj.OffcanvasUtils._openPin = function(offcanvas, resolve, reject, edge)
   //insert a glassPane if offcanvas is modal
   oj.OffcanvasUtils._applyModality(offcanvas, drawer);
 
+  //  - opening offcanvas automatically scrolls to the top
+  //  - perf: fif jank: nav drawer and list view items
+  // Moving the focus before animation works fine with the "start" and "top" drawers, but not with 
+  // the "end" and "bottom" drawers. (There may be a browser bug causing problems) 
+  if (edge === oj.OffcanvasUtils.EDGE_START || edge === oj.OffcanvasUtils.EDGE_TOP) {
+    oj.OffcanvasUtils._setFocus(offcanvas);
+  }
+
   //add transition end listener
   oj.OffcanvasUtils._onTransitionEnd(drawer,
     function () {
       //After animation, remove transition class
 //      drawer.removeClass(oj.OffcanvasUtils.TRANSITION_SELECTOR);
 
-      // - opening offcanvas automatically scrolls to the top
-      oj.OffcanvasUtils._setFocus(offcanvas);
+      //  - opening offcanvas automatically scrolls to the top
+      //  - perf: fif jank: nav drawer and list view items
+      // Moving the focus before animation works fine with the "start" and "top" drawers, but not 
+      // with the "end" and "bottom" drawers. (There may be a browser bug causing problems) 
+      if (edge === oj.OffcanvasUtils.EDGE_END || edge === oj.OffcanvasUtils.EDGE_BOTTOM) {
+        oj.OffcanvasUtils._setFocus(offcanvas);
+      }
 
       //fire after open event
       drawer.trigger("ojopen", offcanvas);
@@ -1116,6 +1171,14 @@ oj.OffcanvasUtils._openOldDrawer = function (offcanvas, resolve, reject, edge, d
   // insert a glassPane if offcanvas is modal
   oj.OffcanvasUtils._applyModality(offcanvas, drawer);
 
+  //  - opening offcanvas automatically scrolls to the top
+  //  - perf: fif jank: nav drawer and list view items
+  // Moving the focus before animation works fine with the "start" and "top" drawers, but not with 
+  // the "end" and "bottom" drawers. (There may be a browser bug causing problems) 
+  if (edge === oj.OffcanvasUtils.EDGE_START || edge === oj.OffcanvasUtils.EDGE_TOP) {
+    oj.OffcanvasUtils._setFocus(offcanvas);
+  }
+
   // add transition end listener
   oj.OffcanvasUtils._onTransitionEnd(wrapper,
     function () {
@@ -1123,7 +1186,12 @@ oj.OffcanvasUtils._openOldDrawer = function (offcanvas, resolve, reject, edge, d
       wrapper.removeClass(oj.OffcanvasUtils.TRANSITION_SELECTOR);
 
       //  - opening offcanvas automatically scrolls to the top
-      oj.OffcanvasUtils._setFocus(offcanvas);
+      //  - perf: fif jank: nav drawer and list view items
+      // Moving the focus before animation works fine with the "start" and "top" drawers, but not 
+      // with the "end" and "bottom" drawers. (There may be a browser bug causing problems) 
+      if (edge === oj.OffcanvasUtils.EDGE_END || edge === oj.OffcanvasUtils.EDGE_BOTTOM) {
+        oj.OffcanvasUtils._setFocus(offcanvas);
+      }
 
       // fire after open event
       drawer.trigger('ojopen', offcanvas);
@@ -1350,7 +1418,7 @@ oj.OffcanvasUtils.open = function (offcanvas) {
  *
  */
 oj.OffcanvasUtils.close = function (offcanvas) {
-  return oj.OffcanvasUtils._close(offcanvas[oj.OffcanvasUtils.SELECTOR_KEY], true);
+  return oj.OffcanvasUtils._close(offcanvas[oj.OffcanvasUtils.SELECTOR_KEY], offcanvas[oj.OffcanvasUtils.ANIMATE_KEY] === undefined ? true : false);
 };
 
 oj.OffcanvasUtils._close = function (selector, animation) {
@@ -1697,17 +1765,28 @@ oj.OffcanvasUtils.setupPanToReveal = function (_offcanvas) {
         return;
       }
 
+      // check for pan up/down at a certain angle which gives abnormal values
+      if (event.gesture.angle < 0 && (event.gesture.deltaX < -100 || event.gesture.deltaY < -100)) {
+        return;
+      }
+
       ui = { direction: direction, distance: Math.abs(event.gesture.deltaX) };
       evt = $.Event('ojpanstart');
       drawer.trigger(evt, ui);
 
       if (!evt.isDefaultPrevented()) {
-            // need the size to display the canvas when release
-        size = offcanvas.size;
-        if (size == null) {
-          size = drawer.outerWidth();
-          offcanvas.size = size;
-        }
+        var busyContext = oj.Context.getContext(outerWrapper.get(0)).getBusyContext();
+        busyContext.whenReady().then(function() {
+
+              // need the size to display the canvas when release
+          size = offcanvas.size;
+          if (size == null) {
+            size = drawer.outerWidth();
+            offcanvas.size = size;
+          }
+
+          proceed = true;
+        });
 
             // make sure it's in closed state
         offcanvas._closePromise = null;
@@ -1718,7 +1797,6 @@ oj.OffcanvasUtils.setupPanToReveal = function (_offcanvas) {
 
             // sets the appropriate offcanvas class
         oj.OffcanvasUtils._toggleClass(offcanvas, wrapper, true);
-        proceed = true;
 
             // stop touch event from bubbling to prevent for example pull to refresh from happening
         event.gesture.srcEvent.stopPropagation();

@@ -192,6 +192,7 @@
 //$includeValidationGroupClasses:  $includeFormControlClasses !default;
 // This is used by oj-form-layout custom element
 //$includeFormLayoutElementClasses:$includeFormControlClasses !default;
+//$includeLabelValueClasses:       $includeFormControlClasses !default;
 // Mostly used by form controls. Need the 'or' to work with
 // both form control and Non form control components
 //$includeOptionClasses:           $includeFormControlClasses or $includeAllClasses !default;
@@ -249,6 +250,7 @@
 //$includeProgressListClasses:     $includeAllClasses !default;
 //$includeResponsiveHelperClasses: $includeAllClasses !default;
 //$includeRowExpanderClasses:      $includeAllClasses !default;
+//$includeSwipeActionsClasses:     $includeAllClasses !default;
 //$includeSwipeToRevealClasses:    $includeAllClasses !default;
 //$includeSwitcherClasses:         $includeAllClasses !default;
 //$includeTableClasses:            $includeAllClasses !default;
@@ -986,6 +988,7 @@
 
 // The following variables apply to individual oj-message regardless of the display type and
 //  position of its oj-message parent
+//$messageHeaderHeight:                                   auto !default;
 //$messageCloseIconDisplay:                               none !default;
 //$messageCategoryTextColor:                              $secondaryTextColor !default;
 //$messageCategoryFontSize:                 oj-px-to-rem(12px, $baseFontSize: 16px) !default;
@@ -1540,7 +1543,7 @@
 
 // inline label in a oj-flex > oj-flex-item; we do not float, thus we need line-height
 // to maintain label's height, and we need a different top margin for this case.
-//$formLayoutLabelInlineMarginTop: .3em !default;
+//$formLayoutLabelInlineMarginTop: .5em !default;
 
 // in a form layout when the labels are inline what is the
 // default label alignment, legal values are start and end
@@ -1672,6 +1675,8 @@
 // INPUT NUMBER
 // the spacing between the input and the buttonset
 //$inputNumberInputToButtonMargin: 16px !default;
+//inputnumber up and down button width
+//$inputNumberButtonWidth: 50px;
 
 // RADIO and CHECKBOX
 // The input html element can be hidden the radio/checkbox rendered as an image instead
@@ -2350,6 +2355,11 @@
 //$swipeActionsAttentionBgColor:       $accentColorAttention5 !default;
 //$swipeActionsDangerBgColor:      $accentColorDanger5 !default;
 
+// width of action item
+//$swipeActionsItemWidth:            75px !default;
+// padding between icon and text in action item
+//$swipeActionsIconToTextPadding: oj-px-to-rem(10px, $baseFontSize: 16px) !default;
+
 // INDEXER
 //-----------------------------------------------------------------------------
 // height of each item in the indexer
@@ -2837,6 +2847,8 @@
 //$dvtGanttMinorAxisSeparatorColor: $dvtGanttMajorAxisSeparatorColor !default;
 
 //$dvtGanttDependencyLineColor:     $formControlLabelColor !default;
+
+//$dvtGanttTaskDragImageBorderColor: $textColor3 !default;
 
 //icon
 //----------------------------------

@@ -65,7 +65,7 @@ define('fetchStrategies',['./persistenceManager', './persistenceUtils', './impl/
               return serverResponseCallback(request, responseClone);
             }).then(function (resolvedResponse) {
               localVars.resolvedResponse = resolvedResponse;
-              return persistenceManager.getCache().hasMatch(request, {ignoreSearch: true});
+              return persistenceManager.getCache().hasMatch(request);
             }).then(function (matchExist) {
               var responseClone = localVars.resolvedResponse.clone();
               if (matchExist) {
@@ -139,7 +139,7 @@ define('fetchStrategies',['./persistenceManager', './persistenceUtils', './impl/
     };
 
     function _checkCacheForMatch(request) {
-      return persistenceManager.getCache().match(request, {ignoreSearch: true});
+      return persistenceManager.getCache().match(request);
     };
 
     function _fetchFromCacheOrServerIfEmpty(request, options, serverResponseCallback) {

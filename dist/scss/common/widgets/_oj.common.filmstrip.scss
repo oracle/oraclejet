@@ -94,6 +94,16 @@
     .oj-filmstrip-transition-prev-oldpage-from,
     .oj-filmstrip-transition-prev-newpage-from {
     }
+
+    //when set on a filmstrip page, the page will be displayed as first page
+    .oj-filmstrip-transition-display-as-firstpage {
+      @include oj-order-property(-1);
+    }
+
+    //when set on a filmstrip page, the page will be displayed as last page
+    .oj-filmstrip-transition-display-as-lastpage {
+      @include oj-order-property(1);
+    }
     
     //the default layout of logical pages positions them next to each other in 
     //a single row or column in their original DOM order, so the 

@@ -45,12 +45,12 @@ var oj = _scope['oj'] =
    * @global
    * @member {string} version JET version numberr
    */
-  'version': "5.0.0",
+  'version': "5.1.0",
   /**
    * @global
    * @member {string} revision JET source code revision number
    */
-  'revision': "2018-04-04_15-21-24",
+  'revision': "2018-06-06_15-03-03",
           
   // This function is only meant to be used outside the library, so quoting the name
   // to avoid renaming is appropriate
@@ -234,7 +234,7 @@ oj.Logger.log = function(args)
  * oj.Logger.option("writer",  customWriter);  //an object that implements the following methods: log(), info(), warn(), error()
  *
  * @param {Object|string} [key]
- * @param {*} [value]
+ * @param {any} [value]
  * @ojsignature {target: "Type", for: "returns", value: "any"}
  * @export
  * @memberof oj.Logger
@@ -799,8 +799,8 @@ oj.Object._initClasses = function(currClass)
  *   <li> Array [order matters]; will traverse through the arrays and compare oj.Object.compareValues(array[i], array2[i]) </li>
  *   <li> Instances that support valueOf [i.e. Boolean, String, Number, Date, and etc] will be compared by usage of that function </li>
  * </ol>
- * @param {*} obj1 The first value to compare.
- * @param {*} obj2 The second value to compare.
+ * @param {any} obj1 The first value to compare.
+ * @param {any} obj2 The second value to compare.
  * @return {boolean}
  * @public
  * @export
@@ -1825,6 +1825,18 @@ oj.EventSource.prototype.handleEvent = function(eventType, event)
 oj.Config = {};
 
 /**
+ * Retrieves the type of device the application is running on.
+ * @memberof oj.Config
+ * @method getDeviceType
+ * @return {"phone" | "tablet" | "others"} The device type
+ * @export 
+ */
+oj.Config.getDeviceType = function()
+{
+  return oj.AgentUtils.getAgentInfo()['deviceType'];
+};
+
+/**
  * Retrieves the current locale
  * @memberof oj.Config
  * @method getLocale
@@ -2350,11 +2362,23 @@ oj.AgentUtils.OS =
   LINUX: "Linux"
 };
 /**
+ * Device type identity.
+ * @enum {string}
+ * @public
+ * @memberof oj.AgentUtils
+ */
+oj.AgentUtils.DEVICETYPE =
+{
+  PHONE: "phone",
+  TABLET: "tablet",
+  OTHERS: "others"
+};
+/**
  * Parses the browser user agent string determining what browser and layout engine
  * is being used.
  *
  * @param {Object|null|string=} userAgent a specific agent string but defaults to navigator userAgent if not provided
- * @return {{os: oj.AgentUtils.OS, browser: oj.AgentUtils.BROWSER, browserVersion: number,
+ * @return {{os: oj.AgentUtils.OS, browser: oj.AgentUtils.BROWSER, browserVersion: number, deviceType: oj.AgentUtils.DEVICETYPE,
  *          engine: oj.AgentUtils.ENGINE, engineVersion: number, hashCode: number}}
  * @public
  * @memberof oj.AgentUtils
@@ -2372,6 +2396,7 @@ oj.AgentUtils.getAgentInfo = function (userAgent)
       'os': currAgentInfo["os"],
       'browser': currAgentInfo["browser"],
       'browserVersion': currAgentInfo["browserVersion"],
+      'deviceType': currAgentInfo["deviceType"],
       'engine': currAgentInfo["engine"],
       'engineVersion': currAgentInfo["engineVersion"],
       'hashCode': currAgentInfo["hashCode"]
@@ -2382,6 +2407,8 @@ oj.AgentUtils.getAgentInfo = function (userAgent)
   var browser = oj.AgentUtils.BROWSER.UNKNOWN;
   /** @type {number} */
   var browserVersion = 0;
+  /** @type {oj.AgentUtils.DEVICETYPE} */
+  var deviceType = oj.AgentUtils.DEVICETYPE.OTHERS;
   /** @type {oj.AgentUtils.ENGINE} */
   var engine = oj.AgentUtils.ENGINE.UNKNOWN;
   /** @type {number} */
@@ -2400,6 +2427,19 @@ oj.AgentUtils.getAgentInfo = function (userAgent)
     os = oj.AgentUtils.OS.WINDOWSPHONE;
   else if (userAgent.indexOf("win") > -1)
     os = oj.AgentUtils.OS.WINDOWS;
+
+  if (os == oj.AgentUtils.OS.ANDROID)
+  {
+    // This works for Chrome, Firefox, and Edge on Android, even though only Chrome is officially supported.
+    // This also works for Edge on Windows 10 Mobile, which announces itself as android-compatible user agent.
+    deviceType = userAgent.indexOf("mobile") > -1 ? oj.AgentUtils.DEVICETYPE.PHONE : oj.AgentUtils.DEVICETYPE.TABLET;
+  }
+  else if (os == oj.AgentUtils.OS.IOS)
+  {
+    // This works for Safari, Chrome, Firefox, and Edge on iOS, even though only Safari is officially supported.
+    deviceType = userAgent.indexOf("iphone") > -1 ? oj.AgentUtils.DEVICETYPE.PHONE : oj.AgentUtils.DEVICETYPE.TABLET;
+  }
+
   if (userAgent.indexOf("msie") > -1)
   {
     browser = oj.AgentUtils.BROWSER.IE;
@@ -2462,6 +2502,7 @@ oj.AgentUtils.getAgentInfo = function (userAgent)
     'os': os,
     'browser': browser,
     'browserVersion': browserVersion,
+    'deviceType': deviceType,
     'engine': engine,
     'engineVersion': engineVersion
   };
@@ -2469,6 +2510,7 @@ oj.AgentUtils.getAgentInfo = function (userAgent)
     'os': currAgentInfo["os"],
     'browser': currAgentInfo["browser"],
     'browserVersion': currAgentInfo["browserVersion"],
+    'deviceType': currAgentInfo["deviceType"],
     'engine': currAgentInfo["engine"],
     'engineVersion': currAgentInfo["engineVersion"],
     'hashCode': currAgentInfo["hashCode"]
@@ -2626,7 +2668,7 @@ oj.ThemeUtils.clearCache = function()
  * @method parseJSONFromFontFamily
  * @memberof oj.ThemeUtils
  * @param {string} selector a class selector name, for example 'demo-map-json';
- * @return {*} the result of parsing the font family with JSON.parse. 
+ * @return {any} the result of parsing the font family with JSON.parse. 
  *      The returned value is cached, so if you modify the returned 
  *      value it will be reflected in the cache.
  * @throws {SyntaxError} If JSON.parse throws a SyntaxError exception we will log an error and rethrow 
@@ -5095,7 +5137,7 @@ oj.Context.getParentElement = function (element)
    * @param {string} attr attribute
    * @param {string} value attribute value
    * @param {string} type property type
-   * @return {*} coerced value
+   * @return {any} coerced value
    * @private
    */
   oj.__AttributeUtils.coerceValue = function(elem, attr, value, type)

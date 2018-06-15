@@ -1,7 +1,7 @@
 {
   "name": "oj-tab-bar",
-  "version": "5.0.0",
-  "jetVersion": "5.0.0",
+  "version": "5.1.0",
+  "jetVersion": "5.1.0",
   "displayName": "Tab Bar",
   "preview": true,
   "roles": [
@@ -97,7 +97,7 @@
   "properties": {
     "currentItem": {
       "description": "Gets and sets the key of the item that should have keyboard focus.",
-      "type": "*",
+      "type": "any",
       "displayName": "Current Item",
       "value": null,
       "writeback": true
@@ -218,7 +218,7 @@
     },
     "selection": {
       "description": "Gets and sets the key of the selected item.",
-      "type": "*",
+      "type": "any",
       "displayName": "Selection",
       "value": null,
       "writeback": true
@@ -340,7 +340,7 @@
         {
           "name": "value",
           "description": "The new value to set the property to.",
-          "type": "*"
+          "type": "any"
         }
       ],
       "return": "void"
@@ -354,7 +354,7 @@
           "type": "string"
         }
       ],
-      "return": "*"
+      "return": "any"
     },
     "setProperties": {
       "description": "Performs a batch set of properties.",
@@ -405,7 +405,7 @@
       "detail": {
         "key": {
           "description": "Selected list item Key.",
-          "type": "*"
+          "type": "any"
         },
         "item": {
           "description": "Selected list item.",
@@ -419,7 +419,7 @@
       "detail": {
         "previousKey": {
           "description": "the Key of the previous item",
-          "type": "*"
+          "type": "any"
         },
         "previousItem": {
           "description": "the previous item",
@@ -427,7 +427,7 @@
         },
         "key": {
           "description": "the Key of the new current item",
-          "type": "*"
+          "type": "any"
         },
         "item": {
           "description": "the new current item",
@@ -442,7 +442,7 @@
       "detail": {
         "fromKey": {
           "description": "the Key of the tab item being navigated from",
-          "type": "*"
+          "type": "any"
         },
         "fromItem": {
           "description": "the tab item being navigated from",
@@ -450,7 +450,7 @@
         },
         "toKey": {
           "description": "the Key of the tab item being navigated to",
-          "type": "*"
+          "type": "any"
         },
         "toItem": {
           "description": "the tab item being navigated to",
@@ -464,7 +464,7 @@
       "detail": {
         "fromKey": {
           "description": "the Key of the tab item being navigated from",
-          "type": "*"
+          "type": "any"
         },
         "fromItem": {
           "description": "the tab item being navigated from",
@@ -472,7 +472,7 @@
         },
         "toKey": {
           "description": "the Key of the tab item being navigated to",
-          "type": "*"
+          "type": "any"
         },
         "toItem": {
           "description": "the tab item being navigated to",
@@ -491,7 +491,7 @@
         },
         "key": {
           "description": "Key of the item being removed",
-          "type": "*"
+          "type": "any"
         }
       }
     },
@@ -505,7 +505,7 @@
         },
         "key": {
           "description": "Key of the item removed",
-          "type": "*"
+          "type": "any"
         }
       }
     },

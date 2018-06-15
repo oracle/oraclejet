@@ -238,7 +238,7 @@ oj.CollectionTableDataSource.prototype.get = function(id, options)
 /**
  * Performs a sort on the data source.
  * @param {Object} [criteria] the sort criteria.
- * @param {*} criteria.key The key that identifies which field to sort
+ * @param {any} criteria.key The key that identifies which field to sort
  * @param {'ascending'|'descending'|'none'} criteria.direction the sort direction, valid values are "ascending", "descending", "none" (default)
  * @return {Promise.<null>} promise object triggering done when complete.
  * @export
@@ -472,7 +472,12 @@ oj.CollectionTableDataSource.prototype._addCollectionEventListeners = function()
     oj.TableDataSource.superclass.handleEvent.call(self, oj.TableDataSource.EventType['ERROR'], collection, xhr, options);
   });
   this._collection.on(oj.Events.EventType['REQUEST'], function(event) {
-    oj.TableDataSource.superclass.handleEvent.call(self, oj.TableDataSource.EventType['REQUEST'], event);
+    // If this datasource is fetching, it calls setRangeLocal on the collection, which
+    // causes the collection to fire the REQUEST event.  In this case we don't want this
+    // datasource to fire its own REQUEST event since it has already done that in _startFetch.
+    if (!self._isFetching) {
+      oj.TableDataSource.superclass.handleEvent.call(self, oj.TableDataSource.EventType['REQUEST'], event);
+    }
   });
 };
 
@@ -569,7 +574,7 @@ oj.CollectionTableDataSource.prototype._startFetch = function(options)
  * Indicate ending fetch
  * @param {Object} options
  * @param {Object} result Result object
- * @param {*} error Error
+ * @param {any} error Error
  * @private
  * @memberof oj.CollectionTableDataSource
  */

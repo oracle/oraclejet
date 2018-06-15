@@ -139,7 +139,12 @@ oj.FilmStripPagingModel.prototype.setPage = function(page, options)
         if (prevPageCount != pageCount)
           self.handleEvent("pageCount", {"pageCount": pageCount, "previousPageCount": prevPageCount});
         if (bFiredBeforePageEvent)
-          self.handleEvent("page", {"page": page, "previousPage": prevPage});
+        {
+          var optionsObj = {"page": page, "previousPage": prevPage};
+          if (options && options["loopDirection"])
+            optionsObj["loopDirection"] = options["loopDirection"];
+          self.handleEvent("page", optionsObj);
+        }
         resolve(null);
       });
   }
@@ -568,7 +573,39 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
      * // setter
      * myFilmStrip.arrowVisibility = 'visible';
      */
-    arrowVisibility: "auto"
+    arrowVisibility: "auto",
+
+    /** 
+     * Specify the navigation looping behavior.
+     * 
+     * @ojstatus preview
+     * @expose 
+     * @memberof oj.ojFilmStrip
+     * @instance
+     * @type {string}
+     * @ojvalue {string} "off"  Navigation is bounded between first and last page and 
+     *                          can't go any further in the direction of navigation.
+     * @ojvalue {string} "page" Navigation is not bounded between first and last page 
+     *                          and can go further in the direction of navigation.
+     *                          This lets user to loop around from first page to last page or 
+     *                          from last page to first page.
+     * @default "off"
+     * @ojshortdesc Specifies the navigation looping behavior
+     *
+     * @example <caption>Initialize the FilmStrip with the 
+     * <code class="prettyprint">looping</code> attribute specified:</caption>
+     * &lt;oj-film-strip looping='page'>
+     * &lt;/oj-film-strip>
+     * 
+     * @example <caption>Get or set the <code class="prettyprint">looping</code> 
+     * property after initialization:</caption>
+     * // getter
+     * var looping = myFilmStrip.looping;
+     * 
+     * // setter
+     * myFilmStrip.looping = 'page';
+     */
+    looping: "off"
     
     /**
      * FilmStrip inherits the <code class="prettyprint">disabled</code> 
@@ -649,6 +686,10 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
         options.arrowVisibility !== _AUTO)
       throw new Error(_ERROR_INVALID_NAV_ARROW_VISIBILITY + options.arrowVisibility);
     
+    //throw error if "looping" property set to invalid value
+    if (options.looping !== _LOOPING_OFF && options.looping !== _LOOPING_PAGE)
+      throw new Error(_ERROR_INVALID_LOOPING + options.looping);
+
     this.touchEventNamespace = this.eventNamespace + "Touch";
     this.mouseEventNamespace = this.eventNamespace + "Mouse";
     this.keyEventNamespace = this.eventNamespace + "Key";
@@ -924,7 +965,8 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
     var elem = this.element;
     elem
       .removeClass("oj-filmstrip oj-component " + _OJ_FILMSTRIP_HOVER)
-      .removeAttr("tabindex role");
+      .removeAttr("tabindex role")
+      .removeAttr("aria-labelledby");
     
     //remove a generated unique id
     elem.removeUniqueId();
@@ -1021,6 +1063,12 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
           throw new Error(_ERROR_INVALID_NAV_ARROW_VISIBILITY + value);
         bRefresh = (options.arrowVisibility != value);
         break;
+      case "looping":
+        //throw error if "looping" property set to invalid value
+        if (value !== _LOOPING_OFF && value !== _LOOPING_PAGE)
+          throw new Error(_ERROR_INVALID_LOOPING + value);
+        bRefresh = (options.looping != value);
+        break;
       case _CURRENT_ITEM:
         //Make sure currentItem value is an object of (id, index)
         value = this._convertItemToObj(value);
@@ -1095,6 +1143,19 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
   {
     var options = this.options;
     return (options.orientation !== _VERTICAL);
+  },
+  
+  /** 
+   * Determine whether the looping behavior is set to page
+   * @returns {boolean} True if looping is set to page, false otherwise.
+   * @memberof oj.ojFilmStrip
+   * @instance
+   * @private
+   */
+  _isLoopingPage: function()
+  {
+    var options = this.options;
+    return (options.looping === _LOOPING_PAGE);
   },
   
   /** 
@@ -1195,6 +1256,15 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
     if (!bHorizontal)
       elem.addClass(_OJ_FILMSTRIP_VERTICAL);
     
+    // Fix  - ACC: FIF TOUR PAGE DOESN'T DESCRIBE WHAT'S WITHIN THE FILMSTRIP
+    // Create a page info element that will contain the current page information for accessibility
+    var pageInfoElem = this._createPageInfoElem();
+    var elementId = elem.attr('id');
+    var pageInfoId = pageInfoElem.attr('id');
+    elem.append(pageInfoElem);    // @HTMLUpdateOK
+    elem.attr('aria-labelledby', elementId + ' ' + pageInfoId);
+    this._pageInfoElem = pageInfoElem;
+
     //FIX : only need to create nav buttons if the filmstrip 
     //is not empty
     if (options.arrowVisibility !== _HIDDEN &&
@@ -1239,6 +1309,12 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
     if (navArrowContainers)
       navArrowContainers.remove();
     
+    if (this._pageInfoElem) {
+      this._UnregisterChildNode(this._pageInfoElem);
+      this._pageInfoElem.remove();
+      this._pageInfoElem = null;
+    }
+    
     //the individual page containers that were added in _adjustSizes are not
     //removed here; they are expected to have been removed before calling
     //_unwrapChildren
@@ -1256,6 +1332,41 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
     elem.removeClass(_OJ_FILMSTRIP_CONTAINER + " " + _OJ_FILMSTRIP_VERTICAL);
   },
   
+  /**
+   * Create the page info element to contain the current page information
+   * @returns {jQuery} Page Info jQuery object.
+   * @memberof oj.ojFilmStrip
+   * @instance
+   * @private
+   */
+  _createPageInfoElem: function () {
+    var pageInfoElem = $(document.createElement('div'));
+    pageInfoElem.uniqueId();
+    pageInfoElem.addClass('oj-helper-hidden-accessible oj-filmstrip-liveregion');
+    pageInfoElem.attr({ role: 'region', 'aria-live': 'polite', 'aria-atomic': 'true' });
+    return pageInfoElem;
+  },
+
+
+  /**
+   * Update the page info element that contains the current page information
+   * @return {void}
+   * @memberof oj.ojFilmStrip
+   * @instance
+   * @private
+   */
+  _updatePageInfoElem: function () {
+    var pagingModel = this._pagingModel;
+    var pageIndex = pagingModel.getPage();
+    var pageCount = pagingModel.getPageCount();
+    var pageInfo = _escapeHtml(this.getTranslatedString('labelAccFilmStrip',
+                                    { pageIndex: pageIndex + 1, pageCount: pageCount }));
+    var pageInfoElem = this._pageInfoElem;
+    if (pageInfoElem) {
+      pageInfoElem.attr('aria-label', pageInfo);
+    }
+  },
+
   /** 
    * Setup events to only show the navigation arrows when the mouse hovers over
    * the filmStrip.
@@ -1347,10 +1458,17 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
    */
   _prevPage: function()
   {
+    var pagingModel = this._pagingModel;
     if (this._hasPrevPage())
     {
-      var pagingModel = this._pagingModel;
       pagingModel.setPage(pagingModel.getPage() - 1);
+    } 
+    else
+    {
+      var pageCount = pagingModel.getPageCount();
+      // navigate from first page to last page
+      if (this._isLoopingPage() && pageCount > 1)
+        pagingModel.setPage(pageCount - 1, {"loopDirection": _LOOPING_DIRECTION_PREV});
     }
   },
   
@@ -1363,10 +1481,17 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
    */
   _nextPage: function()
   {
+    var pagingModel = this._pagingModel;
     if (this._hasNextPage())
     {
-      var pagingModel = this._pagingModel;
       pagingModel.setPage(pagingModel.getPage() + 1);
+    }
+    else
+    {
+      var pageCount = pagingModel.getPageCount();
+      // navigate from last page to first page
+      if (this._isLoopingPage() && pageCount > 1)
+        pagingModel.setPage(0, {"loopDirection": _LOOPING_DIRECTION_NEXT});
     }
   },
   
@@ -1405,8 +1530,9 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
       var pagingModel = this._pagingModel;
       var pageIndex = pagingModel.getPage();
       var pageCount = pagingModel.getPageCount();
-      this._displayNavigationArrow(pageIndex !== 0, this._prevButton);
-      this._displayNavigationArrow(pageIndex !== pageCount - 1, this._nextButton);
+      var bLooping = this._isLoopingPage() && (pageCount > 1);
+      this._displayNavigationArrow(bLooping || (pageIndex !== 0), this._prevButton);
+      this._displayNavigationArrow(bLooping || (pageIndex !== pageCount - 1), this._nextButton);
     }
   },
   
@@ -1508,8 +1634,6 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
     var str = "<div class='" + _OJ_FILMSTRIP_ARROW + " oj-default oj-enabled " + locationMarker + "' role='button' tabindex='-1'";
     str += "><span class='oj-filmstrip-arrow-icon " + locationMarker + " oj-component-icon'></span></div>";
     parentElem.append(str); // @HTMLUpdateOK
-    var elem = this.element;
-    var elemId = elem.attr("id");
     var arrowElem = parentElem.children(_PERIOD + _OJ_FILMSTRIP_ARROW).eq(0);
     arrowElem.uniqueId();
     var arrowId = arrowElem.attr("id");
@@ -1517,8 +1641,12 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
       arrowElem.attr("aria-label", label);
     if (tooltip)
       arrowElem.attr("title", tooltip);
-    arrowElem.attr("aria-labelledby", arrowId + " " + elemId);
-
+    
+    // Fix  - ACC: FIF TOUR PAGE DOESN'T DESCRIBE WHAT'S WITHIN THE FILMSTRIP
+    var pageInfoElem = this._pageInfoElem;
+    var pageInfoId = pageInfoElem.attr('id');
+    arrowElem.attr('aria-labelledby', pageInfoId + ' ' + arrowId);
+    
     //  - filmstrip: next/previous oj-hover colors doesn't go away in touch device
     this._AddHoverable(arrowElem);
     this._AddActiveable(arrowElem);
@@ -1753,13 +1881,16 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
   _handlePage: function(event)
   {
     var pageIndex = event["page"];
+    var loopDirection = event["loopDirection"];
     var prevPageIndex = event["previousPage"];
     var pagesWrapper = this._pagesWrapper;
     var pages = this._getPages();
     var pagingModel = this._pagingModel;
     var pageSize = pagingModel.getPageSize();
+    var pageCount = pagingModel.getPageCount();
     var bImmediate = prevPageIndex < 0 || prevPageIndex == pageIndex ||
                      this._itemsPerPage != pageSize;
+    var bLooping = this._isLoopingPage();
     //update _itemsPerPage AFTER using it to initialize bImmediate above
     this._itemsPerPage = pageSize;
     
@@ -1779,13 +1910,22 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
     var bDeferScroll = this._bDragInit;
     if (prevPageIndex > -1 && !bImmediate)
     {
+      var bNext = pageIndex > prevPageIndex;
+      // if looping is enabled, continue in the direction of the navigation
+      if (bLooping && loopDirection) 
+        bNext = (loopDirection === _LOOPING_DIRECTION_NEXT);
+      
+      // check if navigating from first page to last page or from last page to first page
+      var bFirstToLast = bLooping && !bNext && (pageCount > 1) && (prevPageIndex == 0);
+      var bLastToFirst = bLooping && bNext && (pageCount > 1) && (prevPageIndex == pageCount - 1);
+
       bDeferScroll = true;
       //set size of pages wrapper to show two pages at a time because both of
       //them will temporarily be visible
       pagesWrapper.css(this._getCssSizeAttr(), 2 * this._componentSize);
       //if going to the previous page, initially scroll to show the current page
       //because the previous page will be at the current scroll position
-      if (pageIndex < prevPageIndex)
+      if (!bNext)
       {
         //only adjust scroll if the page was hidden (in the case of dragging,
         //the page will already be unhidden and scrolled correctly)
@@ -1794,15 +1934,19 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
       }
       
       //set initial transition states on the pages
-      if (pageIndex > prevPageIndex)
+      if (bNext)
       {
         oldPage.addClass(_OJ_FILMSTRIP_TRANSITION_NEXT_OLDPAGE_FROM);
         newPage.addClass(_OJ_FILMSTRIP_TRANSITION_NEXT_NEWPAGE_FROM);
+        if (bLastToFirst)
+          newPage.addClass(_OJ_FILMSTRIP_TRANSITION_DISPLAY_AS_LASTPAGE);
       }
       else
       {
         oldPage.addClass(_OJ_FILMSTRIP_TRANSITION_PREV_OLDPAGE_FROM);
         newPage.addClass(_OJ_FILMSTRIP_TRANSITION_PREV_NEWPAGE_FROM);
+        if (bFirstToLast)
+          newPage.addClass(_OJ_FILMSTRIP_TRANSITION_DISPLAY_AS_FIRSTPAGE);
       }
     }
     
@@ -1828,17 +1972,18 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
       //Changing the timeout delay from 0 to 25 seems to help.
       setTimeout(function()
         {
-          self._finishHandlePage(pageIndex, prevPageIndex, bImmediate, bDragInit);
+          self._finishHandlePage(pageIndex, prevPageIndex, bNext, bImmediate, bDragInit);
         }, 25);
     }
     else
-      this._finishHandlePage(pageIndex, prevPageIndex, bImmediate);
+      this._finishHandlePage(pageIndex, prevPageIndex, bNext, bImmediate);
   },
   
   /** 
    * Finish handling a 'page' event from the PagingModel.
    * @param {number} pageIndex 0-based page index to go to.
    * @param {number} prevPageIndex 0-based old page index.
+   * @param {boolean} bNext True if the navigation direction is next.
    * @param {boolean} bImmediate True to change pages immediately with no 
    *        transition, false to transition them over time.
    * @param {boolean} bDragInit True if we're currently drag scrolling, false
@@ -1848,7 +1993,7 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
    * @instance
    * @private
    */
-  _finishHandlePage: function(pageIndex, prevPageIndex, bImmediate, bDragInit)
+  _finishHandlePage: function(pageIndex, prevPageIndex, bNext, bImmediate, bDragInit)
   {
     var pagesWrapper = this._pagesWrapper;
     if (!bImmediate)
@@ -1874,7 +2019,6 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
       {
         //remove initial transition states and set destination states, and
         //transition between them
-        var bNext = pageIndex > prevPageIndex;
         var oldPage = $(pages[prevPageIndex]);
         var newPage = $(pages[pageIndex]);
         oldPage.addClass(_OJ_FILMSTRIP_TRANSITION);
@@ -1944,7 +2088,9 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
                    _OJ_FILMSTRIP_TRANSITION_NEXT_OLDPAGE_TO + " " + 
                    _OJ_FILMSTRIP_TRANSITION_NEXT_NEWPAGE_TO + " " + 
                    _OJ_FILMSTRIP_TRANSITION_PREV_OLDPAGE_TO + " " + 
-                   _OJ_FILMSTRIP_TRANSITION_PREV_NEWPAGE_TO);
+                   _OJ_FILMSTRIP_TRANSITION_PREV_NEWPAGE_TO + " " + 
+                   _OJ_FILMSTRIP_TRANSITION_DISPLAY_AS_FIRSTPAGE + " " + 
+                   _OJ_FILMSTRIP_TRANSITION_DISPLAY_AS_LASTPAGE);
     //remove transforms left over from drag scrolling
     _removeTransform(pages);
     
@@ -1983,6 +2129,8 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
       this._handleResize();
     }
     
+    // Fix  - ACC: FIF TOUR PAGE DOESN'T DESCRIBE WHAT'S WITHIN THE FILMSTRIP
+    this._updatePageInfoElem();
     //FIX : resolve busy state after animating a scroll
     this._resolveBusyState();
   },
@@ -2260,7 +2408,8 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
   {
     var pagingModel = this._pagingModel;
     var pageIndex = pagingModel.getPage();
-    var newPageIndex = -1;
+    var pageCount = pagingModel.getPageCount();
+    var newPageIndex = -2;
     switch (event.keyCode)
     {
       case $.ui.keyCode.RIGHT:
@@ -2285,14 +2434,33 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
         newPageIndex = 0;
         break;
       case $.ui.keyCode.END:
-        newPageIndex = pagingModel.getPageCount() - 1;
+        newPageIndex = pageCount - 1;
         break;
       default :
         return;
     }
     
-    if (newPageIndex > -1 && newPageIndex < pagingModel.getPageCount())
+    if (newPageIndex > -1 && newPageIndex < pageCount) 
+    {
       pagingModel.setPage(newPageIndex);
+    }
+    else if (this._isLoopingPage() && pageCount > 1) 
+    {
+      var optionsObj = {};
+      // navigate from last page to first page
+      if (newPageIndex == pageCount)
+      {
+        newPageIndex = 0;
+        optionsObj["loopDirection"] = _LOOPING_DIRECTION_NEXT;
+      }
+      // navigate from first page to last page
+      if (newPageIndex == -1)
+      {
+        newPageIndex = pageCount - 1;
+        optionsObj["loopDirection"] = _LOOPING_DIRECTION_PREV;
+      }
+      pagingModel.setPage(newPageIndex, optionsObj);
+    }
     
     event.preventDefault();
   },
@@ -2409,6 +2577,8 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
     {
       this._bTouch = true;
       this._bDragInit = false;
+      this._bFirstToLast = false;
+      this._bLastToFirst = false;
       
       var bHorizontal = this._isHorizontal();
       this._touchStartCoord = bHorizontal ? coordsObj.pageX : coordsObj.pageY;
@@ -2421,12 +2591,14 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
    * Called after a drag scroll has started if the drag has passed an initial
    * threshold.
    * @param {Object} coordsObj Object that has pageX and pageY properties.
+   * @param {boolean} bFirstToLast true if looping from first page to last page.
+   * @param {boolean} bLastToFirst true if looping from last page to first page.
    * @return {void}
    * @memberof oj.ojFilmStrip
    * @instance
    * @private
    */
-  _initDragScroll: function(coordsObj)
+  _initDragScroll: function(coordsObj, bFirstToLast, bLastToFirst)
   {
     //save off some initial information at the start of a swipe
     var bHorizontal = this._isHorizontal();
@@ -2436,36 +2608,71 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
     var cssAttr = this._getCssPositionAttr();
     var pagesWrapper = this._pagesWrapper;
     var pagingModel = this._pagingModel;
+    var pageIndex = pagingModel.getPage();
+    var pageCount = pagingModel.getPageCount();
 
     //unhide adjacent pages (unhide both because we don't know which way user 
     //will scroll)
     var pages = this._getPages();
     var pageCountToShow = 1;
-    if (pagingModel.getPage() > 0)
+    
+    if (bFirstToLast || bLastToFirst)
     {
-      this._unhidePage($(pages[pagingModel.getPage() - 1]));
+      if (bFirstToLast)
+      {
+        //unhide last page
+        this._unhidePage($(pages[pageCount - 1]));
+        
+        //when unhiding previous page, need to adjust current scroll position
+        //to continue showing current page
+        pagesWrapper.css(cssAttr, -this._componentSize + _PX);
+        
+        //increment number of pages we need to show
+        pageCountToShow++;
+        
+        // display last page as first page
+        $(pages[pageCount - 1]).addClass(_OJ_FILMSTRIP_TRANSITION_DISPLAY_AS_FIRSTPAGE);
+      }
+      if (bLastToFirst)
+      {
+        //unhide first page
+        this._unhidePage($(pages[0]));
+        
+        //increment number of pages we need to show
+        pageCountToShow++;
 
-      //when unhiding previous page, need to adjust current scroll position
-      //to continue showing current page
-      pagesWrapper.css(cssAttr, -this._componentSize + _PX);
-
-      //increment number of pages we need to show
-      pageCountToShow++;
+        // display first page as last page
+        $(pages[0]).addClass(_OJ_FILMSTRIP_TRANSITION_DISPLAY_AS_LASTPAGE);
+      }
     }
-    if (pagingModel.getPage() < pagingModel.getPageCount() - 1)
+    else
     {
-      this._unhidePage($(pages[pagingModel.getPage() + 1]));
+      if (pageIndex > 0)
+      {
+        this._unhidePage($(pages[pageIndex - 1]));
 
-      //increment number of pages we need to show
-      pageCountToShow++;
+        //when unhiding previous page, need to adjust current scroll position
+        //to continue showing current page
+        pagesWrapper.css(cssAttr, -this._componentSize + _PX);
+
+        //increment number of pages we need to show
+        pageCountToShow++;
+      }
+      if (pageIndex < pageCount - 1)
+      {
+        this._unhidePage($(pages[pageIndex + 1]));
+        
+        //increment number of pages we need to show
+        pageCountToShow++;
+      }
     }
-
+    
     if (pageCountToShow > 1)
       pagesWrapper.css(this._getCssSizeAttr(), pageCountToShow * this._componentSize);
 
     this._touchStartScroll = parseInt(pagesWrapper.css(cssAttr), 10);
   },
-
+  
   /** 
    * Process a move during drag scrolling.
    * @param {Event} event <code class="prettyprint">jQuery</code> event object.
@@ -2489,38 +2696,60 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
     var touchCoord2 = bHorizontal ? coordsObj.pageY : coordsObj.pageX;
     var diff2 = touchCoord2 - this._touchStartCoord2;
 
-    if (Math.abs(diff2) > Math.abs(diff)) {
-      //don't scroll again for this same swipe
-      this._bTouch = false;
-
-      //set a flag indicating we don't scroll for this touch event
-      this._scrolledForThisTouch = false;
-    }
-
-    //only initialize the drag once we've passed the initial threshold
-    if (!this._bDragInit)
-    {
-      if (Math.abs(diff) > _DRAG_SCROLL_INIT_THRESHOLD)
-      {
-        this._initDragScroll(coordsObj);
-        this._bDragInit = true;
-      }
-      //return here even if we just initialized the drag so that we'll start
-      //processing the drag move on the next event when we have different mouse
-      //coords
-      return;
-    }
-    
     //in non-RTL, if swiping left or up, scroll next; otherwise scroll prev
     //in RTL, if swiping right or up, scroll next; otherwise scroll prev
     var bNext = (bHorizontal && this._bRTL) ? (diff > 0) : (diff < 0);
     //determine whether the filmStrip can be scrolled in the direction of the swipe
     var pagingModel = this._pagingModel;
     var pageIndex = pagingModel.getPage();
+    var pageCount = pagingModel.getPageCount();
+    var bLooping = this._isLoopingPage();
+
+    var bFirstToLast = bLooping && !bNext && (pageCount > 1) && (pageIndex == 0);
+    var bLastToFirst = bLooping && bNext && (pageCount > 1) && (pageIndex == pageCount - 1);
+    
+    if (!this._bDragInit)
+    {
+      //  - cannot scroll vertically in filmstrip component
+      // If the direction of swipe doesn't align with orientation of filmstrip, 
+      // don't scroll again for this same swipe
+      if (Math.abs(diff2) > Math.abs(diff)) {
+        this._bTouch = false;
+
+        //set a flag indicating we don't scroll for this touch event
+        this._scrolledForThisTouch = false;
+      }
+      
+      //only initialize the drag once we've passed the initial threshold
+      if (Math.abs(diff) > _DRAG_SCROLL_INIT_THRESHOLD)
+      {
+        this._initDragScroll(coordsObj, bFirstToLast, bLastToFirst);
+        this._bDragInit = true;
+      }
+      this._bFirstToLast = bFirstToLast;
+      this._bLastToFirst = bLastToFirst;
+
+      //return here even if we just initialized the drag so that we'll start
+      //processing the drag move on the next event when we have different mouse
+      //coords
+      return;
+      
+    } else if (bFirstToLast != this._bFirstToLast || bLastToFirst != this._bLastToFirst) {
+      // if the navigation has changed from first page to last page or from last page to first page,
+      // reset the pages, because we need to reposition the pages again
+      this._dragScrollResetPages();
+      
+      // re-initialize the drag scroll based on the current drag coordinates
+      this._initDragScroll(coordsObj, bFirstToLast, bLastToFirst);
+      this._bFirstToLast = bFirstToLast;
+      this._bLastToFirst = bLastToFirst;
+    }
+    
     var canScrollInSwipeDirection = (bNext && pageIndex < (pagingModel.getPageCount() - 1)) ||
                                     (!bNext && pageIndex > 0);
     //only need to do something if we can scroll in the swipe direction
-    if (canScrollInSwipeDirection)
+    //if looping is enabled, continue in the direction of the swipe
+    if (canScrollInSwipeDirection || bLooping)
     {
       //only scroll next/prev if the swipe is longer than the threshold; if it's
       //less, then just drag the items with the swipe
@@ -2533,16 +2762,35 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
       //if swiping beyond the threshold, scroll to the next/prev page
       if (Math.abs(diff) >= threshold)
       {
-        var newPageIndex = bNext ? pageIndex + 1 : pageIndex - 1;
+        var newPageIndex, pageToHide;
+        var optionsObj = {};
         
+        if (bFirstToLast || bLastToFirst) {
+          if (bFirstToLast)
+          {
+            newPageIndex = pageCount - 1;
+            // Hide only if more than 2 pages are available
+            pageToHide = pageCount > 2 ? 1 : -1;
+          }            
+          else if (bLastToFirst)
+          {
+            newPageIndex = 0;
+            // Hide only if more than 2 pages are available
+            pageToHide = pageCount > 2 ? (pageCount - 2) : -1;
+          }
+          optionsObj["loopDirection"] = bNext ? _LOOPING_DIRECTION_NEXT : _LOOPING_DIRECTION_PREV;
+        } else {
+          newPageIndex = bNext ? pageIndex + 1 : pageIndex - 1;
+          pageToHide = bNext ? pageIndex - 1 : pageIndex + 1;
+        }
+
         //hide the page that we're not scrolling to
-        var pageToHide = bNext ? pageIndex - 1 : pageIndex + 1;
         if (pageToHide > -1 && pageToHide < pagingModel.getPageCount())
           this._hidePage($(pages[pageToHide]));
         
         //when hiding previous page, need to adjust current scroll position
         //to continue showing current page
-        if (bNext && pageToHide > -1)
+        if (bNext && pageToHide > -1 && !bLastToFirst)
         {
           var currScroll = parseInt(pagesWrapper.css(cssAttr), 10);
           pagesWrapper.css(cssAttr, (currScroll + this._componentSize) + _PX);
@@ -2554,12 +2802,12 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
         //don't scroll again for this same swipe
         this._bTouch = false;
         
-        pagingModel.setPage(newPageIndex);
+        pagingModel.setPage(newPageIndex, optionsObj);
       }
       //if swiping under the threshold, just move the conveyor with the swipe
       else
       {
-        var scrollVal = (bHorizontal && this._bRTL) ? -diff : diff;
+        var scrollVal = diff;
         var transform = bHorizontal ? "translate3d(" + scrollVal + "px, 0, 0)" :
                                       "translate3d(0, " + scrollVal + "px, 0)";
         _applyTransform(pages.filter(_VISIBLE_SELECTOR), transform);
@@ -2596,8 +2844,37 @@ oj.__registerWidget("oj.ojFilmStrip", $['oj']['baseComponent'],
     }
     this._bTouch = false;
     this._bDragInit = false;
+    this._bFirstToLast = false;
+    this._bLastToFirst = false;
+
     //reset the flag indicating if we've scrolled for this touch event
     this._scrolledForThisTouch = false;
+  },
+
+  /** 
+   * Reset the pages during drag scrolling.
+   * @return {void}
+   * @memberof oj.ojFilmStrip
+   * @instance
+   * @private
+   */
+  _dragScrollResetPages: function()
+  {
+    var pagesWrapper = this._pagesWrapper;
+    var cssAttr = this._getCssPositionAttr();
+    var pagingModel = this._pagingModel;
+    var pageIndex = pagingModel.getPage();
+    var pageCount = pagingModel.getPageCount();
+    //hide all pages except for current one
+    var pages = this._getPages();
+    for (var i = 0; i < pages.length; i++)
+    {
+      if (i != pageIndex)
+        this._hidePage($(pages[i]));
+    }
+    pagesWrapper.css(cssAttr, "0px");
+    $(pages[0]).removeClass(_OJ_FILMSTRIP_TRANSITION_DISPLAY_AS_LASTPAGE);
+    $(pages[pageCount - 1]).removeClass(_OJ_FILMSTRIP_TRANSITION_DISPLAY_AS_FIRSTPAGE);
   },
   
   /**
@@ -2850,6 +3127,8 @@ var _ADJACENT = "adjacent",
     _ERROR_INVALID_NAV_ARROW_PLACEMENT = "Unsupported value set as 'arrowPlacement' property: ",
     //throw an error when "arrowVisibility" property set to invalid value
     _ERROR_INVALID_NAV_ARROW_VISIBILITY = "Unsupported value set as 'arrowVisibility' property: ",
+    //throw an error when "looping" property set to invalid value
+    _ERROR_INVALID_LOOPING = "Unsupported value set as 'looping' property: ",
     _FLEX_BASIS = "flex-basis",
     _HIDDEN = "hidden",
     //jQuery hidden selector
@@ -2880,9 +3159,15 @@ var _ADJACENT = "adjacent",
     _OJ_FILMSTRIP_TRANSITION_NEXT_OLDPAGE_TO = "oj-filmstrip-transition-next-oldpage-to",
     _OJ_FILMSTRIP_TRANSITION_PREV_NEWPAGE_TO = "oj-filmstrip-transition-prev-newpage-to",
     _OJ_FILMSTRIP_TRANSITION_PREV_OLDPAGE_TO = "oj-filmstrip-transition-prev-oldpage-to",
+    _OJ_FILMSTRIP_TRANSITION_DISPLAY_AS_FIRSTPAGE = "oj-filmstrip-transition-display-as-firstpage",
+    _OJ_FILMSTRIP_TRANSITION_DISPLAY_AS_LASTPAGE = "oj-filmstrip-transition-display-as-lastpage",
     _OJ_FILMSTRIP_VERTICAL = "oj-filmstrip-vertical",
     _OJ_START = "oj-start",
     _OJ_TOP = "oj-top",
+    _LOOPING_OFF = "off",
+    _LOOPING_PAGE = "page",
+    _LOOPING_DIRECTION_NEXT = "next",
+    _LOOPING_DIRECTION_PREV = "prev",
     
     _OVERLAY = "overlay",
     _PERIOD = ".",
@@ -2978,16 +3263,24 @@ var ojFilmStripMeta = {
       "type": "string",
       "enumValues": ["horizontal", "vertical"]
     },
+    "looping": {
+      "type": "string",
+      "enumValues": ["off", "page"]
+    },
     "translations": {
       "type": "Object",
       "properties": {
+        "labelAccFilmStrip": {
+          "type": "string",
+          "value": "Displaying page {pageIndex} of {pageCount}"
+        },
         "labelAccArrowNextPage": {
           "type": "string",
-          "value": "Next Page"
+          "value": "Select Next to display next page"
         },
         "labelAccArrowPreviousPage": {
           "type": "string",
-          "value": "Previous Page"
+          "value": "Select Previous to display previous page"
         },
         "tipArrowNextPage": {
           "type": "string",

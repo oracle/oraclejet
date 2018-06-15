@@ -274,6 +274,10 @@ define('dragImage',[],function() {
       // Set zIndex so that the drag image won't get covered by other elements
       imageElem.style.zIndex = _findMaxChildZIndex(document.body) + 1;
 
+      // Hide the drag image initially to avoid flicker.  dragController
+      // will move and show it at the right position on the first drag. 
+      imageElem.style.visibility = "hidden";
+
       if (!attached) {
         document.body.removeChild(element);
         element.style.position = stylePosition;

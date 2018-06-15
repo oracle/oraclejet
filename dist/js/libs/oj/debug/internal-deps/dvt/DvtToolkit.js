@@ -861,6 +861,8 @@ dvt.Context.prototype.getStage = function() {
 dvt.Context.prototype.isReadyToRender = function() {
   // Check if the parent div is connected to the DOM and not hidden via display:none. This indicates that
   // we can perform measurement, which is a pre-requisite for us to render.
+  if (this._destroyed)
+    return false;
   if (this._parentDiv.offsetParent != null)
     return true;
   else {
@@ -1568,6 +1570,13 @@ dvt.Context.prototype.setCustomElement = function(customElement) {
  */
 dvt.Context.prototype.isCustomElement = function() {
   return this._customElement;
+};
+
+/**
+ * Marks context as destroyed. Called by ojdvt-base on component destruction.
+ */
+dvt.Context.prototype.destroy = function() {
+  this._destroyed = true;
 };
 
 /**
@@ -27663,14 +27672,15 @@ dvt.BaseComponent.prototype.getOptions = function() {
  * Applies the specified options on top of the existing properties.  This function is only supported after the
  * component is initially rendered.
  * @param {object} options The object containing data and specifications for this component.
+ * @param {object=} noClone an object of keys not to be cloned.
  */
-dvt.BaseComponent.prototype.applyOptions = function(options) 
+dvt.BaseComponent.prototype.applyOptions = function(options, noClone) 
 {
   if (!this.Options || !options)
     return;
 
   // Merge the new properties with the existing ones and set
-  this.SetOptions(dvt.JsonUtils.merge(options, this.Options));
+  this.SetOptions(dvt.JsonUtils.merge(options, this.Options, noClone));
 };
 
 /**
@@ -31534,8 +31544,8 @@ dvt.ClientBehaviorHandler.prototype.CreateClientBehaviorEvent = function(target,
   * @class dvt.SelectionHandler
   * @constructor
   */
-dvt.SelectionHandler = function(type) {
-  this.Init(type);
+dvt.SelectionHandler = function(context, type) {
+  this.Init(context, type);
 };
 
 dvt.Obj.createSubclass(dvt.SelectionHandler, dvt.Obj);
@@ -31543,7 +31553,8 @@ dvt.Obj.createSubclass(dvt.SelectionHandler, dvt.Obj);
 dvt.SelectionHandler.TYPE_SINGLE = 's';
 dvt.SelectionHandler.TYPE_MULTIPLE = 'm';
 
-dvt.SelectionHandler.prototype.Init = function(type) {
+dvt.SelectionHandler.prototype.Init = function(context, type) {
+  this._context = context;
   this._selection = [];
   this._type = type ? type : dvt.SelectionHandler.TYPE_SINGLE;
 
@@ -31600,19 +31611,27 @@ dvt.SelectionHandler.prototype.processInitialSelections = function(selectedIds, 
   if (!selectedIds || !targets)
     return;
 
-  // Construct a targetMap that maps the id to the target object so that the process to match targets with the
-  // selectedId array takes O(n) time instead of O(n^2) ()
-  var targetMap = {};
-  for (var j = 0; j < targets.length; j++) {
-    if (targets[j].getId() != null)
-      targetMap[targets[j].getId()] = targets[j];
+  // Construct a keySet so that the process to iterate though the targets and match the selectedIds takes
+  // O(n) time instead of O(n^2) ()
+  // This logic is a little convoluted and involves iterating over both the targets + selectedIds due to the
+  // lack of a KeyMap, but should still be linear
+  var keySet = new this._context.oj.KeySetImpl(selectedIds);
+  var matchedMap = new Map();
+  var count = 0;
+  for (var i = 0; count !== selectedIds.length && i < targets.length; i++) {
+    var target = targets[i];
+    if (target.isSelectable && target.isSelectable()) {
+      var keySetId = keySet.get(target.getId());
+      if (keySetId != null) {
+        // Found a match
+        count++;
+        matchedMap.set(keySetId, target);
+      }
+    }
   }
-
-  // Loop through all the selected ids, matching them to the targets
   for (var i = 0; i < selectedIds.length; i++) {
-    var target = targetMap[selectedIds[i]];
-    if (target && target.isSelectable && target.isSelectable()) {
-      // Found a match
+    var target = matchedMap.get(selectedIds[i]);
+    if (target) {
       this._addToSelection(target, true, true);
     }
     else {
@@ -38649,6 +38668,28 @@ dvt.EventFactory.newTimelineViewportChangeEvent = function(viewportStart, viewpo
 dvt.EventFactory.newGanttViewportChangeEvent = function(viewportStart, viewportEnd, majorAxisScale, minorAxisScale) {
   var ret = dvt.EventFactory.newTimelineViewportChangeEvent(viewportStart, viewportEnd, minorAxisScale);
   ret['majorAxisScale'] = majorAxisScale;
+  return ret;
+};
+
+/**
+ * @param {array} taskContexts The start value of the viewport.
+ * @param {string} value The end value of the viewport.
+ * @param {string} start The scale value of the major axis.
+ * @param {string} end The scale value of the minor axis.
+ * @param {string} baselineStart
+ * @param {string} baselineEnd
+ * @param {object} rowContext
+ * @return {object}
+ **/
+dvt.EventFactory.newGanttMoveEvent = function(taskContexts, value, start, end, baselineStart, baselineEnd, rowContext) {
+  var ret = dvt.EventFactory.newEvent('move');
+  ret['taskContexts'] = taskContexts;
+  ret['value'] = value;
+  ret['start'] = start;
+  ret['end'] = end;
+  ret['baselineStart'] = baselineStart;
+  ret['baselineEnd'] = baselineEnd;
+  ret['rowContext'] = rowContext;
   return ret;
 };
 

@@ -220,7 +220,16 @@ function moduleViewModel (context)
 {
   var element = context.element;
   var props = context['properties'];
-  
+  var self = this;
+  this.animation = context['properties'].animation;
+  this.propertyChanged = function(detail)
+  {
+    if (detail.property === 'animation')
+    {
+      self.animation = detail.value;
+    }
+  };
+
   function isViewAttached(config) 
   {
     var view = config ? config['view'] : null;
@@ -256,7 +265,7 @@ function moduleViewModel (context)
 };
 
 var moduleValue = '{\"view\":$properties.config.view, \"viewModel\":$properties.config.viewModel,' + 
-                  '\"cleanupMode\":$properties.config.cleanupMode,\"animation\":$properties.animation}';
+                  '\"cleanupMode\":$properties.config.cleanupMode,\"animation\":animation}';
 
 var moduleView = "<!-- ko ojModule: "+ moduleValue +" --><!-- /ko -->";
 

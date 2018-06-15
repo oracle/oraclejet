@@ -1,7 +1,7 @@
 {
   "name": "oj-list-view",
-  "version": "5.0.0",
-  "jetVersion": "5.0.0",
+  "version": "5.1.0",
+  "jetVersion": "5.1.0",
   "displayName": "List View",
   "preview": true,
   "roles": [
@@ -44,7 +44,7 @@
     },
     "currentItem": {
       "description": "Gets and sets the key of the item that should have keyboard focus.",
-      "type": "*",
+      "type": "any",
       "displayName": "Current Item",
       "value": null,
       "writeback": true
@@ -207,19 +207,19 @@
       "properties": {
         "key": {
           "description": "The key of the first selected item",
-          "type": "*"
+          "type": "any"
         },
         "data": {
           "description": "The data of the first selected item",
-          "type": "*"
+          "type": "any"
         }
       }
     },
     "groupHeaderPosition": {
       "description": "Gets and sets whether group header should stick to the top as user scrolls.",
-      "type": "",
+      "type": "string",
       "displayName": "Group Header Position",
-      "value": "\"sticky\"",
+      "value": "sticky",
       "enumValues": [
         "static",
         "sticky"
@@ -237,7 +237,7 @@
     },
     "item": {
       "description": "Customize the functionalities of each item on the list.",
-      "type": "",
+      "type": "Object",
       "displayName": "Item",
       "properties": {
         "focusable": {
@@ -279,7 +279,7 @@
     },
     "scrollPolicyOptions": {
       "description": "Gets and sets the fetch options as user scrolls down the list that triggers fetch of data.",
-      "type": "Object.<string, number>|null",
+      "type": "Object<string, number>|null",
       "displayName": "Scroll Policy Options",
       "properties": {
         "fetchSize": {
@@ -322,11 +322,11 @@
         },
         "parent": {
           "description": "the key of the parent where the index is relative to. If not specified, then the root is assumed",
-          "type": "*"
+          "type": "any"
         },
         "key": {
           "description": "the key of the item. If DataProvider is used for data and the key does not exists in the \nDataProvider, then the value is ignored. If DataProvider is not used then ListView will fetch and scroll until the item is found\nor the end of the list is reached and there's no more items to fetch.",
-          "type": "*"
+          "type": "any"
         },
         "offsetX": {
           "description": "the horizontal offset in pixel relative to the item identified by key/index.",
@@ -340,7 +340,7 @@
     },
     "selection": {
       "description": "Gets and sets the keys of the selected items.",
-      "type": "Array<*>",
+      "type": "Array<any>",
       "displayName": "Selection",
       "value": [],
       "writeback": true
@@ -465,7 +465,7 @@
             {
               "name": "key",
               "description": "The key of the item. If both index and key are specified, then key takes precedence.",
-              "type": "*"
+              "type": "any"
             },
             {
               "name": "index",
@@ -480,7 +480,7 @@
           ]
         }
       ],
-      "return": "*"
+      "return": "any"
     },
     "getIndexerModel": {
       "description": "Gets the IndexerModel which can be used with the ojIndexer. The IndexerModel provided by ListView\nby defaults returns a list of locale dependent characters. See translations for the key used to return\nall characters. When a user selects a character in the ojIndexer ListView will scroll to the group \nheader (or the closest one) with the character as its prefix.",
@@ -508,7 +508,7 @@
         {
           "name": "value",
           "description": "The new value to set the property to.",
-          "type": "*"
+          "type": "any"
         }
       ],
       "return": "void"
@@ -522,7 +522,7 @@
           "type": "string"
         }
       ],
-      "return": "*"
+      "return": "any"
     },
     "setProperties": {
       "description": "Performs a batch set of properties.",
@@ -573,7 +573,7 @@
       "detail": {
         "previousKey": {
           "description": "the key of the previous item",
-          "type": "*"
+          "type": "any"
         },
         "previousItem": {
           "description": "the previous item",
@@ -581,7 +581,7 @@
         },
         "key": {
           "description": "the key of the new current item",
-          "type": "*"
+          "type": "any"
         },
         "item": {
           "description": "the new current item",
@@ -595,7 +595,7 @@
       "detail": {
         "key": {
           "description": "the key of the item to be expanded",
-          "type": "*"
+          "type": "any"
         },
         "item": {
           "description": "the item to be expanded",
@@ -609,7 +609,7 @@
       "detail": {
         "key": {
           "description": "the key of the item to be collapsed",
-          "type": "*"
+          "type": "any"
         },
         "item": {
           "description": "the item to be collapsed",
@@ -622,7 +622,7 @@
       "detail": {
         "key": {
           "description": "The key of the item that was just collapsed.",
-          "type": "*"
+          "type": "any"
         },
         "item": {
           "description": "The list item that was just collapsed.",
@@ -653,7 +653,7 @@
       "detail": {
         "key": {
           "description": "The key of the item that was just expanded.",
-          "type": "*"
+          "type": "any"
         },
         "item": {
           "description": "The list item that was just expanded.",
@@ -693,8 +693,38 @@
       "description": "The contextMenu slot is set on the oj-menu within this element. \nThis is used to designate the JET Menu that this component should launch as a context menu on right-click, Shift-F10, Press & Hold, or component-specific gesture. \nIf specified, the browser's native context menu will be replaced by the JET Menu specified in this slot.\n\nThe application can register a listener for the Menu's ojBeforeOpen event. The listener can cancel the launch via event.preventDefault(), \nor it can customize the menu contents by editing the menu DOM directly, and then calling refresh() on the Menu.\n\nTo help determine whether it's appropriate to cancel the launch or customize the menu, the ojBeforeOpen listener can use component API's to determine which \ntable cell, chart item, etc., is the target of the context menu. See the JSDoc and demos of the individual components for details. \n\nKeep in mind that any such logic must work whether the context menu was launched via right-click, Shift-F10, Press & Hold, or component-specific touch gesture."
     },
     "itemTemplate": {
-      "description": "The itemTemplate slot is used to specify the template for rendering each item in the list. The slot must be a <template> element. \n\nWhen the template is executed for each item, it will have access to the binding context containing the following properties:\n\n$current - an object that contains information for the current item being rendered componentElement - the <oj-list-view> custom element data - the data for the current item being rendered index - the zero-based index of the current item being rendered key - the key of the current item being rendered depth (available when hierarchical data is provided) - the depth of the current item being rendered. The depth of the first level children under the invisible root is 1 leaf (available when hierarchical data is provided) - whether the current item is a leaf node or not parentKey (available when hierarchical data is provided) - the key of the parent item. The parent key is null for root nodes \n\nalias - if as attribute was specified, the value will be used to provide an application-named alias for $current.\n\n\n\nThe content of the template should not include the <li> element, only what's inside it.\nWhen both template and item.renderer are specified, the item.renderer takes precedence.",
-      "preview": true
+      "description": "The itemTemplate slot is used to specify the template for rendering each item in the list. The slot must be a <template> element.\nThe content of the template could either include the <li> element, in which case that will be used as\nthe root of the item. Or it can be just the content which excludes the <li> element.\nWhen the template is executed for each item, it will have access to the binding context containing the following properties: $current - an object that contains information for the current item. (See the table below for a list of properties available on $current) alias - if as attribute was specified, the value will be used to provide an application-named alias for $current.\n",
+      "preview": true,
+      "data": {
+        "componentElement": {
+          "description": "The <oj-list-view> custom element",
+          "type": "Element"
+        },
+        "data": {
+          "description": "The data for the current item being rendered",
+          "type": "Object"
+        },
+        "index": {
+          "description": "The zero-based index of the curent item",
+          "type": "number"
+        },
+        "key": {
+          "description": "The key of the current item being rendered",
+          "type": "any"
+        },
+        "depth": {
+          "description": "The depth of the current item (available when hierarchical data is provided) being rendered. The depth of the first level children under the invisible root is 1.",
+          "type": "number"
+        },
+        "leaf": {
+          "description": "True if the current item is a leaf node (available when hierarchical data is provided).",
+          "type": "boolean"
+        },
+        "parentkey": {
+          "description": "The key of the parent item (available when hierarchical data is provided). The parent key is null for root nodes.",
+          "type": "any"
+        }
+      }
     }
   }
 }

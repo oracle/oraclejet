@@ -45,7 +45,7 @@ define(['ojs/ojcore', 'ojs/ojeventtarget'], function(oj)
  * @memberof oj.FetchByKeysParameters
  * @instance
  * @name keys
- * @type {Set.<*>}
+ * @type {Set.<any>}
  * @ojsignature {target: "Type",
  *               value: "Set<K>"}
  */
@@ -127,7 +127,7 @@ define(['ojs/ojcore', 'ojs/ojeventtarget'], function(oj)
  * @memberof oj.ContainsKeysResults
  * @instance
  * @name results
- * @type {Set.<*>}
+ * @type {Set.<any>}
  * @ojsignature {target: "Type",
  *               value: "Set<K>"}
  */
@@ -746,7 +746,7 @@ oj['CompoundFilterOperator']['CompoundOperator'] = CompoundFilterOperator.Compou
  * @memberof oj.DataProviderAddOperationEventDetail
  * @instance
  * @name afterKeys
- * @type {Set.<*>}
+ * @type {Set.<any>}
  * @ojsignature {target: "Type",
  *               value: "?Set<K>"}
  */
@@ -1172,7 +1172,7 @@ oj['DataProviderMutationEvent'] = DataProviderMutationEvent;
  * @memberof oj.DataProviderOperationEventDetail
  * @instance
  * @name keys
- * @type {Set.<*>}
+ * @type {Set.<any>}
  * @ojsignature {target: "Type",
  *               value: "Set<K>"}
  */
@@ -1585,7 +1585,7 @@ oj.DataProvider = function()
 };
 
 /**
- * Fetch the first block of data.
+ * Get an asyncIterator which can be used to fetch a block of data.
  * 
  * @ojstatus preview
  * @since 4.2.0
@@ -1600,6 +1600,14 @@ oj.DataProvider = function()
  * @name fetchFirst
  * @ojsignature {target: "Type",
  *               value: "(FetchListParameters?): AsyncIterable<FetchListResult<K, D>>"}
+ * @example <caption>Get an asyncIterator and then fetch first block of data by executing next() on the iterator. Subsequent blocks can be fetched by executing next() again.</caption>
+ * var asyncIterator = dataprovider.fetchFirst(options)[Symbol.asyncIterator]();
+ * asyncIterator.next().then(function(result) {
+ *   var value = result.value;
+ *   var data = value.data;
+ *   var keys = value.metadata.map(function(val) {
+ *     return val.key;
+ * });
  */
 
 /**
@@ -1624,6 +1632,11 @@ oj.DataProvider = function()
  * @name getCapability
  * @ojsignature {target: "Type",
  *               value: "(capabilityName: string): any"}
+ * @example <caption>Check what kind of fetchByKeys is supported.</caption>
+ * var capabilityInfo = dataprovider.getCapability('fetchByKeys');
+ * if (capabilityInfo.implementation == 'iteration') {
+ *   // the DataProvider supports iteration for fetchByKeys
+ *   ...
  */
 
 /**
@@ -1637,6 +1650,14 @@ oj.DataProvider = function()
  * @instance
  * @method
  * @name getTotalSize
+ * @example <caption>Get the total rows</caption>
+ * dataprovider.getTotalSize().then(function(value) {
+ *   if (value == -1) {
+ *     // we don't know the total row count
+ *   } else {
+ *     // the total count
+ *     console.log(value);
+ * });
  */
 
 /**
@@ -1659,6 +1680,12 @@ oj.DataProvider = function()
  * @name fetchByKeys
  * @ojsignature {target: "Type",
  *               value: "(parameters : FetchByKeysParameters<K>) : Promise<FetchByKeysResults<K, D>>"}
+ * @example <caption>Fetch for keys 1001 and 556</caption>
+ * var fetchKeys = [1001, 556];
+ * dataprovider.fetchByKeys({keys: fetchKeys}).then(function(value) {
+ *   // get the data for key 1001
+ *   console.log(value.results.get(1001).data);
+ * });
  */
 
 /**
@@ -1681,6 +1708,16 @@ oj.DataProvider = function()
  * @name containsKeys
  * @ojsignature {target: "Type",
  *               value: "(parameters : FetchByKeysParameters<K>) : Promise<ContainsKeysResults<K>>"}
+ * @example <caption>Check if keys 1001 and 556 are contained</caption>
+ * var containsKeys = [1001, 556];
+ * dataprovider.containsKeys({keys: containsKeys}).then(function(value) {
+ *   var results = value['results'];
+ *   if (results.has(1001)) {
+ *     console.log('Has key 1001');
+ *   } else if (results.has(556){
+ *     console.log('Has key 556');
+ *   }
+ * });
  */
 
 /**
@@ -1703,6 +1740,16 @@ oj.DataProvider = function()
  * @name fetchByOffset
  * @ojsignature {target: "Type",
  *               value: "(parameters: FetchByOffsetParameters<D>): Promise<FetchByOffsetResults<K, D>>"}
+ * @example <caption>Fetch by offset 5 rows starting at index 2</caption>
+ * dataprovider.fetchByOffset({size: 5, offset: 2}).then(function(value) {
+ *   var results = result['results'];
+ *   var data = results.map(function(value) {
+ *     return value['data'];
+ *   });
+ *   var keys = results.map(function(value) {
+ *     return value['metadata']['key'];
+ *   });
+ * });
  */
 
 /**
@@ -1724,6 +1771,9 @@ oj.DataProvider = function()
  * @name isEmpty
  * @ojsignature {target: "Type",
  *               value: "(): 'yes' | 'no' | 'unknown'"}
+ * @example <caption>Check if empty</caption>
+ * var isEmpty = dataprovider.isEmpty();
+ * console.log('DataProvider is empty: ' + isEmpty);
  */
 
 /**

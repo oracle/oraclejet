@@ -225,9 +225,9 @@ dvt.TagCloud.prototype.SetOptions = function(options) {
   // Initialize the selection handler
   var selectionMode = this.Options['selectionMode'];
   if (selectionMode === 'single')
-    this.SelectionHandler = new dvt.SelectionHandler(dvt.SelectionHandler.TYPE_SINGLE);
+    this.SelectionHandler = new dvt.SelectionHandler(this.getCtx(), dvt.SelectionHandler.TYPE_SINGLE);
   else if (selectionMode === 'multiple')
-    this.SelectionHandler = new dvt.SelectionHandler(dvt.SelectionHandler.TYPE_MULTIPLE);
+    this.SelectionHandler = new dvt.SelectionHandler(this.getCtx(), dvt.SelectionHandler.TYPE_MULTIPLE);
   else
     this.SelectionHandler = null;
 

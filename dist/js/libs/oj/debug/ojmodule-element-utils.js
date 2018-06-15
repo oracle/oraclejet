@@ -53,6 +53,8 @@ oj.ModuleElementUtils = ModuleElementUtils;
 
 /** 
  * Utility function for creating a view to be used in configuration object for oj-module.
+ * @since 5.0.0
+ * @ojstatus preview  
  * @param {Object} options Options object used to create a view
  * @param {string} options.viewPath The path to the view, relative to the RequireJS baseURL.
  *                                  The text plugin will be used for loading the view.
@@ -90,6 +92,8 @@ ModuleElementUtils.createView = function(options)
 };
 /** 
  * Utility function for creating a view model to be used in configuration object for oj-module.
+ * @since 5.0.0
+ * @ojstatus preview  
  * @param {Object} options Options object used to create a view model
  * @param {string} options.viewModelPath The path to the model, relative to the RequireJS baseURL.
  * @param {Function=} options.require An optional instance of the require() function to be used for loading the view. 

@@ -1,7 +1,7 @@
 {
   "name": "oj-n-box",
-  "version": "5.0.0",
-  "jetVersion": "5.0.0",
+  "version": "5.1.0",
+  "jetVersion": "5.1.0",
   "displayName": "N Box",
   "preview": true,
   "roles": [
@@ -85,13 +85,137 @@
       "description": "The list of cells. Also accepts a Promise for deferred data rendering. No data will be rendered if the Promise is rejected.",
       "type": "Array<Object>|Promise|null",
       "displayName": "Cells",
-      "value": null
+      "value": null,
+      "extension": {
+        "vbcs": {
+          "itemProperties": {
+            "column": {
+              "description": "The id of the column containing this cell.",
+              "type": "string",
+              "value": null
+            },
+            "label": {
+              "description": "The text for the cell label.",
+              "type": "string",
+              "value": null
+            },
+            "labelHalign": {
+              "description": "The halign value for the cell label.",
+              "type": "string",
+              "value": "start",
+              "enumValues": [
+                "center",
+                "end",
+                "start"
+              ],
+              "propertyEditorValues": {
+                "center": {
+                  "displayName": "Center"
+                },
+                "end": {
+                  "displayName": "End"
+                },
+                "start": {
+                  "displayName": "Start"
+                }
+              }
+            },
+            "labelStyle": {
+              "description": "The CSS style object defining the style of the cell label.",
+              "type": "Object",
+              "value": null
+            },
+            "maximizedSvgClassName": {
+              "description": "The CSS style class for this cell. Used for customizing the maximized cell background and border.",
+              "type": "string",
+              "value": null
+            },
+            "maximizedSvgStyle": {
+              "description": "The CSS style object for this cell. Used for customizing the maximized cell background and border.",
+              "type": "Object",
+              "value": null
+            },
+            "minimizedSvgClassName": {
+              "description": "The CSS style class for this cell. Used for customizing the minimized cell background and border.",
+              "type": "string",
+              "value": null
+            },
+            "minimizedSvgStyle": {
+              "description": "The CSS style object for this cell. Used for customizing the minimized cell background and border.",
+              "type": "Object",
+              "value": null
+            },
+            "row": {
+              "description": "The id of the row containing this cell.",
+              "type": "string",
+              "value": null
+            },
+            "shortDesc": {
+              "description": "The description of this cell. This is used for accessibility.",
+              "type": "string",
+              "value": null
+            },
+            "showCount": {
+              "description": "Determines when to display the cell count label (extra info displayed after primary cell label). \"off\" never show the count label. \"on\" always show the count label. Show countLabel value if specified, otherwise use a simple node count. \"auto\" show the count label if countLabel attribute is defined.",
+              "type": "string",
+              "value": "auto",
+              "enumValues": [
+                "auto",
+                "off",
+                "on"
+              ],
+              "propertyEditorValues": {
+                "auto": {
+                  "displayName": "Auto"
+                },
+                "off": {
+                  "displayName": "Off"
+                },
+                "on": {
+                  "displayName": "On"
+                }
+              }
+            },
+            "svgClassName": {
+              "description": "The CSS style class for this cell. Used for customizing the cell background and border.",
+              "type": "string",
+              "value": null
+            },
+            "svgStyle": {
+              "description": "The CSS style object for this cell. Used for customizing the cell background and border.",
+              "type": "Object",
+              "value": null
+            }
+          }
+        }
+      }
     },
     "columns": {
       "description": "The list of columns. Also accepts a Promise for deferred data rendering. No data will be rendered if the Promise is rejected.",
       "type": "Array<Object>|Promise|null",
       "displayName": "Columns",
-      "value": null
+      "value": null,
+      "extension": {
+        "vbcs": {
+          "itemProperties": {
+            "id": {
+              "description": "The id of the column. Used to identify this column.",
+              "type": "string",
+              "value": null
+            },
+            "label": {
+              "description": "The text for the column label.",
+              "type": "string",
+              "value": null
+            },
+            "labelStyle": {
+              "description": "The CSS style object defining the style of the column label.",
+              "type": "Object",
+              "value": null
+            }
+          }
+        }
+      }
     },
     "columnsTitle": {
       "description": "The text for the title on the column edge.",
@@ -249,7 +373,427 @@
       "description": "The list of nodes. Also accepts a Promise for deferred data rendering. No data will be rendered if the Promise is rejected.",
       "type": "Array<Object>|Promise|null",
       "displayName": "Nodes",
-      "value": null
+      "value": null,
+      "extension": {
+        "vbcs": {
+          "itemProperties": {
+            "borderColor": {
+              "description": "The color of the node border.",
+              "type": "string",
+              "value": null
+            },
+            "borderWidth": {
+              "description": "The width of the node border.",
+              "type": "number",
+              "value": null
+            },
+            "categories": {
+              "description": "An optional array of additional category strings corresponding to this data item. This enables highlighting and filtering of individual data items through interactions with other visualization elements. Defaults to node's id if unspecified.",
+              "type": "Array<string>",
+              "value": null
+            },
+            "color": {
+              "description": "The background color of this node.",
+              "type": "string",
+              "value": null
+            },
+            "column": {
+              "description": "The column id for this node.",
+              "type": "string",
+              "value": null
+            },
+            "groupCategory": {
+              "description": "The group category this node belongs to. Nodes with the same groupCategory will be grouped together.",
+              "type": "string",
+              "value": null
+            },
+            "icon": {
+              "description": "Defines the primary icon for this node.",
+              "type": "Object",
+              "value": null,
+              "properties": {
+                "borderColor": {
+                  "description": "The border color of this icon.",
+                  "type": "string",
+                  "value": null
+                },
+                "borderRadius": {
+                  "description": "The border radius of this icon. CSS border-radius values accepted. Note that non-% values (including unitless) get interpreted as 'px'.",
+                  "type": "string",
+                  "value": null
+                },
+                "borderWidth": {
+                  "description": "The border width of this icon.",
+                  "type": "number",
+                  "value": null
+                },
+                "color": {
+                  "description": "The fill color of this icon.",
+                  "type": "string",
+                  "value": null
+                },
+                "height": {
+                  "description": "The height of this icon.",
+                  "type": "number",
+                  "value": null
+                },
+                "opacity": {
+                  "description": "The opacity of this icon.",
+                  "type": "number",
+                  "value": null
+                },
+                "pattern": {
+                  "description": "The fill pattern of this icon.",
+                  "type": "string",
+                  "value": "none",
+                  "enumValues": [
+                    "largeChecker",
+                    "largeCrosshatch",
+                    "largeDiagonalLeft",
+                    "largeDiagonalRight",
+                    "largeDiamond",
+                    "largeTriangle",
+                    "none",
+                    "smallChecker",
+                    "smallCrosshatch",
+                    "smallDiagonalLeft",
+                    "smallDiagonalRight",
+                    "smallDiamond",
+                    "smallTriangle"
+                  ],
+                  "propertyEditorValues": {
+                    "largeChecker": {
+                      "displayName": "Large Checker"
+                    },
+                    "largeCrosshatch": {
+                      "displayName": "Large Crosshatch"
+                    },
+                    "largeDiagonalLeft": {
+                      "displayName": "Large Diagonal Left"
+                    },
+                    "largeDiagonalRight": {
+                      "displayName": "Large Diagonal Right"
+                    },
+                    "largeDiamond": {
+                      "displayName": "Large Diamond"
+                    },
+                    "largeTriangle": {
+                      "displayName": "Large Triangle"
+                    },
+                    "none": {
+                      "displayName": "None"
+                    },
+                    "smallChecker": {
+                      "displayName": "Small Checker"
+                    },
+                    "smallCrosshatch": {
+                      "displayName": "Small Crosshatch"
+                    },
+                    "smallDiagonalLeft": {
+                      "displayName": "Small Diagonal Left"
+                    },
+                    "smallDiagonalRight": {
+                      "displayName": "Small Diagonal Right"
+                    },
+                    "smallDiamond": {
+                      "displayName": "Small Diamond"
+                    },
+                    "smallTriangle": {
+                      "displayName": "Small Triangle"
+                    }
+                  }
+                },
+                "shape": {
+                  "description": "The shape of this icon. Can take the name of a built-in shape or the svg path commands for a custom shape.",
+                  "type": "string",
+                  "value": null,
+                  "enumValues": [
+                    "circle",
+                    "diamond",
+                    "ellipse",
+                    "human",
+                    "plus",
+                    "rectangle",
+                    "square",
+                    "star",
+                    "triangleDown",
+                    "triangleUp"
+                  ],
+                  "propertyEditorValues": {
+                    "circle": {
+                      "displayName": "Circle"
+                    },
+                    "diamond": {
+                      "displayName": "Diamond"
+                    },
+                    "ellipse": {
+                      "displayName": "Ellipse"
+                    },
+                    "human": {
+                      "displayName": "Human"
+                    },
+                    "plus": {
+                      "displayName": "Plus"
+                    },
+                    "rectangle": {
+                      "displayName": "Rectangle"
+                    },
+                    "square": {
+                      "displayName": "Square"
+                    },
+                    "star": {
+                      "displayName": "Star"
+                    },
+                    "triangleDown": {
+                      "displayName": "Triangle Down"
+                    },
+                    "triangleUp": {
+                      "displayName": "Triangle Up"
+                    }
+                  }
+                },
+                "source": {
+                  "description": "The URL of an image to display for this icon.",
+                  "type": "string",
+                  "value": null
+                },
+                "svgClassName": {
+                  "description": "The CSS style class defining the style of this icon.",
+                  "type": "string",
+                  "value": null
+                },
+                "svgStyle": {
+                  "description": "The CSS style object defining the style of this icon.",
+                  "type": "Object",
+                  "value": null
+                },
+                "width": {
+                  "description": "The width of this icon.",
+                  "type": "number",
+                  "value": null
+                }
+              }
+            },
+            "id": {
+              "description": "The id of this node.",
+              "type": "string",
+              "value": null
+            },
+            "indicatorColor": {
+              "description": "The background color for the indicator section of this node.",
+              "type": "string",
+              "value": null
+            },
+            "indicatorIcon": {
+              "description": "Defines the indicator icon for this node.",
+              "type": "Object",
+              "value": null,
+              "properties": {
+                "borderColor": {
+                  "description": "The border color of this indicator icon.",
+                  "type": "string",
+                  "value": null
+                },
+                "borderRadius": {
+                  "description": "The border radius of this indicator icon. CSS border-radius values accepted. Note that non-% values (including unitless) get interpreted as 'px'.",
+                  "type": "string",
+                  "value": null
+                },
+                "borderWidth": {
+                  "description": "The border width of this indicator icon.",
+                  "type": "number",
+                  "value": null
+                },
+                "color": {
+                  "description": "The fill color of this indicator icon.",
+                  "type": "string",
+                  "value": null
+                },
+                "height": {
+                  "description": "The height of this indicator icon.",
+                  "type": "number",
+                  "value": null
+                },
+                "opacity": {
+                  "description": "The opacity of this indicator icon.",
+                  "type": "number",
+                  "value": null
+                },
+                "pattern": {
+                  "description": "The fill pattern of this indicator icon.",
+                  "type": "string",
+                  "value": "none",
+                  "enumValues": [
+                    "largeChecker",
+                    "largeCrosshatch",
+                    "largeDiagonalLeft",
+                    "largeDiagonalRight",
+                    "largeDiamond",
+                    "largeTriangle",
+                    "none",
+                    "smallChecker",
+                    "smallCrosshatch",
+                    "smallDiagonalLeft",
+                    "smallDiagonalRight",
+                    "smallDiamond",
+                    "smallTriangle"
+                  ],
+                  "propertyEditorValues": {
+                    "largeChecker": {
+                      "displayName": "Large Checker"
+                    },
+                    "largeCrosshatch": {
+                      "displayName": "Large Crosshatch"
+                    },
+                    "largeDiagonalLeft": {
+                      "displayName": "Large Diagonal Left"
+                    },
+                    "largeDiagonalRight": {
+                      "displayName": "Large Diagonal Right"
+                    },
+                    "largeDiamond": {
+                      "displayName": "Large Diamond"
+                    },
+                    "largeTriangle": {
+                      "displayName": "Large Triangle"
+                    },
+                    "none": {
+                      "displayName": "None"
+                    },
+                    "smallChecker": {
+                      "displayName": "Small Checker"
+                    },
+                    "smallCrosshatch": {
+                      "displayName": "Small Crosshatch"
+                    },
+                    "smallDiagonalLeft": {
+                      "displayName": "Small Diagonal Left"
+                    },
+                    "smallDiagonalRight": {
+                      "displayName": "Small Diagonal Right"
+                    },
+                    "smallDiamond": {
+                      "displayName": "Small Diamond"
+                    },
+                    "smallTriangle": {
+                      "displayName": "Small Triangle"
+                    }
+                  }
+                },
+                "shape": {
+                  "description": "The shape of this indicator icon. Can take the name of a built-in shape or the svg path commands for a custom shape.",
+                  "type": "string",
+                  "value": null,
+                  "enumValues": [
+                    "circle",
+                    "diamond",
+                    "ellipse",
+                    "human",
+                    "plus",
+                    "rectangle",
+                    "square",
+                    "star",
+                    "triangleDown",
+                    "triangleUp"
+                  ],
+                  "propertyEditorValues": {
+                    "circle": {
+                      "displayName": "Circle"
+                    },
+                    "diamond": {
+                      "displayName": "Diamond"
+                    },
+                    "ellipse": {
+                      "displayName": "Ellipse"
+                    },
+                    "human": {
+                      "displayName": "Human"
+                    },
+                    "plus": {
+                      "displayName": "Plus"
+                    },
+                    "rectangle": {
+                      "displayName": "Rectangle"
+                    },
+                    "square": {
+                      "displayName": "Square"
+                    },
+                    "star": {
+                      "displayName": "Star"
+                    },
+                    "triangleDown": {
+                      "displayName": "Triangle Down"
+                    },
+                    "triangleUp": {
+                      "displayName": "Triangle Up"
+                    }
+                  }
+                },
+                "source": {
+                  "description": "The URL of an image to display for this indicator icon.",
+                  "type": "string",
+                  "value": null
+                },
+                "svgClassName": {
+                  "description": "The CSS style class defining the style of this indicator icon.",
+                  "type": "string",
+                  "value": null
+                },
+                "svgStyle": {
+                  "description": "The CSS style object defining the style of this indicator icon.",
+                  "type": "Object",
+                  "value": null
+                },
+                "width": {
+                  "description": "The width of this indicator icon.",
+                  "type": "number",
+                  "value": null
+                }
+              }
+            },
+            "label": {
+              "description": "The text for the node label.",
+              "type": "string",
+              "value": null
+            },
+            "row": {
+              "description": "The row id for this node.",
+              "type": "string",
+              "value": null
+            },
+            "secondaryLabel": {
+              "description": "The text for the secondary node label.",
+              "type": "string",
+              "value": null
+            },
+            "shortDesc": {
+              "description": "The description of this node. This is used for accessibility and also for customizing the tooltip text.",
+              "type": "string",
+              "value": null
+            },
+            "svgClassName": {
+              "description": "The CSS style class defining the style of this node.",
+              "type": "string",
+              "value": null
+            },
+            "svgStyle": {
+              "description": "The CSS style object defining the style of this node.",
+              "type": "Object",
+              "value": null
+            },
+            "xPercentage": {
+              "description": "An optional horizontal position (as a percentage) to be used in the average position calculation when grouping across cells.",
+              "type": "number",
+              "value": null
+            },
+            "yPercentage": {
+              "description": "An optional vertical position (as a percentage) to be used in the average position calculation when grouping across cells.",
+              "type": "number",
+              "value": null
+            }
+          }
+        }
+      }
     },
     "otherColor": {
       "description": "The color for the \"other\" group nodes.",
@@ -266,7 +810,28 @@
       "description": "The list of rows. Also accepts a Promise for deferred data rendering. No data will be rendered if the Promise is rejected.",
       "type": "Array<Object>|Promise|null",
       "displayName": "Rows",
-      "value": null
+      "value": null,
+      "extension": {
+        "vbcs": {
+          "itemProperties": {
+            "id": {
+              "description": "The id of the row. Used to identify this row.",
+              "type": "string",
+              "value": null
+            },
+            "label": {
+              "description": "The text for the row label.",
+              "type": "string",
+              "value": null
+            },
+            "labelStyle": {
+              "description": "The CSS style object defining the style of the row label.",
+              "type": "Object",
+              "value": null
+            }
+          }
+        }
+      }
     },
     "rowsTitle": {
       "description": "The text for the title on the row edge.",
@@ -372,6 +937,14 @@
               "description": "The CSS style object defining the style of the cell labels. The default value comes from the CSS and varies based on theme.",
               "type": "Object"
             },
+            "maximizedSvgStyle": {
+              "description": "The CSS style object defining the styles of the cell background and border when the cell is maximized. The default value comes from the CSS and varies based on theme.",
+              "type": "Object"
+            },
+            "minimizedSvgStyle": {
+              "description": "The CSS style object defining the styles of the cell background and border when the cell is minimized. The default value comes from the CSS and varies based on theme.",
+              "type": "Object"
+            },
             "showCount": {
               "description": "Determines when to display the cell count label.",
               "type": "string",
@@ -392,6 +965,10 @@
                   "displayName": "On"
                 }
               }
+            },
+            "svgStyle": {
+              "description": "The CSS style object defining the styles of the cell background and border. The default value comes from the CSS and varies based on theme.",
+              "type": "Object"
             }
           }
         },
@@ -1064,7 +1641,7 @@
         {
           "name": "value",
           "description": "The new value to set the property to.",
-          "type": "*"
+          "type": "any"
         }
       ],
       "return": "void"
@@ -1078,7 +1655,7 @@
           "type": "string"
         }
       ],
-      "return": "*"
+      "return": "any"
     },
     "setProperties": {
       "description": "Performs a batch set of properties.",

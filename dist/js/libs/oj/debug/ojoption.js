@@ -104,6 +104,7 @@ function ojOption(context) {
  * <li>oj-radioset</li>
  * <li>oj-select-one</li>
  * <li>oj-select-many</li>
+ * <li>oj-swipe-actions</li>
  * </ul>
  * </p>
  * <p>For example:
@@ -149,7 +150,7 @@ function ojOption(context) {
  * @expose
  * @memberof oj.ojOption
  * @instance
- * @type {*}
+ * @type {any}
  *
  * @example <caption>Initialize the oj-option with the <code class="prettyprint">value</code> attribute specified:</caption>
  * &lt;oj-option value="option1">Option1&lt;/oj-option>
@@ -207,7 +208,7 @@ function ojOption(context) {
  * 
  * @function setProperty
  * @param {string} property - The property name to set. Supports dot notation for subproperty access.
- * @param {*} value - The new value to set the property to.
+ * @param {any} value - The new value to set the property to.
  * @return {void}
  * 
  * @expose
@@ -221,7 +222,7 @@ function ojOption(context) {
  * Retrieves a value for a property or a single subproperty for complex properties.
  * @function getProperty
  * @param {string} property - The property name to get. Supports dot notation for subproperty access.
- * @return {*}
+ * @return {any}
  * 
  * @expose
  * @memberof oj.ojOption

@@ -2593,6 +2593,7 @@ oj.__registerWidget("oj.ojMasonryLayout", $['oj']['baseComponent'],
     var elem = this.element;
     var options = this.options;
     var bReorderHandle = false;
+    var bRefreshMenu = false;
     switch (key) 
     {
       case "reorderHandle":
@@ -2611,8 +2612,16 @@ oj.__registerWidget("oj.ojMasonryLayout", $['oj']['baseComponent'],
             this._initMenu(value);
         }
         break;
+      case "translations":
+        if (!oj.Object.compareValues(value, this.options[key]))
+          bRefreshMenu = true;
+        break;
     }
     this._super(key, value, flags);
+    if (bRefreshMenu)
+    {
+      this._refreshMenu();
+    }
     if (bReorderHandle && value)
     {
       this._setupReorderHandles();
@@ -3401,28 +3410,27 @@ oj.__registerWidget("oj.ojMasonryLayout", $['oj']['baseComponent'],
 
     listItems.each(function()
       {
-        if ($(this).children('a').length === 0)
+        var command = $(this).attr('data-oj-command');
+        if (command.indexOf("oj-masonrylayout-") >= 0)
+          command = command.slice("oj-masonrylayout-".length);
+        var tagName = ($menuContainer[0].tagName === "OJ-MENU") ? this.tagName : "li";
+        var newMenuItem = self._buildContextMenuItem(command, tagName);
+        
+        $(this).attr('id', newMenuItem.attr('id'));
+        if (this.tagName === "OJ-OPTION")
         {
-          var command = $(this).attr('data-oj-command').slice("oj-masonrylayout-".length);
-          var tagName = ($menuContainer[0].tagName === "OJ-MENU") ? this.tagName : "li";
-          var newMenuItem = self._buildContextMenuItem(command, tagName);
-          
-          $(this).attr('id', newMenuItem.attr('id'));
-          if (this.tagName === "OJ-OPTION")
-          {
-            // Just update the content of OJ-OPTION and don't replace that with menu item,
-            // because replacing OJ-OPTION would trigger a detach/attach of custom element
-            this.innerHTML = newMenuItem.get(0).innerHTML;
-            $(this).attr('data-oj-command', newMenuItem.attr('data-oj-command'));
-          }
-          else
-          {
-            // replace the list item with the new menu item
-            newMenuItem.get(0).className = $(this).get(0).className;
-            $(this).replaceWith(newMenuItem); //@HTMLUpdateOK                        
-          }
-          bChanged = true;
+          // Just update the content of OJ-OPTION and don't replace that with menu item,
+          // because replacing OJ-OPTION would trigger a detach/attach of custom element
+          this.innerHTML = newMenuItem.get(0).innerHTML;
+          $(this).attr('data-oj-command', newMenuItem.attr('data-oj-command'));
         }
+        else
+        {
+          // replace the list item with the new menu item
+          newMenuItem.get(0).className = $(this).get(0).className;
+          $(this).replaceWith(newMenuItem); //@HTMLUpdateOK                        
+        }
+        bChanged = true;
       });
 
     if (bChanged) {
@@ -3456,7 +3464,7 @@ oj.__registerWidget("oj.ojMasonryLayout", $['oj']['baseComponent'],
       menu.usermenu = false;
       if (menu.$container[0].tagName === "OJ-MENU")
       {
-        menu.$container[0].removeEventListener("ojAction");
+        menu.$container[0].removeEventListener("ojAction", this._handleContextMenuSelect);
       }
       else
       {
@@ -3464,6 +3472,20 @@ oj.__registerWidget("oj.ojMasonryLayout", $['oj']['baseComponent'],
       }
       menu.$container = null;
     }
+  },
+
+  /**
+   * Refresh the context menu.
+   * @return {void}
+   * @memberof oj.ojMasonryLayout
+   * @instance
+   * @private
+   */
+  _refreshMenu: function()
+  {
+    this._clearMenu();
+    this._initMenu();
+    this._applyMenu();
   },
   
   /**

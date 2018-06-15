@@ -147,8 +147,16 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
   {
     /** 
      * Dictates component's autocomplete state. 
-     * This attribute indicates whether the value of the control can be automatically 
-     * completed by the browser.
+     * This attribute indicates whether the value of the control can be automatically
+     * completed by the browser. The common values are "on" and "off".
+     * <p>Since this attribute passes through to the input element
+     * unchanged, you can look at the html specs for detailed information for how browsers behave
+     * and what values besides "on" and "off" you can set. The html spec says the default is "on",
+     * so when autocomplete is not explicitly set, the browsers treat it as "on".
+     * </p>
+     * @see {@link https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input}
+     * @see {@link https://caniuse.com/#feat=input-autocomplete-onoff}
+     * @see {@link https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#autofilling-form-controls:-the-autocomplete-attribute}
      * 
      * @example <caption>Initialize component with <code class="prettyprint">autocomplete</code> attribute:</caption>
      * &lt;oj-input-number autocomplete = "on">&lt;/oj-input-number>
@@ -158,14 +166,13 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
      * var ro = myComp.autocomplete;
      *
      * // setter
-     * myComp.autocomplete = "on";
+     * myComp.autocomplete = "off";
      * 
+     * @ojshortdesc Dictates component's autocomplete state.
      * @expose 
-     * @type {string|undefined}
-     * @ojvalue {string} "on" enable autofill
-     * @ojvalue {string} "off" disable autofill
-     * @alias autocomplete
-     * @default "off"
+     * @type {string}
+     * @ojsignature {target: "Type", value: "'on'|'off'|string", jsdocOverride: true}
+     * @default "on"
      * @instance
      * @access public
      * @memberof oj.ojInputNumber
@@ -578,13 +585,22 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
      * */
     step: 1,
     /** 
-     * List of validators used by component when performing validation. Each item is either an 
+         * List of validators used by component along with the implicit component validators
+         * when performing validation. Each item is either an
      * instance that duck types {@link oj.Validator}, or is an Object literal containing the 
-     * properties listed below. Implicit validators created by a component when certain attributes 
-     * are present (e.g. <code class="prettyprint">required</code> attribute), are separate from 
-     * validators specified through this attribute. At runtime when the component runs validation, it 
-     * combines the implicit validators with the list specified through this attribute. 
+         * properties listed below.
      * <p>
+         * Implicit validators are created by the element when certain attributes are present. 
+         * For example, if the <code class="prettyprint">required</code> 
+         * attribute is set, an implicit {@link oj.RequiredValidator} is created. If the 
+         * <code class="prettyprint">min</code> and/or <code class="prettyprint">max</code> attribute
+         * is set, an implicit {@link oj.NumberRangeValidator} is created.
+         * At runtime when the component runs validation, it
+         * combines all the implicit validators with all the validators 
+         * specified through this <code class="prettyprint">validators</code> attribute, and runs 
+         * all of them.
+         * </p>
+         * <p>
      * Hints exposed by validators are shown in the notewindow by default, or as determined by the 
      * 'validatorHint' property set on the <code class="prettyprint">display-options</code> 
      * attribute. 
@@ -645,8 +661,6 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
      *                     "messageDetail": "You must enter at least 3 letters or numbers"}}]'>
      * &lt;/oj-input-number>      
      * 
-     * NOTE: oj.Validation.validatorFactory('numberRange') returns the validator factory that is used 
-     * to instantiate a range validator for numbers.
      * 
      * @example <caption>Initialize the component with multiple validator instances:</caption>
      * var validator1 = new MyCustomValidator({'foo': 'A'}); 
@@ -667,7 +681,9 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
      * @access public
      * @instance
      * @memberof oj.ojInputNumber
-     * @ojsignature  { target: "Type", value: "Array<oj.Validator<number>|oj.Validation.FactoryRegisteredValidatorOrConverter>|null"}
+     * @ojsignature  { target: "Type", 
+     *       value: "Array<oj.Validator<number>|oj.Validation.FactoryRegisteredValidatorOrConverter>|null",
+     *       jsdocOverride: true}
      * @type {Array.<Object>|undefined}
      */
     
@@ -2522,7 +2538,6 @@ var ojInputNumberMeta = {
   "properties": {
     "autocomplete": {
       "type": "string",
-      "enumValues": ["off", "on"],
       "extension": {
         _COPY_TO_INNER_ELEM: true
       }

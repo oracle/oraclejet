@@ -484,7 +484,7 @@ $formLayoutMarginBottom: 10px !default;
 
 // inline label in a form we do not float, thus we need line-height
 // to maintain label's height, and we need a different top margin for this case.
-$formLayoutLabelInlineMarginTop: .3em !default;
+$formLayoutLabelInlineMarginTop: .5em !default;
 
 
 $formLayoutFieldInlineAlign: end !default;
@@ -509,6 +509,9 @@ $inputSearchIconPadding: 0 8px 0 0 !default;
 // INPUT NUMBER
 // the spacing between the input and the buttonset
 $inputNumberInputToButtonMargin: 16px !default;
+//up and down button width
+$inputNumberButtonWidth: 50px;
+
 
 // RADIOSET AND CHECKBOXSET
 // Android has input rendered as a background image and label comes before the image

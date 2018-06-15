@@ -73,7 +73,8 @@ function _KoCustomBindingProvider()
           {
             var args = Array.prototype.slice.call(originalArgs);
             args.push(ret, wrapped);
-            ret = handler.apply(null, args);
+            // Ignore dependencies here so that bindings don't get triggered due to contained evaluations
+            ret = ko.ignoreDependencies(handler, null, args);
           }
         );
       }

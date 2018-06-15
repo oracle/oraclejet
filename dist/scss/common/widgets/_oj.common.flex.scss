@@ -52,7 +52,9 @@
   }
 
   @if ($generateJustify) {
-
+    .#{$selectorPrefix}-justify-content-flex-start {
+      @include oj-justify-content-property(flex-start);
+    }
 
     .#{$selectorPrefix}-justify-content-flex-end {
       @include oj-justify-content-property(flex-end);

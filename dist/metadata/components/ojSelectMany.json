@@ -1,7 +1,7 @@
 {
   "name": "oj-select-many",
-  "version": "5.0.0",
-  "jetVersion": "5.0.0",
+  "version": "5.1.0",
+  "jetVersion": "5.1.0",
   "displayName": "Multi Select",
   "preview": true,
   "roles": [
@@ -60,7 +60,7 @@
     },
     "help": {
       "description": "Form component help information.\n\nThe properties supported on the help option are:",
-      "type": "Object.<string, string>",
+      "type": "Object",
       "displayName": "Help",
       "value": {
         "help": {
@@ -76,7 +76,7 @@
     },
     "helpHints": {
       "description": "Represents hints for oj-form-layout element to \nrender help information on the label of the editable component.",
-      "type": "Object.<string, string>",
+      "type": "Object",
       "displayName": "Help Hints",
       "value": {
         "definition": "",
@@ -125,7 +125,7 @@
     },
     "options": {
       "description": "The option items for the Select.",
-      "type": "null|Array<(oj.Option|oj.Optgroup)>|oj.DataProvider.<oj.Option>",
+      "type": "null|Array<(oj.Option|oj.Optgroup)>|oj.DataProvider<oj.Option>",
       "displayName": "Options",
       "value": null
     },
@@ -183,7 +183,7 @@
     },
     "placeholder": {
       "description": "A short hint that can be displayed before user selects a value.",
-      "type": "string|null|undefined",
+      "type": "string|null",
       "displayName": "Placeholder",
       "value": null
     },
@@ -286,14 +286,28 @@
     },
     "value": {
       "description": "The value of the element.",
-      "type": "Array<*>",
+      "type": "Array<any>",
       "displayName": "Value"
     },
     "valueOptions": {
       "description": "The current values of the element and theirs associated display labels.",
       "type": "null|Array<Object>",
       "displayName": "Value Options",
-      "value": null
+      "value": null,
+      "extension": {
+        "vbcs": {
+          "itemProperties": {
+            "value": {
+              "description": "a current value of JET Select",
+              "type": "any"
+            },
+            "label": {
+              "description": "display label of value above. If missing, String(value) is used.",
+              "type": "string"
+            }
+          }
+        }
+      }
     }
   },
   "methods": {
@@ -324,7 +338,7 @@
         {
           "name": "value",
           "description": "The new value to set the property to.",
-          "type": "*"
+          "type": "any"
         }
       ],
       "return": "void"
@@ -338,7 +352,7 @@
           "type": "string"
         }
       ],
-      "return": "*"
+      "return": "any"
     },
     "setProperties": {
       "description": "Performs a batch set of properties.",

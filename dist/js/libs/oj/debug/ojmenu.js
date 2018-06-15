@@ -133,15 +133,15 @@ define(['ojs/ojcore', 'jquery', "hammerjs", "ojs/ojjquery-hammer", 'promise', 'o
  *   Submenus
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#submenus-section"></a>
  * </h3>
- * 
+ *
  * <p>Submenus can be created by specifying nested <code class="prettyprint">oj-menu</code> elements under the desired <code class="prettyprint">oj-option</code> elements.
- * 
+ *
  * <p>When a submenu is present, a default submenu icon will be automatically added to the parent menu item (see <a href="#itemIcons-section">Menu Item Icons</a>).
- * 
+ *
  * <p>Sheet menus are not appropriate when submenus are present. Therefore, submenus and there parent menus are always displayed as a dropDown regardless of the
  * <code class="prettyprint">open-options.display</code> attribute's value.
- * 
- * 
+ *
+ *
  * <h3 id="dividers-section">
  *   Dividers
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#dividers-section"></a>
@@ -170,8 +170,8 @@ define(['ojs/ojcore', 'jquery', "hammerjs", "ojs/ojjquery-hammer", 'promise', 'o
  * or end icons for a menu item, the <code class="prettyprint">startIcon</code> or <code class="prettyprint">endIcon</code> slot of the
  * <code class="prettyprint">oj-option</code> should be specified. See the <code class="prettyprint">oj-option</code> doc for details about
  * accepted children and slots.</p>
- * 
- * 
+ *
+ *
  * <h3 id="dismissal-section">
  *   Dismissal
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#dismissal-section"></a>
@@ -408,7 +408,7 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
              *
              * <p>To avoid disorienting the user, if the screen width changes while the menu is already open (e.g. due to a device
              * rotation), the display may not change until the next launch.
-             * 
+             *
              * <p>Sheet menus are not appropriate when submenus are present.  Thus, menus having submenus are always displayed as
              * a dropDown, regardless of the values of this option and the SASS variable.
              *
@@ -513,20 +513,20 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
              * </ul>
              *
              * <p>By default, when the <code class="prettyprint">of</code> field is not set, the menu is positioned relative to the launcher.</p>
-             * 
+             *
              * <p>The default position value varies between menus and submenus as follows:
              * <ul>
              *   <li>Top level menu default: <code class="prettyprint">{ my: { horizontal: "start", vertical: "top" }, at: { horizontal: "start", vertical: "bottom" }, offset: { x: 0, y: 0 }, collision: "flipfit" }</code></li>
              *   <li>Submenu default: <code class="prettyprint">{ my: { horizontal: "start", vertical:  "top" }, at: { horizontal: "end", vertical: "top" }, offset: { x: 0, y: 0 }, collision: "flipfit" }</code></li>
              * </ul>
-             * 
+             *
              * <b>Deprecated v5.0.0 jQuery UI position syntax; Use of a percent unit with "my" or "at" is not supported.</b>
              *
              * @expose
              * @alias openOptions.position
              * @memberof! oj.ojMenu
              * @instance
-             * @type {Object}  
+             * @type {Object}
              *
              * @example <caption>Initialize the menu with the <code class="prettyprint">openOptions.position</code> option specified:</caption>
              * &lt;oj-menu open-options.position.my.horizontal='start'>&lt;/oj-menu>
@@ -811,7 +811,7 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
          *            event.preventDefault to cancel the default animation, It must call the
          *            endCallback function when it finishes its own animation handling and any
          *            custom animation has ended.
-         *            
+         *
          * @example <caption>Bind an event listener to the
          *          <code class="prettyprint">onOjAnimateStart</code> property to override the default
          *          "open" animation:</caption>
@@ -823,7 +823,7 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
          *       event.preventDefault();
          *       oj.AnimationUtils.fadeIn(event.detail.element).then(event.detail.endCallback);
          *   };
-         *   
+         *
          * @example <caption>Bind an event listener to the
          *          <code class="prettyprint">onOjAnimateStart</code> property to override the default
          *          "close" animation:</caption>
@@ -858,7 +858,7 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
          *                      <li>"open" - when a menu element is opened</li>
          *                      <li>"close" - when a menu element is closed</li>
          *                    </ul>
-         *                    
+         *
          * @example <caption>Bind an event listener to the
          *          <code class="prettyprint">onOjAnimateEnd</code> property to listen for the "open"
          *          ending animation:</caption>
@@ -868,7 +868,7 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
          *      is open
          *     if (event.detail.action == "open") {}
          *   };
-         * 
+         *
          * @example <caption>Bind an event listener to the
          *          <code class="prettyprint">onOjAnimateEnd</code> property to listen for the "close"
          *          ending animation:</caption>
@@ -998,7 +998,7 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
          *
          * <p>To ensure keyboard accessibility, the only correct, supported way to react to the selection of a menu item is to listen
          * for this event.  Click listeners and <code class="prettyprint">href</code> navigation should not be used.
-         * 
+         *
          * <p>To find the value of the menu item that triggered an action event, the event.target.value should be used.
          *
          * @expose
@@ -1013,7 +1013,7 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
          *   {
          *     // the target of the action event is the selected &lt;oj-option> element
          *     var itemSelected = event.target;
-         *     
+         *
          *     // find the 'value' of the selected &lt;oj-option> element
          *     var selectedValue = itemSelected.value;
          *   }
@@ -1045,7 +1045,7 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
             // deprecation of non-<ul> menus.  Per arch. discussion, throw in this case rather than just turning off cancel item.
             if (_SHEETS_HAVE_CANCEL_ITEM && this.element[0].tagName.toLowerCase() !== "ul")
                 throw new Error("Cancel item supported for <ul> menus only.");
-            
+
             // TODO: When support for non-<ul> menus is pulled after the deprecation period, replace the above check with this one:
 //          if (this.element[0].tagName.toLowerCase() !== "ul")
 //              throw new Error("Menu must be based on a <ul> element.");
@@ -1068,21 +1068,21 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
 
             if (!this._isSubmenu)
                 this._createAsTopLevelMenu();
-            
+
             // fixup the position option if custom element menu or submenu
             var options = this.options;
             options["openOptions"]["position"] = oj.PositionUtils.coerceToJet(options["openOptions"]["position"]);
         }
     },
-    
+
     _createAsTopLevelMenu: function()
     {
         var self = this;
         this.activeMenu = this.element;
-        
+
         // flag used to prevent firing of the click handler as the event bubbles up through nested menus
         this.mouseHandled = false;
-        
+
         this._setupSwipeBehavior();
 
         this.element
@@ -1271,12 +1271,12 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
         this._usingCallback = $.proxy(this._usingHandler, this);
         this._setup();
     },
-    
+
     _createAsSubmenu: function()
     {
         // set special container name as this should have submenu defaults
         this.element.attr(oj.Components._OJ_CONTAINER_ATTR, this['widgetName']);
-        
+
         this.element
             .uniqueId()
             .addClass( "oj-menu oj-component oj-menu-submenu oj-menu-dropdown" ) // submenus are always dropdown
@@ -1298,29 +1298,30 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
         else
             return _contextMenuPressHoldJustEnded;
     },
-    
+
     _processOjOptions: function() {
         var self = this;
-        
+
         self._maxEndIconCount = 0;
         self._maxStartIconCount = 0;
         self._startIconWidth = 0;
         self._endIconWidth = 0;
-        
+
         var ojOptions = this.element.find("oj-option");
         $.each(ojOptions, function(i, option) {
             option["customOptionRenderer"] = self._customOptionRenderer.bind(self);
         });
     },
-    
+
     _customOptionRenderer: function(option) {
         // Implement custom rendering here...
         var ojOption = $(option);
         var self = this;
-        
+
         // clear out any roles or classes that we may have previously set
         this._clearOption(ojOption);
-        
+        this._hasSubmenus = false;
+
         // if 'a' tag already exists, we need to remove it and re-render content
         var anchors = ojOption.children('a');
         for (var i = 0; i < anchors.length; i++)
@@ -1337,14 +1338,14 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
                 break;
             }
         }
-        
+
         // test to see if this is a divider
         if (!/[^\-\u2014\u2013\s]/.test( ojOption.text() )) // hyphen, em dash, en dash
             this._initDividers(ojOption);
         else
         {
             this._initMenuItems(ojOption);
-            
+
             // create 'a' tag
             var a = document.createElement('a');
             a.setAttribute('href', '#');
@@ -1360,7 +1361,7 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
                    });
 
             ojOption.prepend(a); // @HTMLUpdateOK append trusted new DOM to menu item
-            
+
             var supportedSlots = ["startIcon", "", "endIcon"];
             var slots = oj.BaseCustomElementBridge.getSlotMap(option);
 
@@ -1410,7 +1411,7 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
                     }
                 }
             });
-            
+
             // check for disabled state in case all we need to do is update disabled attribute
             if (option['disabled'] == true)
             {
@@ -1423,27 +1424,27 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
                 customAnchor.removeAttr( "aria-disabled" );
             }
         }
-        
+
         var children = this.element.children();
         var dividers = children.filter( ".oj-menu-divider" );
-        
+
         // ensure "before/after-divider" classes are applied iff appropriate
         this._initDividerNeighbors(children, dividers);
     },
-    
+
     // Helper method to position start icons
     _positionStartIcon: function(node, index, count) {
         if (this.isRtl)
             var marginProperty = 'margin-right';
         else
             marginProperty = 'margin-left';
-        
+
         var margin = parseInt($(node).css( marginProperty ), 10);
         // margins are negative for start icons
         this._startIconWidth = -1 * margin;
         $(node).css( marginProperty, margin * (count - index) + 'px' );
     },
-    
+
     // Helper method to position end icons
     _positionEndIcon: function(node, index, count) {
         if (this.isRtl)
@@ -1456,16 +1457,16 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
             marginProperty = 'margin-right';
             widthProperty = 'margin-left';
         }
-        
+
         var margin = parseInt($(node).css( marginProperty ), 10);
         // margins are negative for end icons
         this._endIconWidth = -1 * parseInt($(node).css( widthProperty ), 10);
         $(node).css( marginProperty, (margin + this._endIconWidth * (count - index - 1)) + 'px' );
     },
-    
+
     // Helper method to handle menu item padding updates
     _updateMenuPadding: function($menu) {
-        
+
         var anchors = $menu.children()  // <li>s
                           .children(); // <a>s
         var iconCount = anchors.children(".oj-menu-item-icon:not(.oj-menu-cancel-icon)").length; // icons other than cancel item's icon
@@ -1481,20 +1482,20 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
         if (this._maxEndIconCount && this._maxEndIconCount > 1)
             this._applyAnchorIconPadding(anchors, this._endIconWidth, this._maxEndIconCount, false);
     },
-    
+
     // Helper method to apply icon padding to menu item anchors
     _applyAnchorIconPadding: function(anchors, iconWidth, count, isStart) {
         if ((this.isRtl && isStart) || (!this.isRtl && !isStart))
             var paddingProperty = 'padding-right';
         else
             paddingProperty = 'padding-left';
-        
+
         anchors.each(function() {
             var padding = parseInt($(this).css( paddingProperty ), 10);
             $(this).css( paddingProperty, (padding + iconWidth * (count - 1)) + 'px' );
         });
     },
-    
+
    /**
     * @instance
     * @private
@@ -1518,7 +1519,7 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
                     }
 
                     var self = this;
-                    
+
                     //Clone _openPopupMenus as __dismiss() will remove the open menu from _openPopupMenus list
                     var openPopupMenus = _openPopupMenus.slice(0, _openPopupMenus.length);
                     $.each(openPopupMenus , function(index, menu) {
@@ -1543,13 +1544,13 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
                             // cascading close animation if it wants to.
                             self._runOnPromise(promise, function() {
                               // The menu could have been opened by a different launcher by
-                              // the time its submenus finish collapsing, so double-check if we 
+                              // the time its submenus finish collapsing, so double-check if we
                               // still need to dismiss it.
                               if (menu._dismissEvent)
                               {
                                 if (menu._launcher)
                                   menu.__dismiss(event);
-                                
+
                                 menu._dismissEvent = null;
                               }
                             });
@@ -1847,16 +1848,16 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
 
     _setup: function() { // Private, not an override (not in base class).  Method name unquoted so will be safely optimized (renamed) by GCC as desired.
         this.isRtl = this._GetReadingDirection() === "rtl";
-        
+
         if (!this._IsCustomElement())
             this._setupWidgetMenus();
         else
         {
             this._processOjOptions();
-            
+
             if (this._isSubmenu)
                 this.options.openOptions.launcher = this.element.parent();
-            
+
             // ensure menu padding is updated
             this._updateMenuPadding(this.element);
         }
@@ -1866,12 +1867,12 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
             this._blur();
         }
     },
-    
+
     _setupWidgetMenus: function() { // Private, not an override (not in base class).  Method name unquoted so will be safely optimized (renamed) by GCC as desired.
         var self=this;
-        
+
         var submenus = this.element.find( this.options.menuSelector ); // <ul>'s except root <ul>
-        
+
         var menus = submenus.add( this.element ),                      // <ul>'s including root <ul>
             children = menus.children();                               // <li>'s in root menu and submenus
 
@@ -1928,20 +1929,20 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
             self._updateMenuPadding($(this));
         });
     },
-    
+
     // helper method to create and add a submenu icon to the item provided
     _setupSubmenu: function(item, submenu) {
         var submenuIcon = $( "<span>" );
-        
+
         submenuIcon   // separate stmt rather than chaining, since GCC can't tell that this is the setter overload of .data().
             .addClass( "oj-menu-submenu-icon oj-component-icon" )
             .data( "oj-ojMenu-submenu-icon", true ); // TODO: can't we just look for the class at destroy time rather than adding this data?
-    
+
         item
             .attr( "aria-haspopup", "true" )
             .attr( "aria-expanded", "false" ) // per a11y team, live on <a>, not <ul> like JQUI
             .append( submenuIcon ); // @HTMLUpdateOK append trusted new DOM to menu item
-    
+
         submenu.attr( "aria-labelledby", item.attr( "id" ));
     },
 
@@ -1985,7 +1986,7 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
         dividers.prev().addClass( "oj-menu-item-before-divider" );
         dividers.next().addClass( "oj-menu-item-after-divider" );
     },
-    
+
     /**
      * @private
      */
@@ -2179,13 +2180,13 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
     {
       var defaults;
       var animation;
-      
+
       defaults = (oj.ThemeUtils.parseJSONFromFontFamily('oj-menu-option-defaults') || {})["animation"];
       if (defaults && defaults[menuType])
       {
         animation = defaults[menuType][action];
       }
-      
+
       return animation;
     },
 
@@ -2210,14 +2211,14 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
      * @memberof oj.ojMenu
      * @instance
      * @private
-     * @param {*} effects - The animation options
+     * @param {any} effects - The animation options
      * @param {Object} propertyMap - The runtime property values
-     * @return {*} The resolved animation effects
+     * @return {any} The resolved animation effects
      */
     _replaceAnimationOptions: function(effects, propertyMap)
     {
       if (propertyMap && effects && typeof effects != 'string')
-      {    
+      {
         var effectsAsString = JSON.stringify(effects);
 
         for (var key in propertyMap)
@@ -2227,12 +2228,12 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
 
         effects = JSON.parse(effectsAsString);
       }
-      
+
       return effects;
     },
 
     /**
-     * Utility method to run a task when a promise is resolved, or run it 
+     * Utility method to run a task when a promise is resolved, or run it
      * immediately if there is no promise.
      *
      * @memberof oj.ojMenu
@@ -2266,7 +2267,7 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
     _beforeCloseHandler : function (psOptions)
     {
       var rootElement = psOptions[oj.PopupService.OPTION.POPUP];
-      
+
       // For custom element:
       // Fire action event before menu closed, so that app action handlers can do their thing
       // without waiting for the animation to finish.
@@ -2304,7 +2305,7 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
       else
       {
         var animationOptions = this._getDefaultAnimation(this._sheetMenuIsOpen ? 'sheet' : 'dropdown', 'close');
-        var promise = oj.AnimationUtils.startAnimation(rootElement[0], "close", 
+        var promise = oj.AnimationUtils.startAnimation(rootElement[0], "close",
           oj.PositionUtils.addTransformOriginAnimationEffectsOption(rootElement, animationOptions), this);
 
         promise.then(function() {
@@ -2434,7 +2435,7 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
      *
      * @param {Object=} event What triggered the menu launch.  May be <code class="prettyprint">null</code>.  May be omitted if subsequent params are omitted.
      * @param {Object=} openOptions Options to merge with the <code class="prettyprint">openOptions</code> option.  May be <code class="prettyprint">null</code>.  May be omitted if subsequent params are omitted.
-     * 
+     *
      * @example <caption>Invoke the <code class="prettyprint">open</code> method:</caption>
      * // override the launcher for this launch only, without affecting the other
      * // openOptions, and without affecting the component's openOptions option
@@ -2447,20 +2448,20 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
 
         // If _clickAwayHandler has determined that we need to dismiss the menu,
         // do it first so that ojclose event is triggered for the old launcher
-        // before ojbeforeopen event is triggered for the new launcher        
+        // before ojbeforeopen event is triggered for the new launcher
         if (this._dismissEvent)
         {
            // Disable animation since we'll be reopening the menu
           this._disableAnimation = true;
-          
+
           // Use the event from _clickAwayHandler as the close event's originalEvent
           this.__dismiss(this._dismissEvent);
-          
+
           // In case the menu is being opened by a different launcher, we don't
           // want the _clickAwayHandler for the old launcher to dismiss it.
           this._dismissEvent = null;
         }
-        
+
         //
         // Important:  Merge [submenu]openOptions *before* calling _trigger(), and don't use the merged values until *after* the call.
         // Reason:  Per doc on open() and beforeOpen event, we pass the merged openOptions to beforeOpen listeners as a "live" object,
@@ -2478,7 +2479,7 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
         openOptions.position = $.extend({}, openOptions.position);
         if (this._IsCustomElement())
             this._setPosition(openOptions.position);
-        
+
         submenuOpenOptions = $.extend({}, this.options.submenuOpenOptions, submenuOpenOptions);
 
         // getCurrentOpenOptions() returns a deep copy of this._currentOpenOptions if set.  Put the live copy in the ivar, and have that method make the copy, so that the method picks up
@@ -2508,14 +2509,14 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
         if (this.element.is(":visible")) {
             // Disable animation since we'll be reopening the menu
             this._disableAnimation = true;
-            
+
             // if getCurrentOpenOptions() is called during the close event marking the end of the previous launch,
             // then it should return the details for the old launch
             this._currentOpenOptions = oldOpenOptions;
 
             // Use the beforeOpen event as the close event's originalEvent
             this.__dismiss(beforeOpenResults['event']); // sets this._currentOpenOptions to null
-            
+
             // In case the menu is being opened by a different launcher, we don't
             // want the _clickAwayHandler for the old launcher to dismiss it.
             this._dismissEvent = null;
@@ -2554,7 +2555,7 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
             // vary by launch when there are submenus.
             this.element.addClass("oj-menu-dropdown").removeClass("oj-menu-sheet");
             modality = _DROPDOWN_MODALITY;
-            
+
             // convert the position option back to JQuery format if custom element menu or submenu
             if (this._IsCustomElement())
             {
@@ -2633,10 +2634,10 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
         psOptions[oj.PopupService.OPTION.CUSTOM_ELEMENT] = this._IsCustomElement();
 
         oj.PopupService.getInstance().open(psOptions);
-        
+
         this._disableAnimation = false;
     },
-    
+
     /**
      * @memberof oj.ojMenu
      * @instance
@@ -2646,8 +2647,8 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
      */
     _setPosition : function (position)
     {
-      var options = this.options; 
-      
+      var options = this.options;
+
       // new position extends the existing object
       // covert to jet internal position format
       if (position)
@@ -2676,20 +2677,8 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
       if (!this._isAnimationDisabled())
       {
         var animationOptions = this._getDefaultAnimation(isDropDown ? 'dropdown' : 'sheet', 'open');
-        promise = oj.AnimationUtils.startAnimation(rootElement[0], "open", 
+        promise = oj.AnimationUtils.startAnimation(rootElement[0], "open",
           oj.PositionUtils.addTransformOriginAnimationEffectsOption(rootElement, animationOptions), this);
-
-        if (isDropDown)
-        {
-          // For dropdown, no need to return a promise from the open animation 
-          // since the menu is ready for interaction as soon as it's visible,
-          // and we want mouseenter events to be handled while animating.
-          //
-          // For sheet, we need to return the promise because it's coming in
-          // from the bottom and afterOpenHandler set focus to it, which can
-          // cause the layout to move around if the menu is not yet in view.
-          promise = undefined;
-        }
       }
 
       return promise;
@@ -2757,24 +2746,24 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
         // Don't open if already open.
         // Calling position() again when the submenu is animating will mess up
         // the calculation and make the submenu appear in different positions.
-        if ( submenu.attr( "aria-hidden" ) !== "true" ) {
+        if ( submenu.attr( "aria-hidden" ) !== "true" || !this.active) {
             return;
         }
-        
+
         if (this._IsCustomElement())
         {
             var submenuWidget = this._getSubmenuWidget(submenu);
             var beforeOpenResults = submenuWidget._trigger2( "beforeOpen", event);
-            
+
             if (!beforeOpenResults['proceed'])
                 return;
-            
+
             var position = oj.PositionUtils.coerceToJqUi(submenuWidget.options.openOptions.position);
             position = oj.PositionUtils.normalizeHorizontalAlignment(position, this.isRtl);
         }
         else
             position = this._submenuPosition;
-        
+
         position = $.extend( {"of": this.active}, position); // normalizeHorizontalAlignment() was already called on the ivar
 
         this._clearTimer && this._clearTimer();
@@ -2794,7 +2783,7 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
         if (!this._launcher && _openPopupMenus.indexOf(this) < 0) {
             _openPopupMenus.push(this);
         }
-        
+
         if (!this._isAnimationDisabled())
         {
           var animation = this._getDefaultAnimation('submenu', 'open');
@@ -2853,12 +2842,12 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
           // Need to add busy state since submenu animation doesn't go through PopupService events
           var resolveBusyState = oj.Context.getContext(this.element[0]).getBusyContext().addBusyState({"description": "closing submenus"});
 
-          // IMPORTANT: Do not change promise to the one returned by then().  Doing 
+          // IMPORTANT: Do not change promise to the one returned by then().  Doing
           // so will introduce an additional delay and disrupt the continuity of
           // busy state with any subsequent operation.
           promise.then(resolveBusyState);
         }
-        
+
         return promise;
     },
 
@@ -2899,21 +2888,21 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
           // starting from the innermost level.
           // There is no default close animation, but this allows app to define
           // cascading close animation if it wants to.
-          
+
           // Define a recurive function that close all submenus of a menu
           var closeSubmenus = function(currentMenu)
           {
             var masterPromise = null;
-            
+
             // Get <li> child elements of the current menu.  Submenus are rendered as
             // <ul> children of <li> elements.
             var items = currentMenu.children();
-            
+
             // Find all the immediate child menus and iterate through them
             var childMenus = items.children( ".oj-menu" );
             childMenus.each(function(index, submenu) {
               var jSubmenu = $(submenu);
-              
+
               // Define a function that animate the closing and hiding of the iterated menu
               var animateMenuClose = function() {
                 var position = jSubmenu.data(_POSITION_DATA);
@@ -2962,7 +2951,7 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
                 }
             }
         }
-        
+
         return closePromise;
     },
 
@@ -2983,7 +2972,7 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
      */
     _collapse: function( event, which ) { // Private, not an override (not in base class).  Method name unquoted so will be safely optimized (renamed) by GCC as desired.
         var promise;
-        
+
         if (which == null || which === "active") {
             var newItem = this.activeMenu &&
                 this.activeMenu.closest( ".oj-menu-item", this.element );
@@ -3399,13 +3388,13 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
     /**
      * Adds a busy state with the specified description.
      *
-     * Asynchronously, after the specified delay in ms, calls callback with "this" bound to this menu instance, 
+     * Asynchronously, after the specified delay in ms, calls callback with "this" bound to this menu instance,
      * and then resolves the busy state.
      *
      * Returns a "cancel" function that if called:
-     * - Cancels the timer, so that the callback is never called (unless it has already been called).  
+     * - Cancels the timer, so that the callback is never called (unless it has already been called).
      * - Resolves the busy state.
-     * 
+     *
      * @memberof oj.ojMenu
      * @instance
      * @private
@@ -3422,8 +3411,8 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
         // Call this line each time rather than caching busyContext
         var resolve = oj.Context.getContext(this.element[0]).getBusyContext().addBusyState({"description": description});
 
-        // resolve() bombs if called a 2nd time, so prevent that possibility by wrapping it in a function that can't call 
-        // it twice, and never calling resolve() directly. If that "bombs 2nd time" behavior is removed from the BusyContext 
+        // resolve() bombs if called a 2nd time, so prevent that possibility by wrapping it in a function that can't call
+        // it twice, and never calling resolve() directly. If that "bombs 2nd time" behavior is removed from the BusyContext
         // framework, can remove this "resolveOnce" wrapper var, and just call resolve() below.
         var resolveOnce = function() {
             if (resolve) {
@@ -3481,9 +3470,9 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
 
       this._super();
     }
-    
+
     // Override contextMenu slot definition to remove it from the jsdoc as it is not supported for menus
-    
+
     /**
      * @ojslot contextMenu
      * @memberof oj.ojMenu
@@ -3614,7 +3603,7 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
 
 oj.Components.setDefaultOptions(
 {
-  'ojMenu': // properties for all menu components 
+  'ojMenu': // properties for all menu components
   {
     'openOptions': oj.Components.createDynamicPropertyGetter(function(context){
       return {
@@ -3764,52 +3753,6 @@ var ojMenuMeta = {
             },
             "of": {
               "type": "string|object"
-            },
-            "collision": {
-              "type": "string",
-              "enumValues": ["flip", "fit", "flipfit", "flipcenter", "none"]
-            }
-          }
-        },
-        "submenuPosition": {
-          "type": "object",
-          "properties": {
-            "my": {
-              "type": "object",
-              "properties": {
-                "horizontal": {
-                  "type": "string",
-                  "enumValues": ["start", "end", "left", "center", "right"]
-                },
-                "vertical": {
-                  "type": "string",
-                  "enumValues": ["top", "center", "bottom"]
-                }
-              }
-            },
-            "at": {
-              "type": "object",
-              "properties": {
-                "horizontal": {
-                  "type": "string",
-                  "enumValues": ["start", "end", "left", "center", "right"]
-                },
-                "vertical": {
-                  "type": "string",
-                  "enumValues": ["top", "center", "bottom"]
-                }
-              }
-            },
-            "offset": {
-              "type": "object",
-              "properties": {
-                "x": {
-                  "type": "number"
-                },
-                "y": {
-                  "type": "number"
-                }
-              }
             },
             "collision": {
               "type": "string",

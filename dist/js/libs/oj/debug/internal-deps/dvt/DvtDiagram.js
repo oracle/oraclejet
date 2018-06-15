@@ -1422,6 +1422,7 @@ DvtDiagramLayoutContextNode.prototype.Reset = function() {
   this.setBounds(null);
   this.setContentBounds(null);
   this.setLabelBounds(null);
+  this.setDirty();
 };
 
 /**
@@ -1851,9 +1852,9 @@ dvt.BaseDiagram.prototype.getSelectionHandler = function() {
  */
 dvt.BaseDiagram.prototype.setSelectionMode = function(selectionMode) {
   if (selectionMode == 'single')
-    this._selectionHandler = new dvt.SelectionHandler(dvt.SelectionHandler.TYPE_SINGLE);
+    this._selectionHandler = new dvt.SelectionHandler(this.getCtx(), dvt.SelectionHandler.TYPE_SINGLE);
   else if (selectionMode == 'multiple')
-    this._selectionHandler = new dvt.SelectionHandler(dvt.SelectionHandler.TYPE_MULTIPLE);
+    this._selectionHandler = new dvt.SelectionHandler(this.getCtx(), dvt.SelectionHandler.TYPE_MULTIPLE);
   else
     this._selectionHandler = null;
 
@@ -5199,6 +5200,7 @@ dvt.Diagram.prototype.PreRender = function() {
   else if (this._layoutContext) {
     this._layoutContext.setEventData(null);
     this._layoutContext.setComponentSize(new dvt.DiagramRectangle(0, 0, this.getWidth(), this.getHeight()));
+    this._layoutContext.setCurrentViewport(null);
   }
 };
 
@@ -5305,7 +5307,7 @@ dvt.Diagram.prototype._resolveDeferredData = function(dataSource, nodeData) {
  * @private
  */
 dvt.Diagram.prototype._renderDeferredData = function(renderCount, dataSource, nodeData, resolvedData) {
-  if (renderCount === this._renderCount) {
+  if (renderCount === this._renderCount && this.getCtx().isReadyToRender()) {
     if (resolvedData != null) {
       nodeData['nodes'] = resolvedData['nodes'];
       //add links to top level links option
@@ -5585,8 +5587,7 @@ dvt.Diagram.prototype._fitContent = function() {
     var bLayoutViewport = this.IsLayoutViewport();
     var fitBounds = bLayoutViewport ? this.GetLayoutViewport() :
                     viewBounds ? viewBounds : this._cachedViewBounds;
-    if (bLayoutViewport)
-      pzc.setZoomToFitPadding(0);
+    pzc.setZoomToFitPadding(bLayoutViewport ? 0 : dvt.PanZoomCanvas.DEFAULT_PADDING);
     pzc.setZoomToFitEnabled(true);
     pzc.zoomToFit(null, fitBounds);
     pzc.setZoomToFitEnabled(this.IsZoomingEnabled());
@@ -5689,7 +5690,7 @@ dvt.Diagram.prototype.prepareNodes = function(nodesData) {
   var origExpanded = this.getOptions()['expanded'];
   if (!origExpanded || (!(origExpanded['has']) && !this.DisclosedNodes)) {
     this.DisclosedNodes = !origExpanded ? [] :
-        origExpanded === 'all' ? this._arNodeIds : origExpanded;
+        origExpanded === 'all' ? this._arNodeIds.slice(0) : origExpanded;
   }
 };
 
@@ -6429,7 +6430,7 @@ dvt.Diagram.prototype.expand = function(nodeId) {
   if (expanded && expanded['has'] && !expanded['has'](nodeId)) { // key set - component created a custom element
     triggerEvent = true;
     expanded = expanded['add']([nodeId]);
-    this.applyOptions({'expanded': expanded});
+    this.applyOptions({'expanded': expanded}, this.Defaults.getNoCloneObject());
   }
   else { // rely internally on this.DisclosedNodes - component created as a widget
     if (!this.DisclosedNodes)
@@ -6457,7 +6458,7 @@ dvt.Diagram.prototype.collapse = function(nodeId) {
   if (expanded && expanded['has'] && expanded['has'](nodeId)) { // key set - component created a custom element
     triggerEvent = true;
     expanded = expanded['delete']([nodeId]);
-    this.applyOptions({'expanded': expanded});
+    this.applyOptions({'expanded': expanded}, this.Defaults.getNoCloneObject());
   }
   else { // rely internally on this.DisclosedNodes - component created as a widget
     var index = -1;
@@ -6766,6 +6767,19 @@ dvt.Diagram.prototype.handleDataSourceChangeEvent = function(type, event) {
   if (type == 'add') {
     parentId = event['parentId'];
     parentNode = parentId ? this.getNodeById(parentId) : null;
+    if (this.getOptions()['expanded'] === "all") {
+      if (nodes) {
+        var disclosedNodes = this.DisclosedNodes;
+        var updateDisclosed = function(nodeArr) {
+          for (var i=0; i < nodeArr.length; i++) {
+            disclosedNodes.push(nodeArr[i].id);
+            if (nodeArr[i].nodes)
+              updateDisclosed(nodeArr[i].nodes);
+            }
+          }    
+        updateDisclosed(nodes);
+      }
+    }
     if (parentNode) {
       parentNode.appendChildNodesData(nodes, event['index']);
       if (this._isNodeDisclosed(parentId)) {
@@ -7542,7 +7556,9 @@ DvtDiagramDataAnimationState.prototype._addAncestorStates = function(parentId) {
   // added to to the top level or an already disclosed container
   this._wasParentDisclosed = parentNode ? parentNode.isDisclosed() : true;
   while (parentNode) {
-    var oldState = parentNode.getAnimationState(parentNode.getId() === parentId);
+    var keepOriginal = (parentNode.getId() === parentId) || 
+    (parentNode.isDisclosed() && this._diagram.getOptions()['renderer']);
+    var oldState = parentNode.getAnimationState(keepOriginal);
     this._nodes.push(oldState);
     this._newNodes.push(parentNode);
     this._processedObjMap[parentNode.getId()] = true;
@@ -9372,12 +9388,13 @@ DvtDiagramNode.prototype.render = function() {
     this._applyCustomNodeContent(this._diagram.getOptions()['renderer'], this._getState(), null);
     //update container padding if the node is a disclosed container
     if (this.isDisclosed()) {
+      var zoom = this.GetDiagram().getPanZoomCanvas().getZoom();
       var nodeBoundingRect = this.getElem().getBoundingClientRect();
       var childPaneBoundingRect = this._childNodePane ? this._childNodePane.getElem().getBoundingClientRect() : null;
-      this._containerPadding = {left: childPaneBoundingRect.left - nodeBoundingRect.left,
-        right: nodeBoundingRect.right - childPaneBoundingRect.right,
-        top: childPaneBoundingRect.top - nodeBoundingRect.top,
-        bottom: nodeBoundingRect.bottom - childPaneBoundingRect.bottom};
+      this._containerPadding = {left: (childPaneBoundingRect.left - nodeBoundingRect.left)/zoom,
+        right: (nodeBoundingRect.right - childPaneBoundingRect.right)/zoom,
+        top: (childPaneBoundingRect.top - nodeBoundingRect.top)/zoom,
+        bottom: (nodeBoundingRect.bottom - childPaneBoundingRect.bottom)/zoom};
     }
     //reset default selection shape if it is there
     if (this._selectionShape) {
@@ -10323,12 +10340,13 @@ DvtDiagramNode.prototype.setLabelAlignments = function(halign, valign) {
  */
 DvtDiagramNode.prototype.getContainerPadding = function() {
   if (!this._containerPadding && this._diagram.getOptions()['renderer']) {
+    var zoom = this.GetDiagram().getPanZoomCanvas().getZoom();
     var nodeBoundingRect = this.getElem().getBoundingClientRect();
     var childPaneBoundingRect = this._childNodePane ? this._childNodePane.getElem().getBoundingClientRect() : null;
-    this._containerPadding = {left: childPaneBoundingRect.left - nodeBoundingRect.left,
-      right: nodeBoundingRect.right - childPaneBoundingRect.right,
-      top: childPaneBoundingRect.top - nodeBoundingRect.top,
-      bottom: nodeBoundingRect.bottom - childPaneBoundingRect.bottom};
+    this._containerPadding = {left: (childPaneBoundingRect.left - nodeBoundingRect.left)/zoom,
+        right: (nodeBoundingRect.right - childPaneBoundingRect.right)/zoom,
+        top: (childPaneBoundingRect.top - nodeBoundingRect.top)/zoom,
+        bottom: (nodeBoundingRect.bottom - childPaneBoundingRect.bottom)/zoom};
   }
   else if (!this._containerPadding) {
     var paddingProps = ['padding-left', 'padding-right', 'padding-top', 'padding-bottom'];
@@ -10779,7 +10797,7 @@ DvtDiagramNode.prototype.getAnimationState = function(keepOrigContent) {
     containerShape.getWidth = function() {return containerShape['width']};
     containerShape.getHeight = function() {return containerShape['height']};
   }
-  if (keepOrigContent || (this.isDisclosed() && this._diagram.getOptions()['renderer'])) {
+  if (keepOrigContent) {
     //move the original node content to a temporary container,
     //that will be used for animation
     origContent = new dvt.Container(this.getCtx());

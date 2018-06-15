@@ -121,6 +121,12 @@ define(['ojs/ojcore', 'jquery', 'hammerjs', 'ojs/ojjquery-hammer', 'ojs/ojcompon
    * </h3>
    *
    * {@ojinclude "name":"keyboardDoc"}
+   * <h3 id="styling-section">
+   *   Styling
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#styling-section"></a>
+   * </h3>
+   *
+   * {@ojinclude "name":"stylingDoc"} 
    * @ojstatus preview
    * @ojcomponent oj.ojLabel
    * @ojshortdesc Provides support for 'required' and 'help' icons on form field labels.
@@ -187,7 +193,7 @@ define(['ojs/ojcore', 'jquery', 'hammerjs', 'ojs/ojjquery-hammer', 'ojs/ojcompon
        * @expose
        * @memberof oj.ojLabel
        * @instance
-       * @type {Object.<string, string>|null}
+       * @type {Object|null}
        * @default {'definition' :null, 'source': null}
        * @since 4.0.0
        *
@@ -1796,6 +1802,7 @@ define(['ojs/ojcore', 'jquery', 'hammerjs', 'ojs/ojjquery-hammer', 'ojs/ojcompon
      * 
      * @ojfragment touchDoc - Used in touch gesture section of classdesc, and standalone gesture doc
      * @memberof oj.ojLabel
+       * @instance
      */
    /**
      * <table class="keyboard-table">
@@ -1821,6 +1828,7 @@ define(['ojs/ojcore', 'jquery', 'hammerjs', 'ojs/ojjquery-hammer', 'ojs/ojcompon
      *
      * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
      * @memberof oj.ojLabel
+       * @instance
      */
     
     /**
@@ -1845,11 +1853,28 @@ define(['ojs/ojcore', 'jquery', 'hammerjs', 'ojs/ojjquery-hammer', 'ojs/ojcompon
      *       user that this character is the accesskey. Use this in conjunction with
      *       the HTML accesskey attribute on the oj-label element.</td>
      *     </tr>
+       *     <tr>
+       *       <td>oj-label-nowrap</td>
+       *       <td>place on the oj-label element to have it not wrap 
+       *       when you don't want to use the responsive design classes 
+       *       (e.g., oj-md-labels-nowrap or oj-md-label-nowrap).</td>
+       *     </tr>
+       *     <tr>
+       *       <td>oj-label-inline</td>
+       *       <td>place on the oj-label element to inline the label with the sibling dom element 
+       *       when you don't want to use the responsive design classes (e.g., oj-md-labels-inline).</td>
+       *     </tr>
+       *     <tr>
+       *       <td>oj-label-inline-top</td>
+       *       <td>place on a label element or oj-label element to inline the label with the 
+       *       sibling dom element and have zero margin-top.</td>
+       *     </tr>    
      *   </tbody>
      * </table>
      *
      * @ojfragment stylingDoc - Used in Styling section of classdesc, and standalone Styling doc
      * @memberof oj.ojLabel
+       * @instance
      */
   });
 

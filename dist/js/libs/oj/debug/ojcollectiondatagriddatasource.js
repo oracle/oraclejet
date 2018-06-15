@@ -956,8 +956,8 @@ oj.CollectionDataGridDataSource.prototype.keys = function(indexes)
  * Returns the row and column index based on the keys. In a paging case returns the 
  * index on the page, not the absolute index in the array.
  * @param {Object} keys the key for each axis
- * @property {*} keys.row the key for the row axis
- * @property {*} keys.column the key for the column axis
+ * @property {any} keys.row the key for the row axis
+ * @property {any} keys.column the key for the column axis
  * @return {Promise.<Object>} a promise object containing the index for each axis
  * @export
  * @method
@@ -1024,7 +1024,7 @@ oj.CollectionDataGridDataSource.prototype.getCapability = function(feature)
  * Performs a sort on the data source.
  * @param {Object|null} criteria the sort criteria. 
  * @property {string} criteria.axis The axis in which the sort is performed, valid values are "row", "column"
- * @property {*} criteria.key The key that identifies which header to sort
+ * @property {any} criteria.key The key that identifies which header to sort
  * @property {string} criteria.direction the sort direction, valid values are "ascending", "descending", "none" (default)
  * @param {Object=} callbacks the callbacks to be invoke upon completion of the sort operation.
  * @property {function():undefined=} callbacks.success the callback to invoke when the sort completed successfully.  
@@ -1211,8 +1211,8 @@ oj.CollectionDataGridDataSource.prototype._setSortInfo = function(key)
 
 /**
  * Move a model to a new index in the collection, if referenceRow is null adds to the end
- * @param {*} rowToMove the key of the model that should be moved
- * @param {*} referenceRow the key of the model that the moved model should be inserted before or after
+ * @param {any} rowToMove the key of the model that should be moved
+ * @param {any} referenceRow the key of the model that the moved model should be inserted before or after
  * @param {string} position The position of the moved row relative to the reference row.  
  *        Valid values are: "before", "after" 
  * @param {Object=} callbacks the callbacks to be invoke upon completion of the move operation.
@@ -1267,8 +1267,8 @@ oj.CollectionDataGridDataSource.prototype.move = function(rowToMove, referenceRo
 
 /**
  * Checks whether a move operation is valid.
- * @param {*} rowToMove the key of the row to move
- * @param {*} referenceRow the key of the reference row which combined with position are used to determine
+ * @param {any} rowToMove the key of the row to move
+ * @param {any} referenceRow the key of the reference row which combined with position are used to determine
  *        the destination of where the row should moved to.
  * @param {string} position The position of the moved row relative to the reference row.
  *        Valid values are: "before", "after".
@@ -1288,8 +1288,8 @@ oj.CollectionDataGridDataSource.prototype.moveOK = function(rowToMove, reference
 /**
  * Returns an Object for an event
  * @param {string} operation the operation done on the model
- * @param {*} rowKey the key for the row axis
- * @param {*} columnKey the key for the column axis
+ * @param {any} rowKey the key for the row axis
+ * @param {any} columnKey the key for the column axis
  * @param {number=} rowIndex the index for the row axis
  * @param {number=} columnIndex the index for the column axis
  * @return {Object} an object containing the the source, operation, and keys of the event
@@ -1536,7 +1536,7 @@ oj.CollectionHeaderSet.prototype.setModels = function(models)
  * 2) the index specified is out of bounds. 
  * @param {number} index the absolute index of the header in which we want to retrieve the header from.  
  * @param {number=} level the level of the header, 0 is the outermost header and increments by 1 moving inward
- * @return {*} the data for the specific index.
+ * @return {any} the data for the specific index.
  * @export
  * @expose
  * @method
@@ -1662,7 +1662,21 @@ oj.CollectionHeaderSet.prototype.getExtent = function(index, level)
 };
 
 /**
- * Gets the depth of an index starting at a particular level. The depth is the number 
+ * Gets the label for the level along the axis of that header. Specify null to have no header labels.
+ * @param {number} level the header level to retrieve the label data for
+ * @return {*} the data for the header label
+ * @export
+ * @expose
+ * @method
+ * @instance
+ * @memberof oj.CollectionHeaderSet
+ */
+oj.CollectionHeaderSet.prototype.getLabel = function () {
+  return null;
+};
+
+/**
+ * Gets the depth of an index starting at a particular level. The depth is the number
  * of levels spanned by the header.
  * @param {number} index the absolute index of the depth to get
  * @param {number=} level the level of the header, 0 is the outermost header

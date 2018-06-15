@@ -143,7 +143,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
            * @public 
            * @instance
            * @memberof! oj.ojPagingControl
-           * @type {Object.<string, Array|number>}
+           * @type {Object}
            * @default {'layout': ['auto'], 'type': 'numbers', 'orientation': 'horizontal', 'maxPageLinks': 6}
            *
            * @example <caption>Initialize the PagingControl, overriding some page-options values and leaving the others intact:</caption>
@@ -248,7 +248,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
            * @public 
            * @instance
            * @memberof! oj.ojPagingControl
-           * @type {Object.<string, number>}
+           * @type {Object}
            * @default {"maxCount": 500}
            *
            * @example <caption>Initialize the PagingControl, overriding load-more-options value:</caption>
@@ -1385,6 +1385,14 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
         navArrow.attr('href', '#');
         navArrow.attr('oncontextmenu', 'return false;');
         var accLabelText = this.getTranslatedString(accLabelKey);
+
+        // Add an aria-label on the button.  Otherwise screen reader will
+        // use the text content, which includes the arrow ::before pseudo-element.
+        // Even though the arrow is not read, it will be displayed as a non-printable
+        // character in things like buttons list in screen reader and interfere
+        // with keyboard selection.
+        navArrow.attr('aria-label', accLabelText);
+
         var accLabel = this._createAccLabelSpan(accLabelText, accLabelClass);
         navArrow.append(accLabel); //@HTMLUpdateOK
         if (isVertical)
@@ -2987,7 +2995,12 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
             pagingControlNavMaxLabel.text(navInputPageMaxLabel);
             pagingControlNavInputSection.append(pagingControlNavMaxLabel); //@HTMLUpdateOK
           }
-          pagingControlNavInput.ojInputText({'displayOptions': {'messages': ['notewindow'], 'converterHint': ['notewindow'],  'validatorHint': ['notewindow']}, 'rootAttributes': {'style':"width: auto; min-width: 0;"}, 'optionChange': this._handlePageChange.bind(this), 'validators': [{'type': 'numberRange', 'options': {'min': 1, max: maxPageVal}}]}).attr('data-oj-internal', '');
+          pagingControlNavInput.ojInputText({'displayOptions': {'messages': ['notewindow'], 'converterHint': ['notewindow'],  'validatorHint': ['notewindow']}, 'rootAttributes': {'style':"width: auto; min-width: 0;"}, 'validators': [{'type': 'numberRange', 'options': {'min': 1, max: maxPageVal}}]}).attr('data-oj-internal', '');
+
+          // Add the optionChange listener after initializing the input component.
+          // Otherwise we get the optionChange event which causes a page change and
+          // extra refresh on the associating table.
+          pagingControlNavInput.on({ ojoptionchange: this._handlePageChange.bind(this) });
         }
         
         if (($.inArray(this._PAGE_OPTION_LAYOUT._AUTO, pageOptionLayout) != -1 && !isDot) ||

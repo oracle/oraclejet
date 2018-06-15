@@ -1,7 +1,7 @@
 {
   "name": "oj-navigation-list",
-  "version": "5.0.0",
-  "jetVersion": "5.0.0",
+  "version": "5.1.0",
+  "jetVersion": "5.1.0",
   "displayName": "Navigation List",
   "preview": true,
   "roles": [
@@ -88,7 +88,7 @@
   "properties": {
     "currentItem": {
       "description": "Gets and sets the key of the item that should have keyboard focus.",
-      "type": "*",
+      "type": "any",
       "displayName": "Current Item",
       "value": null,
       "writeback": true
@@ -222,7 +222,7 @@
     },
     "selection": {
       "description": "Gets and sets the key of the selected item.",
-      "type": "*",
+      "type": "any",
       "displayName": "Selection",
       "value": null,
       "writeback": true
@@ -278,7 +278,7 @@
         {
           "name": "value",
           "description": "The new value to set the property to.",
-          "type": "*"
+          "type": "any"
         }
       ],
       "return": "void"
@@ -292,7 +292,7 @@
           "type": "string"
         }
       ],
-      "return": "*"
+      "return": "any"
     },
     "setProperties": {
       "description": "Performs a batch set of properties.",
@@ -343,7 +343,7 @@
       "detail": {
         "key": {
           "description": "Selected list item Key.",
-          "type": "*"
+          "type": "any"
         },
         "item": {
           "description": "Selected list item.",
@@ -357,7 +357,7 @@
       "detail": {
         "key": {
           "description": "the Key of the item to be collapse",
-          "type": "*"
+          "type": "any"
         },
         "item": {
           "description": "the item to be collapse",
@@ -371,7 +371,7 @@
       "detail": {
         "previousKey": {
           "description": "the Key of the previous item",
-          "type": "*"
+          "type": "any"
         },
         "previousItem": {
           "description": "the previous item",
@@ -379,7 +379,7 @@
         },
         "key": {
           "description": "the Key of the new current item",
-          "type": "*"
+          "type": "any"
         },
         "item": {
           "description": "the new current item",
@@ -392,7 +392,7 @@
       "detail": {
         "key": {
           "description": "The Key of the item that was just collapsed.",
-          "type": "*"
+          "type": "any"
         },
         "item": {
           "description": "The list item that was just collapsed.",
@@ -406,7 +406,7 @@
       "detail": {
         "key": {
           "description": "the Key of the item to be expand",
-          "type": "*"
+          "type": "any"
         },
         "item": {
           "description": "the item to be expand",
@@ -419,7 +419,7 @@
       "detail": {
         "key": {
           "description": "The Key of the item that was just expanded.",
-          "type": "*"
+          "type": "any"
         },
         "item": {
           "description": "The list item that was just expanded.",

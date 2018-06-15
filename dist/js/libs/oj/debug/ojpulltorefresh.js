@@ -57,7 +57,7 @@ oj.PullToRefreshUtils = {};
  * @export
  * @param {Element} element the DOM element that hosts the content to refresh.  When the content is scrollable, the value of this parameter must be the scrollable element.  
  *                  Specifically, when using this with ListView, the ListView element might not necessarily be the scrollable element, but is one of its ancestors instead.
- * @param {function():Promise.<*>} refreshFunc the function to invoke when refresh is triggered.  It must return a Promise.
+ * @param {function():Promise.<any>} refreshFunc the function to invoke when refresh is triggered.  It must return a Promise.
  * @param {Object=} options optional values that controls aspects of pull to refresh
  * @param {number=} options.threshold the number of pixels to pull until refresh is triggered.  If not specified, a default value will be calculated based on the height of the panel consisting the refresh icon, primary text, and secondary text.
  * @param {string=} options.primaryText the primary text to display.  The primary text is usually used to describe the pull action.  If not specified then no primary text will be displayed.

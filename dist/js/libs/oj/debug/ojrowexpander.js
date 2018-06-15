@@ -19,7 +19,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdatasource-common'
  
 /**
  * Convenient class that represents an empty node set
- * @param {*} parent the parent key
+ * @param {any} parent the parent key
  * @param {number} start the start index
  * @constructor
  * @since 1.0
@@ -34,7 +34,7 @@ oj.EmptyNodeSet = function(parent, start)
 
 /**
  * Gets the parent
- * @return {*} the key of the parent.
+ * @return {any} the key of the parent.
  * @export
  */
 oj.EmptyNodeSet.prototype.getParent = function()
@@ -294,7 +294,7 @@ oj.FlattenedNodeSet.prototype._getDataOrMetadata = function(nodeSet, index, curr
  * Combines two NodeSets together into one.
  * @param {Object} nodeSet1 the first node set
  * @param {Object} nodeSet2 the second node set
- * @param {*} mergeAt the row key on the first node set where the second node set is merge to 
+ * @param {any} mergeAt the row key on the first node set where the second node set is merge to 
  * @constructor
  * @since 1.0
  * @ojtsignore
@@ -310,7 +310,7 @@ oj.MergedNodeSet = function(nodeSet1, nodeSet2, mergeAt)
 /**
  * Retrieve the index of the key within the first node set
  * Which is going to be the index where the two node set merge
- * @param {*} key the key to find the index
+ * @param {any} key the key to find the index
  * @return {number} the index of the key within the first node set, if index is not found, then the last index of the first node set is returned.
  * @private
  */
@@ -335,7 +335,7 @@ oj.MergedNodeSet.prototype._findIndex = function(key)
 
 /**
  * Gets the parent
- * @return {*} the key of the parent.
+ * @return {any} the key of the parent.
  * @export
  */
 oj.MergedNodeSet.prototype.getParent = function()
@@ -923,8 +923,8 @@ oj.FlattenedTreeDataSource.prototype._fetchRowsFromChildren = function(range, ca
 
 /**
  * Checks whether a move operation is valid.
- * @param {*} rowToMove the key of the row to move
- * @param {*} referenceRow the key of the reference row which combined with position are used to determine 
+ * @param {any} rowToMove the key of the row to move
+ * @param {any} referenceRow the key of the reference row which combined with position are used to determine 
  *        the destination of where the row should moved to.
  * @param {number|string} position The position of the moved row relative to the reference row.  
  *        This can be a string: "before", "after", "inside", "first", "last", or the zero based index to position 
@@ -939,8 +939,8 @@ oj.FlattenedTreeDataSource.prototype.moveOK = function(rowToMove, referenceRow, 
 
 /**
  * Moves a row from one location to another (different position within the same parent or a completely different parent)
- * @param {*} rowToMove the key of the row to move
- * @param {*} referenceRow the key of the reference row which combined with position are used to determine 
+ * @param {any} rowToMove the key of the row to move
+ * @param {any} referenceRow the key of the reference row which combined with position are used to determine 
  *        the destination of where the row should moved to.
  * @param {number|string} position The position of the moved row relative to the reference row.  
  *        This can be a string: "before", "after", "inside", "first", "last", or the zero based index to position 
@@ -1104,7 +1104,7 @@ oj.FlattenedTreeDataSource.prototype._verifyFetchResults = function(nodeSet, par
 /**
  * Returns the number of children for a specified parent.  If the value returned is not >= 0 then it is automatically assumed
  * that the child count is unknown.
- * @param {*} parent the parent key.  Specify null if inquiring child count of the root.
+ * @param {any} parent the parent key.  Specify null if inquiring child count of the root.
  * @return {number} the number of children for the specified parent.
  * @export
  */
@@ -1472,7 +1472,7 @@ oj.FlattenedTreeDataSource.prototype._processDescendantsNodeSet = function(nodeS
 
 /**
  * Expand the specified row.
- * @param {*} rowKey the key of the row to expand
+ * @param {any} rowKey the key of the row to expand
  * @export
  * @return {undefined}
  */
@@ -1483,7 +1483,7 @@ oj.FlattenedTreeDataSource.prototype.expand = function(rowKey)
 
 /**
  * Expand the specified row with options
- * @param {*} rowKey the key of the row to expand
+ * @param {any} rowKey the key of the row to expand
  * @param {Object=} options additional options to pass to fetchChildren method
  * @private
  */
@@ -1545,7 +1545,7 @@ oj.FlattenedTreeDataSource.prototype._processQueue = function()
 /**
  * Queue an operation to be process later
  * @param {string} op the operation
- * @param {*} rowKey the row key where the operation is to be apply
+ * @param {any} rowKey the row key where the operation is to be apply
  * @private
  */
 oj.FlattenedTreeDataSource.prototype._queueOp = function(op, rowKey)
@@ -1560,7 +1560,7 @@ oj.FlattenedTreeDataSource.prototype._queueOp = function(op, rowKey)
 
 /**
  * Collapse the specified row.
- * @param {*} rowKey the key of the row to collapse
+ * @param {any} rowKey the key of the row to collapse
  * @return {undefined}
  * @export
  */
@@ -1640,7 +1640,7 @@ oj.FlattenedTreeDataSource.prototype.collapse = function(rowKey)
 
 /**
  * Checks whether the row key is expanded.
- * @param {*} rowKey the key of the row to inquire the state
+ * @param {any} rowKey the key of the row to inquire the state
  * @return {boolean} true if the row is/should be expanded.  False otherwise.
  * @private
  */
@@ -1676,7 +1676,7 @@ oj.FlattenedTreeDataSource.prototype._isExpanded = function(rowKey)
 
 /**
  * Helper method to retrieve the index of the row key in the set of collapsed row keys
- * @param {*} rowKey the key of the row
+ * @param {any} rowKey the key of the row
  * @return {number} the index of the key in the collapsed key array
  * @private
  */ 
@@ -1687,7 +1687,7 @@ oj.FlattenedTreeDataSource.prototype._getCollapsedKeyIndex = function(rowKey)
 
 /**
  * Helper method to retrieve the index of the row key in the set of expanded row keys
- * @param {*} rowKey the key of the row
+ * @param {any} rowKey the key of the row
  * @return {number} the index of the key in the expanded key array
  * @private
  */ 
@@ -1698,7 +1698,7 @@ oj.FlattenedTreeDataSource.prototype._getExpandedKeyIndex = function(rowKey)
 
 /**
  * Helper method to retrieve the index of the row key in a specified array
- * @param {*} rowKey the key of the row
+ * @param {any} rowKey the key of the row
  * @return {number} the index of the key in the array
  * @private
  */ 
@@ -1721,7 +1721,7 @@ oj.FlattenedTreeDataSource.prototype._getKeyIndex = function(arr, rowKey)
 
 /**
  * Remove the row key from the expanded cache
- * @param {*} rowKey the key to remove
+ * @param {any} rowKey the key to remove
  * @private
  */
 oj.FlattenedTreeDataSource.prototype._removeExpanded = function(rowKey)
@@ -1737,7 +1737,7 @@ oj.FlattenedTreeDataSource.prototype._removeExpanded = function(rowKey)
 
 /**
  * Remove the row key from the collapsed cache
- * @param {*} rowKey the key to remove
+ * @param {any} rowKey the key to remove
  * @private
  */
 oj.FlattenedTreeDataSource.prototype._removeCollapsed = function(rowKey)
@@ -1753,7 +1753,7 @@ oj.FlattenedTreeDataSource.prototype._removeCollapsed = function(rowKey)
 
 /**
  * Callback method to handle fetch error on expand operation.
- * @param {*} rowKey the key of the expanded row
+ * @param {any} rowKey the key of the expanded row
  * @param {Object} status the error status
  * @protected
  */
@@ -1765,7 +1765,7 @@ oj.FlattenedTreeDataSource.prototype.handleExpandError = function(rowKey, status
 
 /**
  * Callback method to handle fetch success on expand operation.
- * @param {*} rowKey the key of the expanded row
+ * @param {any} rowKey the key of the expanded row
  * @param {Object} nodeSet the node set that describes the children of the expanded row
  * @param {number} childCount the total number of children the expanded row has
  * @param {Object=} options optional parameters to the method
@@ -2199,7 +2199,7 @@ oj.FlattenedTreeDataSource.prototype.refresh = function()
 
 /**
  * Determine the flattened index for the specified key
- * @param {*} rowKey the key to find the index
+ * @param {any} rowKey the key to find the index
  * @return {number} the index representing the specified key.  Returns -1 if the index
  *         cannot be found.
  * @protected
@@ -2253,7 +2253,7 @@ oj.FlattenedTreeDataSource.prototype.getFetchedRange = function()
 
 /**
  * Returns the key of the ancestors.
- * @param {*} rowKey the row key to find the ancestors.
+ * @param {any} rowKey the row key to find the ancestors.
  * @return {Array} an array of the key of the ancestors from root to the row with specified row key.
  * @protected
  */
@@ -2293,7 +2293,7 @@ oj.FlattenedTreeDataSource.prototype.handleMaxCountReached = function(range, cal
 /**
  * Abstract method to insert a set of rows into the DataGrid/Table
  * @param {number} insertAtIndex the flattened index of the node where the rows are inserted.
- * @param {*} insertAtKey the key of the node where the rows are inserted (the parent key)
+ * @param {any} insertAtKey the key of the node where the rows are inserted (the parent key)
  * @param {Object} nodeSet the node set containing data/metadata of inserted rows
  * @protected
  */
@@ -2304,7 +2304,7 @@ oj.FlattenedTreeDataSource.prototype.insertRows = function(insertAtIndex, insert
 
 /**
  * Abstract method to remove the specified rows in the DataGrid/Table
- * @param {Array.<*>} rowKeys an array of keys of the rows to be remove.
+ * @param {Array.<any>} rowKeys an array of keys of the rows to be remove.
  * @protected
  */
 oj.FlattenedTreeDataSource.prototype.removeRows = function(rowKeys)
@@ -2837,7 +2837,8 @@ oj.__registerWidget('oj.ojRowExpander', $['oj']['baseComponent'],
         var self, iconSpacer;
         iconSpacer = $(document.createElement('div')).addClass(this.classNames['iconspacer']);
         this.toucharea = $(document.createElement('div')).addClass(this.classNames['toucharea']);
-        this.icon = $(document.createElement('a')).attr('href', '#').attr('aria-labelledby', this._getLabelledBy()).addClass(this.classNames['icon']).addClass(this.classNames['clickable']);
+        this.icon = $(document.createElement('a')).attr('href', '#').attr('aria-labelledby', this._getLabelledBy()).addClass(this.classNames['icon']).addClass(this.classNames['clickable']).attr('aria-label', 
+            this.getTranslatedString('accessibleLevelDescription', {'level': this.depth}));
         this.element.append(iconSpacer.append(this.toucharea.append(this.icon))); //@HTMLUpdateOK
 
         self = this;

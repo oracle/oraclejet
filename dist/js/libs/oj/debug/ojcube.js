@@ -1613,8 +1613,8 @@ oj.CubeDataGridDataSource.prototype.move = function(rowToMove, referenceRow, pos
 
 /**
  * Checks whether a move operation is valid.
- * @param {*} rowToMove the key of the row to move
- * @param {*} referenceRow the key of the reference row which combined with position are used to determine 
+ * @param {any} rowToMove the key of the row to move
+ * @param {any} referenceRow the key of the reference row which combined with position are used to determine 
  *        the destination of where the row should moved to.
  * @param {string} position The position of the moved row relative to the reference row. 
  *        Valid values are: "before", "after".
@@ -1801,7 +1801,7 @@ oj.CubeHeaderSet = function(axis, cube, start, count)
  * 2) the index specified is out of bounds. 
  * @param {number} index the index of the header in which we want to retrieve the header from.  This is an absolute index across the entire axis
  * @param {number} level the level of the header
- * @return {*} the data object for the specific index.
+ * @return {any} the data object for the specific index.
  * @memberof oj.CubeHeaderSet
  * @export
  */
@@ -1910,6 +1910,20 @@ oj.CubeHeaderSet.prototype.getCount = function()
 oj.CubeHeaderSet.prototype.getStart = function()
 {
     return this._start;
+};
+
+/**
+ * Gets the label for the level along the axis of that header. Specify null to have no header labels.
+ * @param {number} level the header level to retrieve the label data for
+ * @return {*} the data for the header label
+ * @export
+ * @expose
+ * @method
+ * @instance
+ * @memberof oj.CubeHeaderSet
+ */
+oj.CubeHeaderSet.prototype.getLabel = function () {
+  return null;
 };
 
 /**

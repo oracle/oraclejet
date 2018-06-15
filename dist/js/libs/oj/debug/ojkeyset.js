@@ -104,7 +104,7 @@ KeySet.prototype.SetInternal = function(set)
 /**
  * Returns whether the specified key is contained in this set.
  *
- * @param {*} key the key to check whether it is contained in this set.
+ * @param {any} key the key to check whether it is contained in this set.
  * @return {boolean} true if the specified key is contained in this set, false otherwise.
  * @method
  * @name has
@@ -212,8 +212,8 @@ KeySet.prototype._remove = function(keys)
 
 /**
  * Finds the equavalent key of the specified key within this KeySet.
- * @param {*} keyToFind the key to find
- * @return {*} the key in the key that is equivalent to keyToFind, or null if nothing equivalent can be found.
+ * @param {any} keyToFind the key to find
+ * @return {any} the key in the key that is equivalent to keyToFind, or null if nothing equivalent can be found.
  * @protected
  */
 KeySet.prototype.FindEquals = function(keyToFind)
@@ -404,7 +404,7 @@ ExpandedKeySet.prototype.clear = function()
 /**
  * Returns whether the specified key is contained in this set.
  *
- * @param {*} key the key to check whether it is contained in this set.
+ * @param {any} key the key to check whether it is contained in this set.
  * @return {boolean} true if the specified key is contained in this set, false otherwise.
  * @expose
  * @instance
@@ -544,7 +544,7 @@ ExpandAllKeySet.prototype.clear = function()
 /**
  * Returns whether the specified key is contained in this set.
  *
- * @param {*} key the key to check whether it is contained in this set.
+ * @param {any} key the key to check whether it is contained in this set.
  * @return {boolean} true if the specified key is contained in this set, false otherwise.
  * @expose
  * @instance
@@ -571,6 +571,96 @@ ExpandAllKeySet.prototype.deletedValues = function()
 {
     return this.Clone();
 };
+/* global Set:false, Symbol:false */
+
+/**
+ * Contains all the core functionalities of KeySet.
+ * @param {(Set|Array)=} keys A set of keys to initialize this KeySet with.
+ * @ojstatus preview
+ * @ignore
+ * @ojtsignore
+ * @class KeySetImpl
+ * @constructor
+ * @since 5.1.0
+ */
+var KeySetImpl = function (initialValues) {
+  /**
+   * Returns whether the specified key is contained in this set.
+   * @param {any} key the key to check whether it is contained in this set.
+   * @return {boolean} true if the specified key is contained in this set, false otherwise.
+   */
+  this.has = function (key) {
+    return (this.get(key) != null);
+  };
+
+  /**
+   * Finds the equavalent key of the specified key within this KeySet.
+   * @param {any} keyToFind the key to find
+   * @return {any} the key in the key that is equivalent to keyToFind, or null if nothing equivalent can be found.
+   */
+  this.get = function (keyToFind) {
+    var iterator;
+    var key;
+    var found = null;
+
+    if (this._keys.has(keyToFind)) {
+      return keyToFind;
+    }
+
+    // if it's a primitive, then we are done also
+    if (!(keyToFind === Object(keyToFind))) {
+      return null;
+    }
+
+    // using iterator if it's supported since we could break at any time
+    if (typeof Symbol === 'function' && typeof Set.prototype[Symbol.iterator] === 'function') {
+      iterator = this._keys[Symbol.iterator]();
+      key = iterator.next();
+      while (!key.done) {
+        if (oj.Object.compareValues(key.value, keyToFind) || key.value === keyToFind) {
+          return key.value;
+        }
+        key = iterator.next();
+      }
+    } else {
+      // IE11 supports forEach
+      this._keys.forEach(function (_key) {
+        if ((found == null && oj.Object.compareValues(_key, keyToFind)) || _key === keyToFind) {
+          found = _key;
+        }
+      });
+    }
+
+    return found;
+  };
+
+  /**
+   * Initialize the internal Set with a set of keys.
+   * @param {Set|Array|null|undefined} keys the initial keys to create the internal Set with.
+   */
+  this.InitializeWithKeys = function (keys) {
+    this._keys = this._populate(keys);
+  };
+
+  /**
+   * IE11 does not support constructor with arguments
+   * TODO: move to CollectionUtils
+   */
+  this._populate = function (keys) {
+    var set = new Set(keys);
+    if (keys != null && set.size === 0) {
+      keys.forEach(function (key) {
+        set.add(key);
+      });
+    }
+    return set;
+  };
+
+  this.InitializeWithKeys(initialValues);
+};
+
+// make it available internally
+oj.KeySetImpl = KeySetImpl;
 ;return {
   'KeySet': KeySet,
   'ExpandedKeySet': ExpandedKeySet,

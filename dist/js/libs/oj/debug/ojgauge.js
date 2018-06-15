@@ -3234,10 +3234,11 @@ var ojRatingGaugeMeta = {
     },
     "orientation": {
       "type": "string",
-      "orientation": ["vertical", "horizontal"]
+      "enumValues": ["vertical", "horizontal"]
     },
     "preserveAspectRatio": {
-      "type": "string"
+      "type": "string",
+      "enumValues": ["none", "meet"]
     },
     "readonly": {
       "type": "boolean"
@@ -3267,7 +3268,7 @@ var ojRatingGaugeMeta = {
     },
     "step": {
       "type": "number",
-      "enumValues": ["1", ".5"]
+      "enumValues": ["1", "0.5"]
     },
     "transientValue": {
       "type": "number",
@@ -3493,7 +3494,7 @@ var ojStatusMeterGaugeMeta = {
         },
         "position": {
           "type": "string",
-          "enumValues": ["auto", "center", "insideIndicatorEdge", "outsideIndicatorEdge", "outsidePlotArea", "withTitle"]
+          "enumValues": ["auto", "center", "insideIndicatorEdge", "outsideIndicatorEdge", "outsidePlotArea", "withLabel"]
         },
         "rendered": {
           "type": "string",

@@ -33,6 +33,7 @@
 @import "widgets/oj.alta.windows.animation";
 @import "widgets/oj.alta.windows.progress";
 @import "widgets/oj.alta.windows.pulltorefresh";
+@import "widgets/oj.alta.windows.swipeactions";
 @import "widgets/oj.alta.windows.swipetoreveal";
 @import "widgets/oj.alta.windows.switcher";
 
@@ -115,3 +116,6 @@
 //icon
 @import "widgets/oj.alta.windows.avatar";
 @import "widgets/oj.alta.windows.iconcircle";
+
+// ojModule binding
+@import "widgets/oj.alta.windows.module";

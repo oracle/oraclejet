@@ -200,28 +200,28 @@ define(['ojs/ojcore', 'promise', 'ojs/ojcustomelement', 'ojs/ojcomposite-knockou
  *       <td>yes</td> 
  *       <td>no</td>
  *       <td>{Object<string,<string>}</td>
- *       <td>See Properties table below for details.</td>
+ *       <td>See <a href="#properties-table">Properties</a> table below for details.</td>
  *     </tr> 
 *     <tr>
  *       <td class="rt">methods</td>
  *       <td>yes</td>
  *       <td>no</td>
  *       <td>{Object<string,<string>}</td>
- *       <td>See Methods table below for details.</td>
+ *       <td>See <a href="#methods-table">Methods</a> table below for details.</td>
  *     </tr>
  *     <tr>
  *       <td class="rt">events</td>
  *       <td>yes</td> 
  *       <td>no</td>
  *       <td>{Object<string,<string>}</td>
- *       <td>See Events table below for details.</td>
+ *       <td>See <a href="#events-table">Events</a> table below for details.</td>
  *     </tr>
  *     <tr>
  *       <td class="rt">slots</td>
  *       <td>yes</td>
  *       <td>no</td>
  *       <td>{Object<string,<string>}</td>
- *       <td>See Slots table below for details.</td>
+ *       <td>See <a href="#slots-table">Slots</a> table below for details.</td>
  *     </tr> 
  *     <tr>
  *       <td class="name"><code>compositeDependencies</code></td>
@@ -285,6 +285,13 @@ define(['ojs/ojcore', 'promise', 'ojs/ojcustomelement', 'ojs/ojcomposite-knockou
  *      </td>
  *     </tr> 
  *     <tr>
+ *       <td class="name"><code>help</code></td>
+ *       <td>no</td>
+ *       <td>no</td>
+ *       <td>{string}</td>
+ *       <td>Specifies a URL to detailed API documentation for this component.</td>
+ *     </tr>
+ *     <tr>
  *       <td class="name"><code>icon</code></td>
  *       <td>no</td>
  *       <td>no</td>
@@ -320,10 +327,97 @@ define(['ojs/ojcore', 'promise', 'ojs/ojcustomelement', 'ojs/ojcomposite-knockou
  *      </td>
  *     </tr> 
  *     <tr>
+ *       <td class="name"><code>license</code></td>
+ *       <td>no</td>
+ *       <td>no</td>
+ *       <td>{string}</td>
+ *       <td>A reference to the license under which use of the component is granted.  The value can be:
+ *         <ul>
+ *           <li>the name of the license text file packaged with the component</li>
+ *           <li>a URL to a remote license file</li>
+ *         </ul>
+ *         If unspecified, downstream consumers can look for a default, case-insensitive license file at the root of the component package.
+ *       </td>
+ *     </tr>
+ *     <tr>
+ *       <td class="name"><code>propertyLayout</code></td>
+ *       <td>no</td>
+ *       <td>no</td>
+ *       <td>{Array<{Object}>}</td>
+ *       <td>An optional ordered array of one or more <b><i>propertyLayoutGroup</i></b> objects.  A propertyLayoutGroup enables a component author to order
+ *           and shape the groupings of their properties in the design time environment for their component.  Each propertyLayoutGroup object is defined as follows:
+ *         <h6>Properties</h6>
+ *         <table class="params">
+ *           <thead>
+ *             <tr>
+ *               <th>Name</th>
+ *               <th>Type</th>
+ *               <th>Description</th>
+ *             </tr>
+ *           </thead>
+ *           <tbody>
+ *             <tr>
+ *               <td class="name"><code>propertyGroup</code></td>
+ *               <td>{string}</td>
+ *               <td>The property group name associated with this propertyLayoutGroup.  Reserved values include:
+ *                 <ul>
+ *                   <li><code>"common"</code> - an ordered group of properties that are commonly used for configuring this
+ *                       component, so they should be prominently highlighted and the design time environment should provide
+ *                       extra assistance</li>
+ *                   <li><code>"data"</code> - an ordered group of properties associated with data binding</li>
+ *                 </ul>
+ *               </td>
+ *             </tr>
+ *             <tr>
+ *               <td class="name"><code>displayName</code></td>
+ *               <td>{string}</td>
+ *               <td>An optional user friendly, translatable name for this propertyLayoutGroup.</td>
+ *             </tr>
+ *             <tr>
+ *               <td class="name"><code>items</code></td>
+ *               <td>{Array<{string | Object}>}</td>
+ *               <td>An ordered array of one or more items in this propertyLayoutGroup:
+ *                 <ul>
+ *                   <li>Items of type {string} represent the names of component properties or sub-properties.</li>
+ *                   <li>Items of type {Object} represent a nested layout structure.</li>
+ *                 </ul>
+ *               </td>
+ *             </tr>
+ *           </tbody>
+ *         </table> 
+ *         <h6>Notes</h6>
+ *         <ul>
+ *           <li>Component authors are <b>not</b> required to map all of their properties within their component's <code>propertyLayout</code> object.
+ *               Design time environments are expected to implement designs that enable access to both mapped and unmapped properties.</li>
+ *           <li>Nested propertyLayoutGroups enable support for design time environments that expose collapsible sections of related properties –
+ *               in which case, a section heading is suggested by that propertyLayoutGroup's <code>displayName</code>.</li>
+ *           <li>If the design time environment does not support nested property groupings, then the assumption is that
+ *               nested propertyLayoutGroups will be inlined within their common parent propertyLayoutGroup.</li>
+ *         </ul>
+ *         <h6>Example</h6>
+ *         A typical Property Inspector layout for the oj-input-text component might look as follows:
+ *  <pre class="prettyprint"><code>
+ *  "propertyLayout":
+ *    [
+ *      {
+ *        "propertyGroup": "common",
+ *        "displayName": "Common",
+ *        "items": ["labelHint", "placeholder", "required", "disabled", "readonly"]
+ *      },
+ *      {
+ *        "propertyGroup": "data",
+ *        "displayName": "Data",
+ *        "items": ["value"]
+ *      }
+ *    ]
+ *  </code></pre>
+ *       </td>
+ *     </tr>
+ *     <tr>
  *       <td class="name"><code>styleClasses</code></td>
  *       <td>no</td>
  *       <td>no</td>
- *       <td>{Array.<{Object}>}</td>
+ *       <td>{Array<{Object}>}</td>
  *       <td>Optional array of groupings of style class names that are applicable to this component.  Each grouping object has the following properties:
  *         <h6>Properties</h6>
  *         <table class="params">
@@ -337,7 +431,7 @@ define(['ojs/ojcore', 'promise', 'ojs/ojcustomelement', 'ojs/ojcomposite-knockou
  *           <tbody>
  *             <tr>
  *               <td class="name"><code>styleGroup</code></td>
- *               <td>{Array.<{string}>}</td>
+ *               <td>{Array<{string}>}</td>
  *               <td>Array of mutually exclusive style class names that belong to this group.</td>
  *             </tr>
  *             <tr>
@@ -352,7 +446,7 @@ define(['ojs/ojcore', 'promise', 'ojs/ojcustomelement', 'ojs/ojcomposite-knockou
  *   </tbody>
  * </table>
  *
- * <h3>Properties</h3>
+ * <h3 id="properties-table">Properties</h3>
  * <table class="params">
  *   <thead>
  *     <tr>
@@ -435,7 +529,19 @@ define(['ojs/ojcore', 'promise', 'ojs/ojcustomelement', 'ojs/ojcomposite-knockou
  *               <td>{string}</td>
  *               <td>A user friendly, translatable name of the property.</td>
  *             </tr> 
- 
+ *             <tr>
+ *               <td class="name"><code>eventGroup</code></td>
+ *               <td>no</td>
+ *               <td>{string}</td>
+ *               <td>Optional group name for this property's corresponding <b><i>[property]</i>Changed event</b> in a
+ *                   design time environment.  Reserved values are:
+ *                 <ul>
+ *                   <li><code>"common"</code> - Applications will commonly want to react to changes to this property at runtime,
+ *                     so its corresponding property change event should be prominently highlighted and the design time environment
+ *                     should provide extra assistance.</li>
+ *                 </ul>
+ *               </td>
+ *             </tr>
  *             <tr>
  *               <td class="name"><code>exclusiveMaximum</code></td>
  *               <td>no</td>
@@ -475,20 +581,120 @@ define(['ojs/ojcore', 'promise', 'ojs/ojcustomelement', 'ojs/ojcomposite-knockou
  *               </td>
  *             </tr>
  *             <tr>
+ *               <td class="name"><code>format</code></td>
+ *               <td>no</td>
+ *               <td>{string}</td>
+ *               <td>Format hint for a primitive type that can be used for simple validation in the design time environment,
+ *                   or to invoke a specialized customizer control or set of controls.  The following set of reserved format
+ *                   keywords are supported:
+ *                 <h6>{number} type formats</h6> 
+ *                 <table class="params">
+ *                   <thead>
+ *                     <tr>
+ *                       <th>Keyword</th>
+ *                       <th>Description</th>
+ *                     </tr>
+ *                   </thead>
+ *                   <tbody>
+ *                     <tr>
+ *                       <td class="name"><code>double</code></td>
+ *                       <td>floating point number with double precision</td>
+ *                     </tr> 
+ *                     <tr>
+ *                       <td class="name"><code>float</code></td>
+ *                       <td>floating point number with single precision</td>
+ *                     </tr> 
+ *                     <tr>
+ *                       <td class="name"><code>int32</code></td>
+ *                       <td>signed 32-bit integer</td>
+ *                     </tr> 
+ *                     <tr>
+ *                       <td class="name"><code>int64</code></td>
+ *                       <td>signed 64-bit integer</td>
+ *                     </tr> 
+ *                   </tbody>
+ *                 </table>
+ *                 <h6>{string} type formats</h6> 
+ *                 <table class="params">
+ *                   <thead>
+ *                     <tr>
+ *                       <th>Keyword</th>
+ *                       <th>Description</th>
+ *                     </tr>
+ *                   </thead>
+ *                   <tbody>
+ *                     <tr>
+ *                       <td class="name"><code>binary</code></td>
+ *                       <td>sequence of octets</td>
+ *                     </tr> 
+ *                     <tr>
+ *                       <td class="name"><code>byte</code></td>
+ *                       <td>sequence of base64-encoded characters</td>
+ *                     </tr> 
+ *                     <tr>
+ *                       <td class="name"><code>color</code></td>
+ *                       <td>CSS color value</td>
+ *                     </tr> 
+ *                     <tr>
+ *                       <td class="name"><code>date</code></td>
+ *                       <td>date in RFC 3339 format, using the "full-date" profile</td>
+ *                     </tr> 
+ *                     <tr>
+ *                       <td class="name"><code>date-time</code></td>
+ *                       <td>date-time in RFC 3339 format, using the "date-time" profile</td>
+ *                     </tr> 
+ *                     <tr>
+ *                       <td class="name"><code>email</code></td>
+ *                       <td>Internet email address in RFC 5322 format</td>
+ *                     </tr> 
+ *                     <tr>
+ *                       <td class="name"><code>time</code></td>
+ *                       <td>time in RFC 3339 format, using the "full-time" profile</td>
+ *                     </tr> 
+ *                     <tr>
+ *                       <td class="name"><code>password</code></td>
+ *                       <td>hint to UIs to obscure input</td>
+ *                     </tr> 
+ *                     <tr>
+ *                       <td class="name"><code>uri</code></td>
+ *                       <td>Uniform Resource Identifier in RFC 3986 format</td>
+ *                     </tr> 
+ *                   </tbody>
+ *                 </table>
+ *               </td>
+ *             </tr>
+ *             <tr>
+ *               <td class="name"><code>help</code></td>
+ *               <td>no</td>
+ *               <td>{string}</td>
+ *               <td>Specifies a URL to detailed API documentation for this component property.  The value
+ *                   can be either an absolute URL, or an anchor string to be appended at the end of the
+ *                   Component-level <code>help</code> value after a hash ('&#x23') character.
+ *               </td>
+ *             </tr>
+ *             <tr>
  *               <td class="name"><code>maximum</code></td>
  *               <td>no</td>
  *               <td>{number}|{string}</td>
  *               <td>Validation metadata - specifies the <i>inclusive</i> high end of a possible range of values (e.g., "maximum": 1.0 → valid property value is <=1.0). 
- *               If the value is a string, then it is assumed to represent a dateTime value in the ISO 8601 extended date/time format.
- *               NOTE:  Use this in place of the deprecated max metadata property</td>
+ *               If the value is a string, then it is assumed to represent a dateTime value in the ISO 8601 extended date/time format.</td>
  *             </tr>
  *             <tr>
  *               <td class="name"><code>minimum</code></td>
  *               <td>no</td>
  *               <td>{number}|{string}</td>
  *               <td>Validation metadata - specifies the <i>inclusive</i> low end of a possible range of values (e.g., "minimum": 0.0 → valid property value is >=0.0). 
- *               If the value is a string, then it is assumed to represent a dateTime value in the ISO 8601 extended date/time format.
- *               NOTE:  Use this in place of the deprecated min metadata property</td>
+ *               If the value is a string, then it is assumed to represent a dateTime value in the ISO 8601 extended date/time format.</td>
+ *             </tr>
+ *             <tr>
+ *               <td class="name"><code>pattern</code></td>
+ *               <td>no</td>
+ *               <td>{string}</td>
+ *               <td>Javascript regular expression that can be used to validate a string value at design time
+ *                   <h6>Example:</h6>
+ *                   To validate a string that matches the format of a U.S. Social Security number, you could specify the following:
+ *                   <code>"pattern": "^\d{3}-?\d{2}-?\d{4}$"</code>
+ *               </td>
  *             </tr>
  *             <tr>
  *               <td class="name"><code>placeholder</code></td>
@@ -560,6 +766,34 @@ define(['ojs/ojcore', 'promise', 'ojs/ojcustomelement', 'ojs/ojcomposite-knockou
  *                   </table>
  *             </tr>
  *             <tr>
+ *               <td class="name"><code>propertyGroup</code></td>
+ *               <td>no</td>
+ *               <td>{string}</td>
+ *               <td>Optional group name for this property in a design time environment.  Reserved values include:
+ *                   <ul>
+ *                     <li><code>"common"</code> - This property is commonly used for configuring this component,
+ *                       so it should be prominently highlighted and the design time environment should provide
+ *                       extra assistance.</li>
+ *                     <li><code>"data"</code> - This property is commonly associated with data binding.</li>
+ *                   </ul>
+ *                   Nested group names can be specified using a period ('.') as a separator.  For example,
+ *                   a Charting component can choose to prominently group properties relating to a business chart's
+ *                   Legend with the <code>propertyGroup</code> specified as "common.legend"
+ *                   <h6>Notes</h6>
+ *                   <ul>
+ *                     <li>Component authors are <b>not</b> required to map all of their properties to a particular
+ *                         <code>propertyGroup</code>.  Design time environments are expected to implement designs
+ *                         that enable access to both mapped and unmapped properties.</li>
+ *                     <li>Component authors can optionally specify their preferred layout and ordering of component
+ *                         properties within a <code>propertyGroup</code> by providing additional Component-level
+ *                         <code>propertyLayout</code> metadata.</li>
+ *                     <li>Conversely, if a property is mapped to a particular <code>propertyGroup</code> but
+ *                         is <b>not</b> referenced in the corresponding <code>propertyLayout</code> metadata,
+ *                         then its layout and ordering is undefined.</li>
+ *                   </ul>
+ *               </td>
+ *             </tr>
+ *             <tr>
  *               <td class="name"><code>required</code></td>
  *               <td>no</td>
  *               <td>{boolean}</td>
@@ -592,7 +826,7 @@ define(['ojs/ojcore', 'promise', 'ojs/ojcustomelement', 'ojs/ojcomposite-knockou
  *   </tbody>
  * </table>
  *
- * <h3>Methods</h3>
+ * <h3 id="methods-table">Methods</h3>
  * <table class="params">
  *   <thead>
  *     <tr>
@@ -660,6 +894,15 @@ define(['ojs/ojcore', 'promise', 'ojs/ojcustomelement', 'ojs/ojcomposite-knockou
  *               </td>
  *             </tr> 
  *             <tr>
+ *               <td class="name"><code>help</code></td>
+ *               <td>no</td>
+ *               <td>{string}</td>
+ *               <td>Specifies a URL to detailed API documentation for this component method.  The value
+ *                   can be either an absolute URL, or an anchor string to be appended at the end of the
+ *                   Component-level <code>help</code> value after a hash ('&#x23') character.
+ *               </td>
+ *             </tr>
+ *             <tr>
  *               <td class="name"><code>params</code></td>
  *               <td>no</td>
  *               <td>{Array<{Object}>}</td>
@@ -712,7 +955,7 @@ define(['ojs/ojcore', 'promise', 'ojs/ojcustomelement', 'ojs/ojcomposite-knockou
  *   </tbody>
  * </table>
  *
- * <h3>Events</h3>
+ * <h3 id="events-table">Events</h3>
  * <table class="params">
  *   <thead>
  *     <tr>
@@ -754,33 +997,84 @@ define(['ojs/ojcore', 'promise', 'ojs/ojcustomelement', 'ojs/ojcomposite-knockou
  *               <td>A description for the event.</td>
  *             </tr>
  *             <tr>
- *               <td class="name"><code>displayName</code></td>
- *               <td>no</td>
- *               <td>{string}</td>
- *               <td>A user friendly, translatable name of the event.</td>
- *             </tr>
- *             <tr>
  *               <td class="name"><code>detail</code></td>
  *               <td>no</td>
  *               <td>{object}</td>
- *               <td>Describes the properties available on the event's detail property which contains data passed when initializing the event.</p>
+ *               <td>Describes the properties available on the the event's detail property, which contains data passed
+ *                   when initializing the event. The metadata object has the following properties:
  *                 <h6>Properties</h6>
  *                 <table class="params">
  *                   <thead>
  *                     <tr>
  *                       <th>Name</th>
  *                       <th>Type</th>
+ *                       <th>Description</th>
  *                     </tr>
  *                   </thead>
  *                   <tbody>
  *                     <tr>
  *                       <td class="name"><code>[field name]</code></td>
- *                       <td>{description: string, type: string}</td>
+ *                       <td>{Object}</td>
+ *                       <td>Information about the specified field in the event's payload.  The object
+ *                         has the following properties:
+ *                         <h6>Properties</h6>
+ *                         <table class="params">
+ *                           <thead>
+ *                             <tr>
+ *                               <th>Name</th>
+ *                               <th>Type</th>
+ *                               <th>Description</th>
+ *                             </tr>
+ *                           </thead>
+ *                           <tbody>
+ *                             <tr>
+ *                               <td class="name"><code>description</code></td>
+ *                               <td>{string}</td>
+ *                               <td>An optional, translatable description of this field</td>
+ *                             </tr>
+ *                             <tr>
+ *                               <td class="name"><code>type</code></td>
+ *                               <td>{string}</td>
+ *                               <td>The type of this field's value</td>
+ *                             </tr>
+ *                             <tr>
+ *                               <td class="name"><code>eventGroup</code></td>
+ *                               <td>{string}</td>
+ *                               <td>Optional flag that maps this field for special consideration in a design time
+ *                                   environment -- the value should match the <code>eventGroup</code> value of
+ *                                   the containing Event metadata element)
+ *                               </td>
+ *                             </tr>
+ *                            </tbody>
+ *                          </table>
+ *                       </td>
  *                     </tr>
  *                   </tbody>
  *                 </table>
  *               </td>
  *             </tr> 
+ *             <tr>
+ *               <td class="name"><code>displayName</code></td>
+ *               <td>no</td>
+ *               <td>{string}</td>
+ *               <td>A user friendly, translatable name of the event.</td>
+ *             </tr>
+ *             <tr>
+ *               <td class="name"><code>eventGroup</code></td>
+ *               <td>no</td>
+ *               <td>{string}</td>
+ *               <td>Optional group name for this event in a design time environment.  Reserved values are:
+ *                 <ul>
+ *                   <li><code>"common"</code> - Applications will commonly want to invoke application logic
+ *                       in response to this event, so it should be prominently highlighted and the design time
+ *                       environment should provide extra assistance.</li>
+ *                 </ul>
+ *                 If an event is mapped to an <code>eventGroup</code>, then members of that event's
+ *                 <code>detail</code> metadata can be also be flagged with that same <code>eventGroup</code>
+ *                 name – this enables the design time environment to map event payload details with any extra
+ *                 assistance afforded by that grouping.
+ *               </td>
+ *             </tr>
  *             <tr>
  *               <td class="name"><code>extension</code></td>
  *               <td>no</td>
@@ -808,6 +1102,15 @@ define(['ojs/ojcore', 'promise', 'ojs/ojcustomelement', 'ojs/ojcomposite-knockou
  *               </td>
  *             </tr> 
  *             <tr>
+ *               <td class="name"><code>help</code></td>
+ *               <td>no</td>
+ *               <td>{string}</td>
+ *               <td>Specifies a URL to detailed API documentation for this component event.  The value
+ *                   can be either an absolute URL, or an anchor string to be appended at the end of the
+ *                   Component-level <code>help</code> value after a hash ('&#x23') character.
+ *               </td>
+ *             </tr>
+ *             <tr>
  *               <td class="name"><code>visible</code></td>
  *               <td>no</td>
  *               <td>{boolean}</td>
@@ -820,7 +1123,7 @@ define(['ojs/ojcore', 'promise', 'ojs/ojcustomelement', 'ojs/ojcomposite-knockou
  *   </tbody>
  * </table>
  *
- * <h3>Slots</h3>
+ * <h3 id="slots-table">Slots</h3>
  * <table class="params">
  *   <thead>
  *     <tr>
@@ -843,6 +1146,40 @@ define(['ojs/ojcore', 'promise', 'ojs/ojcustomelement', 'ojs/ojcomposite-knockou
  *             </tr>
  *           </thead>
  *           <tbody>  
+ *             <tr>
+ *               <td class="name"><code>data</code></td>
+ *               <td>no</td>
+ *               <td>{Object}</td>
+ *               <td>
+ *                 An object whose keys are the variable names available on $current and whose values are objects that
+ *                 provide additional information about the variable as described in the table below. These variables
+ *                 extend what's available on the application context and will be exposed as subproperties
+ *                 on the $current variable and any application provided aliases.
+ *                 This property only applies to template slots.
+ *                 <h6>Properties</h6>
+ *                 <table class="params">
+ *                   <thead>
+ *                     <tr>
+ *                       <th>Name</th>
+ *                       <th>Type</th>
+ *                       <th>Description</th>
+ *                     </tr>
+ *                   </thead>
+ *                   <tbody>
+ *                     <tr>
+ *                       <td class="name"><code>description</code></td>
+ *                       <td>{string}</td>
+ *                       <td>The description for the data property.</td>
+ *                     </tr>
+ *                     <tr>
+ *                       <td class="name"><code>type</code></td>
+ *                       <td>{string}</td>
+ *                       <td>The data property type.</td>
+ *                     </tr>
+ *                   </tbody>
+ *                 </table>
+ *               </td>
+ *             </tr>
  *             <tr>
  *               <td class="name"><code>description</code></td>
  *               <td>no</td>
@@ -881,6 +1218,31 @@ define(['ojs/ojcore', 'promise', 'ojs/ojcustomelement', 'ojs/ojcomposite-knockou
  *                 Please consult the documentation for the downstream tool to determine what (if any) extension metadata is supported.
  *               </td>
  *             </tr> 
+ *             <tr>
+ *               <td class="name"><code>help</code></td>
+ *               <td>no</td>
+ *               <td>{string}</td>
+ *               <td>Specifies a URL to detailed API documentation for this component slot.  The value
+ *                   can be either an absolute URL, or an anchor string to be appended at the end of the
+ *                   Component-level <code>help</code> value after a hash ('&#x23') character.
+ *               </td>
+ *             </tr>
+ *             <tr>
+ *               <td class="name"><code>maxItems</code></td>
+ *               <td>no</td>
+ *               <td>{number}</td>
+ *               <td>Specifies the maximum number of elements that the design time environment should allow
+ *                   to be added to this slot.  If unspecified, the default is that there is no maximum.
+ *               </td>
+ *             </tr>
+ *             <tr>
+ *               <td class="name"><code>minItems</code></td>
+ *               <td>no</td>
+ *               <td>{number}</td>
+ *               <td>Specifies the minimum number of elements that the design time environment should allow
+ *                   to be added to this slot.  If unspecified, the default is 0.
+ *               </td>
+ *             </tr>
  *             <tr>
  *               <td class="name"><code>visible</code></td>
  *               <td>no</td>
@@ -1551,8 +1913,11 @@ define(['ojs/ojcore', 'promise', 'ojs/ojcustomelement', 'ojs/ojcomposite-knockou
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#slotting"></a>
  * </h2>
  * <p>
- * Complex composite components which can contain additional composites and/or content for child facets defined in its associated View can be constructed via slotting.
- * See the <a href="oj.ojBindSlot.html">oj-bind-slot</a> API doc for more information.
+ * The View can also contain slots where application provided DOM can go. Complex composite components which can contain additional composites 
+ * and/or content for child facets defined in its associated View can be constructed via slotting. There are two ways to define a composite's 
+ * slots, using either an <a href="oj.ojBindSlot.html">oj-bind-slot</a> or an <a href="oj.ojBindTemplateSlot.html">oj-bind-template-slot</a> 
+ * element to indicate that that slot's content will be stamped using an application provided template. See the relevant slot API docs for 
+ * more information.
  * </p>
  *
  * <h2 id="bindorder-section">
@@ -1679,11 +2044,12 @@ oj.Composite.register = function(name, descriptor)
 oj.Composite.getContainingComposite = function(node, stopBelow)
 {
   var composite = null;
-  
+ 
   while(node)
   {
     node = oj.CompositeTemplateRenderer.getEnclosingComposite(node);
-    if (node)
+    //: we should ignore oj-module component since it is not a relevant enclosing composite for this call
+    if (node && node.nodeName.toLowerCase() !== 'oj-module')
     {
       if (stopBelow && !(node.compareDocumentPosition(stopBelow) & 16/*contained by*/))
       {
@@ -1692,7 +2058,7 @@ oj.Composite.getContainingComposite = function(node, stopBelow)
       composite = node;
     }
   }
-  
+ 
   return composite;
 };
 
@@ -1714,6 +2080,7 @@ oj.Composite.__COMPOSITE_PROP = '__oj_composite';
  * @ignore
  */
 oj.Composite.__BINDING_PROVIDER = '__oj_binding_prvdr';
+
 /**
  * JET component custom element bridge.
  * 
@@ -1743,37 +2110,54 @@ oj.CollectionUtils.copyInto(oj.CompositeElementBridge.proto,
     oj.CompositeTemplateRenderer.invokeViewModelMethod(this._VIEW_MODEL, 'propertyChanged', [vmContext]);
   },
 
-  AddComponentMethods: function(proto) 
-  {
+  AddComponentMethods: function (proto) {
     // Add subproperty getter/setter
-    proto['setProperty'] = function(prop, value) {
-      var bridge = oj.BaseCustomElementBridge.getInstance(this);
-      if (!bridge.SaveEarlyPropertySet(prop, value))
-        bridge.SetProperty(this, prop, value, this, true);
+    var setPropertyHelper = function (element, bridge, prop, value, propertyBag, isOuterSet) {
+      if (!bridge.SaveEarlyPropertySet(prop, value)) {
+        var setResult = bridge.SetProperty(element, prop, value, propertyBag, isOuterSet);
+        if (setResult.propertySet) {
+          if (setResult.isSubproperty) {
+            // Retrieve the property tracker for the top level property and notify that a subproperty has
+            // changed so any View bound subproperties will trigger a View update
+            var propertyTracker = oj.CompositeElementBridge._getPropertyTracker(bridge,
+              setResult.property);
+            propertyTracker.valueHasMutated();
+          }
+        }
+      }
     };
-    proto['getProperty'] = function(prop) {
+    // eslint-disable-next-line no-param-reassign
+    proto.setProperty = function (prop, value) {
+      var bridge = oj.BaseCustomElementBridge.getInstance(this);
+      setPropertyHelper(this, bridge, prop, value, this, true);
+    };
+    // eslint-disable-next-line no-param-reassign
+    proto.getProperty = function (prop) {
       var bridge = oj.BaseCustomElementBridge.getInstance(this);
       return bridge.GetProperty(this, prop, this);
     };
-    proto['_propsProto']['setProperty'] =  function(prop, value) {
+    // eslint-disable-next-line no-param-reassign
+    proto._propsProto.setProperty = function (prop, value) {
       // 'this' is the property object we pass to the ViewModel to track internal property changes
-      this._BRIDGE.SetProperty(this._ELEMENT, prop, value, this, false);
+      setPropertyHelper(this._ELEMENT, this._BRIDGE, prop, value, this, false);
     };
-    proto['_propsProto']['getProperty'] = function(prop) {
+    // eslint-disable-next-line no-param-reassign
+    proto._propsProto.getProperty = function (prop) {
       // 'this' is the property object we pass to the ViewModel to track internal property changes
       return this._BRIDGE.GetProperty(this, prop, this);
     };
     // Always add automation methods, but if the ViewModel defines overrides, wrap the overrides
     // and pass the default implementation in as the last parameter to the ViewModel's method.
-    proto['getNodeBySubId'] = function(locator) {
+    // eslint-disable-next-line no-param-reassign
+    proto.getNodeBySubId = function (locator) {
       var bridge = oj.BaseCustomElementBridge.getInstance(this);
       var viewModel = bridge._getViewModel(this);
-      if (viewModel.getNodeBySubId)
+      if (viewModel.getNodeBySubId) {
         return viewModel.getNodeBySubId(locator, bridge._getNodeBySubId.bind(this));
-      else
-        return bridge._getNodeBySubId.bind(this)(locator);
+      }
+      return bridge._getNodeBySubId.bind(this)(locator);
     };
-    proto['getSubIdByNode'] = function(node) {
+    proto.getSubIdByNode = function(node) {
       var bridge = oj.BaseCustomElementBridge.getInstance(this);
       var viewModel = bridge._getViewModel(this);
       if (viewModel.getSubIdByNode)
@@ -1846,6 +2230,9 @@ oj.CollectionUtils.copyInto(oj.CompositeElementBridge.proto,
 
       // Resolve the component busy state 
       bridge.resolveDelayedReadyPromise();
+    }).catch(function (reason) {
+      // Resolve the busy state if the activated Promise is rejected
+      bridge._throwError(element, reason);
     });
   },
 

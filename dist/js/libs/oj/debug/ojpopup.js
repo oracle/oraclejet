@@ -930,7 +930,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
         this._setAutoDismiss(options["autoDismiss"]);
         this._addDescribedBy();
 
-        if (!this._IsCustomElement() || !element[0].hasAttribute["role"])
+        if (!this._IsCustomElement() || !element[0].hasAttribute("role"))
           element.attr("role", options["role"]);
 
         // convert to the jquery ui position format
@@ -1010,6 +1010,26 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
         this._on(element, {'keydown' : this._keyHandler, 'keyup' : this._keyHandler});
         if (launcher && launcher.length > 0)
           this._on(launcher, {'keydown' : this._keyHandler, 'keyup' : this._keyHandler});
+      },
+      /**
+       * Override to retrieve the context menu element from the context area of the popup
+       * versus the root.
+       * @memberof oj.ojPopup
+       * @instance
+       * @protected
+       * @override
+       */
+      _GetContextMenu: function()
+      {
+        if (this._IsCustomElement())
+        {
+          var slotMap = oj.BaseCustomElementBridge.getSlotMap(this._content[0]);
+          var slot = slotMap['contextMenu'];
+          if (slot && slot.length > 0)
+            return slot[0];
+        }
+        else
+          return this._super();
       },
       /**
        * Closes the popup. This method does not accept any arguments.

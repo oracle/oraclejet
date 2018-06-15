@@ -1,7 +1,7 @@
 {
   "name": "oj-table",
-  "version": "5.0.0",
-  "jetVersion": "5.0.0",
+  "version": "5.1.0",
+  "jetVersion": "5.1.0",
   "displayName": "Table",
   "preview": true,
   "roles": [
@@ -28,7 +28,7 @@
   "properties": {
     "accessibility": {
       "description": "Accessibility attributes.",
-      "type": "Object.<string, string>|null",
+      "type": "Object<string, string>|null",
       "displayName": "Accessibility",
       "value": null,
       "properties": {
@@ -49,11 +49,189 @@
       "description": "An array of column definitions.\nIf the application change the column definitions after the Table is loaded, it must call the\nrefresh() method to update the Table display.",
       "type": "Array<Object>|null",
       "displayName": "Columns",
-      "value": null
+      "value": null,
+      "extension": {
+        "vbcs": {
+          "itemProperties": {
+            "className": {
+              "description": "The CSS class to apply to the column cells\n\nSee the columns attribute for usage examples.",
+              "type": "string|null",
+              "value": null
+            },
+            "field": {
+              "description": "The data field this column refers to.\n\nSee the columns attribute for usage examples.",
+              "type": "string|null",
+              "value": null
+            },
+            "footerClassName": {
+              "description": "The CSS class to apply to the footer cell.\n\nSee the columns attribute for usage examples.",
+              "type": "string|null",
+              "value": null
+            },
+            "footerRenderer": {
+              "description": "The renderer function that renders the content of the footer.\nThe function will be passed a context object which contains\nthe following objects: columnIndex: The column index componentElement: A reference to the Table root element footerContext.datasource: The \"data\" attribute of the Table parentElement: Empty rendered element\n\nThe function should return one of the following: An Object with the following property: insert: HTMLElement | string - A string or a DOM element of the content inside the footer. undefined: If the developer chooses to manipulate the footer element directly, the function should return undefined.\n\nIf no renderer is specified, the Table will treat the footer data as a String.\n\nSee the columns attribute for usage examples.",
+              "type": "function|null",
+              "value": null
+            },
+            "footerStyle": {
+              "description": "The CSS styling to apply to the footer cell.\n\nSee the columns attribute for usage examples.",
+              "type": "string|null",
+              "value": null
+            },
+            "footerTemplate": {
+              "description": "The name of the slot used to specify the template for rendering the footer cell. The slot must be a <template> element.\nThe content of the template should not include the <td> element, only what's inside it.\nWhen both footerTemplate and footerRenderer are specified, the footerRenderer takes precedence.\nWhen the template is executed for each footer, it will have access to the binding context containing the following properties: $current - an object that contains information for the current footer being rendered. (See the table below for a list of properties available on $current) alias - if as attribute was specified, the value will be used to provide an application-named alias for $current.\n",
+              "type": "string|null",
+              "value": null,
+              "properties": {
+                "componentElement": {
+                  "description": "The <oj-table> custom element.",
+                  "type": "Element"
+                }
+              }
+            },
+            "headerClassName": {
+              "description": "The CSS class to apply to the column header text.\n\nSee the columns attribute for usage examples.",
+              "type": "string|null",
+              "value": null
+            },
+            "headerRenderer": {
+              "description": "The renderer function that renders the content of the header.\nThe function will be passed a context object which contains\nthe following objects: columnIndex: The column index columnHeaderDefaultRenderer(options, delegateRenderer): If the column is not sortable then this function will be included in the context. The options parameter specifies the options (future use) for the renderer while the delegateRenderer parameter specifies the function which the developer would like to be called during rendering of the column header. columnHeaderSortableIconRenderer(options, delegateRenderer): If the column is sortable then this function will be included in the context. The options parameter specifies the options (future use) for the renderer while the delegateRenderer parameter specifies the function which the developer would like to be called during rendering of the sortable column header. Calling the columnHeaderSortableIconRenderer function enables rendering custom header content while also preserving the sort icons. componentElement: A reference to the Table root element data: The header text for the column headerContext.datasource: The \"data\" attribute of the Table parentElement: Empty rendered TH element\n\nThe function should return one of the following: An Object with the following property: insert: HTMLElement | string - A string or a DOM element of the content inside the header. undefined: If the developer chooses to manipulate the header element directly, the function should return undefined.\n\nIf no renderer is specified, the Table will treat the header data as a String.\n\nSee the columns attribute for usage examples.",
+              "type": "function|null",
+              "value": null
+            },
+            "headerStyle": {
+              "description": "The CSS styling to apply to the column header text.\n\nSee the columns attribute for usage examples.",
+              "type": "string|null",
+              "value": null
+            },
+            "headerTemplate": {
+              "description": "The name of the slot used to specify the template for rendering the header cell. The slot must be a <template> element.\nThe content of the template should not include the <th> element, only what's inside it.\nWhen both headerTemplate and headerRenderer are specified, the headerRenderer takes precedence.\nWhen the template is executed for each header, it will have access to the binding context containing the following properties: $current - an object that contains information for the current header being rendered. (See the table below for a list of properties available on $current) alias - if as attribute was specified, the value will be used to provide an application-named alias for $current.\n",
+              "type": "string|null",
+              "value": null,
+              "properties": {
+                "componentElement": {
+                  "description": "The <oj-table> custom element",
+                  "type": "Element"
+                },
+                "data": {
+                  "description": "The data object for the current header",
+                  "type": "Object"
+                }
+              }
+            },
+            "headerText": {
+              "description": "Text to display in the header of the column.\n\nSee the columns attribute for usage examples.",
+              "type": "string|null",
+              "value": null
+            },
+            "id": {
+              "description": "The identifier for the column\n\nSee the columns attribute for usage examples.",
+              "type": "string|null",
+              "value": null
+            },
+            "renderer": {
+              "description": "The renderer function that renders the content of the cell.\nThe function will be passed a context object which contains\nthe following objects: cellContext.datasource: The \"data\" attribute of the Table cellContext.mode: The mode of the row. It can be \"edit\" or \"navigation\". cellContext.status: Contains the rowIndex, rowKey, and currentRow columnIndex: The column index componentElement: A reference to the Table root element data: The cell data parentElement: Empty rendered element row: Key/value pairs of the row\n\nThe function should return one of the following: An Object with the following property: insert: HTMLElement | string - A string or a DOM element of the content inside the header. undefined: If the developer chooses to manipulate the cell element directly, the function should return undefined.\n\nIf no renderer is specified, the Table will treat the cell data as a String.\n\nSee the columns attribute for usage examples.",
+              "type": "function|null",
+              "value": null
+            },
+            "resizable": {
+              "description": "Enable or disable width resize along the column end headers.",
+              "type": "string",
+              "value": "disabled",
+              "enumValues": [
+                "disabled",
+                "enabled"
+              ],
+              "propertyEditorValues": {
+                "disabled": {
+                  "displayName": "Disabled"
+                },
+                "enabled": {
+                  "displayName": "Enabled"
+                }
+              }
+            },
+            "sortProperty": {
+              "description": "Indicates the row attribute used for sorting when sort is invoked on this\ncolumn. Useful for concatenated columns, where the sort is done by only a subset\nof the concatenated items.\n\nSee the columns attribute for usage examples.",
+              "type": "string|null",
+              "value": null
+            },
+            "sortable": {
+              "description": "Whether or not the column is sortable.\n\nA sortable column has a clickable header that (when clicked)\nsorts the table by that column's property. Note that\nin order for a column to be sortable, this attribute\nmust be set to \"enabled\" and the underlying model must\nsupport sorting by this column's property. If this attribute\nis set to \"auto\" then the column will be sortable if the\nunderlying model supports sorting. A value of \"disabled\" will\ndisable sorting on the column.\n\nSee the columns attribute for usage examples.",
+              "type": "string",
+              "value": "auto",
+              "enumValues": [
+                "auto",
+                "disabled",
+                "enabled"
+              ],
+              "propertyEditorValues": {
+                "auto": {
+                  "description": "Column will be sortable if the underlying model supports sorting.",
+                  "displayName": "Auto"
+                },
+                "disabled": {
+                  "description": "Disabled.",
+                  "displayName": "Disabled"
+                },
+                "enabled": {
+                  "description": "Enabled.",
+                  "displayName": "Enabled"
+                }
+              }
+            },
+            "style": {
+              "description": "The CSS styling to apply to the column cells\n\nSee the columns attribute for usage examples.",
+              "type": "string|null",
+              "value": null
+            },
+            "template": {
+              "description": "The name of the slot used to specify the template for rendering the cell. The slot must be a <template> element.\nThe content of the template should not include the <td> element, only what's inside it.\nWhen both cell template and cell renderer are specified, the cell renderer takes precedence.\nWhen the template is executed for the cell, it will have access to the binding context containing the following properties: $current - An object that contains information for the current cell being rendered (See the table below for a list of properties available on $current) alias - If as attribute was specified, the value will be used to provide an application-named alias for $current.\n",
+              "type": "string|null",
+              "value": null,
+              "properties": {
+                "componentElement": {
+                  "description": "The <oj-table> custom element",
+                  "type": "Element"
+                },
+                "data": {
+                  "description": "The data for the current cell being rendered",
+                  "type": "Object"
+                },
+                "row": {
+                  "description": "The data for the row contained the current cell being rendered",
+                  "type": "Object"
+                },
+                "index": {
+                  "description": "The zero-based index of the current row being rendered",
+                  "type": "number"
+                },
+                "columnIndex": {
+                  "description": "The zero-based index of the current column being rendered.",
+                  "type": "number"
+                },
+                "key": {
+                  "description": "The key of the current cell being rendered.",
+                  "type": "any"
+                },
+                "mode": {
+                  "description": "The mode of the row containing the cell. It can be \"edit\" or \"navigation\".",
+                  "type": "string"
+                }
+              }
+            },
+            "width": {
+              "description": "The width in px of the column",
+              "type": "number|null",
+              "value": null
+            }
+          }
+        }
+      }
     },
     "columnsDefault": {
       "description": "Default values to apply to all columns objects.",
-      "type": "Object.<string, (string|null)>",
+      "type": "Object",
       "displayName": "Columns Default",
       "value": null,
       "properties": {
@@ -83,9 +261,15 @@
           "value": null
         },
         "footerTemplate": {
-          "description": "The name of the slot used to specify the template for rendering the footer cell. The slot must be a <template> element. \n\nWhen the template is executed each footer, it will have access to the binding context containing the following properties:\n\n$current - an object that contains information for the current footer being rendered componentElement - the <oj-table> custom element \n\nalias - if as attribute was specified, the value will be used to provide an application-named alias for $current.\n\n\n\nThe content of the template should not include the <td> element, only what's inside it.\nWhen both footerTemplate and footerRenderer are specified, the footerRenderer takes precedence.",
+          "description": "The name of the slot used to specify the template for rendering the footer cell. The slot must be a <template> element.\nThe content of the template should not include the <td> element, only what's inside it.\nWhen both footerTemplate and footerRenderer are specified, the footerRenderer takes precedence.\nWhen the template is executed for each footer, it will have access to the binding context containing the following properties: $current - an object that contains information for the current footer being rendered. (See the table below for a list of properties available on $current) alias - if as attribute was specified, the value will be used to provide an application-named alias for $current.\n",
           "type": "string|null",
-          "value": null
+          "value": null,
+          "properties": {
+            "componentElement": {
+              "description": "The <oj-table> custom element.",
+              "type": "Element"
+            }
+          }
         },
         "headerClassName": {
           "description": "The default CSS class to apply to the column header.\n\nSee the columns-default attribute for usage examples.",
@@ -103,9 +287,19 @@
           "value": null
         },
         "headerTemplate": {
-          "description": "The name of the slot used to specify the template for rendering the header cell. The slot must be a <template> element. \n\nWhen the template is executed for the header, it will have access to the binding context containing the following properties:\n\n$current - an object that contains information for the current header being rendered componentElement - the <oj-table> custom element data - the data for the current header being rendered \n\nalias - if as attribute was specified, the value will be used to provide an application-named alias for $current.\n\n\n\nThe content of the template should not include the <th> element, only what's inside it.\nWhen both headerTemplate and headerRenderer are specified, the headerRenderer takes precedence.",
+          "description": "The name of the slot used to specify the template for rendering the header cell. The slot must be a <template> element.\nThe content of the template should not include the <th> element, only what's inside it.\nWhen both headerTemplate and headerRenderer are specified, the headerRenderer takes precedence.\nWhen the template is executed for each header, it will have access to the binding context containing the following properties: $current - an object that contains information for the current header being rendered. (See the table below for a list of properties available on $current) alias - if as attribute was specified, the value will be used to provide an application-named alias for $current.\n",
           "type": "string|null",
-          "value": null
+          "value": null,
+          "properties": {
+            "componentElement": {
+              "description": "The <oj-table> custom element",
+              "type": "Element"
+            },
+            "data": {
+              "description": "The data object for the current header",
+              "type": "Object"
+            }
+          }
         },
         "headerText": {
           "description": "Default text to display in the header of the column.\n\nSee the columns-default attribute for usage examples.",
@@ -169,9 +363,39 @@
           "value": null
         },
         "template": {
-          "description": "The name of the slot used to specify the template for rendering the cell. The slot must be a <template> element. \n\nWhen the template is executed for the cell, it will have access to the binding context containing the following properties:\n\n$current - an object that contains information for the current cell being rendered componentElement - the <oj-table> custom element data - the data for the current cell being rendered index - the zero-based index of the current row being rendered key - the key of the current cell being rendered \n\nalias - if as attribute was specified, the value will be used to provide an application-named alias for $current.\n\n\n\nThe content of the template should not include the <td> element, only what's inside it.\nWhen both cell template and cell renderer are specified, the cell renderer takes precedence.",
+          "description": "The name of the slot used to specify the template for rendering the cell. The slot must be a <template> element.\nThe content of the template should not include the <td> element, only what's inside it.\nWhen both cell template and cell renderer are specified, the cell renderer takes precedence.\nWhen the template is executed for the cell, it will have access to the binding context containing the following properties: $current - an object that contains information for the current cell being rendered alias - if as attribute was specified, the value will be used to provide an application-named alias for $current.\n",
           "type": "string|null",
-          "value": null
+          "value": null,
+          "properties": {
+            "componentElement": {
+              "description": "The <oj-table> custom element",
+              "type": "Element"
+            },
+            "data": {
+              "description": "The data for the current cell being rendered",
+              "type": "Object"
+            },
+            "row": {
+              "description": "The data for the row contained the current cell being rendered",
+              "type": "Object"
+            },
+            "index": {
+              "description": "The zero-based index of the current row being rendered",
+              "type": "number"
+            },
+            "columnIndex": {
+              "description": "The zero-based index of the current column being rendered.",
+              "type": "number"
+            },
+            "key": {
+              "description": "The key of the current cell being rendered.",
+              "type": "any"
+            },
+            "mode": {
+              "description": "The mode of the row containing the cell. It can be \"edit\" or \"navigation\".",
+              "type": "string"
+            }
+          }
         },
         "width": {
           "description": "Default CSS width to apply to the column",
@@ -428,7 +652,7 @@
     },
     "scrollPolicyOptions": {
       "description": "scrollPolicy options.\n\nWhen scrollPolicy is loadMoreOnScroll, the next block of rows is fetched\nwhen the user scrolls to the end of the table. The fetchSize property\ndetermines how many rows are fetched in each block.",
-      "type": "Object.<string, string>|null",
+      "type": "Object|null",
       "displayName": "Scroll Policy Options",
       "value": {
         "fetchSize": 25,
@@ -458,7 +682,7 @@
     },
     "selectionMode": {
       "description": "The row and column selection modes. Both can be either single or multiple.",
-      "type": "Object.<string, string>|null",
+      "type": "Object<string, string>|null",
       "displayName": "Selection Mode",
       "value": null,
       "properties": {
@@ -679,7 +903,7 @@
           "type": "number"
         }
       ],
-      "return": "Promise.<boolean>"
+      "return": "Promise<boolean>"
     },
     "setProperty": {
       "description": "Sets a property or a single subproperty for complex properties and notifies the component\nof the change, triggering a [property]Changed event.",
@@ -692,7 +916,7 @@
         {
           "name": "value",
           "description": "The new value to set the property to.",
-          "type": "*"
+          "type": "any"
         }
       ],
       "return": "void"
@@ -706,7 +930,7 @@
           "type": "string"
         }
       ],
-      "return": "*"
+      "return": "any"
     },
     "setProperties": {
       "description": "Performs a batch set of properties.",
@@ -762,11 +986,11 @@
       "detail": {
         "currentRow": {
           "description": "the new current row",
-          "type": "oj.ojTable.CurrentRow.<K>"
+          "type": "oj.ojTable.CurrentRow<K>"
         },
         "previousCurrentRow": {
           "description": "the previous current row",
-          "type": "oj.ojTable.CurrentRow.<K>"
+          "type": "oj.ojTable.CurrentRow<K>"
         }
       }
     },

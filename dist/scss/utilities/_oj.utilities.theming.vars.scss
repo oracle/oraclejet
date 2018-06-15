@@ -69,6 +69,15 @@
   $colorList: _oj-theming-add-var($colorList, '$neutralColor16', $neutralColor16);
   $colorList: _oj-theming-add-var($colorList, '$neutralColor17', $neutralColor17);
 
+  // text colors
+  $colorList: _oj-theming-add-var($colorList, '$textColor1', $textColor1);
+  $colorList: _oj-theming-add-var($colorList, '$textColor2', $textColor2);
+  $colorList: _oj-theming-add-var($colorList, '$textColor3', $textColor3);
+  $colorList: _oj-theming-add-var($colorList, '$textColor4', $textColor4);
+  $colorList: _oj-theming-add-var($colorList, '$textColor5', $textColor5);
+  $colorList: _oj-theming-add-var($colorList, '$textColor6', $textColor6);
+  $colorList: _oj-theming-add-var($colorList, '$textColor7', $textColor7);
+
   // Accent Colors
   $colorList: _oj-theming-add-var($colorList, '$accentColorHighlight1', $accentColorHighlight1);
   $colorList: _oj-theming-add-var($colorList, '$accentColorHighlight2', $accentColorHighlight2);
@@ -109,15 +118,6 @@
   $colorList: _oj-theming-add-var($colorList, '$accentColorDvt10', $accentColorDvt10);
   $colorList: _oj-theming-add-var($colorList, '$accentColorDvt11', $accentColorDvt11);
   $colorList: _oj-theming-add-var($colorList, '$accentColorDvt12', $accentColorDvt12);
-
-  // text colors
-  $colorList: _oj-theming-add-var($colorList, '$textColor1', $textColor1);
-  $colorList: _oj-theming-add-var($colorList, '$textColor2', $textColor2);
-  $colorList: _oj-theming-add-var($colorList, '$textColor3', $textColor3);
-  $colorList: _oj-theming-add-var($colorList, '$textColor4', $textColor4);
-  $colorList: _oj-theming-add-var($colorList, '$textColor5', $textColor5);
-  $colorList: _oj-theming-add-var($colorList, '$textColor6', $textColor6);
-  $colorList: _oj-theming-add-var($colorList, '$textColor7', $textColor7);
 
   @return $colorList;
 
@@ -778,6 +778,7 @@
   $colorList: _oj-theming-add-var($colorList, '$dvtGanttMinorAxisLabelColor', $dvtGanttMinorAxisLabelColor);
   $colorList: _oj-theming-add-var($colorList, '$dvtGanttMinorAxisSeparatorColor', $dvtGanttMinorAxisSeparatorColor);
   $colorList: _oj-theming-add-var($colorList, '$dvtGanttDependencyLineColor', $dvtGanttDependencyLineColor);
+  $colorList: _oj-theming-add-var($colorList, '$dvtGanttTaskDragImageBorderColor', $dvtGanttTaskDragImageBorderColor);
 
   @return $colorList;
 }

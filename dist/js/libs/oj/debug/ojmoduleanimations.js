@@ -12,6 +12,7 @@ define(['ojs/ojcore', 'knockout', 'jquery', 'promise', 'ojs/ojanimation'], funct
  * All rights reserved.
  */
 
+/* global ko:false, Promise:false */
 
 /**
  * A collection of ModuleAnimation implementations that can be specified on the "animation"
@@ -54,17 +55,12 @@ define(['ojs/ojcore', 'knockout', 'jquery', 'promise', 'ojs/ojanimation'], funct
  */
 oj.ModuleAnimations = {};
 
-oj.ModuleAnimations._addContainedElements = function(node, roots)
-{
+oj.ModuleAnimations._addContainedElements = function (node, roots) {
   var child = ko.virtualElements.firstChild(node);
-  while(child)
-  {
-    if (child.nodeType == 1)
-    {
+  while (child) {
+    if (child.nodeType === 1) {
       roots.push(child);
-    }
-    else if (child.nodeType == 8)
-    {
+    } else if (child.nodeType === 8) {
       this._addContainedElements(child, roots);
     }
 
@@ -72,38 +68,32 @@ oj.ModuleAnimations._addContainedElements = function(node, roots)
   }
 };
 
-oj.ModuleAnimations._cacheVirtualViewRoot = function(context, root)
-{
-  context['_ojOldRoot'] = root;
+oj.ModuleAnimations._cacheVirtualViewRoot = function (context, root) {
+  // eslint-disable-next-line no-param-reassign
+  context._ojOldRoot = root;
 };
 
-oj.ModuleAnimations._getVirtualViewRoot = function(context)
-{
-  return context['_ojOldRoot'];
+oj.ModuleAnimations._getVirtualViewRoot = function (context) {
+  return context._ojOldRoot;
 };
 
-oj.ModuleAnimations._defaultCanAnimate = function(context)
-{
+oj.ModuleAnimations._defaultCanAnimate = function (context) {
   // No animation for the initial module display
-  if (context['isInitial'])
-  {
+  if (context.isInitial) {
     return false;
   }
 
   // We can animate if the module binding is on a real element
-  if (context['node'].nodeType == 1)
-  {
+  if (context.node.nodeType === 1) {
     return true;
   }
 
   // If the module binding is on a comment node, we can animate if the view
   // is single-rooted
-  if (context['node'].nodeType == 8)
-  {
+  if (context.node.nodeType === 8) {
     var children = [];
-    oj.ModuleAnimations._addContainedElements(context['node'], children);
-    if (children && children.length == 1)
-    {
+    oj.ModuleAnimations._addContainedElements(context.node, children);
+    if (children && children.length === 1) {
       oj.ModuleAnimations._cacheVirtualViewRoot(context, children[0]);
       return true;
     }
@@ -112,40 +102,37 @@ oj.ModuleAnimations._defaultCanAnimate = function(context)
   return false;
 };
 
-oj.ModuleAnimations._getOldView = function(context)
-{
+oj.ModuleAnimations._getOldView = function (context) {
   var oldView;
 
-  if (context['node'].nodeType == 1)
-  {
-    oldView = context['node'];
-  }
-  else if (context['node'].nodeType == 8)
-  {
+  if (context.node.nodeType === 1) {
+    oldView = context.node;
+  } else if (context.node.nodeType === 8) {
     oldView = oj.ModuleAnimations._getVirtualViewRoot(context);
   }
 
   return oldView;
 };
 
-oj.ModuleAnimations._createViewParent = function(oldView)
-{
+oj.ModuleAnimations._createViewParent = function (oldView) {
   var viewport = $(document.createElement('div'));
-  var cssStyle = {'position': 'absolute',
-                  'height': oldView.offsetHeight + 'px',
-                  'width': oldView.offsetWidth + 'px',
-                  'left': oldView.offsetLeft + 'px',
-                  'top': oldView.offsetTop + 'px'};
+  var cssStyle = {
+    position: 'absolute',
+    height: oldView.offsetHeight + 'px',
+    width: oldView.offsetWidth + 'px',
+    left: oldView.offsetLeft + 'px',
+    top: oldView.offsetTop + 'px'
+  };
 
-  viewport.appendTo(oldView.offsetParent); //@HTMLUpdateOK; viewPort constructed above
+  viewport.appendTo(oldView.offsetParent); // @HTMLUpdateOK; viewPort constructed above
   viewport.css(cssStyle);
   viewport.addClass('oj-animation-host-viewport');
-  
+
   var host = document.createElement('div');
   host.className = 'oj-animation-host';
 
-  viewport.append(host); //@HTMLUpdateOK; host is constructed above
-  
+  viewport.append(host); // @HTMLUpdateOK; host is constructed above
+
   return host;
 };
 
@@ -158,11 +145,11 @@ oj.ModuleAnimations._createViewParent = function(oldView)
   *                              If this is an object, it should describe the effect:
   * @param {string} oldViewEffect.effect - the name of an effect method in oj.AnimationUtils
   * @param {*=} oldViewEffect.effectOption - any option applicable to the specific animation effect<br><br>
-  *                                                 Replace <i>effectOption</i> with the actual option name.  More than one option can be specified.  
+  *                                                 Replace <i>effectOption</i> with the actual option name.  More than one option can be specified.
   *                                                 Refer to the method description in {@link oj.AnimationUtils} for available options.
   * @param {null|string|Object} newViewEffect - an animation effect for the incoming view.<br><br>
   *                                             This is in the same format as oldViewEffect.
-  * @param {boolean} newViewOnTop - specify true to initially create the new view on top of the old view. 
+  * @param {boolean} newViewOnTop - specify true to initially create the new view on top of the old view.
   *                  This is needed for certain effects such as sliding the new view in to cover the old view.
   *                  Default is false.
   * @return {Object} an implementation of the ModuleAnimation interface
@@ -172,170 +159,147 @@ oj.ModuleAnimations._createViewParent = function(oldView)
   *  { target: "Type", for: "newViewEffect", value: "{effect: oj.AnimationUtils.AnimationMethods, [key:string]: any}|oj.AnimationUtils.AnimationMethods|null"},
   *  { target: "Type", for: "returns", value: "oj.ModuleElementAnimation"}
   * ]
-  * 
+  *
   * @example <caption>Create a custom ModuleAnimation that fades out old view by 50% and slides in the new view:</caption>
   * var customAnimation = oj.ModuleAnimations.createAnimation({"effect":"fadeOut", "endOpacity":0.5}, {"effect":"slideIn", "direction":"end"}, true);
   */
-oj.ModuleAnimations.createAnimation = function(oldViewEffect, newViewEffect, newViewOnTop)
-{
+oj.ModuleAnimations.createAnimation = function (oldViewEffect, newViewEffect, newViewOnTop) {
   return {
-    'canAnimate': oj.ModuleAnimations._defaultCanAnimate,
-    'prepareAnimation': function(context) {
+    canAnimate: oj.ModuleAnimations._defaultCanAnimate,
+    prepareAnimation: function (context) {
       var viewParents = {};
       var oldView = oj.ModuleAnimations._getOldView(context);
-      
-      if (newViewEffect && !newViewOnTop)
-      {
-        viewParents['newViewParent'] = oj.ModuleAnimations._createViewParent(oldView);
-      }
-      
-      if (oldViewEffect)
-      {
-        viewParents['oldViewParent'] = oj.ModuleAnimations._createViewParent(oldView);
+
+      if (newViewEffect && !newViewOnTop) {
+        viewParents.newViewParent = oj.ModuleAnimations._createViewParent(oldView);
       }
 
-      if (newViewEffect && newViewOnTop)
-      {
-        viewParents['newViewParent'] = oj.ModuleAnimations._createViewParent(oldView);
-      }    
+      if (oldViewEffect) {
+        viewParents.oldViewParent = oj.ModuleAnimations._createViewParent(oldView);
+      }
 
-      return viewParents;  
+      if (newViewEffect && newViewOnTop) {
+        viewParents.newViewParent = oj.ModuleAnimations._createViewParent(oldView);
+      }
+
+      return viewParents;
     },
-    'animate': function(context) {
-      var oldViewHost = context['oldViewParent'];
-      var newViewHost = context['newViewParent'];
+    animate: function (context) {
+      var oldViewHost = context.oldViewParent;
+      var newViewHost = context.newViewParent;
 
       var promises = [];
 
-      if (oldViewHost && oldViewEffect)
-      {
+      if (oldViewHost && oldViewEffect) {
         promises.push(oj.AnimationUtils.startAnimation(oldViewHost, 'close', oldViewEffect));
       }
 
-      if (newViewHost && newViewEffect)
-      {
+      if (newViewHost && newViewEffect) {
         promises.push(oj.AnimationUtils.startAnimation(newViewHost, 'open', newViewEffect));
       }
 
       var animatePromise = Promise.all(promises);
 
-      return animatePromise.then(function(result) {
+      return animatePromise.then(function () {
         oj.ModuleAnimations._postAnimationProcess(context);
       });
     }
   };
 };
 
-oj.ModuleAnimations._removeViewParent = function(context, hostProp)
-{
+oj.ModuleAnimations._removeViewParent = function (context, hostProp) {
   var host = context[hostProp];
-  
-  if (host)
-  {
-    var viewport = host.parentNode; 
-    if (viewport && viewport.parentNode)
-    {
+
+  if (host) {
+    var viewport = host.parentNode;
+    if (viewport && viewport.parentNode) {
       viewport.parentNode.removeChild(viewport);
     }
   }
 };
 
-oj.ModuleAnimations._postAnimationProcess = function(context)
-{
-  context['removeOldView']();
-  context['insertNewView']();
+oj.ModuleAnimations._postAnimationProcess = function (context) {
+  context.removeOldView();
+  context.insertNewView();
 
   oj.ModuleAnimations._removeViewParent(context, 'newViewParent');
   oj.ModuleAnimations._removeViewParent(context, 'oldViewParent');
 };
 
-oj.ModuleAnimations._getModuleEffect = function(animateName)
-{
-  if (oj.ModuleAnimations._moduleEffects == null)
-  {
-    oj.ModuleAnimations._moduleEffects = oj.ThemeUtils.parseJSONFromFontFamily('oj-animation-module-effects');
+oj.ModuleAnimations._getModuleEffect = function (animateName) {
+  if (oj.ModuleAnimations._moduleEffects == null) {
+    oj.ModuleAnimations._moduleEffects =
+      oj.ThemeUtils.parseJSONFromFontFamily('oj-animation-module-effects');
   }
 
-  if (oj.ModuleAnimations._moduleEffects)
-  {
+  if (oj.ModuleAnimations._moduleEffects) {
     return oj.ModuleAnimations._moduleEffects[animateName];
   }
-  
+
   return null;
 };
 
-oj.ModuleAnimations._getImplementation = function(animateName)
-{
+oj.ModuleAnimations._getImplementation = function (animateName) {
   var descriptor = oj.ModuleAnimations._getModuleEffect(animateName);
-  if (descriptor)
-  {
-    return oj.ModuleAnimations.createAnimation(descriptor['oldViewEffect'],
-                                               descriptor['newViewEffect'],
-                                               descriptor['newViewOnTop']);
+  if (descriptor) {
+    return oj.ModuleAnimations.createAnimation(descriptor.oldViewEffect,
+                                               descriptor.newViewEffect,
+                                               descriptor.newViewOnTop);
   }
-  
+
   return null;
 };
 
-oj.ModuleAnimations._getNavigateMethod = function(context, navigationType)
-{
-  if (oj.ModuleAnimations._navigateMethods == null)
-  {
-    oj.ModuleAnimations._navigateMethods = oj.ThemeUtils.parseJSONFromFontFamily('oj-animation-navigate-methods');
+oj.ModuleAnimations._getNavigateMethod = function (context, navigationType) {
+  if (oj.ModuleAnimations._navigateMethods == null) {
+    oj.ModuleAnimations._navigateMethods =
+      oj.ThemeUtils.parseJSONFromFontFamily('oj-animation-navigate-methods');
   }
 
-  if (oj.ModuleAnimations._navigateMethods)
-  {
+  if (oj.ModuleAnimations._navigateMethods) {
     return oj.ModuleAnimations._navigateMethods[navigationType];
   }
-  
+
   return null;
 };
 
-oj.ModuleAnimations._navigateCanAnimate = function(context, navigationType)
-{
+oj.ModuleAnimations._navigateCanAnimate = function (context, navigationType) {
   var animateName = oj.ModuleAnimations._getNavigateMethod(context, navigationType);
-  if (oj.ModuleAnimations[animateName])
-  {
-    return oj.ModuleAnimations[animateName]['canAnimate'] == null ||
-           oj.ModuleAnimations[animateName]['canAnimate'](context);
+  if (oj.ModuleAnimations[animateName]) {
+    return oj.ModuleAnimations[animateName].canAnimate == null ||
+           oj.ModuleAnimations[animateName].canAnimate(context);
   }
-  
+
   return false;
 };
 
-oj.ModuleAnimations._navigatePrepareAnimation = function(context, navigationType)
-{
+oj.ModuleAnimations._navigatePrepareAnimation = function (context, navigationType) {
   var animateName = oj.ModuleAnimations._getNavigateMethod(context, navigationType);
-  if (oj.ModuleAnimations[animateName] && oj.ModuleAnimations[animateName]['prepareAnimation'])
-  {
-    return oj.ModuleAnimations[animateName]['prepareAnimation'](context);
+  if (oj.ModuleAnimations[animateName] && oj.ModuleAnimations[animateName].prepareAnimation) {
+    return oj.ModuleAnimations[animateName].prepareAnimation(context);
   }
-  
+
   return null;
 };
 
-oj.ModuleAnimations._navigateAnimate = function(context, navigationType)
-{
+oj.ModuleAnimations._navigateAnimate = function (context, navigationType) {
   var animateName = oj.ModuleAnimations._getNavigateMethod(context, navigationType);
-  if (oj.ModuleAnimations[animateName] && oj.ModuleAnimations[animateName]['animate'])
-  {
-    return oj.ModuleAnimations[animateName]['animate'](context);
+  if (oj.ModuleAnimations[animateName] && oj.ModuleAnimations[animateName].animate) {
+    return oj.ModuleAnimations[animateName].animate(context);
   }
-  
+
   return Promise.resolve();
 };
 
-oj.ModuleAnimations._getNavigateImplementation = function(navigationType)
-{
+oj.ModuleAnimations._getNavigateImplementation = function (navigationType) {
   return {
-    'canAnimate': function(context) {
+    canAnimate: function (context) {
       return oj.ModuleAnimations._navigateCanAnimate(context, navigationType);
     },
-    'prepareAnimation': function(context) {
+    prepareAnimation: function (context) {
       return oj.ModuleAnimations._navigatePrepareAnimation(context, navigationType);
     },
-    'animate': function(context) {
+    animate: function (context) {
       return oj.ModuleAnimations._navigateAnimate(context, navigationType);
     }
   };
@@ -569,7 +533,8 @@ oj.ModuleAnimations.drillOut = oj.ModuleAnimations.navParent;
  * @example <caption>Set the default in the theme (SCSS) :</caption>
  * $animationNavSiblingEarlierDefault:  pushEnd  !default;
  */
-oj.ModuleAnimations.navSiblingEarlier = oj.ModuleAnimations._getNavigateImplementation('navSiblingEarlier');
+oj.ModuleAnimations.navSiblingEarlier =
+  oj.ModuleAnimations._getNavigateImplementation('navSiblingEarlier');
 
 /**
  * ModuleAnimation implementation for navigating to sibling views later in the reading order by
@@ -592,7 +557,8 @@ oj.ModuleAnimations.navSiblingEarlier = oj.ModuleAnimations._getNavigateImplemen
  * @example <caption>Set the default in the theme (SCSS) :</caption>
  * $animationNavSiblingLaterDefault:  pushStart  !default;
  */
-oj.ModuleAnimations.navSiblingLater = oj.ModuleAnimations._getNavigateImplementation('navSiblingLater');
+oj.ModuleAnimations.navSiblingLater =
+  oj.ModuleAnimations._getNavigateImplementation('navSiblingLater');
 
 /**
   * Returns an implementation of ModuleAnimation interface that switches between different animation implementations
@@ -614,49 +580,41 @@ oj.ModuleAnimations.navSiblingLater = oj.ModuleAnimations._getNavigateImplementa
   *  ]
   * @export
   */
-oj.ModuleAnimations.switcher = function(callback)
-{
+oj.ModuleAnimations.switcher = function (callback) {
   /**
    * @constructor
    * @private
    */
-  var AnimateProxy = function()
-  {
+  var AnimateProxy = function () {
     var _delegate;
 
-    function _getDelegateInvoker(name)
-    {
-      var invoker = function(context)
-      {
+    function _getDelegateInvoker(name) {
+      var invoker = function (context) {
         return _delegate[name].call(_delegate, context);
-      }
+      };
       return invoker;
-    };
+    }
 
-    var _self  = this;
+    var _self = this;
     var _canAnimate = 'canAnimate';
 
-    this[_canAnimate] = function(context)
-    {
+    this[_canAnimate] = function (context) {
       // Get the 'delegate' animation
       var type = callback(context);
       _delegate = (type == null ? null : oj.ModuleAnimations[type]);
-      if (!_delegate)
-      {
+      if (!_delegate) {
         return false;
       }
 
       // Define the rest of the methods on the fly if we have a delegate
       var methods = ['prepareAnimation', 'animate'];
-      for (var i=0; i<methods.length; i++)
-      {
+      for (var i = 0; i < methods.length; i++) {
         var method = methods[i];
         _self[method] = _getDelegateInvoker(method);
       }
 
       return _getDelegateInvoker(_canAnimate)(context);
     };
-
   };
 
   return new AnimateProxy();

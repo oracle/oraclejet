@@ -135,7 +135,7 @@ define(['ojs/ojcore', 'ojs/ojcomponentcore'],
  * 
  * @function setProperty
  * @param {string} property - The property name to set. Supports dot notation for subproperty access.
- * @param {*} value - The new value to set the property to.
+ * @param {any} value - The new value to set the property to.
  * @return {void}
  * 
  * @expose
@@ -149,7 +149,7 @@ define(['ojs/ojcore', 'ojs/ojcomponentcore'],
  * Retrieves a value for a property or a single subproperty for complex properties.
  * @function getProperty
  * @param {string} property - The property name to get. Supports dot notation for subproperty access.
- * @return {*}
+ * @return {any}
  * 
  * @expose
  * @memberof oj.ojValidationGroup
@@ -847,12 +847,12 @@ function ojValidationGroup(context) {
         // check if node is in the _trackedComponents
         if (_trackedComponents.indexOf(node) !== -1)
           return true;
-      }
-      // now check if the node contains a tracked node
-      for (var j=0; j < trackedLength; j++)
-      {
-        if (node.contains(_trackedComponents[j]))
-          return true;
+        // now check if the node contains a tracked node
+        for (var j = 0; j < trackedLength; j++) {
+          if (node.contains(_trackedComponents[j])) {
+            return true;
+          }
+        }
       }
     }
     return false;

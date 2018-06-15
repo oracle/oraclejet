@@ -1,7 +1,7 @@
 {
   "name": "oj-treemap",
-  "version": "5.0.0",
-  "jetVersion": "5.0.0",
+  "version": "5.1.0",
+  "jetVersion": "5.1.0",
   "displayName": "Treemap",
   "preview": true,
   "roles": [
@@ -455,7 +455,309 @@
       "description": "An array of objects with the following properties that defines the data for the nodes. Also accepts a Promise for deferred data rendering. No data will be rendered if the Promise is rejected.",
       "type": "Array<Object>|Promise|null",
       "displayName": "Nodes",
-      "value": null
+      "value": null,
+      "extension": {
+        "vbcs": {
+          "itemProperties": {
+            "categories": {
+              "description": "An optional array of category strings corresponding to this data item. This enables highlighting and filtering of individual data items through interactions with the legend and other visualization elements. The categories array of each node is required to be a superset of the categories array of its parent node. If not specified, the ids of the node and its ancestors will be used.",
+              "type": "Array<string>",
+              "value": null
+            },
+            "color": {
+              "description": "The fill color of the node.",
+              "type": "string",
+              "value": null
+            },
+            "drilling": {
+              "description": "Specifies whether drilling is enabled for the node. Drillable nodes will show a pointer cursor on hover and fire an ojDrill event on click (double click if selection is enabled). To enable drilling for all nodes at once, use the drilling attribute in the top level.",
+              "type": "string",
+              "value": "inherit",
+              "enumValues": [
+                "inherit",
+                "off",
+                "on"
+              ],
+              "propertyEditorValues": {
+                "inherit": {
+                  "displayName": "Inherit"
+                },
+                "off": {
+                  "displayName": "Off"
+                },
+                "on": {
+                  "displayName": "On"
+                }
+              }
+            },
+            "groupLabelDisplay": {
+              "description": "The label display behavior for group nodes.",
+              "type": "string",
+              "value": "header",
+              "enumValues": [
+                "header",
+                "node",
+                "off"
+              ],
+              "propertyEditorValues": {
+                "header": {
+                  "displayName": "Header"
+                },
+                "node": {
+                  "displayName": "Node"
+                },
+                "off": {
+                  "displayName": "Off"
+                }
+              }
+            },
+            "header": {
+              "description": "An object defining the properties for the node header.",
+              "type": "Object",
+              "value": null,
+              "properties": {
+                "isolate": {
+                  "description": "Specifies whether isolate behavior is enabled on the node.",
+                  "type": "string",
+                  "value": "on",
+                  "enumValues": [
+                    "off",
+                    "on"
+                  ],
+                  "propertyEditorValues": {
+                    "off": {
+                      "displayName": "Off"
+                    },
+                    "on": {
+                      "displayName": "On"
+                    }
+                  }
+                },
+                "labelHalign": {
+                  "description": "The horizontal alignment of the header title.",
+                  "type": "string",
+                  "value": "start",
+                  "enumValues": [
+                    "center",
+                    "end",
+                    "start"
+                  ],
+                  "propertyEditorValues": {
+                    "center": {
+                      "displayName": "Center"
+                    },
+                    "end": {
+                      "displayName": "End"
+                    },
+                    "start": {
+                      "displayName": "Start"
+                    }
+                  }
+                },
+                "labelStyle": {
+                  "description": "The CSS style object defining the style of the header title.",
+                  "type": "Object",
+                  "value": null
+                },
+                "useNodeColor": {
+                  "description": "Specifies whether the node color should be displayed in the header.",
+                  "type": "string",
+                  "value": "off",
+                  "enumValues": [
+                    "off",
+                    "on"
+                  ],
+                  "propertyEditorValues": {
+                    "off": {
+                      "displayName": "Off"
+                    },
+                    "on": {
+                      "displayName": "On"
+                    }
+                  }
+                }
+              }
+            },
+            "id": {
+              "description": "The id of the node.",
+              "type": "string",
+              "value": null
+            },
+            "label": {
+              "description": "The label for this node.",
+              "type": "string",
+              "value": null
+            },
+            "labelDisplay": {
+              "description": "The label display behavior for leaf nodes.",
+              "type": "string",
+              "value": "node",
+              "enumValues": [
+                "node",
+                "off"
+              ],
+              "propertyEditorValues": {
+                "node": {
+                  "displayName": "Node"
+                },
+                "off": {
+                  "displayName": "Off"
+                }
+              }
+            },
+            "labelHalign": {
+              "description": "The horizontal alignment for labels displayed within the node.",
+              "type": "string",
+              "value": "center",
+              "enumValues": [
+                "center",
+                "end",
+                "start"
+              ],
+              "propertyEditorValues": {
+                "center": {
+                  "displayName": "Center"
+                },
+                "end": {
+                  "displayName": "End"
+                },
+                "start": {
+                  "displayName": "Start"
+                }
+              }
+            },
+            "labelStyle": {
+              "description": "The CSS style object defining the style of the label. The CSS white-space property can be defined with value \"nowrap\" to disable default text wrapping.",
+              "type": "Object",
+              "value": null
+            },
+            "labelValign": {
+              "description": "The vertical alignment for labels displayed within the node.",
+              "type": "string",
+              "value": "center",
+              "enumValues": [
+                "bottom",
+                "center",
+                "top"
+              ],
+              "propertyEditorValues": {
+                "bottom": {
+                  "displayName": "Bottom"
+                },
+                "center": {
+                  "displayName": "Center"
+                },
+                "top": {
+                  "displayName": "Top"
+                }
+              }
+            },
+            "nodes": {
+              "description": "An array of objects with properties for the child nodes.",
+              "type": "Array<Object>",
+              "value": null
+            },
+            "pattern": {
+              "description": "The pattern used to fill the node.",
+              "type": "string",
+              "value": "none",
+              "enumValues": [
+                "largeChecker",
+                "largeCrosshatch",
+                "largeDiagonalLeft",
+                "largeDiagonalRight",
+                "largeDiamond",
+                "largeTriangle",
+                "none",
+                "smallChecker",
+                "smallCrosshatch",
+                "smallDiagonalLeft",
+                "smallDiagonalRight",
+                "smallDiamond",
+                "smallTriangle"
+              ],
+              "propertyEditorValues": {
+                "largeChecker": {
+                  "displayName": "Large Checker"
+                },
+                "largeCrosshatch": {
+                  "displayName": "Large Crosshatch"
+                },
+                "largeDiagonalLeft": {
+                  "displayName": "Large Diagonal Left"
+                },
+                "largeDiagonalRight": {
+                  "displayName": "Large Diagonal Right"
+                },
+                "largeDiamond": {
+                  "displayName": "Large Diamond"
+                },
+                "largeTriangle": {
+                  "displayName": "Large Triangle"
+                },
+                "none": {
+                  "displayName": "None"
+                },
+                "smallChecker": {
+                  "displayName": "Small Checker"
+                },
+                "smallCrosshatch": {
+                  "displayName": "Small Crosshatch"
+                },
+                "smallDiagonalLeft": {
+                  "displayName": "Small Diagonal Left"
+                },
+                "smallDiagonalRight": {
+                  "displayName": "Small Diagonal Right"
+                },
+                "smallDiamond": {
+                  "displayName": "Small Diamond"
+                },
+                "smallTriangle": {
+                  "displayName": "Small Triangle"
+                }
+              }
+            },
+            "selectable": {
+              "description": "Specifies whether or not the node will be selectable.",
+              "type": "string",
+              "value": "auto",
+              "enumValues": [
+                "auto",
+                "off"
+              ],
+              "propertyEditorValues": {
+                "auto": {
+                  "displayName": "Auto"
+                },
+                "off": {
+                  "displayName": "Off"
+                }
+              }
+            },
+            "shortDesc": {
+              "description": "The description of this node. This is used for accessibility and also for customizing the tooltip text.",
+              "type": "string",
+              "value": null
+            },
+            "svgClassName": {
+              "description": "The CSS style class to apply to the node. The style class and inline style will override any other styling specified through the properties. For tooltip interactivity, it's recommended to also pass a representative color to the node color attribute.",
+              "type": "string",
+              "value": null
+            },
+            "svgStyle": {
+              "description": "The inline style to apply to the node. The style class and inline style will override any other styling specified through the properties. For tooltip interactivity, it's recommended to also pass a representative color to the node color attribute.",
+              "type": "Object",
+              "value": null
+            },
+            "value": {
+              "description": "The value of the node. The value determines the relative size of the node.",
+              "type": "number",
+              "value": null
+            }
+          }
+        }
+      }
     },
     "rootNode": {
       "description": "The id of the root node. When specified, only the root node and children of the root will be displayed.",
@@ -719,7 +1021,7 @@
         {
           "name": "value",
           "description": "The new value to set the property to.",
-          "type": "*"
+          "type": "any"
         }
       ],
       "return": "void"
@@ -733,7 +1035,7 @@
           "type": "string"
         }
       ],
-      "return": "*"
+      "return": "any"
     },
     "setProperties": {
       "description": "Performs a batch set of properties.",

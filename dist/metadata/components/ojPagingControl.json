@@ -1,7 +1,7 @@
 {
   "name": "oj-paging-control",
-  "version": "5.0.0",
-  "jetVersion": "5.0.0",
+  "version": "5.1.0",
+  "jetVersion": "5.1.0",
   "displayName": "Paging Control",
   "preview": true,
   "roles": [
@@ -18,7 +18,7 @@
     },
     "loadMoreOptions": {
       "description": "Options for loadMore mode.",
-      "type": "Object.<string, number>",
+      "type": "Object",
       "displayName": "Load More Options",
       "value": {
         "maxCount": 500
@@ -74,7 +74,7 @@
     },
     "pageOptions": {
       "description": "Options for page mode.",
-      "type": "Object.<string, (Array|number)>",
+      "type": "Object",
       "displayName": "Page Options",
       "value": {
         "layout": [
@@ -309,19 +309,19 @@
   "methods": {
     "firstPage": {
       "description": "Load the first page of data",
-      "return": "Promise.<null>"
+      "return": "Promise<null>"
     },
     "previousPage": {
       "description": "Load the previous page of data",
-      "return": "Promise.<null>"
+      "return": "Promise<null>"
     },
     "nextPage": {
       "description": "Load the next page of data",
-      "return": "Promise.<null>"
+      "return": "Promise<null>"
     },
     "lastPage": {
       "description": "Load the last page of data",
-      "return": "Promise.<null>"
+      "return": "Promise<null>"
     },
     "page": {
       "description": "Load the specified page of data",
@@ -332,11 +332,11 @@
           "type": "number"
         }
       ],
-      "return": "Promise.<null>"
+      "return": "Promise<null>"
     },
     "loadNext": {
       "description": "Load the next set of data",
-      "return": "Promise.<null>"
+      "return": "Promise<null>"
     },
     "refresh": {
       "description": "Refresh the paging control.",
@@ -353,7 +353,7 @@
         {
           "name": "value",
           "description": "The new value to set the property to.",
-          "type": "*"
+          "type": "any"
         }
       ],
       "return": "void"
@@ -367,7 +367,7 @@
           "type": "string"
         }
       ],
-      "return": "*"
+      "return": "any"
     },
     "setProperties": {
       "description": "Performs a batch set of properties.",

@@ -131,7 +131,7 @@ oj.Object.createSubclass(oj.TreeDataSource, oj.DataSource, "oj.TreeDataSource");
 /**
  * Returns the number of children for a specified parent.  If the value returned is not >= 0 then it is automatically assumed
  * that the child count is unknown.
- * @param {*} parent the parent key.  Specify null if inquiring child count of the root.
+ * @param {any} parent the parent key.  Specify null if inquiring child count of the root.
  * @return {number} the number of children for the specified parent.
  * @method
  * @name getChildCount
@@ -141,7 +141,7 @@ oj.Object.createSubclass(oj.TreeDataSource, oj.DataSource, "oj.TreeDataSource");
 
 /**
  * Fetch the children
- * @param {*} parent the parent key.  Specify null if fetching children from the root.
+ * @param {any} parent the parent key.  Specify null if fetching children from the root.
  * @param {Object} range information about the range, it must contain the following properties: start, count
  * @property {number} range.start the start index of the range in which the children are fetched
  * @property {number} range.count the size of the range in which the children are fetched
@@ -162,7 +162,7 @@ oj.Object.createSubclass(oj.TreeDataSource, oj.DataSource, "oj.TreeDataSource");
 
 /**
  * Fetch all children and their children recursively from a specified parent.
- * @param {*} parent the parent key.  Specify null to fetch everything from the root (i.e. expand all)
+ * @param {any} parent the parent key.  Specify null to fetch everything from the root (i.e. expand all)
  * @param {Object} callbacks the callbacks to be invoke when fetch children operation is completed.  The valid callback
  *        types are "success" and "error"
  * @property {function(oj.NodeSet)} callbacks.success the callback to invoke when fetch completed successfully.
@@ -181,7 +181,7 @@ oj.Object.createSubclass(oj.TreeDataSource, oj.DataSource, "oj.TreeDataSource");
 /**
  * Performs a sort operation on the tree data.
  * @param {Object} criteria the sort criteria.  It must contain the following properties: key, direction
- * @property {*} criteria.key the key identifying the attribute (column) to sort on
+ * @property {any} criteria.key the key identifying the attribute (column) to sort on
  * @property {'ascending'|'descending'|'none'} criteria.direction the sort direction, valid values are "ascending", "descending", "none" (default)
  * @param {Object} callbacks callbacks for the sort operation
  * @property {function():void} callbacks.success the callback to invoke when the sort completed successfully
@@ -209,8 +209,8 @@ oj.Object.createSubclass(oj.TreeDataSource, oj.DataSource, "oj.TreeDataSource");
 
 /**
  * Moves a row from one location to another (different position within the same parent or a completely different parent)
- * @param {*} rowToMove the key of the row to move
- * @param {*} referenceRow the key of the reference row which combined with position are used to determine 
+ * @param {any} rowToMove the key of the row to move
+ * @param {any} referenceRow the key of the reference row which combined with position are used to determine 
  *        the destination of where the row should moved to.
  * @param {number|string} position The position of the moved row relative to the reference row.  
  *        This can be a string: "before", "after", "inside", "first", "last", or the zero based index to position 
@@ -227,8 +227,8 @@ oj.Object.createSubclass(oj.TreeDataSource, oj.DataSource, "oj.TreeDataSource");
 
 /**
  * Checks whether a move operation is valid.
- * @param {*} rowToMove the key of the row to move
- * @param {*} referenceRow the key of the reference row which combined with position are used to determine 
+ * @param {any} rowToMove the key of the row to move
+ * @param {any} referenceRow the key of the reference row which combined with position are used to determine 
  *        the destination of where the row should moved to.
  * @param {number|string} position The position of the moved row relative to the reference row.  
  *        This can be a string: "before", "after", "inside", "first", "last", or the zero based index to position 
@@ -365,7 +365,7 @@ oj.TableDataSource.prototype.Init = function()
  * property. If sort() is called with empty sort criteria then the criteria set in this property is used.
  * 
  * @type {Object} 
- * @property {*} criteria.key The key that identifies which field to sort
+ * @property {any} criteria.key The key that identifies which field to sort
  * @property {'ascending'|'descending'|'none'} criteria.direction the sort direction, valid values are "ascending", "descending", "none" (default)
  */
 oj.TableDataSource.prototype.sortCriteria = null;
@@ -441,7 +441,7 @@ oj.TableDataSource.prototype.sortCriteria = null;
 /**
  * Performs a sort on the data source. Null criteria clears the existing sort.
  * @param {Object} [criteria] the sort criteria.
- * @property {*} criteria.key The key that identifies which field to sort
+ * @property {any} criteria.key The key that identifies which field to sort
  * @property {'ascending'|'descending'|'none'} criteria.direction the sort direction, valid values are "ascending", "descending", "none" (default)
  * @return {Promise.<null>} promise object triggering done when complete.
  * @method
@@ -482,14 +482,14 @@ oj.TableDataSource.prototype.totalSizeConfidence = function()
  * @typedef {Object} oj.TableDataSource.RowData
  * @property {Object} data The raw row data. 
  * @property {number} index The index for the row.
- * @property {*} key The key value for the row.
+ * @property {any} key The key value for the row.
  */
 
  /**
  * Row Datas returned by fetch method.
  * @typedef {Object} oj.TableDataSource.RowDatas
  * @property {Array.<Object>} data An array of raw row data. 
- * @property {Array.<*>} keys An array of key values for the rows.
+ * @property {Array.<any>} keys An array of key values for the rows.
  * @property {number} startIndex The startIndex for the returned set of rows.
  */
 
@@ -702,8 +702,8 @@ oj.Object.createSubclass(oj.DataGridDataSource, oj.DataSource, "oj.DataGridDataS
  * @memberof oj.DataGridDataSource
  * @instance
  * @param {Object} keys the key for each axis
- * @property {*} keys.row the key for the row axis
- * @property {*} keys.column the key for the column axis
+ * @property {any} keys.row the key for the row axis
+ * @property {any} keys.column the key for the column axis
  * @return {Promise.<Object>} a Promise object which when resolved returns an object containing the index for each axis
  */
 
@@ -715,7 +715,7 @@ oj.Object.createSubclass(oj.DataGridDataSource, oj.DataSource, "oj.DataGridDataS
  * @instance
  * @param {Object|null} criteria the sort criteria. 
  * @property {string} criteria.axis The axis in which the sort is performed, valid values are "row", "column"
- * @property {*} criteria.key The key that identifies which header to sort
+ * @property {any} criteria.key The key that identifies which header to sort
  * @property {string} criteria.direction the sort direction, valid values are "ascending", "descending", "none" (default)
  * @param {Object=} callbacks the callbacks to be invoke upon completion of the sort operation.
  * @property {function():undefined=} callbacks.success the callback to invoke when the sort completed successfully.  
@@ -732,8 +732,8 @@ oj.Object.createSubclass(oj.DataGridDataSource, oj.DataSource, "oj.DataGridDataS
  * @name move
  * @memberof oj.DataGridDataSource
  * @instance
- * @param {*} rowToMove the key of the row to move
- * @param {*} referenceRow the key of the reference row which combined with position are used to determine 
+ * @param {any} rowToMove the key of the row to move
+ * @param {any} referenceRow the key of the reference row which combined with position are used to determine 
  *        the destination of where the row should moved to.
  * @param {string} position The position of the moved row relative to the reference row.  
  *        Valid values are: "before", "after" 
@@ -748,8 +748,8 @@ oj.Object.createSubclass(oj.DataGridDataSource, oj.DataSource, "oj.DataGridDataS
 
 /**
  * Checks whether a move operation is valid.
- * @param {*} rowToMove the key of the row to move
- * @param {*} referenceRow the key of the reference row which combined with position are used to determine
+ * @param {any} rowToMove the key of the row to move
+ * @param {any} referenceRow the key of the reference row which combined with position are used to determine
  *        the destination of where the row should moved to.
  * @param {string} position the position of the moved row relative to the reference row.
  * @return {string} returns "valid" if the move is valid, "invalid" otherwise.

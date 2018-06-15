@@ -1,7 +1,7 @@
 {
   "name": "oj-color-palette",
-  "version": "5.0.0",
-  "jetVersion": "5.0.0",
+  "version": "5.1.0",
+  "jetVersion": "5.1.0",
   "displayName": "Color Palette",
   "preview": true,
   "description": "Displays a set of pre-defined colors from which a specific color can be selected.",
@@ -57,7 +57,7 @@
     },
     "help": {
       "description": "Form component help information.\n\nThe properties supported on the help option are:",
-      "type": "Object.<string, string>",
+      "type": "Object",
       "displayName": "Help",
       "value": {
         "help": {
@@ -73,7 +73,7 @@
     },
     "helpHints": {
       "description": "Represents hints for oj-form-layout element to \nrender help information on the label of the editable component.",
-      "type": "Object.<string, string>",
+      "type": "Object",
       "displayName": "Help Hints",
       "value": {
         "definition": "",
@@ -158,7 +158,21 @@
       "type": "Array<Object>",
       "displayName": "Palette",
       "value": null,
-      "translatable": true
+      "translatable": true,
+      "extension": {
+        "vbcs": {
+          "itemProperties": {
+            "color": {
+              "description": "the color definition",
+              "type": "oj.Color"
+            },
+            "label": {
+              "description": "optional descriptive string (refer to attribute label-display). If omitted, label defaults to the color's hex string format.",
+              "type": "string"
+            }
+          }
+        }
+      }
     },
     "swatchSize": {
       "description": "Specifies the swatch size.",
@@ -250,7 +264,7 @@
         {
           "name": "value",
           "description": "The new value to set the property to.",
-          "type": "*"
+          "type": "any"
         }
       ]
     },
@@ -263,7 +277,7 @@
           "type": "string"
         }
       ],
-      "return": "*"
+      "return": "any"
     },
     "setProperties": {
       "description": "Performs a batch set of properties.",

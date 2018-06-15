@@ -1,0 +1,26 @@
+// Copyright (c) 2014, 2018, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+
+
+// ----- start dependencies ---------
+
+// set up include variables before importing dependencies
+@if $includeSwipeActionsClasses != false {
+  $includeSwipeToRevealClasses: true !global;
+}
+
+// import dependencies
+@import "oj.alta.ios.swipetoreveal";
+
+// ----- end dependencies ---------
+
+
+// import classes defined in the common directory
+@import "../../common/widgets/oj.common.swipeactions"; 
+
+@if $includeSwipeActionsClasses != false {
+  @include module-include-once("alta.ios.swipeactions") {
+
+  }
+}

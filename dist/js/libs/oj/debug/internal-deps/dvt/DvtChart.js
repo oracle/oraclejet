@@ -175,34 +175,6 @@ dvt.Chart.prototype.GetComponentDescription = function()
 dvt.Chart.prototype.SetOptions = function(options) {
 
   if (options) {
-    // DataProvider Support : Must be done before setting this.Options and before calling processDataObject()
-    if (options['data'] && !options['_dataInfoConverted']) {
-      // The data provider contract does not guarantee that series will be passed as
-      // objects, or that the items array is defined and empty. We handle that here.
-      var series = dvt.JsonUtils.clone(options['data']['series']);
-      if (series) {
-        series = series.map(function(seriesObject) {
-          if (typeof seriesObject == 'object') {
-            seriesObject['items'] = [];
-            return seriesObject;
-          }
-          else
-            return {'name': seriesObject, items: []};
-        });
-      }
-      else
-        series = [];
-
-      var groups = dvt.JsonUtils.clone(options['data']['groups']);
-
-      var convertedData = this._convertData(series, groups, 0);
-      options['series'] = convertedData['series'];
-      options['groups'] = convertedData['groups'];
-
-      // Avoid reprocessing on re-renders if no new options object was passed
-      options['_dataInfoConverted'] = true;
-    }
-
     // Combine the user options with the defaults and store
     this._rawOptions = options;
     this.Options = this.Defaults.calcOptions(options);
@@ -226,9 +198,9 @@ dvt.Chart.prototype.SetOptions = function(options) {
   // Initialize the selection handler
   var selectionMode = this.Options['selectionMode'];
   if (selectionMode == 'single')
-    this._selectionHandler = new dvt.SelectionHandler(dvt.SelectionHandler.TYPE_SINGLE);
+    this._selectionHandler = new dvt.SelectionHandler(this.getCtx(), dvt.SelectionHandler.TYPE_SINGLE);
   else if (selectionMode == 'multiple')
-    this._selectionHandler = new dvt.SelectionHandler(dvt.SelectionHandler.TYPE_MULTIPLE);
+    this._selectionHandler = new dvt.SelectionHandler(this.getCtx(), dvt.SelectionHandler.TYPE_MULTIPLE);
   else
     this._selectionHandler = null;
 
@@ -369,63 +341,6 @@ dvt.Chart.prototype.render = function(options, width, height)
   if (!this.Animation)
     // If not animating, that means we're done rendering, so fire the ready event.
     this.RenderComplete();
-};
-
-/**
- * Converts the data from the chart data attribute to the syntax needed
- * in the toolkit. i.e. items on group leaves -> items on series
- * @param {Array} series
- * @param {Array} groups
- * @param {number} currentGroupCount The current number of group leafs found
- * @return {Object} An object with the converted series and groups
- * @private
- */
-dvt.Chart.prototype._convertData = function(series, groups, currentGroupCount) 
-{
-  if (!currentGroupCount)
-    currentGroupCount = 0;
-
-  if (!series)
-    series = [];
-
-  if (groups) {
-    for (var g = 0; g < groups.length; g++) {
-      var nestedGroups = groups[g]['groups'];
-      if (nestedGroups && nestedGroups.length > 0) {
-        // Not a group leaf, recurse down the group tree to find the items
-        var convertedData = this._convertData(series, nestedGroups, currentGroupCount);
-        series = convertedData['series'];
-        groups[g]['groups'] = convertedData['groups'];
-        currentGroupCount = convertedData['currentGroupCount'];
-      }
-      else {
-        currentGroupCount++;
-
-        // Get the items in this leaf, push in order to series, then delete from groups
-        var itemsArray = groups[g]['items'];
-        if (itemsArray) {
-          var s = 0;
-          for (s; s < series.length; s++) {
-            // dataProvider contract guarantees that the data items were declared in order of the series
-            series[s]['items'].push(itemsArray[s] == undefined ? null : itemsArray[s]);
-          }
-          // Add a new series if this group has more items than the current number of existing series
-          while (s < itemsArray.length) {
-            var items = [];
-            for (var i = 0; i < currentGroupCount - 1; i++) {
-              items.push(null);
-            }
-            items.push(itemsArray[s]);
-            series.push({'name': 'Series ' + (s + 1), 'items': items});
-            s++;
-          }
-          delete groups[g]['items'];
-        }
-      }
-    }
-  }
-
-  return {'series': series, 'groups': groups, 'currentGroupCount' : currentGroupCount};
 };
 
 /**
@@ -3778,7 +3693,7 @@ DvtChartObjPeer.associate = function(displayable, chart, seriesIndex, groupIndex
  */
 DvtChartObjPeer.prototype.getId = function() {
   if (this._seriesIndex >= 0 && this._groupIndex >= 0)
-    return new DvtChartDataItem(this._dataItemId, this.getSeries(), this.getGroup());
+    return new DvtChartDataItem(this._dataItemId, this.getSeries(), this.getGroup(), this._chart.getCtx());
   else if (this._seriesIndex >= 0)
     return this.getSeries();
   else
@@ -4408,12 +4323,14 @@ DvtChartRefObjPeer.prototype.getDatatipColor = function() {
   * @param {string} id The ID for the data item, if available.
   * @param {string} series The series ID for the chart data item.
   * @param {string|Array} group The group ID for the chart data item.
+  * @param {dvt.Context} context The context for the chart.
   */
-var DvtChartDataItem = function(id, series, group) {
+var DvtChartDataItem = function(id, series, group, context) {
   // Expose as named properties to simplify uptake.
   this['id'] = id;
   this['series'] = series;
   this['group'] = group;
+  this['context'] = context;
 };
 
 dvt.Obj.createSubclass(DvtChartDataItem, dvt.Obj);
@@ -4456,11 +4373,11 @@ DvtChartDataItem.prototype.equals = function(dataItem) {
   // However, for nested items, we have to compare the id.
   if (dataItem instanceof DvtChartDataItem) {
     if (this['id'] != null || dataItem['id'] != null) {
-      return DvtChartDataUtils.isEqualId(this['id'], dataItem['id']);
+      return DvtChartDataUtils.isEqualId(this['id'], dataItem['id'], this['context']);
     }
     else {
-      return DvtChartDataUtils.isEqualId(this['series'], dataItem['series']) &&
-          DvtChartDataUtils.isEqualId(this['group'], dataItem['group']);
+      return DvtChartDataUtils.isEqualId(this['series'], dataItem['series'], this['context']) &&
+          DvtChartDataUtils.isEqualId(this['group'], dataItem['group'], this['context']);
     }
   }
 
@@ -4471,10 +4388,17 @@ DvtChartDataItem.prototype.equals = function(dataItem) {
  * @override
  */
 DvtChartDataItem.prototype.toString = function() {
-  if (this['id'] != null)
+  if (this['id'] != null && typeof this['id'] !== "object")
     return this['id'].toString();
   else
     return DvtChartDataUtils.createDataItemId(this['series'], this['group']);
+};
+
+/**
+ * @override
+ */
+DvtChartDataItem.prototype.valueOf = function() {
+  return this.toString();
 };
 
 /**
@@ -11448,7 +11372,7 @@ DvtChartPieSlice.createFillerSlice = function(pieChart, value) {
   slice._centerY = pieChart.getCenter().y;
   slice._fillColor = 'rgba(255,255,255,0)';
   slice._strokeColor = 'rgba(255,255,255,0)';
-  slice._id = new DvtChartDataItem(null, null, null);
+  slice._id = new DvtChartDataItem(null, null, null, null);
   return slice;
 };
 
@@ -14021,11 +13945,16 @@ DvtChartDataUtils._processTimeAxis = function(chart) {
 
 /**
  * Returns whether a and b are equal ids. The ids can be a string or and array of strings.
- * @param {string|Array} a
- * @param {string|Array} b
+ * @param {object} a
+ * @param {object} b
+ * @param {dvt.Context} context The chart context
  * @return {boolean}
  */
-DvtChartDataUtils.isEqualId = function(a, b) {
+DvtChartDataUtils.isEqualId = function(a, b, context) {
+  // TODO: Refactor to share comparison code with oj.KeySetImpl
+  var ojCompareValues =  context.oj ? context.oj.Object.compareValues : null;
+  if (ojCompareValues)
+    return ojCompareValues(a, b);
   if (a == null || b == null) // don't consider undefined ids as equal
     return false;
   if (a == b)
@@ -15061,25 +14990,23 @@ DvtChartDataUtils.isAssignedToY2 = function(chart, seriesIndex) {
  */
 DvtChartDataUtils.getInitialSelection = function(chart) {
   var selection = chart.getOptions()['selection'];
+  var hasDataProvider = chart.getOptions()['data'] != null;
   if (!selection)
     selection = [];
 
   // Process the data item ids and fill in series and group information
   var peers = chart.getChartObjPeers();
   for (var i = 0; i < selection.length; i++) {
-    var id;
-    if (typeof selection[i] == 'string' || dvt.ArrayUtils.isArray(selection[i])) {
-      id = selection[i];
+    var id = selection[i]['id'] && !hasDataProvider ? selection[i]['id'] : selection[i]; // check first if selection object has an id value
+    if (!selection[i]['id'] && !selection[i]['series'] && !selection[i]['group']) {
       selection[i] = {'id': id};
     }
-    else
-      id = selection[i]['id'];
 
     // If id is defined, but series and group are not
     if (id != null && !(selection[i]['series'] && selection[i]['group'])) {
       for (var j = 0; j < peers.length; j++) {
         var peer = peers[j];
-        if (DvtChartDataUtils.isEqualId(id, peer.getDataItemId())) {
+        if (DvtChartDataUtils.isEqualId(id, peer.getDataItemId(), chart.getCtx())) {
           selection[i]['series'] = peer.getSeries();
           selection[i]['group'] = peer.getGroup();
           break;
@@ -15120,6 +15047,7 @@ DvtChartDataUtils.hasVolumeSeries = function(chart) {
   var hasVolume = chart.getOptionsCache().getFromCache('hasVolume');
   return hasVolume ? hasVolume : false;
 };
+
 /**
  * Returns whether the data point is currently selected.
  * @param {dvt.Chart} chart
@@ -15142,9 +15070,9 @@ DvtChartDataUtils.isDataSelected = function(chart, seriesIndex, groupIndex, item
     selection = [];
 
   for (var i = 0; i < selection.length; i++) {
-    if (DvtChartDataUtils.isEqualId(id, selection[i]) || DvtChartDataUtils.isEqualId(id, selection[i]['id']))
+    if (DvtChartDataUtils.isEqualId(id, selection[i], chart.getCtx()) || DvtChartDataUtils.isEqualId(id, selection[i]['id'], chart.getCtx()))
       return true;
-    if (selection[i]['id'] == null && DvtChartDataUtils.isEqualId(series, selection[i]['series']) && DvtChartDataUtils.isEqualId(group, selection[i]['group']))
+    if (selection[i]['id'] == null && DvtChartDataUtils.isEqualId(series, selection[i]['series'], chart.getCtx()) && DvtChartDataUtils.isEqualId(group, selection[i]['group'], chart.getCtx()))
       return true;
   }
 
@@ -15545,18 +15473,22 @@ DvtChartDataUtils.getDataContext = function(chart, seriesIndex, groupIndex, item
   }
   else if (nestedDataItem) {
     var rawData = rawOptions['series'][seriesIndex]['items'][groupIndex];
+    delete rawData['_itemData'];
     dataContext = {
       'id': DvtChartDataUtils.getNestedDataItemId(chart, seriesIndex, groupIndex, itemIndex),
       'data' : [rawData, rawData['items'][itemIndex]],
       'value': DvtChartDataUtils.getValue(chart, seriesIndex, groupIndex, itemIndex),
       'y': DvtChartDataUtils.getValue(chart, seriesIndex, groupIndex, itemIndex),
-      'color': DvtChartStyleUtils.getMarkerColor(chart, seriesIndex, groupIndex, itemIndex)
+      'color': DvtChartStyleUtils.getMarkerColor(chart, seriesIndex, groupIndex, itemIndex),
+      'itemData': chartOptions['series'][seriesIndex]['items'][groupIndex]["_itemData"]
     };
   }
   else if (dataItem) {
+    var rawData = rawOptions['series'][seriesIndex]['items'][groupIndex];
+    delete rawData['_itemData'];
     dataContext = {
       'id': DvtChartDataUtils.getDataItemId(chart, seriesIndex, groupIndex),
-      'data' : rawOptions['series'][seriesIndex]['items'][groupIndex],
+      'data' : rawData,
       'value': DvtChartDataUtils.getValue(chart, seriesIndex, groupIndex),
       'targetValue': DvtChartDataUtils.getTargetValue(chart, seriesIndex, groupIndex),
       'x': DvtChartDataUtils.getXValue(chart, seriesIndex, groupIndex),
@@ -15567,7 +15499,8 @@ DvtChartDataUtils.getDataContext = function(chart, seriesIndex, groupIndex, item
       'open': dataItem['open'],
       'close': dataItem['close'],
       'volume': dataItem['volume'],
-      'color': DvtChartStyleUtils.getColor(chart, seriesIndex, groupIndex)
+      'color': DvtChartStyleUtils.getColor(chart, seriesIndex, groupIndex),
+      'itemData': chartOptions['series'][seriesIndex]['items'][groupIndex]["_itemData"]
     };
   }
   else if (seriesItem) {
@@ -16219,17 +16152,18 @@ DvtChartEventUtils.setInitialSelection = function(chart, selection) {
     return;
   }
 
-  // Construct a selectionMap that maps the selection id to a selected boolean so that the process to match peers with
-  // the selection array takes O(n) time instead of O(n^2) ()
-  var selectionMap = {};
+  // Construct a keySet of selection ids
+  var selectionIds = [];
   for (var i = 0; i < selection.length; i++) {
     if (selection[i]['id'] != null)
-      selectionMap[selection[i]['id']] = true;
+      selectionIds.push(selection[i]['id']);
     else if (selection[i]['series'] != null && selection[i]['group'] != null)
-      selectionMap[DvtChartDataUtils.createDataItemId(selection[i]['series'], selection[i]['group'])] = true;
+      selectionIds.push(DvtChartDataUtils.createDataItemId(selection[i]['series'], selection[i]['group']));
   }
+  var ctx = chart.getCtx();
+  var selectionSet = new ctx.oj.KeySetImpl(selectionIds);
 
-  // Now go through the peers and add the peers that can be found inside the selectionMap to the selectedIds array.
+  // Now go through the peers and add the peers that can be found inside the selectionSet to the selectedIds array.
   var peers = chart.getChartObjPeers();
   var selectedIds = [];
   for (var j = 0; j < peers.length; j++) {
@@ -16238,8 +16172,11 @@ DvtChartEventUtils.setInitialSelection = function(chart, selection) {
       continue;
 
     // We have to check both id and series+group combination because the user can specify selection using either
-    if (selectionMap[peer.getDataItemId()] || selectionMap[DvtChartDataUtils.createDataItemId(peer.getSeries(), peer.getGroup())])
+    var peerDataId = peer.getDataItemId();
+    var peerDataItemId = DvtChartDataUtils.createDataItemId(peer.getSeries(), peer.getGroup());
+    if (selectionSet.has(peerDataId) || selectionSet.has(peerDataItemId)) {
       selectedIds.push(peer.getId());
+    }
   }
 
   handler.processInitialSelections(selectedIds, peers);
@@ -16316,7 +16253,7 @@ DvtChartEventUtils.isDataItemDrillable = function(chart, seriesIndex, groupIndex
 };
 
 /**
- * Add data, seriesData, and groupData to the event payload.
+ * Add data, itemData, seriesData, and groupData to the event payload.
  * @param {dvt.Chart} chart
  * @param {object} eventPayload The event payload to decorate. Currently contains series, group, and id.
  */
@@ -16328,6 +16265,7 @@ DvtChartEventUtils.addEventData = function(chart, eventPayload) {
 
   if (dataContext) {
     eventPayload['data'] = dataContext['data'];
+    eventPayload['itemData'] = dataContext['itemData']; // data provider row data
     eventPayload['seriesData'] = dataContext['seriesData'];
     if (dataContext['groupData'])
       eventPayload['groupData'] = dataContext['groupData'];
@@ -19744,7 +19682,7 @@ DvtChartPieUtils.getSliceId = function(chart, seriesIndex) {
   var id = dataItem ? dataItem['id'] : null;
   var series = DvtChartDataUtils.getSeries(chart, seriesIndex);
   var group = DvtChartDataUtils.getGroup(chart, 0);
-  return new DvtChartDataItem(id, series, group);
+  return new DvtChartDataItem(id, series, group, chart.getCtx());
 };
 
 
@@ -19755,7 +19693,7 @@ DvtChartPieUtils.getSliceId = function(chart, seriesIndex) {
  */
 DvtChartPieUtils.getOtherSliceId = function(chart) {
   var group = DvtChartDataUtils.getGroup(chart, 0);
-  return new DvtChartDataItem(null, DvtChartPieUtils.OTHER_SLICE_SERIES_ID, group);
+  return new DvtChartDataItem(null, DvtChartPieUtils.OTHER_SLICE_SERIES_ID, group, chart.getCtx());
 };
 
 

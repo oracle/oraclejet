@@ -652,8 +652,8 @@ oj.PagingDataGridDataSource.prototype.keys = function(indexes)
  * Returns the row and column index based on the keys. In a paging case returns the 
  * index on the page, not the absolute index in the array.
  * @param {Object} keys the key for each axis
- * @property {*} keys.row the key for the row axis
- * @property {*} keys.column the key for the column axis
+ * @property {any} keys.row the key for the row axis
+ * @property {any} keys.column the key for the column axis
  * @return {Promise.<Object>} a promise object containing the index for each axis
  * @export
  * @method
@@ -713,7 +713,7 @@ oj.PagingDataGridDataSource.prototype.size = function()
  * Performs a sort on the data source.
  * @param {Object|null} criteria the sort criteria. 
  * @property {string} criteria.axis The axis in which the sort is performed, valid values are "row", "column"
- * @property {*} criteria.key The key that identifies which header to sort
+ * @property {any} criteria.key The key that identifies which header to sort
  * @property {string} criteria.direction the sort direction, valid values are "ascending", "descending", "none" (default)
  * @param {Object=} callbacks the callbacks to be invoke upon completion of the sort operation.
  * @property {function():undefined=} callbacks.success the callback to invoke when the sort completed successfully.  
@@ -767,8 +767,8 @@ oj.PagingDataGridDataSource.prototype.totalSizeConfidence = function()
 
 /**
  * Checks whether a move operation is valid.
- * @param {*} rowToMove the key of the row to move
- * @param {*} referenceRow the key of the reference row which combined with position are used to determine
+ * @param {any} rowToMove the key of the row to move
+ * @param {any} referenceRow the key of the reference row which combined with position are used to determine
  *        the destination of where the row should moved to.
  * @param {string} position The position of the moved row relative to the reference row.  
  *        Valid values are: "before", "after".
@@ -785,8 +785,8 @@ oj.PagingDataGridDataSource.prototype.moveOK = function(rowToMove, referenceRow,
 
 /**
  * Moves a row from one location to another.
- * @param {*} rowToMove the key of the row to move
- * @param {*} referenceRow the key of the reference row which combined with position are used to determine 
+ * @param {any} rowToMove the key of the row to move
+ * @param {any} referenceRow the key of the reference row which combined with position are used to determine 
  *        the destination of where the row should moved to.
  * @param {string} position The position of the moved row relative to the reference row.
  *        Valid values are: "before", "after" 
@@ -837,7 +837,7 @@ oj.PagingHeaderSet = function(headerSet, startIndex)
  * 2) the index specified is out of bounds.
  * @param {number} index the absolute index of the header in which we want to retrieve the header from.
  * @param {number=} level the level of the header, 0 is the outermost header and increments by 1 moving inward
- * @return {*} the data for the specific index.
+ * @return {any} the data for the specific index.
  * @export
  * @expose
  * @method
@@ -964,4 +964,19 @@ oj.PagingHeaderSet.prototype.getStartIndex = function()
 {
     return this.m_startIndex;
 };
+
+/**
+ * Gets the label for the level along the axis of that header. Specify null to have no header labels.
+ * @param {number} level the header level to retrieve the label data for
+ * @return {*} the data for the header label
+ * @export
+ * @expose
+ * @method
+ * @instance
+ * @memberof! oj.PagingHeaderSet
+ */
+oj.PagingHeaderSet.prototype.getLabel = function (level) {
+  return this.m_headerSet.getLabel(level);
+};
+
 });

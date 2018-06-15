@@ -1,7 +1,7 @@
 {
   "name": "oj-color-spectrum",
-  "version": "5.0.0",
-  "jetVersion": "5.0.0",
+  "version": "5.1.0",
+  "jetVersion": "5.1.0",
   "displayName": "Color Spectrum",
   "preview": true,
   "description": "Enables a custom color value to be specified from a display containing a saturation/luminosity spectrum, plus hue and opacity sliders.",
@@ -57,7 +57,7 @@
     },
     "help": {
       "description": "Form component help information.\n\nThe properties supported on the help option are:",
-      "type": "Object.<string, string>",
+      "type": "Object",
       "displayName": "Help",
       "value": {
         "help": {
@@ -73,7 +73,7 @@
     },
     "helpHints": {
       "description": "Represents hints for oj-form-layout element to \nrender help information on the label of the editable component.",
-      "type": "Object.<string, string>",
+      "type": "Object",
       "displayName": "Help Hints",
       "value": {
         "definition": "",
@@ -202,7 +202,7 @@
         {
           "name": "value",
           "description": "The new value to set the property to.",
-          "type": "*"
+          "type": "any"
         }
       ]
     },
@@ -215,7 +215,7 @@
           "type": "string"
         }
       ],
-      "return": "*"
+      "return": "any"
     },
     "setProperties": {
       "description": "Performs a batch set of properties.",

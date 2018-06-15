@@ -1,0 +1,25 @@
+{
+  "name": "oj-bind-template-slot",
+  "version": "5.1.0",
+  "jetVersion": "5.1.0",
+  "displayName": "Bind Template Slot",
+  "preview": true,
+  "description": "A placeholder for stamped child DOM to appear in a specified slot.",
+  "properties": {
+    "as": {
+      "description": "An alias for $current that can be referenced inside application provided template DOM.",
+      "type": "string",
+      "displayName": "As"
+    },
+    "data": {
+      "description": "The object containing additional context variables to extend the stamped template nodes' \nbinding context. These variables will be exposed as variables on $current and the alias if\nprovided by the 'as' attribute.",
+      "type": "Object",
+      "displayName": "Data"
+    },
+    "name": {
+      "description": "The name of the slot.",
+      "type": "string",
+      "displayName": "Name"
+    }
+  }
+}

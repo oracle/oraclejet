@@ -105,7 +105,7 @@ oj.__registerWidget('oj.ojNBox', $['oj']['dvtBaseComponent'],
      * @default "none"
      */
     animationOnDataChange: "none",
-    
+
     /**
      * Specifies the animation that is shown on initial display.
      * @expose
@@ -166,7 +166,7 @@ oj.__registerWidget('oj.ojNBox', $['oj']['dvtBaseComponent'],
      * @default null
      */
     columns: null,
-    
+
     /**
      * The text for the title on the column edge.
      * @expose
@@ -177,7 +177,7 @@ oj.__registerWidget('oj.ojNBox', $['oj']['dvtBaseComponent'],
      * @default ""
      */
     columnsTitle: "",
-    
+
     /**
      * A function that returns custom text for the cell count labels (extra info displayed after primary labels). The function takes a dataContext argument, provided by the NBox, with the following properties: <ul>   <li>row: The row value of the cell.</li>    <li>column: The column value of the cell.</li>    <li>nodeCount: The number of non-hidden nodes in the cell.</li> <li>totalNodeCount: The number of non-hidden nodes in the NBox.</li> <li>highlightedNodeCount: The number of highlighted nodes in the cell.</li> </ul> The custom count label is shown by a cell when its showCount attribute is set "on" or "auto".
      * @expose
@@ -189,7 +189,7 @@ oj.__registerWidget('oj.ojNBox', $['oj']['dvtBaseComponent'],
      * @default null
      */
     countLabel: null,
-    
+
     /**
      * Specifies how nodes should be grouped.
      * @expose
@@ -203,7 +203,7 @@ oj.__registerWidget('oj.ojNBox', $['oj']['dvtBaseComponent'],
      * @default "withinCell"
      */
     groupBehavior: "withinCell",
-    
+
     /**
      * An array of attributes to style the group nodes with. Any attributes not listed will be ignored.
      * @expose
@@ -219,7 +219,7 @@ oj.__registerWidget('oj.ojNBox', $['oj']['dvtBaseComponent'],
      * @default ["color", "indicatorColor", "indicatorIconShape", "indicatorIconColor", "indicatorIconPattern"]
      */
     groupAttributes: ["color", "indicatorColor", "indicatorIconColor", "indicatorIconPattern", "indicatorIconShape"],
-    
+
     /**
      * An array of category strings used for category filtering. Data items with a category in hiddenCategories will be filtered.
      * @expose
@@ -231,7 +231,7 @@ oj.__registerWidget('oj.ojNBox', $['oj']['dvtBaseComponent'],
      * @ojwriteback
      */
     hiddenCategories: [],
-    
+
     /**
      * Defines the behavior applied when hovering over data items.
      * @expose
@@ -256,7 +256,7 @@ oj.__registerWidget('oj.ojNBox', $['oj']['dvtBaseComponent'],
      * @ojwriteback
      */
     highlightedCategories: [],
-    
+
     /**
      * The matching condition for the highlightedCategories property. By default, highlightMatch is 'all' and only items whose categories match all of the values specified in the highlightedCategories array will be highlighted. If highlightMatch is 'any', then items that match at least one of the highlightedCategories values will be highlighted.
      * @expose
@@ -282,7 +282,7 @@ oj.__registerWidget('oj.ojNBox', $['oj']['dvtBaseComponent'],
      * @default "on"
      */
     labelTruncation: "on",
-    
+
     /**
      * The id of the column to be maximized.
      * @expose
@@ -362,7 +362,7 @@ oj.__registerWidget('oj.ojNBox', $['oj']['dvtBaseComponent'],
      * @default ""
      */
     rowsTitle: "",
-    
+
     /**
      * An array containing the ids of the selected nodes.
      * @expose
@@ -443,7 +443,27 @@ oj.__registerWidget('oj.ojNBox', $['oj']['dvtBaseComponent'],
          * @type {Object}
          */
         labelStyle: undefined,
-                
+
+        /**
+         * The CSS style object defining the styles of the cell background and border when the cell is maximized.  The default value comes from the CSS and varies based on theme.
+         * @expose
+         * @name styleDefaults.cellDefaults.maximizedSvgStyle
+         * @memberof! oj.ojNBox
+         * @instance
+         * @type {Object}
+         */
+        maximizedSvgStyle: undefined,
+
+        /**
+         * The CSS style object defining the styles of the cell background and border when the cell is minimized.  The default value comes from the CSS and varies based on theme.
+         * @expose
+         * @name styleDefaults.cellDefaults.minimizedSvgStyle
+         * @memberof! oj.ojNBox
+         * @instance
+         * @type {Object}
+         */
+        minimizedSvgStyle: undefined,
+
         /**
          * Determines when to display the cell count label (extra info displayed after primary cell label). "off" never show the count label. "on" always show the count label. Show countLabel value if specified, otherwise use a simple node count. "auto" show the count label if countLabel attribute is defined.
          * @expose
@@ -457,9 +477,20 @@ oj.__registerWidget('oj.ojNBox', $['oj']['dvtBaseComponent'],
          * @ojvalue {string} "auto"
          * @default "auto"
          */
-        showCount: "auto"
-      },      
-      
+        showCount: "auto",
+
+        /**
+         * The CSS style object defining the styles of the cell background and border.  The default value comes from the CSS and varies based on theme.
+         * @expose
+         * @name styleDefaults.cellDefaults.svgStyle
+         * @memberof! oj.ojNBox
+         * @instance
+         * @type {Object}
+         */
+        svgStyle: undefined
+
+      },
+
       /**
        * The CSS style object defining the style of the column labels.  The default value comes from the CSS and varies based on theme.
        * @expose
@@ -469,7 +500,7 @@ oj.__registerWidget('oj.ojNBox', $['oj']['dvtBaseComponent'],
        * @type {Object}
        */
       columnLabelStyle: undefined,
-      
+
       /**
        * The CSS style object defining the style of the columns title.  The default value comes from the CSS and varies based on theme.
        * @expose
@@ -479,7 +510,7 @@ oj.__registerWidget('oj.ojNBox', $['oj']['dvtBaseComponent'],
        * @type {Object}
        */
       columnsTitleStyle: undefined,
-      
+
       /**
        * Specifies initial hover delay in ms for highlighting data items.
        * @expose
@@ -491,7 +522,7 @@ oj.__registerWidget('oj.ojNBox', $['oj']['dvtBaseComponent'],
        * @ojunits milliseconds
        */
       hoverBehaviorDelay: 200,
-      
+
       /**
        * An object defining the style defaults for nodes.
        * @expose
@@ -511,7 +542,7 @@ oj.__registerWidget('oj.ojNBox', $['oj']['dvtBaseComponent'],
          * @type {string}
          */
         borderColor: "",
-      
+
         /**
          * The default width of the node borders.  The default value varies based on theme.
          * @expose
@@ -552,7 +583,7 @@ oj.__registerWidget('oj.ojNBox', $['oj']['dvtBaseComponent'],
            * @type {string}
            */
           borderColor: "#000000",
-          
+
           /**
            * The default border radius of the node icons. CSS border-radius values accepted. Note that non-% values (including unitless) get interpreted as 'px'.  The default value varies based on theme.
            * @expose
@@ -562,7 +593,7 @@ oj.__registerWidget('oj.ojNBox', $['oj']['dvtBaseComponent'],
            * @type {string}
            */
           borderRadius: 0,
-          
+
           /**
            * The default border width of the node icons.  The default value varies based on theme.
            * @expose
@@ -572,7 +603,7 @@ oj.__registerWidget('oj.ojNBox', $['oj']['dvtBaseComponent'],
            * @type {number}
            */
           borderWidth: 0,
-          
+
           /**
            * The default fill color of the node icons.
            * @expose
@@ -583,7 +614,7 @@ oj.__registerWidget('oj.ojNBox', $['oj']['dvtBaseComponent'],
            * @default ""
            */
           color: "",
-          
+
           /**
            * The default height of the node icons. If the value is 0, the height will be automatically based on the remaining node contents.
            * @expose
@@ -595,7 +626,7 @@ oj.__registerWidget('oj.ojNBox', $['oj']['dvtBaseComponent'],
            * @ojunits pixels
            */
           height: 0,
-          
+
           /**
            * The default opacity of the node icons.
            * @expose
@@ -606,7 +637,7 @@ oj.__registerWidget('oj.ojNBox', $['oj']['dvtBaseComponent'],
            * @default 1
            */
           opacity: 1,
-          
+
           /**
            * The default fill pattern of the node icons.
            * @expose
@@ -630,7 +661,7 @@ oj.__registerWidget('oj.ojNBox', $['oj']['dvtBaseComponent'],
            * @default "none"
            */
           pattern: "none",
-                    
+
           /**
            * The default shape of the node icons. Can take the name of a built-in shape or the svg path commands for a custom shape.
            * @expose
@@ -651,7 +682,7 @@ oj.__registerWidget('oj.ojNBox', $['oj']['dvtBaseComponent'],
            * @default "square"
            */
           shape: "square",
-          
+
           /**
            * The URL of an image to display by default for the node icons.
            * @expose
@@ -662,7 +693,7 @@ oj.__registerWidget('oj.ojNBox', $['oj']['dvtBaseComponent'],
            * @default ""
            */
           source: "",
-          
+
           /**
            * The default width of the node icons.  If the value is 0, the width will be automatically based on the remaining node contents.
            * @expose
@@ -674,7 +705,7 @@ oj.__registerWidget('oj.ojNBox', $['oj']['dvtBaseComponent'],
            */
           width: 0
         },
-        
+
         /**
          * The default background color of the node indicator sections.
          * @expose
@@ -685,7 +716,7 @@ oj.__registerWidget('oj.ojNBox', $['oj']['dvtBaseComponent'],
          * @default ""
          */
         indicatorColor: "",
-        
+
         /**
          * An object defining the style defaults for the node indicator icons.
          * @expose
@@ -705,7 +736,7 @@ oj.__registerWidget('oj.ojNBox', $['oj']['dvtBaseComponent'],
            * @type {string}
            */
           borderColor: "#000000",
-          
+
           /**
            * The default border radius of the node indicator icons. CSS border-radius values accepted. Note that non-% values (including unitless) get interpreted as 'px'.  The default value varies based on theme.
            * @expose
@@ -715,7 +746,7 @@ oj.__registerWidget('oj.ojNBox', $['oj']['dvtBaseComponent'],
            * @type {string}
            */
           borderRadius: 0,
-          
+
           /**
            * The default border width of the node indicator icons.  The default value varies based on theme.
            * @expose
@@ -725,7 +756,7 @@ oj.__registerWidget('oj.ojNBox', $['oj']['dvtBaseComponent'],
            * @type {number}
            */
           borderWidth: 0,
-          
+
           /**
            * The default fill color of the node indicator icons.
            * @expose
@@ -747,7 +778,7 @@ oj.__registerWidget('oj.ojNBox', $['oj']['dvtBaseComponent'],
            * @ojunits pixels
            */
           height: 10,
-          
+
           /**
            * The default opacity of the node indicator icons.
            * @expose
@@ -782,7 +813,7 @@ oj.__registerWidget('oj.ojNBox', $['oj']['dvtBaseComponent'],
            * @default "none"
            */
           pattern: "none",
-          
+
           /**
            * The default shape of the node indicator icons. Can take the name of a built-in shape or the svg path commands for a custom shape.
            * @expose
@@ -803,7 +834,7 @@ oj.__registerWidget('oj.ojNBox', $['oj']['dvtBaseComponent'],
            * @default "square"
            */
           shape: "square",
-          
+
           /**
            * The URL of an image to display by default for the node indicator icons.
            * @expose
@@ -814,7 +845,7 @@ oj.__registerWidget('oj.ojNBox', $['oj']['dvtBaseComponent'],
            * @default null
            */
           source: "",
-          
+
           /**
            * The default width of the node indicator icons.  The default value varies based on theme.
            * @expose
@@ -824,9 +855,9 @@ oj.__registerWidget('oj.ojNBox', $['oj']['dvtBaseComponent'],
            * @type {number}
            * @ojunits pixels
            */
-          width: 10        
+          width: 10
         },
-        
+
         /**
          * The CSS style object defining the style of the node labels.  The default value comes from the CSS and varies based on theme.
          * @expose
@@ -836,7 +867,7 @@ oj.__registerWidget('oj.ojNBox', $['oj']['dvtBaseComponent'],
          * @type {Object}
          */
         labelStyle: undefined,
-        
+
         /**
          * The CSS style object defining the style of the node secondary labels.  The default value comes from the CSS and varies based on theme.
          * @expose
@@ -845,9 +876,9 @@ oj.__registerWidget('oj.ojNBox', $['oj']['dvtBaseComponent'],
          * @instance
          * @type {Object}
          */
-        secondaryLabelStyle: undefined       
+        secondaryLabelStyle: undefined
       },
-      
+
       /**
        * The CSS style object defining the style of the row labels.  The default value comes from the CSS and varies based on theme.
        * @expose
@@ -857,7 +888,7 @@ oj.__registerWidget('oj.ojNBox', $['oj']['dvtBaseComponent'],
        * @type {Object}
        */
       rowLabelStyle: undefined,
-      
+
       /**
        * The CSS style object defining the style of the rows title.  The default value comes from the CSS and varies based on theme.
        * @expose
@@ -867,12 +898,12 @@ oj.__registerWidget('oj.ojNBox', $['oj']['dvtBaseComponent'],
        * @type {Object}
        * @default null
        */
-      rowsTitleStyle: undefined  
+      rowsTitleStyle: undefined
     },
-    
-    
+
+
     /**
-     * An object containing an optional callback function for tooltip customization. 
+     * An object containing an optional callback function for tooltip customization.
      * @expose
      * @name tooltip
      * @memberof oj.ojNBox
@@ -897,8 +928,8 @@ oj.__registerWidget('oj.ojNBox', $['oj']['dvtBaseComponent'],
        * </ul>
        *  The function should return an Object that contains only one of the two properties:
        *  <ul>
-       *    <li>insert: HTMLElement | string - An HTML element, which will be appended to the tooltip, or a tooltip string.</li> 
-       *    <li>preventDefault: <code>true</code> - Indicates that the tooltip should not be displayed. It is not necessary to return {preventDefault:false} to display tooltip, since this is a default behavior.</li> 
+       *    <li>insert: HTMLElement | string - An HTML element, which will be appended to the tooltip, or a tooltip string.</li>
+       *    <li>preventDefault: <code>true</code> - Indicates that the tooltip should not be displayed. It is not necessary to return {preventDefault:false} to display tooltip, since this is a default behavior.</li>
        *  </ul>
        * @expose
        * @name tooltip.renderer
@@ -909,9 +940,9 @@ oj.__registerWidget('oj.ojNBox', $['oj']['dvtBaseComponent'],
        */
       renderer: null
     },
- 
+
     /**
-     * Data visualizations require a press and hold delay before triggering tooltips and rollover effects on mobile devices to avoid interfering with page panning, but these hold delays can make applications seem slower and less responsive. For a better user experience, the application can remove the touch and hold delay when data visualizations are used within a non scrolling container or if there is sufficient space outside of the visualization for panning. If touchResponse is touchStart the element will instantly trigger the touch gesture and consume the page pan events if the element does not require an internal feature that requires a touch start gesture like scrolling. If touchResponse is auto, the element will behave like touchStart if it determines that it is not rendered within scrolling content and if panning is not available for those elements that support the feature. 
+     * Data visualizations require a press and hold delay before triggering tooltips and rollover effects on mobile devices to avoid interfering with page panning, but these hold delays can make applications seem slower and less responsive. For a better user experience, the application can remove the touch and hold delay when data visualizations are used within a non scrolling container or if there is sufficient space outside of the visualization for panning. If touchResponse is touchStart the element will instantly trigger the touch gesture and consume the page pan events if the element does not require an internal feature that requires a touch start gesture like scrolling. If touchResponse is auto, the element will behave like touchStart if it determines that it is not rendered within scrolling content and if panning is not available for those elements that support the feature.
      * @expose
      * @name touchResponse
      * @memberof oj.ojNBox
@@ -921,7 +952,7 @@ oj.__registerWidget('oj.ojNBox', $['oj']['dvtBaseComponent'],
      * @ojvalue {string} "auto"
      * @default "auto"
      */
-    touchResponse: "auto"    
+    touchResponse: "auto"
   },
 
   //** @inheritdoc */
@@ -2474,6 +2505,12 @@ var ojNBoxMeta = {
             "labelStyle": {
               "type": "object"
             },
+            "maximizedSvgStyle": {
+              "type": "object"
+            },
+            "minimizedSvgStyle": {
+              "type": "object"
+            },
             "showCount": {
               "type": "string",
               "enumValues": ["on", "off", "auto"]
@@ -2725,9 +2762,10 @@ var dvtMeta = oj.CustomElementBridge.getMetadata('oj-n-box');
 oj.CustomElementBridge.register('oj-n-box', {
   'metadata': dvtMeta,
   'parseFunction': dvtMeta['extension']._DVT_PARSE_FUNC({
-  	'style-defaults.node-defaults.icon-defaults.shape': true, 
+  	'style-defaults.node-defaults.icon-defaults.shape': true,
   	'style-defaults.node-defaults.indicator-icon-defaults.shape': true
   })
 });
 })();
+
 });
