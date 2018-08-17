@@ -773,4 +773,5 @@ oj['FetchByOffsetMixin'].applyMixin(ListDataProviderView);
 /**
  * End of jsdoc
  */
+  return ListDataProviderView;
 });

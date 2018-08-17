@@ -1,0 +1,22 @@
+{
+  "name": "oj-gantt-row",
+  "version": "5.2.0",
+  "jetVersion": "5.2.0",
+  "displayName": "Gantt Row",
+  "type": "core",
+  "description": "ojGanttRow",
+  "properties": {
+    "label": {
+      "description": "The label associated with the row.",
+      "type": "string",
+      "displayName": "Label",
+      "value": ""
+    },
+    "labelStyle": {
+      "description": "The CSS style defining the style of the label. Only CSS style applicable to SVG elements can be used.",
+      "type": "object",
+      "displayName": "Label Style",
+      "value": {}
+    }
+  }
+}

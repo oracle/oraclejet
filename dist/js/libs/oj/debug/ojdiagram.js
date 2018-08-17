@@ -6,6 +6,740 @@
 "use strict";
 define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/internal-deps/dvt/DvtDiagram', 'ojs/ojdatasource-common'], function(oj, $, comp, base, dvt)
 {
+
+var __oj_diagram_metadata = 
+{
+  "properties": {
+    "animationOnDataChange": {
+      "type": "string",
+      "enumValues": [
+        "auto",
+        "none"
+      ],
+      "value": "none"
+    },
+    "animationOnDisplay": {
+      "type": "string",
+      "enumValues": [
+        "auto",
+        "none"
+      ],
+      "value": "none"
+    },
+    "data": {
+      "type": "object"
+    },
+    "dnd": {
+      "type": "object",
+      "properties": {
+        "drag": {
+          "type": "object",
+          "properties": {
+            "nodes": {
+              "type": "object",
+              "properties": {
+                "dataTypes": {
+                  "type": "string|Array<string>"
+                },
+                "drag": {
+                  "type": "function"
+                },
+                "dragEnd": {
+                  "type": "function"
+                },
+                "dragStart": {
+                  "type": "function"
+                }
+              }
+            },
+            "ports": {
+              "type": "object",
+              "properties": {
+                "dataTypes": {
+                  "type": "string|Array<string>"
+                },
+                "drag": {
+                  "type": "function"
+                },
+                "dragEnd": {
+                  "type": "function"
+                },
+                "dragStart": {
+                  "type": "function"
+                },
+                "linkStyle": {
+                  "type": "function"
+                },
+                "selector": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "drop": {
+          "type": "object",
+          "properties": {
+            "background": {
+              "type": "object",
+              "properties": {
+                "dataTypes": {
+                  "type": "string|Array<string>"
+                },
+                "dragEnter": {
+                  "type": "function"
+                },
+                "dragLeave": {
+                  "type": "function"
+                },
+                "dragOver": {
+                  "type": "function"
+                },
+                "drop": {
+                  "type": "function"
+                }
+              }
+            },
+            "links": {
+              "type": "object",
+              "properties": {
+                "dataTypes": {
+                  "type": "string|Array<string>"
+                },
+                "dragEnter": {
+                  "type": "function"
+                },
+                "dragLeave": {
+                  "type": "function"
+                },
+                "dragOver": {
+                  "type": "function"
+                },
+                "drop": {
+                  "type": "function"
+                }
+              }
+            },
+            "nodes": {
+              "type": "object",
+              "properties": {
+                "dataTypes": {
+                  "type": "string|Array<string>"
+                },
+                "dragEnter": {
+                  "type": "function"
+                },
+                "dragLeave": {
+                  "type": "function"
+                },
+                "dragOver": {
+                  "type": "function"
+                },
+                "drop": {
+                  "type": "function"
+                }
+              }
+            },
+            "ports": {
+              "type": "object",
+              "properties": {
+                "dataTypes": {
+                  "type": "string|Array<string>"
+                },
+                "dragEnter": {
+                  "type": "function"
+                },
+                "dragLeave": {
+                  "type": "function"
+                },
+                "dragOver": {
+                  "type": "function"
+                },
+                "drop": {
+                  "type": "function"
+                },
+                "selector": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "expanded": {
+      "type": "KeySet",
+      "writeback": true,
+      "value": "new ExpandedKeySet()"
+    },
+    "focusRenderer": {
+      "type": "function"
+    },
+    "hiddenCategories": {
+      "type": "Array<string>",
+      "writeback": true,
+      "value": []
+    },
+    "highlightMatch": {
+      "type": "string",
+      "enumValues": [
+        "all",
+        "any"
+      ],
+      "value": "all"
+    },
+    "highlightedCategories": {
+      "type": "Array<string>",
+      "writeback": true,
+      "value": []
+    },
+    "hoverBehavior": {
+      "type": "string",
+      "enumValues": [
+        "dim",
+        "none"
+      ],
+      "value": "none"
+    },
+    "hoverRenderer": {
+      "type": "function"
+    },
+    "layout": {
+      "type": "function"
+    },
+    "linkHighlightMode": {
+      "type": "string",
+      "enumValues": [
+        "link",
+        "linkAndNodes"
+      ],
+      "value": "link"
+    },
+    "linkProperties": {
+      "type": "function",
+      "properties": {
+        "labelStyle": {
+          "type": "object"
+        },
+        "color": {
+          "type": "string"
+        },
+        "svgStyle": {
+          "type": "object"
+        },
+        "svgClassName": {
+          "type": "string"
+        },
+        "width": {
+          "type": "number"
+        },
+        "startConnectorType": {
+          "type": "string"
+        },
+        "endConnectorType": {
+          "type": "string"
+        }
+      }
+    },
+    "maxZoom": {
+      "type": "number",
+      "value": 1
+    },
+    "minZoom": {
+      "type": "number",
+      "value": 0
+    },
+    "nodeHighlightMode": {
+      "type": "string",
+      "enumValues": [
+        "node",
+        "nodeAndIncomingLinks",
+        "nodeAndLinks",
+        "nodeAndOutgoingLinks"
+      ],
+      "value": "node"
+    },
+    "nodeProperties": {
+      "type": "function",
+      "properties": {
+        "showDisclosure": {
+          "type": "string"
+        },
+        "labelStyle": {
+          "type": "object"
+        },
+        "icon": {
+          "type": "object",
+          "properties": {
+            "borderColor": {
+              "type": "string"
+            },
+            "borderRadius": {
+              "type": "string"
+            },
+            "borderWidth": {
+              "type": "number"
+            },
+            "color": {
+              "type": "string"
+            },
+            "pattern": {
+              "type": "string"
+            },
+            "opacity": {
+              "type": "number"
+            },
+            "shape": {
+              "type": "string"
+            },
+            "source": {
+              "type": "string"
+            },
+            "sourceHover": {
+              "type": "string"
+            },
+            "sourceHoverSelected": {
+              "type": "string"
+            },
+            "sourceSelected": {
+              "type": "string"
+            },
+            "width": {
+              "type": "number"
+            },
+            "height": {
+              "type": "number"
+            },
+            "svgStyle": {
+              "type": "object"
+            },
+            "svgClassName": {
+              "type": "object"
+            }
+          }
+        },
+        "overview": {
+          "type": "object",
+          "properties": {
+            "icon": {
+              "type": "object",
+              "properties": {
+                "shape": {
+                  "type": "string"
+                },
+                "svgStyle": {
+                  "type": "object"
+                },
+                "svgClassName": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "overview": {
+      "type": "object",
+      "properties": {
+        "halign": {
+          "type": "string",
+          "enumValues": [
+            "center",
+            "end",
+            "start"
+          ],
+          "value": "end"
+        },
+        "height": {
+          "type": "number",
+          "value": 100
+        },
+        "rendered": {
+          "type": "string",
+          "enumValues": [
+            "off",
+            "on"
+          ],
+          "value": "off"
+        },
+        "valign": {
+          "type": "string",
+          "enumValues": [
+            "bottom",
+            "middle",
+            "top"
+          ],
+          "value": "bottom"
+        },
+        "width": {
+          "type": "number",
+          "value": 200
+        }
+      }
+    },
+    "panDirection": {
+      "type": "string",
+      "enumValues": [
+        "auto",
+        "x",
+        "y"
+      ],
+      "value": "auto"
+    },
+    "panning": {
+      "type": "string",
+      "enumValues": [
+        "auto",
+        "none"
+      ],
+      "value": "none"
+    },
+    "promotedLinkBehavior": {
+      "type": "string",
+      "enumValues": [
+        "full",
+        "lazy",
+        "none"
+      ],
+      "value": "lazy"
+    },
+    "renderer": {
+      "type": "function"
+    },
+    "selection": {
+      "type": "Array<string>",
+      "writeback": true
+    },
+    "selectionMode": {
+      "type": "string",
+      "enumValues": [
+        "multiple",
+        "none",
+        "single"
+      ],
+      "value": "none"
+    },
+    "selectionRenderer": {
+      "type": "function"
+    },
+    "styleDefaults": {
+      "type": "object",
+      "properties": {
+        "animationDuration": {
+          "type": "number"
+        },
+        "hoverBehaviorDelay": {
+          "type": "number",
+          "value": 200
+        },
+        "linkDefaults": {
+          "type": "object",
+          "properties": {
+            "color": {
+              "type": "string"
+            },
+            "endConnectorType": {
+              "type": "string",
+              "enumValues": [
+                "arrow",
+                "arrowConcave",
+                "arrowOpen",
+                "circle",
+                "none",
+                "rectangle",
+                "rectangleRounded"
+              ],
+              "value": "none"
+            },
+            "labelStyle": {
+              "type": "object",
+              "value": {}
+            },
+            "startConnectorType": {
+              "type": "string",
+              "enumValues": [
+                "arrow",
+                "arrowConcave",
+                "arrowOpen",
+                "circle",
+                "none",
+                "rectangle",
+                "rectangleRounded"
+              ],
+              "value": "none"
+            },
+            "svgClassName": {
+              "type": "object",
+              "value": "\"\""
+            },
+            "svgStyle": {
+              "type": "object",
+              "value": {}
+            },
+            "width": {
+              "type": "number",
+              "value": 1
+            }
+          }
+        },
+        "nodeDefaults": {
+          "type": "object",
+          "properties": {
+            "icon": {
+              "type": "object",
+              "properties": {
+                "borderColor": {
+                  "type": "string"
+                },
+                "borderRadius": {
+                  "type": "string"
+                },
+                "borderWidth": {
+                  "type": "number"
+                },
+                "color": {
+                  "type": "string"
+                },
+                "height": {
+                  "type": "number",
+                  "value": 10
+                },
+                "pattern": {
+                  "type": "string",
+                  "enumValues": [
+                    "largeChecker",
+                    "largeCrosshatch",
+                    "largeDiagonalLeft",
+                    "largeDiagonalRight",
+                    "largeDiamond",
+                    "largeTriangle",
+                    "none",
+                    "smallChecker",
+                    "smallCrosshatch",
+                    "smallDiagonalLeft",
+                    "smallDiagonalRight",
+                    "smallDiamond",
+                    "smallTriangle"
+                  ],
+                  "value": "none"
+                },
+                "shape": {
+                  "type": "string",
+                  "value": "circle"
+                },
+                "source": {
+                  "type": "string"
+                },
+                "sourceHover": {
+                  "type": "string"
+                },
+                "sourceHoverSelected": {
+                  "type": "string"
+                },
+                "sourceSelected": {
+                  "type": "string"
+                },
+                "svgClassName": {
+                  "type": "string",
+                  "value": ""
+                },
+                "svgStyle": {
+                  "type": "object",
+                  "value": {}
+                },
+                "width": {
+                  "type": "number",
+                  "value": 10
+                }
+              }
+            },
+            "labelStyle": {
+              "type": "object",
+              "value": {}
+            },
+            "showDisclosure": {
+              "type": "string",
+              "enumValues": [
+                "off",
+                "on"
+              ],
+              "value": "on"
+            }
+          }
+        },
+        "promotedLink": {
+          "type": "object",
+          "properties": {
+            "color": {
+              "type": "string"
+            },
+            "endConnectorType": {
+              "type": "string",
+              "enumValues": [
+                "arrow",
+                "arrowConcave",
+                "arrowOpen",
+                "circle",
+                "none",
+                "rectangle",
+                "rectangleRounded"
+              ],
+              "value": "none"
+            },
+            "startConnectorType": {
+              "type": "string",
+              "enumValues": [
+                "arrow",
+                "arrowConcave",
+                "arrowOpen",
+                "circle",
+                "none",
+                "rectangle",
+                "rectangleRounded"
+              ],
+              "value": "none"
+            },
+            "svgClassName": {
+              "type": "object",
+              "value": "\"\""
+            },
+            "svgStyle": {
+              "type": "object",
+              "value": {}
+            },
+            "width": {
+              "type": "number",
+              "value": 1
+            }
+          }
+        }
+      }
+    },
+    "tooltip": {
+      "type": "object",
+      "properties": {
+        "renderer": {
+          "type": "function"
+        }
+      }
+    },
+    "touchResponse": {
+      "type": "string",
+      "enumValues": [
+        "auto",
+        "touchStart"
+      ],
+      "value": "auto"
+    },
+    "trackResize": {
+      "type": "string",
+      "enumValues": [
+        "off",
+        "on"
+      ],
+      "value": "on"
+    },
+    "translations": {
+      "type": "object",
+      "value": {},
+      "properties": {
+        "componentName": {
+          "type": "string"
+        },
+        "labelAndValue": {
+          "type": "string"
+        },
+        "labelClearSelection": {
+          "type": "string"
+        },
+        "labelCountWithTotal": {
+          "type": "string"
+        },
+        "labelDataVisualization": {
+          "type": "string"
+        },
+        "labelInvalidData": {
+          "type": "string"
+        },
+        "labelNoData": {
+          "type": "string"
+        },
+        "promotedLink": {
+          "type": "string"
+        },
+        "promotedLinkAriaDesc": {
+          "type": "string"
+        },
+        "promotedLinks": {
+          "type": "string"
+        },
+        "stateCollapsed": {
+          "type": "string"
+        },
+        "stateDrillable": {
+          "type": "string"
+        },
+        "stateExpanded": {
+          "type": "string"
+        },
+        "stateHidden": {
+          "type": "string"
+        },
+        "stateIsolated": {
+          "type": "string"
+        },
+        "stateMaximized": {
+          "type": "string"
+        },
+        "stateMinimized": {
+          "type": "string"
+        },
+        "stateSelected": {
+          "type": "string"
+        },
+        "stateUnselected": {
+          "type": "string"
+        },
+        "stateVisible": {
+          "type": "string"
+        }
+      }
+    },
+    "zoomRenderer": {
+      "type": "function"
+    },
+    "zooming": {
+      "type": "string",
+      "enumValues": [
+        "auto",
+        "none"
+      ],
+      "value": "none"
+    }
+  },
+  "methods": {
+    "getNodeCount": {},
+    "getNode": {},
+    "getLinkCount": {},
+    "getLink": {},
+    "getPromotedLink": {},
+    "getContextByNode": {},
+    "refresh": {},
+    "setProperty": {},
+    "getProperty": {},
+    "setProperties": {},
+    "getNodeBySubId": {},
+    "getSubIdByNode": {}
+  },
+  "events": {
+    "ojBeforeExpand": {},
+    "ojExpand": {},
+    "ojBeforeCollapse": {},
+    "ojCollapse": {}
+  },
+  "extension": {}
+};
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
@@ -1304,7 +2038,6 @@ oj.__registerWidget('oj.ojDiagram', $['oj']['dvtBaseComponent'],
      * @memberof oj.ojDiagram
      * @instance
      * @type {Object}
-     * @default {"drag": null, "drop": null}
      *
      * @example <caption>Initialize the diagram with the
      * <code class="prettyprint">dnd</code> attribute specified:</caption>
@@ -1338,7 +2071,6 @@ oj.__registerWidget('oj.ojDiagram', $['oj']['dvtBaseComponent'],
        * @memberof! oj.ojDiagram
        * @instance
        * @type {Object}
-       * @default null
        */
        drag: null,
         /**
@@ -1358,6 +2090,7 @@ oj.__registerWidget('oj.ojDiagram', $['oj']['dvtBaseComponent'],
          * @memberof! oj.ojDiagram
          * @instance
          * @type {string|Array.<string>}
+         * @default null
          */
         /**
          * An optional callback function that receives the "drag" event as argument. 
@@ -1367,6 +2100,7 @@ oj.__registerWidget('oj.ojDiagram', $['oj']['dvtBaseComponent'],
          * @memberof! oj.ojDiagram
          * @instance
          * @type {function(Event)}
+         * @default null
          */
         /**
          * An optional callback function that receives the "dragend" event as argument. 
@@ -1376,6 +2110,7 @@ oj.__registerWidget('oj.ojDiagram', $['oj']['dvtBaseComponent'],
          * @memberof! oj.ojDiagram
          * @instance
          * @type {function(Event)}
+         * @default null
          */
         /**
          * An optional callback function that receives the "dragstart" event and context information as arguments. 
@@ -1396,6 +2131,7 @@ oj.__registerWidget('oj.ojDiagram', $['oj']['dvtBaseComponent'],
          * @memberof! oj.ojDiagram
          * @instance
          * @type {function(Event, Object)}
+         * @default null
          */
         /**
          * If this object is specified, the diagram will initiate link creation when the user starts dragging from a port. 
@@ -1405,7 +2141,6 @@ oj.__registerWidget('oj.ojDiagram', $['oj']['dvtBaseComponent'],
          * @memberof! oj.ojDiagram
          * @instance
          * @type {Object}
-         * @default {}
          */
         /**
          * An optional callback function for customizing link feedback based on a starting node and a port. 
@@ -1433,6 +2168,7 @@ oj.__registerWidget('oj.ojDiagram', $['oj']['dvtBaseComponent'],
          * @memberof! oj.ojDiagram
          * @instance
          * @type {function(Object)}
+         * @default null
          */
         /**
          * A string, containing a selector expression, that will be used to identify the descendant DOM element in a diagram node that can be used for link creation. This property is requred. 
@@ -1442,6 +2178,7 @@ oj.__registerWidget('oj.ojDiagram', $['oj']['dvtBaseComponent'],
          * @memberof! oj.ojDiagram
          * @instance
          * @type {string}
+         * @default null
          */
         /**
          * The MIME types to use for the dragged data in the dataTransfer object. This can be a string if there is only one type, or an array of strings if multiple types are needed. and parentElement. This property is required unless the application calls setData itself in a dragStart callback function. 
@@ -1451,6 +2188,7 @@ oj.__registerWidget('oj.ojDiagram', $['oj']['dvtBaseComponent'],
          * @memberof! oj.ojDiagram
          * @instance
          * @type {string|Array.<string>}
+         * @default null
          */
         /**
          * An optional callback function that receives the "drag" event as argument. 
@@ -1460,6 +2198,7 @@ oj.__registerWidget('oj.ojDiagram', $['oj']['dvtBaseComponent'],
          * @memberof! oj.ojDiagram
          * @instance
          * @type {function(Event)}
+         * @default null
          */
         /**
          * An optional callback function that receives the "dragend" event as argument. 
@@ -1469,6 +2208,7 @@ oj.__registerWidget('oj.ojDiagram', $['oj']['dvtBaseComponent'],
          * @memberof! oj.ojDiagram
          * @instance
          * @type {function(Event)}
+         * @default null
          */
         /**
          * An optional callback function that receives the "dragstart" event and context information as arguments.
@@ -1489,6 +2229,7 @@ oj.__registerWidget('oj.ojDiagram', $['oj']['dvtBaseComponent'],
          * @memberof! oj.ojDiagram
          * @instance
          * @type {function(Event, Object)}
+         * @default null
          */
       /**
        * An object that describes drop functionality.
@@ -1497,7 +2238,6 @@ oj.__registerWidget('oj.ojDiagram', $['oj']['dvtBaseComponent'],
        * @memberof! oj.ojDiagram
        * @instance
        * @type {Object}
-       * @default null
        */
        drop: null
         /**
@@ -1516,6 +2256,7 @@ oj.__registerWidget('oj.ojDiagram', $['oj']['dvtBaseComponent'],
          * @memberof! oj.ojDiagram
          * @instance
          * @type {string|Array.<string>}
+         * @default null
          */
         /**
          * An optional callback function that receives the "dragenter" event and context information as arguments. 
@@ -1527,6 +2268,7 @@ oj.__registerWidget('oj.ojDiagram', $['oj']['dvtBaseComponent'],
          * @memberof! oj.ojDiagram
          * @instance
          * @type {function(Event, Object)}
+         * @default null
          */
         /**
          * An optional callback function that receives the "dragover" event and context information as arguments.
@@ -1538,6 +2280,7 @@ oj.__registerWidget('oj.ojDiagram', $['oj']['dvtBaseComponent'],
          * @memberof! oj.ojDiagram
          * @instance
          * @type {function(Event, Object)}
+         * @default null
          */
         /**
          * An optional callback function that receives the "dragleave" event and context information as arguments.
@@ -1548,6 +2291,7 @@ oj.__registerWidget('oj.ojDiagram', $['oj']['dvtBaseComponent'],
          * @memberof! oj.ojDiagram
          * @instance
          * @type {function(Event, Object)}
+         * @default null
          */
         /**
          * A callback function that receives the "drop" event and context information as arguments. 
@@ -1559,6 +2303,7 @@ oj.__registerWidget('oj.ojDiagram', $['oj']['dvtBaseComponent'],
          * @memberof! oj.ojDiagram
          * @instance
          * @type {function(Event, Object)}
+         * @default null
          */
         /**
          * Allows dropping on diagram nodes.
@@ -1576,6 +2321,7 @@ oj.__registerWidget('oj.ojDiagram', $['oj']['dvtBaseComponent'],
          * @memberof! oj.ojDiagram
          * @instance
          * @type {string|Array.<string>}
+         * @default null
          */
         /**
          * An optional callback function that receives the "dragenter" event and context information as arguments. 
@@ -1587,6 +2333,7 @@ oj.__registerWidget('oj.ojDiagram', $['oj']['dvtBaseComponent'],
          * @memberof! oj.ojDiagram
          * @instance
          * @type {function(Event, Object)}
+         * @default null
          */
         /**
          * An optional callback function that receives the "dragover" event and context information as arguments.
@@ -1598,6 +2345,7 @@ oj.__registerWidget('oj.ojDiagram', $['oj']['dvtBaseComponent'],
          * @memberof! oj.ojDiagram
          * @instance
          * @type {function(Event, Object)}
+         * @default null
          */
         /**
          * An optional callback function that receives the "dragleave" event and context information as arguments.
@@ -1608,6 +2356,7 @@ oj.__registerWidget('oj.ojDiagram', $['oj']['dvtBaseComponent'],
          * @memberof! oj.ojDiagram
          * @instance
          * @type {function(Event, Object)}
+         * @default null
          */
         /**
          * A callback function that receives the "drop" event and context information as arguments. 
@@ -1619,6 +2368,7 @@ oj.__registerWidget('oj.ojDiagram', $['oj']['dvtBaseComponent'],
          * @memberof! oj.ojDiagram
          * @instance
          * @type {function(Event, Object)}
+         * @default null
          */
         /**
          * Allows dropping on diagram links.
@@ -1636,6 +2386,7 @@ oj.__registerWidget('oj.ojDiagram', $['oj']['dvtBaseComponent'],
          * @memberof! oj.ojDiagram
          * @instance
          * @type {string|Array.<string>}
+         * @default null
          */
         /**
          * An optional callback function that receives the "dragenter" event and context information as arguments.
@@ -1647,6 +2398,7 @@ oj.__registerWidget('oj.ojDiagram', $['oj']['dvtBaseComponent'],
          * @memberof! oj.ojDiagram
          * @instance
          * @type {function(Event, Object)}
+         * @default null
          */
         /**
          * An optional callback function that receives the "dragover" event and context information as arguments.
@@ -1658,6 +2410,7 @@ oj.__registerWidget('oj.ojDiagram', $['oj']['dvtBaseComponent'],
          * @memberof! oj.ojDiagram
          * @instance
          * @type {function(Event, Object)}
+         * @default null
          */
         /**
          * An optional callback function that receives the "dragleave" event and context information as arguments.
@@ -1668,6 +2421,7 @@ oj.__registerWidget('oj.ojDiagram', $['oj']['dvtBaseComponent'],
          * @memberof! oj.ojDiagram
          * @instance
          * @type {function(Event, Object)}
+         * @default null
          */
         /**
          * A callback function that receives the "drop" event and context information as arguments. 
@@ -1679,6 +2433,7 @@ oj.__registerWidget('oj.ojDiagram', $['oj']['dvtBaseComponent'],
          * @memberof! oj.ojDiagram
          * @instance
          * @type {function(Event, Object)}
+         * @default null
          */
         /**
          * Allows dropping a link end on a port.
@@ -1696,6 +2451,7 @@ oj.__registerWidget('oj.ojDiagram', $['oj']['dvtBaseComponent'],
          * @memberof! oj.ojDiagram
          * @instance
          * @type {string}
+         * @default null
          */
         /**
          *  An array of MIME data types the Diagram ports can accept. This property is required unless dragEnter, dragOver, and drop callback functions are specified to handle the corresponding events. 
@@ -1705,6 +2461,7 @@ oj.__registerWidget('oj.ojDiagram', $['oj']['dvtBaseComponent'],
          * @memberof! oj.ojDiagram
          * @instance
          * @type {string|Array.<string>}
+         * @default null
          */
         /**
          * An optional callback function that receives the "dragenter" event and context information as arguments. 
@@ -1716,6 +2473,7 @@ oj.__registerWidget('oj.ojDiagram', $['oj']['dvtBaseComponent'],
          * @memberof! oj.ojDiagram
          * @instance
          * @type {function(Event, Object)}
+         * @default null
          */
         /**
          * An optional callback function that receives the "dragover" event and context information as arguments.
@@ -1727,6 +2485,7 @@ oj.__registerWidget('oj.ojDiagram', $['oj']['dvtBaseComponent'],
          * @memberof! oj.ojDiagram
          * @instance
          * @type {function(Event, Object)}
+         * @default null
          */
         /**
          * An optional callback function that receives the "dragleave" event and context information as arguments.
@@ -1737,6 +2496,7 @@ oj.__registerWidget('oj.ojDiagram', $['oj']['dvtBaseComponent'],
          * @memberof! oj.ojDiagram
          * @instance
          * @type {function(Event, Object)}
+         * @default null
          */
         /**
          * A callback function that receives the "drop" event and context information as arguments. 
@@ -1748,6 +2508,7 @@ oj.__registerWidget('oj.ojDiagram', $['oj']['dvtBaseComponent'],
          * @memberof! oj.ojDiagram
          * @instance
          * @type {function(Event, Object)}
+         * @default null
          */
      },
 
@@ -1878,7 +2639,6 @@ oj.__registerWidget('oj.ojDiagram', $['oj']['dvtBaseComponent'],
      * @memberof oj.ojDiagram
      * @instance
      * @type {Object}
-     * @default {"renderer": null}
      *
      * @example <caption>Initialize the diagram with the 
      * <code class="prettyprint">tooltip</code> attribute specified:</caption>
@@ -2380,6 +3140,11 @@ oj.__registerWidget('oj.ojDiagram', $['oj']['dvtBaseComponent'],
      * @property {number} icon.height The height of the icon.
      * @property {object} icon.svgStyle The CSS style object defining the style of the icon. The style class and style object will be applied directly on the icon and override any other styling specified through the properties.
      * @property {object} icon.svgClassName The CSS style class defining the style of the icon. The style class and style object will be applied directly on the icon and override any other styling specified through the properties.
+     * @property {object} overview Specifies overview node shape.
+     * @property {object} overview.icon Specifies an icon for the node in the overview window. The following properties can be used to customize the overview node. The width and height of the overview node is determined from the rendered node in the diagram.
+     * @property {string} overview.icon.shape The shape of the icon in the overview window. Can take one of the following values for the shape name or the svg path commands for a custom shape.<br/>Supported built-in shapes:"inherit", "ellipse", "square", "plus", "diamond", "triangleUp", "triangleDown", "human", "rectangle", "star", "circle".<br/> The default value is always "inherit", but that means different things for custom nodes and default nodes. When "inherit" value is specified for a default node, the shape is determined from the node in the diagram. When "inherit" value is specified for a custom node, "rectangle" shape will be used.<br>This property doesn't apply at all to containers (custom or default).
+     * @property {object} overview.icon.svgStyle The CSS style object defining the style of the node icon in the overview.
+     * @property {string} overview.icon.svgClassName The CSS style class defining the style of the node icon in the overview.
      *
      * @example <caption>Customizing node icon color using <code class="prettyprint">customColor</code> property defined on the node data object</caption>
      * &lt;oj-diagram
@@ -2425,13 +3190,108 @@ oj.__registerWidget('oj.ojDiagram', $['oj']['dvtBaseComponent'],
      */
     promotedLinkBehavior: "lazy",
     /**
+     * An object, used to define a diagram overview. If not specified, no overview will be shown.
+     * @expose
+     * @name overview
+     * @memberof oj.ojDiagram
+     * @instance
+     * @type {Object}
+     *
+     * @example <caption>Initialize the diagram with the
+     * <code class="prettyprint">overview</code> attribute specified:</caption>
+     *
+     * <!-- Using dot notation -->
+     * &lt;oj-diagram overview.rendered = 'on' overview.width = '150'>&lt;/oj-diagram>
+     *
+     * &lt;oj-diagram overview='[[overviewObject]]'>&lt;/oj-diagram>
+     *
+     * @example <caption>Get or set the <code class="prettyprint">overview</code>
+     * property after initialization:</caption>
+     * // Get one
+     * var value = myDiagram.overview.width;
+     *
+     * // Get all
+     * var values = myDiagram.overview;
+     *
+     * // Set one, leaving the others intact. Always use the setProperty API for
+     * // subproperties rather than setting a subproperty directly.
+     * myDiagram.setProperty('overview.width', '150');
+     *
+     * // Set all. Must list every resource key, as those not listed are lost.
+     * myDiagram.overview=overviewObject;
+     */
+    overview: {
+      /**
+       * Specifies whether the overview scrollbar is rendered.
+       * <br></br>See the <a href="#overview">overview</a> attribute for usage examples.
+       * @expose
+       * @name overview.rendered
+       * @memberof! oj.ojDiagram
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "on"
+       * @ojvalue {string} "off"
+       * @default "off"
+       */
+      rendered: 'off',
+      /**
+       * Overview window width. The width can't exceed the diagram width.
+       * If the specified width exceeds the width of the diagram itself, the width of the diagram will be used instead.
+       * @ojshortdesc Overview window width.
+       * @expose
+       * @name overview.width
+       * @memberof! oj.ojDiagram
+       * @instance
+       * @type {number}
+       * @default 200
+       */
+      width: 200,
+      /**
+       * Overview window height. The height can't exceed the diagram height.
+       * If the specified height exceeds the height of the diagram itself, the height of the diagram will be used instead.
+       * @ojshortdesc Overview window height.
+       * @expose
+       * @name overview.height
+       * @memberof! oj.ojDiagram
+       * @instance
+       * @type {number}
+       * @default 100
+       */
+      height: 100,
+      /**
+       * Horizontal alignment for diagram overview window
+       * @expose
+       * @name overview.halign
+       * @memberof! oj.ojDiagram
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "start"
+       * @ojvalue {string} "end"
+       * @ojvalue {string} "center"
+       * @default "end"
+       */
+      halign: 'end',
+      /**
+       * Vertical alignment for diagram overview window
+       * @expose
+       * @name overview.valign
+       * @memberof! oj.ojDiagram
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "top"
+       * @ojvalue {string} "bottom"
+       * @ojvalue {string} "middle"
+       * @default "bottom"
+       */
+      valign: 'bottom'
+    },
+    /**
      * An object defining the style defaults for this diagram.
      * @expose
      * @name styleDefaults
      * @memberof oj.ojDiagram
      * @instance
      * @type {Object}
-     * @default {"hoverBehaviorDelay":200, "nodeDefaults":{"labelStyle":{}, "showDisclosure":"on", "icon":{"pattern":"none", "shape":"circle", "width":10, "height":10, "svgClassName":""}}, "linkDefaults":{"width":1.0, "labelStyle":{}, "startConnectorType":"none", "endConnectorType":"none", "svgClassName":""}, "promotedLink":{"width":1.0, "startConnectorType":"none", "endConnectorType":"none", "svgClassName":""}}
      *
      * @example <caption>Get or set the <code class="prettyprint">styleDefaults</code> 
      * property after initialization:</caption>
@@ -2468,8 +3328,8 @@ oj.__registerWidget('oj.ojDiagram', $['oj']['dvtBaseComponent'],
        * @memberof! oj.ojDiagram
        * @instance
        * @type {number}
-       * @default 200
        * @ojunits milliseconds
+       * @default 200
        */
        hoverBehaviorDelay: 200,
       /**
@@ -2513,7 +3373,6 @@ oj.__registerWidget('oj.ojDiagram', $['oj']['dvtBaseComponent'],
          * @memberof! oj.ojDiagram
          * @instance
          * @type {Object}
-         * @default {"width": 10, "height": 10, "fillPattern": "none", "shape": "circle"}
          */
          icon: {
           /**
@@ -2523,6 +3382,7 @@ oj.__registerWidget('oj.ojDiagram', $['oj']['dvtBaseComponent'],
            * @memberof! oj.ojDiagram
            * @instance
            * @type {string}
+           * @ojformat color
            */
           /**
            * The default border radius of the icon. CSS border-radius values accepted. Note that non-% values (including unitless) get interpreted as 'px'.
@@ -2549,6 +3409,7 @@ oj.__registerWidget('oj.ojDiagram', $['oj']['dvtBaseComponent'],
            * @memberof! oj.ojDiagram
            * @instance
            * @type {string}
+           * @ojformat color
            */
           /**
            * Default fill pattern of the icon.
@@ -2581,16 +3442,16 @@ oj.__registerWidget('oj.ojDiagram', $['oj']['dvtBaseComponent'],
            * @memberof! oj.ojDiagram
            * @instance
            * @type {string}
-           * @ojvalue {string} "ellipse"
-           * @ojvalue {string} "square"
-           * @ojvalue {string} "plus"
-           * @ojvalue {string} "diamond"
-           * @ojvalue {string} "triangleUp"
-           * @ojvalue {string} "triangleDown"
-           * @ojvalue {string} "human"
-           * @ojvalue {string} "rectangle"
-           * @ojvalue {string} "star"
-           * @ojvalue {string} "circle"
+           * @ojvalue {string=} "ellipse"
+           * @ojvalue {string=} "square"
+           * @ojvalue {string=} "plus"
+           * @ojvalue {string=} "diamond"
+           * @ojvalue {string=} "triangleUp"
+           * @ojvalue {string=} "triangleDown"
+           * @ojvalue {string=} "human"
+           * @ojvalue {string=} "rectangle"
+           * @ojvalue {string=} "star"
+           * @ojvalue {string=} "circle"
            * @default "circle"
            */
            shape: "circle",
@@ -2679,7 +3540,6 @@ oj.__registerWidget('oj.ojDiagram', $['oj']['dvtBaseComponent'],
        * @memberof! oj.ojDiagram
        * @instance
        * @type {Object}
-       * @default {"labelStyle: {}, ""startConnectorType": "none", "endConnectorType": "none", "width": 1.0}
        */
        linkDefaults: {
         /**
@@ -2689,6 +3549,7 @@ oj.__registerWidget('oj.ojDiagram', $['oj']['dvtBaseComponent'],
          * @memberof! oj.ojDiagram
          * @instance
          * @type {string}
+         * @ojformat color
          */
         /**
          * The default style object represents the SVG CSS style of the link. User defined custom SVG CSS Styles will be applied directly on the link. 
@@ -2718,6 +3579,7 @@ oj.__registerWidget('oj.ojDiagram', $['oj']['dvtBaseComponent'],
          * @instance
          * @type {number}
          * @ojunits pixels
+         * @default 1.0
          */
          width: 1.0,
         /**
@@ -2730,6 +3592,7 @@ oj.__registerWidget('oj.ojDiagram', $['oj']['dvtBaseComponent'],
          * @memberof! oj.ojDiagram
          * @instance
          * @type {Object}
+         * @default {}
          */
          labelStyle: {},
         /**
@@ -2746,6 +3609,7 @@ oj.__registerWidget('oj.ojDiagram', $['oj']['dvtBaseComponent'],
          * @ojvalue {string} "rectangle"
          * @ojvalue {string} "rectangleRounded"
          * @ojvalue {string} "none"
+         * @default "none"
          */
          startConnectorType: "none",
         /**
@@ -2762,6 +3626,7 @@ oj.__registerWidget('oj.ojDiagram', $['oj']['dvtBaseComponent'],
          * @ojvalue {string} "rectangle"
          * @ojvalue {string} "rectangleRounded"
          * @ojvalue {string} "none"
+         * @default "none"
          */
          endConnectorType: "none"
        },
@@ -2772,7 +3637,6 @@ oj.__registerWidget('oj.ojDiagram', $['oj']['dvtBaseComponent'],
        * @memberof! oj.ojDiagram
        * @instance
        * @type {Object}
-       * @default {""startConnectorType": "none", "endConnectorType": "none", "width": 1.0}
        */
        promotedLink: {
         /**
@@ -2782,6 +3646,7 @@ oj.__registerWidget('oj.ojDiagram', $['oj']['dvtBaseComponent'],
          * @memberof! oj.ojDiagram
          * @instance
          * @type {string}
+         * @ojformat color
          */
          color: "#778999",
         /**
@@ -2811,6 +3676,7 @@ oj.__registerWidget('oj.ojDiagram', $['oj']['dvtBaseComponent'],
          * @instance
          * @type {number}
          * @ojunits pixels
+         * @default 1.0
          */
          width: 1.0,
         /**
@@ -2827,6 +3693,7 @@ oj.__registerWidget('oj.ojDiagram', $['oj']['dvtBaseComponent'],
          * @ojvalue {string} "rectangle"
          * @ojvalue {string} "rectangleRounded"
          * @ojvalue {string} "none"
+         * @default "none"
          */
          startConnectorType: "none",
         /**
@@ -2843,6 +3710,7 @@ oj.__registerWidget('oj.ojDiagram', $['oj']['dvtBaseComponent'],
          * @ojvalue {string} "rectangle"
          * @ojvalue {string} "rectangleRounded"
          * @ojvalue {string} "none"
+         * @default "none"
          */
          endConnectorType: "none"
        }
@@ -2992,6 +3860,22 @@ oj.__registerWidget('oj.ojDiagram', $['oj']['dvtBaseComponent'],
   //** @inheritdoc */
   _GetComponentRendererOptions: function() {
     return ['tooltip/renderer','renderer','focusRenderer','hoverRenderer','selectionRenderer','zoomRenderer'];
+  },
+  
+  //* * @inheritdoc */
+  _SetupResources: function () {
+    this._super();
+    if (this._component) {
+      this._component.addDataSourceEventListeners();
+    }
+  },
+
+  //* * @inheritdoc */
+  _ReleaseResources: function () {
+    this._super();
+    if (this._component) {
+      this._component.removeDataSourceEventListeners();
+    }
   },
  
   /**
@@ -3178,6 +4062,11 @@ oj.__registerWidget('oj.ojDiagram', $['oj']['dvtBaseComponent'],
     styleClasses['oj-diagram-link oj-hover'] = [
       {'path': 'styleDefaults/linkDefaults/hoverOuterColor', 'property': 'border-top-color'},
       {'path': 'styleDefaults/linkDefaults/hoverInnerColor', 'property': 'border-bottom-color'}
+    ];
+    styleClasses['oj-diagram-overview'] = { path: 'styleDefaults/_overviewStyles/overview/backgroundColor', property: 'background-color' };
+    styleClasses['oj-diagram-overview-viewport'] = [
+      { path: 'styleDefaults/_overviewStyles/viewport/borderColor', property: 'border-color' },
+      { path: 'styleDefaults/_overviewStyles/viewport/backgroundColor', property: 'background-color' }
     ];
     return styleClasses;
   },
@@ -3846,6 +4735,7 @@ oj.Components.setDefaultOptions({
  * @memberof! oj.ojDiagram
  * @instance
  * @type {string}
+ * @ojformat color
  * @default null
  */
 /**
@@ -3864,6 +4754,7 @@ oj.Components.setDefaultOptions({
  * @memberof! oj.ojDiagram
  * @instance
  * @type {string}
+ * @ojformat color
  * @default null
  */
 /**
@@ -4052,6 +4943,7 @@ oj.Components.setDefaultOptions({
  * @memberof! oj.ojDiagram
  * @instance
  * @type {string}
+ * @ojformat color
  * @default null
  */
 /**
@@ -4302,411 +5194,20 @@ oj.Components.setDefaultOptions({
  * @memberof oj.ojDiagram
  */
 
+/* global __oj_diagram_metadata:false */
 /**
  * Ignore tag only needed for DVTs that have jsDoc in separate _doc.js files.
  * @ignore
  */
-(function() {
-var ojDiagramMeta = {
-  "properties": {
-    "animationOnDataChange": {
-      "type": "string",
-      "enumValues": ["auto","none"]
-    },
-    "animationOnDisplay": {
-      "type": "string",
-      "enumValues": ["auto","none"]
-    },
-    "data": {},
-    "dnd": {
-      "type": "object",
-      "properties": {
-        "drag": {
-          "type": "object",
-          "properties":{
-            "nodes":{
-              "type":"object",
-              "properties": {
-                "dataTypes": {
-                  "type": "Array<string>"
-                },
-                "drag": {},
-                "dragEnd": {},
-                "dragStart": {}
-              }
-            },
-            "ports":{
-              "type":"object",
-              "properties": {
-                "dataTypes": {
-                  "type": "Array<string>"
-                },
-                "linkStyle": {},
-                "selector": {"type":"string"},
-                "drag": {},
-                "dragEnd": {},
-                "dragStart": {}
-              }
-            }
-          }
-        },
-        "drop": {
-          "type": "object",
-          "properties":{
-            "background" :{
-              "type":"object",
-              "properties": {
-                "dataTypes": {
-                  "type": "Array<string>"
-                },
-                "dragEnter": {},
-                "dragLeave": {},
-                "dragOver": {},
-                "drop": {}
-              }              
-            },
-            "nodes" :{
-              "type":"object",
-              "properties": {
-                "dataTypes": {
-                  "type": "Array<string>"
-                },
-                "dragEnter": {},
-                "dragLeave": {},
-                "dragOver": {},
-                "drop": {}
-              }
-            },
-            "links" :{
-              "type":"object",
-              "properties": {
-                "dataTypes": {
-                  "type": "Array<string>"
-                },
-                "dragEnter": {},
-                "dragLeave": {},
-                "dragOver": {},
-                "drop": {}
-              }
-            },
-            "ports" :{
-              "type":"object",
-              "properties": {
-                "dataTypes": {
-                  "type": "Array<string>"
-                },
-                "feedbackStyle": {},
-                "selector": {"type":"string"},
-                "dragEnter": {},
-                "dragLeave": {},
-                "dragOver": {},
-                "drop": {}
-              }
-            }
-          }
-        }
-      }
-    },
-    "expanded" : {
-      "writeback": true
-    },
-    "focusRenderer": {},
-    "hiddenCategories": {
-      "type": "Array<string>",
-      "writeback": true
-    },
-    "highlightedCategories": {
-      "type": "Array<string>",
-      "writeback": true
-    },
-    "highlightMatch": {
-      "type": "string",
-      "enumValues": ["any", "all"]
-    },
-    "hoverBehavior": {
-      "type": "string",
-      "enumValues": ["dim", "none"]
-    },
-    "hoverRenderer": {},
-    "layout": {},
-    "linkHighlightMode": {
-      "type": "string",
-      "enumValues": ["linkAndNodes", "link"]
-    },
-    "linkProperties":{},
-    "maxZoom": {
-      "type": "number"
-    },
-    "minZoom": {
-      "type": "number"
-    },
-    "nodeHighlightMode": {
-      "type": "string",
-      "enumValues": ["nodeAndIncomingLinks", "nodeAndOutgoingLinks", "nodeAndLinks", "node"]
-    },
-    "nodeProperties": {},
-    "panDirection": {
-      "type": "string",
-      "enumValues": ["x", "y", "auto"]
-    },
-    "panning": {
-      "type": "string",
-      "enumValues": ["auto", "none"]
-    },
-    "promotedLinkBehavior":{
-      "type": "string",
-      "enumValues": ["none", "lazy", "full"]
-    },
-    "renderer": {},
-    "selection": {
-      "type": "Array<string>",
-      "writeback": true
-    },
-    "selectionMode": {
-      "type": "string",
-      "enumValues": ["none", "single", "multiple"]
-    },
-    "selectionRenderer": {},
-    "styleDefaults": {
-      "type": "object",
-      "properties": {
-        "animationDuration": {
-          "type": "number"
-        },
-        "hoverBehaviorDelay": {
-          "type": "number"
-        },
-        "linkDefaults": {
-          "type": "object",
-          "properties": {
-            "color": {
-              "type": "string"
-            },
-            "endConnectorType": {
-              "type": "string",
-              "enumValues": ["arrowOpen", "arrow", "arrowConcave", "circle", "rectangle", "rectangleRounded", "none"]
-            },
-            "labelStyle": {
-              "type": "object"
-            },
-            "startConnectorType": {
-              "type": "string",
-              "enumValues": ["arrowOpen", "arrow", "arrowConcave", "circle", "rectangle", "rectangleRounded", "none"]
-            },
-            "svgStyle": {
-              "type": "object"
-            },
-            "width": {
-              "type": "number"
-            }
-          }
-        },
-        "nodeDefaults": {
-          "type": "object",
-          "properties": {
-            "icon": {
-              "type": "object",
-              "properties": {
-                "borderColor": {
-                  "type": "string"
-                },
-                "borderWidth": {
-                  "type": "number"
-                },
-                "color": {
-                  "type": "string"
-                },
-                "height": {
-                  "type": "number"
-                },
-                "pattern": {
-                  "type": "string",
-                  "enumValues": ["smallChecker", "smallCrosshatch", "smallDiagonalLeft", 
-                                 "smallDiagonalRight", "smallDiamond", "smallTriangle",
-                                 "largeChecker", "largeCrosshatch", "largeDiagonalLeft",
-                                 "largeDiagonalRight", "largeDiamond", "largeTriangle", "none"]
-                },
-                "shape": {
-                  "type": "string"
-                },
-                "source": {
-                  "type": "string"
-                },
-                "sourceHover": {
-                  "type": "string"
-                },
-                "sourceHoverSelected": {
-                  "type": "string"
-                },
-                "sourceSelected": {
-                  "type": "string"
-                },
-                "svgStyle": {
-                  "type": "object"
-                },
-                "width": {
-                  "type": "number"
-                }
-              }
-            },
-            "labelStyle": {
-              "type": "object"
-            },
-            "showDisclosure": {
-              "type": "string",
-              "enumValues": ["on", "off"]
-            }
-          }
-        },
-        "promotedLink": {
-          "type": "object",
-          "properties": {
-            "color": {
-              "type": "string"
-            },
-            "endConnectorType": {
-              "type": "string",
-              "enumValues": ["arrowOpen", "arrow", "arrowConcave", "circle", "rectangle", "rectangleRounded", "none"]
-            },
-            "startConnectorType": {
-              "type": "string",
-              "enumValues": ["arrowOpen", "arrow", "arrowConcave", "circle", "rectangle", "rectangleRounded", "none"]
-            },
-            "svgStyle": {
-              "type": "object"
-            },
-            "width": {
-              "type": "number"
-            }
-          }
-        }
-      }
-    },
-    "tooltip": {
-      "type": "object",
-      "properties": {
-        "renderer": {}
-      }
-    },
-    "touchResponse": {
-      "type": "string",
-      "enumValues": ["touchStart", "auto"]
-    },
-    "translations": {
-      "type": "Object",
-      "properties": {
-        "componentName": {
-          "type": "string",
-          "value": "Diagram"
-        },
-        "labelAndValue": {
-          "type": "string",
-          "value": "{0}: {1}"
-        },
-        "labelClearSelection": {
-          "type": "string",
-          "value": "Clear Selection"
-        },
-        "labelCountWithTotal": {
-          "type": "string",
-          "value": "{0} of {1}"
-        },
-        "labelDataVisualization": {
-          "type": "string",
-          "value": "Data Visualization"
-        },
-        "labelInvalidData": {
-          "type": "string",
-          "value": "Invalid data"
-        },
-        "labelNoData": {
-          "type": "string",
-          "value": "No data to display"
-        },
-        "promotedLink": {
-          "type": "string",
-          "value": "{0} link"
-        },
-        "promotedLinkAriaDesc": {
-          "type": "string",
-          "value": "Indirect"
-        },
-        "promotedLinks": {
-          "type": "string",
-          "value": "{0} links"
-        },
-        "stateCollapsed": {
-          "type": "string",
-          "value": "Collapsed"
-        },
-        "stateDrillable": {
-          "type": "string",
-          "value": "Drillable"
-        },
-        "stateExpanded": {
-          "type": "string",
-          "value": "Expanded"
-        },
-        "stateHidden": {
-          "type": "string",
-          "value": "Hidden"
-        },
-        "stateIsolated": {
-          "type": "string",
-          "value": "Isolated"
-        },
-        "stateMaximized": {
-          "type": "string",
-          "value": "Maximized"
-        },
-        "stateMinimized": {
-          "type": "string",
-          "value": "Minimized"
-        },
-        "stateSelected": {
-          "type": "string",
-          "value": "Selected"
-        },
-        "stateUnselected": {
-          "type": "string",
-          "value": "Unselected"
-        },
-        "stateVisible": {
-          "type": "string",
-          "value": "Visible"
-        }
-      }
-    },
-    "zooming": {
-      "type": "string",
-      "enumValues": ["auto", "none"]
-    },
-    "zoomRenderer": {}
-  },
-  "events": {
-    "beforeCollapse": {},
-    "beforeExpand": {},
-    "collapse": {},
-    "expand": {}
-  },
-  "methods": {
-    "getContextByNode": {},
-    "getLink": {},
-    "getLinkCount": {},
-    "getNode": {},
-    "getNodeCount": {},
-    "getPromotedLink": {}
-  },
-  "extension": {
-    _WIDGET_NAME: "ojDiagram"
-  }
-};
-oj.CustomElementBridge.registerMetadata('oj-diagram', 'dvtBaseComponent', ojDiagramMeta);
+(function () {
+  __oj_diagram_metadata.extension._WIDGET_NAME = 'ojDiagram';
+  oj.CustomElementBridge.registerMetadata('oj-diagram', 'dvtBaseComponent', __oj_diagram_metadata);
 // Get the combined meta of superclass which contains a shape parse function generator
-var dvtMeta = oj.CustomElementBridge.getMetadata('oj-diagram');
-oj.CustomElementBridge.register('oj-diagram', {
-  'metadata': dvtMeta,
-  'parseFunction': dvtMeta['extension']._DVT_PARSE_FUNC({'style-defaults.node-defaults.icon.shape': true})
-});
-})();
+  var dvtMeta = oj.CustomElementBridge.getMetadata('oj-diagram');
+  oj.CustomElementBridge.register('oj-diagram', {
+    metadata: dvtMeta,
+    parseFunction: dvtMeta.extension._DVT_PARSE_FUNC({ 'style-defaults.node-defaults.icon.shape': true })
+  });
+}());
+
 });

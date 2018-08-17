@@ -3,7 +3,7 @@
  * All rights reserved.
  */
 
-define('impl/logger',[], function () {
+define('persist/impl/logger',[], function () {
   'use strict';
 
   /**
@@ -242,7 +242,7 @@ define('impl/logger',[], function () {
  * All rights reserved.
  */
 
-define('persistenceUtils',['./impl/logger'], function (logger) {
+define('persist/persistenceUtils',['./impl/logger'], function (logger) {
   'use strict';
   
   /**
@@ -775,7 +775,7 @@ define('persistenceUtils',['./impl/logger'], function (logger) {
  * All rights reserved.
  */
 
-define('impl/PersistenceXMLHttpRequest',['../persistenceUtils', './logger'], function (persistenceUtils, logger) {
+define('persist/impl/PersistenceXMLHttpRequest',['../persistenceUtils', './logger'], function (persistenceUtils, logger) {
   'use strict';
 
   /**
@@ -1411,7 +1411,7 @@ define('impl/PersistenceXMLHttpRequest',['../persistenceUtils', './logger'], fun
  * All rights reserved.
  */
 
-define('persistenceStoreManager',['./impl/logger'], function (logger) {
+define('persist/persistenceStoreManager',['./impl/logger'], function (logger) {
   'use strict';
   
   /**
@@ -1630,7 +1630,7 @@ define('persistenceStoreManager',['./impl/logger'], function (logger) {
  * All rights reserved.
  */
 
-define('impl/defaultCacheHandler',['../persistenceUtils', '../persistenceStoreManager', './logger'],
+define('persist/impl/defaultCacheHandler',['../persistenceUtils', '../persistenceStoreManager', './logger'],
   function (persistenceUtils, persistenceStoreManager, logger) {
   'use strict';
 
@@ -2091,7 +2091,7 @@ define('impl/defaultCacheHandler',['../persistenceUtils', '../persistenceStoreMa
  * All rights reserved.
  */
 
-define('impl/PersistenceSyncManager',['require', '../persistenceUtils', '../persistenceStoreManager', './defaultCacheHandler', './logger'],
+define('persist/impl/PersistenceSyncManager',['require', '../persistenceUtils', '../persistenceStoreManager', './defaultCacheHandler', './logger'],
   function (require, persistenceUtils, persistenceStoreManager, cacheHandler, logger) {
     'use strict';
 
@@ -2634,7 +2634,7 @@ define('impl/PersistenceSyncManager',['require', '../persistenceUtils', '../pers
  * All rights reserved.
  */
 
-define('impl/OfflineCache',["./defaultCacheHandler", "./logger"], function (cacheHandler, logger) {
+define('persist/impl/OfflineCache',["./defaultCacheHandler", "./logger"], function (cacheHandler, logger) {
   'use strict';
 
   /**
@@ -3157,7 +3157,7 @@ define('impl/OfflineCache',["./defaultCacheHandler", "./logger"], function (cach
  * All rights reserved.
  */
 
-define('impl/offlineCacheManager',['../persistenceStoreManager', './OfflineCache', './logger'],
+define('persist/impl/offlineCacheManager',['../persistenceStoreManager', './OfflineCache', './logger'],
   function (persistenceStoreManager, OfflineCache, logger) {
     'use strict';
 
@@ -3813,14 +3813,14 @@ define('impl/offlineCacheManager',['../persistenceStoreManager', './OfflineCache
   self.fetch.polyfill = true
 })(typeof self !== 'undefined' ? self : this);
 
-define("impl/fetch", function(){});
+define("persist/impl/fetch", function(){});
 
 /**
  * Copyright (c) 2017, Oracle and/or its affiliates.
  * All rights reserved.
  */
 
-define('persistenceManager',['./impl/PersistenceXMLHttpRequest', './impl/PersistenceSyncManager', './impl/offlineCacheManager', './impl/logger', './impl/fetch'],
+define('persist/persistenceManager',['./impl/PersistenceXMLHttpRequest', './impl/PersistenceSyncManager', './impl/offlineCacheManager', './impl/logger', './impl/fetch'],
   function (PersistenceXMLHttpRequest, PersistenceSyncManager, offlineCacheManager, logger) {
     'use strict';
 

@@ -10,8 +10,8 @@
   @include module-include-once("alta.android.formlayout.element") {
 
     .oj-form > .oj-flex {
-        padding-left: $formControlLabelInlineGutter;
-        padding-right: $formControlLabelInlineGutter;
+      padding-left: $formControlLabelInlineGutter;
+      padding-right: $formControlLabelInlineGutter;
     }
   }
 }

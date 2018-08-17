@@ -12,6 +12,46 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
        function(oj, $)
 {
 
+var __oj_progress_metadata = 
+{
+  "properties": {
+    "max": {
+      "type": "number",
+      "value": 100
+    },
+    "translations": {
+      "type": "object",
+      "value": {},
+      "properties": {
+        "ariaIndeterminateProgressText": {
+          "type": "string"
+        }
+      }
+    },
+    "type": {
+      "type": "string",
+      "enumValues": [
+        "bar",
+        "circle"
+      ],
+      "value": "bar"
+    },
+    "value": {
+      "type": "number",
+      "writeback": true,
+      "value": 0
+    }
+  },
+  "methods": {
+    "refresh": {},
+    "setProperty": {},
+    "getProperty": {},
+    "setProperties": {},
+    "getNodeBySubId": {},
+    "getSubIdByNode": {}
+  },
+  "extension": {}
+};
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
@@ -560,40 +600,11 @@ oj.__registerWidget("oj.ojProgressbar",  $['oj']['baseComponent'], {
 
 }( ));
 
-(function() {
-var ojProgressMeta = {
-  "properties": {
-    "max": {
-      "type": "number"
-    },
-    "type": {
-      "type": "string",
-      "enumValues": ["bar", "circle"]
-    },
-    "radius": {
-      "type": "number"
-    },
-    "translations": {
-      "type": "Object",
-      "properties": {
-        "ariaIndeterminateProgressText": {
-          "type": "string",
-          "value": "In Progress"
-        }
-      }
-    },
-    "value": {
-      "type": "number",
-      "writeback": true
-    }
-  },
-  "methods": {},
-  "extension": {
-    _WIDGET_NAME: "ojProgressbar"
-  }
-};
-oj.CustomElementBridge.registerMetadata('oj-progress', 'baseComponent', ojProgressMeta);
-oj.CustomElementBridge.register('oj-progress', {'metadata': oj.CustomElementBridge.getMetadata('oj-progress')});
-})();
+/* global __oj_progress_metadata:false */
+(function () {
+  __oj_progress_metadata.extension._WIDGET_NAME = 'ojProgressbar';
+  oj.CustomElementBridge.registerMetadata('oj-progress', 'baseComponent', __oj_progress_metadata);
+  oj.CustomElementBridge.register('oj-progress', { metadata: oj.CustomElementBridge.getMetadata('oj-progress') });
+}());
 
 });

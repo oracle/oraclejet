@@ -7,7 +7,207 @@
 define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojs/ojkeyset', 'ojdnd'],
     function(oj, $)
 {
+ 
 
+var __oj_tree_view_metadata = 
+{
+  "properties": {
+    "currentItem": {
+      "type": "any",
+      "writeback": true,
+      "readOnly": true
+    },
+    "data": {
+      "type": "oj.TreeDataSource"
+    },
+    "dnd": {
+      "type": "object",
+      "properties": {
+        "drag": {
+          "type": "object",
+          "properties": {
+            "items": {
+              "type": "object",
+              "properties": {
+                "dataTypes": {
+                  "type": "string|Array<string>"
+                },
+                "dragStart": {
+                  "type": "function"
+                },
+                "drag": {
+                  "type": "function"
+                },
+                "dragEnd": {
+                  "type": "function"
+                }
+              }
+            }
+          }
+        },
+        "drop": {
+          "type": "object",
+          "properties": {
+            "items": {
+              "type": "object",
+              "properties": {
+                "dataTypes": {
+                  "type": "string|Array<string>"
+                },
+                "dragEnter": {
+                  "type": "function"
+                },
+                "dragOver": {
+                  "type": "function"
+                },
+                "dragLeave": {
+                  "type": "function"
+                },
+                "drop": {
+                  "type": "function"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "expanded": {
+      "type": "KeySet",
+      "writeback": true,
+      "value": "new ExpandedKeySet()"
+    },
+    "item": {
+      "type": "object",
+      "properties": {
+        "focusable": {
+          "type": "function",
+          "properties": {
+            "componentElement": {
+              "type": "Element"
+            },
+            "data": {
+              "type": "D"
+            },
+            "depth": {
+              "type": "number"
+            },
+            "index": {
+              "type": "number"
+            },
+            "key": {
+              "type": "K"
+            },
+            "leaf": {
+              "type": "boolean"
+            },
+            "parentElement": {
+              "type": "Element"
+            },
+            "parentKey": {
+              "type": "K"
+            }
+          }
+        },
+        "renderer": {
+          "type": "function",
+          "properties": {
+            "componentElement": {
+              "type": "Element"
+            },
+            "data": {
+              "type": "D"
+            },
+            "depth": {
+              "type": "number"
+            },
+            "index": {
+              "type": "number"
+            },
+            "key": {
+              "type": "K"
+            },
+            "leaf": {
+              "type": "boolean"
+            },
+            "parentElement": {
+              "type": "Element"
+            },
+            "parentKey": {
+              "type": "K"
+            }
+          }
+        },
+        "selectable": {
+          "type": "function",
+          "properties": {
+            "componentElement": {
+              "type": "Element"
+            },
+            "data": {
+              "type": "D"
+            },
+            "depth": {
+              "type": "number"
+            },
+            "index": {
+              "type": "number"
+            },
+            "key": {
+              "type": "K"
+            },
+            "leaf": {
+              "type": "boolean"
+            },
+            "parentElement": {
+              "type": "Element"
+            },
+            "parentKey": {
+              "type": "K"
+            }
+          }
+        }
+      }
+    },
+    "selection": {
+      "type": "Array<any>",
+      "writeback": true,
+      "value": []
+    },
+    "selectionMode": {
+      "type": "string",
+      "enumValues": [
+        "multiple",
+        "none",
+        "single"
+      ],
+      "value": "none"
+    },
+    "translations": {
+      "type": "object",
+      "value": {}
+    }
+  },
+  "methods": {
+    "getContextByNode": {},
+    "refresh": {},
+    "setProperty": {},
+    "getProperty": {},
+    "setProperties": {},
+    "getNodeBySubId": {},
+    "getSubIdByNode": {}
+  },
+  "events": {
+    "ojAnimateEnd": {},
+    "ojAnimateStart": {},
+    "ojBeforeCollapse": {},
+    "ojBeforeCurrentItem": {},
+    "ojBeforeExpand": {},
+    "ojCollapse": {},
+    "ojExpand": {}
+  },
+  "extension": {}
+};
 /**
  * @ojcomponent oj.ojTreeView
  * @augments oj.baseComponent
@@ -260,7 +460,6 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojs/o
        * @expose
        * @memberof! oj.ojTreeView
        * @type {Object}
-       * @default {"drag": null, "drop": null}
        * @instance
        */
       dnd: {
@@ -1946,7 +2145,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojs/o
         });
       });
 
-      var dragDataTypes = dragOptions['dataTypes'] || [];
+      var optionTypes = dragOptions.dataTypes;
+      var dragDataTypes = (typeof optionTypes === 'string') ? [optionTypes] : (optionTypes || []);
       for (var i = 0; i < dragDataTypes.length; i++)
       {
         dataTransfer.setData(dragDataTypes[i], JSON.stringify(dragData));
@@ -1988,7 +2188,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojs/o
     _handleDropTargetEvent: function(event, eventType)
     {
       var dropOptions = this._getDropOptions();
-      var dropDataTypes = dropOptions['dataTypes'] || [];
+      var optionTypes = dropOptions.dataTypes;
+      var dropDataTypes = (typeof optionTypes === 'string') ? [optionTypes] : (optionTypes || []);
       var callback = dropOptions[eventType];
       var targetItem = $(event.target).closest('.oj-treeview-item');
 
@@ -2374,91 +2575,11 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojs/o
  * @memberof oj.ojTreeView
  */
 
-(function() {
-  var ojTreeViewMeta = {
-    'properties': {
-      'currentItem': {
-        'type': 'any',
-        'readOnly': true,
-        'writeback': true
-      },
-      'data': {},
-      'dnd': {
-        'type': 'object',
-        'properties': {
-          'drag': {
-            'type': 'object',
-            'properties':{
-              'items':{
-                'type':'object',
-                'properties': {
-                  'dataTypes': {
-                    'type': 'Array<string>'
-                  },
-                  'drag': {},
-                  'dragEnd': {},
-                  'dragStart': {}
-                }
-              }
-            }
-          },
-          'drop': {
-            'type': 'object',
-            'properties':{
-              'items' :{
-                'type':'object',
-                'properties': {
-                  'dataTypes': {
-                    'type': 'Array<string>'
-                  },
-                  'dragEnter': {},
-                  'dragLeave': {},
-                  'dragOver': {},
-                  'drop': {}
-                }
-              }
-            }
-          }
-        }
-      },
-      'expanded': {
-        'writeback': true
-      },
-      'item': {
-        'type': 'object',
-        'properties': {
-          'focusable': {},
-          'renderer': {},
-          'selectable': {}
-        }
-      },
-      'selection': {
-        'type': 'Array<object>',
-        'writeback': true
-      },
-      'selectionMode': {
-        'type': 'string',
-        'enumValues': ['none', 'single', 'multiple']
-      }
-    },
-    'events': {
-      'animateEnd': {},
-      'animateStart': {},
-      'beforeCollapse': {},
-      'beforeCurrentItem': {},
-      'beforeExpand': {},
-      'collapse': {},
-      'expand': {}
-    },
-    'methods': {
-      'getContextByNode': {}
-    },
-    'extension': {
-      _WIDGET_NAME: 'ojTreeView'
-    }
-  };
-  oj.CustomElementBridge.registerMetadata('oj-tree-view', 'baseComponent', ojTreeViewMeta);
-  oj.CustomElementBridge.register('oj-tree-view', {'metadata': oj.CustomElementBridge.getMetadata('oj-tree-view')});
-})();
+/* global __oj_tree_view_metadata:false */
+(function () {
+  __oj_tree_view_metadata.extension._WIDGET_NAME = 'ojTreeView';
+  oj.CustomElementBridge.registerMetadata('oj-tree-view', 'baseComponent', __oj_tree_view_metadata);
+  oj.CustomElementBridge.register('oj-tree-view', { metadata: oj.CustomElementBridge.getMetadata('oj-tree-view') });
+}());
 
 });

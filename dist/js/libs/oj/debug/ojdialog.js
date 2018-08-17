@@ -9,8 +9,173 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
         'jqueryui-amd/widgets/mouse'],
        function(oj, $)
 {
+//%COMPONENT_METADATA%
 
-
+var __oj_dialog_metadata = 
+{
+  "properties": {
+    "cancelBehavior": {
+      "type": "string",
+      "enumValues": [
+        "escape",
+        "icon",
+        "none"
+      ],
+      "value": "icon"
+    },
+    "dragAffordance": {
+      "type": "string",
+      "enumValues": [
+        "none",
+        "title-bar"
+      ],
+      "value": "title-bar"
+    },
+    "initialVisibility": {
+      "type": "string",
+      "enumValues": [
+        "hide",
+        "show"
+      ],
+      "value": "hide"
+    },
+    "modality": {
+      "type": "string",
+      "enumValues": [
+        "modal",
+        "modeless"
+      ],
+      "value": "modal"
+    },
+    "position": {
+      "type": "object",
+      "properties": {
+        "at": {
+          "type": "object",
+          "properties": {
+            "horizontal": {
+              "type": "string",
+              "enumValues": [
+                "center",
+                "end",
+                "left",
+                "right",
+                "start"
+              ],
+              "value": "center"
+            },
+            "vertical": {
+              "type": "string",
+              "enumValues": [
+                "bottom",
+                "center",
+                "top"
+              ],
+              "value": "center"
+            }
+          }
+        },
+        "collision": {
+          "type": "string",
+          "enumValues": [
+            "fit",
+            "flip",
+            "flipfit",
+            "none"
+          ],
+          "value": "fit"
+        },
+        "my": {
+          "type": "object",
+          "properties": {
+            "horizontal": {
+              "type": "string",
+              "enumValues": [
+                "center",
+                "end",
+                "left",
+                "right",
+                "start"
+              ],
+              "value": "center"
+            },
+            "vertical": {
+              "type": "string",
+              "enumValues": [
+                "bottom",
+                "center",
+                "top"
+              ],
+              "value": "center"
+            }
+          }
+        },
+        "of": {
+          "type": "string|object",
+          "value": "window"
+        },
+        "offset": {
+          "type": "object",
+          "properties": {
+            "x": {
+              "type": "number",
+              "value": 0
+            },
+            "y": {
+              "type": "number",
+              "value": 0
+            }
+          }
+        }
+      }
+    },
+    "resizeBehavior": {
+      "type": "string",
+      "enumValues": [
+        "none",
+        "resizable"
+      ],
+      "value": "resizable"
+    },
+    "role": {
+      "type": "string",
+      "value": "dialog"
+    },
+    "translations": {
+      "type": "object",
+      "value": {},
+      "properties": {
+        "labelCloseIcon": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "methods": {
+    "close": {},
+    "isOpen": {},
+    "open": {},
+    "refresh": {},
+    "setProperty": {},
+    "getProperty": {},
+    "setProperties": {},
+    "getNodeBySubId": {},
+    "getSubIdByNode": {}
+  },
+  "events": {
+    "ojBeforeClose": {},
+    "ojBeforeOpen": {},
+    "ojClose": {},
+    "ojFocus": {},
+    "ojOpen": {},
+    "ojResize": {},
+    "ojResizeStart": {},
+    "ojResizeStop": {},
+    "ojAnimateStart": {},
+    "ojAnimateEnd": {}
+  },
+  "extension": {}
+};
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
@@ -317,26 +482,22 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
     options:
     {
         /**
-         * Specifies the cancel behavior of the dialog. The following are valid values:
+         * Specifies the cancel behavior of the dialog.
+         * The default value depends on the theme.
+         * In the alta-web theme, the default is <code class="prettyprint">"icon"</code>,
+         * and in alta-android, alta-ios and alta-windows themes, the
+         * default is <code class="prettyprint">"none"</code>.
          *
-         * <ul>
-         * <li>
-         * <code class="prettyprint">"icon"</code> - (the default) (a) a close icon will automatically be created, and (b) the dialog will close when it has focus and user presses the escape (ESC) key.
-         * </li>
-         * <li>
-         * <code class="prettyprint">"none"</code> - no actions will be associated with the escape key.
-         * </li>
-         * <li>
-         * <code class="prettyprint">"escape"</code> -  the dialog will close when it has focus and user presses the escape (ESC) key. A close icon will not automatically be created.
-         * </li>
-         * </ul>
-         *
-         * Note that the cancelBehavior applies to both automatic and user-defined headers. So by default, a user-defined header will have a system generated close icon.
+         * <p> Note that the cancelBehavior applies to both automatic and user-defined headers.
+         * So by default, a user-defined header in the alta-web theme will have a system generated close icon.
          * @expose
          * @memberof oj.ojDialog
          * @instance
          * @type {string}
          * @default "icon"
+         * @ojvalue {string} "icon" A close icon will automatically be created. The dialog will close when it has focus and user presses the escape (ESC) key.
+         * @ojvalue {string} "escape" The dialog will close when it has focus and user presses the escape (ESC) key. A close icon will not be created.
+         * @ojvalue {string} "none" A close icon will not be created. No actions will be associated with the escape key.
          *
          * @example <caption>Initialize the dialog to disable the default <code class="prettyprint">cancelBehavior</code></caption>
          * &lt;oj-dialog cancel-behavior="none" &gt;&lt;/oj-dialog&gt;
@@ -355,14 +516,18 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
       cancelBehavior: 'icon',
         /**
          * Specifies the drag affordance.
-         * If set to <code class="prettyprint">"title-bar"</code> (the default) the dialog will be draggable by the title bar.
-         * If <code class="prettyprint">"none"</code>, the dialog will not be draggable.
+         * The default value depends on the theme.
+         * In the alta-web theme, the default is <code class="prettyprint">"title-bar"</code>,
+         * and in alta-android, alta-ios and alta-windows themes, the
+         * default is <code class="prettyprint">"none"</code>.
          *
          * @expose
          * @memberof oj.ojDialog
          * @instance
          * @type {string}
          * @default "title-bar"
+         * @ojvalue {string} "title-bar" The dialog will be draggable by the title bar.
+         * @ojvalue {string} "none" The dialog will not be draggable.
          *
          * @example <caption>Initialize the dialog to disable dragging <code class="prettyprint">dragAffordance</code></caption>
          * &lt;oj-dialog drag-affordance="none" &gt;&lt;/oj-dialog&gt;
@@ -376,16 +541,15 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
          */
       dragAffordance: 'title-bar',
         /**
-         * <p> Set the initial visibility of the dialog.
-         * If set to <code class="prettyprint">"show"</code>, the dialog will automatically open upon initialization.
-         * If <code class="prettyprint">"hide"</code>, the dialog will stay hidden until
-         * the <a href="#method-open"><code class="prettyprint">open()</code></a> method is called.
+         * Set the initial visibility of the dialog.
          *
          * @expose
          * @memberof oj.ojDialog
          * @instance
          * @type {string}
          * @default "hide"
+         * @ojvalue {string} "hide" The dialog will stay hidden until the <a href="#open"><code class="prettyprint">open()</code></a> method is called.
+         * @ojvalue {string} "show" The dialog will automatically open upon initialization.
          *
          * @example <caption>Initialize the dialog with the <code class="prettyprint">initialVisibility</code> property:</caption>
          * &lt;oj-dialog initial-visibility="show" &gt;&lt;/oj-dialog&gt;
@@ -400,21 +564,15 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
       initialVisibility: 'hide',
         /**
          *
-         * The modality of the dialog. Valid values are:
-         * <ul>
-         * <li>
-         * <code class="prettyprint">"modal"</code> - (the default) The dialog is modal. Interactions with other page elements are disabled. Modal dialogs overlay other page elements.
-         * </li>
-         * <li>
-         * <code class="prettyprint">"modeless"</code> - defines a modeless dialog.
-         * </li>
-         * </ul>
+         * Defines the modality of the dialog.
          *
          * @expose
          * @memberof oj.ojDialog
          * @instance
          * @default "modal"
          * @type {string}
+         * @ojvalue {string} "modal" The dialog is modal. Interactions with other page elements are disabled. Modal dialogs overlay other page elements.
+         * @ojvalue {string} "modeless" Defines a modeless dialog.
          *
          * @example <caption>Initialize the dialog to a specific modality <code class="prettyprint">modality</code></caption>
          * &lt;oj-dialog modality="modeless" &gt;&lt;/oj-dialog&gt;
@@ -443,7 +601,6 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
            *
            * @expose
            * @memberof oj.ojDialog
-           * @default {"my":{"vertical" :"center", "horizontal": "center"}, "at": {"vertical": "center", "horizontal": "center"}, "of": "window", "collision": "fit", "offset": {"x": 0, "y": "0"}}
            * @instance
            * @type {Object}
            * @ojsignature { target: "Type",
@@ -493,6 +650,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
                  * @ojvalue {string} "left"
                  * @ojvalue {string} "center"
                  * @ojvalue {string} "right"
+                 * @default "center"
                  */
           horizontal: 'center',
                 /**
@@ -505,6 +663,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
                  * @ojvalue {string} "top"
                  * @ojvalue {string} "center"
                  * @ojvalue {string} "bottom"
+                 * @default "center"
                  */
           vertical: 'center'
         },
@@ -526,6 +685,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
                  * @alias position.offset.x
                  * @name position.offset.x
                  * @type {number}
+                 * @default 0
                  */
           x: 0,
                 /**
@@ -536,6 +696,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
                  * @alias position.offset.y
                  * @name position.offset.y
                  * @type {number}
+                 * @default 0
                  */
           y: 0
         },
@@ -563,6 +724,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
                  * @ojvalue {string} "left"
                  * @ojvalue {string} "center"
                  * @ojvalue {string} "right"
+                 * @default "center"
                  */
           horizontal: 'center',
                 /**
@@ -575,6 +737,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
                  * @ojvalue {string} "top"
                  * @ojvalue {string} "center"
                  * @ojvalue {string} "bottom"
+                 * @default "center"
                  */
           vertical: 'center'
         },
@@ -597,6 +760,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
                * @alias position.of
                * @name position.of
                * @type {string|{x: number, y: number}}
+               * @default "window"
                */
         of: 'window',
               /**
@@ -616,6 +780,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
                *  on whichever side allows more of the element to be visible. Then the fit logic
                *  is applied to ensure as much of the element is visible as possible.
                * @ojvalue {string} "none" no collision detection.
+               * @default "fit"
                */
         collision: 'fit',
               // Ensure the titlebar is always visible
@@ -628,13 +793,18 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
       },
         /**
          *
-         * The resizeBehavior of the dialog. "resizable" (default) makes the dialog resizable.
-         * "none" disables dialog resizability.
+         * Defines the resizeBehavior of the dialog.
+         * The default value depends on the theme.
+         * In the alta-web theme, the default is <code class="prettyprint">"resizable"</code>,
+         * and in alta-android, alta-ios and alta-windows themes, the
+         * default is <code class="prettyprint">"none"</code>.
          *
          * @expose
          * @memberof oj.ojDialog
          * @instance
          * @type {string}
+         * @ojvalue {string} "resizable" Thie dialog will be interactively resizable.
+         * @ojvalue {string} "none" The dialog will not be interactively resizable.
          * @default "resizable"
          *
          * @example <caption>Initialize the dialog to a specific resizeBehavior <code class="prettyprint">resizeBehavior</code></caption>
@@ -2439,6 +2609,11 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
      *       <td><p> Class automatically generated on the default (body) slot.</td>
      *     </tr>
      *     <tr>
+     *       <td>oj-dialog-content</td>
+     *       <td><p> Class automatically generated that wraps body content. Applications can use this class to apply style properties to body content.</td>
+     *       </td>
+     *     </tr>
+     *     <tr>
      *       <td>oj-dialog-footer</td>
      *       <td><p> Class automatically generated on the footer slot.</td>
      *     </tr>
@@ -3737,112 +3912,11 @@ $.widget("oj.ojResizable", {
 
 }());
 
+/* global __oj_dialog_metadata:false */
 (function () {
-  var ojDialogMeta = {
-    "properties" : {
-      "cancelBehavior" : {
-        "type" : "string",
-        "enumValues" : ["icon", "escape", "none"]
-      },
-      "dragAffordance" : {
-        "type" : "string",
-        "enumValues" : ["title-bar", "none"]
-      },
-      "initialVisibility" : {
-        "type" : "string",
-        "enumValues" : ["hide", "show"]
-      },
-      "modality" : {
-        "type" : "string",
-        "enumValues" : ["modal", "modeless"]
-      },
-      "position" : {
-        "type" : "object",
-        "properties" : {
-          "my" : {
-            "type" : "object|string",
-            "properties" : {
-              "horizontal" : {
-                "type" : "string",
-                "enumValues" : ["start", "end", "left", "center", "right"]
-              },
-              "vertical" : {
-                "type" : "string",
-                "enumValues" : ["top", "center", "bottom"]
-              }
-            }
-          },
-          "at" : {
-            "type" : "object|string",
-            "properties" : {
-              "horizontal" : {
-                "type" : "string",
-                "enumValues" : ["start", "end", "left", "center", "right"]
-              },
-              "vertical" : {
-                "type" : "string",
-                "enumValues" : ["top", "center", "bottom"]
-              }
-            }
-          },
-          "offset" : {
-            "type" : "object",
-            "properties" : {
-              "x" : {
-                "type" : "number"
-              },
-              "y" : {
-                "type" : "number"
-              }
-            }
-          },
-          "of" : {
-            "type" : "string|{x:number, y:number}"
-          },
-          "collision" : {
-            "type" : "string",
-            "enumValues" : ["flip", "fit", "flipfit", "none"]
-          }
-        }
-      },
-      "resizeBehavior" : {
-        "type" : "string",
-        "enumValues" : ["resizable", "none"]
-      },
-      "translations": {
-        "type": "Object",
-        "properties": {
-          "labelCloseIcon": {
-            "type": "string",
-            "value": "Close"
-          }
-        }
-      }
-    },
-    "events" : {
-      "animateEnd" : {},
-      "animateStart" : {},
-      "beforeClose" : {},
-      "beforeOpen" : {},
-      "close" : {},
-      "open" : {},
-      "focus" : {},
-      "resize" : {},
-      "resizeStart" : {},
-      "resizeStop" : {}
-    },
-    "methods" : {
-      "close" : {},
-      "isOpen" : {},
-      "open" : {},
-      "refresh" : {}
-    },
-    "extension" : {
-      _WIDGET_NAME : "ojDialog"
-    }
-  };
-  oj.CustomElementBridge.registerMetadata('oj-dialog', 'baseComponent', ojDialogMeta);
-  oj.CustomElementBridge.register('oj-dialog', {'metadata' : oj.CustomElementBridge.getMetadata('oj-dialog')});
-})();
+  __oj_dialog_metadata.extension._WIDGET_NAME = 'ojDialog';
+  oj.CustomElementBridge.registerMetadata('oj-dialog', 'baseComponent', __oj_dialog_metadata);
+  oj.CustomElementBridge.register('oj-dialog', { metadata: oj.CustomElementBridge.getMetadata('oj-dialog') });
+}());
 
 });

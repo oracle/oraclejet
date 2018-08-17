@@ -7,7 +7,841 @@
 define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'ojs/ojoptgroup', 'ojs/ojoption', 'promise', 'ojs/ojlistdataproviderview'], 
        function(oj, $, compCore, validation)
 {
-
+//%COMPONENT_METADATA%
+var __oj_combobox_many_metadata = 
+{
+  "properties": {
+    "asyncValidators": {
+      "type": "Array<Object>",
+      "value": []
+    },
+    "converter": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "options": {
+          "type": "object"
+        }
+      }
+    },
+    "describedBy": {
+      "type": "string"
+    },
+    "disabled": {
+      "type": "boolean",
+      "value": false
+    },
+    "displayOptions": {
+      "type": "object",
+      "properties": {
+        "converterHint": {
+          "type": "Array<string>|string",
+          "value": [
+            "placeholder",
+            "notewindow"
+          ]
+        },
+        "helpInstruction": {
+          "type": "Array<string>|string",
+          "value": [
+            "notewindow"
+          ]
+        },
+        "messages": {
+          "type": "Array<string>|string",
+          "value": [
+            "inline"
+          ]
+        },
+        "validatorHint": {
+          "type": "Array<string>|string",
+          "value": [
+            "notewindow"
+          ]
+        }
+      }
+    },
+    "help": {
+      "type": "object",
+      "properties": {
+        "instruction": {
+          "type": "string"
+        }
+      }
+    },
+    "helpHints": {
+      "type": "object",
+      "properties": {
+        "definition": {
+          "type": "string",
+          "value": ""
+        },
+        "source": {
+          "type": "string",
+          "value": ""
+        }
+      }
+    },
+    "labelHint": {
+      "type": "string",
+      "value": ""
+    },
+    "messagesCustom": {
+      "type": "Array<Object>",
+      "writeback": true,
+      "value": []
+    },
+    "minLength": {
+      "type": "number",
+      "value": 0
+    },
+    "optionRenderer": {
+      "type": "function"
+    },
+    "options": {
+      "type": "Array<(oj.Option|oj.Optgroup)>|oj.DataProvider<oj.Option>"
+    },
+    "optionsKeys": {
+      "type": "object",
+      "properties": {
+        "childKeys": {
+          "type": "object",
+          "properties": {
+            "label": {
+              "type": "string"
+            },
+            "value": {
+              "type": "string"
+            },
+            "children": {
+              "type": "string"
+            },
+            "childKeys": {
+              "type": "object"
+            }
+          }
+        },
+        "children": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        }
+      }
+    },
+    "pickerAttributes": {
+      "type": "object"
+    },
+    "placeholder": {
+      "type": "string"
+    },
+    "rawValue": {
+      "type": "string",
+      "writeback": true,
+      "readOnly": true
+    },
+    "required": {
+      "type": "boolean",
+      "value": false
+    },
+    "translations": {
+      "type": "object",
+      "value": {},
+      "properties": {
+        "filterFurther": {
+          "type": "string"
+        },
+        "noMatchesFound": {
+          "type": "string"
+        },
+        "required": {
+          "type": "object",
+          "properties": {
+            "hint": {
+              "type": "string"
+            },
+            "messageDetail": {
+              "type": "string"
+            },
+            "messageSummary": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "valid": {
+      "type": "string",
+      "writeback": true,
+      "enumValues": [
+        "invalidHidden",
+        "invalidShown",
+        "pending",
+        "valid"
+      ],
+      "readOnly": true
+    },
+    "validators": {
+      "type": "Array",
+      "value": []
+    },
+    "value": {
+      "type": "Array<any>",
+      "writeback": true
+    },
+    "valueOptions": {
+      "type": "Array<Object>",
+      "writeback": true
+    }
+  },
+  "methods": {
+    "refresh": {},
+    "validate": {},
+    "reset": {},
+    "showMessages": {},
+    "setProperty": {},
+    "getProperty": {},
+    "setProperties": {},
+    "getNodeBySubId": {},
+    "getSubIdByNode": {}
+  },
+  "events": {
+    "ojAnimateStart": {},
+    "ojAnimateEnd": {}
+  },
+  "extension": {}
+};
+var __oj_combobox_one_metadata = 
+{
+  "properties": {
+    "asyncValidators": {
+      "type": "Array<Object>",
+      "value": []
+    },
+    "converter": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "options": {
+          "type": "object"
+        }
+      }
+    },
+    "describedBy": {
+      "type": "string"
+    },
+    "disabled": {
+      "type": "boolean",
+      "value": false
+    },
+    "displayOptions": {
+      "type": "object",
+      "properties": {
+        "converterHint": {
+          "type": "Array<string>|string",
+          "value": [
+            "placeholder",
+            "notewindow"
+          ]
+        },
+        "helpInstruction": {
+          "type": "Array<string>|string",
+          "value": [
+            "notewindow"
+          ]
+        },
+        "messages": {
+          "type": "Array<string>|string",
+          "value": [
+            "inline"
+          ]
+        },
+        "validatorHint": {
+          "type": "Array<string>|string",
+          "value": [
+            "notewindow"
+          ]
+        }
+      }
+    },
+    "filterOnOpen": {
+      "type": "string",
+      "enumValues": [
+        "none",
+        "rawValue"
+      ],
+      "value": "none"
+    },
+    "help": {
+      "type": "object",
+      "properties": {
+        "instruction": {
+          "type": "string"
+        }
+      }
+    },
+    "helpHints": {
+      "type": "object",
+      "properties": {
+        "definition": {
+          "type": "string",
+          "value": ""
+        },
+        "source": {
+          "type": "string",
+          "value": ""
+        }
+      }
+    },
+    "labelHint": {
+      "type": "string",
+      "value": ""
+    },
+    "messagesCustom": {
+      "type": "Array<Object>",
+      "writeback": true,
+      "value": []
+    },
+    "minLength": {
+      "type": "number",
+      "value": 0
+    },
+    "optionRenderer": {
+      "type": "function"
+    },
+    "options": {
+      "type": "Array<(oj.Option|oj.Optgroup)>|oj.DataProvider<oj.Option>"
+    },
+    "optionsKeys": {
+      "type": "object",
+      "properties": {
+        "childKeys": {
+          "type": "object",
+          "properties": {
+            "label": {
+              "type": "string"
+            },
+            "value": {
+              "type": "string"
+            },
+            "children": {
+              "type": "string"
+            },
+            "childKeys": {
+              "type": "object"
+            }
+          }
+        },
+        "children": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        }
+      }
+    },
+    "pickerAttributes": {
+      "type": "object"
+    },
+    "placeholder": {
+      "type": "string"
+    },
+    "rawValue": {
+      "type": "string",
+      "writeback": true,
+      "readOnly": true
+    },
+    "required": {
+      "type": "boolean",
+      "value": false
+    },
+    "translations": {
+      "type": "object",
+      "value": {},
+      "properties": {
+        "filterFurther": {
+          "type": "string"
+        },
+        "noMatchesFound": {
+          "type": "string"
+        },
+        "required": {
+          "type": "object",
+          "properties": {
+            "hint": {
+              "type": "string"
+            },
+            "messageDetail": {
+              "type": "string"
+            },
+            "messageSummary": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "valid": {
+      "type": "string",
+      "writeback": true,
+      "enumValues": [
+        "invalidHidden",
+        "invalidShown",
+        "pending",
+        "valid"
+      ],
+      "readOnly": true
+    },
+    "validators": {
+      "type": "Array",
+      "value": []
+    },
+    "value": {
+      "type": "any",
+      "writeback": true
+    },
+    "valueOption": {
+      "type": "object",
+      "writeback": true,
+      "properties": {
+        "value": {
+          "type": "any"
+        },
+        "label": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "methods": {
+    "refresh": {},
+    "validate": {},
+    "reset": {},
+    "showMessages": {},
+    "setProperty": {},
+    "getProperty": {},
+    "setProperties": {},
+    "getNodeBySubId": {},
+    "getSubIdByNode": {}
+  },
+  "events": {
+    "ojValueUpdated": {},
+    "ojAnimateStart": {},
+    "ojAnimateEnd": {}
+  },
+  "extension": {}
+};
+var __oj_select_many_metadata = 
+{
+  "properties": {
+    "describedBy": {
+      "type": "string"
+    },
+    "disabled": {
+      "type": "boolean",
+      "value": false
+    },
+    "displayOptions": {
+      "type": "object",
+      "properties": {
+        "converterHint": {
+          "type": "Array<string>|string",
+          "value": [
+            "placeholder",
+            "notewindow"
+          ]
+        },
+        "helpInstruction": {
+          "type": "Array<string>|string",
+          "value": [
+            "notewindow"
+          ]
+        },
+        "messages": {
+          "type": "Array<string>|string",
+          "value": [
+            "inline"
+          ]
+        },
+        "validatorHint": {
+          "type": "Array<string>|string",
+          "value": [
+            "notewindow"
+          ]
+        }
+      }
+    },
+    "help": {
+      "type": "object",
+      "properties": {
+        "instruction": {
+          "type": "string"
+        }
+      }
+    },
+    "helpHints": {
+      "type": "object",
+      "properties": {
+        "definition": {
+          "type": "string",
+          "value": ""
+        },
+        "source": {
+          "type": "string",
+          "value": ""
+        }
+      }
+    },
+    "labelHint": {
+      "type": "string",
+      "value": ""
+    },
+    "messagesCustom": {
+      "type": "Array<Object>",
+      "writeback": true,
+      "value": []
+    },
+    "minimumResultsForSearch": {
+      "type": "number",
+      "value": 15
+    },
+    "optionRenderer": {
+      "type": "function"
+    },
+    "options": {
+      "type": "Array<(oj.Option|oj.Optgroup)>|oj.DataProvider<oj.Option>"
+    },
+    "optionsKeys": {
+      "type": "object",
+      "properties": {
+        "childKeys": {
+          "type": "object",
+          "properties": {
+            "label": {
+              "type": "string"
+            },
+            "value": {
+              "type": "string"
+            },
+            "children": {
+              "type": "string"
+            },
+            "childKeys": {
+              "type": "object"
+            }
+          }
+        },
+        "children": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        }
+      }
+    },
+    "pickerAttributes": {
+      "type": "object"
+    },
+    "placeholder": {
+      "type": "string"
+    },
+    "renderMode": {
+      "type": "string"
+    },
+    "required": {
+      "type": "boolean",
+      "value": false
+    },
+    "translations": {
+      "type": "object",
+      "value": {},
+      "properties": {
+        "filterFurther": {
+          "type": "string"
+        },
+        "moreMatchesFound": {
+          "type": "string"
+        },
+        "noMatchesFound": {
+          "type": "string"
+        },
+        "oneMatchesFound": {
+          "type": "string"
+        },
+        "required": {
+          "type": "object",
+          "properties": {
+            "hint": {
+              "type": "string"
+            },
+            "messageDetail": {
+              "type": "string"
+            },
+            "messageSummary": {
+              "type": "string"
+            }
+          }
+        },
+        "searchField": {
+          "type": "string"
+        }
+      }
+    },
+    "valid": {
+      "type": "string",
+      "writeback": true,
+      "enumValues": [
+        "invalidHidden",
+        "invalidShown",
+        "pending",
+        "valid"
+      ],
+      "readOnly": true
+    },
+    "value": {
+      "type": "Array<any>",
+      "writeback": true
+    },
+    "valueOptions": {
+      "type": "Array<Object>",
+      "writeback": true
+    }
+  },
+  "methods": {
+    "refresh": {},
+    "validate": {},
+    "reset": {},
+    "showMessages": {},
+    "setProperty": {},
+    "getProperty": {},
+    "setProperties": {},
+    "getNodeBySubId": {},
+    "getSubIdByNode": {}
+  },
+  "events": {
+    "ojAnimateStart": {},
+    "ojAnimateEnd": {}
+  },
+  "extension": {}
+};
+var __oj_select_one_metadata = 
+{
+  "properties": {
+    "describedBy": {
+      "type": "string"
+    },
+    "disabled": {
+      "type": "boolean",
+      "value": false
+    },
+    "displayOptions": {
+      "type": "object",
+      "properties": {
+        "converterHint": {
+          "type": "Array<string>|string",
+          "value": [
+            "placeholder",
+            "notewindow"
+          ]
+        },
+        "helpInstruction": {
+          "type": "Array<string>|string",
+          "value": [
+            "notewindow"
+          ]
+        },
+        "messages": {
+          "type": "Array<string>|string",
+          "value": [
+            "inline"
+          ]
+        },
+        "validatorHint": {
+          "type": "Array<string>|string",
+          "value": [
+            "notewindow"
+          ]
+        }
+      }
+    },
+    "help": {
+      "type": "object",
+      "properties": {
+        "instruction": {
+          "type": "string"
+        }
+      }
+    },
+    "helpHints": {
+      "type": "object",
+      "properties": {
+        "definition": {
+          "type": "string",
+          "value": ""
+        },
+        "source": {
+          "type": "string",
+          "value": ""
+        }
+      }
+    },
+    "labelHint": {
+      "type": "string",
+      "value": ""
+    },
+    "messagesCustom": {
+      "type": "Array<Object>",
+      "writeback": true,
+      "value": []
+    },
+    "minimumResultsForSearch": {
+      "type": "number",
+      "value": 15
+    },
+    "optionRenderer": {
+      "type": "function"
+    },
+    "options": {
+      "type": "Array<(oj.Option|oj.Optgroup)>|oj.DataProvider<oj.Option>"
+    },
+    "optionsKeys": {
+      "type": "object",
+      "properties": {
+        "childKeys": {
+          "type": "object",
+          "properties": {
+            "label": {
+              "type": "string"
+            },
+            "value": {
+              "type": "string"
+            },
+            "children": {
+              "type": "string"
+            },
+            "childKeys": {
+              "type": "object"
+            }
+          }
+        },
+        "children": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        }
+      }
+    },
+    "pickerAttributes": {
+      "type": "object"
+    },
+    "placeholder": {
+      "type": "string"
+    },
+    "renderMode": {
+      "type": "string"
+    },
+    "required": {
+      "type": "boolean",
+      "value": false
+    },
+    "translations": {
+      "type": "object",
+      "value": {},
+      "properties": {
+        "filterFurther": {
+          "type": "string"
+        },
+        "moreMatchesFound": {
+          "type": "string"
+        },
+        "noMatchesFound": {
+          "type": "string"
+        },
+        "oneMatchesFound": {
+          "type": "string"
+        },
+        "required": {
+          "type": "object",
+          "properties": {
+            "hint": {
+              "type": "string"
+            },
+            "messageDetail": {
+              "type": "string"
+            },
+            "messageSummary": {
+              "type": "string"
+            }
+          }
+        },
+        "searchField": {
+          "type": "string"
+        }
+      }
+    },
+    "valid": {
+      "type": "string",
+      "writeback": true,
+      "enumValues": [
+        "invalidHidden",
+        "invalidShown",
+        "pending",
+        "valid"
+      ],
+      "readOnly": true
+    },
+    "value": {
+      "type": "any",
+      "writeback": true,
+      "value": "When the value attribute is not set, the first option is used as its initial value if it exists."
+    },
+    "valueOption": {
+      "type": "object",
+      "writeback": true,
+      "properties": {
+        "value": {
+          "type": "any"
+        },
+        "label": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "methods": {
+    "refresh": {},
+    "validate": {},
+    "reset": {},
+    "showMessages": {},
+    "setProperty": {},
+    "getProperty": {},
+    "setProperties": {},
+    "getNodeBySubId": {},
+    "getSubIdByNode": {}
+  },
+  "events": {
+    "ojAnimateStart": {},
+    "ojAnimateEnd": {}
+  },
+  "extension": {}
+};
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
@@ -607,10 +1441,14 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'ojs/ojoptgroup', 'ojs/oj
         oj.DataProviderFeatureChecker.isIteratingDataProvider(data) : false;
     },
 
-    getDataProvider: function(options)
-    {
-      var dataProvider = options._dataProvider || options.options;
-      return _ComboUtils.isDataProvider(dataProvider)? dataProvider : null;
+    getDataProvider: function (options) {
+      if (options) {
+        var dataProvider = options._dataProvider || options.options;
+        if (_ComboUtils.isDataProvider(dataProvider)) {
+          return dataProvider;
+        }
+      }
+      return null;
     },
 
     clearDataProviderWrapper: function(widget)
@@ -732,32 +1570,69 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'ojs/ojoptgroup', 'ojs/oj
       return resolveLater;
     },
 
-    //single selection: keep value and valueOption in sync
-    syncValueWithValueOption: function (ojContext, valueOption, value)
-    {
-      var newVal = valueOption ? valueOption['value'] : null;
-      if (! oj.Object.compareValues(newVal, value)) {
-        ojContext._SetValue(newVal, null, {doValueChangeCheck: false,
-                                           '_context': {internalSet: true,
-                                                        writeback: true}});
+    // single selection: keep value and valueOption in sync
+    syncValueWithValueOption: function (ojContext, valueOption, value) {
+      var newVal;
+      //  - resetting value when value-option and placeholder are set throws exception
+      if (_ComboUtils.isValueOptionsForPlaceholder(false, valueOption)) {
+        if (_ComboUtils.isValueForPlaceholder(false, value)) {
+          newVal = value;
+        } else {
+          newVal = null;
+        }
+      } else {
+        newVal = valueOption ? valueOption.value : null;
+      }
+      if (!oj.Object.compareValues(newVal, value)) {
+        ojContext._SetValue(newVal, null, { doValueChangeCheck: false,
+          _context: { internalSet: true,
+            writeback: true } });
       }
     },
 
-    //multiple selection: keep value in sync with valueOptions
-    syncValueWithValueOptions: function (ojContext, valueOptions, value)
-    {
-      if (valueOptions) {
-        var newVal = [];
+    // multiple selection: keep value in sync with valueOptions
+    syncValueWithValueOptions: function (ojContext, valueOptions, value) {
+      var newVal;
+      if (_ComboUtils.isValueOptionsForPlaceholder(true, valueOptions)) {
+        if (_ComboUtils.isValueForPlaceholder(true, value)) {
+          newVal = value;
+        } else {
+          newVal = _ComboUtils.getValueForPlaceholder(true);
+        }
+        if (!oj.Object.compareValues(newVal, value)) {
+          ojContext._SetValue(newVal, null, { doValueChangeCheck: false,
+            _context: { internalSet: true, writeback: true } });
+        }
+      } else if (valueOptions) {
+        newVal = [];
         for (var i = 0; i < valueOptions.length; i++) {
-          newVal.push(valueOptions[i]['value']);
+          newVal.push(valueOptions[i].value);
         }
 
-        if (! oj.Object.compareValues(newVal, value)) {
-          ojContext._SetValue(newVal, null, {doValueChangeCheck: false,
-                                          '_context': {internalSet: true,
-                                                       writeback: true}});
+        if (!oj.Object.compareValues(newVal, value)) {
+          ojContext._SetValue(newVal, null, { doValueChangeCheck: false,
+            _context: { internalSet: true, writeback: true } });
         }
       }
+    },
+
+    //  - resetting value when value-option and placeholder are set throws exception
+    getValueOptionsForPlaceholder: function (multiple) {
+      return multiple ? [] : {};
+    },
+
+    isValueOptionsForPlaceholder: function (multiple, valOpts) {
+      return (valOpts == null) || oj.Object.compareValues(valOpts,
+             _ComboUtils.getValueOptionsForPlaceholder(multiple));
+    },
+
+    getValueForPlaceholder: function (multiple) {
+      return multiple ? [] : '';
+    },
+
+    isValueForPlaceholder: function (multiple, value) {
+      return (value == null) || oj.Object.compareValues(value,
+             _ComboUtils.getValueForPlaceholder(multiple));
     },
 
     // - need to be able to specify the initial value of select components bound to dprv
@@ -768,52 +1643,49 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'ojs/ojoptgroup', 'ojs/oj
         changed: true,
         writeback: true
       };
+      var opts;
+      if (ojContext.combobox && ojContext.combobox.opts) {
+        opts = ojContext.combobox.opts;
+      } else if (ojContext.select && ojContext.select.opts) {
+        opts = ojContext.select.opts;
+      }
 
       var newValueOptions;
       if (ojContext.multiple) {
         if (valueOptions && valueOptions.length) {
           newValueOptions = [];
           for (var i = 0; i < valueOptions.length; i++) {
-            newValueOptions.push({"value": valueOptions[i]['value'], 
-                                  "label": valueOptions[i]['label']});            
+            newValueOptions.push({ value: valueOptions[i].value,
+              label: valueOptions[i].label });
           }
-        }
-        else {
+        } else {
           newValueOptions = valueOptions;
         }
-        ojContext.option('valueOptions', newValueOptions, {'_context': context});
+        ojContext.option('valueOptions', newValueOptions, { _context: context });
 
-        // - placeholder is not displayed after removing selections from select many
-        //update internal valueOptions
-        if (ojContext.combobox && ojContext.combobox.opts) {
-          ojContext.combobox.opts.valueOptions = newValueOptions;
+        //  - placeholder is not displayed after removing selections from select many
+        // update internal valueOptions
+        if (opts) {
+          opts.valueOptions = newValueOptions;
         }
-        else if (ojContext.select && ojContext.select.opts) {
-          ojContext.select.opts.valueOptions = newValueOptions;
+      } else {
+        var valopt = valueOptions;
+        if (Array.isArray(valueOptions)) {
+          valopt = valueOptions[0];
         }
-      }
-      else {
-        if (Array.isArray(valueOptions))
-          valueOptions = valueOptions[0];
 
-        if (valueOptions) {
-          newValueOptions = {"value": valueOptions['value'], "label": valueOptions['label']};
-          ojContext.option('valueOption', 
-                           {"value": valueOptions['value'], "label": valueOptions['label']},
-                           {'_context': context});
+        //  - resetting value when value-option and placeholder are set throws exception
+        if (valopt && !_ComboUtils.isValueOptionsForPlaceholder(ojContext.multiple, valopt)) {
+          newValueOptions = { value: valopt.value, label: valopt.label };
+        } else {
+          newValueOptions = valopt;
         }
-        else {
-          newValueOptions = valueOptions;
-        }
-        ojContext.option('valueOption', newValueOptions, {'_context': context});
+        ojContext.option('valueOption', newValueOptions, { _context: context });
 
-        // - placeholder is not displayed after removing selections from select many
-        //update internal valueOption
-        if (ojContext.combobox && ojContext.combobox.opts) {
-          ojContext.combobox.opts.valueOption = newValueOptions;
-        }
-        else if (ojContext.select && ojContext.select.opts) {
-          ojContext.select.opts.valueOption = newValueOptions;
+        //  - placeholder is not displayed after removing selections from select many
+        // update internal valueOption
+        if (opts) {
+          opts.valueOption = newValueOptions;
         }
       }
     },
@@ -862,19 +1734,15 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'ojs/ojoptgroup', 'ojs/oj
      */
     applyValueOptions: function(context, options)
     {
-      if (context && ! context.ojContext._resolveValueOptionsLater &&
-          (context._classNm === "oj-combobox" || context._classNm === "oj-select")) {
+      if (context && !context.ojContext._resolveValueOptionsLater &&
+          (context._classNm === 'oj-combobox' || context._classNm === 'oj-select')) {
+        var isMultiple = context.ojContext.multiple;
+        var valueOptions = isMultiple ? options.valueOptions : options.valueOption;
 
-        var valueOptions;
-        if (context.ojContext.multiple) {
-          valueOptions = options.valueOptions;
-
-          // - placeholder is not displayed after removing selections from select many
-          if (valueOptions && valueOptions.length == 0 && options.placeholder)
-            return false;
-        }
-        else {
-          valueOptions = options.valueOption;
+        //  - resetting value when value-option and placeholder are set throws exception
+        //  - placeholder is not displayed after removing selections from select many
+        if (_ComboUtils.isValueOptionsForPlaceholder(isMultiple, valueOptions)) {
+          return false;
         }
         if (valueOptions) {
           context._updateSelection(valueOptions);
@@ -1089,7 +1957,9 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'ojs/ojoptgroup', 'ojs/oj
     //_ComboUtils
     // Fetch from the data provider and filter the data locally until 
     // the end of data or fetch size has reached
-    fetchFilteredData: function (dataProvider, fetchSize, context, query, dropdown) {
+    fetchFilteredData: function (_context, fetchSize, query, dropdown) {
+      var context = _context;
+      var dataProvider = _ComboUtils.getDataProvider(context.options);
       var results = [];
       var fetchListParms = {
         'size': fetchSize
@@ -1144,8 +2014,10 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'ojs/ojoptgroup', 'ojs/oj
             else {
               for (var item, i = 0; i < data.length; i++) {
                 item = data[i];
-                if (! query || ! query.matcher || query.matcher(query.term, item.label, item))
+                if (!query || !query.matcher ||
+                    query.matcher(query.term, _ComboUtils.getLabel(item), item)) {
                   results.push(item);
+                }
               }
             }
           }
@@ -1207,18 +2079,16 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'ojs/ojoptgroup', 'ojs/oj
         options.fetchType = null;
       }
 
-      //fetch data from dataProvider
-      var fetchPromise = 
-        _ComboUtils.fetchFilteredData(_ComboUtils.getDataProvider(options),
-                                      (fetchSize || options.fetchSize || _ComboUtils.DEFAULT_FETCH_SIZE),
-                                      context, query, widget.dropdown
-                                     ).then(
+      // fetch data from dataProvider
+      var fs = (fetchSize || options.fetchSize || _ComboUtils.DEFAULT_FETCH_SIZE);
+      var fetchPromise =
+        _ComboUtils.fetchFilteredData(context, fs, query, widget.dropdown).then(
           function (fetchResults) {
             if (spinnerContainer) {
               _ComboUtils.removeLoadingIndicator(spinnerContainer);
             }
-            // - search not shown before typing a character
-            context._resultCount = fetchResults? fetchResults.length : 0;
+            //  - search not shown before typing a character
+            context._resultCount = fetchResults ? fetchResults.length : 0;
             return fetchResults;
           });
 
@@ -1252,12 +2122,13 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'ojs/ojoptgroup', 'ojs/oj
       });
     },
 
-    //_ComboUtils
-    //fetch first block of data from the data provider
-    fetchFirstBlockFromDataProvider : function (container, dataProvider, fetchSize)
-    {
-      //add busy context
-      var fetchResolveFunc = _ComboUtils._addBusyState(container, "fetching selected data");
+    // _ComboUtils
+    // fetch first block of data from the data provider
+    fetchFirstBlockFromDataProvider: function (container, options, fetchSize) {
+      var dataProvider = _ComboUtils.getDataProvider(options);
+
+      // add busy context
+      var fetchResolveFunc = _ComboUtils._addBusyState(container, 'fetching selected data');
 
       var fetchListParms = {
         'size': (fetchSize || _ComboUtils.DEFAULT_FETCH_SIZE)
@@ -1274,18 +2145,35 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'ojs/ojoptgroup', 'ojs/oj
         });
     },
 
-    //_ComboUtils
-    //fetch the data row by its key("value")
-    fetchByKeyFromDataProvider : function (container, dataProvider, query)
-    {
-      if (! oj.DataProviderFeatureChecker.isFetchByKeys(dataProvider))
-        return;
+    // _ComboUtils
+    // fetch the data row by its key("value")
+    fetchByKeyFromDataProvider: function (container, options, query) {
+      var dataProvider = _ComboUtils.getDataProvider(options);
+      // add busy context
+      var fetchResolveFunc = _ComboUtils._addBusyState(container, 'fetching selected data');
 
-      //add busy context
-      var fetchResolveFunc = _ComboUtils._addBusyState(container, "fetching selected data");
+      //  - sdp.fetchbykeys method is being called twice for a single value
+      // Stored the selected value in container._fetchByKeys, it will be cleared when the promise
+      // is resolved or rejected. When this method is called again with the same selected value,
+      // don't make another call to dataProvider.fetchByKeys because the previous one is in flight.
+      var fetchPromise;
+      if (container._fetchByKeys && container._fetchByKeys.promise &&
+          oj.Object.compareValues(query.value, container._fetchByKeys.key)) {
+        fetchPromise = container._fetchByKeys.promise;
+      } else {
+        fetchPromise = dataProvider.fetchByKeys({ keys: query.value });
+        // save key and promise
+        container._fetchByKeys = {
+          key: query.value,
+          promise: fetchPromise
+        };
+      }
 
-      //fetch the data row by its key("value")
-      dataProvider.fetchByKeys({keys:query.value}).then(function(fetchResults) {
+      // fetch the data row by its key("value")
+      fetchPromise.then(function (fetchResults) {
+        //  - sdp.fetchbykeys method is being called twice for a single value
+        container._fetchByKeys = undefined;
+
         var values = [];
         fetchResults.results.forEach(function(val, key, map) {
           values.push(val.data);
@@ -1295,37 +2183,39 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'ojs/ojoptgroup', 'ojs/oj
           results: values
         });
         _ComboUtils._clearBusyState(fetchResolveFunc);
-      }, 
-      function(error) {
+      },
+      function () {
+        //  - sdp.fetchbykeys method is being called twice for a single value
+        container._fetchByKeys = undefined;
         query.callback();
         _ComboUtils._clearBusyState(fetchResolveFunc);
       });
     },
 
-    //_ComboUtils
-    //check if the specified value is in the dataProvider
-    //return a promise with the following results
-    //1) null: value is invalid or reject by fetchByKeyFromDataProvider
-    //2) array of valid values
-    validateFromDataProvider : function (container, dataProvider, value)
-    {
-      return new Promise(function(resolve, reject) {
-        _ComboUtils.fetchByKeyFromDataProvider(container, dataProvider,
-          {value: Array.isArray(value)? value : [value],
-           callback: function(data) {
-             var results = null;
-             // - need to be able to specify the initial value of select components bound to dprv
-             if (data && data.results.length) {
-               results = {};
-               results.value = [];
-               results.valueOptions = [];
-               for (var i = 0; i < data.results.length; i++) {
-                 results.valueOptions.push(data.results[i]);
-                 results.value.push(data.results[i].value);
-               }
-             }
-             resolve(results);
-         }});
+    // _ComboUtils
+    // check if the specified value is in the dataProvider
+    // return a promise with the following results
+    // 1) null: value is invalid or reject by fetchByKeyFromDataProvider
+    // 2) array of valid values
+    validateFromDataProvider: function (container, options, value) {
+      // eslint-disable-next-line no-unused-vars
+      return new Promise(function (resolve, reject) {
+        _ComboUtils.fetchByKeyFromDataProvider(container, options,
+          { value: Array.isArray(value) ? value : [value],
+            callback: function (data) {
+              var results = null;
+              //  - need to be able to specify the initial value of select components bound to dprv
+              if (data && data.results.length) {
+                results = {};
+                results.value = [];
+                results.valueOptions = [];
+                for (var i = 0; i < data.results.length; i++) {
+                  results.valueOptions.push(data.results[i]);
+                  results.value.push(data.results[i].value);
+                }
+              }
+              resolve(results);
+            } });
       });
     },
 
@@ -1863,7 +2753,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'ojs/ojoptgroup', 'ojs/oj
         {
           return {
             value : element.prop("value") || element.attr("value"),
-            label : element.text() || element.attr("label"),
+            label : element.text().trim() || element.attr("label"),
             element : element.get(),
             css : element.attr("class"),
             disabled : element.prop("disabled"),
@@ -2331,31 +3221,21 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'ojs/ojoptgroup', 'ojs/oj
         else if ("options" in opts)
         {
           var dataOptions = opts.options;
-          var dataProvider;
 
-          if (_ComboUtils.isDataProvider(dataOptions)) {
-            dataProvider = _ComboUtils.getDataProvider(opts);
-          }
-
-          if (dataProvider)
-          {
-            opts.query = function(query) {
+          if (_ComboUtils.getDataProvider(opts)) {
+            opts.query = function (query) {
               if (query.value) {
-                _ComboUtils.fetchByKeyFromDataProvider(self.container, 
-                                                       dataProvider, query);
-              }
-              else {
+                _ComboUtils.fetchByKeyFromDataProvider(self.container, opts, query);
+              } else {
                 _ComboUtils.fetchFromDataProvider(self, opts, query);
               }
             };
-          }
-          else if ($.isFunction(dataOptions))
-          {
-            opts.query = _ComboUtils.remote(dataOptions, opts.optionsKeys ? opts.optionsKeys : null);
-          }
-          else
-          {
-            opts.query = _ComboUtils.local(dataOptions, opts.optionsKeys ? opts.optionsKeys : null);
+          } else if ($.isFunction(dataOptions)) {
+            opts.query = _ComboUtils.remote(dataOptions,
+                                            opts.optionsKeys ? opts.optionsKeys : null);
+          } else {
+            opts.query = _ComboUtils.local(dataOptions,
+                                           opts.optionsKeys ? opts.optionsKeys : null);
           }
         }
 
@@ -3395,10 +4275,16 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'ojs/ojoptgroup', 'ojs/oj
       {
         var placeholder = this._getPlaceholder();
 
-        if (!placeholder)
+        if (!placeholder) {
           return;
-        this.search.attr("placeholder", placeholder);
-        this.container.removeClass(this._classNm + "-allowclear");
+        }
+        // placeholder text of selectMany is in the <li> of this.selection
+        if (this.ojContext.multiple && this._classNm === 'oj-select') {
+          var defLi = this.selection.find('.oj-select-default');
+          defLi.text(placeholder);
+        } else {
+          this.search.attr('placeholder', placeholder);
+        }
       },
 
       //_AbstractOjChoice
@@ -3444,37 +4330,37 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'ojs/ojoptgroup', 'ojs/oj
       //_AbstractOjChoice
       ///pass original event
       setVal: function (val, event, context) {
-        
         var options = { doValueChangeCheck: false };
-        if (context)
-          options["_context"] = context;
+        if (context) {
+          options._context = context;
+        }
 
-        // - need to be asble to specify the initial value of select components bound to dprv
-        if (! this._skipSetValueOptions) {
-          var queryResult = _ComboUtils.getLastQueryResult(this);
-          var match;
+        //  - need to be asble to specify the initial value of select components bound to dprv
+        var multiple = this.ojContext.multiple;
+        if (!this._skipSetValueOptions) {
+          //  - resetting value when value-option and placeholder are set throws exception
+          if (_ComboUtils.isValueForPlaceholder(multiple, val) && this._getPlaceholder() !== null) {
+            this.setValOpts(_ComboUtils.getValueOptionsForPlaceholder(multiple));
+          } else {
+            var queryResult = _ComboUtils.getLastQueryResult(this);
+            var match;
 
-
-          if (queryResult) {
-            if (this.ojContext.multiple) {
-              match = _ComboUtils.findOptions(queryResult, val);
+            if (queryResult) {
+              if (multiple) {
+                match = _ComboUtils.findOptions(queryResult, val);
+              } else {
+                match = _ComboUtils.findOption(queryResult, val);
+              }
             }
-            else {
-              match = _ComboUtils.findOption(queryResult, val);
-            }
-          }
-          //set valueOption
-          if (match) {
-            //clone valueOption otherwise it will not trigger change event
-            this.setValOpts(match);
-          }
-          else {
-            //new entry?
-            if (this._classNm === "oj-combobox") {            
-              this.ojContext._resolveValueOptionsLater = 
-                _ComboUtils.findOption(this.getValOpts(), val) == null ? false : true;
-            }
-            else {
+            // set valueOption
+            if (match) {
+              // clone valueOption otherwise it will not trigger change event
+              this.setValOpts(match);
+            } else if (this._classNm === 'oj-combobox') {
+              // new entry?
+              this.ojContext._resolveValueOptionsLater =
+                _ComboUtils.findOption(this.getValOpts(), val) != null;
+            } else {
               this.ojContext._resolveValueOptionsLater = true;
             }
           }
@@ -3494,8 +4380,6 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'ojs/ojoptgroup', 'ojs/oj
           // - select needs implementation fixes...
           this.ojContext._SetValue(val, event, options);
         }
-        // also set on the input element
-        this.opts.element.val(val);
       },
 
       getValOpts: function () {
@@ -3506,12 +4390,19 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'ojs/ojoptgroup', 'ojs/oj
 
       setValOpts: function (valOpts) {
         var ojContext = this.ojContext;
+        var multiple = ojContext.multiple;
+
+        //  -reseting value when value-option and placeholder are set throws exception
+        if (_ComboUtils.isValueOptionsForPlaceholder(multiple, valOpts) &&
+            this._getPlaceholder() !== null) {
+          // eslint-disable-next-line no-param-reassign
+          valOpts = _ComboUtils.getValueOptionsForPlaceholder(multiple);
+        }
         _ComboUtils.setValueOptions(ojContext, valOpts);
 
-        if (ojContext.multiple) {
+        if (multiple) {
           this.opts.valueOptions = valOpts;
-        }
-        else {
+        } else {
           this.opts.valueOption = valOpts;
         }
       },
@@ -4559,22 +5450,37 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'ojs/ojoptgroup', 'ojs/oj
         }
       },
       
-      _updateSelectedOption : function(selected)
-      {
+      _updateSelectedOption : function(selected) {
         if (selected !== undefined && selected !== null) {
           this._updateSelection(selected);
-        }else{
+          //  - need to be able to specify the initial value of select components bound to dprv
+          this.setValOpts(selected);
+        } else {
           // if we found no match, update the selection with the value
           var value = this.getVal();
-          var data = !value ? null : !Array.isArray(value) ? {'label':value}: (Array.isArray(value) && value.length ) ? { 'label': value[0] } : null ;
+          var data;
+          if (!value) {
+            data = null;
+          } else if (!Array.isArray(value)) {
+            data = { label: value };
+          } else if (value.length) {
+            data = { label: value[0] };
+          } else {
+            data = null;
+          }
           this._updateSelection(data);
-        } 
-
-        // - need to be able to specify the initial value of select components bound to dprv
-        this.setValOpts(selected);
+          // if value is a new entry
+          if (!selected && value) {
+            this.setValOpts({
+              value: value,
+              label: _ComboUtils.getLabel({ value: value })
+            });
+          } else {
+            this.setValOpts(selected);
+          }
+        }
       }
-    }
-    );
+    });
 
 
 /**
@@ -5661,9 +6567,7 @@ var _AbstractMultiChoice = _ComboUtils.clazz(_AbstractOjChoice,
 
       // Storing this data so that it will be used when setting the display value.
       this.currentItem = data;
-
-      this.opts.element.val(ids.length === 0 ? "" : ids.join(this.opts.separator));
-
+      this.currentValue = ids;
 
       self._postprocessResults();
     },
@@ -5697,7 +6601,7 @@ var _AbstractMultiChoice = _ComboUtils.clazz(_AbstractOjChoice,
 
       // If the component is invalid, we will not get all the values matching the displayed value
       if (!this.ojContext.isValid()) {
-        val = _ComboUtils.splitVal(this.opts.element.val(), this.opts.separator);
+        val = this.currentValue;
       }
 
       var self = this;
@@ -5843,8 +6747,9 @@ var _AbstractMultiChoice = _ComboUtils.clazz(_AbstractOjChoice,
       }
 
       // If the component is invalid, we will not get all the values matching the displayed value
-      if (!this.ojContext.isValid())
-        val = _ComboUtils.splitVal(this.opts.element.val(), this.opts.separator);
+      if (!this.ojContext.isValid()) {
+        val = this.currentValue;
+      }
 
       while ((index = val.indexOf(this.id(data))) >= 0)
       {
@@ -5860,12 +6765,15 @@ var _AbstractMultiChoice = _ComboUtils.clazz(_AbstractOjChoice,
       selected.remove();
     },
 
-    _postprocessResults : function (data, initial, noHighlightUpdate)
-    {
-      var val = (this.getVal() && (this.opts.element.val() || this.ojContext.isValid())) ? this.getVal() : [],
-      choices = this.results.find(".oj-listbox-result"),
-      compound = this.results.find(".oj-listbox-result-with-children"),
-      self = this;
+    _postprocessResults: function (data, initial, noHighlightUpdate) {
+      // display all available options in the drop down if the component is in invaid state
+      if (!this.ojContext.isValid()) {
+        return;
+      }
+      var val = this.getVal();
+      var choices = this.results.find('.oj-listbox-result');
+      var compound = this.results.find('.oj-listbox-result-with-children');
+      var self = this;
 
       _ComboUtils.each2(choices, function (i, choice)
       {
@@ -5949,8 +6857,10 @@ var _AbstractMultiChoice = _ComboUtils.clazz(_AbstractOjChoice,
         }
       }
       this.ojContext._SetValue(unique, event, options);
-      if (this.ojContext.isValid() || unique.length === 0)
-        this.opts.element.val(unique.length === 0 ? "" : unique.join(this.opts.separator));
+
+      if (this.ojContext.isValid() || unique.length === 0) {
+        this.currentValue = unique;
+      }
 
       this.search.attr("aria-activedescendant", this.opts.element.attr("id"));
     }
@@ -6557,6 +7467,12 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
    *
    * {@ojinclude "name":"keyboardDocOne"}
    *
+   * <h3 id="styling-section">
+   *   Styling
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#styling-section"></a>
+   * </h3>
+   *
+   * {@ojinclude "name":"stylingDoc"}
    *
    * {@ojinclude "name":"comboboxCommon"}
    */
@@ -6615,6 +7531,12 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
    *
    * {@ojinclude "name":"keyboardDocMany"}
    *
+   * <h3 id="styling-section">
+   *   Styling
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#styling-section"></a>
+   * </h3>
+   *
+   * {@ojinclude "name":"stylingDoc"}
    *
    * {@ojinclude "name":"comboboxCommon"}
    */
@@ -6673,6 +7595,194 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
     options :
     {
       /**
+      * {@ojinclude "name":"comboboxCommonAsyncValidators"}
+      *
+       * @example <caption>Create an Object that duck-types the oj.AsyncValidator interface.
+       * Bind the Object to the JET form component's async-validators attribute. The
+       * validator's 'validate' method will be called when the user changes the input.</caption>
+       *  self.asyncValidator1 = {
+       *    // required validate method
+       *    'validate': function(value) {
+       *      return new Promise(function(resolve, reject) {
+       *        var successful = someBackendMethod();
+       *        if (successful) {
+       *          resolve(true);
+       *        } else {
+       *          reject(new Error('The options are incorrect.'));
+       *        }
+       *      });
+       *    },
+       *    // optional hint attribute. hint shows up when user sets focus to input.
+       *    'hint': new Promise(function (resolve, reject) {
+       *      var backendHint = getSomeBackendHint();
+       *      resolve(backendHint);
+       *    });
+       *  };
+       *  -- HTML --
+       *  &lt;oj-combobox-one async-validators="[[[asyncValidator1]]]">&lt;/oj-combobox-one>
+       * @example <caption>Initialize the component with multiple AsyncValidator
+       * duck-typed instances:</caption>
+       * -- HTML --
+       * &lt;oj-combobox-one
+                  async-validators="[[[asyncValidator1, asyncValidator2]]]">&lt;/oj-combobox-one>
+       *
+       * @example <caption>Get or set the <code class="prettyprint">asyncValidators</code>
+       * property after initialization:</caption>
+       * // getter
+       * var validators = myComp.asyncValidators;
+       *
+       * // setter
+       * var myValidators = [{
+       * 'validate' : function(value) {
+       *   return new Promise(function(resolve, reject) {
+       *   // mock server-side delay
+       *   setTimeout(function () {
+       *     if (valuePassesValidation) {
+       *       resolve(true);
+       *     } else {
+       *       reject(new Error('the options are incorrect'));
+       *     }
+       *   },10);
+       *   });
+       * }
+       * }];
+       * myComp.asyncValidators = myValidators;
+      * @name asyncValidators
+      * @ojshortdesc Specifies a list of async validators for
+      * performing async validation by the element.
+      * @expose
+      * @access public
+      * @instance
+      * @memberof oj.ojComboboxOne
+      * @default []
+      * @ojsignature  { target: "Type",
+      *       value: "Array<oj.AsyncValidator<V>>",
+      *       jsdocOverride: true}
+      * @type {Array.<Object>}
+      */
+     /**
+      * {@ojinclude "name":"comboboxCommonAsyncValidators"}
+      *
+       * @example <caption>Create an Object that duck-types the oj.AsyncValidator interface.
+       * Bind the Object to the JET form component's async-validators attribute. The
+       * validator's 'validate' method will be called when the user changes the input.</caption>
+       *  self.asyncValidator1 = {
+       *    // required validate method
+       *    'validate': function(value) {
+       *      return new Promise(function(resolve, reject) {
+       *        var successful = someBackendMethod();
+       *        if (successful) {
+       *          resolve(true);
+       *        } else {
+       *          reject(new Error('The amount of purchase is too high. It is ' + value));
+       *        }
+       *      });
+       *    },
+       *    // optional hint attribute. hint shows up when user sets focus to input.
+       *    'hint': new Promise(function (resolve, reject) {
+       *      var formattedMaxPurchase = getSomeBackendFormattedMaxPurchase();
+       *      resolve(maxPurchase + " is the maximum.");
+       *    });
+       *  };
+       *  -- HTML --
+       *  &lt;oj-combobox-many async-validators="[[[asyncValidator1]]]">&lt;/oj-combobox-many>
+       * @example <caption>Initialize the component with multiple AsyncValidator
+       * duck-typed instances:</caption>
+       * -- HTML --
+       * &lt;oj-combobox-many
+                  async-validators="[[[asyncValidator1, asyncValidator2]]]">&lt;/oj-combobox-many>
+       *
+       * @example <caption>Get or set the <code class="prettyprint">asyncValidators</code>
+       * property after initialization:</caption>
+       * // getter
+       * var validators = myComp.asyncValidators;
+       *
+       * // setter
+       * var myValidators = [{
+       * 'validate' : function(value) {
+       *   return new Promise(function(resolve, reject) {
+       *   // mock server-side delay
+       *   setTimeout(function () {
+       *     if (value === "pass" || value === "another pass") {
+       *       resolve(true);
+       *     } else {
+       *       reject(new Error("value isn't 'pass' or 'another pass'. It is " + value.));
+       *     }
+       *   },10);
+       *   });
+       * }
+       * }];
+       * myComp.asyncValidators = myValidators;
+      * @name asyncValidators
+      * @ojshortdesc Specifies a list of async validators for
+      * performing async validation by the element.
+      * @expose
+      * @access public
+      * @instance
+      * @memberof oj.ojComboboxMany
+      * @default []
+      * @ojsignature  { target: "Type",
+      *       value: "Array<oj.AsyncValidator<V>>",
+      *       jsdocOverride: true}
+      * @type {Array.<Object>}
+      */
+      /**
+       * List of asynchronous validators used by the component when performing validation.
+       * Use <code class="prettyprint">async-validators</code> when you need to
+       * perform some validation work on the server. Otherwise, use
+       * <code class="prettyprint">validators</code>, which are synchronous.
+       * <p>
+       * Each item in the Array is an instance that duck types {@link oj.AsyncValidator}.
+       * Implicit validators created by a component when certain attributes
+       * are present (e.g. <code class="prettyprint">required</code> attribute) are separate from
+       * validators specified through the <code class="prettyprint">async-validators</code>
+       * attribute and the <code class="prettyprint">validators</code> attribute.
+       * At runtime when the component runs validation, it
+       * combines the implicit validators with the list specified through the
+       * <code class="prettyprint">validators</code>
+       * attribute and also the list specified through the
+       * <code class="prettyprint">async-validators</code> attribute.
+       * Error messages are shown as soon as each async validator returns;
+       * we do not wait until all the async validators finish to show errors.
+       * If the component's valid state changes for the worse, it is also updated
+       * as each validator returns so valid will be invalidShown
+       * as soon as the first validator has an Error.
+       * </p>
+       * <p> It is recommended that you show the
+       * value you are validating in the error message because if the async operation takes a while,
+       * the user could be typing in a new value when the error message comes back
+       * and might be confused what value the error is for. However, if the user enters a new value
+       * (like presses Enter or Tab), a new validation lifecycle will start
+       * and validation errors for the previous value will not be shown to the user.
+       * If you need to format the value for the error message,
+       * you can use
+       * <code class="prettyprint">oj.IntlConverterUtils.getConverterInstance(converterOption)</code>
+       * to get the converter instance,
+       * then call <code class="prettyprint">converter.format(value)</code>.
+       * </p>
+       * <p>
+       * Hints exposed by async-validators and validators are shown in the notewindow by default,
+       * or as determined by the 'validatorHint' property set on the
+       * <code class="prettyprint">display-options</code> attribute.
+       * </p>
+       * <p>Since async validators are run asynchronously, you should wait on the BusyContext before
+       * you check valid property or the value property. Alternatively you can add a callback to
+       * the onValidChanged or ojValueChanged events.
+       * </p>
+       * <p>
+       * The steps performed always, running validation and clearing messages is the same as
+       * for the <code class="prettyprint">validators</code> attribute.
+       * </p>
+       * <br/>
+       * @expose
+       * @access public
+       * @instance
+       * @memberof oj.ojCombobox
+       * @default []
+       * @ojfragment comboboxCommonAsyncValidators
+       */
+        asyncValidators: [],
+      /**
        * A converter instance that duck types {@link oj.Converter}. Or an object literal containing
        * the following properties.
        * <p>
@@ -6728,11 +7838,16 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
        * @expose
        * @access public
        * @instance
+       * @default null
        * @memberof! oj.ojCombobox
-       * @type {Object|undefined}
+       * @type {Object|null}
+       * @ojsignature {
+       *    target: "Type",
+       *    value: "oj.Converter<any>|oj.Validation.RegisteredConverter",
+       *    jsdocOverride: true}
        */
-      converter: undefined,
-      
+        converter: null,
+
       /**
        * Whether to filter the list with the current display value on opening the drop down. This can be used to support search use cases. 
        * This only applies to the initial opening of the drop down. When the user starts typing, the dropdown filters as usual.
@@ -6939,7 +8054,6 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
        * @access public
        * @instance
        * @type {?Object}
-       * @default null
        * @memberof! oj.ojCombobox
        *
        * @example <caption>Initialize the Combobox with <code class="prettyprint">options-keys</code> specified. This allows the key names to be redefined in the options array.</caption>
@@ -7314,9 +8428,9 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
       * 
       * </p>
       * 
-      * @ojvalue {boolean} false - implies a value is not required to be provided by the user. 
+      * This property set to <code class="prettyprint">false</code> implies that a value is not required to be provided by the user.
       * This is the default.
-      * @ojvalue {boolean} true - implies a value is required to be provided by user and the 
+      * This property set to <code class="prettyprint">true</code> implies that a value is required to be provided by user and the
       * input's label will render a required icon. Additionally a required validator - 
       * {@link oj.RequiredValidator} - is implicitly used if no explicit required validator is set. 
       * An explicit required validator can be set by page authors using the validators attribute. 
@@ -7368,7 +8482,11 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
       * @access public
       * @instance
       * @memberof oj.ojComboboxOne
-      * @type {Array|undefined}
+      * @type {Array}
+      * @default []
+      * @ojsignature  { target: "Type",
+      *   value: "Array<oj.Validator<V>|oj.Validation.RegisteredValidator>|null",
+      *   jsdocOverride: true}
       */
      /**
       * {@ojinclude "name":"comboboxCommonValidators"}
@@ -7407,11 +8525,15 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
       * @access public
       * @instance
       * @memberof oj.ojComboboxMany
-      * @type {Array|undefined}
+      * @type {Array}
+      * @default []
+      * @ojsignature  { target: "Type",
+      *   value: "Array<oj.Validator<V>|oj.Validation.RegisteredValidator>|null",
+      *   jsdocOverride: true}
       */
       /** 
-       * List of validators used by element  along with the implicit component validators 
-       * when performing validation. Each item is either an
+       * List of synchronous validators used by component along with asynchronous validators
+       * and the implicit component validators when performing validation. Each item is either an
        * instance that duck types {@link oj.Validator}, or is an Object literal containing the 
        * properties listed below.       
        * <p>
@@ -7420,7 +8542,8 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
        * attribute is set, an implicit {@link oj.RequiredValidator} is created.
        * At runtime when the component runs validation, it
        * combines all the implicit validators with all the validators 
-       * specified through this <code class="prettyprint">validators</code> attribute, and
+       * specified through this <code class="prettyprint">validators</code> attribute
+       * and the <code class="prettyprint">async-validators</code> attribute, and
        * runs all of them.
        * </p>
        * <p>
@@ -7447,8 +8570,9 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
        * steps it always performs.</li>
        * <li>if element is invalid and is showing messages -
        * <code class="prettyprint">messages-shown</code> property is non-empty, when 
-       * <code class="prettyprint">validators</code> changes then all element messages are cleared 
-       * and full validation run using the display value on the element. 
+       * <code class="prettyprint">validators</code> or
+       * <code class="prettyprint">async-validators</code changes then all element messages
+       * are cleared and full validation run using the display value on the element.
        * <ul>
        *   <li>if there are validation errors, then <code class="prettyprint">value</code> 
        *   property is not updated and the error is shown. 
@@ -7483,9 +8607,13 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
        * @access public
        * @instance
        * @memberof oj.ojCombobox
+       * @default []
+       * @ojsignature  { target: "Type",
+       *   value: "Array<oj.Validator<V>|oj.Validation.RegisteredValidator>|null",
+       *   jsdocOverride: true}
        * @ojfragment comboboxCommonValidators
-       */    
-      validators: undefined,
+       */
+        validators: [],
 
       /**
        * The <code class="prettyprint">valueOption</code> is similar to the <code class="prettyprint">value</code>, but is an 
@@ -7503,6 +8631,7 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
        * @instance
        * @type {null | Object}
        * @default null
+       * @ojwriteback
        *
        * @property {any} value current value of JET Combobox
        * @property {string} [label] display label of value above. If missing, String(value) is used. 
@@ -7539,6 +8668,7 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
        * @instance
        * @type {null | Array.<Object>}
        * @default null
+       * @ojwriteback
        *
        * @property {any} value a current value of JET Combobox
        * @property {string} [label] display label of value above. If missing, String(value) is used. 
@@ -7605,6 +8735,7 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
        * @ojshortdesc The value of the element.
        * @access public
        * @instance
+       * @ojwriteback
        * @memberof oj.ojComboboxMany
        * @type {Array.<any>}
        */
@@ -7789,6 +8920,22 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
      */
     _AfterSetOptionValidators : oj.EditableValueUtils._AfterSetOptionValidators,   
     /**
+        * When async-validators attribute changes, take the following steps.
+        *
+        * - Clear the cached normalized list of all validator instances. push new hints to messaging.<br/>
+        * - if component is valid -> validators changes -> no change<br/>
+        * - if component is invalid has messagesShown -> validators changes -> clear all component
+        * messages and re-run full validation on displayValue. if there are no errors push value to
+        * model;<br/>
+        * - if component is invalid has messagesHidden -> validators changes -> do nothing; doesn't change
+        * the required-ness of component <br/>
+        * - messagesCustom is not cleared.<br/>
+        * @memberof! oj.ojCombobox
+        * @instance
+        * @protected
+        */
+      _AfterSetOptionAsyncValidators: oj.EditableValueUtils._AfterSetOptionAsyncValidators,
+    /**
      * Performs post processing after converter option changes by taking the following steps.
      * 
      * - always push new converter hint to messaging <br/>
@@ -7834,6 +8981,16 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
      * @protected
      */
     _GetNormalizedValidatorsFromOption : oj.EditableValueUtils._GetNormalizedValidatorsFromOption,
+   /**
+    * This returns an array of all async validators
+    * normalized from the async-validators attribute set on the component. <br/>
+    * @return {Array} of validators.
+    * @memberof! oj.ojCombobox
+    * @instance
+    * @protected
+    */
+      _GetNormalizedAsyncValidatorsFromOption:
+        oj.EditableValueUtils._GetNormalizedAsyncValidatorsFromOption,
     
     _setup : function ()
     {
@@ -7907,75 +9064,83 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
      * @protected
      * @memberof! oj.ojCombobox
      */
-    _setOption : function (key, value, flags)
-    {
-      if (key === "value") {
-       
-        if (Array.isArray(value)) {
-          if (!this._IsCustomElement())
-            value = value.slice(0);
-        } 
-        else if(typeof value === "string") {
-          if (this.multiple === true)
-            value = _ComboUtils.splitVal(value, ",");
-          else if (!this._IsCustomElement())
-            value = [value];
-        }
-        
-        // valueChangeTrigger will be used while setting the display value.
-        if (flags && flags["_context"] && flags["_context"].optionMetadata)
-        {
-          this.combobox.valueChangeTrigger = flags["_context"].optionMetadata["trigger"];
-        }
-        else
-          this.combobox.valueChangeTrigger = null;
+    _setOption : function (key, value, flags) {
+      var multi = this.multiple;
 
-        // - placeholder is not displayed after removing selections from select many
-        if ((typeof this.options['placeholder'] === 'string') &&
-            ((value == null || value && value.length == 0) ||
-             (this._IsCustomElement() && value==""))) {
-          _ComboUtils.setValueOptions(this, this.multiple? [] : "");
+      if (key === 'value') {
+        if (Array.isArray(value)) {
+          if (!this._IsCustomElement()) {
+            value = value.slice(0);
+          }
+        } else if (typeof value === 'string') {
+          if (multi === true) {
+            value = _ComboUtils.splitVal(value, ',');
+          } else if (!this._IsCustomElement()) {
+            value = [value];
+          }
+        }
+
+        // valueChangeTrigger will be used while setting the display value.
+        if (flags && flags._context && flags._context.optionMetadata) {
+          this.combobox.valueChangeTrigger = flags._context.optionMetadata.trigger;
+        } else {
+          this.combobox.valueChangeTrigger = null;
+        }
+
+        //  - placeholder is not displayed after removing selections from select many
+        //  - resetting value when value-option and placeholder are set throws exception
+        if ((typeof this.options.placeholder === 'string') &&
+            ((value == null || (value && value.length === 0)) ||
+             (this._IsCustomElement() && _ComboUtils.isValueForPlaceholder(multi, value)))) {
+          _ComboUtils.setValueOptions(this,
+                                      _ComboUtils.getValueOptionsForPlaceholder(multi));
+          this._super(key, value, flags);
+          return;
         }
       }
 
-      //if we have a new data provider, remove the old dataProvider event listeners 
-      if (key === "options") {
+      // if we have a new data provider, remove the old dataProvider event listeners
+      if (key === 'options') {
         _ComboUtils.removeDataProviderEventListeners(this);
         _ComboUtils.clearDataProviderWrapper(this);
+      } else if ((key === 'valueOption' && multi !== true) ||
+                 (key === 'valueOptions' && multi === true)) {
+        //  - resetting value when value-option and placeholder are set throws exception
+        this.combobox.setValOpts(null);
       }
-      this._super(key, value, flags);  
+      this._super(key, value, flags);
 
-      // - need to be able to specify the initial value of select components bound to dprv
-      if (key === "valueOption" && this.multiple !== true) {
-        _ComboUtils.syncValueWithValueOption(this, value, null);
-      }
-      else if (key === "valueOptions" && this.multiple === true && Array.isArray(value)) {
-        _ComboUtils.syncValueWithValueOptions(this, value, null);
-      }
-      //update valueOptions
-      else if (key === "value") {
+      //  - need to be able to specify the initial value of select components bound to dprv
+      if (key === 'valueOption' && multi !== true) {
+        if (this.combobox) {
+          this.combobox.opts.valueOption = value;
+        }
+        _ComboUtils.syncValueWithValueOption(this, value, this.options.value);
+      } else if (key === 'valueOptions' && multi === true) {
+        if (this.combobox) {
+          this.combobox.opts.valueOptions = value;
+        }
+        _ComboUtils.syncValueWithValueOptions(this, value, this.options.value);
+      } else if (key === 'value') {
+        // update valueOptions
         _ComboUtils.updateValueOptions(this.combobox);
-      }
-
-      else if (key === "options") 
-      {
-        //only add data provider event listeners to new data provider
+      } else if (key === 'options') {
+        // only add data provider event listeners to new data provider
         if (_ComboUtils.isDataProvider(value)) {
-          _ComboUtils.wrapDataProviderIfNeeded(this, this.combobox? this.combobox.opts : null);
+          _ComboUtils.wrapDataProviderIfNeeded(this, this.combobox ? this.combobox.opts : null);
           _ComboUtils.addDataProviderEventListeners(this);
         }
         this.combobox.opts.options = value;
         this.combobox.opts = this.combobox._prepareOpts(this.combobox.opts);
-      }
-
-      else if (key === "disabled")
-      {
-        if (value)
+      } else if (key === 'disabled') {
+        if (value) {
           this.combobox._disable();
-        else
+        } else {
           this.combobox._enable();
+        }
       }
     },
+
     /**
       * Performs post processing after _SetOption() is called. Different options when changed perform
       * different tasks. See _AfterSetOption[OptionName] method for details.
@@ -8002,6 +9167,9 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
         case "converter":
           this._AfterSetOptionConverter(option);
           break;   
+          case 'asyncValidators':
+            this._AfterSetOptionAsyncValidators(option);
+            break;
         default:
           break;
       }
@@ -8019,16 +9187,16 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
       this.combobox.close();
     },
 
-      /**
-       * Override to do the delay connect/disconnect
-       * @memberof oj.ojCombobox
-       * @override
-       * @protected
-       */
-      _VerifyConnectedForSetup: function () {
-        //  - temp moving oj-select from one elem to another should not cause fetch
-        return true;
-      },
+    /**
+     * Override to do the delay connect/disconnect
+     * @memberof oj.ojCombobox
+     * @override
+     * @protected
+     */
+    _VerifyConnectedForSetup: function () {
+      //  - temp moving oj-select from one elem to another should not cause fetch
+      return true;
+    },
 
     /**
      * Updates display value of combobox.
@@ -8216,6 +9384,30 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
      */
     _ValidateReturnBoolean: function()
     {
+        var displayValueForSetValue = this._getDisplayValueForSetValue();
+
+        return this._SetValueReturnBoolean(displayValueForSetValue, null,
+          this._VALIDATE_METHOD_OPTIONS);
+      },
+
+    /**
+     * Returns Promise that resolves to "valid" if validation passes, "invalid" otherwise
+     *
+     * @return {Promise} that resolves to "valid" if validation passes, "invalid" otherwise
+     * @memberof! oj.ojCombobox
+     * @override
+     * @protected
+     * @instance
+     * @ignore
+     */
+      _ValidateReturnPromise: function () {
+        var displayValueForSetValue = this._getDisplayValueForSetValue();
+
+        return this._SetValueReturnPromise(displayValueForSetValue, null,
+          this._VALIDATE_METHOD_OPTIONS);
+      },
+
+      _getDisplayValueForSetValue: function () {
       var displayValue = this.combobox.search.val();
       var newValue = null;
 
@@ -8240,8 +9432,7 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
           newValue = existingValue;
         }
       }
-
-      return this._SetValue(newValue, null, this._VALIDATE_METHOD_OPTIONS);
+        return newValue;
     },
 
     _getDropdown : function ()
@@ -8672,11 +9863,35 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
    *  </table>
    *
    * <p>Disabled option items receive no highlight and are not selectable.</p>
-	 *
-	 * @ojfragment keyboardDocMany - Used in keyboard section of classdesc, and standalone gesture doc
-	 * @memberof oj.ojComboboxMany
-	 */
-  });
+   *
+   * @ojfragment keyboardDocMany - Used in keyboard section of classdesc, and standalone gesture doc
+   * @memberof oj.ojComboboxMany
+   */
+  /**
+   * {@ojinclude "name":"ojStylingDocIntro"}
+   * <p>The form control text align style classes can be applied to the component, or an ancestor element. When
+   * applied to an ancestor element, all form components that support the text align style classes will be affected.
+   *
+   * <table class="generic-table styling-table">
+   *   <thead>
+   *     <tr>
+   *       <th>{@ojinclude "name":"ojStylingDocClassHeader"}</th>
+   *       <th>{@ojinclude "name":"ojStylingDocDescriptionHeader"}</th>
+   *     </tr>
+   *   </thead>
+   *   <tbody>
+   *     <tr>
+   *       <td>oj-form-control-text-align-start</td>
+   *       <td>Aligns the text to the left in ltr and to the right in rtl</td>
+   *     </tr>
+   *   </tbody>
+   * </table>
+   *
+   * @ojfragment stylingDoc - Used in Styling section of classdesc, and standalone Styling doc
+   * @memberof oj.ojCombobox
+   */
+
+    });
 
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
@@ -8884,9 +10099,9 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
         * 
         * </p>
         * 
-        * @ojvalue {boolean} false - implies a value is not required to be provided by the user. 
+        * This property set to <code class="prettyprint">false</code> implies that a value is not required to be provided by the user.
         * This is the default.
-        * @ojvalue {boolean} true - implies a value is required to be provided by user and the 
+        * This property set to <code class="prettyprint">true</code> implies that a value is required to be provided by user and the
         * input's label will render a required icon. Additionally a required validator - 
         * {@link oj.RequiredValidator} - is implicitly used if no explicit required validator is set. 
         * An explicit required validator can be set by page authors using the validators option. 
@@ -9177,7 +10392,6 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
        * @expose 
        * @access public
        * @instance
-       * @default n/a
        * @memberof! oj.ojInputSearch
        * @type {string|undefined}
        * @since 2.0.2
@@ -9711,7 +10925,7 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
       else
         newValue = [displayValue];
 
-      return this._SetValue(newValue, null, this._VALIDATE_METHOD_OPTIONS);
+        return this._SetValueReturnBoolean(newValue, null, this._VALIDATE_METHOD_OPTIONS);
     },
     
     /**
@@ -10115,6 +11329,12 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
    *
    * {@ojinclude "name":"keyboardDocOne"}
    *
+   * <h3 id="styling-section">
+   *   Styling
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#styling-section"></a>
+   * </h3>
+   *
+   * {@ojinclude "name":"stylingDoc"}
    *
    * {@ojinclude "name":"selectCommon"}
    */
@@ -10173,6 +11393,12 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
    *
    * {@ojinclude "name":"keyboardDocMany"}
    *
+   * <h3 id="styling-section">
+   *   Styling
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#styling-section"></a>
+   * </h3>
+   *
+   * {@ojinclude "name":"stylingDoc"}
    *
    * {@ojinclude "name":"selectCommon"}
    */
@@ -10534,7 +11760,6 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
        * @access public
        * @instance
        * @type {?Object}
-       * @default null
        * @memberof oj.ojSelect
        *
        * @example <caption>Initialize the Select with <code class="prettyprint">options-keys</code> specified. This allows the key names to be redefined in the options array.</caption>
@@ -10732,9 +11957,9 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
        * 
        * </p>
        * 
-       * @ojvalue {boolean} false - implies a value is not required to be provided by the user. 
+       * This property set to <code class="prettyprint">false</code> implies that a value is not required to be provided by the user.
        * This is the default.
-       * @ojvalue {boolean} true - implies a value is required to be provided by user and the 
+       * This property set to <code class="prettyprint">true</code> implies that a value is required to be provided by user and the
        * input's label will render a required icon. Additionally a required validator - 
        * {@link oj.RequiredValidator} - is implicitly used if no explicit required validator is set. 
        * An explicit required validator can be set by page authors using the validators attribute. 
@@ -10839,6 +12064,7 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
        * @instance
        * @type {null | Object}
        * @default null
+       * @ojwriteback
        *
        * @property {any} value current value of JET Select
        * @property {string} [label] display label of value above. If missing, String(value) is used. 
@@ -10875,6 +12101,7 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
        * @instance
        * @type {null | Array.<Object>}
        * @default null
+       * @ojwriteback
        *
        * @property {any} value a current value of JET Select
        * @property {string} [label] display label of value above. If missing, String(value) is used. 
@@ -10946,6 +12173,7 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
        * @ojshortdesc The value of the element.
        * @access public
        * @instance
+       * @ojwriteback
        * @memberof oj.ojSelectMany
        * @type {Array.<any>}
        */
@@ -11105,12 +12333,12 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
 
       // - ie11 multiple select with keyboard fails
       if (!this._IsCustomElement() || this.multiple === true ) {
-        this._SetValue(arr, event, {doValueChangeCheck: false,
+          this._SetValueReturnBoolean(arr, event, { doValueChangeCheck: false,
                                   '_context': {internalSet: true}});
         _ComboUtils.setValueOptions(this, arrValOpts);
       }
       else {
-        this._SetValue(arr[0], event, {doValueChangeCheck: false,
+          this._SetValueReturnBoolean(arr[0], event, { doValueChangeCheck: false,
                                   '_context': {internalSet: true}});
         _ComboUtils.setValueOptions(this, arrValOpts[0]);
       }
@@ -11134,135 +12362,122 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
       element.addClass(_ComboUtils.GENERATED_OPTIONS_SELECTOR);
     },
 
-    _nativeSetSelected : function (value)
-    {
-      var selected = null;
-      if (value) {
-        selected = value;
-      }
-      else {
-        if (this._HasPlaceholderSet()) {
-          if (this.options.required)
+      _nativeSetSelected: function (value) {
+        var selected = null;
+        if (value) {
+          selected = value;
+        } else {
+          if (this._HasPlaceholderSet()) {
+            if (this.options.required) {
+              selected = this._nativeFindFirstEnabledOptionValue();
+            }
+            this._SetPlaceholder(this.options.placeholder);
+          }
+
+          // default to the first enabled option
+          if (selected === null) {
             selected = this._nativeFindFirstEnabledOptionValue();
-          this._SetPlaceholder(this.options.placeholder);
+          }
         }
+        this._setInitialSelectedValue(selected);
+      },
 
-        // default to the first enabled option
-        if (selected === null) {
-          selected = this._nativeFindFirstEnabledOptionValue();
-        }
-      }
-      this._setInitialSelectedValue(selected);
-    },
-
-    //fetch first block from data provider
-    //when data available validate the selected value
-    _nativeFetchFromDataProvider : function (dataProvider)
-    {
-      var self = this;
-      _ComboUtils.fetchFirstBlockFromDataProvider(this.element, 
-                                                  dataProvider).then( 
-        function(data) {
+      // fetch first block from data provider
+      // when data available validate the selected value
+      _nativeFetchFromDataProvider: function () {
+        var self = this;
+        _ComboUtils.fetchFirstBlockFromDataProvider(this.element,
+                                                    self.options).then(
+        function (data) {
           self._nativeQueryCallback(data);
           if (data.length) {
-          //make sure value still valid
+          // make sure value still valid
             var selected = self.options.value;
             if (selected) {
               _ComboUtils.validateFromDataProvider(self.element,
-                                                   dataProvider, 
+                                                   self.options,
                                                    selected).then(
-              function(results) {
-                // - need to be able to specify the initial value of select components bound to dprv
+              function (results) {
+                //  - need to be able to specify the initial value of select components bound to dprv
                 if (results) {
                   var valueOptions = results.valueOptions;
                   if (Array.isArray(valueOptions) && valueOptions.length) {
                     _ComboUtils.setValueOptions(self, valueOptions);
                   }
-                  //only set value if it is valid
+                  // only set value if it is valid
                   var values = results.value;
                   if (Array.isArray(values) && values.length) {
-                    self._nativeSetSelected(self.multiple? values : values[0]);
+                    self._nativeSetSelected(self.multiple ? values : values[0]);
                   }
                 }
               });
-            }
-            //no selected value, default to placeholder or 1st item
-            else {
+            } else {
+              // no selected value, default to placeholder or 1st item
               self._nativeSetSelected();
             }
           }
         });
-    },
+      },
 
-    _nativeSetup : function ()
-    {
-      var element = this.element;
+      _nativeSetup: function () {
+        var element = this.element;
 
-      //add a <div> around <select> for validation error
-      element.wrap("<div>").parent() // @HTMLUpdateOK
-        .addClass("oj-select-native oj-component oj-select oj-form-control");
-      element.addClass("oj-select-select oj-component-initnode");
+        // add a <div> around <select> for validation error
+        element.wrap('<div>').parent() // @HTMLUpdateOK
+        .addClass('oj-select-native oj-component oj-select oj-form-control');
+        element.addClass('oj-select-select oj-component-initnode');
 
-      //multiple attr
-      if (this.multiple) {
-        if (! element[0].multiple)
-          element[0].multiple = true;
+        // multiple attr
+        if (this.multiple) {
+          if (!element[0].multiple) {
+            element[0].multiple = true;
+          }
 
-        element.parent().prepend("<a class='oj-select-arrow oj-component-icon oj-clickable-icon-nocontext oj-select-multiple-open-icon' role='presentation'></a>");  // @HTMLUpdateOK
-      }
-      else {
-        element.parent().prepend("<a class='oj-select-arrow oj-component-icon oj-clickable-icon-nocontext oj-select-open-icon' role='presentation'></a>");  // @HTMLUpdateOK
-      }
-      //disable attr
-      this._nativeSetDisabled(this.options.disabled);
+          element.parent().prepend("<a class='oj-select-arrow oj-component-icon oj-clickable-icon-nocontext oj-select-multiple-open-icon' role='presentation'></a>");  // @HTMLUpdateOK
+        } else {
+          element.parent().prepend("<a class='oj-select-arrow oj-component-icon oj-clickable-icon-nocontext oj-select-open-icon' role='presentation'></a>");  // @HTMLUpdateOK
+        }
+      // disable attr
+        this._nativeSetDisabled(this.options.disabled);
 
-      if (this.options.list)
-      {
-        _ComboUtils.listPopulateResults(element, 
-                                        $("#" + this.options.list).children(),
+        if (this.options.list) {
+          _ComboUtils.listPopulateResults(element,
+                                        $('#' + this.options.list).children(),
                                         this._formatValue.bind(this));
-        element.addClass(_ComboUtils.GENERATED_OPTIONS_SELECTOR);
-      }
-      else if (this.options.options)
-      {
-        var dataProvider = _ComboUtils.getDataProvider(this.options);
-        if (dataProvider) {
-          this._nativeFetchFromDataProvider(dataProvider);
-        }
-        else {
-          this._nativeQueryCallback(this.options.options);
-        }
-      }
-      else if (this._IsCustomElement()) 
-      {
-//TODO: TEST if the dropdown only contains a placeholder don't call ojOptionPopulateResults
-        var children = element.children();
-        if (children.length !== 1 || ! children.hasClass("oj-listbox-placeholder")) {
-          // handle custom element with oj-option, oj-optgroup case
-          _ComboUtils.ojOptionPopulateResults(element, 
-                                              children,
-                                              this._formatValue.bind(this));        
           element.addClass(_ComboUtils.GENERATED_OPTIONS_SELECTOR);
+        } else if (this.options.options) {
+          if (_ComboUtils.getDataProvider(this.options)) {
+            this._nativeFetchFromDataProvider();
+          } else {
+            this._nativeQueryCallback(this.options.options);
+          }
+        } else if (this._IsCustomElement()) {
+// TODO: TEST if the dropdown only contains a placeholder don't call ojOptionPopulateResults
+          var children = element.children();
+          if (children.length !== 1 || !children.hasClass('oj-listbox-placeholder')) {
+          // handle custom element with oj-option, oj-optgroup case
+            _ComboUtils.ojOptionPopulateResults(element, children,
+                                                this._formatValue.bind(this));
+            element.addClass(_ComboUtils.GENERATED_OPTIONS_SELECTOR);
+          }
         }
-      }
 
-      this._focusable({
-        'element': element,
-        'applyHighlight': true
-      });
+        this._focusable({
+          element: element,
+          applyHighlight: true
+        });
 
-      // - the selected option of the ojselect not reflected in the value variable
-      var dataProvider = _ComboUtils.getDataProvider(this.options);
-      if (! this.options.value && ! this._HasPlaceholderSet() &&
-          ! dataProvider) {
-        this._setInitialSelectedValue(this._nativeFindFirstEnabledOptionValue());
-      }
+        //  - the selected option of the ojselect not reflected in the value variable
+        if (!this.options.value && !this._HasPlaceholderSet() &&
+            !_ComboUtils.getDataProvider(this.options)) {
+          this._setInitialSelectedValue(this._nativeFindFirstEnabledOptionValue());
+        }
 
-      //add a change listener
-      element.change(this._nativeChangeHandler.bind(this));
+      // add a change listener
+        element.change(this._nativeChangeHandler.bind(this));
 
-      _ComboUtils.addDataProviderEventListeners(this);
-    },
+        _ComboUtils.addDataProviderEventListeners(this);
+      },
 
     // native renderMode
     _jetSetup : function ()
@@ -11299,7 +12514,7 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
       else 
         selected = selectedVal;
       
-      this._SetValue(selected, 
+        this._SetValueReturnBoolean(selected,
                      null, {doValueChangeCheck: false,
                             '_context': {internalSet: true, writeback: true},
                             'changed': true,
@@ -11390,15 +12605,15 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
     },
 
     /**
-       * Override to do the delay connect/disconnect
-       * @memberof oj.ojSelect
-       * @override
-       * @protected
-       */
-      _VerifyConnectedForSetup: function () {
-        //  - temp moving oj-select from one elem to another should not cause fetch
-        return true;
-      },
+     * Override to do the delay connect/disconnect
+     * @memberof oj.ojSelect
+     * @override
+     * @protected
+     */
+    _VerifyConnectedForSetup: function () {
+      //  - temp moving oj-select from one elem to another should not cause fetch
+      return true;
+    },
 
     /**
      * Set the placeholder.
@@ -11575,11 +12790,10 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
           }
           // update valueOptions
           if (this._resolveValueOptionsLater) {
-            opts = { value: '', label: this.options.placeholder };
-            if (this.multiple) {
-              opts = [opts];
-            }
-            _ComboUtils.setValueOptions(this, opts);
+            //  - reseting value when value-option and placeholder are set
+            // throws exception
+            _ComboUtils.setValueOptions(this,
+              _ComboUtils.getValueOptionsForPlaceholder(this.multiple));
           }
         } else {
           //  - oj-select-one throws exception for mobile when selectedindex = -1 on refresh
@@ -11643,16 +12857,39 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
           existingValue.push(displayValue);
           newValue = existingValue;
         }
-        return this._SetValue(newValue, null, this._VALIDATE_METHOD_OPTIONS);
+          return this._SetValueReturnBoolean(newValue, null, this._VALIDATE_METHOD_OPTIONS);
       }
       
       // - select needs implementation fixes...
       if (this.select)
-        return this._SetValue(this.select.getVal(), null, this._VALIDATE_METHOD_OPTIONS);
+          return this._SetValueReturnBoolean(
+          this.select.getVal(), null, this._VALIDATE_METHOD_OPTIONS);
 
       return true;
 
     },
+
+    /**
+     * Returns a Promise that resolves to "valid" if validation passes, "invalid" otherwise
+     * jmw TODO: ojselect doesn't have validators or asyncValidators, so this will never be
+     * called. But what should I do about it?
+     * 1. set to oj.EVU's function. not so good an idea because we may miss a bug where it's
+     * being called when really it should never be called. An ok idea because code coverage
+     * would never be hit otherwise.
+     * 3. call _ValidateReturnBoolean wrapped in a Promise, and doc that this should never
+     *  be called and log a warning if it is called.
+     * 4. Assert, this should never be called. that's probably a good idea.
+     * @return {Promise} resolves to "valid" if validation passes, "invalid" otherwise
+     * @memberof! oj.ojSelect
+     * @override
+     * @protected
+     * @instance
+     * @ignore
+     */
+      _ValidateReturnPromise: function () {
+        oj.Assert.assert(false, 'ojselect\'s _ValidateReturnPromise should never be called since it ' +
+        'doesn\'t have async-validators or validators options');
+      },
 
     // native renderMode
     _nativeFindFirstEnabledOptionValue : function ()
@@ -11679,31 +12916,31 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
           children.remove();
       }
 
-      //if data provider, fetch data
+      // if data provider, fetch data
       if (_ComboUtils.isDataProvider(options)) {
-        this._nativeFetchFromDataProvider(options);
-      }
-      else {
-        _ComboUtils.arrayPopulateResults(element, 
+        this._nativeFetchFromDataProvider();
+      } else {
+        _ComboUtils.arrayPopulateResults(element,
                                          options,
-                                         this._formatValue.bind(this), 
+                                         this._formatValue.bind(this),
                                          this.options.optionsKeys);
-      var defVal = null;
-      if (this._HasPlaceholderSet())
-      {
-        if (this.options.required)
+
+        var defVal = null;
+        if (this._HasPlaceholderSet())
+        {
+          if (this.options.required)
+            defVal = this._nativeFindFirstEnabledOptionValue();
+
+          this._SetPlaceholder();
+        }
+
+        // default to the first enabled option
+        if (defVal === null)
           defVal = this._nativeFindFirstEnabledOptionValue();
 
-        this._SetPlaceholder();
-      }
+        this.options.value = defVal;
 
-      // default to the first enabled option
-      if (defVal === null)
-        defVal = this._nativeFindFirstEnabledOptionValue();
-
-      this.options.value = defVal;
-
-      this.option("value", oSelected);
+        this.option("value", oSelected);
       }
       element.addClass(_ComboUtils.GENERATED_OPTIONS_SELECTOR);
     },
@@ -11743,271 +12980,251 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
       return null;
     },
 
-    /**
-     * Handles options specific to select.
-     * @override
-     * @protected
-     * @memberof! oj.ojSelect
-     */
-    _setOption : function (key, value, flags)
-    {
-      if (key === "value") {
-        //clone the value, otherwise _setDisplayValue will not be invoked on binding value to ko observableArray.
-        //TODO: Need to revisit this once 18724975 is fixed.
+      /**
+       * Handles options specific to select.
+       * @override
+       * @protected
+       * @memberof! oj.ojSelect
+       */
+      _setOption: function (key, _value, flags) {
+        var value = _value;
+        var selected;
+        var self = this;
+        var selfSuper = this._super;
+        var multi = this.multiple;
 
-        if (this._HasPlaceholderSet() && 
-            ((value && value.length == 0) ||
-             (this._IsCustomElement() && value==""))) {
+        if (key === 'value') {
+          // clone the value, otherwise _setDisplayValue will not be invoked on binding value to ko observableArray.
+          // TODO: Need to revisit this once 18724975 is fixed.
 
-          // - placeholder is not displayed after removing selections from select many
-          _ComboUtils.setValueOptions(this, this.multiple? [] : "");
-          this._super(key, value, flags);
-          return;
-        }
-
-        // native renderMode
-        var element;
-        if (this.select)
-        {
-          element = this.select.datalist;
-          if (! element)
-            element = this.select.opts.element;
-        }
-        
-        var customSelectOne = this._IsCustomElement() && !this.multiple;
-
-        // turn value to an array
-        if (! Array.isArray(value) && !customSelectOne)
-          value = [value];
-
-        if (this._isNative())
-        {
-          if (!customSelectOne)
-            value = this._removePlaceholderInMultiValues(value);
-
-          //set oj-select-default on the select tag if the selected value is a placeholder and a singleton
-          if (value.length == 1 && value[0] == "")
-            this.element.addClass("oj-select-default");
-          else
-            this.element.removeClass("oj-select-default");
-        }
-
-        var dataProvider = _ComboUtils.getDataProvider(this.options);
-        if (dataProvider && value) {
-          var self = this;
-          var selfSuper = this._super;
-          if (this.select) {
-            this.select.opts.options = dataProvider;
-          }
-          _ComboUtils.validateFromDataProvider(
-            this._isNative()? this.element : this.select.container, 
-            dataProvider, value).then(
-            function(results) {
-              // - need to be able to specify the initial value of select components bound to dprv
-              if (results) {
-                var valueOptions = results.valueOptions;
-                if (Array.isArray(valueOptions) && valueOptions.length) {
-                  _ComboUtils.setValueOptions(self, valueOptions);
-                }
-                //only set value if it is valid
-                var values = results.value;
-                if (Array.isArray(values) && values.length) {
-                  selfSuper.call(self, key, self.multiple? values : values[0]);
-                }
-              }
-            });
-            // - ojselect allows to set invalid value when using dataprovider
+          if (this._HasPlaceholderSet() &&
+            ((value && value.length === 0) ||
+             (this._IsCustomElement() && _ComboUtils.isValueForPlaceholder(multi, value)))) {
+            //  - placeholder is not displayed after removing selections from select many
+            _ComboUtils.setValueOptions(this,
+                                        _ComboUtils.getValueOptionsForPlaceholder(multi));
+            this._super(key, value, flags);
             return;
-        }
-        // - ojselect should ignore the invalid value set programmatically
-        else if (!customSelectOne) {
-          var newArr = [];
-          for (var i = 0; i < value.length; i++) {
-            if (this.select)
-            {
-              //Note: both multi select and remote data cases, the validate function is not available
-              if (! this.select.opts.validate ||
+          }
+
+          // native renderMode
+          var element;
+          if (this.select) {
+            element = this.select.datalist;
+            if (!element) {
+              element = this.select.opts.element;
+            }
+          }
+
+          var customSelectOne = this._IsCustomElement() && !multi;
+
+          // turn value to an array
+          if (!Array.isArray(value) && !customSelectOne) {
+            value = [value];
+          }
+
+          if (this._isNative()) {
+            if (!customSelectOne) {
+              value = this._removePlaceholderInMultiValues(value);
+            }
+
+            // set oj-select-default on the select tag if the selected value is a placeholder and a singleton
+            if (value.length === 1 && value[0] === '') {
+              this.element.addClass('oj-select-default');
+            } else {
+              this.element.removeClass('oj-select-default');
+            }
+          }
+
+          if (_ComboUtils.getDataProvider(this.options) && value) {
+            if (this.select) {
+              this.select.opts.options = this.options.options;
+            }
+
+            _ComboUtils.validateFromDataProvider(
+              this._isNative() ? this.element : this.select.container, this.options, value)
+              .then(function (results) {
+                //  - need to be able to specify the initial value of select components bound to dprv
+                if (results) {
+                  var valueOptions = results.valueOptions;
+                  if (Array.isArray(valueOptions) && valueOptions.length) {
+                    _ComboUtils.setValueOptions(self, valueOptions);
+                  }
+                  // only set value if it is valid
+                  var values = results.value;
+                  if (Array.isArray(values) && values.length) {
+                    selfSuper.call(self, key, multi ? values : values[0]);
+                  }
+                }
+              });
+            //  - ojselect allows to set invalid value when using dataprovider
+            return;
+          } else if (!customSelectOne) {
+            //  - ojselect should ignore the invalid value set programmatically
+            var newArr = [];
+            for (var i = 0; i < value.length; i++) {
+              if (this.select) {
+                // Note: both multi select and remote data cases, the validate function is not available
+                if (!this.select.opts.validate ||
                   this.select.opts.validate(element, value[i]) ||
-                  this._isOptionDataPending())
+                    this._isOptionDataPending()) {
+                  newArr.push(value[i]);
+                }
+              } else if (this.element.find("option[value='" + value[i] + "']").length > 0) {
                 newArr.push(value[i]);
+              }
             }
-            else
-            {
-              if (this.element.find("option[value='" + value[i] + "']").length > 0)
-                newArr.push(value[i]);
+
+            // only set values that are valid
+            //  - can't remove last selected value in multi-select ojselect
+            // multi select allows empty array
+            if (newArr.length > 0 || multi) {
+              this._super(key, newArr, flags);
+              //  - need to be able to specify the initial value of select components bound to dprv
+              _ComboUtils.updateValueOptions(this.select);
             }
+            return;
           }
-        
-          //only set values that are valid
-          // - can't remove last selected value in multi-select ojselect
-          //multi select allows empty array
-          if (newArr.length > 0 || this.multiple) {
-            this._super(key, newArr, flags);
-            // - need to be able to specify the initial value of select components bound to dprv
-            _ComboUtils.updateValueOptions(this.select);
-          }
-          return;
-        } 
-        else {
-          if (! (this.select && this.select.opts.validate) ||
+          if (!(this.select && this.select.opts.validate) ||
               this.select.opts.validate(element, value) ||
               this._isOptionDataPending()) {
             this._super(key, value, flags);
 
-            // - need to be able to specify the initial value of select components bound to dprv
+              //  - need to be able to specify the initial value of select components bound to dprv
             _ComboUtils.updateValueOptions(this.select);
           }
           return;
-        }
-      }
-      else if (key === "placeholder")
-      {
-        // native renderMode
-        if (this.select) {
-          this.select.opts.placeholder = value;
-          this.select._setPlaceholder();
-        }
-        else {
-          var selected = this.options.value;
-          if (! selected || selected.length === 0 || ! selected[0])
-            this.element[0].selectedIndex = 0;
-        }
-      }
-
-      else if (key === "minimumResultsForSearch")
-      {
-        // native renderMode
-        if (this.select)
-          this.select.opts.minimumResultsForSearch = value;
-      }
-
-      else if (key === "renderMode")
-      {
-        this._cleanup();
-        this.options.renderMode = value;
-        this.refresh();
-      }
-
-      //if we have a new data provider, remove the old dataProvider event listeners 
-      if (key === "options") {
-        _ComboUtils.removeDataProviderEventListeners(this);
-        _ComboUtils.clearDataProviderWrapper(this);
-      }
-      this._super(key, value, flags);
-
-      if (key === "disabled")
-      {
-        if (this.select)
-        {
-          if (value)
-            this.select._disable();
-          else
-            this.select._enable();
-        }
-        else {
-          this._nativeSetDisabled(value);
-        }
-      }
-      // - need to be able to specify the initial value of select components bound to dprv
-      else if (key === "valueOption" && this.multiple !== true) {
-        _ComboUtils.syncValueWithValueOption(this, value, null);
-      }
-      else if (key === "valueOptions" && this.multiple === true && Array.isArray(value)) {
-        _ComboUtils.syncValueWithValueOptions(this, value, null);
-      }
-      else if (key === "options")
-      {
-        //if options is a new data provider
-        //wrap it with LVDP if it doesn't implement FetchByKeys
-        //add event listeners
-        if (_ComboUtils.isDataProvider(value)) {
-          //update internal dataProviderWrapper
-          _ComboUtils.wrapDataProviderIfNeeded(this, this.select ? this.select.opts : null);
-          _ComboUtils.addDataProviderEventListeners(this);
-        }
-        if (this.select)
-        {
-          //make sure the value still valid
-          var selected = this.select.getVal();
-          var dataProvider = _ComboUtils.getDataProvider(this.options);
-
-          if (dataProvider && selected) {
-            var self = this;
-            var selfSuper = this._super;
-
-            //  - need to be able to specify the initial value of select components bound to dprv
-            if (_ComboUtils.applyValueOptions(this.select, this.options)) {
-              this.select.opts.options = value;
-              this.select.opts = self.select._prepareOpts(this.select.opts);
+        } else if (key === 'placeholder') {
+          if (this.select) {
+            this.select.opts.placeholder = value;
+            if (_ComboUtils.isValueForPlaceholder(multi, this.options.value)) {
+              this.select._setPlaceholder();
             }
-            else {
-              _ComboUtils.validateFromDataProvider(this.select.container, dataProvider, 
-                                                   this.options.value).then(
-              function(results) {
-                // - need to be able to specify the initial value of select components bound to dprv
-                var values = results? results.value : null;
+          } else {
+            // native renderMode
+            selected = this.options.value;
+            if (!selected || selected.length === 0 || !selected[0]) {
+              this.element[0].selectedIndex = 0;
+            }
+          }
+        } else if (key === 'minimumResultsForSearch') {
+          // native renderMode
+          if (this.select) {
+            this.select.opts.minimumResultsForSearch = value;
+          }
+        } else if (key === 'renderMode') {
+          this._cleanup();
+          this.options.renderMode = value;
+          this.refresh();
+        }
+
+        // if we have a new data provider, remove the old dataProvider event listeners
+        if (key === 'options') {
+          _ComboUtils.removeDataProviderEventListeners(this);
+          _ComboUtils.clearDataProviderWrapper(this);
+        }
+        this._super(key, value, flags);
+
+        if (key === 'disabled') {
+          if (this.select) {
+            if (value) {
+              this.select._disable();
+            } else {
+              this.select._enable();
+            }
+          } else {
+            this._nativeSetDisabled(value);
+          }
+        } else if (key === 'valueOption' && multi !== true) {
+          if (this.select) {
+            this.select.opts.valueOption = value;
+          }
+          //  - need to be able to specify the initial value of select components bound to dprv
+          _ComboUtils.syncValueWithValueOption(this, value, this.options.value);
+        } else if (key === 'valueOptions' && multi === true) {
+          if (this.select) {
+            this.select.opts.valueOptions = value;
+          }
+          _ComboUtils.syncValueWithValueOptions(this, value, this.options.value);
+        } else if (key === 'options') {
+          // if options is a new data provider
+          // wrap it with LVDP if it doesn't implement FetchByKeys
+          // add event listeners
+          if (_ComboUtils.isDataProvider(value)) {
+          // update internal dataProviderWrapper
+            _ComboUtils.wrapDataProviderIfNeeded(this, this.select ? this.select.opts : null);
+            _ComboUtils.addDataProviderEventListeners(this);
+          }
+          if (this.select) {
+            // make sure the value still valid
+            selected = this.select.getVal();
+            if (_ComboUtils.getDataProvider(this.options) && selected) {
+              //  - need to be able to specify the initial value of select components bound to dprv
+              if (_ComboUtils.applyValueOptions(this.select, this.options)) {
+                this.select.opts.options = value;
+                this.select.opts = self.select._prepareOpts(this.select.opts);
+              } else {
+                _ComboUtils.validateFromDataProvider(this.select.container, this.options,
+                                                     this.options.value).then(
+              function (results) {
+                //  - need to be able to specify the initial value of select components bound to dprv
+                var values = results ? results.value : null;
                 if (values) {
                   var valueOptions = results.valueOptions;
                   if (Array.isArray(valueOptions) && valueOptions.length) {
                     _ComboUtils.setValueOptions(self, valueOptions);
                   }
-                  //only set value if it is valid
+                  // only set value if it is valid
                   if (Array.isArray(values) && values.length) {
-                    selfSuper.call(self, "value", self.multiple? values : values[0]);
+                    selfSuper.call(self, 'value', multi ? values : values[0]);
                   }
-                }
-                //use placeholder if specified
-                else if (self.options.placeholder) {
-                  self.select._updateSelectedOption(self.options.placeholder);
-                }
-                //the selected value is no longer valid, fetch 1st item from data provider
-                else {
-                  _ComboUtils.fetchFirstBlockFromDataProvider(self.select.container, 
-                                                              dataProvider, 1).then(
-                    function(data) {
-                      //At this point if we still don't have a selected value then default to the first item
+                } else if (self.options.placeholder) {
+                  // use placeholder if specified
+                  if (!multi) {
+                    self.select._updateSelectedOption(self.options.placeholder);
+                  }
+                } else {
+                  // the selected value is no longer valid, fetch 1st item from data provider
+                  _ComboUtils.fetchFirstBlockFromDataProvider(self.select.container,
+                                                              self.options, 1).then(
+                    function (data) {
+                      // At this point if we still don't have a selected value then default to the first item
                       if (data && data.length > 0 && selected === self.select.getVal()) {
                         self.select._updateSelectedOption(data[0]);
-                      }
-                      else {
-                        selfSuper.call(self, "value", null);
-                        //update select box
-                        if (! self.multiple)
-                          self.select.text.text("");
+                      } else {
+                        selfSuper.call(self, 'value', null);
+                        // update select box
+                        if (!multi) {
+                          self.select.text.text('');
+                        }
                       }
                     });
                 }
                 self.select.opts.options = value;
                 self.select.opts = self.select._prepareOpts(self.select.opts);
               });
-            }
-          }
-          else {
-            // - an empty placeholder shows up if data changed after first binding
-            // - ojselect - validator error message is not shown
-            // - ojselect tooltip no longer appears once options and value observables change
-            this.select.opts.options = value;
-            this.select.opts = this.select._prepareOpts(this.select.opts);
+              }
+            } else {
+              //  - an empty placeholder shows up if data changed after first binding
+              //  - ojselect - validator error message is not shown
+              //  - ojselect tooltip no longer appears once options and value observables change
+              this.select.opts.options = value;
+              this.select.opts = this.select._prepareOpts(this.select.opts);
 
-            //make sure the value still valid
-            this.select.setValOpts(null);
-            this._super("value", selected);
+              // make sure the value still valid
+              this.select.setValOpts(null);
+              this._super('value', selected);
+            }
+          } else {
+            this._nativeSetOptions(value);
+          }
+        } else if (key === 'required' && this._isNative()) {
+          var placeholder = $(this.element.find('.oj-listbox-placeholder'));
+          if (placeholder && placeholder.attr('value') === '') {
+          // hide placeholder when required is true
+            this._hidePlaceholder(placeholder, value);
           }
         }
-        else
-        {
-          this._nativeSetOptions(value);
-        }
-      }
-      else if (key === "required" && this._isNative())
-      {
-        var placeholder = $(this.element.find(".oj-listbox-placeholder"));
-        if (placeholder && placeholder.attr("value") === "")
-        {
-          //hide placeholder when required is true
-          this._hidePlaceholder(placeholder, value);
-        }
-      }
 /*
       else if (key === "pickerAttributes")
       {
@@ -12015,8 +13232,8 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
           this.select._setPickerAttributes(value);
       }
 */
-    },
-    
+      },
+
     _isOptionDataPending : function ()
     {
       var options = this['options']['options'];
@@ -12604,9 +13821,31 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
      * @ojfragment keyboardDocMany - Used in keyboard section of classdesc, and standalone gesture doc
      * @memberof oj.ojSelectMany
      */
+    /**
+     * {@ojinclude "name":"ojStylingDocIntro"}
+     * <p>The form control text align style classes can be applied to the component, or an ancestor element. When
+     * applied to an ancestor element, all form components that support the text align style classes will be affected.
+     *
+     * <table class="generic-table styling-table">
+     *   <thead>
+     *     <tr>
+     *       <th>{@ojinclude "name":"ojStylingDocClassHeader"}</th>
+     *       <th>{@ojinclude "name":"ojStylingDocDescriptionHeader"}</th>
+     *     </tr>
+     *   </thead>
+     *   <tbody>
+     *     <tr>
+     *       <td>oj-form-control-text-align-start</td>
+     *       <td>Aligns the text to the left in ltr and to the right in rtl</td>
+     *     </tr>
+     *   </tbody>
+     * </table>
+     *
+     * @ojfragment stylingDoc - Used in Styling section of classdesc, and standalone Styling doc
+     * @memberof oj.ojSelect
+     */
 
-
-  }
+    }
   );
 
 oj.Components.setDefaultOptions(
@@ -12631,438 +13870,36 @@ oj.Components.setDefaultOptions(
   }
 );
 
-(function() {
-var ojComboboxOneMeta = {
-  "properties": {
-    "converter": {
-      "type": "Object"
-    },
-    "filterOnOpen": {
-      "type": "string",
-      "enumValues": ["none", "rawValue"]
-    },
-    "minLength": {
-      "type": "number"
-    },
-    "optionRenderer": {},
-    "options": {
-    },
-    "optionsKeys": {
-      "type": "Object",
-      "properties": {
-        "label": {
-          "type": "string"
-        },
-        "value": {
-          "type": "string"
-        },
-        "children": {
-          "type": "string"
-        },
-        "childKeys": {
-          "type": "Object",
-          "properties": {
-            "label": {
-              "type": "string"
-            },
-            "value": {
-              "type": "string"
-            },
-            "children": {
-              "type": "string"
-            }
-          }
-        }
-      }
-    },
-    "pickerAttributes": {
-      "type": "Object"
-    },
-    "placeholder": {
-      "type": "string"
-    },
-    "rawValue": {
-      "type": "string",
-      "readOnly": true,
-      "writeback": true
-    },
-    "required": {
-      "type": "boolean"
-    },  
-    "translations": {
-      "type": "Object",
-      "properties": {
-        "filterFurther": {
-          "type": "string",
-          "value": "More results available, please filter further."
-        },
-        "noMatchesFound": {
-          "type": "string",
-          "value": "No matches found"
-        },
-        "required": {
-          "type": "Object",
-          "properties": {
-            "hint": {
-              "type": "string"
-            },
-            "messageDetail": {
-              "type": "string"
-            },
-            "messageSummary": {
-              "type": "string"
-            }
-          }
-        }
-      }
-    },
-    "value": {
-      "type": "any",
-      "writeback": true
-    },
-    "validators": {
-      "type": "Array"
-    },
-    "valueOption": {
-      "type": "Object",
-      "writeback": true
-    }
-  },
-  "events": {
-    "valueUpdated": {}
-  },
-  "methods": {
-    "validate": {}
-  },
-  "extension": {
-    _INNER_ELEM: 'input',
-    _WIDGET_NAME: "ojCombobox"
-  }
-};
-oj.CustomElementBridge.registerMetadata('oj-combobox-one', 'editableValue', ojComboboxOneMeta);
-oj.CustomElementBridge.register('oj-combobox-one', {'metadata': oj.CustomElementBridge.getMetadata('oj-combobox-one')});
-})();
+/* global __oj_combobox_one_metadata:false */
+(function () {
+  __oj_combobox_one_metadata.extension._WIDGET_NAME = 'ojCombobox';
+  __oj_combobox_one_metadata.extension._INNER_ELEM = 'input';
+  oj.CustomElementBridge.registerMetadata('oj-combobox-one', 'editableValue', __oj_combobox_one_metadata);
+  oj.CustomElementBridge.register('oj-combobox-one', { metadata: oj.CustomElementBridge.getMetadata('oj-combobox-one') });
+}());
 
-(function() {
-var ojComboboxManyMeta = {
-  "properties": {
-    "converter": {
-      "type": "Object"
-    },
-    "minLength": {
-      "type": "number"
-    },
-    "optionRenderer": {},
-    "options": {
-    },
-    "optionsKeys": {
-      "type": "Object",
-      "properties": {
-        "label": {
-          "type": "string"
-        },
-        "value": {
-          "type": "string"
-        },
-        "children": {
-          "type": "string"
-        },
-        "childKeys": {
-          "type": "Object",
-          "properties": {
-            "label": {
-              "type": "string"
-            },
-            "value": {
-              "type": "string"
-            },
-            "children": {
-              "type": "string"
-            }
-          }
-        }
-      }
-    },
-    "pickerAttributes": {
-      "type": "Object"
-    },
-    "placeholder": {
-      "type": "string"
-    },
-    "rawValue": {
-      "type": "string",
-      "readOnly": true,
-      "writeback": true
-    },
-    "required": {
-      "type": "boolean"
-    },  
-    "translations": {
-      "type": "Object",
-      "properties": {
-        "filterFurther": {
-          "type": "string",
-          "value": "More results available, please filter further."
-        },
-        "noMatchesFound": {
-          "type": "string",
-          "value": "No matches found"
-        },
-        "required": {
-          "type": "Object",
-          "properties": {
-            "hint": {
-              "type": "string"
-            },
-            "messageDetail": {
-              "type": "string"
-            },
-            "messageSummary": {
-              "type": "string"
-            }
-          }
-        }
-      }
-    },
-    "value": {
-      "type": "Array",
-      "writeback": true
-    },
-    "validators": {
-      "type": "Array"
-    },
-    "valueOptions": {
-      "type": "Array",
-      "writeback": true
-    }
-  },
-  "methods": {
-    "validate": {}
-  },
-  "extension": {
-    _INNER_ELEM: 'input',
-    _WIDGET_NAME: "ojCombobox"
-  }
-};
-oj.CustomElementBridge.registerMetadata('oj-combobox-many', 'editableValue', ojComboboxManyMeta);
-oj.CustomElementBridge.register('oj-combobox-many', {'metadata': oj.CustomElementBridge.getMetadata('oj-combobox-many')});
-})();
+/* global __oj_combobox_many_metadata:false */
+(function () {
+  __oj_combobox_many_metadata.extension._WIDGET_NAME = 'ojCombobox';
+  __oj_combobox_many_metadata.extension._INNER_ELEM = 'input';
+  oj.CustomElementBridge.registerMetadata('oj-combobox-many', 'editableValue', __oj_combobox_many_metadata);
+  oj.CustomElementBridge.register('oj-combobox-many', { metadata: oj.CustomElementBridge.getMetadata('oj-combobox-many') });
+}());
 
-(function() {
-var ojSelectOneMeta = {
-  "properties": {
-    "minimumResultsForSearch": {
-      "type": "number"
-    },
-    "optionRenderer": {},
-    "options": {
-    },
-    "optionsKeys": {
-      "type": "Object",
-      "properties": {
-        "label": {
-          "type": "string"
-        },
-        "value": {
-          "type": "string"
-        },
-        "children": {
-          "type": "string"
-        },
-        "childKeys": {
-          "type": "Object",
-          "properties": {
-            "label": {
-              "type": "string"
-            },
-            "value": {
-              "type": "string"
-            },
-            "children": {
-              "type": "string"
-            }
-          }
-        }
-      }
-    },
-    "pickerAttributes": {
-      "type": "Object"
-    },
-    "placeholder": {
-      "type": "string"
-    },
-    "renderMode": {
-      "type": "string"
-    },
-    "required": {
-      "type": "boolean"
-    }, 
-    "translations": {
-      "type": "Object",
-      "properties": {
-        "filterFurther": {
-          "type": "string",
-          "value": "More results available, please filter further."
-        },
-        "moreMatchesFound": {
-          "type": "string",
-          "value": "num matches found"
-        },
-        "noMatchesFound": {
-          "type": "string",
-          "value": "No matches found"
-        },
-        "oneMatchesFound": {
-          "type": "string",
-          "value": "One match found"
-        },
-        "required": {
-          "type": "Object",
-          "properties": {
-            "hint": {
-              "type": "string"
-            },
-            "messageDetail": {
-              "type": "string"
-            },
-            "messageSummary": {
-              "type": "string"
-            }
-          }
-        },
-        "searchField": {
-          "type": "string",
-          "value": "Search field"
-        }
-      }
-    }, 
-    "value": {
-      "type": "any",
-      "writeback": true
-    },
-    "valueOption": {
-      "type": "Object",
-      "writeback": true
-    }
-  },
-  "methods": {
-    "validate": {}
-  },
-  "extension": {
-    _INNER_ELEM: 'select',
-    _WIDGET_NAME: "ojSelect"
-  }
-};
-oj.CustomElementBridge.registerMetadata('oj-select-one', 'editableValue', ojSelectOneMeta);
-oj.CustomElementBridge.register('oj-select-one', {'metadata': oj.CustomElementBridge.getMetadata('oj-select-one')});
-})();
+/* global __oj_select_one_metadata:false */
+(function () {
+  __oj_select_one_metadata.extension._WIDGET_NAME = 'ojSelect';
+  __oj_select_one_metadata.extension._INNER_ELEM = 'select';
+  oj.CustomElementBridge.registerMetadata('oj-select-one', 'editableValue', __oj_select_one_metadata);
+  oj.CustomElementBridge.register('oj-select-one', { metadata: oj.CustomElementBridge.getMetadata('oj-select-one') });
+}());
 
-(function() {
-var ojSelectManyMeta = {
-  "properties": {
-    "minimumResultsForSearch": {
-      "type": "number"
-    },
-    "optionRenderer": {},
-    "options": {
-    },
-    "optionsKeys": {
-      "type": "Object",
-      "properties": {
-        "label": {
-          "type": "string"
-        },
-        "value": {
-          "type": "string"
-        },
-        "children": {
-          "type": "string"
-        },
-        "childKeys": {
-          "type": "Object",
-          "properties": {
-            "label": {
-              "type": "string"
-            },
-            "value": {
-              "type": "string"
-            },
-            "children": {
-              "type": "string"
-            }
-          }
-        }
-      }
-    },
-    "pickerAttributes": {
-      "type": "Object"
-    },
-    "placeholder": {
-      "type": "string"
-    },
-    "renderMode": {
-      "type": "string"
-    },
-    "required": {
-      "type": "boolean"
-    },  
-    "translations": {
-      "type": "Object",
-      "properties": {
-        "filterFurther": {
-          "type": "string",
-          "value": "More results available, please filter further."
-        },
-        "moreMatchesFound": {
-          "type": "string",
-          "value": "num matches found"
-        },
-        "noMatchesFound": {
-          "type": "string",
-          "value": "No matches found"
-        },
-        "oneMatchesFound": {
-          "type": "string",
-          "value": "One match found"
-        },
-        "required": {
-          "type": "Object",
-          "properties": {
-            "hint": {
-              "type": "string"
-            },
-            "messageDetail": {
-              "type": "string"
-            },
-            "messageSummary": {
-              "type": "string"
-            }
-          }
-        },
-        "searchField": {
-          "type": "string",
-          "value": "Search field"
-        }
-      }
-    },
-    "value": {
-      "type": "Array",
-      "writeback": true
-    },
-    "valueOptions": {
-      "type": "Array",
-      "writeback": true
-    }
-  },
-  "methods": {
-    "validate": {}
-  },
-  "extension": {
-    _INNER_ELEM: 'select',
-    _WIDGET_NAME: "ojSelect"
-  }
-};
-oj.CustomElementBridge.registerMetadata('oj-select-many', 'editableValue', ojSelectManyMeta);
-oj.CustomElementBridge.register('oj-select-many', {'metadata': oj.CustomElementBridge.getMetadata('oj-select-many')});
-})();
+/* global __oj_select_many_metadata:false */
+(function () {
+  __oj_select_many_metadata.extension._WIDGET_NAME = 'ojSelect';
+  __oj_select_many_metadata.extension._INNER_ELEM = 'select';
+  oj.CustomElementBridge.registerMetadata('oj-select-many', 'editableValue', __oj_select_many_metadata);
+  oj.CustomElementBridge.register('oj-select-many', { metadata: oj.CustomElementBridge.getMetadata('oj-select-many') });
+}());
+
 });

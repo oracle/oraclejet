@@ -249,22 +249,6 @@ dvt.TimelineOverview.prototype.getSeriesIds = function()
   return this._seriesIds.split(' ');
 };
 
-/**
- * Adds a label in time axis.
- * @param {number} pos The time position.
- * @param {string} text The label text.
- * @param {number} width The width of the component.
- * @param {number} height The height of the component.
- * @param {number} maxWidth The maximum label width.
- * @param {string=} id The optional id for the corresponding DOM element.
- * @protected
- * @override
- */
-dvt.TimelineOverview.prototype.addLabel = function(pos, text, width, height, maxWidth, id)
-{
-  dvt.TimelineOverview.superclass.addLabel.call(this, pos, text, width, height, maxWidth, id, this._labelStyle);
-};
-
 /***************************** common helper methods *********************************************/
 dvt.TimelineOverview.prototype.isItemSelectionEnabled = function()
 {
@@ -343,8 +327,16 @@ dvt.TimelineOverview.prototype.parseDataXML = function(width, height)
   if (this._markers == null)
     return;
 
-  var start = this._start;
-  var end = this._end;
+  if (this.isVertical())
+  {
+    var start = this._yMin;
+    var end = this._yMax;
+  }
+  else
+  {
+    start = this._xMin;
+    end = this._xMax;
+  }
 
   // find the optimal size of the marker
   var opt = this.calculateOptimalSize(start, end, width, height, this._markerSize);
@@ -358,7 +350,7 @@ dvt.TimelineOverview.prototype.parseDataXML = function(width, height)
       durationMarkers[durationMarkers.length] = marker;
   }
   this.prepareDurations(durationMarkers);
-  this.addDurations(durationMarkers);
+  this.addDurations(durationMarkers, start, end);
 
   this._markerSize = opt;
 };
@@ -551,7 +543,7 @@ dvt.TimelineOverview.prototype.addMarker = function(node, sz)
   return displayable;
 };
 
-dvt.TimelineOverview.prototype.addDurations = function(durationMarkers)
+dvt.TimelineOverview.prototype.addDurations = function(durationMarkers, start, end)
 {
   var context = this.getCtx();
   for (var i = this._maxDurationY; i > 0; i--)
@@ -561,10 +553,10 @@ dvt.TimelineOverview.prototype.addDurations = function(durationMarkers)
       var node = durationMarkers[j];
       if (i == node._durationLevel)
       {
-        var x = dvt.OverviewUtils.getDatePosition(this._start, this._end, node.getTime(), this.isVertical() ? this.Height : this.Width);
+        var x = dvt.OverviewUtils.getDatePosition(start, end, node.getTime(), this.isVertical() ? this.Height : this.Width);
         var durationId = '_drn_' + node.getId();
         var durationY = 9 + 5 * node._durationLevel;
-        var x2 = dvt.OverviewUtils.getDatePosition(this._start, this._end, node.getEndTime(), this.isVertical() ? this.Height : this.Width);
+        var x2 = dvt.OverviewUtils.getDatePosition(start, end, node.getEndTime(), this.isVertical() ? this.Height : this.Width);
         if (this.isVertical())
         {
           if (this.isRTL())
@@ -772,9 +764,6 @@ dvt.TimelineOverview.prototype.HandleShapeMouseOver = function(event)
       // Show the tooltip
       this.getCtx().getTooltipManager().showDatatip(event.pageX, event.pageY, tooltip, '#000000');
     }
-
-    if (this.isFlashEnvironment())
-      this.setCursor('pointer');
   }
 
   // if selection is disabled in Timeline then return
@@ -881,67 +870,23 @@ dvt.TimelineOverview.prototype.HandleMarkerClick = function(drawable, isMultiSel
   var time = drawable._node.getTime();
   if (time != null)
   {
-    // scroll timeline
-    var evt = new dvt.TimelineOverviewEvent(dvt.TimelineOverviewEvent.SUBTYPE_SCROLL_TIME);
-    evt.setTime(time);
-    this.dispatchEvent(evt);
-
     // scroll overview
     var slidingWindow = this.getSlidingWindow();
     var newPos;
 
     if (this.isVertical())
+    {
       newPos = this.getX(drawable) - slidingWindow.getHeight() / 2;
+      this.animateSlidingWindow(null, newPos);
+    }
     else
+    {
       newPos = this.getX(drawable) - slidingWindow.getWidth() / 2;
-
-    this.animateSlidingWindow(newPos);
+      this.animateSlidingWindow(newPos);
+    }
   }
 };
-
 /************************** end event handling *********************************************/
-
-
-/***************************** zoom (overview operation only) *********************************************/
-dvt.TimelineOverview.prototype.updateSlidingWindowForZoom = function(renderStart, start, end, width)
-{
-  // update time info from timeline peer
-  this._start = start;
-  this._end = end;
-  this._width = width;
-  this._renderStart = renderStart;
-
-  var timelineSize = width;
-
-  if (this.isVertical())
-    var size = this.Height;
-  else
-    size = this.Width;
-
-  // calcualte new left and width
-  // first get the date using the width of timeline overview as position relative to the overall timeline
-  var rangeStartTime = dvt.OverviewUtils.getPositionDate(start, end, 0, timelineSize);
-  var rangeEndTime = dvt.OverviewUtils.getPositionDate(start, end, size, timelineSize);
-
-  var rangeStartPos = dvt.OverviewUtils.getDatePosition(start, end, rangeStartTime, size);
-  var rangeEndPos = dvt.OverviewUtils.getDatePosition(start, end, rangeEndTime, size);
-
-  var renderStartPos = dvt.OverviewUtils.getDatePosition(start, end, renderStart, size);
-
-  var newPos = renderStartPos;
-  var newSize = Math.max(dvt.Overview.MIN_WINDOW_SIZE, Math.min(size, rangeEndPos - rangeStartPos));
-  if (newPos + newSize > size)
-    newPos = Math.max(0, size - newSize);
-
-  if (this.isHorizontalRTL())
-    newPos = size - newSize - newPos;
-
-  this.animateSlidingWindow(newPos, newSize);
-
-  // update increment as well
-  this._increment = this.calculateIncrement(size);
-};
-/************************** end zoom *********************************************/
 
 
 /************************** marker highlight *********************************************/
@@ -1137,8 +1082,6 @@ dvt.TimelineOverview.prototype.applyState = function(drawable, state)
     {
       if (markerType == dvt.SimpleMarker.CIRCLE)
       {
-        if (this.isFlashEnvironment())
-          borderOffset = 0;
         var width = (drawable.getDimensions().w + (borderOffset * 2)) * drawable.getScaleX();
         var height = (drawable.getDimensions().h + (borderOffset * 2)) * drawable.getScaleY();
         var cx = this.getX(drawable) - borderOffset + (width / 2);
@@ -1183,8 +1126,6 @@ dvt.TimelineOverview.prototype.applyState = function(drawable, state)
         var glowOffset = borderOffset - borderWidth;
         if (markerType == dvt.SimpleMarker.CIRCLE)
         {
-          if (this.isFlashEnvironment())
-            glowOffset = 0;
           width = (drawable.getDimensions().w + (glowOffset * 2)) * drawable.getScaleX();
           height = (drawable.getDimensions().h + (glowOffset * 2)) * drawable.getScaleY();
           cx = this.getX(drawable) - glowOffset + (width / 2);
@@ -1270,8 +1211,16 @@ dvt.TimelineOverview.prototype.handleAutoPPRInsert = function(xmlString)
   this.orderInsert(marker);
 
   // draw the marker
-  var start = this._start;
-  var end = this._end;
+  if (this.isVertical())
+  {
+    var start = this._yMin;
+    var end = this._yMax;
+  }
+  else
+  {
+    start = this._xMin;
+    end = this._xMax;
+  }
   var width = this.Width;
   var height = this.Height;
 
@@ -1283,7 +1232,7 @@ dvt.TimelineOverview.prototype.handleAutoPPRInsert = function(xmlString)
     var durationMarkers = [];
     durationMarkers[0] = marker;
     this.prepareDurations(durationMarkers);
-    this.addDurations(durationMarkers);
+    this.addDurations(durationMarkers, start, end);
   }
 };
 
@@ -1311,8 +1260,16 @@ dvt.TimelineOverview.prototype.handleAutoPPRUpdate = function(rowKey, xmlString)
     this.orderInsert(updatedMarker);
 
     // draw the marker
-    var start = this._start;
-    var end = this._end;
+    if (this.isVertical())
+    {
+      var start = this._yMin;
+      var end = this._yMax;
+    }
+    else
+    {
+      start = this._xMin;
+      end = this._xMax;
+    }
     var width = this.Width;
     var height = this.Height;
 
@@ -1329,7 +1286,7 @@ dvt.TimelineOverview.prototype.handleAutoPPRUpdate = function(rowKey, xmlString)
       var durationMarkers = [];
       durationMarkers[0] = marker;
       this.prepareDurations(durationMarkers);
-      this.addDurations(durationMarkers);
+      this.addDurations(durationMarkers, start, end);
     }
   }
 };
@@ -1569,12 +1526,7 @@ DvtTimelineOverviewParser.prototype.ParseRootAttributes = function(options)
   // The object that will be populated with parsed values and returned
   var ret = DvtTimelineOverviewParser.superclass.ParseRootAttributes.call(this, options);
 
-  ret.start = parseInt(options['start']);
-  ret.end = parseInt(options['end']);
-  ret.width = parseInt(options['width']);
-  ret.renderStart = parseInt(options['renstart']);
   ret.currentTime = parseInt(options['ocd']);
-
   ret.orientation = options['orn'];
   ret.selectionMode = options['selmode'];
   ret.isRtl = options['rtl'].toString();
@@ -3012,9 +2964,6 @@ dvt.Timeline.prototype.onAnimationEnd = function()
 dvt.Timeline.prototype._getOverviewObject = function()
 {
   var overviewOptions = new Object();
-  overviewOptions['start'] = this._start;
-  overviewOptions['end'] = this._end;
-  overviewOptions['renstart'] = this._viewStartTime;
   overviewOptions['width'] = this._contentLength;
   overviewOptions['selmode'] = this._selectionMode;
   overviewOptions['rtl'] = this.isRTL();
@@ -3040,27 +2989,34 @@ dvt.Timeline.prototype._getOverviewObject = function()
   if (this._isVertical)
   {
     overviewOptions['orn'] = 'vertical';
-    var handle = this._resources['overviewHandleVert'];
-    if (handle)
-    {
-      overviewOptions['_hbi'] = handle;
-      overviewOptions['_hw'] = 15;
-      overviewOptions['_hh'] = 3;
-    }
+    overviewOptions['yMin'] = this._start;
+    overviewOptions['yMax'] = this._end;
+    overviewOptions['y1'] = this._viewStartTime;
+    overviewOptions['y2'] = this._viewEndTime;
   }
   else
   {
     overviewOptions['orn'] = 'horizontal';
-    handle = this._resources['overviewHandleHor'];
-    if (handle)
-    {
-      overviewOptions['_hbi'] = handle;
-      overviewOptions['_hw'] = 3;
-      overviewOptions['_hh'] = 15;
-    }
+    overviewOptions['xMin'] = this._start;
+    overviewOptions['xMax'] = this._end;
+    overviewOptions['x1'] = this._viewStartTime;
+    overviewOptions['x2'] = this._viewEndTime;
     overviewOptions['_ds'] = 'square';
     overviewOptions['_dsx'] = '1.3d';
     overviewOptions['_dsy'] = '0.9d';
+  }
+
+  if (this._resources['overviewHandleVert'])
+  {
+    overviewOptions['_vhbi'] = this._resources['overviewHandleVert'];
+    overviewOptions['_vhw'] = 15;
+    overviewOptions['_vhh'] = 3;
+  }
+  if (this._resources['overviewHandleHor'])
+  {
+    overviewOptions['_hbi'] = this._resources['overviewHandleHor'];
+    overviewOptions['_hw'] = 3;
+    overviewOptions['_hh'] = 15;
   }
 
   overviewOptions['axisTicks'] = this._getOverviewAxisOptions();
@@ -3268,10 +3224,9 @@ dvt.Timeline.prototype.handleZoomWheel = function(newLength, time, compLoc, trig
   if (this._hasOverview)
   {
     if (this._isVertical)
-      var overviewLength = this._overview.Height;
+      this._overview.setViewportRange(null, null, this._viewStartTime, this._viewEndTime);
     else
-      overviewLength = this._overview.Width;
-    this._overview.setViewportRange(this._viewStartTime, this._viewEndTime, overviewLength);
+      this._overview.setViewportRange(this._viewStartTime, this._viewEndTime, null, null);
   }
   if (this.isTimeDirScrollbarOn())
     this.timeDirScrollbar.setViewportRange(this._viewStartTime, this._viewEndTime);
@@ -3487,10 +3442,8 @@ dvt.Timeline.prototype.panBy = function(deltaX, deltaY)
     }
     this.panZoomCanvasBy(deltaY);
     if (this._hasOverview)
-    {
-      var overviewLength = this._overview.Height;
-      this._overview.setViewportRange(this._viewStartTime, this._viewEndTime, overviewLength);
-    }
+      this._overview.setViewportRange(null, null, this._viewStartTime, this._viewEndTime);
+
     if (this.isTimeDirScrollbarOn())
       this.timeDirScrollbar.setViewportRange(this._viewStartTime, this._viewEndTime);
   }
@@ -3498,10 +3451,8 @@ dvt.Timeline.prototype.panBy = function(deltaX, deltaY)
   {
     this.panZoomCanvasBy(deltaX);
     if (this._hasOverview)
-    {
-      var overviewLength = this._overview.Width;
-      this._overview.setViewportRange(this._viewStartTime, this._viewEndTime, overviewLength);
-    }
+      this._overview.setViewportRange(this._viewStartTime, this._viewEndTime, null, null);
+
     if (this.isTimeDirScrollbarOn())
       this.timeDirScrollbar.setViewportRange(this._viewStartTime, this._viewEndTime);
 
@@ -3555,14 +3506,22 @@ dvt.Timeline.prototype.HandleEvent = function(event, component)
     // check for selection event, and handle accordingly
     dvt.EventDispatcher.dispatchEvent(this._callback, this._callbackObj, this, event);
   }
-  else if (type == 'overview')
+  else if (type == dvt.OverviewEvent.TYPE)
   {
     var subType = event.getSubType();
-    if (subType == 'rangeChanging' || subType == 'rangeChange')
+    if (subType == dvt.OverviewEvent.SUBTYPE_RANGECHANGING || subType == dvt.OverviewEvent.SUBTYPE_RANGECHANGE)
     {
       var oldViewTime = this._viewEndTime - this._viewStartTime;
-      this._viewStartTime = event.getNewStartTime();
-      this._viewEndTime = event.getNewEndTime();
+      if (this._isVertical)
+      {
+        this._viewStartTime = event.getNewY1();
+        this._viewEndTime = event.getNewY2();
+      }
+      else
+      {
+        this._viewStartTime = event.getNewX1();
+        this._viewEndTime = event.getNewX2();
+      }
       var viewTime = this._viewEndTime - this._viewStartTime;
       if (viewTime > 0)
       {
@@ -3601,13 +3560,21 @@ dvt.Timeline.prototype.HandleEvent = function(event, component)
         this.updateSeries();
         this.applyTimeZoomCanvasPosition();
       }
-      if (subType == 'rangeChange')
+      if (subType == dvt.OverviewEvent.SUBTYPE_RANGECHANGE)
         this.dispatchEvent(this.createViewportChangeEvent());
     }
-    if (subType == 'scrollPos' || subType == 'scrollTime')
+    if (subType == dvt.OverviewEvent.SUBTYPE_SCROLL_POS || subType == dvt.OverviewEvent.SUBTYPE_SCROLL_TIME)
     {
-      this._viewStartTime = event.getNewStartTime();
-      this._viewEndTime = event.getNewEndTime();
+      if (this._isVertical)
+      {
+        this._viewStartTime = event.getNewY1();
+        this._viewEndTime = event.getNewY2();
+      }
+      else
+      {
+        this._viewStartTime = event.getNewX1();
+        this._viewEndTime = event.getNewX2();
+      }
       var widthFactor = this.getContentLength() / (this._end - this._start);
       this.setRelativeStartPos(widthFactor * (this._start - this._viewStartTime));
       this.applyTimeZoomCanvasPosition();
@@ -3761,10 +3728,9 @@ dvt.Timeline.prototype.updateScrollForItemNavigation = function(item)
   if (this._hasOverview)
   {
     if (this._isVertical)
-      var overviewLength = this._overview.Height;
+      this._overview.setViewportRange(null, null, this._viewStartTime, this._viewEndTime);
     else
-      overviewLength = this._overview.Width;
-    this._overview.setViewportRange(this._viewStartTime, this._viewEndTime, overviewLength);
+      this._overview.setViewportRange(this._viewStartTime, this._viewEndTime, null, null);
   }
   if (this.isTimeDirScrollbarOn())
     this.timeDirScrollbar.setViewportRange(this._viewStartTime, this._viewEndTime);

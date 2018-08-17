@@ -6,6 +6,598 @@
 "use strict";
 define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore', 'ojs/ojdatasource-common', 'ojs/ojdatacollection-utils', 'ojs/ojinputnumber', 'ojs/ojmenu', 'ojs/ojdialog'], function(oj, $)
 {
+  
+
+var __oj_data_grid_metadata = 
+{
+  "properties": {
+    "bandingInterval": {
+      "type": "object",
+      "properties": {
+        "column": {
+          "type": "number",
+          "value": 0
+        },
+        "row": {
+          "type": "number",
+          "value": 0
+        }
+      }
+    },
+    "cell": {
+      "type": "object",
+      "properties": {
+        "className": {
+          "type": "function|string"
+        },
+        "renderer": {
+          "type": "function"
+        },
+        "style": {
+          "type": "function|string"
+        }
+      }
+    },
+    "currentCell": {
+      "type": "object",
+      "writeback": true,
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "axis": {
+          "type": "string"
+        },
+        "index": {
+          "type": "number"
+        },
+        "level": {
+          "type": "number"
+        },
+        "key": {
+          "type": "number"
+        },
+        "indexes": {
+          "type": "object",
+          "properties": {
+            "row": {
+              "type": "number"
+            },
+            "column": {
+              "type": "number"
+            }
+          }
+        },
+        "keys": {
+          "type": "object",
+          "properties": {
+            "row": {
+              "type": "string"
+            },
+            "column": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "data": {
+      "type": "oj.DataGridDataSource"
+    },
+    "dnd": {
+      "type": "object",
+      "properties": {
+        "reorder": {
+          "type": "object",
+          "properties": {
+            "row": {
+              "type": "string",
+              "enumValues": [
+                "disable",
+                "enable"
+              ],
+              "value": "disable"
+            }
+          }
+        }
+      }
+    },
+    "editMode": {
+      "type": "string",
+      "writeback": true,
+      "enumValues": [
+        "cellEdit",
+        "cellNavigation",
+        "none"
+      ],
+      "value": "none"
+    },
+    "gridlines": {
+      "type": "object",
+      "properties": {
+        "horizontal": {
+          "type": "string",
+          "enumValues": [
+            "hidden",
+            "visible"
+          ],
+          "value": "visible"
+        },
+        "vertical": {
+          "type": "string",
+          "enumValues": [
+            "hidden",
+            "visible"
+          ],
+          "value": "visible"
+        }
+      }
+    },
+    "header": {
+      "type": "object",
+      "properties": {
+        "column": {
+          "type": "object",
+          "properties": {
+            "className": {
+              "type": "function|string"
+            },
+            "label": {
+              "type": "object",
+              "properties": {
+                "className": {
+                  "type": "function|string"
+                },
+                "renderer": {
+                  "type": "function"
+                },
+                "style": {
+                  "type": "function|string"
+                }
+              }
+            },
+            "renderer": {
+              "type": "function"
+            },
+            "resizable": {
+              "type": "object",
+              "properties": {
+                "height": {
+                  "type": "string",
+                  "enumValues": [
+                    "disable",
+                    "enable"
+                  ],
+                  "value": "disable"
+                },
+                "width": {
+                  "type": "string|function",
+                  "enumValues": [
+                    "disable",
+                    "enable"
+                  ],
+                  "value": "disable"
+                }
+              }
+            },
+            "sortable": {
+              "type": "function|string",
+              "enumValues": [
+                "auto",
+                "disable",
+                "enable"
+              ],
+              "value": "auto"
+            },
+            "style": {
+              "type": "function|string"
+            }
+          }
+        },
+        "columnEnd": {
+          "type": "object",
+          "properties": {
+            "className": {
+              "type": "function|string"
+            },
+            "label": {
+              "type": "object",
+              "properties": {
+                "className": {
+                  "type": "function|string"
+                },
+                "renderer": {
+                  "type": "function"
+                },
+                "style": {
+                  "type": "function|string"
+                }
+              }
+            },
+            "renderer": {
+              "type": "function"
+            },
+            "resizable": {
+              "type": "object",
+              "properties": {
+                "height": {
+                  "type": "string",
+                  "enumValues": [
+                    "disable",
+                    "enable"
+                  ],
+                  "value": "disable"
+                },
+                "width": {
+                  "type": "string|function",
+                  "enumValues": [
+                    "disable",
+                    "enable"
+                  ],
+                  "value": "disable"
+                }
+              }
+            },
+            "style": {
+              "type": "function|string"
+            }
+          }
+        },
+        "row": {
+          "type": "object",
+          "properties": {
+            "className": {
+              "type": "function|string"
+            },
+            "label": {
+              "type": "object",
+              "properties": {
+                "className": {
+                  "type": "function|string"
+                },
+                "renderer": {
+                  "type": "function"
+                },
+                "style": {
+                  "type": "function|string"
+                }
+              }
+            },
+            "renderer": {
+              "type": "function"
+            },
+            "resizable": {
+              "type": "object",
+              "properties": {
+                "height": {
+                  "type": "string|function",
+                  "enumValues": [
+                    "disable",
+                    "enable"
+                  ],
+                  "value": "disable"
+                },
+                "width": {
+                  "type": "string",
+                  "enumValues": [
+                    "disable",
+                    "enable"
+                  ],
+                  "value": "disable"
+                }
+              }
+            },
+            "sortable": {
+              "type": "function|string",
+              "enumValues": [
+                "auto",
+                "disable",
+                "enable"
+              ],
+              "value": "auto"
+            },
+            "style": {
+              "type": "function|string"
+            }
+          }
+        },
+        "rowEnd": {
+          "type": "object",
+          "properties": {
+            "className": {
+              "type": "function|string"
+            },
+            "label": {
+              "type": "object",
+              "properties": {
+                "className": {
+                  "type": "function|string"
+                },
+                "renderer": {
+                  "type": "function"
+                },
+                "style": {
+                  "type": "function|string"
+                }
+              }
+            },
+            "renderer": {
+              "type": "function"
+            },
+            "resizable": {
+              "type": "object",
+              "properties": {
+                "height": {
+                  "type": "string|function",
+                  "enumValues": [
+                    "disable",
+                    "enable"
+                  ],
+                  "value": "disable"
+                },
+                "width": {
+                  "type": "string",
+                  "enumValues": [
+                    "disable",
+                    "enable"
+                  ],
+                  "value": "disable"
+                }
+              }
+            },
+            "style": {
+              "type": "function|string"
+            }
+          }
+        }
+      }
+    },
+    "scrollPolicy": {
+      "type": "string",
+      "enumValues": [
+        "auto",
+        "loadMoreOnScroll",
+        "scroll"
+      ],
+      "value": "auto"
+    },
+    "scrollPolicyOptions": {
+      "type": "object",
+      "properties": {
+        "maxRowCount": {
+          "type": "number"
+        },
+        "maxColumnCount": {
+          "type": "number"
+        }
+      }
+    },
+    "scrollPosition": {
+      "type": "object",
+      "writeback": true,
+      "value": {
+        "x": 0,
+        "y": 0
+      },
+      "properties": {
+        "x": {
+          "type": "number"
+        },
+        "y": {
+          "type": "number"
+        },
+        "rowIndex": {
+          "type": "number"
+        },
+        "columnIndex": {
+          "type": "number"
+        },
+        "rowKey": {
+          "type": "any"
+        },
+        "columnKey": {
+          "type": "any"
+        },
+        "offsetX": {
+          "type": "number"
+        },
+        "offsetY": {
+          "type": "number"
+        }
+      }
+    },
+    "selection": {
+      "type": "Array<Object>",
+      "writeback": true,
+      "value": []
+    },
+    "selectionMode": {
+      "type": "object",
+      "properties": {
+        "cell": {
+          "type": "string",
+          "enumValues": [
+            "multiple",
+            "none",
+            "single"
+          ],
+          "value": "none"
+        },
+        "row": {
+          "type": "string",
+          "enumValues": [
+            "multiple",
+            "none",
+            "single"
+          ],
+          "value": "none"
+        }
+      }
+    },
+    "translations": {
+      "type": "object",
+      "value": {},
+      "properties": {
+        "accessibleActionableMode": {
+          "type": "string"
+        },
+        "accessibleColumnContext": {
+          "type": "string"
+        },
+        "accessibleColumnEndHeaderContext": {
+          "type": "string"
+        },
+        "accessibleColumnHeaderContext": {
+          "type": "string"
+        },
+        "accessibleColumnSelected": {
+          "type": "string"
+        },
+        "accessibleColumnSpanContext": {
+          "type": "string"
+        },
+        "accessibleFirstColumn": {
+          "type": "string"
+        },
+        "accessibleFirstRow": {
+          "type": "string"
+        },
+        "accessibleLastColumn": {
+          "type": "string"
+        },
+        "accessibleLastRow": {
+          "type": "string"
+        },
+        "accessibleLevelContext": {
+          "type": "string"
+        },
+        "accessibleMultiCellSelected": {
+          "type": "string"
+        },
+        "accessibleNavigationMode": {
+          "type": "string"
+        },
+        "accessibleRangeSelectModeOff": {
+          "type": "string"
+        },
+        "accessibleRangeSelectModeOn": {
+          "type": "string"
+        },
+        "accessibleRowCollapsed": {
+          "type": "string"
+        },
+        "accessibleRowContext": {
+          "type": "string"
+        },
+        "accessibleRowEndHeaderContext": {
+          "type": "string"
+        },
+        "accessibleRowExpanded": {
+          "type": "string"
+        },
+        "accessibleRowHeaderContext": {
+          "type": "string"
+        },
+        "accessibleRowSelected": {
+          "type": "string"
+        },
+        "accessibleRowSpanContext": {
+          "type": "string"
+        },
+        "accessibleSelectionAffordanceBottom": {
+          "type": "string"
+        },
+        "accessibleSelectionAffordanceTop": {
+          "type": "string"
+        },
+        "accessibleSortAscending": {
+          "type": "string"
+        },
+        "accessibleSortDescending": {
+          "type": "string"
+        },
+        "accessibleStateSelected": {
+          "type": "string"
+        },
+        "accessibleSummaryEstimate": {
+          "type": "string"
+        },
+        "accessibleSummaryExact": {
+          "type": "string"
+        },
+        "accessibleSummaryExpanded": {
+          "type": "string"
+        },
+        "labelCut": {
+          "type": "string"
+        },
+        "labelDisableNonContiguous": {
+          "type": "string"
+        },
+        "labelEnableNonContiguous": {
+          "type": "string"
+        },
+        "labelPaste": {
+          "type": "string"
+        },
+        "labelResize": {
+          "type": "string"
+        },
+        "labelResizeDialogSubmit": {
+          "type": "string"
+        },
+        "labelResizeHeight": {
+          "type": "string"
+        },
+        "labelResizeWidth": {
+          "type": "string"
+        },
+        "labelSortCol": {
+          "type": "string"
+        },
+        "labelSortColAsc": {
+          "type": "string"
+        },
+        "labelSortColDsc": {
+          "type": "string"
+        },
+        "labelSortRow": {
+          "type": "string"
+        },
+        "labelSortRowAsc": {
+          "type": "string"
+        },
+        "labelSortRowDsc": {
+          "type": "string"
+        },
+        "msgFetchingData": {
+          "type": "string"
+        },
+        "msgNoData": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "methods": {
+    "refresh": {},
+    "getContextByNode": {},
+    "setProperty": {},
+    "getProperty": {},
+    "setProperties": {},
+    "getNodeBySubId": {},
+    "getSubIdByNode": {}
+  },
+  "events": {
+    "ojResize": {},
+    "ojSort": {},
+    "ojScroll": {},
+    "ojBeforeCurrentCell": {},
+    "ojBeforeEdit": {},
+    "ojBeforeEditEnd": {}
+  },
+  "extension": {}
+};
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
@@ -6089,7 +6681,7 @@ DvtDataGrid.prototype._addCellsToFragment = function(fragment, cellSet, rowStart
                 for (k = 0; k < extents['row']; k++)
                 {
                     rowKey = k === 0 ? cellContext['keys']['row'] : this._getKey(this._getHeaderByIndex(tempRowIndex + k, 0, this.m_rowHeader, this.m_rowHeaderLevelCount, this.m_startRowHeader), 'row');
-                    height += this._getCellDimension(cell, tempRowIndex, rowKey, 'row', 'height', true);
+                    height += this._getCellDimension(cell, tempRowIndex, rowKey, 'row', 'height', j === 0);
                 }
 
                 // set the px height on the cell
@@ -6098,7 +6690,7 @@ DvtDataGrid.prototype._addCellsToFragment = function(fragment, cellSet, rowStart
                 for (k = 0; k < extents['column']; k++)
                 {
                     columnKey = k === 0 ? cellContext['keys']['column'] : this._getKey(this._getHeaderByIndex(columnIndex + k, 0, this.m_colHeader, this.m_columnHeaderLevelCount, this.m_startColHeader), 'column');
-                    width += this._getCellDimension(cell, columnIndex, columnKey, 'column', 'width', columnIndex === 0);
+                    width += this._getCellDimension(cell, columnIndex, columnKey, 'column', 'width', i === 0);
                 }
 
                 // set the px width on the cell regardless of unit type currently on it
@@ -6336,7 +6928,8 @@ DvtDataGrid.prototype._getCellDimension = function(cell, index, key, axis, dimen
 
     // use a shim element so that we don't have to manage class name ordering
     // in the case of no headers this gets called everytime, so added firstPass to make sure it's only the first time
-    if (endHeader == -1 && firstPass && !this.m_initialized)
+    // initialized doesn't matter because of scroll behavior
+    if (endHeader == -1 && firstPass)
     {
         shimHeaderContext = this.createHeaderContext(axis, index, null, {'key': key}, null, 0, 0, 1);
         inlineStyle = this.m_options.getInlineStyle(axis, shimHeaderContext);
@@ -16221,7 +16814,8 @@ DvtDataGrid.prototype._getCellByIndex = function(indexes)
     var id = this._getFromDatabodyMap(indexes);
     if (id != null)
     {
-        return document.getElementById(id);
+        // databody isn't necessarily attached to the document
+        return this.m_databody.querySelector('#' + id);
     }
     return null;
 };
@@ -22246,9 +22840,6 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
                  * @memberof oj.ojDataGrid
                  * @instance
                  * @type {Object}
-                 * @default {"row":0, "column":0}
-                 * @property {number} row row banding interval
-                 * @property {number} column column banding interval
                  * @ojshortdesc Specifies the data body row and column banding intervals.
                  *
                  * @example <caption>Initialize the DataGrid with the <code class="prettyprint">bandingInterval</code> attribute specified:</caption>
@@ -22274,7 +22865,76 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
                  *     column: 1
                  * };
                  */
-                bandingInterval: {'row': 0, 'column': 0},
+                bandingInterval: {
+                    /**
+                     * <p>Row banding intervals within the DataGrid body.
+                     *
+                     * @expose
+                     * @memberof! oj.ojDataGrid
+                     * @name bandingInterval.row
+                     * @instance
+                     * @type {number}
+                     * @default 0
+                     * @ojshortdesc Specifies the data body row banding intervals.
+                     *
+                     * @example <caption>Initialize the DataGrid with the <code class="prettyprint">bandingInterval</code> attribute specified:</caption>
+                     * &lt;!-- Using dot notation -->
+                     * &lt;oj-data-grid banding-interval.row='1'>&lt;/oj-data-grid>
+                     *
+                     * &lt;!-- Using JSON notation -->
+                     * &lt;oj-data-grid banding-interval='{"row": 1}'>&lt;/oj-data-grid>
+                     *
+                     * @example <caption>Get or set the <code class="prettyprint">bandingInterval</code> property after initialization:</caption>
+                     * // Get one
+                     * var bandingIntervalValue = myDataGrid.bandingInterval.row;
+                     *
+                     * // Set one, leaving the others intact
+                     * myDataGrid.setProperty('bandingInterval.row', 1);
+                     *
+                     * // Get all
+                     * var bandingIntervalValues = myDataGrid.bandingInterval;
+                     *
+                     * // Set all.  Must list every resource key, as those not listed are lost.
+                     * myDataGrid.bandingInterval = {
+                     *     row: 1,
+                     * };
+                     */
+                    row: 0, 
+                    /**
+                     * <p>Column banding intervals within the DataGrid body.
+                     *
+                     * @expose
+                     * @memberof! oj.ojDataGrid
+                     * @name bandingInterval.column
+                     * @instance
+                     * @type {number}
+                     * @default 0
+                     * @ojshortdesc Specifies the data body column banding intervals.
+                     *
+                     * @example <caption>Initialize the DataGrid with the <code class="prettyprint">bandingInterval</code> attribute specified:</caption>
+                     * &lt;!-- Using dot notation -->
+                     * &lt;oj-data-grid banding-interval.column='1'>&lt;/oj-data-grid>
+                     *
+                     * &lt;!-- Using JSON notation -->
+                     * &lt;oj-data-grid banding-interval='{"column": 1}'>&lt;/oj-data-grid>
+                     *
+                     * @example <caption>Get or set the <code class="prettyprint">bandingInterval</code> property after initialization:</caption>
+                     * // Get one
+                     * var bandingIntervalValue = myDataGrid.bandingInterval.column;
+                     *
+                     * // Set one, leaving the others intact
+                     * myDataGrid.setProperty('bandingInterval.column', 1);
+                     *
+                     * // Get all
+                     * var bandingIntervalValues = myDataGrid.bandingInterval;
+                     *
+                     * // Set all.  Must list every resource key, as those not listed are lost.
+                     * myDataGrid.bandingInterval = {
+                     *     column: 1,
+                     * };
+                     */
+                    column: 0
+                },
                 /**
                  * <p>The data source for the DataGrid must be an extension of oj.DataGridDataSource.
                  * See the <a href="#data-section">data section</a> in the introduction for data sources provided out of the box.
@@ -22306,9 +22966,6 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
                  * @memberof oj.ojDataGrid
                  * @instance
                  * @type {Object}
-                 * @default {"horizontal": "visible", "vertical": "visible"}
-                 * @property {string} horizontal horizontal gridlines, valid values are: 'hidden', 'visible'
-                 * @property {string} vertical vertical gridlines, valid values are: 'hidden', 'visible'
                  * @ojshortdesc Specifies the visibility of the grid body vertical and horizontal gridlines.
                  *
                  * @example <caption>Initialize the DataGrid with the <code class="prettyprint">gridlines</code> attribute specified:</caption>
@@ -22319,12 +22976,6 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
                  * &lt;oj-data-grid gridlines='{"horizontal":"hidden", "vertical":"hidden"}'>&lt;/oj-data-grid>
                  *
                  * @example <caption>Get or set the <code class="prettyprint">gridlines</code> property after initialization:</caption>
-                 * // Get one
-                 * var gridlinesValue = myDataGrid.gridlines.horizontal;
-                 *
-                 * // Set one, leaving the others intact
-                 * myDataGrid.setProperty('gridlines.horizontal', 'hidden');
-                 *
                  * // Get all
                  * var gridlinesValues = myDataGrid.gridlines;
                  *
@@ -22334,7 +22985,82 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
                  *     vertical: 'hidden'
                  * };
                  */
-                gridlines: {'horizontal': 'visible', 'vertical': 'visible'},
+                gridlines: {
+                    /**
+                     * <p>Display or hide the horizontal gridlines in the data body. Gridlines are
+                     * visible by default and must be set to <code class="prettyprint">'hidden'</code> in order to be hidden.
+                     *
+                     * @expose
+                     * @name gridlines.horizontal
+                     * @memberof! oj.ojDataGrid
+                     * @instance
+                     * @type {string}
+                     * @default "visible"
+                     * @ojvalue {string} "visible" show horizontal gridlines
+                     * @ojvalue {string} "hidden" hide horizontal gridlines
+                     * @ojshortdesc Specifies the visibility of the grid body vertical and horizontal gridlines.
+                     *
+                     * @example <caption>Initialize the DataGrid with the <code class="prettyprint">gridlines</code> attribute specified:</caption>
+                     * &lt;!-- Using dot notation -->
+                     * &lt;oj-data-grid gridlines.horizontal='hidden'>&lt;/oj-data-grid>
+                     *
+                     * &lt;!-- Using JSON notation -->
+                     * &lt;oj-data-grid gridlines='{"horizontal":"hidden"}'>&lt;/oj-data-grid>
+                     *
+                     * @example <caption>Get or set the <code class="prettyprint">gridlines</code> property after initialization:</caption>
+                     * // Get one
+                     * var gridlinesValue = myDataGrid.gridlines.horizontal;
+                     *
+                     * // Set one, leaving the others intact
+                     * myDataGrid.setProperty('gridlines.horizontal', 'hidden');
+                     *
+                     * // Get all
+                     * var gridlinesValues = myDataGrid.gridlines;
+                     *
+                     * // Set all.  Must list every resource key, as those not listed are lost.
+                     * myDataGrid.gridlines = {
+                     *     horizontal: 'hidden',
+                     * };
+                     */
+                    horizontal: 'visible',
+                    /**
+                     * <p>Display or hide the vertical gridlines in the data body. Gridlines are
+                     * visible by default and must be set to <code class="prettyprint">'hidden'</code> in order to be hidden.
+                     *
+                     * @expose
+                     * @name gridlines.vertical
+                     * @memberof! oj.ojDataGrid
+                     * @instance
+                     * @type {string}
+                     * @default "visible"
+                     * @ojvalue {string} "visible" show vertical gridlines
+                     * @ojvalue {string} "hidden" hide vertical gridlines
+                     * @ojshortdesc Specifies the visibility of the grid body vertical and vertical gridlines.
+                     *
+                     * @example <caption>Initialize the DataGrid with the <code class="prettyprint">gridlines</code> attribute specified:</caption>
+                     * &lt;!-- Using dot notation -->
+                     * &lt;oj-data-grid gridlines.vertical='hidden'>&lt;/oj-data-grid>
+                     *
+                     * &lt;!-- Using JSON notation -->
+                     * &lt;oj-data-grid gridlines='{"vertical":"hidden"}'>&lt;/oj-data-grid>
+                     *
+                     * @example <caption>Get or set the <code class="prettyprint">gridlines</code> property after initialization:</caption>
+                     * // Get one
+                     * var gridlinesValue = myDataGrid.gridlines.vertical;
+                     *
+                     * // Set one, leaving the others intact
+                     * myDataGrid.setProperty('gridlines.vertical', 'hidden');
+                     *
+                     * // Get all
+                     * var gridlinesValues = myDataGrid.gridlines;
+                     *
+                     * // Set all.  Must list every resource key, as those not listed are lost.
+                     * myDataGrid.gridlines = {
+                     *     vertical: 'hidden',
+                     * };
+                     */
+                    vertical: 'visible'
+                },
                 /**
                  * <p>The information about the data grid scroll position. Contains the x,y pixel coordinates, as well as the index
                  * and key information of the cell closest to the origin of the grid data body.
@@ -22359,10 +23085,12 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
                  * it will likely be updated to an index before that which corresponds to the row index at the origin, rather than the last row index which is at the bottom
                  * of the visible region.
                  *
+                 * @ojwriteback
                  * @expose
                  * @memberof oj.ojDataGrid
                  * @instance
                  * @type {Object}
+                 * @ojwriteback
                  * @default <code class="prettyprint">{x: 0, y: 0}</code>
                  * @property {number=} x the horizontal position in pixel
                  * @property {number=} y the vertical position in pixel
@@ -22372,10 +23100,10 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
                  * @property {number=} columnIndex the zero-based column index of the cell at the origin of the grid.  If <a href="#scrollPolicy">scrollPolicy</a> is set to 'loadMoreOnScroll' 
                  * and the index is greater than maxCount set in <a href="#scrollPolicyOptions">scrollPolicyOptions</a>, then it will scroll and fetch
                  * until the end of the list is reached and there's no more items to fetch.
-                 * @property {any=} rowKey the row key of the cell at the origin of the grid. If DataGridDataSource is used for <a href="data">data</a> and the key does not exist in the 
+                 * @property {any=} rowKey the row key of the cell at the origin of the grid. If DataGridDataSource is used for <a href="#data">data</a> and the key does not exist in the 
                  * DataGridDataSource, then the value is ignored.  If it is unknown in the data source then the grid will fetch and scroll until the item is found
                  * or the end of the axis is reached and there's no more items to fetch.
-                 * @property {any=} columnKey the column key of the cell at the origin of the grid. If DataGridDataSource is used for <a href="data">data</a> and the key does not exist in the 
+                 * @property {any=} columnKey the column key of the cell at the origin of the grid. If DataGridDataSource is used for <a href="#data">data</a> and the key does not exist in the 
                  * DataGridDataSource, then the value is ignored.  If it is unknown in the data source then the grid will fetch and scroll until the item is found
                  * or the end of the axis is reached and there's no more items to fetch.
                  * @property {number=} offsetX the horizontal offset in pixel relative to the cell identified by key/index.
@@ -22418,9 +23146,6 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
                  * @memberof oj.ojDataGrid
                  * @instance
                  * @type {Object}
-                 * @default {cell:'none', row:'none'}
-                 * @property {string} row set row selection mode, valid values are: 'none', 'single', 'multiple'
-                 * @property {string} cell set cell selection mode, valid values are: 'none', 'single', 'multiple'
                  * @ojshortdesc Specifies row or cell selection.
                  *
                  * @example <caption>Initialize the DataGrid with the <code class="prettyprint">selectionMode</code> attribute specified:</caption>
@@ -22511,48 +23236,68 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
                     row: 'none'
                 },
                 /**
-                 * <p>Enables or disables reordering the rows within the same DataGrid using drag and drop.
-                 *
-                 * <p>Specify an object with a subproperty <code class="prettyprint">reorder</code> set to <code class="prettyprint">{row:'enable'}</code> to enable
-                 * reordering.  Setting the <code class="prettyprint">reorder</code> subproperty to <code class="prettyprint">{row:'disable'}</code>,
-                 * or setting the <code class="prettyprint">dnd</code> attribute to <code class="prettyprint">null</code> (or omitting
-                 * it), disables reordering support. There must be move capability support on the data source to enable this feature.
+                 * <p>Enables or disables drag and drop features on the datagrid.
                  *
                  * @type {Object}
-                 * @property {Object} reorder an object with property row
-                 * @property {string} reorder.row row reordering within the DataGrid, valid values are: 'enable', 'disable'
-                 *
-                 * @default {"reorder": {"row" :"disable"}}
                  * @expose
                  * @instance
                  * @memberof oj.ojDataGrid
-                 * @ojshortdesc Specifies the drag and drop row reordering.
-                 *
-                 * @example <caption>Initialize the DataGrid with the <code class="prettyprint">dnd</code> attribute specified:</caption>
-                 * &lt;!-- Using dot notation -->
-                 * &lt;oj-data-grid dnd.reorder.row='enable'>&lt;/oj-data-grid>
-                 *
-                 * &lt;!-- Using JSON notation -->
-                 * &lt;oj-data-grid dnd='{"reorder": {"row": "enable"}}'>&lt;/oj-data-grid>
-                 *
-                 * @example <caption>Get or set the <code class="prettyprint">dnd</code> property after initialization:</caption>
-                 * // Get one
-                 * var dndValue = myDataGrid.dnd.reorder.row;
-                 *
-                 * // Set one, leaving the others intact
-                 * myDataGrid.setProperty('dnd.reorder.row', 'enable');
-                 *
-                 * // Get all
-                 * var dndValues = myDataGrid.dnd;
-                 *
-                 * // Set all.  Must list every resource key, as those not listed are lost.
-                 * myDataGrid.dnd = {
-                 *     reorder: {
-                 *          row: 'enable'
-                 *     }
-                 * };
+                 * @ojshortdesc Specifies the drag and drop features.
                  */
-                dnd : {'reorder': {'row' :'disable'}},
+                dnd: {
+                    /**
+                     * <p>Enables or disables reordering the rows within the same DataGrid using drag and drop.
+                     *
+                     * @type {Object}
+                     * @name dnd.reorder
+                     * @expose
+                     * @instance
+                     * @memberof! oj.ojDataGrid
+                     * @ojshortdesc Specifies the drag and drop reordering.
+                     */
+                    reorder: {
+                        /**
+                         * <p>Enables or disables reordering the rows within the same DataGrid using drag and drop.
+                         *
+                         * There must be move capability support on the data source to enable this feature.
+                         *
+                         * @name dnd.reorder.row
+                         * @type {string}
+                         * @default "disable"
+                         * @ojvalue {string} "enable" enable row reordering
+                         * @ojvalue {string} "disable" disable row reordering
+                         * @expose
+                         * @instance
+                         * @memberof! oj.ojDataGrid
+                         * @ojshortdesc Specifies the drag and drop row reordering.
+                         *
+                         * @example <caption>Initialize the DataGrid with the <code class="prettyprint">dnd</code> attribute specified:</caption>
+                         * &lt;!-- Using dot notation -->
+                         * &lt;oj-data-grid dnd.reorder.row='enable'>&lt;/oj-data-grid>
+                         *
+                         * &lt;!-- Using JSON notation -->
+                         * &lt;oj-data-grid dnd='{"reorder": {"row": "enable"}}'>&lt;/oj-data-grid>
+                         *
+                         * @example <caption>Get or set the <code class="prettyprint">dnd</code> property after initialization:</caption>
+                         * // Get one
+                         * var dndValue = myDataGrid.dnd.reorder.row;
+                         *
+                         * // Set one, leaving the others intact
+                         * myDataGrid.setProperty('dnd.reorder.row', 'enable');
+                         *
+                         * // Get all
+                         * var dndValues = myDataGrid.dnd;
+                         *
+                         * // Set all.  Must list every resource key, as those not listed are lost.
+                         * myDataGrid.dnd = {
+                         *     reorder: {
+                         *          row: 'enable'
+                         *     }
+                         * };
+                         */
+                        row: 'disable'
+                    }
+                },
                 /**
                  * <p>Specifies the mechanism used to scroll the data inside the DataGrid.
                  *
@@ -22591,7 +23336,6 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
                  * @type {Object|null}
                  * @property {number=} maxRowCount The maximum total number of rows to fetch, -1 is unbounded
                  * @property {number=} maxColumnCount The maximum total number of columns to fetch, -1 is unbounded
-                 * @default {'maxRowCount': 500, 'maxColumnCount': 500}
                  *
                  * @example <caption>Initialize the DataGrid with the <code class="prettyprint">scroll-policy-options</code> attribute specified:</caption>
                  * &lt;!-- Using dot notation -->
@@ -22623,7 +23367,7 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
                      * @default 500
                      * @ojmin -1
                      */                    
-                    'maxRowCount': 500, 
+                    maxRowCount: 500, 
                     /**
                      * The maximum number of columns which will be displayed before fetching more rows will be stopped.
                      * <p>See the <a href="#scrollPolicyOptions">scroll-policy-options</a> attribute for usage examples.</p>
@@ -22636,7 +23380,7 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
                      * @default 500
                      * @ojmin -1
                      */                    
-                    'maxColumnCount': 500
+                    maxColumnCount: 500
                 },
                 /**
                  * <p>Specifies the current selections in the DataGrid.
@@ -23042,44 +23786,98 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
                          * that for row header, a function cannot be used with the <code class="prettyprint">width</code> subproperty.
                          * If a function is specified it takes a single parameter, <a href="#context-section">headerContext</a> and must return a string of
                          * <code class="prettyprint">enable</code> or <code class="prettyprint">disable</code>.
-                         *
+                         * 
                          * @expose
                          * @alias header.row.resizable
                          * @memberof! oj.ojDataGrid
                          * @instance
-                         * @type {Object.<string, string>|Object.<string, function(Object)>|null}
-                         * @default {"width": "disable", "height": "disable"}
-                         * @property {string} width row width resizable, valid values are: 'enable', 'disable'
-                         * @property {string} height row header height resizable, valid values are: 'enable', 'disable'
+                         * @type {Object}
                          * @ojshortdesc Specifies resizing width or height on the row headers.
-                         *
-                         * @example <caption>Initialize the DataGrid with the <code class="prettyprint">resizable</code> attribute specified:</caption>
-                         * &lt;!-- Using dot notation -->
-                         * &lt;oj-data-grid header.row.resizable.width='enable'>&lt;/oj-data-grid>
-                         *
-                         * &lt;!-- Using JSON notation -->
-                         * &lt;oj-data-grid header='{"row":{"resizable": {"width": "enable"}}}'>&lt;/oj-data-grid>
-                         *
-                         * @example <caption>Get or set the <code class="prettyprint">resizable</code> property after initialization:</caption>
-                         * // Get one
-                         * var resizableValue = myDataGrid.header.row.resizable.width;
-                         *
-                         * // Set one, leaving the others intact
-                         * myDataGrid.setProperty('header.row.resizable.width', 'enable');
-                         *
-                         * // Get all
-                         * var resizableValues = myDataGrid.header.row.resizable;
-                         *
-                         * // Set all.  Must list every resource key, as those not listed are lost.
-                         * myDataGrid.header = {
-                         *    row: {
-                         *        resizable: {
-                         *            width: 'enable'
-                         *         }
-                         *    }
-                         * };
                          */
-                        resizable: {'width': 'disable', 'height': 'disable'},
+                        resizable: {
+                            /**
+                             * <p>Enable or disable width resize along the row headers.
+                             *
+                             * @expose
+                             * @alias header.row.resizable.width
+                             * @memberof! oj.ojDataGrid
+                             * @instance
+                             * @type {string}
+                             * @default "disable"
+                             * @ojvalue {string} "enable" enable width resize on row headers
+                             * @ojvalue {string} "disable" disable width resize on row headers
+                             * @ojshortdesc Specifies resizing width on the row headers.
+                             *
+                             * @example <caption>Initialize the DataGrid with the <code class="prettyprint">resizable</code> attribute specified:</caption>
+                             * &lt;!-- Using dot notation -->
+                             * &lt;oj-data-grid header.row.resizable.width='enable'>&lt;/oj-data-grid>
+                             *
+                             * &lt;!-- Using JSON notation -->
+                             * &lt;oj-data-grid header='{"row":{"resizable": {"width": "enable"}}}'>&lt;/oj-data-grid>
+                             *
+                             * @example <caption>Get or set the <code class="prettyprint">resizable</code> property after initialization:</caption>
+                             * // Get one
+                             * var resizableValue = myDataGrid.header.row.resizable.width;
+                             *
+                             * // Set one, leaving the others intact
+                             * myDataGrid.setProperty('header.row.resizable.width', 'enable');
+                             *
+                             * // Get all
+                             * var resizableValues = myDataGrid.header.row.resizable;
+                             *
+                             * // Set all.  Must list every resource key, as those not listed are lost.
+                             * myDataGrid.header = {
+                             *    row: {
+                             *        resizable: {
+                             *            width: 'enable'
+                             *         }
+                             *    }
+                             * };
+                             */
+                            width: 'disable', 
+
+                            /**
+                             * <p>Enable or disable height resize along the row headers. If a function is specified it takes a single parameter, <a href="#context-section">headerContext</a> and must return a string of
+                             * <code class="prettyprint">enable</code> or <code class="prettyprint">disable</code>.
+                             *
+                             * @expose
+                             * @alias header.row.resizable.height
+                             * @memberof! oj.ojDataGrid
+                             * @instance
+                             * @type {string|function(Object)}
+                             * @default "disable"
+                             * @ojvalue {string} "enable" enable height resize on row headers
+                             * @ojvalue {string} "disable" disable height resize on row headers
+                             * @ojshortdesc Specifies resizing height on the row headers.
+                             *
+                             * @example <caption>Initialize the DataGrid with the <code class="prettyprint">resizable</code> attribute specified:</caption>
+                             * &lt;!-- Using dot notation -->
+                             * &lt;oj-data-grid header.row.resizable.height='enable'>&lt;/oj-data-grid>
+                             *
+                             * &lt;!-- Using JSON notation -->
+                             * &lt;oj-data-grid header='{"row":{"resizable": {"height": "enable"}}}'>&lt;/oj-data-grid>
+                             *
+                             * @example <caption>Get or set the <code class="prettyprint">resizable</code> property after initialization:</caption>
+                             * // Get one
+                             * var resizableValue = myDataGrid.header.row.resizable.height;
+                             *
+                             * // Set one, leaving the others intact
+                             * myDataGrid.setProperty('header.row.resizable.height', 'enable');
+                             *
+                             * // Get all
+                             * var resizableValues = myDataGrid.header.row.resizable;
+                             *
+                             * // Set all.  Must list every resource key, as those not listed are lost.
+                             * myDataGrid.header = {
+                             *    row: {
+                             *        resizable: {
+                             *            height: 'enable'
+                             *         }
+                             *    }
+                             * };
+                             */
+                            height: 'disable'
+                        },
                         /**
                          * <p>Enable or disable sorting on the field bounded by this header. The
                          * data source associated with the DataGrid must have the sort function defined and the capability supported.
@@ -23326,39 +24124,92 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
                          * @alias header.column.resizable
                          * @memberof! oj.ojDataGrid
                          * @instance
-                         * @type {Object.<string, string>|Object.<string, function(Object)>|null}
-                         * @default {"width": "disable", "height": "disable"}
-                         * @property {string} width column width resizable, valid values are: 'enable', 'disable'
-                         * @property {string} height column header height resizable, valid values are: 'enable', 'disable'
+                         * @type {Object}
                          * @ojshortdesc Specifies resizing width or height on the column headers.
-                         *
-                         * @example <caption>Initialize the DataGrid with the <code class="prettyprint">resizable</code> attribute specified:</caption>
-                         * &lt;!-- Using dot notation -->
-                         * &lt;oj-data-grid header.column.resizable.width='enable'>&lt;/oj-data-grid>
-                         *
-                         * &lt;!-- Using JSON notation -->
-                         * &lt;oj-data-grid header='{"column":{"resizable": {"width": "enable"}}}'>&lt;/oj-data-grid>
-                         *
-                         * @example <caption>Get or set the <code class="prettyprint">resizable</code> property after initialization:</caption>
-                         * // Get one
-                         * var resizableValue = myDataGrid.header.column.resizable.width;
-                         *
-                         * // Set one, leaving the others intact
-                         * myDataGrid.setProperty('header.column.resizable.width', 'enable');
-                         *
-                         * // Get all
-                         * var resizableValues = myDataGrid.header.column.resizable;
-                         *
-                         * // Set all.  Must list every resource key, as those not listed are lost.
-                         * myDataGrid.header = {
-                         *    column: {
-                         *        resizable: {
-                         *            width: 'enable'
-                         *         }
-                         *    }
-                         * };
                          */
-                        resizable: {'width': 'disable', 'height': 'disable'},
+                        resizable: {
+                            /**
+                             * <p>Enable or disable width resize along the column headers. If a function is specified it takes a single parameter, <a href="#context-section">headerContext</a> and must return a string of
+                             * <code class="prettyprint">enable</code> or <code class="prettyprint">disable</code>.
+                             *
+                             * @expose
+                             * @alias header.column.resizable.width
+                             * @memberof! oj.ojDataGrid
+                             * @instance
+                             * @type {string|function(Object)}
+                             * @default "disable"
+                             * @ojvalue {string} "enable" enable width resize on column headers
+                             * @ojvalue {string} "disable" disable width resize on column headers
+                             * @ojshortdesc Specifies resizing width on the column headers.
+                             *
+                             * @example <caption>Initialize the DataGrid with the <code class="prettyprint">resizable</code> attribute specified:</caption>
+                             * &lt;!-- Using dot notation -->
+                             * &lt;oj-data-grid header.column.resizable.width='enable'>&lt;/oj-data-grid>
+                             *
+                             * &lt;!-- Using JSON notation -->
+                             * &lt;oj-data-grid header='{"column":{"resizable": {"width": "enable"}}}'>&lt;/oj-data-grid>
+                             *
+                             * @example <caption>Get or set the <code class="prettyprint">resizable</code> property after initialization:</caption>
+                             * // Get one
+                             * var resizableValue = myDataGrid.header.column.resizable.width;
+                             *
+                             * // Set one, leaving the others intact
+                             * myDataGrid.setProperty('header.column.resizable.width', 'enable');
+                             *
+                             * // Get all
+                             * var resizableValues = myDataGrid.header.column.resizable;
+                             *
+                             * // Set all.  Must list every resource key, as those not listed are lost.
+                             * myDataGrid.header = {
+                             *    column: {
+                             *        resizable: {
+                             *            width: 'enable'
+                             *         }
+                             *    }
+                             * };
+                             */                            
+                            width: 'disable', 
+                            /**
+                             * <p>Enable or disable height resize along the column headers.
+                             *
+                             * @expose
+                             * @alias header.column.resizable.height
+                             * @memberof! oj.ojDataGrid
+                             * @instance
+                             * @type {string}
+                             * @default "disable"
+                             * @ojvalue {string} "enable" enable height resize on column headers
+                             * @ojvalue {string} "disable" disable height resize on column headers
+                             * @ojshortdesc Specifies resizing height on the column headers.
+                             *
+                             * @example <caption>Initialize the DataGrid with the <code class="prettyprint">resizable</code> attribute specified:</caption>
+                             * &lt;!-- Using dot notation -->
+                             * &lt;oj-data-grid header.column.resizable.height='enable'>&lt;/oj-data-grid>
+                             *
+                             * &lt;!-- Using JSON notation -->
+                             * &lt;oj-data-grid header='{"column":{"resizable": {"height": "enable"}}}'>&lt;/oj-data-grid>
+                             *
+                             * @example <caption>Get or set the <code class="prettyprint">resizable</code> property after initialization:</caption>
+                             * // Get one
+                             * var resizableValue = myDataGrid.header.column.resizable.height;
+                             *
+                             * // Set one, leaving the others intact
+                             * myDataGrid.setProperty('header.column.resizable.height', 'enable');
+                             *
+                             * // Get all
+                             * var resizableValues = myDataGrid.header.column.resizable;
+                             *
+                             * // Set all.  Must list every resource key, as those not listed are lost.
+                             * myDataGrid.header = {
+                             *    column: {
+                             *        resizable: {
+                             *            height: 'enable'
+                             *         }
+                             *    }
+                             * };
+                             */                            
+                            height: 'disable'
+                        },
                         /**
                          * <p>Enable or disable sorting on the field bounded by this header. The
                          * data source associated with the DataGrid must have the sort function defined and the capability supported.
@@ -23605,39 +24456,92 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
                          * @alias header.columnEnd.resizable
                          * @memberof! oj.ojDataGrid
                          * @instance
-                         * @type {Object.<string, string>|Object.<string, function(Object)>|null}
-                         * @default {"width": "disable", "height": "disable"}
-                         * @property {string} width columnEnd width resizable, valid values are: 'enable', 'disable'
-                         * @property {string} height columnEnd header height resizable, valid values are: 'enable', 'disable'
+                         * @type {Object}
                          * @ojshortdesc Specifies resizing width or height on the column end headers.
-                         *
-                         * @example <caption>Initialize the DataGrid with the <code class="prettyprint">resizable</code> attribute specified:</caption>
-                         * &lt;!-- Using dot notation -->
-                         * &lt;oj-data-grid header.column-end.resizable.width='enable'>&lt;/oj-data-grid>
-                         *
-                         * &lt;!-- Using JSON notation -->
-                         * &lt;oj-data-grid header='{"column-end":{"resizable": {"width": "enable"}}}'>&lt;/oj-data-grid>
-                         *
-                         * @example <caption>Get or set the <code class="prettyprint">resizable</code> property after initialization:</caption>
-                         * // Get one
-                         * var resizableValue = myDataGrid.header.columnEnd.resizable.width;
-                         *
-                         * // Set one, leaving the others intact
-                         * myDataGrid.setProperty('header.columnEnd.resizable.width', 'enable');
-                         *
-                         * // Get all
-                         * var resizableValues = myDataGrid.header.columnEnd.resizable;
-                         *
-                         * // Set all.  Must list every resource key, as those not listed are lost.
-                         * myDataGrid.header = {
-                         *    columnEnd: {
-                         *        resizable: {
-                         *            width: 'enable'
-                         *         }
-                         *    }
-                         * };
                          */
-                        resizable: {'width': 'disable', 'height': 'disable'},
+                        resizable: {
+                            /**
+                             * <p>Enable or disable width resize along the columnEnd headers. If a function is specified it takes a single parameter, <a href="#context-section">headerContext</a> and must return a string of
+                             * <code class="prettyprint">enable</code> or <code class="prettyprint">disable</code>.
+                             *
+                             * @expose
+                             * @alias header.columnEnd.resizable.width
+                             * @memberof! oj.ojDataGrid
+                             * @instance
+                             * @type {string|function(Object)}
+                             * @default "disable"
+                             * @ojvalue {string} "enable" enable width resize on columnEnd headers
+                             * @ojvalue {string} "disable" disable width resize on columnEnd headers
+                             * @ojshortdesc Specifies resizing width on the columnEnd headers.
+                             *
+                             * @example <caption>Initialize the DataGrid with the <code class="prettyprint">resizable</code> attribute specified:</caption>
+                             * &lt;!-- Using dot notation -->
+                             * &lt;oj-data-grid header.column-end.resizable.width='enable'>&lt;/oj-data-grid>
+                             *
+                             * &lt;!-- Using JSON notation -->
+                             * &lt;oj-data-grid header='{"columnEnd":{"resizable": {"width": "enable"}}}'>&lt;/oj-data-grid>
+                             *
+                             * @example <caption>Get or set the <code class="prettyprint">resizable</code> property after initialization:</caption>
+                             * // Get one
+                             * var resizableValue = myDataGrid.header.columnEnd.resizable.width;
+                             *
+                             * // Set one, leaving the others intact
+                             * myDataGrid.setProperty('header.columnEnd.resizable.width', 'enable');
+                             *
+                             * // Get all
+                             * var resizableValues = myDataGrid.header.columnEnd.resizable;
+                             *
+                             * // Set all.  Must list every resource key, as those not listed are lost.
+                             * myDataGrid.header = {
+                             *    columnEnd: {
+                             *        resizable: {
+                             *            width: 'enable'
+                             *         }
+                             *    }
+                             * };
+                             */
+                            width: 'disable', 
+                            /**
+                             * <p>Enable or disable height resize along the columnEnd headers.
+                             *
+                             * @expose
+                             * @alias header.columnEnd.resizable.height
+                             * @memberof! oj.ojDataGrid
+                             * @instance
+                             * @type {string}
+                             * @default "disable"
+                             * @ojvalue {string} "enable" enable height resize on columnEnd headers
+                             * @ojvalue {string} "disable" disable height resize on columnEnd headers
+                             * @ojshortdesc Specifies resizing height on the columnEnd headers.
+                             *
+                             * @example <caption>Initialize the DataGrid with the <code class="prettyprint">resizable</code> attribute specified:</caption>
+                             * &lt;!-- Using dot notation -->
+                             * &lt;oj-data-grid header.column-end.resizable.height='enable'>&lt;/oj-data-grid>
+                             *
+                             * &lt;!-- Using JSON notation -->
+                             * &lt;oj-data-grid header='{"columnEnd":{"resizable": {"height": "enable"}}}'>&lt;/oj-data-grid>
+                             *
+                             * @example <caption>Get or set the <code class="prettyprint">resizable</code> property after initialization:</caption>
+                             * // Get one
+                             * var resizableValue = myDataGrid.header.columnEnd.resizable.height;
+                             *
+                             * // Set one, leaving the others intact
+                             * myDataGrid.setProperty('header.columnEnd.resizable.height', 'enable');
+                             *
+                             * // Get all
+                             * var resizableValues = myDataGrid.header.columnEnd.resizable;
+                             *
+                             * // Set all.  Must list every resource key, as those not listed are lost.
+                             * myDataGrid.header = {
+                             *    columnEnd: {
+                             *        resizable: {
+                             *            height: 'enable'
+                             *         }
+                             *    }
+                             * };
+                             */
+                            height: 'disable'
+                        },
                         /**
                          * <p>The inline style to apply to columnEnd headers in the DataGrid. If a string is specified
                          * the class will be added to all columnEnd header cells. Note that percentage (%) width and height values are not supported.
@@ -23856,39 +24760,92 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
                          * @alias header.rowEnd.resizable
                          * @memberof! oj.ojDataGrid
                          * @instance
-                         * @type {Object.<string, string>|Object.<string, function(Object)>|null}
-                         * @default {"width": "disable", "height": "disable"}
-                         * @property {string} width rowEnd width resizable, valid values are: 'enable', 'disable'
-                         * @property {string} height rowEnd header height resizable, valid values are: 'enable', 'disable'
+                         * @type {Object}
                          * @ojshortdesc Specifies resizing width or height on the row end headers.
-                         *
-                         * @example <caption>Initialize the DataGrid with the <code class="prettyprint">resizable</code> attribute specified:</caption>
-                         * &lt;!-- Using dot notation -->
-                         * &lt;oj-data-grid header.row-end.resizable.width='enable'>&lt;/oj-data-grid>
-                         *
-                         * &lt;!-- Using JSON notation -->
-                         * &lt;oj-data-grid header='{"row-end":{"resizable": {"width": "enable"}}}'>&lt;/oj-data-grid>
-                         *
-                         * @example <caption>Get or set the <code class="prettyprint">resizable</code> property after initialization:</caption>
-                         * // Get one
-                         * var resizableValue = myDataGrid.header.row-end.resizable.width;
-                         *
-                         * // Set one, leaving the others intact
-                         * myDataGrid.setProperty('header.row-end.resizable.width', 'enable');
-                         *
-                         * // Get all
-                         * var resizableValues = myDataGrid.header.rowEnd.resizable;
-                         *
-                         * // Set all.  Must list every resource key, as those not listed are lost.
-                         * myDataGrid.header = {
-                         *    rowEnd: {
-                         *        resizable: {
-                         *            width: 'enable'
-                         *         }
-                         *    }
-                         * };
                          */
-                        resizable: {'width': 'disable', 'height': 'disable'},
+                        resizable: {
+                            /**
+                             * <p>Enable or disable width resize along the rowEnd headers.
+                             *
+                             * @expose
+                             * @alias header.rowEnd.resizable.width
+                             * @memberof! oj.ojDataGrid
+                             * @instance
+                             * @type {string}
+                             * @default "disable"
+                             * @ojvalue {string} "enable" enable width resize on rowEnd headers
+                             * @ojvalue {string} "disable" disable width resize on rowEnd headers
+                             * @ojshortdesc Specifies resizing width on the rowEnd headers.
+                             *
+                             * @example <caption>Initialize the DataGrid with the <code class="prettyprint">resizable</code> attribute specified:</caption>
+                             * &lt;!-- Using dot notation -->
+                             * &lt;oj-data-grid header.row-end.resizable.width='enable'>&lt;/oj-data-grid>
+                             *
+                             * &lt;!-- Using JSON notation -->
+                             * &lt;oj-data-grid header='{"rowEnd":{"resizable": {"width": "enable"}}}'>&lt;/oj-data-grid>
+                             *
+                             * @example <caption>Get or set the <code class="prettyprint">resizable</code> property after initialization:</caption>
+                             * // Get one
+                             * var resizableValue = myDataGrid.header.rowEnd.resizable.width;
+                             *
+                             * // Set one, leaving the others intact
+                             * myDataGrid.setProperty('header.rowEnd.resizable.width', 'enable');
+                             *
+                             * // Get all
+                             * var resizableValues = myDataGrid.header.rowEnd.resizable;
+                             *
+                             * // Set all.  Must list every resource key, as those not listed are lost.
+                             * myDataGrid.header = {
+                             *    rowEnd: {
+                             *        resizable: {
+                             *            width: 'enable'
+                             *         }
+                             *    }
+                             * };
+                             */
+                            width: 'disable',
+                            /**
+                             * <p>Enable or disable height resize along the rowEnd headers. If a function is specified it takes a single parameter, <a href="#context-section">headerContext</a> and must return a string of
+                             * <code class="prettyprint">enable</code> or <code class="prettyprint">disable</code>.
+                             *
+                             * @expose
+                             * @alias header.rowEnd.resizable.height
+                             * @memberof! oj.ojDataGrid
+                             * @instance
+                             * @type {string|function(Object)}
+                             * @default "disable"
+                             * @ojvalue {string} "enable" enable height resize on rowEnd headers
+                             * @ojvalue {string} "disable" disable height resize on rowEnd headers
+                             * @ojshortdesc Specifies resizing height on the rowEnd headers.
+                             *
+                             * @example <caption>Initialize the DataGrid with the <code class="prettyprint">resizable</code> attribute specified:</caption>
+                             * &lt;!-- Using dot notation -->
+                             * &lt;oj-data-grid header.row-end.resizable.height='enable'>&lt;/oj-data-grid>
+                             *
+                             * &lt;!-- Using JSON notation -->
+                             * &lt;oj-data-grid header='{"rowEnd":{"resizable": {"height": "enable"}}}'>&lt;/oj-data-grid>
+                             *
+                             * @example <caption>Get or set the <code class="prettyprint">resizable</code> property after initialization:</caption>
+                             * // Get one
+                             * var resizableValue = myDataGrid.header.rowEnd.resizable.height;
+                             *
+                             * // Set one, leaving the others intact
+                             * myDataGrid.setProperty('header.rowEnd.resizable.height', 'enable');
+                             *
+                             * // Get all
+                             * var resizableValues = myDataGrid.header.rowEnd.resizable;
+                             *
+                             * // Set all.  Must list every resource key, as those not listed are lost.
+                             * myDataGrid.header = {
+                             *    rowEnd: {
+                             *        resizable: {
+                             *            height: 'enable'
+                             *         }
+                             *    }
+                             * };
+                             */
+                            height: 'disable'
+                        },
                         /**
                          * <p>The inline style to apply to rowEnd headers in the DataGrid. If a string is specified
                          * the class will be added to all rowEnd header cells. Note that percentage (%) width and height values are not supported.
@@ -25699,7 +26656,7 @@ oj.__registerWidget('oj.ojDataGrid', $['oj']['baseComponent'],
         index += header.index();
         return index;
     },
-    /**
+     /**
      * Get the level of a header
      * @param {Object} header the header
      * @return {number} the level of the header
@@ -27487,459 +28444,12 @@ DvtDataGridKeyboardHandler.prototype.getAction = function(event, capabilities)
     }
     return 'NO_OP';
 };
-(function() {
-var ojDataGridMeta = {
-  "properties": {
-    "bandingInterval": {
-      "type": "object",
-      "properties": {
-        "row": {
-          "type": "number"
-        },
-        "column": {
-          "type": "number"
-        }
-      }
-    },
-    "cell": {
-      "type": "object",
-      "properties": {
-        "className": {
-          "type": "string|function"
-        },
-        "renderer": {},
-        "style": {
-          "type": "string|function"
-        }
-      }
-    },
-    "currentCell": {
-      "type": "object",
-      "writeback": true
-    },
-    "data": {},
-    "dnd": {
-      "type": "object",
-      "properties": {
-        "reorder": {
-          "type": "object",
-          "properties": {
-            "row": {
-              "type": "string",
-              "enumValues": ["disable", "enable"]
-            }
-          }
-        }
-      }
-    },
-    "editMode": {
-        "type": "string",
-        "enumValues": ["none", "cellNavigation", "cellEdit"]
-    },
-    "gridlines": {
-      "type": "object",
-      "properties": {
-        "horizontal": {
-          "type": "string",
-          "enumValues": ["visible", "hidden"]
-        },
-        "vertical": {
-          "type": "string",
-          "enumValues": ["visible", "hidden"]
-        }
-      }
-    },
-    "header": {
-      "type": "object",
-      "properties": {
-        "column": {
-          "type": "object",
-          "properties": {
-            "className": {
-              "type": "string|function"
-            },
-            "label": {
-              "type": "object",
-              "properties": {
-                "className": {
-                  "type": "string|function"
-                },
-                "renderer": {},
-                "style": {
-                  "type": "string|function"
-                }
-              }
-            },
-            "renderer": {},
-            "resizable": {
-              "type": "object",
-              "properties": {
-                "width": {
-                  "type": "string|function",
-                  "enumValues": ["disable", "enable"]
-                },
-                "height": {
-                  "type": "string|function",
-                  "enumValues": ["disable", "enable"]
-                }
-              }
-            },
-            "sortable": {
-              "type": "string|function",
-              "enumValues": ["auto", "disable", "enable"]
-            },
-            "style": {
-              "type": "string|function"
-            }
-          }
-        },
-        "columnEnd": {
-          "type": "object",
-          "properties": {
-            "className": {
-              "type": "string|function"
-            },
-            "label": {
-              "type": "object",
-              "properties": {
-                "className": {
-                  "type": "string|function"
-                },
-                "renderer": {},
-                "style": {
-                  "type": "string|function"
-                }
-              }
-            },
-            "renderer": {},
-            "resizable": {
-              "type": "object",
-              "properties": {
-                "width": {
-                  "type": "string|function",
-                  "enumValues": ["disable", "enable"]
-                },
-                "height": {
-                  "type": "string|function",
-                  "enumValues": ["disable", "enable"]
-                }
-              }
-            },
-            "sortable": {
-              "type": "string|function",
-              "enumValues": ["auto", "disable", "enable"]
-            },
-            "style": {
-              "type": "string|function"
-            }
-          }
-        },
-        "row": {
-          "type": "object",
-          "properties": {
-            "className": {
-              "type": "string|function"
-            },
-            "label": {
-              "type": "object",
-              "properties": {
-                "className": {
-                  "type": "string|function"
-                },
-                "renderer": {},
-                "style": {
-                  "type": "string|function"
-                }
-              }
-            },
-            "renderer": {},
-            "resizable": {
-              "type": "object",
-              "properties": {
-                "width": {
-                  "type": "string|function",
-                  "enumValues": ["disable", "enable"]
-                },
-                "height": {
-                  "type": "string|function",
-                  "enumValues": ["disable", "enable"]
-                }
-              }
-            },
-            "sortable": {
-              "type": "string|function",
-              "enumValues": ["auto", "disable", "enable"]
-            },
-            "style": {
-              "type": "string|function"
-            }
-          }
-        },
-        "rowEnd": {
-          "type": "object",
-          "properties": {
-            "className": {
-              "type": "string|function"
-            },
-            "label": {
-              "type": "object",
-              "properties": {
-                "className": {
-                  "type": "string|function"
-                },
-                "renderer": {},
-                "style": {
-                  "type": "string|function"
-                }
-              }
-            },
-            "renderer": {},
-            "resizable": {
-              "type": "object",
-              "properties": {
-                "width": {
-                  "type": "string|function",
-                  "enumValues": ["disable", "enable"]
-                },
-                "height": {
-                  "type": "string|function",
-                  "enumValues": ["disable", "enable"]
-                }
-              }
-            },
-            "sortable": {
-              "type": "string|function",
-              "enumValues": ["auto", "disable", "enable"]
-            },
-            "style": {
-              "type": "string|function"
-            }
-          }
-        }
-      }
-    },
-    "scrollPolicy": {
-      "type": "string",
-      "enumValues": ["auto", "loadMoreOnScroll", "scroll"]
-    },
-    "scrollPolicyOptions": {
-      "type": "object",
-      "properties": {
-        "maxRowCount": {
-          "type": "number"
-        },
-        "maxColumnCount": {
-          "type": "number"
-        }          
-      }
-    },
-    "scrollPosition": {
-      "writeback": true,        
-      "type": "object",
-      "properties": {
-        "rowIndex": {
-          "type": "number"
-        },
-        "columnIndex": {
-          "type": "number"
-        },
-        "rowKey": {
-          "type": "*"
-        },
-        "columnKey": {
-          "type": "*"
-        },
-        "x": {
-          "type": "number"
-        },
-        "y": {
-          "type": "number"
-        },
-        "offsetX": {
-          "type": "number"
-        },
-        "offsetY": {
-          "type": "number"
-        }
-      }
-    },
-    "selection": {
-      "type": "Array<object>",
-      "writeback": true
-    },
-    "selectionMode": {
-      "type": "object",
-      "properties": {
-        "row": {
-          "type": "string",
-          "enumValues": ["none", "single", "multiple"]
-        },
-        "cell": {
-          "type": "string",
-          "enumValues": ["none", "single", "multiple"]
-        }
-      }
-    },
-    "translations": {
-      "type": "Object",
-      "properties": {
-        "accessibleActionableMode": {
-          "type": "string"
-        },
-        "accessibleColumnContext": {
-          "type": "string"
-        },
-        "accessibleColumnEndHeaderContext": {
-          "type": "string"
-        },
-        "accessibleColumnHeaderContext": {
-          "type": "string"
-        },
-        "accessibleColumnSelected": {
-          "type": "string"
-        },
-        "accessibleColumnSpanContext": {
-          "type": "string"
-        },
-        "accessibleFirstColumn": {
-          "type": "string"
-        },
-        "accessibleFirstRow": {
-          "type": "string"
-        },
-        "accessibleLastColumn": {
-          "type": "string"
-        },
-        "accessibleLastRow": {
-          "type": "string"
-        },
-        "accessibleLevelContext": {
-          "type": "string"
-        },
-        "accessibleMultiCellSelected": {
-          "type": "string"
-        },
-        "accessibleNavigationMode": {
-          "type": "string"
-        },
-        "accessibleRangeSelectModeOff": {
-          "type": "string"
-        },
-        "accessibleRangeSelectModeOn": {
-          "type": "string"
-        },
-        "accessibleRowCollapsed": {
-          "type": "string"
-        },
-        "accessibleRowContext": {
-          "type": "string"
-        },
-        "accessibleRowEndHeaderContext": {
-          "type": "string"
-        },
-        "accessibleRowExpanded": {
-          "type": "string"
-        },
-        "accessibleRowHeaderContext": {
-          "type": "string"
-        },
-        "accessibleRowSelected": {
-          "type": "string"
-        },
-        "accessibleRowSpanContext": {
-          "type": "string"
-        },
-        "accessibleSelectionAffordanceBottom": {
-          "type": "string"
-        },
-        "accessibleSelectionAffordanceTop": {
-          "type": "string"
-        },
-        "accessibleSortAscending": {
-          "type": "string"
-        },
-        "accessibleSortDescending": {
-          "type": "string"
-        },
-        "accessibleStateSelected": {
-          "type": "string"
-        },
-        "accessibleSummaryEstimate": {
-          "type": "string"
-        },
-        "accessibleSummaryExact": {
-          "type": "string"
-        },
-        "accessibleSummaryExpanded": {
-          "type": "string"
-        },
-        "labelCut": {
-          "type": "string"
-        },
-        "labelDisableNonContiguous": {
-          "type": "string"
-        },
-        "labelEnableNonContiguous": {
-          "type": "string"
-        },
-        "labelPaste": {
-          "type": "string"
-        },
-        "labelResize": {
-          "type": "string"
-        },
-        "labelResizeDialogSubmit": {
-          "type": "string"
-        },
-        "labelResizeHeight": {
-          "type": "string"
-        },
-        "labelResizeWidth": {
-          "type": "string"
-        },
-        "labelSortCol": {
-          "type": "string"
-        },
-        "labelSortColAsc": {
-          "type": "string"
-        },
-        "labelSortColDsc": {
-          "type": "string"
-        },
-        "labelSortRow": {
-          "type": "string"
-        },
-        "labelSortRowAsc": {
-          "type": "string"
-        },
-        "labelSortRowDsc": {
-          "type": "string"
-        },
-        "msgFetchingData": {
-          "type": "string"
-        },
-        "msgNoData": {
-          "type": "string"
-        }
-      }
-    }
-  },
-  "methods": {
-    "getContextByNode": {}
-  },
-  "events": {
-    "beforeCurrentCell": {},
-    "beforeEdit": {},
-    "beforeEditEnd": {},
-    "resize": {},
-    "scroll": {},
-    "sort": {}
-  },
-  "extension": {
-    _WIDGET_NAME: "ojDataGrid"
-  }
-};
-oj.CustomElementBridge.registerMetadata('oj-data-grid', 'baseComponent', ojDataGridMeta);
-oj.CustomElementBridge.register('oj-data-grid', {'metadata': oj.CustomElementBridge.getMetadata('oj-data-grid')});
-})();
+/* global __oj_data_grid_metadata */
+
+(function () {
+  __oj_data_grid_metadata.extension._WIDGET_NAME = 'ojDataGrid';
+  oj.CustomElementBridge.registerMetadata('oj-data-grid', 'baseComponent', __oj_data_grid_metadata);
+  oj.CustomElementBridge.register('oj-data-grid', { metadata: oj.CustomElementBridge.getMetadata('oj-data-grid') });
+}());
+
 });

@@ -7,7 +7,28 @@
 define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'], 
        function(oj, $)
 {
-
+//%COMPONENT_METADATA%
+var __oj_optgroup_metadata = 
+{
+  "properties": {
+    "disabled": {
+      "type": "boolean",
+      "value": false
+    },
+    "label": {
+      "type": "string"
+    }
+  },
+  "methods": {
+    "setProperty": {},
+    "getProperty": {},
+    "refresh": {},
+    "setProperties": {},
+    "getNodeBySubId": {},
+    "getSubIdByNode": {}
+  },
+  "extension": {}
+};
 /**
  * Copyright (c) 2017, Oracle and/or its affiliates.
  * All rights reserved.
@@ -166,30 +187,19 @@ function ojOptGroup(context) {
  * @example <caption>Set a batch of properties:</caption>
  * myComponent.setProperties({"prop1": "value1", "prop2.subprop": "value2", "prop3": "value3"});
  */ 
+
+/* global ojOptGroup:false */
+/* global __oj_optgroup_metadata:false */
 /**
  * @protected
  * @ignore
  */
-(function() {
-  var ojOptgroupMeta = {
-    "properties": {
-      "disabled": {
-        "type": "boolean",
-        "value": false
-      }, 
-      "label": {
-        "type": "string",
-        "value": ""
-      },
-      // not documented
-      "customOptgroupRenderer": {}
-    },
-    "extension": {
-      _CONSTRUCTOR: ojOptGroup
-    }
-  };
-  oj.CustomElementBridge.registerMetadata('oj-optgroup', null, ojOptgroupMeta);
-  oj.CustomElementBridge.register('oj-optgroup', {'metadata': oj.CustomElementBridge.getMetadata('oj-optgroup')});
-})();
+(function () {
+  // not documented
+  __oj_optgroup_metadata.properties.customOptgroupRenderer = {};
+  __oj_optgroup_metadata.extension._CONSTRUCTOR = ojOptGroup;
+  oj.CustomElementBridge.registerMetadata('oj-optgroup', null, __oj_optgroup_metadata);
+  oj.CustomElementBridge.register('oj-optgroup', { metadata: oj.CustomElementBridge.getMetadata('oj-optgroup') });
+}());
 
 });

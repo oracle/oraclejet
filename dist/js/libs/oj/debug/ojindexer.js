@@ -12,7 +12,51 @@ define(['ojs/ojcore', 'jquery', 'hammerjs', 'promise', 'ojs/ojjquery-hammer', 'o
         */
        function(oj, $, Hammer)
 {
-
+//%COMPONENT_METADATA%
+var __oj_indexer_metadata = 
+{
+  "properties": {
+    "data": {
+      "type": "oj.IndexerModel"
+    },
+    "translations": {
+      "type": "object",
+      "value": {},
+      "properties": {
+        "ariaDisabledLabel": {
+          "type": "string"
+        },
+        "ariaInBetweenText": {
+          "type": "string"
+        },
+        "ariaKeyboardInstructionText": {
+          "type": "string"
+        },
+        "ariaOthersLabel": {
+          "type": "string"
+        },
+        "ariaTouchInstructionText": {
+          "type": "string"
+        },
+        "indexerCharacters": {
+          "type": "string"
+        },
+        "indexerOthers": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "methods": {
+    "refresh": {},
+    "setProperty": {},
+    "getProperty": {},
+    "setProperties": {},
+    "getNodeBySubId": {},
+    "getSubIdByNode": {}
+  },
+  "extension": {}
+};
 /*jslint browser: true,devel:true*/
 /**
  * The interface for oj.IndexerModel which should be implemented by all object instances
@@ -419,10 +463,15 @@ oj.__registerWidget('oj.ojIndexer', $['oj']['baseComponent'],
     _destroy: function()
     {
         this._super();
-        this._unsetAriaProperties();
-        this.element.removeClass("oj-component-initnode");
 
-        oj.DomUtils.unwrap(this.element, this._getIndexerContainer());
+        var container = this._getIndexerContainer();
+ 
+        this._unregisterResizeListener(container);
+        this._unregisterTouchHandler(container);
+        this._unsetAriaProperties();
+        this.element.removeClass('oj-component-initnode');
+ 
+        oj.DomUtils.unwrap(this.element, container);
     },
 
     /**
@@ -1303,43 +1352,12 @@ oj.__registerWidget('oj.ojIndexer', $['oj']['baseComponent'],
     });
 
 }() );
-(function() {
-var ojIndexerMeta = {
-  "properties": {
-    "data": {},
-    "translations": {
-      "type": "Object",
-      "properties": {
-        "ariaDisabledLabel": {
-          "type": "string"
-        },
-        "ariaInBetweenText": {
-          "type": "string"
-        },
-        "ariaKeyboardInstructionText": {
-          "type": "string"
-        },
-        "ariaOthersLabel": {
-          "type": "string"
-        },
-        "ariaTouchInstructionText": {
-          "type": "string"
-        },
-        "indexerCharacters": {
-          "type": "string"
-        },
-        "indexerOthers": {
-          "type": "string"
-        }
-      }
-    }
-  },
-  "extension": {
-    _INNER_ELEM: 'ul',
-    _WIDGET_NAME: "ojIndexer"
-  }
-};
-oj.CustomElementBridge.registerMetadata('oj-indexer', 'baseComponent', ojIndexerMeta);
-oj.CustomElementBridge.register('oj-indexer', {'metadata': oj.CustomElementBridge.getMetadata('oj-indexer')});
-})();
+/* global __oj_indexer_metadata:false */
+(function () {
+  __oj_indexer_metadata.extension._WIDGET_NAME = 'ojIndexer';
+  __oj_indexer_metadata.extension._INNER_ELEM = 'ul';
+  oj.CustomElementBridge.registerMetadata('oj-indexer', 'baseComponent', __oj_indexer_metadata);
+  oj.CustomElementBridge.register('oj-indexer', { metadata: oj.CustomElementBridge.getMetadata('oj-indexer') });
+}());
+
 });

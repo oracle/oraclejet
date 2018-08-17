@@ -7,7 +7,136 @@
 define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojcolor','ojs/ojslider', 'jqueryui-amd/widgets/draggable', 'ojs/ojtouchproxy', 'ojs/ojeditablevalue'],
        function(oj, $)
 {
+  
 
+var __oj_color_spectrum_metadata = 
+{
+  "properties": {
+    "describedBy": {
+      "type": "string"
+    },
+    "disabled": {
+      "type": "boolean",
+      "value": false
+    },
+    "displayOptions": {
+      "type": "object",
+      "properties": {
+        "converterHint": {
+          "type": "Array<string>|string",
+          "value": [
+            "placeholder",
+            "notewindow"
+          ]
+        },
+        "helpInstruction": {
+          "type": "Array<string>|string",
+          "value": [
+            "notewindow"
+          ]
+        },
+        "messages": {
+          "type": "Array<string>|string",
+          "value": [
+            "inline"
+          ]
+        },
+        "validatorHint": {
+          "type": "Array<string>|string",
+          "value": [
+            "notewindow"
+          ]
+        }
+      }
+    },
+    "help": {
+      "type": "object",
+      "properties": {
+        "instruction": {
+          "type": "string"
+        }
+      }
+    },
+    "helpHints": {
+      "type": "object",
+      "properties": {
+        "definition": {
+          "type": "string",
+          "value": ""
+        },
+        "source": {
+          "type": "string",
+          "value": ""
+        }
+      }
+    },
+    "labelHint": {
+      "type": "string",
+      "value": ""
+    },
+    "labelledBy": {
+      "type": "string"
+    },
+    "messagesCustom": {
+      "type": "Array<Object>",
+      "writeback": true,
+      "value": []
+    },
+    "transientValue": {
+      "type": "oj.Color",
+      "writeback": true,
+      "readOnly": true
+    },
+    "translations": {
+      "type": "object",
+      "value": {},
+      "properties": {
+        "labelHue": {
+          "type": "string"
+        },
+        "labelOpacity": {
+          "type": "string"
+        },
+        "labelSatLum": {
+          "type": "string"
+        },
+        "labelThumbDesc": {
+          "type": "string"
+        }
+      }
+    },
+    "valid": {
+      "type": "string",
+      "writeback": true,
+      "enumValues": [
+        "invalidHidden",
+        "invalidShown",
+        "pending",
+        "valid"
+      ],
+      "readOnly": true
+    },
+    "value": {
+      "type": "oj.Color",
+      "writeback": true
+    }
+  },
+  "methods": {
+    "setProperty": {},
+    "getProperty": {},
+    "setProperties": {},
+    "refresh": {},
+    "reset": {},
+    "showMessages": {},
+    "getNodeBySubId": {},
+    "getSubIdByNode": {}
+  },
+  "events": {
+    "ojAnimateStart": {},
+    "ojAnimateEnd": {}
+  },
+  "extension": {}
+};
 /*----------------------------------------------------------------
    ojColorSpectrum    JET Color (spectrum) element
    Depends:   jquery.ui.core.js
@@ -183,6 +312,7 @@ function _rgbToHsl(r, g, b)
           * The value of the element representing the current color.
           * @member
           * @type {oj.Color}
+          * @ojformat color
           * @default null
           * @ojwriteback
           * @expose
@@ -216,7 +346,6 @@ function _rgbToHsl(r, g, b)
           * @alias transientValue
           * @member
           * @type {oj.Color}
-          * @default null
           * @expose
           * @instance
           * @memberof oj.ojColorSpectrum
@@ -629,7 +758,7 @@ function _rgbToHsl(r, g, b)
          if (ui.option === "rawValue")
            this._SetRawValue(newColor, e);
          else if (ui.option === "value")
-           this._SetValue(newColor, e);
+            this._SetValueReturnBoolean(newColor, e);
        }
        this._setColorVals(newColor) ;
      },
@@ -847,7 +976,7 @@ function _rgbToHsl(r, g, b)
         //  Fire value optionChange event.
         var oNewColor = new oj.Color({"h":hue, "s":sat, "l":lum, "a":this._alphaVal}) ;
         this._SetRawValue(oNewColor, e);
-        this._SetValue(oNewColor, e);
+        this._SetValueReturnBoolean(oNewColor, e);
 
         this._setAriaText(hue, sat, lum, this._alphaVal);
         this._value = oNewColor ;
@@ -943,7 +1072,7 @@ function _rgbToHsl(r, g, b)
 
        //  Fire the completing "value" event
        var newVal = this.options[this._transientValueName];
-       this._SetValue(newVal, e);
+        this._SetValueReturnBoolean(newVal, e);
      },
 
 
@@ -1079,7 +1208,7 @@ function _rgbToHsl(r, g, b)
 
         if (e.type === "dragstop")
         {
-          this._SetValue(color, e.originalEvent);
+          this._SetValueReturnBoolean(color, e.originalEvent);
           aria = true ;
         }
 
@@ -1940,49 +2069,11 @@ $(".oj-colorspectrum-alpha").uniqueId();
 
 })();
 
-(function() {
-var ojColorSpectrumMeta = {
-  "properties": {
-    "labelledBy": {
-      "type": "string"
-    },
-    "transientValue": {
-      "readOnly": true,
-      "writeback": true
-    },
-    "value": {
-      "writeback": true
-    },
-    "translations": {
-      "type": "Object",
-      "properties": {
-        "labelHue": {
-          "type": "string",
-          "value": "Hue"
-        },
-        "labelOpacity": {
-          "type": "string",
-          "value": "Opacity"
-        },
-        "labelSatLum": {
-          "type": "string",
-          "value": "Saturation/Luminance"
-        },
-        "labelThumbDesc": {
-          "type": "string",
-          "value": "color spectrum four way slider"
-        }
-      }
-    },
-  },
-  "methods": {},
-  "extension": {
-    _WIDGET_NAME: "ojColorSpectrum"
-  }
-};
-oj.CustomElementBridge.registerMetadata('oj-color-spectrum', 'editableValue', ojColorSpectrumMeta);
-oj.CustomElementBridge.register('oj-color-spectrum', {'metadata': oj.CustomElementBridge.getMetadata('oj-color-spectrum')});
-
-})();
+/* global __oj_color_spectrum_metadata */
+(function () {
+  __oj_color_spectrum_metadata.extension._WIDGET_NAME = 'ojColorSpectrum';
+  oj.CustomElementBridge.registerMetadata('oj-color-spectrum', 'editableValue', __oj_color_spectrum_metadata);
+  oj.CustomElementBridge.register('oj-color-spectrum', { metadata: oj.CustomElementBridge.getMetadata('oj-color-spectrum') });
+}());
 
 });

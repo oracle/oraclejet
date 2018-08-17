@@ -1,9 +1,9 @@
 {
   "name": "oj-label",
-  "version": "5.1.0",
-  "jetVersion": "5.1.0",
+  "version": "5.2.0",
+  "jetVersion": "5.2.0",
   "displayName": "Label",
-  "preview": true,
+  "type": "core",
   "styleClasses": [
     {
       "styleGroup": [
@@ -46,7 +46,7 @@
     },
     "help": {
       "description": "The help information that goes on the oj-label. The help attributes are:\n\ndefinition - this is the help definition text. \nIt is what shows up\nwhen the user hovers over the help icon, or tabs into the help icon, or press\nand holds the help icon on a mobile device. No formatted text is available for\nhelp definition attribute.\nsource - this is the help source url.\nIf present, a help icon will\nrender next to the label. For security reasons we only support urls with protocol http: or https:.\nIf the url doesn't comply we ignore it and throw an error.\nPass in an encoded URL since we do not encode the URL.\n",
-      "type": "Object|null",
+      "type": "object|null",
       "displayName": "Help",
       "value": {
         "definition": null,
@@ -76,20 +76,21 @@
       "value": false
     },
     "translations": {
-      "description": "A collection of translated resources from the translation bundle, or null if this\ncomponent has no resources. Resources may be accessed and overridden individually or collectively, as seen in the examples. If the component does not contain any translatable resource, the default value of this attribute will be \nnull. If not, an object containing all resources relevant to the component.\n\nIf this component has translations, their documentation immediately follows this doc entry.",
-      "type": "Object|null",
+      "description": "A collection of translated resources from the translation bundle, or null if this component has no resources.",
+      "type": "object|null",
       "displayName": "Translations",
+      "value": {},
       "translatable": true,
       "properties": {
         "tooltipHelp": {
           "description": "Used for the default help icon tooltip.. Most likely the application developer\nwould use the oj-label's help.definition property to specify the help definition\ntext per oj-label element.",
           "type": "string",
-          "value": "Help"
+          "displayName": "Tooltip Help"
         },
         "tooltipRequired": {
           "description": "Used for the default required icon tooltip.",
           "type": "string",
-          "value": "Required"
+          "displayName": "Tooltip Required"
         }
       }
     }
@@ -132,7 +133,7 @@
         {
           "name": "properties",
           "description": "An object containing the property and value pairs to set.",
-          "type": "Object"
+          "type": "object"
         }
       ],
       "return": "void"

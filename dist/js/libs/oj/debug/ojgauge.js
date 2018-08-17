@@ -6,6 +6,842 @@
 "use strict";
 define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/internal-deps/dvt/DvtGauge'], function(oj, $, comp, base, dvt)
 {
+  
+
+var __oj_led_gauge_metadata = 
+{
+  "properties": {
+    "borderColor": {
+      "type": "string"
+    },
+    "color": {
+      "type": "string"
+    },
+    "label": {
+      "type": "object",
+      "properties": {
+        "style": {
+          "type": "object",
+          "value": {}
+        },
+        "text": {
+          "type": "string",
+          "value": ""
+        }
+      }
+    },
+    "max": {
+      "type": "number",
+      "value": 100
+    },
+    "metricLabel": {
+      "type": "object",
+      "properties": {
+        "converter": {
+          "type": "object"
+        },
+        "rendered": {
+          "type": "string",
+          "enumValues": [
+            "off",
+            "on"
+          ],
+          "value": "off"
+        },
+        "scaling": {
+          "type": "string",
+          "enumValues": [
+            "auto",
+            "billion",
+            "million",
+            "none",
+            "quadrillion",
+            "thousand",
+            "trillion"
+          ],
+          "value": "auto"
+        },
+        "style": {
+          "type": "object",
+          "value": {}
+        },
+        "text": {
+          "type": "string",
+          "value": ""
+        },
+        "textType": {
+          "type": "string",
+          "enumValues": [
+            "number",
+            "percent"
+          ],
+          "value": "number"
+        }
+      }
+    },
+    "min": {
+      "type": "number",
+      "value": 0
+    },
+    "rotation": {
+      "type": "number",
+      "enumValues": [
+        "0",
+        "180",
+        "270",
+        "90"
+      ],
+      "value": 0
+    },
+    "size": {
+      "type": "number",
+      "value": 1
+    },
+    "svgClassName": {
+      "type": "string",
+      "value": ""
+    },
+    "svgStyle": {
+      "type": "object",
+      "value": {}
+    },
+    "thresholds": {
+      "type": "Array<Object>",
+      "value": []
+    },
+    "tooltip": {
+      "type": "object",
+      "properties": {
+        "renderer": {
+          "type": "function",
+          "properties": {
+            "color": {
+              "type": "string"
+            },
+            "componentElement": {
+              "type": "Element"
+            },
+            "label": {
+              "type": "string"
+            },
+            "parentElement": {
+              "type": "Element"
+            }
+          }
+        }
+      }
+    },
+    "trackResize": {
+      "type": "string",
+      "enumValues": [
+        "off",
+        "on"
+      ],
+      "value": "on"
+    },
+    "translations": {
+      "type": "object",
+      "value": {},
+      "properties": {
+        "componentName": {
+          "type": "string"
+        },
+        "labelAndValue": {
+          "type": "string"
+        },
+        "labelClearSelection": {
+          "type": "string"
+        },
+        "labelCountWithTotal": {
+          "type": "string"
+        },
+        "labelDataVisualization": {
+          "type": "string"
+        },
+        "labelInvalidData": {
+          "type": "string"
+        },
+        "labelNoData": {
+          "type": "string"
+        },
+        "stateCollapsed": {
+          "type": "string"
+        },
+        "stateDrillable": {
+          "type": "string"
+        },
+        "stateExpanded": {
+          "type": "string"
+        },
+        "stateHidden": {
+          "type": "string"
+        },
+        "stateIsolated": {
+          "type": "string"
+        },
+        "stateMaximized": {
+          "type": "string"
+        },
+        "stateMinimized": {
+          "type": "string"
+        },
+        "stateSelected": {
+          "type": "string"
+        },
+        "stateUnselected": {
+          "type": "string"
+        },
+        "stateVisible": {
+          "type": "string"
+        }
+      }
+    },
+    "type": {
+      "type": "string",
+      "value": "circle"
+    },
+    "value": {
+      "type": "number",
+      "writeback": true
+    },
+    "visualEffects": {
+      "type": "string",
+      "enumValues": [
+        "auto",
+        "none"
+      ],
+      "value": "auto"
+    }
+  },
+  "methods": {
+    "getMetricLabel": {},
+    "refresh": {},
+    "setProperty": {},
+    "getProperty": {},
+    "setProperties": {},
+    "getNodeBySubId": {},
+    "getSubIdByNode": {}
+  },
+  "extension": {}
+};
+var __oj_rating_gauge_metadata = 
+{
+  "properties": {
+    "changed": {
+      "type": "boolean",
+      "writeback": true,
+      "value": false
+    },
+    "changedState": {
+      "type": "object",
+      "properties": {
+        "borderColor": {
+          "type": "string",
+          "value": ""
+        },
+        "color": {
+          "type": "string"
+        },
+        "shape": {
+          "type": "string",
+          "value": "star"
+        },
+        "source": {
+          "type": "string",
+          "value": ""
+        },
+        "svgClassName": {
+          "type": "string",
+          "value": ""
+        },
+        "svgStyle": {
+          "type": "object",
+          "value": {}
+        }
+      }
+    },
+    "hoverState": {
+      "type": "object",
+      "properties": {
+        "borderColor": {
+          "type": "string",
+          "value": ""
+        },
+        "color": {
+          "type": "string"
+        },
+        "shape": {
+          "type": "string",
+          "value": "star"
+        },
+        "source": {
+          "type": "string",
+          "value": ""
+        },
+        "svgClassName": {
+          "type": "string",
+          "value": ""
+        },
+        "svgStyle": {
+          "type": "object",
+          "value": {}
+        }
+      }
+    },
+    "max": {
+      "type": "number",
+      "value": 5
+    },
+    "min": {
+      "type": "number",
+      "value": 0
+    },
+    "orientation": {
+      "type": "string",
+      "enumValues": [
+        "horizontal",
+        "vertical"
+      ],
+      "value": "horizontal"
+    },
+    "preserveAspectRatio": {
+      "type": "string",
+      "enumValues": [
+        "meet",
+        "none"
+      ],
+      "value": "meet"
+    },
+    "readonly": {
+      "type": "boolean",
+      "value": false
+    },
+    "selectedState": {
+      "type": "object",
+      "properties": {
+        "borderColor": {
+          "type": "string",
+          "value": ""
+        },
+        "color": {
+          "type": "string"
+        },
+        "shape": {
+          "type": "string",
+          "value": "star"
+        },
+        "source": {
+          "type": "string",
+          "value": ""
+        },
+        "svgClassName": {
+          "type": "string",
+          "value": ""
+        },
+        "svgStyle": {
+          "type": "object",
+          "value": {}
+        }
+      }
+    },
+    "step": {
+      "type": "number",
+      "value": 1
+    },
+    "thresholds": {
+      "type": "Array<Object>",
+      "value": []
+    },
+    "tooltip": {
+      "type": "object",
+      "properties": {
+        "renderer": {
+          "type": "function",
+          "properties": {
+            "color": {
+              "type": "string"
+            },
+            "componentElement": {
+              "type": "Element"
+            },
+            "label": {
+              "type": "string"
+            },
+            "parentElement": {
+              "type": "Element"
+            }
+          }
+        }
+      }
+    },
+    "trackResize": {
+      "type": "string",
+      "enumValues": [
+        "off",
+        "on"
+      ],
+      "value": "on"
+    },
+    "transientValue": {
+      "type": "number",
+      "writeback": true,
+      "readOnly": true
+    },
+    "translations": {
+      "type": "object",
+      "value": {},
+      "properties": {
+        "componentName": {
+          "type": "string"
+        },
+        "labelAndValue": {
+          "type": "string"
+        },
+        "labelClearSelection": {
+          "type": "string"
+        },
+        "labelCountWithTotal": {
+          "type": "string"
+        },
+        "labelDataVisualization": {
+          "type": "string"
+        },
+        "labelInvalidData": {
+          "type": "string"
+        },
+        "labelNoData": {
+          "type": "string"
+        },
+        "stateCollapsed": {
+          "type": "string"
+        },
+        "stateDrillable": {
+          "type": "string"
+        },
+        "stateExpanded": {
+          "type": "string"
+        },
+        "stateHidden": {
+          "type": "string"
+        },
+        "stateIsolated": {
+          "type": "string"
+        },
+        "stateMaximized": {
+          "type": "string"
+        },
+        "stateMinimized": {
+          "type": "string"
+        },
+        "stateSelected": {
+          "type": "string"
+        },
+        "stateUnselected": {
+          "type": "string"
+        },
+        "stateVisible": {
+          "type": "string"
+        }
+      }
+    },
+    "unselectedState": {
+      "type": "object",
+      "properties": {
+        "borderColor": {
+          "type": "string",
+          "value": ""
+        },
+        "color": {
+          "type": "string"
+        },
+        "shape": {
+          "type": "string",
+          "value": "star"
+        },
+        "source": {
+          "type": "string",
+          "value": ""
+        },
+        "svgClassName": {
+          "type": "string",
+          "value": ""
+        },
+        "svgStyle": {
+          "type": "object",
+          "value": {}
+        }
+      }
+    },
+    "value": {
+      "type": "number",
+      "writeback": true
+    },
+    "visualEffects": {
+      "type": "string",
+      "enumValues": [
+        "auto",
+        "none"
+      ],
+      "value": "auto"
+    }
+  },
+  "methods": {
+    "refresh": {},
+    "setProperty": {},
+    "getProperty": {},
+    "setProperties": {},
+    "getNodeBySubId": {},
+    "getSubIdByNode": {}
+  },
+  "extension": {}
+};
+var __oj_status_meter_gauge_metadata = 
+{
+  "properties": {
+    "angleExtent": {
+      "type": "number",
+      "value": 360
+    },
+    "animationDuration": {
+      "type": "number"
+    },
+    "animationOnDataChange": {
+      "type": "string",
+      "enumValues": [
+        "auto",
+        "none"
+      ],
+      "value": "none"
+    },
+    "animationOnDisplay": {
+      "type": "string",
+      "enumValues": [
+        "auto",
+        "none"
+      ],
+      "value": "none"
+    },
+    "borderColor": {
+      "type": "string"
+    },
+    "borderRadius": {
+      "type": "string",
+      "value": "auto"
+    },
+    "center": {
+      "type": "object",
+      "properties": {
+        "renderer": {
+          "type": "function",
+          "properties": {
+            "componentElement": {
+              "type": "Element"
+            },
+            "innerBounds": {
+              "type": "oj.ojStatusMeterGauge.Bounds"
+            },
+            "metricLabel": {
+              "type": "string"
+            },
+            "outerBounds": {
+              "type": "oj.ojStatusMeterGauge.Bounds"
+            }
+          }
+        }
+      }
+    },
+    "color": {
+      "type": "string"
+    },
+    "indicatorSize": {
+      "type": "number",
+      "value": 1
+    },
+    "innerRadius": {
+      "type": "number",
+      "value": 0.7
+    },
+    "label": {
+      "type": "object",
+      "properties": {
+        "position": {
+          "type": "string",
+          "enumValues": [
+            "auto",
+            "center",
+            "start"
+          ],
+          "value": "auto"
+        },
+        "style": {
+          "type": "object",
+          "value": {}
+        },
+        "text": {
+          "type": "string",
+          "value": ""
+        }
+      }
+    },
+    "max": {
+      "type": "number",
+      "value": 100
+    },
+    "metricLabel": {
+      "type": "object",
+      "properties": {
+        "converter": {
+          "type": "object"
+        },
+        "position": {
+          "type": "string",
+          "enumValues": [
+            "auto",
+            "center",
+            "insideIndicatorEdge",
+            "outsideIndicatorEdge",
+            "outsidePlotArea",
+            "withLabel"
+          ],
+          "value": "auto"
+        },
+        "rendered": {
+          "type": "string",
+          "enumValues": [
+            "auto",
+            "off",
+            "on"
+          ],
+          "value": "auto"
+        },
+        "scaling": {
+          "type": "string",
+          "enumValues": [
+            "auto",
+            "billion",
+            "million",
+            "none",
+            "quadrillion",
+            "thousand",
+            "trillion"
+          ],
+          "value": "auto"
+        },
+        "style": {
+          "type": "object",
+          "value": {}
+        },
+        "text": {
+          "type": "string",
+          "value": ""
+        },
+        "textType": {
+          "type": "string",
+          "enumValues": [
+            "number",
+            "percent"
+          ],
+          "value": "number"
+        }
+      }
+    },
+    "min": {
+      "type": "number",
+      "value": 0
+    },
+    "orientation": {
+      "type": "string",
+      "enumValues": [
+        "circular",
+        "horizontal",
+        "vertical"
+      ],
+      "value": "horizontal"
+    },
+    "plotArea": {
+      "type": "object",
+      "properties": {
+        "borderColor": {
+          "type": "string"
+        },
+        "borderRadius": {
+          "type": "string",
+          "value": "auto"
+        },
+        "color": {
+          "type": "string"
+        },
+        "rendered": {
+          "type": "string",
+          "enumValues": [
+            "auto",
+            "off",
+            "on"
+          ],
+          "value": "auto"
+        },
+        "svgClassName": {
+          "type": "string",
+          "value": ""
+        },
+        "svgStyle": {
+          "type": "object",
+          "value": {}
+        }
+      }
+    },
+    "readonly": {
+      "type": "boolean",
+      "value": false
+    },
+    "referenceLines": {
+      "type": "Array<Object>",
+      "value": []
+    },
+    "startAngle": {
+      "type": "number",
+      "value": 90
+    },
+    "step": {
+      "type": "number"
+    },
+    "svgClassName": {
+      "type": "string",
+      "value": ""
+    },
+    "svgStyle": {
+      "type": "object",
+      "value": {}
+    },
+    "thresholdDisplay": {
+      "type": "string",
+      "enumValues": [
+        "all",
+        "currentOnly",
+        "onIndicator"
+      ],
+      "value": "onIndicator"
+    },
+    "thresholds": {
+      "type": "Array<Object>",
+      "value": []
+    },
+    "tooltip": {
+      "type": "object",
+      "properties": {
+        "renderer": {
+          "type": "function",
+          "properties": {
+            "color": {
+              "type": "string"
+            },
+            "componentElement": {
+              "type": "Element"
+            },
+            "label": {
+              "type": "string"
+            },
+            "parentElement": {
+              "type": "Element"
+            }
+          }
+        }
+      }
+    },
+    "trackResize": {
+      "type": "string",
+      "enumValues": [
+        "off",
+        "on"
+      ],
+      "value": "on"
+    },
+    "transientValue": {
+      "type": "number",
+      "writeback": true,
+      "readOnly": true
+    },
+    "translations": {
+      "type": "object",
+      "value": {},
+      "properties": {
+        "componentName": {
+          "type": "string"
+        },
+        "labelAndValue": {
+          "type": "string"
+        },
+        "labelClearSelection": {
+          "type": "string"
+        },
+        "labelCountWithTotal": {
+          "type": "string"
+        },
+        "labelDataVisualization": {
+          "type": "string"
+        },
+        "labelInvalidData": {
+          "type": "string"
+        },
+        "labelNoData": {
+          "type": "string"
+        },
+        "stateCollapsed": {
+          "type": "string"
+        },
+        "stateDrillable": {
+          "type": "string"
+        },
+        "stateExpanded": {
+          "type": "string"
+        },
+        "stateHidden": {
+          "type": "string"
+        },
+        "stateIsolated": {
+          "type": "string"
+        },
+        "stateMaximized": {
+          "type": "string"
+        },
+        "stateMinimized": {
+          "type": "string"
+        },
+        "stateSelected": {
+          "type": "string"
+        },
+        "stateUnselected": {
+          "type": "string"
+        },
+        "stateVisible": {
+          "type": "string"
+        }
+      }
+    },
+    "value": {
+      "type": "number",
+      "writeback": true
+    },
+    "visualEffects": {
+      "type": "string",
+      "enumValues": [
+        "auto",
+        "none"
+      ],
+      "value": "auto"
+    }
+  },
+  "methods": {
+    "getMetricLabel": {},
+    "refresh": {},
+    "setProperty": {},
+    "getProperty": {},
+    "setProperties": {},
+    "getNodeBySubId": {},
+    "getSubIdByNode": {}
+  },
+  "extension": {}
+};
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
@@ -974,6 +1810,7 @@ oj.__registerWidget('oj.ojLedGauge', $['oj']['dvtBaseGauge'],
      * @memberof oj.ojLedGauge
      * @instance
      * @type {string}
+     * @ojformat color
      */
     borderColor: '',
 
@@ -984,6 +1821,7 @@ oj.__registerWidget('oj.ojLedGauge', $['oj']['dvtBaseGauge'],
      * @memberof oj.ojLedGauge
      * @instance
      * @type {string}
+     * @ojformat color
      */
     color: '#393737',
 
@@ -994,7 +1832,6 @@ oj.__registerWidget('oj.ojLedGauge', $['oj']['dvtBaseGauge'],
      * @memberof oj.ojLedGauge
      * @instance
      * @type {Object}
-     * @default {"style": {}, "text": ""}
      */
     label: {
       /**
@@ -1030,7 +1867,6 @@ oj.__registerWidget('oj.ojLedGauge', $['oj']['dvtBaseGauge'],
      * @memberof oj.ojLedGauge
      * @instance
      * @type {Object}
-     * @default {"converter": null, "rendered": "off", "scaling": "auto", "style": {}, "text": "", "textType": "number"}
      */
     metricLabel: {
       /**
@@ -1210,7 +2046,6 @@ oj.__registerWidget('oj.ojLedGauge', $['oj']['dvtBaseGauge'],
      * @memberof oj.ojLedGauge
      * @instance
      * @type {Object}
-     * @default {"renderer": null}
      */
     tooltip: {
       /**
@@ -1238,14 +2073,14 @@ oj.__registerWidget('oj.ojLedGauge', $['oj']['dvtBaseGauge'],
      * @memberof oj.ojLedGauge
      * @instance
      * @type {string}
-     * @ojvalue {string} "arrow"
-     * @ojvalue {string} "diamond"
-     * @ojvalue {string} "square"
-     * @ojvalue {string} "rectangle"
-     * @ojvalue {string} "triangle"
-     * @ojvalue {string} "star"
-     * @ojvalue {string} "human"
-     * @ojvalue {string} "circle"
+     * @ojvalue {string=} "arrow"
+     * @ojvalue {string=} "diamond"
+     * @ojvalue {string=} "square"
+     * @ojvalue {string=} "rectangle"
+     * @ojvalue {string=} "triangle"
+     * @ojvalue {string=} "star"
+     * @ojvalue {string=} "human"
+     * @ojvalue {string=} "circle"
      * @default "circle"
      */
     type: 'circle',
@@ -1453,7 +2288,6 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
      * @memberof oj.ojRatingGauge
      * @instance
      * @type {Object}
-     * @default {"borderColor": "", "color": "#ED2C02", "shape": "star", "source": "", "svgClassName": "", "svgStyle": {}}
      */
     changedState: {
       /**
@@ -1463,7 +2297,9 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
        * @memberof! oj.ojRatingGauge
        * @instance
        * @type {string}
+       * @ojformat color
        * @ojsignature {target: "Type", value: "?"}
+       * @default ""
        */
       borderColor: '',
 
@@ -1474,6 +2310,7 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
        * @memberof! oj.ojRatingGauge
        * @instance
        * @type {string}
+       * @ojformat color
        * @ojsignature {target: "Type", value: "?"}
        */
       color: '#ED2C02',
@@ -1534,7 +2371,6 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
      * @memberof oj.ojRatingGauge
      * @instance
      * @type {Object}
-     * @default {"borderColor": "", "color": "#007CC8", "shape": "star", "source": "", "svgClassName": "", "svgStyle": {}}
      */
     hoverState: {
       /**
@@ -1544,7 +2380,9 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
        * @memberof! oj.ojRatingGauge
        * @instance
        * @type {string}
+       * @ojformat color
        * @ojsignature {target: "Type", value: "?"}
+       * @default ""
        */
       borderColor: '',
 
@@ -1555,6 +2393,7 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
        * @memberof! oj.ojRatingGauge
        * @instance
        * @type {string}
+       * @ojformat color
        * @ojsignature {target: "Type", value: "?"}
        */
       color: '#007CC8',
@@ -1693,7 +2532,6 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
      * @memberof oj.ojRatingGauge
      * @instance
      * @type {Object}
-     * @default {"borderColor": "", "color": "#F8C15A", "shape": "star", "source": "", "svgClassName": "", "svgStyle": {}}
      */
     selectedState: {
       /**
@@ -1703,7 +2541,9 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
        * @memberof! oj.ojRatingGauge
        * @instance
        * @type {string}
+       * @ojformat color
        * @ojsignature {target: "Type", value: "?"}
+       * @default ""
        */
       borderColor: '',
 
@@ -1714,6 +2554,7 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
        * @memberof! oj.ojRatingGauge
        * @instance
        * @type {string}
+       * @ojformat color
        * @ojsignature {target: "Type", value: "?"}
        */
       color: '#F8C15A',
@@ -1774,8 +2615,8 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
      * @memberof oj.ojRatingGauge
      * @instance
      * @type {number}
-     * @ojvalue {number} 0.5
-     * @ojvalue {number} 1
+     * @ojvalue {number=} 0.5
+     * @ojvalue {number=} 1
      * @default 1
      */
     step: 1,
@@ -1799,7 +2640,6 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
      * @memberof oj.ojRatingGauge
      * @instance
      * @type {Object}
-     * @default {"renderer": null}
      */
     tooltip: {
       /**
@@ -1827,7 +2667,6 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
      * @memberof oj.ojRatingGauge
      * @instance
      * @type {Object}
-     * @default {"borderColor": "", "color": "#C4CED7", "shape": "star", "source": "", "svgClassName": "", "svgStyle": {}}
      */
     unselectedState: {
       /**
@@ -1837,7 +2676,9 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
        * @memberof! oj.ojRatingGauge
        * @instance
        * @type {string}
+       * @ojformat color
        * @ojsignature {target: "Type", value: "?"}
+       * @default ""
        */
       borderColor: '',
 
@@ -1848,6 +2689,7 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
        * @memberof! oj.ojRatingGauge
        * @instance
        * @type {string}
+       * @ojformat color
        * @ojsignature {target: "Type", value: "?"}
        */
       color: '#C4CED7',
@@ -2227,6 +3069,7 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $['oj']['dvtBaseGauge'],
      * @memberof oj.ojStatusMeterGauge
      * @instance
      * @type {string}
+     * @ojformat color
      */
     borderColor: '',
 
@@ -2248,7 +3091,6 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $['oj']['dvtBaseGauge'],
      * @memberof oj.ojStatusMeterGauge
      * @instance
      * @type {Object}
-     * @default {"renderer": null}
      */
     center: {
       /**
@@ -2278,6 +3120,7 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $['oj']['dvtBaseGauge'],
      * @memberof oj.ojStatusMeterGauge
      * @instance
      * @type {string}
+     * @ojformat color
      */
     color: '#393737',
 
@@ -2313,7 +3156,6 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $['oj']['dvtBaseGauge'],
      * @memberof oj.ojStatusMeterGauge
      * @instance
      * @type {Object}
-     * @default {"position": "auto", "style": {}, "text": ""}
      */
     label: {
       /**
@@ -2375,7 +3217,6 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $['oj']['dvtBaseGauge'],
      * @memberof oj.ojStatusMeterGauge
      * @instance
      * @type {Object}
-     * @default {"position": "auto", "rendered": "auto", "scaling": "auto", "style": {}, "text": "", "textType": "number"}
      */
     metricLabel: {
       /**
@@ -2514,7 +3355,6 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $['oj']['dvtBaseGauge'],
      * @memberof oj.ojStatusMeterGauge
      * @instance
      * @type {Object}
-     * @default {"borderRadius": "auto", "rendered": "auto", "svgClassName": "", "svgStyle": {}}
      */
     plotArea: {
       /**
@@ -2524,6 +3364,7 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $['oj']['dvtBaseGauge'],
        * @memberof! oj.ojStatusMeterGauge
        * @instance
        * @type {string}
+       * @ojformat color
        * @ojsignature {target: "Type", value: "?"}
        */
       borderColor: undefined,
@@ -2547,6 +3388,7 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $['oj']['dvtBaseGauge'],
        * @memberof! oj.ojStatusMeterGauge
        * @instance
        * @type {string}
+       * @ojformat color
        * @ojsignature {target: "Type", value: "?"}
        */
       color: undefined,
@@ -2685,7 +3527,6 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $['oj']['dvtBaseGauge'],
      * @memberof oj.ojStatusMeterGauge
      * @instance
      * @type {Object}
-     * @default {"renderer": null}
      */
     tooltip: {
       /**
@@ -2968,192 +3809,19 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $['oj']['dvtBaseGauge'],
  * Ignore tag only needed for DVTs that have jsDoc in separate _doc.js files.
  * @ignore
  */
-(function() {
-var dvtBaseGaugeMeta = {
-  "properties": {
-    "translations": {
-      "properties": {
-        "componentName": {
-          "type": "string"
-        }
-      }
+(function () {
+  var dvtBaseGaugeMeta = {
+    extension: {
+      _WIDGET_NAME: 'dvtBaseGauge'
     }
-  },
-  "methods": {},
-  "extension": {
-    _WIDGET_NAME: "dvtBaseGauge"
   }
-};
-oj.CustomElementBridge.registerMetadata('dvtBaseGauge', 'dvtBaseComponent', dvtBaseGaugeMeta);
+  oj.CustomElementBridge.registerMetadata('dvtBaseGauge', 'dvtBaseComponent', dvtBaseGaugeMeta);
 })();
 
-(function() {
-var ojLedGaugeMeta = {
-  "properties": {
-    "borderColor": {
-      "type": "string"
-    },
-    "svgClassName": {
-      "type": "string"
-    },
-    "color": {
-      "type": "string"
-    },
-    "max": {
-      "type": "number"
-    },
-    "metricLabel": {
-      "type": "object",
-      "properties": {
-        "converter": {
-          "type": "object"
-        },
-        "rendered": {
-          "type": "string",
-          "enumValues": ["on", "off"]
-        },
-        "scaling": {
-          "type": "string",
-          "enumValues": ["auto", "none", "thousand", "million", "billion", "trillion", "quadrillion"]
-        },
-        "style": {
-          "type": "object"
-        },
-        "text": {
-          "type": "string"
-        },
-        "textType": {
-          "type": "string",
-          "enumValues": ["percent", "number"]
-        }
-      }
-    },
-    "min": {
-      "type": "number"
-    },
-    "rotation": {
-      "type": "number",
-      "enumValues": ["0", "90", "180", "270"]
-    },
-    "size": {
-      "type": "number"
-    },
-    "svgStyle": {
-      "type": "object"
-    },
-    "thresholds": {
-      "type": "Array<object>"
-    },
-    "label": {
-      "type": "object",
-      "properties": {
-        "style": {
-          "type": "object"
-        },
-        "text": {
-          "type": "string"
-        }
-      }
-    },
-    "tooltip": {
-      "type": "object",
-      "properties": {
-        "renderer": {}
-      }
-    },
-    "type": {
-      "type": "string"
-    },
-    "value": {
-      "type": "number",
-      "writeback": true
-    },
-    "visualEffects": {
-      "type": "string",
-      "enumValues": ["none", "auto"]
-    },
-    "translations": {
-      "type": "Object",
-      "properties": {
-        "componentName": {
-          "type": "string",
-          "value": "Gauge"
-        },
-        "labelAndValue": {
-          "type": "string",
-          "value": "{0}: {1}"
-        },
-        "labelClearSelection": {
-          "type": "string",
-          "value": "Clear Selection"
-        },
-        "labelCountWithTotal": {
-          "type": "string",
-          "value": "{0} of {1}"
-        },
-        "labelDataVisualization": {
-          "type": "string",
-          "value": "Data Visualization"
-        },
-        "labelInvalidData": {
-          "type": "string",
-          "value": "Invalid data"
-        },
-        "labelNoData": {
-          "type": "string",
-          "value": "No data to display"
-        },
-        "stateCollapsed": {
-          "type": "string",
-          "value": "Collapsed"
-        },
-        "stateDrillable": {
-          "type": "string",
-          "value": "Drillable"
-        },
-        "stateExpanded": {
-          "type": "string",
-          "value": "Expanded"
-        },
-        "stateHidden": {
-          "type": "string",
-          "value": "Hidden"
-        },
-        "stateIsolated": {
-          "type": "string",
-          "value": "Isolated"
-        },
-        "stateMaximized": {
-          "type": "string",
-          "value": "Maximized"
-        },
-        "stateMinimized": {
-          "type": "string",
-          "value": "Minimized"
-        },
-        "stateSelected": {
-          "type": "string",
-          "value": "Selected"
-        },
-        "stateUnselected": {
-          "type": "string",
-          "value": "Unselected"
-        },
-        "stateVisible": {
-          "type": "string",
-          "value": "Visible"
-        }
-      }
-    }
-  },
-  "methods": {
-    "getMetricLabel": {}
-  },
-  "extension": {
-    _WIDGET_NAME: "ojLedGauge"
-  }
-};
-oj.CustomElementBridge.registerMetadata('oj-led-gauge', 'dvtBaseGauge', ojLedGaugeMeta);
+/* global __oj_led_gauge_metadata:false */
+(function () {
+  __oj_led_gauge_metadata.extension._WIDGET_NAME = 'ojLedGauge';
+  oj.CustomElementBridge.registerMetadata('oj-led-gauge', 'dvtBaseGauge', __oj_led_gauge_metadata);
 // Supported marker shapes for gauges
 var _LED_GAUGE_SHAPE_ENUMS = {
   "arrow": true,
@@ -3173,229 +3841,11 @@ oj.CustomElementBridge.register('oj-led-gauge', {
 });
 })();
 
-(function() {
-var ojRatingGaugeMeta = {
-  "properties": {
-    "changed": {
-      "type": "boolean",
-      "writeback": true
-    },
-    "changedState": {
-      "type": "object",
-      "properties": {
-        "borderColor": {
-          "type": "string"
-        },
-        "svgClassName": {
-          "type": "string"
-        },
-        "color": {
-          "type": "string"
-        },
-        "shape": {
-          "type": "string"
-        },
-        "source": {
-          "type": "string"
-        },
-        "svgStyle": {
-          "type": "object"
-        }
-      }
-    },
-    "hoverState": {
-      "type": "object",
-      "properties": {
-        "borderColor": {
-          "type": "string"
-        },
-        "svgClassName": {
-          "type": "string"
-        },
-        "color": {
-          "type": "string"
-        },
-        "shape": {
-          "type": "string"
-        },
-        "source": {
-          "type": "string"
-        },
-        "svgStyle": {
-          "type": "object"
-        }
-      }
-    },
-    "max": {
-      "type": "number"
-    },
-    "min": {
-      "type": "number"
-    },
-    "orientation": {
-      "type": "string",
-      "enumValues": ["vertical", "horizontal"]
-    },
-    "preserveAspectRatio": {
-      "type": "string",
-      "enumValues": ["none", "meet"]
-    },
-    "readonly": {
-      "type": "boolean"
-    },
-    "selectedState": {
-      "type": "object",
-      "properties": {
-        "borderColor": {
-          "type": "string"
-        },
-        "svgClassName": {
-          "type": "string"
-        },
-        "color": {
-          "type": "string"
-        },
-        "shape": {
-          "type": "string"
-        },
-        "source": {
-          "type": "string"
-        },
-        "svgStyle": {
-          "type": "object"
-        }
-      }
-    },
-    "step": {
-      "type": "number",
-      "enumValues": ["1", "0.5"]
-    },
-    "transientValue": {
-      "type": "number",
-      "writeback": true,
-      "readOnly": true
-    },
-    "thresholds": {
-      "type": "Array<object>"
-    },
-    "tooltip": {
-      "type": "object",
-      "properties": {
-        "renderer": {}
-      }
-    },
-    "translations": {
-      "type": "Object",
-      "properties": {
-        "componentName": {
-          "type": "string",
-          "value": "Gauge"
-        },
-        "labelAndValue": {
-          "type": "string",
-          "value": "{0}: {1}"
-        },
-        "labelClearSelection": {
-          "type": "string",
-          "value": "Clear Selection"
-        },
-        "labelCountWithTotal": {
-          "type": "string",
-          "value": "{0} of {1}"
-        },
-        "labelDataVisualization": {
-          "type": "string",
-          "value": "Data Visualization"
-        },
-        "labelInvalidData": {
-          "type": "string",
-          "value": "Invalid data"
-        },
-        "labelNoData": {
-          "type": "string",
-          "value": "No data to display"
-        },
-        "stateCollapsed": {
-          "type": "string",
-          "value": "Collapsed"
-        },
-        "stateDrillable": {
-          "type": "string",
-          "value": "Drillable"
-        },
-        "stateExpanded": {
-          "type": "string",
-          "value": "Expanded"
-        },
-        "stateHidden": {
-          "type": "string",
-          "value": "Hidden"
-        },
-        "stateIsolated": {
-          "type": "string",
-          "value": "Isolated"
-        },
-        "stateMaximized": {
-          "type": "string",
-          "value": "Maximized"
-        },
-        "stateMinimized": {
-          "type": "string",
-          "value": "Minimized"
-        },
-        "stateSelected": {
-          "type": "string",
-          "value": "Selected"
-        },
-        "stateUnselected": {
-          "type": "string",
-          "value": "Unselected"
-        },
-        "stateVisible": {
-          "type": "string",
-          "value": "Visible"
-        }
-      }
-    },
-    "unselectedState": {
-      "type": "object",
-      "properties": {
-        "borderColor": {
-          "type": "string"
-        },
-        "svgClassName": {
-          "type": "string"
-        },
-        "color": {
-          "type": "string"
-        },
-        "shape": {
-          "type": "string"
-        },
-        "source": {
-          "type": "string"
-        },
-        "svgStyle": {
-          "type": "object"
-        }
-      }
-    },
-    "value": {
-      "type": "number",
-      "writeback": true
-    },
-    "visualEffects": {
-      "type": "string",
-      "enumValues": ["none", "auto"]
-    }
-  },
-  "methods": {},
-  "extension": {
-    _ALIASED_PROPS: {"transientValue": "rawValue"},
-    _WIDGET_NAME: "ojRatingGauge"
-  }
-};
-oj.CustomElementBridge.registerMetadata('oj-rating-gauge', 'dvtBaseGauge', ojRatingGaugeMeta);
+/* global __oj_rating_gauge_metadata:false */
+(function () {
+  __oj_rating_gauge_metadata.extension._WIDGET_NAME = 'ojRatingGauge';
+  __oj_rating_gauge_metadata.extension._ALIASED_PROPS = { transientValue: 'rawValue' };
+  oj.CustomElementBridge.registerMetadata('oj-rating-gauge', 'dvtBaseGauge', __oj_rating_gauge_metadata);
 
 // Consider a string with at least one digit a valid SVG path
 var _SHAPE_REGEXP = /\d/;
@@ -3442,251 +3892,12 @@ oj.CustomElementBridge.register('oj-rating-gauge', {
 });
 })();
 
-(function() {
-var ojStatusMeterGaugeMeta = {
-  "properties": {
-    "angleExtent": {
-      "type": "number"
-    },
-    "animationDuration": {
-      "type": "number"
-    },
-    "animationOnDataChange": {
-      "type": "string",
-      "enumValues": ["auto", "none"]
-    },
-    "animationOnDisplay": {
-      "type": "string",
-      "enumValues": ["auto", "none"]
-    },
-    "borderColor": {
-      "type": "string"
-    },
-    "borderRadius": {
-      "type": "string"
-    },
-    "center": {
-      "type": "object",
-      "properties": {
-        "renderer": {}
-      }
-    },
-    "svgClassName": {
-      "type": "string"
-    },
-    "color": {
-      "type": "string"
-    },
-    "indicatorSize": {
-      "type": "number"
-    },
-    "innerRadius": {
-      "type": "number"
-    },
-    "max": {
-      "type": "number"
-    },
-    "metricLabel": {
-      "type": "object",
-      "properties": {
-        "converter": {
-          "type": "object"
-        },
-        "position": {
-          "type": "string",
-          "enumValues": ["auto", "center", "insideIndicatorEdge", "outsideIndicatorEdge", "outsidePlotArea", "withLabel"]
-        },
-        "rendered": {
-          "type": "string",
-          "enumValues": ["auto", "on", "off"]
-        },
-        "scaling": {
-          "type": "string",
-          "enumValues": ["auto", "none", "thousand", "million", "billion", "trillion", "quadrillion"]
-        },
-        "style": {
-          "type": "object"
-        },
-        "text": {
-          "type": "string"
-        },
-        "textType": {
-          "type": "string",
-          "enumValues": ["percent", "number"]
-        }
-      }
-    },
-    "min": {
-      "type": "number"
-    },
-    "orientation": {
-      "type": "string",
-      "enumValues": ["circular", "horizontal", "vertical"]
-    },
-    "plotArea": {
-      "type": "object",
-      "properties": {
-        "borderColor": {
-          "type": "string"
-        },
-        "borderRadius": {
-          "type": "string"
-        },
-        "svgClassName": {
-          "type": "string"
-        },
-        "color": {
-          "type": "string"
-        },
-        "rendered": {
-          "type": "string",
-          "enumValues": ["auto", "on", "off"]
-        },
-        "svgStyle": {
-          "type": "object"
-        }
-      }
-    },
-    "readonly": {
-      "type": "boolean"
-    },
-    "referenceLines": {
-      "type": "Array<object>"
-    },
-    "startAngle": {
-      "type": "number"
-    },
-    "step": {
-      "type": "number"
-    },
-    "svgStyle": {
-      "type": "object"
-    },
-    "transientValue": {
-      "type": "number",
-      "writeback": true,
-      "readOnly": true
-    },
-    "thresholdDisplay": {
-      "type": "string",
-      "enumValues": ["currentOnly", "all", "onIndicator"]
-    },
-    "thresholds": {
-      "type": "Array<object>"
-    },
-    "translations": {
-      "type": "Object",
-      "properties": {
-        "componentName": {
-          "type": "string",
-          "value": "Gauge"
-        },
-        "labelAndValue": {
-          "type": "string",
-          "value": "{0}: {1}"
-        },
-        "labelClearSelection": {
-          "type": "string",
-          "value": "Clear Selection"
-        },
-        "labelCountWithTotal": {
-          "type": "string",
-          "value": "{0} of {1}"
-        },
-        "labelDataVisualization": {
-          "type": "string",
-          "value": "Data Visualization"
-        },
-        "labelInvalidData": {
-          "type": "string",
-          "value": "Invalid data"
-        },
-        "labelNoData": {
-          "type": "string",
-          "value": "No data to display"
-        },
-        "stateCollapsed": {
-          "type": "string",
-          "value": "Collapsed"
-        },
-        "stateDrillable": {
-          "type": "string",
-          "value": "Drillable"
-        },
-        "stateExpanded": {
-          "type": "string",
-          "value": "Expanded"
-        },
-        "stateHidden": {
-          "type": "string",
-          "value": "Hidden"
-        },
-        "stateIsolated": {
-          "type": "string",
-          "value": "Isolated"
-        },
-        "stateMaximized": {
-          "type": "string",
-          "value": "Maximized"
-        },
-        "stateMinimized": {
-          "type": "string",
-          "value": "Minimized"
-        },
-        "stateSelected": {
-          "type": "string",
-          "value": "Selected"
-        },
-        "stateUnselected": {
-          "type": "string",
-          "value": "Unselected"
-        },
-        "stateVisible": {
-          "type": "string",
-          "value": "Visible"
-        }
-      }
-    },
-    "label": {
-      "type": "object",
-      "properties": {
-        "position": {
-          "type": "string",
-          "enumValues": ["auto", "center", "start"]
-        },
-        "style": {
-          "type": "object"
-        },
-        "text": {
-          "type": "string"
-        }
-      }
-    },
-    "tooltip": {
-      "type": "object",
-      "properties": {
-        "renderer": {}
-      }
-    },
-    "value": {
-      "type": "number",
-      "writeback": true
-    },
-    "visualEffects": {
-      "type": "string",
-      "enumValues": ["none", "auto"]
-    }
-  },
-  "methods": {
-    "getMetricLabel": {}
-  },
-  "extension": {
-    _ALIASED_PROPS: {"transientValue": "rawValue"},
-    _WIDGET_NAME: "ojStatusMeterGauge"
-  }
-};
-oj.CustomElementBridge.registerMetadata('oj-status-meter-gauge', 'dvtBaseGauge', ojStatusMeterGaugeMeta);
-oj.CustomElementBridge.register('oj-status-meter-gauge', {'metadata': oj.CustomElementBridge.getMetadata('oj-status-meter-gauge')});
-})();
+/* global __oj_status_meter_gauge_metadata:false */
+(function () {
+  __oj_status_meter_gauge_metadata.extension._WIDGET_NAME = 'ojStatusMeterGauge';
+  __oj_status_meter_gauge_metadata.extension._ALIASED_PROPS = { transientValue: 'rawValue' };
+  oj.CustomElementBridge.registerMetadata('oj-status-meter-gauge', 'dvtBaseGauge', __oj_status_meter_gauge_metadata);
+  oj.CustomElementBridge.register('oj-status-meter-gauge', { metadata: oj.CustomElementBridge.getMetadata('oj-status-meter-gauge') });
+}());
 
 });

@@ -1,12 +1,9 @@
 {
   "name": "oj-indexer",
-  "version": "5.1.0",
-  "jetVersion": "5.1.0",
+  "version": "5.2.0",
+  "jetVersion": "5.2.0",
   "displayName": "Indexer",
-  "preview": true,
-  "roles": [
-    "slider"
-  ],
+  "type": "core",
   "description": "Displays a list of sections that corresponds to group headers of a list.",
   "properties": {
     "data": {
@@ -16,38 +13,46 @@
       "value": null
     },
     "translations": {
-      "description": "A collection of translated resources from the translation bundle, or null if this\ncomponent has no resources. Resources may be accessed and overridden individually or collectively, as seen in the examples. If the component does not contain any translatable resource, the default value of this attribute will be \nnull. If not, an object containing all resources relevant to the component.\n\nIf this component has translations, their documentation immediately follows this doc entry.",
-      "type": "Object|null",
+      "description": "A collection of translated resources from the translation bundle, or null if this component has no resources.",
+      "type": "object|null",
       "displayName": "Translations",
+      "value": {},
       "translatable": true,
       "properties": {
         "ariaDisabledLabel": {
           "description": "Provides properties to customize the text to read to the screen reader when there is no matching group header.",
-          "type": "string"
+          "type": "string",
+          "displayName": "Aria Disabled Label"
         },
         "ariaInBetweenText": {
           "description": "Provides properties to customize the text that represents between two characters in the Indexer.",
-          "type": "string"
+          "type": "string",
+          "displayName": "Aria In Between Text"
         },
         "ariaKeyboardInstructionText": {
           "description": "Provides properties to customize the screen reader keyboard instructional text for the the Indexer.",
-          "type": "string"
+          "type": "string",
+          "displayName": "Aria Keyboard Instruction Text"
         },
         "ariaOthersLabel": {
           "description": "Provides properties to customize the text to read to the screen reader when the non-letter characters is selected.",
-          "type": "string"
+          "type": "string",
+          "displayName": "Aria Others Label"
         },
         "ariaTouchInstructionText": {
           "description": "Provides properties to customize the screen reader touch instructional text for the the Indexer.",
-          "type": "string"
+          "type": "string",
+          "displayName": "Aria Touch Instruction Text"
         },
         "indexerCharacters": {
           "description": "Provides properties to customize the characters to display in the Indexer.",
-          "type": "string"
+          "type": "string",
+          "displayName": "Indexer Characters"
         },
         "indexerOthers": {
           "description": "Provides properties to customize the non-letter characters to display in the Indexer.",
-          "type": "string"
+          "type": "string",
+          "displayName": "Indexer Others"
         }
       }
     }
@@ -90,7 +95,7 @@
         {
           "name": "properties",
           "description": "An object containing the property and value pairs to set.",
-          "type": "Object"
+          "type": "object"
         }
       ],
       "return": "void"

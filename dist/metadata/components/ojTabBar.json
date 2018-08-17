@@ -1,12 +1,9 @@
 {
   "name": "oj-tab-bar",
-  "version": "5.1.0",
-  "jetVersion": "5.1.0",
+  "version": "5.2.0",
+  "jetVersion": "5.2.0",
   "displayName": "Tab Bar",
-  "preview": true,
-  "roles": [
-    "tablist"
-  ],
+  "type": "core",
   "styleClasses": [
     {
       "styleGroup": [
@@ -160,18 +157,72 @@
     },
     "item": {
       "description": "Customize the functionalities of each tab on Tab bar.",
-      "type": "Object",
+      "type": "object",
       "displayName": "Item",
       "properties": {
         "renderer": {
           "description": "Gets and sets the renderer for the tab item.",
           "type": "function|null",
-          "value": null
+          "displayName": "Renderer",
+          "value": null,
+          "properties": {
+            "componentElement": {
+              "description": "oj-tab-bar element",
+              "type": "Element"
+            },
+            "datasource": {
+              "description": "A reference to the data source object. (Not available for static content)",
+              "type": "oj.DataProvider<K, D>"
+            },
+            "index": {
+              "description": "The index of the item, where 0 is the index of the first item.",
+              "type": "number"
+            },
+            "key": {
+              "description": "The Key of the item.",
+              "type": "K"
+            },
+            "data": {
+              "description": "The data object for the item.",
+              "type": "D"
+            },
+            "parentElement": {
+              "description": "The list item element. The renderer can use this to directly append content.",
+              "type": "Element"
+            }
+          }
         },
         "selectable": {
           "description": "Gets and sets whether the tab can be selected.",
           "type": "function|boolean",
-          "value": true
+          "displayName": "Selectable",
+          "value": true,
+          "properties": {
+            "componentElement": {
+              "description": "oj-tab-bar element",
+              "type": "Element"
+            },
+            "datasource": {
+              "description": "A reference to the data source object. (Not available for static content)",
+              "type": "oj.DataProvider<K, D>"
+            },
+            "index": {
+              "description": "The index of the item, where 0 is the index of the first item.",
+              "type": "number"
+            },
+            "key": {
+              "description": "The Key of the item.",
+              "type": "K"
+            },
+            "data": {
+              "description": "The data object for the item.",
+              "type": "D"
+            },
+            "parentElement": {
+              "description": "The list item element. The renderer can use this to directly append content.",
+              "type": "Element"
+            }
+          }
         }
       }
     },
@@ -200,7 +251,6 @@
       "type": "string",
       "displayName": "Reorderable",
       "value": "disabled",
-      "preview": true,
       "enumValues": [
         "disabled",
         "enabled"
@@ -224,70 +274,71 @@
       "writeback": true
     },
     "translations": {
-      "description": "A collection of translated resources from the translation bundle, or null if this\ncomponent has no resources. Resources may be accessed and overridden individually or collectively, as seen in the examples. If the component does not contain any translatable resource, the default value of this attribute will be \nnull. If not, an object containing all resources relevant to the component.\n\nIf this component has translations, their documentation immediately follows this doc entry.",
-      "type": "Object|null",
+      "description": "A collection of translated resources from the translation bundle, or null if this component has no resources.",
+      "type": "object|null",
       "displayName": "Translations",
+      "value": {},
       "translatable": true,
       "properties": {
         "accessibleReorderAfterItem": {
           "description": "Provides properties to customize the screen reader text when the tentative drop target is after a certain item.",
           "type": "string",
-          "value": "After {item}"
+          "displayName": "Accessible Reorder After Item"
         },
         "accessibleReorderBeforeItem": {
           "description": "Provides properties to customize the screen reader text when the tentative drop target is before a certain item.",
           "type": "string",
-          "value": "Before {item}"
+          "displayName": "Accessible Reorder Before Item"
         },
         "accessibleReorderTouchInstructionText": {
           "description": "Provides properties to customize the screen reader touch instructional text for reordering items.",
           "type": "string",
-          "value": "Double tap and hold.  Wait for the sound then drag to rearrange."
+          "displayName": "Accessible Reorder Touch Instruction Text"
         },
         "labelCut": {
           "description": "Provides properties to customize the context menu cut label.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "Cut"
+          "displayName": "Label Cut"
         },
         "labelPasteAfter": {
           "description": "Provides properties to customize the context menu paste after label.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "Paste After"
+          "displayName": "Label Paste After"
         },
         "labelPasteBefore": {
           "description": "Provides properties to customize the context menu paste before label.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "Paste Before"
+          "displayName": "Label Paste Before"
         },
         "labelRemove": {
           "description": "Provides properties to customize the context menu remove label.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "Remove"
+          "displayName": "Label Remove"
         },
         "msgFetchingData": {
           "description": "Provides properties to customize the message text used by Tab Bar when waiting for data.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "Fetching Data..."
+          "displayName": "Msg Fetching Data"
         },
         "msgNoData": {
           "description": "Provides properties to customize the message text used by Tab Bar when there are no items.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "No items to display."
+          "displayName": "Msg No Data"
         },
         "overflowItemLabel": {
           "description": "Label for overflow menu button.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "More"
+          "displayName": "Overflow Item Label"
         },
         "removeCueText": {
           "description": "Text cue for the removable tab, used as the aria-label for the close icon.",
           "type": "string",
-          "value": "Removable"
+          "displayName": "Remove Cue Text"
         },
         "selectedLabel": {
           "description": "Provides text to read to screen reader when an item is selected.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "selected"
+          "displayName": "Selected Label"
         }
       }
     },
@@ -296,7 +347,6 @@
       "type": "string",
       "displayName": "Truncation",
       "value": "none",
-      "preview": true,
       "enumValues": [
         "none",
         "progressive"
@@ -323,7 +373,7 @@
           "type": "Element"
         }
       ],
-      "return": "Object|null"
+      "return": "object|null"
     },
     "refresh": {
       "description": "Refreshes the visual state of the Tab Bar.",
@@ -362,7 +412,7 @@
         {
           "name": "properties",
           "description": "An object containing the property and value pairs to set.",
-          "type": "Object"
+          "type": "object"
         }
       ],
       "return": "void"
@@ -438,7 +488,6 @@
     "ojBeforeDeselect": {
       "description": "Event handler for when before tab is deselected.",
       "cancelable": true,
-      "preview": true,
       "detail": {
         "fromKey": {
           "description": "the Key of the tab item being navigated from",
@@ -460,7 +509,6 @@
     },
     "ojDeselect": {
       "description": "Event handler for when a tab is deselected.",
-      "preview": true,
       "detail": {
         "fromKey": {
           "description": "the Key of the tab item being navigated from",
@@ -483,7 +531,6 @@
     "ojBeforeRemove": {
       "description": "Event handler for when a tab is about to be removed.",
       "cancelable": true,
-      "preview": true,
       "detail": {
         "item": {
           "description": "Item being removed",
@@ -497,7 +544,6 @@
     },
     "ojRemove": {
       "description": "Event handler for when a tab is removed.",
-      "preview": true,
       "detail": {
         "item": {
           "description": "Item removed",
@@ -511,7 +557,6 @@
     },
     "ojReorder": {
       "description": "Event handler for when a tab is reordered.",
-      "preview": true,
       "detail": {
         "item": {
           "description": "Item to be moved",

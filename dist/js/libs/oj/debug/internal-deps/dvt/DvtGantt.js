@@ -3049,7 +3049,7 @@ dvt.Gantt.prototype.setRows = function(rows)
 
 /**
  * Gets the current row id
- * @return {string} the id of the current row
+ * @return {*} the id of the current row
  */
 dvt.Gantt.prototype.getCurrentRow = function()
 {
@@ -3058,7 +3058,7 @@ dvt.Gantt.prototype.getCurrentRow = function()
 
 /**
  * Sets the current row id
- * @param {string} currentRow the id of the current row
+ * @param {*} currentRow the id of the current row
  */
 dvt.Gantt.prototype.setCurrentRow = function(currentRow)
 {
@@ -3436,11 +3436,12 @@ dvt.Gantt.prototype.setTaskBrightness = function(task, dim)
 
 /**
  * Find the task node with the specified id
- * @param {string} id the id
+ * @param {*} id the id
  * @return {DvtGanttTaskNode} the task with the specified id or null if none is found
  */
 dvt.Gantt.prototype.findTaskNodeById = function(id)
 {
+  var ctx = this.getCtx();
   var rows = this._rows;
   if (rows)
   {
@@ -3449,7 +3450,7 @@ dvt.Gantt.prototype.findTaskNodeById = function(id)
       var tasks = rows[i].getTasks();
       for (var j = 0; j < tasks.length; j++)
       {
-        if (id === tasks[j].getId())
+        if (dvt.Obj.compareValues(ctx, id, tasks[j].getId()))
           return tasks[j];
       }
     }
@@ -3898,7 +3899,7 @@ DvtGanttDependencyNode.prototype.getActiveElementId = function()
 
 /**
  * Retrieve the id of the predecessor task
- * @return {string} the id of the predecessor task
+ * @return {*} the id of the predecessor task
  */
 DvtGanttDependencyNode.prototype.getPredecessor = function()
 {
@@ -3907,7 +3908,7 @@ DvtGanttDependencyNode.prototype.getPredecessor = function()
 
 /**
  * Retrieve the id of the successor task
- * @return {string} the id of the successor task
+ * @return {*} the id of the successor task
  */
 DvtGanttDependencyNode.prototype.getSuccessor = function()
 {
@@ -5890,6 +5891,7 @@ DvtGanttKeyboardHandler.prototype._getDependencyComparator = function()
  */
 DvtGanttKeyboardHandler.prototype.getFirstNavigableDependencyLine = function(task, event, listOfLines)
 {
+  var ctx = this._gantt.getCtx();
   var direction = event.keyCode;
   if (!listOfLines || listOfLines.length < 1 || !task)
     return null;
@@ -5907,7 +5909,7 @@ DvtGanttKeyboardHandler.prototype.getFirstNavigableDependencyLine = function(tas
       taskToCompare = isRTL ? dependencyLine.getSuccessor() : dependencyLine.getPredecessor();
 
     // sanity check...
-    if (task.getId() == taskToCompare)
+    if (dvt.Obj.compareValues(ctx, task.getId(), taskToCompare))
       continue;
 
     var dist = this._getDistance(dependencyLine);
@@ -6459,7 +6461,7 @@ DvtGanttRenderer._renderScrollbars = function(gantt, container)
 /**
  * Renders the row axis.
  * @param {dvt.Gantt} gantt The Gantt being rendered.
- * @param {dvt.Container} container The container to render the row axis into.
+ * @param {dvt.Container=} container The container to render the row axis into. null on resize case.
  */
 DvtGanttRenderer.renderRowAxis = function(gantt, container)
 {
@@ -6472,15 +6474,16 @@ DvtGanttRenderer.renderRowAxis = function(gantt, container)
     {
       rowAxis = new DvtGanttRowAxis(gantt);
       rowAxis.setPixelHinting(true);
-      container.addChild(rowAxis);
       gantt.setRowAxis(rowAxis);
     }
+    if (container) // null on resize case
+      container.addChild(rowAxis);
 
     // render and figure out width
     rowAxis.render(gantt.Width - DvtGanttStyleUtils.getRowAxisGap(), container == null);
 
     var rowAxisWidth = rowAxis.getWidth();
-    var rowAxisSpace = rowAxisWidth + DvtGanttStyleUtils.getRowAxisGap();
+    var rowAxisSpace = rowAxisWidth > 0 ? rowAxisWidth + DvtGanttStyleUtils.getRowAxisGap() : 0;
     gantt._backgroundWidth = gantt._backgroundWidth - rowAxisSpace;
     if (!isRTL)
     {
@@ -6536,7 +6539,7 @@ DvtGanttRenderer._renderBackground = function(gantt)
 
 /**
  * Renders the container for row backgrounds; this separate container is necessary to ensure correct layering.
- * This container would be placed behind vertical gridlines, and other row contents (e.g. tasks) 
+ * This container would be placed behind vertical gridlines, and other row contents (e.g. tasks)
  * would be placed above the vertical gridlines.
  * @param {dvt.Gantt} gantt The gantt component.
  * @param {dvt.Container=} container The container to render the background container into.
@@ -6817,8 +6820,6 @@ DvtGanttRenderer._renderDatabody = function(gantt, container)
 
     // Initial state: show from the top
     databody.setTranslateY(gantt.getDatabodyStart());
-    if (gantt.isRowAxisEnabled())
-      gantt.getRowAxis().setTranslateY(gantt.getDatabodyStart() + gantt.getStartYOffset());
   }
 
   var cp = new dvt.ClipPath();
@@ -6827,6 +6828,10 @@ DvtGanttRenderer._renderDatabody = function(gantt, container)
 
   // Ensure databody translateY is within bounds
   databody.setTranslateY(gantt.getBoundedContentTranslateY(databody.getTranslateY()));
+
+  // Ensure row axis scroll position is in sync
+  if (gantt.isRowAxisEnabled())
+    gantt.getRowAxis().setTranslateY(databody.getTranslateY() + gantt.getStartYOffset());
 };
 
 /**
@@ -7111,19 +7116,20 @@ DvtGanttRenderer._prerenderRows = function(rows)
  */
 DvtGanttRenderer._generateRowNodes = function(gantt)
 {
+  var ctx = gantt.getCtx();
   var oldRowNodes = gantt.getRows();
   var newRows = gantt.getRowsData();
   var newRowNodes = [];
 
-  var oldRowIdRowNodeMap = {};
-  var oldTaskIdRowIdMap = {};
+  var oldRowIdRowNodeMap = new ctx.oj.Map();
+  var oldTaskIdRowIdMap = new ctx.oj.Map();
 
   // Initially mark everything old as 'delete'
   for (var i = 0; i < oldRowNodes.length; i++)
   {
     var oldRowNode = oldRowNodes[i];
     oldRowNode.setRenderState('delete');
-    oldRowIdRowNodeMap[oldRowNode.getId()] = oldRowNode;
+    oldRowIdRowNodeMap.set(oldRowNode.getId(), oldRowNode);
 
     var oldRowNodeTaskNodes = oldRowNode.getTasks();
     for (var j = 0; j < oldRowNodeTaskNodes.length; j++)
@@ -7134,12 +7140,12 @@ DvtGanttRenderer._generateRowNodes = function(gantt)
       {
         oldRowNodeTaskNode.setSelected(false);
       }
-      oldTaskIdRowIdMap[oldRowNodeTaskNode.getProps()['id']] = [oldRowNode.getId(), oldRowNodeTaskNode];
+      oldTaskIdRowIdMap.set(oldRowNodeTaskNode.getId(), [oldRowNode.getId(), oldRowNodeTaskNode]);
     }
   }
 
   var taskDefaults = gantt.getOptions()['taskDefaults'];
-  var deferredNewTaskNodeProps = {};
+  var deferredNewTaskNodeProps = new ctx.oj.Map();
 
   // Determine states of new stuff
   for (var i = 0; i < newRows.length; i++)
@@ -7148,7 +7154,7 @@ DvtGanttRenderer._generateRowNodes = function(gantt)
     var rowId = newRow['id'];
     var tasks = newRow['tasks'];
 
-    var rowNode = oldRowIdRowNodeMap[rowId];
+    var rowNode = oldRowIdRowNodeMap.get(rowId);
     if (rowNode) // row exist
     {
       rowNode.setRenderState('exist');
@@ -7161,19 +7167,19 @@ DvtGanttRenderer._generateRowNodes = function(gantt)
         if (rowNode.isTaskVisible(task))
         {
           var taskProps = rowNode.mergeTaskDefaults(task, taskDefaults);
-          var rowIdtaskNode = oldTaskIdRowIdMap[taskId];
+          var rowIdtaskNode = oldTaskIdRowIdMap.get(taskId);
           if (rowIdtaskNode)
           {
             var taskRowId = rowIdtaskNode[0];
             var taskNode = rowIdtaskNode[1];
-            if (taskRowId === rowId) // task exist, same row
+            if (dvt.Obj.compareValues(ctx, taskRowId, rowId)) // task exist, same row
             {
               taskNode.setRenderState('exist');
             }
             else // task exist, different row
             {
               taskNode.setRenderState('migrate');
-              oldRowIdRowNodeMap[taskRowId].removeTask(taskNode);
+              oldRowIdRowNodeMap.get(taskRowId).removeTask(taskNode);
               rowNode.addTask(taskNode);
             }
             taskNode.setProps(taskProps);
@@ -7182,14 +7188,14 @@ DvtGanttRenderer._generateRowNodes = function(gantt)
           else // new task
           {
             // Defer creating new task; see if we can use a refurbished one later for better performance
-            var deferredTaskPropsArray = deferredNewTaskNodeProps[rowId];
+            var deferredTaskPropsArray = deferredNewTaskNodeProps.get(rowId);
             if (deferredTaskPropsArray)
             {
               deferredTaskPropsArray.push(taskProps);
             }
             else
             {
-              deferredNewTaskNodeProps[rowId] = [taskProps];
+              deferredNewTaskNodeProps.set(rowId, [taskProps]);
             }
           }
         }
@@ -7208,7 +7214,7 @@ DvtGanttRenderer._generateRowNodes = function(gantt)
         if (rowNode.isTaskVisible(task))
         {
           var taskProps = rowNode.mergeTaskDefaults(task, taskDefaults);
-          var rowIdtaskNode = oldTaskIdRowIdMap[taskId];
+          var rowIdtaskNode = oldTaskIdRowIdMap.get(taskId);
           if (rowIdtaskNode)
           {
             var taskRowId = rowIdtaskNode[0];
@@ -7216,7 +7222,7 @@ DvtGanttRenderer._generateRowNodes = function(gantt)
             if (taskNode) // task migrated from a different row
             {
               taskNode.setRenderState('migrate');
-              oldRowIdRowNodeMap[taskRowId].removeTask(taskNode);
+              oldRowIdRowNodeMap.get(taskRowId).removeTask(taskNode);
             }
           }
           else // new task
@@ -7246,7 +7252,7 @@ DvtGanttRenderer._generateRowNodes = function(gantt)
     }
     else
     {
-      var deferredTaskPropsArray = deferredNewTaskNodeProps[oldRowNode.getId()];
+      var deferredTaskPropsArray = deferredNewTaskNodeProps.get(oldRowNode.getId());
       var oldRowNodeTaskNodes = oldRowNode.getTasks();
       for (var j = oldRowNodeTaskNodes.length - 1; j >= 0; j--)
       {
@@ -7473,20 +7479,23 @@ DvtGanttRowAxis.prototype.render = function(totalAvailWidth, isResize)
   var labelCSSStyle = DvtGanttStyleUtils.getRowLabelStyle(options);
   this._width = availableWidth['width'] !== -1 ? availableWidth['calculatedWidth'] : 0;
 
-  for (var i = 0; i < rowsData.length; i++)
+  if (rowsData)
   {
-    var rowData = rowsData[i];
-
-    var labelContent = !isResize ? new DvtGanttRowLabelContent(this, contentType) : this._rowLabelContents[i];
-    labelContent.setRowIndex(i);
-    labelContent.render(rowData, labelCSSStyle, availableWidth);
-
-    if (availableWidth['width'] == -1)
+    for (var i = 0; i < rowsData.length; i++)
     {
-      this._width = Math.min(Math.max(this._width, labelContent.getWidth()), availableWidth['maxWidth']);
+      var rowData = rowsData[i];
+
+      var labelContent = !isResize ? new DvtGanttRowLabelContent(this, contentType) : this._rowLabelContents[i];
+      labelContent.setRowIndex(i);
+      labelContent.render(rowData, labelCSSStyle, availableWidth);
+
+      if (availableWidth['width'] == -1)
+      {
+        this._width = Math.min(Math.max(this._width, labelContent.getWidth()), availableWidth['maxWidth']);
+      }
+    
+      this._rowLabelContents.push(labelContent);    
     }
-  
-    this._rowLabelContents.push(labelContent);    
   }
 
   // Make sure allocated width is integer pixels to avoid svg rendering issues
@@ -7556,7 +7565,6 @@ DvtGanttRowLabelContent.prototype.Init = function(rowAxis, contentType)
 DvtGanttRowLabelContent.prototype.render = function(rowData, labelCSSStyle, availableWidth)
 {
   this._labelString = rowData['label'] != null ? rowData['label'] : '';
-  var availableHeight = this._getAvailableHeight(rowData);
   var isRTL = dvt.Agent.isRightToLeft(this._gantt.getCtx());
 
   if (this._contentType === 'custom')
@@ -7582,6 +7590,7 @@ DvtGanttRowLabelContent.prototype.render = function(rowData, labelCSSStyle, avai
     var maxWidthOption = this._gantt.getRowAxisMaxWidth();
     var contextMaxWidth = (availableWidth['width'] === -1 && (maxWidthOption != null && maxWidthOption === 'none')) ? -1 : availableWidth['calculatedWidth'];
     
+    var availableHeight = this._getAvailableHeight(rowData);
     var customContent = renderer(this.getRendererContext(rowData, contextMaxWidth, availableHeight));
     customContent = customContent != null ? customContent['insert'] : null;
 
@@ -7629,12 +7638,9 @@ DvtGanttRowLabelContent.prototype.render = function(rowData, labelCSSStyle, avai
 
       this._gantt.getEventManager().associate(this._contentDisplayable, this);
     }
-
-    if (this._contentDisplayable.isTruncated())
-      this._contentDisplayable.setTextString(this._contentDisplayable.getUntruncatedTextString());
-
-    // Truncate label to fit
-    dvt.TextUtils.fitText(this._contentDisplayable, availableWidth['calculatedWidth'], availableHeight, this._rowAxis, 1);
+    // Label truncation and adding to DOM will happen in DvtGanttRowNode_finalizeRowLabelRender
+    // This has performance advantages because we'll avoid recalculating row height, what would be once here, and another during row render.
+    // Note however we cannot avoid this for custom content case because we need to provide height to the custom content renderer context
   }
 
   // TODO consider tweaking the logic to avoid this step when an explicit width is set on the row axis for potential performance improvements, especially for custom content
@@ -7663,7 +7669,7 @@ DvtGanttRowLabelContent.prototype.render = function(rowData, labelCSSStyle, avai
     // For custom content, calling getDimensions() on the contentDisplayable <g> element gives x, y relative to the container coordinate space,
     // whereas calling getDimensions() on non custom dvt.OutputText gives x, y relative to the row axis container coordinate space, so there is no need to account for 
     // translations for the width/height of non custom text content.
-    this._width = contentDimensions.w;
+    this._width = Math.min(contentDimensions.w, availableWidth['calculatedWidth']); // Label would have been truncated to fit if the available width is smaller than the label width
     this._height = contentDimensions.h;
   }
 };
@@ -7739,10 +7745,22 @@ DvtGanttRowLabelContent.prototype._getAvailableHeight = function(rowData)
  */
 DvtGanttRowLabelContent.prototype.getRendererContext = function(rowData, maxWidth, maxHeight)
 {
+  var options = this._gantt.getOptions();
+  var taskObjs = rowData['tasks'];
+  var itemData = [];
+  if (options['taskData'])
+  {
+    for (var i = 0; i < taskObjs.length; i++)
+    {
+      itemData.push(taskObjs[i]['_itemData']);
+    }
+  }
+  
   var dataContext = {
-    'component': this._gantt.getOptions()['_widgetConstructor'],
+    'component': options['_widgetConstructor'],
     'parentElement': this._contentDisplayable.getContainerElem(),
     'rowData': rowData,
+    'itemData': options['taskData'] ? itemData : null,
     'maxWidth': maxWidth,
     'maxHeight': maxHeight
   };
@@ -8413,9 +8431,16 @@ DvtGanttRowNode.prototype._finalizeRowLabelRender = function(gantt)
   }
   else
   {
+    var labelDisplayable = labelContent.getDisplayable();
+    if (labelDisplayable.isTruncated())
+      labelDisplayable.setTextString(labelDisplayable.getUntruncatedTextString());
+
+    // Truncate label to fit
+    dvt.TextUtils.fitText(labelDisplayable, rowAxis.getWidth(), this.getRowHeight(), rowAxis, 1);
+
     if (!isRTL)
     {
-      labelContent.getDisplayable().alignRight();
+      labelDisplayable.alignRight();
       x = rowAxis.getWidth();
     }
     else
@@ -8648,7 +8673,7 @@ DvtGanttRowNode.prototype.setRowHeight = function(rowHeight)
  */
 DvtGanttRowNode.prototype._getDate = function(date)
 {
-  if (date == null)
+  if (date == null || date === '')
     return null;
   else if (date.getTime) // check function reference
     return date.getTime();
@@ -9518,9 +9543,12 @@ DvtGanttTaskNode.prototype._updateAriaLabel = function()
  */
 DvtGanttTaskNode.prototype.getDataContext = function()
 {
+  var data = this.getProps();
+  var itemData = data['_itemData'];
   return {
-    'data': this.getProps(),
+    'data': data,
     'rowData': this._row.getProps(),
+    'itemData': itemData ? itemData : null,
     'color': DvtGanttTooltipUtils.getDatatipColor(this),
     'component': this._gantt.getOptions()['_widgetConstructor']
   };
@@ -9534,9 +9562,12 @@ DvtGanttTaskNode.prototype.getDataContext = function()
  */
 DvtGanttTaskNode.prototype.getSandboxDataContext = function()
 {
+  var data = this.getSandboxProps();
+  var itemData = data['_itemData'];
   return {
-    'data': this.getSandboxProps(),
-    'rowData': this.getSandboxProps()['row'].getProps(),
+    'data': data,
+    'rowData': data['row'].getProps(),
+    'itemData': itemData ? itemData : null,
     'color': DvtGanttTooltipUtils.getDatatipColor(this),
     'component': this._gantt.getOptions()['_widgetConstructor']
   };
@@ -9714,7 +9745,7 @@ DvtGanttTaskNode.prototype.isDragAvailable = function(clientIds) {
  * @override
  */
 DvtGanttTaskNode.prototype.getDragTransferable = function(mouseX, mouseY) {
-  return [this.getProps()['id']];
+  return [this.getId()];
 };
 
 /**

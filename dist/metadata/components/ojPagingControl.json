@@ -1,13 +1,9 @@
 {
   "name": "oj-paging-control",
-  "version": "5.1.0",
-  "jetVersion": "5.1.0",
+  "version": "5.2.0",
+  "jetVersion": "5.2.0",
   "displayName": "Paging Control",
-  "preview": true,
-  "roles": [
-    "navigation",
-    "button"
-  ],
+  "type": "core",
   "description": "Provides paging functionality for data collections.",
   "properties": {
     "data": {
@@ -18,15 +14,13 @@
     },
     "loadMoreOptions": {
       "description": "Options for loadMore mode.",
-      "type": "Object",
+      "type": "object",
       "displayName": "Load More Options",
-      "value": {
-        "maxCount": 500
-      },
       "properties": {
         "maxCount": {
           "description": "The maximum number items to display.\nSee the load-more-options attribute for usage examples.",
           "type": "number",
+          "displayName": "Max Count",
           "value": 500,
           "minimum": 0
         }
@@ -74,20 +68,13 @@
     },
     "pageOptions": {
       "description": "Options for page mode.",
-      "type": "Object",
+      "type": "object",
       "displayName": "Page Options",
-      "value": {
-        "layout": [
-          "auto"
-        ],
-        "type": "numbers",
-        "orientation": "horizontal",
-        "maxPageLinks": 6
-      },
       "properties": {
         "layout": {
           "description": "Array of paging navigation controls to be displayed (only applicable for numbers type).\nThis is an array of one or more supported values.\nSee the page-options attribute for usage examples.",
           "type": "Array",
+          "displayName": "Layout",
           "value": [
             "auto"
           ],
@@ -129,12 +116,14 @@
         "maxPageLinks": {
           "description": "The maximum number of page links to display (only applicable for numbers type).\nAn ellipsis '...' will be displayed for pages which exceed the maximum.\nmaxPageLinks must be greater than 4.\nSee the page-options attribute for usage examples.",
           "type": "number",
+          "displayName": "Max Page Links",
           "value": 6,
           "minimum": 5
         },
         "orientation": {
           "description": "The orientation of the page links.\nSee the page-options attribute for usage examples.",
           "type": "string",
+          "displayName": "Orientation",
           "value": "horizontal",
           "enumValues": [
             "horizontal",
@@ -152,6 +141,7 @@
         "type": {
           "description": "The type of page links.\nSee the page-options attribute for usage examples.",
           "type": "string",
+          "displayName": "Type",
           "value": "numbers",
           "enumValues": [
             "dots",
@@ -178,130 +168,131 @@
       "minimum": 1
     },
     "translations": {
-      "description": "A collection of translated resources from the translation bundle, or null if this\ncomponent has no resources. Resources may be accessed and overridden individually or collectively, as seen in the examples. If the component does not contain any translatable resource, the default value of this attribute will be \nnull. If not, an object containing all resources relevant to the component.\n\nIf this component has translations, their documentation immediately follows this doc entry.",
-      "type": "Object|null",
+      "description": "A collection of translated resources from the translation bundle, or null if this component has no resources.",
+      "type": "object|null",
       "displayName": "Translations",
+      "value": {},
       "translatable": true,
       "properties": {
         "labelAccNavFirstPage": {
           "description": "First page label for screen readers.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "First Page"
+          "displayName": "Label Acc Nav First Page"
         },
         "labelAccNavLastPage": {
           "description": "Last page label for screen readers.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "Last Page"
+          "displayName": "Label Acc Nav Last Page"
         },
         "labelAccNavNextPage": {
           "description": "Next page label for screen readers.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "Next Page"
+          "displayName": "Label Acc Nav Next Page"
         },
         "labelAccNavPage": {
           "description": "Current page label for screen readers.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "Page"
+          "displayName": "Label Acc Nav Page"
         },
         "labelAccNavPreviousPage": {
           "description": "Previous page label for screen readers.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "Previous Page"
+          "displayName": "Label Acc Nav Previous Page"
         },
         "labelAccPaging": {
           "description": "Paging control label for screen readers.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "Pagination"
+          "displayName": "Label Acc Paging"
         },
         "labelLoadMore": {
           "description": "Load more link text.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "Show More..."
+          "displayName": "Label Load More"
         },
         "labelLoadMoreMaxRows": {
           "description": "Label for when load more has reached the maximum limit of rows to fetch.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "Reached Maximum Limit of {maxRows} rows"
+          "displayName": "Label Load More Max Rows"
         },
         "labelNavInputPage": {
           "description": "Current page label.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "Page"
+          "displayName": "Label Nav Input Page"
         },
         "labelNavInputPageMax": {
           "description": "Maximum page label.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "of {pageMax}"
+          "displayName": "Label Nav Input Page Max"
         },
         "maxPageLinksInvalid": {
           "description": "Invalid max page links value error.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "Value for maxPageLinks is invalid."
+          "displayName": "Max Page Links Invalid"
         },
         "msgItemRangeCurrent": {
           "description": "Item range text for known row count.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "{pageFrom}-{pageTo}"
+          "displayName": "Msg Item Range Current"
         },
         "msgItemRangeCurrentSingle": {
           "description": "Item range text for single page range.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "{pageFrom}"
+          "displayName": "Msg Item Range Current Single"
         },
         "msgItemRangeItems": {
           "description": "Item range items text.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "items"
+          "displayName": "Msg Item Range Items"
         },
         "msgItemRangeOf": {
           "description": "Item range \"of\" text.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "of"
+          "displayName": "Msg Item Range Of"
         },
         "msgItemRangeOfApprox": {
           "description": "Item range \"of approx\" text.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "approx."
+          "displayName": "Msg Item Range Of Approx"
         },
         "msgItemRangeOfAtLeast": {
           "description": "Item range \"of at least\" text.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "at least"
+          "displayName": "Msg Item Range Of At Least"
         },
         "pageInvalid": {
           "description": "Invalid page error.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "The page value entered is invalid."
+          "displayName": "Page Invalid"
         },
         "tipNavFirstPage": {
           "description": "First page button tip.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "First"
+          "displayName": "Tip Nav First Page"
         },
         "tipNavInputPage": {
           "description": "Current page tip.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "Go To Page"
+          "displayName": "Tip Nav Input Page"
         },
         "tipNavLastPage": {
           "description": "Last page button tip.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "Last"
+          "displayName": "Tip Nav Last Page"
         },
         "tipNavNextPage": {
           "description": "Next page button tip.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "Next"
+          "displayName": "Tip Nav Next Page"
         },
         "tipNavPageLink": {
           "description": "Current page link tip.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "Go To Page {pageNum}"
+          "displayName": "Tip Nav Page Link"
         },
         "tipNavPreviousPage": {
           "description": "Previous page button tip.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "Previous"
+          "displayName": "Tip Nav Previous Page"
         }
       }
     }
@@ -375,7 +366,7 @@
         {
           "name": "properties",
           "description": "An object containing the property and value pairs to set.",
-          "type": "Object"
+          "type": "object"
         }
       ],
       "return": "void"

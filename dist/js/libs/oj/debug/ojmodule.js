@@ -275,7 +275,7 @@ oj.ModuleBinding._EMPTY_MODULE = "oj:blank";
             {
               modelPath = oj.ModuleBinding.defaults['modelPath'];
             }
-            modelPromise = _getRequirePromise(requireFunc, modelPath + moduleName);
+            modelPromise = _getOjModuleRequirePromise(requireFunc, 'viewModel', modelPath + moduleName);
           }
           
           if (modelPromise != null)
@@ -336,7 +336,8 @@ oj.ModuleBinding._EMPTY_MODULE = "oj:blank";
               {
                 viewPath = oj.ModuleBinding.defaults['viewPath'];
               }
-              viewPromise = _getRequirePromise(requireFunc, viewPath + viewName + oj.ModuleBinding.defaults['viewSuffix']);
+              viewPromise = _getOjModuleRequirePromise(requireFunc, 'view',
+                      viewPath + viewName + oj.ModuleBinding.defaults.viewSuffix);
             }
             else
             {
@@ -479,6 +480,12 @@ oj.ModuleBinding._EMPTY_MODULE = "oj:blank";
             {
               targetElement = targetElement || element;
               
+              // For custom elements check whether the binding is already applied to nodes
+              // before attaching nodes to DOM. This helps in a scenario when knockout
+              // uses parent nodes to find applied binding and returns parent binding as a result.
+              // E.g. knockout might return incorrect binding for comment nodes that are attached to DOM.
+              var bindingApplied = isCustomElement && _isBindingApplied(nodes, model);
+              
               _insertNodes(targetElement, nodes);
               
               var fromCache = cached != null;
@@ -493,7 +500,6 @@ oj.ModuleBinding._EMPTY_MODULE = "oj:blank";
               viewModelMethodFunc(model, 'connected');
               dispatchLifecycleEventFunc(contextElement, 'ojViewConnected', [model]);
               
-              var bindingApplied = isCustomElement && _isBindingApplied(nodes, model);
               if (!fromCache && !bindingApplied)
               {
                 var childBindingContext = bindingContext['createChildContext'](model,
@@ -569,6 +575,7 @@ oj.ModuleBinding._EMPTY_MODULE = "oj:blank";
             if (reason != null)
             {
               resolveBusyState();
+
               oj.Logger.error(reason);
               // Additionally log the stack trace for the original error
               /*if (reason instanceof Error)
@@ -994,28 +1001,25 @@ oj.ModuleBinding._EMPTY_MODULE = "oj:blank";
   }
   
   /**
-   * @ignore
+   *  This method gets replaced by JET's Webpack plugin to implement dynamic module loading under Webpack.
+   *  @ignore
    */
-  function _getRequirePromise(requireFunc, module)
-  {
-    requireFunc = requireFunc ? requireFunc : require;
-    return new Promise(
-      function(resolve, reject)
-      {
-        requireFunc([module],
-          function(loaded)
-          {
-            resolve(loaded);
-          },
-          function(reason)
-          {
-            oj.Logger.error("ojModule failed to load " + module);
-            reject(reason);
-          }
-        
-        );
+  function _getOjModuleRequirePromise(_requireFunc, type, module) {
+    // Note that the 'type' parameter is not used by the implemenetation below.
+    // It is, however, used by the Webpack-specific implementation of this function.
+    var requireFunc = _requireFunc || require;
+    var p = new Promise(
+      function (resolve, reject) {
+         requireFunc([module], resolve, reject);
       }
     );
+ 
+    p = p.catch(function (e) {
+       oj.Logger.error('ojModule failed to load ' + module);
+       throw e;
+     });
+ 
+     return p;
   };
   
   /**

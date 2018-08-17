@@ -1,17 +1,14 @@
 {
   "name": "oj-row-expander",
-  "version": "5.1.0",
-  "jetVersion": "5.1.0",
+  "version": "5.2.0",
+  "jetVersion": "5.2.0",
   "displayName": "Row Expander",
-  "preview": true,
-  "roles": [
-    "button"
-  ],
+  "type": "core",
   "description": "Enable hierarchical data to be displayed in a JET Table and JET DataGrid.",
   "properties": {
     "context": {
       "description": "The context object obtained from the column renderer (Table) or cell renderer (DataGrid)",
-      "type": "Object",
+      "type": "object",
       "displayName": "Context",
       "value": null
     },
@@ -23,34 +20,41 @@
       "writeback": true
     },
     "translations": {
-      "description": "A collection of translated resources from the translation bundle, or null if this\ncomponent has no resources. Resources may be accessed and overridden individually or collectively, as seen in the examples. If the component does not contain any translatable resource, the default value of this attribute will be \nnull. If not, an object containing all resources relevant to the component.\n\nIf this component has translations, their documentation immediately follows this doc entry.",
-      "type": "Object|null",
+      "description": "A collection of translated resources from the translation bundle, or null if this component has no resources.",
+      "type": "object|null",
       "displayName": "Translations",
+      "value": {},
       "translatable": true,
       "properties": {
         "accessibleLevelDescription": {
           "description": "Provides properties to customize the accessible context level of the expanded or collapsed row\n\nSee the translations attribute for usage examples.",
-          "type": "string"
+          "type": "string",
+          "displayName": "Accessible Level Description"
         },
         "accessibleRowCollapsed": {
           "description": "Provides properties to customize the accessible context when a row is collapsed\n\nSee the translations attribute for usage examples.",
-          "type": "string"
+          "type": "string",
+          "displayName": "Accessible Row Collapsed"
         },
         "accessibleRowDescription": {
           "description": "Provides properties to customize the accessible context level and index of the row\n\nSee the translations attribute for usage examples.",
-          "type": "string"
+          "type": "string",
+          "displayName": "Accessible Row Description"
         },
         "accessibleRowExpanded": {
           "description": "Provides properties to customize the accessible context when a row is expanded\n\nSee the translations attribute for usage examples.",
-          "type": "string"
+          "type": "string",
+          "displayName": "Accessible Row Expanded"
         },
         "accessibleStateCollapsed": {
           "description": "Provides properties to customize the accessible state of a collapsed row\n\nSee the translations attribute for usage examples.",
-          "type": "string"
+          "type": "string",
+          "displayName": "Accessible State Collapsed"
         },
         "accessibleStateExpanded": {
           "description": "Provides properties to customize the accessible state of an expanded row\n\nSee the translations attribute for usage examples.",
-          "type": "string"
+          "type": "string",
+          "displayName": "Accessible State Expanded"
         }
       }
     }
@@ -92,7 +96,7 @@
         {
           "name": "properties",
           "description": "An object containing the property and value pairs to set.",
-          "type": "Object"
+          "type": "object"
         }
       ],
       "return": "void"

@@ -1,9 +1,9 @@
 {
   "name": "oj-validation-group",
-  "version": "5.1.0",
-  "jetVersion": "5.1.0",
+  "version": "5.2.0",
+  "jetVersion": "5.2.0",
   "displayName": "Validation Group",
-  "preview": true,
+  "type": "core",
   "description": "ojValidationGroup",
   "properties": {
     "valid": {
@@ -72,7 +72,7 @@
         {
           "name": "properties",
           "description": "An object containing the property and value pairs to set.",
-          "type": "Object"
+          "type": "object"
         }
       ],
       "return": "void"
@@ -87,7 +87,8 @@
         {
           "name": "key",
           "description": "\"@firstInvalidShown\" will focus on first invalidShown enabled\ncomponent in DOM order, if any. When no parameter is passed in, the method will\nfocus on first enabled component regardless of the valid state, if any. An enabled\ncomponent is one that is not disabled or readonly.",
-          "type": "string"
+          "type": "string",
+          "optional": true
         }
       ],
       "return": "void"

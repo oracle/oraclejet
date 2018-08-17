@@ -70,20 +70,6 @@ dvt.Overview.DEFAULT_HORIZONTAL_TIMEAXIS_SIZE = 20;
 dvt.Overview.HANDLE_PADDING_SIZE = 20;
 
 /**
- * Attribute for axis label padding.
- * @const
- * @private
- */
-dvt.Overview._DEFAULT_AXIS_LABEL_PADDING = 5;
-
-/**
- * Attribute for default window border width.
- * @const
- * @private
- */
-dvt.Overview._DEFAULT_WINDOW_BORDER_WIDTH = 1;
-
-/**
  * Initializes the view.
  * @param {dvt.Context} context The rendering context.
  * @param {object} callback The function that should be called to dispatch component events.
@@ -100,10 +86,7 @@ dvt.Overview.prototype.Init = function(context, callback, callbackObj)
   this._callback = callback;
   this._callbackObj = callbackObj;
 
-  if (this.isFlashEnvironment())
-    this._lastChildIndex = 7;
-  else
-    this._lastChildIndex = 6;
+  this._lastChildIndex = 6;
 
   var interactive = (this._callback != null || this._callbackObj != null);
   if (interactive)
@@ -123,12 +106,8 @@ dvt.Overview.prototype.Init = function(context, callback, callbackObj)
       this.addEvtListener(dvt.MouseEvent.MOUSEOVER, this.HandleShapeMouseOver, false, this);
       this.addEvtListener(dvt.MouseEvent.MOUSEOUT, this.HandleShapeMouseOut, false, this);
       this.addEvtListener(dvt.MouseEvent.CLICK, this.HandleShapeClick, false, this);
-      this.addEvtListener(dvt.KeyboardEvent.KEYDOWN, this.HandleKeyDown, false, this);
-      this.addEvtListener(dvt.KeyboardEvent.KEYUP, this.HandleKeyUp, false, this);
     }
   }
-
-  this._initPos = 0;
 };
 
 /**
@@ -142,50 +121,58 @@ dvt.Overview.prototype.initDefaults = function()
 /**
  * To support Chart zoom and scroll feature
  * Ability to set the overview window start and end pos
- * @param start - the viewport start time
- * @param end - the viewport end time
- * @param overviewLength - the size of the overview along the axis direction
+ * @param x1 - the viewport x1 value
+ * @param x2 - the viewport x2 value
+ * @param y1 - the viewport y1 value
+ * @param y2 - the viewport y2 value
  */
-dvt.Overview.prototype.setViewportRange = function(start, end, overviewLength)
+dvt.Overview.prototype.setViewportRange = function(x1, x2, y1, y2)
 {
-  if (overviewLength == null)
-    overviewLength = this.Width;
-
-  var viewportStart = this.getDatePosition(start);
-  var viewportEnd = this.getDatePosition(end);
-
-  // make sure it's in bound
-  if (viewportStart < this.getMinimumPosition() || viewportEnd > this.getMaximumPosition())
-    return;
-
-  // make sure the viewport range is not smaller than the minimum window size
-  var size = Math.max(viewportEnd - viewportStart, this.getMinimumWindowSize());
-
-  // make sure values are valid
-  if (size > 0 && viewportStart >= 0 && viewportEnd <= overviewLength)
+  if (x1 != null && x2 != null)
   {
-    var slidingWindow = this.getSlidingWindow();
-    if (this.isHorizontalRTL())
-      this.setSlidingWindowPos(slidingWindow, overviewLength - (viewportStart + size));
-    else
-      this.setSlidingWindowPos(slidingWindow, viewportStart);
-    this.setSlidingWindowSize(slidingWindow, size);
+    var x1Pos = this.getDateXPosition(x1);
+    var x2Pos = this.getDateXPosition(x2);
 
-    this.ScrollTimeAxis();
+    // make sure it's in bounds
+    if (x2Pos > x1Pos)
+    {
+      if (x1Pos < this.getMinimumPositionX())
+        x1Pos = this.getMinimumPositionX();
+      if (x2Pos > this.getMaximumPositionX())
+        x2Pos = this.getMaximumPositionX();
+
+      var width = Math.max(x2Pos - x1Pos, this.getMinimumWindowWidth());
+      var slidingWindow = this.getSlidingWindow();
+      if (this.isRTL())
+        this.setSlidingWindowPosX(slidingWindow, this.Width - (x1Pos + width));
+      else
+        this.setSlidingWindowPosX(slidingWindow, x1Pos);
+
+      DvtOverviewRenderer._setSlidingWindowWidth(this, slidingWindow, width);
+    }
   }
+  if (y1 != null && y2 != null)
+  {
+    var y1Pos = this.getDateYPosition(y1);
+    var y2Pos = this.getDateYPosition(y2);
+
+    // make sure it's in bounds
+    if (y2Pos > y1Pos)
+    {
+      if (y1Pos < this.getMinimumPositionY())
+        y1Pos = this.getMinimumPositionY();
+      if (y2Pos > this.getMaximumPositionY())
+        y2Pos = this.getMaximumPositionY();
+
+      var height = Math.max(y2Pos - y1Pos, this.getMinimumWindowHeight());
+      slidingWindow = this.getSlidingWindow();
+      this.setSlidingWindowPosY(slidingWindow, y1Pos);
+
+      DvtOverviewRenderer._setSlidingWindowHeight(this, slidingWindow, height);
+    }
+  }
+  DvtOverviewRenderer._updateBorderAroundSlidingWindow(this);
 };
-
-
-/**
- * Sets the initial position of the overview window
- */
-dvt.Overview.prototype.setInitialPosition = function(pos)
-{
-  // make sure initial position is within bound
-  if (pos >= this.getMinimumPosition() && pos <= this.getMaximumPosition())
-    this._initPos = pos;
-};
-
 
 /**
  * Checks whether a particular feature is turned off
@@ -225,18 +212,29 @@ dvt.Overview.prototype.render = function(obj, width, height)
     this.Height = height;
   }
 
+  // TODO: update this resize code for standalone overview when implemented
   if (obj == null)
   {
-    // sets the correct time where the sliding window starts
-    var start = this._start;
-    var end = this._end;
-
     var slidingWindow = this.getSlidingWindow();
-    var slidingWindowPos = this.getSlidingWindowPos(slidingWindow);
-    if (slidingWindow != null && slidingWindowPos != 0)
+
+    // sets the correct time where the sliding window starts
+    if (this._xMin && this._xMax)
     {
-      // note this.Width references the old width
-      this._renderStart = dvt.OverviewUtils.getPositionDate(start, end, slidingWindowPos, this.Width);
+      var slidingWindowPos = this.getSlidingWindowPosX(slidingWindow);
+      if (slidingWindow != null && slidingWindowPos != 0)
+      {
+        // note this.Width references the old width
+        this._x1 = dvt.OverviewUtils.getPositionDate(this._xMin, this._xMax, slidingWindowPos, this.Width);
+      }
+    }
+    if (this._yMin && this._yMax)
+    {
+      slidingWindowPos = this.getSlidingWindowPosY(slidingWindow);
+      if (slidingWindow != null && slidingWindowPos != 0)
+      {
+        // note this.Height references the old height
+        this._y1 = dvt.OverviewUtils.getPositionDate(this._yMin, this._yMax, slidingWindowPos, this.Height);
+      }
     }
 
     // clean out existing elements since they will be regenerate
@@ -251,43 +249,7 @@ dvt.Overview.prototype.render = function(obj, width, height)
     this._applyParsedProperties(props);
   }
 
-  var interactive = (this._callback != null || this._callbackObj != null);
-
-  this.createBackground(width, height);
-
-  if (interactive)
-    this.createSlidingWindow(width, height);
-
-  this.updateTimeAxis(width, height);
-
-  this.parseFilledTimeRanges(width, height);
-
-  // update current time
-  this.updateCurrentTime(width, height);
-
-  // render data
-  this.parseDataXML(width, height);
-
-  if (interactive)
-  {
-    this.createBorderAroundSlidingWindow(width, height);
-
-    if (this.isFlashEnvironment())
-    {
-      // flash does not supply the resize cursor, and since none of the available cursors
-      // works for resize, we'll render our own hint
-      this._resizeArrow = this.createResizeArrow();
-    }
-
-    // updates the position and width of sliding window and borders around window
-    this.updateSlidingWindow(width, height);
-  }
-
-  if (this._initialFocusTime != null)
-    this._initPos = Math.max(0, dvt.OverviewUtils.getDatePosition(this._start, this._end, this._initialFocusTime, this._width));
-
-  if (this._initPos > 0)
-    this.longScrollToPos(this._initPos);
+  DvtOverviewRenderer.renderOverview(this);
 };
 
 /**
@@ -318,12 +280,15 @@ dvt.Overview.prototype.Parse = function(obj)
  */
 dvt.Overview.prototype._applyParsedProperties = function(props) 
 {
-  this._start = props.start;
-  this._end = props.end;
-  this._width = props.width;
-  this._renderStart = props.renderStart;
+  this._xMin = props.xMin;
+  this._xMax = props.xMax;
+  this._x1 = props.x1;
+  this._x2 = props.x2;
+  this._yMin = props.yMin;
+  this._yMax = props.yMax;
+  this._y1 = props.y1;
+  this._y2 = props.y2;
   this._currentTime = props.currentTime;
-  this._initialFocusTime = props.initialFocusTime;
   this._animationOnClick = props.animationOnClick;
 
   // chart specific options: left and right margin
@@ -362,9 +327,12 @@ dvt.Overview.prototype._applyParsedProperties = function(props)
 
   this._handleTextureColor = DvtOverviewStyleUtils.getHandleTextureColor(this.Options);
   this._handleFillColor = DvtOverviewStyleUtils.getHandleFillColor(this.Options);
-  this._handleBackgroundImage = DvtOverviewStyleUtils.getHandleBackgroundImage(this.Options);
-  this._handleWidth = DvtOverviewStyleUtils.getHandleWidth(this.Options);
-  this._handleHeight = DvtOverviewStyleUtils.getHandleHeight(this.Options);
+  this._horHandleBackgroundImage = DvtOverviewStyleUtils.getHandleBackgroundImage(this.Options, false);
+  this._horHandleWidth = DvtOverviewStyleUtils.getHandleWidth(this.Options, false);
+  this._horHandleHeight = DvtOverviewStyleUtils.getHandleHeight(this.Options, false);
+  this._vertHandleBackgroundImage = DvtOverviewStyleUtils.getHandleBackgroundImage(this.Options, true);
+  this._vertHandleWidth = DvtOverviewStyleUtils.getHandleWidth(this.Options, true);
+  this._vertHandleHeight = DvtOverviewStyleUtils.getHandleHeight(this.Options, true);
 
   this._overviewBackgroundColor = DvtOverviewStyleUtils.getOverviewBackgroundColor(this.Options);
   this._currentTimeIndicatorColor = DvtOverviewStyleUtils.getCurrentTimeIndicatorColor(this.Options);
@@ -377,35 +345,76 @@ dvt.Overview.prototype._applyParsedProperties = function(props)
   this._leftFilterPanelAlpha = DvtOverviewStyleUtils.getLeftFilterPanelAlpha(this.Options);
   this._rightFilterPanelColor = DvtOverviewStyleUtils.getRightFilterPanelColor(this.Options);
   this._rightFilterPanelAlpha = DvtOverviewStyleUtils.getRightFilterPanelAlpha(this.Options);
+
+  this._labelStyle = new dvt.CSSStyle('font-weight:bold');
 };
 
 
 /***************************** common helper methods *********************************************/
-dvt.Overview.prototype.getDatePosition = function(date)
+
+/**
+ * Returns the horizontal pixel position corresponding to the given date.
+ * @param {number} date The given date.
+ */
+dvt.Overview.prototype.getDateXPosition = function(date)
 {
-  return Math.max(0, dvt.OverviewUtils.getDatePosition(this._start, this._end, date, this.getOverviewSize())) + this._leftMargin;
+  return Math.max(this.getMinimumPositionX(), dvt.OverviewUtils.getDatePosition(this._xMin, this._xMax, date, this.getOverviewWidth()) + this._leftMargin);
 };
 
-dvt.Overview.prototype.getPositionDate = function(pos)
+/**
+ * Returns the vertical pixel position corresponding to the given date.
+ * @param {number} date The given date.
+ */
+dvt.Overview.prototype.getDateYPosition = function(date)
 {
-  return dvt.OverviewUtils.getPositionDate(this._start, this._end, Math.max(0, pos - this._leftMargin), this.getOverviewSize());
+  return Math.max(this.getMinimumPositionY(), dvt.OverviewUtils.getDatePosition(this._yMin, this._yMax, date, this.getOverviewHeight()));
 };
 
+/**
+ * Returns the date corresponding to the given horizontal pixel position.
+ * @param {number} pos The given horizontal pixel position.
+ */
+dvt.Overview.prototype.getXPositionDate = function(pos)
+{
+  return dvt.OverviewUtils.getPositionDate(this._xMin, this._xMax, Math.max(this.getMinimumPositionX() - this._leftMargin, pos - this._leftMargin), this.getOverviewWidth());
+};
+
+/**
+ * Returns the date corresponding to the given vertical pixel position.
+ * @param {number} pos The given vertical pixel position.
+ */
+dvt.Overview.prototype.getYPositionDate = function(pos)
+{
+  return dvt.OverviewUtils.getPositionDate(this._yMin, this._yMax, Math.max(this.getMinimumPositionY(), pos), this.getOverviewHeight());
+};
+
+/**
+ * Whether or not this is rendered in an RTL layout.
+ */
 dvt.Overview.prototype.isRTL = function()
 {
   return this._isRtl == 'true';
 };
 
+/**
+ * Whether or not this is a horizontal overview that is also rendered in an RTL layout..
+ */
 dvt.Overview.prototype.isHorizontalRTL = function()
 {
   return (this.isRTL() && !this.isVertical());
 };
 
+/**
+ * Whether or not this is a vertical overview.
+ */
 dvt.Overview.prototype.isVertical = function()
 {
   return (this._orientation == 'vertical');
 };
 
+/**
+ * Whether or not this overview is rendered 'above'.
+ */
 dvt.Overview.prototype.isOverviewAbove = function()
 {
   return (this.Options['overviewPosition'] == 'above');
@@ -430,33 +439,78 @@ dvt.Overview.prototype.getOverviewSize = function()
     return this.Width - this._leftMargin - this._rightMargin;
 };
 
-// return the minmum position where the sliding window can reach
-dvt.Overview.prototype.getMinimumPosition = function()
+// returns the width of the overview, taking margins into account
+dvt.Overview.prototype.getOverviewWidth = function()
+{
+  return this.Width - this._leftMargin - this._rightMargin;
+};
+
+// returns the width of the overview, taking margins into account
+dvt.Overview.prototype.getOverviewHeight = function()
+{
+  return this.Height;
+};
+
+// return the minmum X position where the sliding window can reach
+dvt.Overview.prototype.getMinimumPositionX = function()
 {
   return this._leftMargin;
 };
 
-// return the maximum position where the sliding window can reach
-dvt.Overview.prototype.getMaximumPosition = function()
+// return the minmum Y position where the sliding window can reach
+dvt.Overview.prototype.getMinimumPositionY = function()
 {
-  if (this.isVertical())
-    return this.Height - this._rightMargin;
-  else
-    return this.Width - this._rightMargin;
+  return 0;
 };
 
-// returns the minimum size of the sliding window
-dvt.Overview.prototype.getMinimumWindowSize = function()
+// return the maximum X position where the sliding window can reach
+dvt.Overview.prototype.getMaximumPositionX = function()
+{
+  return this.Width - this._rightMargin;
+};
+
+// return the maximum Y position where the sliding window can reach
+dvt.Overview.prototype.getMaximumPositionY = function()
+{
+  return this.Height;
+};
+
+// returns the minimum width of the sliding window
+dvt.Overview.prototype.getMinimumWindowWidth = function()
 {
   if (this._minWinSize != null)
     return this._minWinSize;
   else if (this._minimumWindowSize != null)
   {
-    this._minWinSize = dvt.OverviewUtils.getDatePosition(this._start, this._end, this._start + this._minimumWindowSize, this.getOverviewSize());
+    this._minWinSize = dvt.OverviewUtils.getDatePosition(this._xMin, this._xMax, this._xMin + this._minimumWindowSize, this.getOverviewWidth());
     return this._minWinSize;
   }
   else
     return dvt.Overview.MIN_WINDOW_SIZE;
+};
+
+// returns the minimum height of the sliding window
+dvt.Overview.prototype.getMinimumWindowHeight = function()
+{
+  if (this._minWinSize != null)
+    return this._minWinSize;
+  else if (this._minimumWindowSize != null)
+  {
+    this._minWinSize = dvt.OverviewUtils.getDatePosition(this._yMin, this._yMax, this._yMin + this._minimumWindowSize, this.getOverviewHeight());
+    return this._minWinSize;
+  }
+  else
+    return dvt.Overview.MIN_WINDOW_SIZE;
+};
+
+dvt.Overview.prototype.getMaximumWindowWidth = function()
+{
+  return this.Width;
+};
+
+dvt.Overview.prototype.getMaximumWindowHeight = function()
+{
+  return this.Height;
 };
 
 dvt.Overview.prototype.getGrippySize = function()
@@ -485,7 +539,24 @@ dvt.Overview.prototype.getHandleSize = function()
 dvt.Overview.prototype.isHandle = function(drawable) 
 {
   var id = drawable.getId();
-  return (id == 'lh' || id == 'rh' || id == 'lhb' || id == 'rhb' || id == 'grpy' || id == 'lbgrh' || id == 'rbgrh' || (drawable.getParent() != null && drawable.getParent().getId() == 'grpy'));
+  return (id == 'lh' || id == 'rh' || id == 'lhb' || id == 'rhb' || id == 'th' || id == 'bh' ||
+          id == 'thb' || id == 'bhb' || id == 'hgrpy' || id == 'vgrpy' || id == 'lbgrh' || id == 'rbgrh' ||
+          (drawable.getParent() != null && (drawable.getParent().getId() == 'hgrpy' || drawable.getParent().getId() == 'vgrpy')));
+};
+
+dvt.Overview.prototype.isLeftOrRightHandle = function(drawable) 
+{
+  var id = drawable.getId();
+  return (id == 'lh' || id == 'rh' || id == 'lhb' || id == 'rhb' ||
+          id == 'hgrpy' || id == 'lbgrh' || id == 'rbgrh' ||
+          (drawable.getParent() != null && drawable.getParent().getId() == 'hgrpy'));
+};
+
+dvt.Overview.prototype.isTopOrBottomHandle = function(drawable) 
+{
+  var id = drawable.getId();
+  return (id == 'th' || id == 'bh' || id == 'thb' || id == 'bhb' || id == 'vgrpy' ||
+          (drawable.getParent() != null && drawable.getParent().getId() == 'vgrpy'));
 };
 
 // for vertical
@@ -553,6 +624,15 @@ dvt.Overview.prototype.getPageY = function(event)
     return event.pageY;
 };
 
+/**
+ * Returns true if the background should be rendered.
+ * By default it is rendered.
+ * @protected
+ */
+dvt.Overview.prototype.isBackgroundRendered = function()
+{
+  return true;
+};
 
 /**
  * Returns true if a panel should be rendered on the left and right side of the overview window.
@@ -569,6 +649,32 @@ dvt.Overview.prototype.getSlidingWindow = function()
   return this.getChildAt(1);
 };
 
+dvt.Overview.prototype.getSlidingWindowWidth = function()
+{
+  if (this.isHorizontalScrollingEnabled())
+  {
+    var x1Pos = Math.max(this.getMinimumPositionX(), dvt.OverviewUtils.getDatePosition(this._xMin, this._xMax, this._x1, this.Width));
+    var x2Pos = Math.min(this.getMaximumPositionX(), Math.max(this.getMinimumPositionX(), dvt.OverviewUtils.getDatePosition(this._xMin, this._xMax, this._x2, this.Width)));
+
+    return (x2Pos - x1Pos);
+  }
+  else
+    return this.Width;
+};
+
+dvt.Overview.prototype.getSlidingWindowHeight = function()
+{
+  if (this.isVerticalScrollingEnabled())
+  {
+    var y1Pos = Math.max(this.getMinimumPositionY(), dvt.OverviewUtils.getDatePosition(this._yMin, this._yMax, this._y1, this.Height));
+    var y2Pos = Math.min(this.getMaximumPositionY(), Math.max(this.getMinimumPositionY(), dvt.OverviewUtils.getDatePosition(this._yMin, this._yMax, this._y2, this.Height)));
+
+    return (y2Pos - y1Pos);
+  }
+  else
+    return this.Height;
+};
+
 dvt.Overview.prototype.getLeftBackground = function()
 {
   if (this.isLeftAndRightFilterRendered())
@@ -576,7 +682,7 @@ dvt.Overview.prototype.getLeftBackground = function()
   else
     return null;
 };
-
+ 
 dvt.Overview.prototype.getRightBackground = function()
 {
   if (this.isLeftAndRightFilterRendered())
@@ -592,7 +698,7 @@ dvt.Overview.prototype.getLeftBackgroundHandle = function()
   else
     return null;
 };
-
+ 
 dvt.Overview.prototype.getRightBackgroundHandle = function()
 {
   if (this.isLeftAndRightFilterRendered() && !this.isFeatureOff('zoom'))
@@ -603,14 +709,12 @@ dvt.Overview.prototype.getRightBackgroundHandle = function()
 
 dvt.Overview.prototype.getLeftHandle = function()
 {
-  var offset = this._lastChildIndex;
-  return this.getChildAt(this.getNumChildren() - offset);
+  return this._leftHandle;
 };
 
 dvt.Overview.prototype.getRightHandle = function()
 {
-  var offset = this._lastChildIndex - 1;
-  return this.getChildAt(this.getNumChildren() - offset);
+  return this._rightHandle;
 };
 
 dvt.Overview.prototype.getLeftTopBar = function()
@@ -653,6 +757,22 @@ dvt.Overview.prototype.setLinePos = function(line, pos1, pos2)
     if (pos2 != -1)
       line.setX2(pos2);
   }
+};
+
+dvt.Overview.prototype.setLinePosX = function(line, x1, x2)
+{
+  if (x1 != -1)
+    line.setX1(x1);
+  if (x2 != -1)
+    line.setX2(x2);
+};
+
+dvt.Overview.prototype.setLinePosY = function(line, y1, y2)
+{
+  if (y1 != -1)
+    line.setY1(y1);
+  if (y2 != -1)
+    line.setY2(y2);
 };
 
 dvt.Overview.prototype.getLinePos1 = function(line)
@@ -700,465 +820,10 @@ dvt.Overview.prototype.isMovable = function(drawable)
   return false;
 };
 
-dvt.Overview.prototype.isFlashEnvironment = function()
-{
-  return (window && window.isFlashEnvironment);
-};
-
 /***************************** end common helper methods *********************************************/
 
 
 /***************************** marker creation and event handling *********************************************/
-dvt.Overview.prototype.createBackground = function(width, height)
-{
-  // draw a background shape covering all area to capture all mouse events
-  var background = new dvt.Rect(this.getCtx(), 0, 0, width, height, 'bg');
-  background.setSolidFill(this._overviewBackgroundColor);
-
-  // Do not antialias the background
-  background.setPixelHinting(true);
-
-  this.addChild(background);
-  return background;
-};
-
-dvt.Overview.prototype.createSlidingWindow = function(width, height)
-{
-  var vertical = this.isVertical();
-
-  // draw sliding window first so that it is under the markers
-  if (vertical)
-    var slidingWindow = new dvt.Rect(this.getCtx(), 0, 0, width, 0, 'window');
-  else
-    slidingWindow = new dvt.Rect(this.getCtx(), 0, 0, 0, height, 'window');
-  slidingWindow.setSolidFill(this._windowBackgroundColor, this._windowBackgroundAlpha);
-
-  // Do not antialias the Timeline Overview
-  slidingWindow.setPixelHinting(true);
-
-  if (!this.isFeatureOff('zoom'))
-  {
-    var handleSize = this.getHandleSize();
-    var handleStart = this.getHandleStart();
-    var grippySize = this.getGrippySize();
-    if (vertical)
-    {
-      var handleX = (width - 36) / 2;
-      var leftHandleCmds = dvt.PathUtils.moveTo(handleX, 0) +
-          dvt.PathUtils.quadTo(handleX + 3, 6, handleX + 8, 8) +
-                  dvt.PathUtils.lineTo(handleX + 28, 8) +
-                  dvt.PathUtils.quadTo(handleX + 33, 6, handleX + 36, 0);
-      dvt.PathUtils.closePath();
-      var rightHandleCmds = dvt.PathUtils.moveTo(handleX, 0) +
-          dvt.PathUtils.quadTo(handleX + 3, -6, handleX + 8, -8) +
-                  dvt.PathUtils.lineTo(handleX + 28, -8) +
-                  dvt.PathUtils.quadTo(handleX + 33, -6, handleX + 36, 0);
-      dvt.PathUtils.closePath();
-      var leftHandleBackground = new dvt.Rect(this.getCtx(), 0, 0, width, handleSize, 'lhb');
-      var rightHandleBackground = new dvt.Rect(this.getCtx(), 0, 0, width, handleSize, 'rhb');
-      var cursor = 'row-resize';
-
-      if (this._handleBackgroundImage)
-      {
-        var leftGrippy = this.createGrippyImage(width, grippySize);
-        var rightGrippy = this.createGrippyImage(width, grippySize);
-      }
-      else
-      {
-        leftGrippy = this.createGrippy(handleX);
-        rightGrippy = this.createGrippy(handleX);
-      }
-    }
-    else
-    {
-      var handleY = (height - 36) / 2;
-      leftHandleCmds = dvt.PathUtils.moveTo(0, handleY) +
-          dvt.PathUtils.quadTo(6, handleY + 3, 8, handleY + 8) +
-                  dvt.PathUtils.lineTo(8, handleY + 28) +
-                  dvt.PathUtils.quadTo(6, handleY + 33, 0, handleY + 36);
-      dvt.PathUtils.closePath();
-      rightHandleCmds = dvt.PathUtils.moveTo(0, handleY) +
-          dvt.PathUtils.quadTo(-6, handleY + 3, -8, handleY + 8) +
-                  dvt.PathUtils.lineTo(-8, handleY + 28) +
-                  dvt.PathUtils.quadTo(-6, handleY + 33, 0, handleY + 36);
-      dvt.PathUtils.closePath();
-      leftHandleBackground = new dvt.Rect(this.getCtx(), 0 - handleStart, 0, handleSize, height, 'lhb');
-      rightHandleBackground = new dvt.Rect(this.getCtx(), handleStart, 0, handleSize, height, 'rhb');
-      cursor = 'col-resize';
-
-      if (this._handleBackgroundImage)
-      {
-        leftGrippy = this.createGrippyImage(grippySize, height);
-        rightGrippy = this.createGrippyImage(grippySize, height);
-      }
-      else
-      {
-        leftGrippy = this.createGrippy(handleY);
-        rightGrippy = this.createGrippy(handleY);
-      }
-    }
-
-    leftHandleBackground.setSolidFill(this._windowBackgroundColor, 0);
-    rightHandleBackground.setSolidFill(this._windowBackgroundColor, 0);
-
-    // Do not antialias the handle backgrounds
-    leftHandleBackground.setPixelHinting(true);
-    rightHandleBackground.setPixelHinting(true);
-
-    var leftHandle = new dvt.Path(this.getCtx(), leftHandleCmds, 'lh');
-    var rightHandle = new dvt.Path(this.getCtx(), rightHandleCmds, 'rh');
-    leftHandle.setSolidFill(this._handleFillColor);
-    leftHandle.setSolidStroke(this._handleFillColor);
-    rightHandle.setSolidFill(this._handleFillColor);
-    rightHandle.setSolidStroke(this._handleFillColor);
-
-    // if the handle color is the same as the background color, it should not have antialiasing so it does not appear visible
-    if (this._windowBackgroundColor == this._handleFillColor)
-    {
-      leftHandle.setPixelHinting(true);
-      rightHandle.setPixelHinting(true);
-    }
-
-    // sets the resize cursor, for Flash this will hide the cursor and we will render our own cursor instead
-    leftHandleBackground.setCursor(cursor);
-    rightHandleBackground.setCursor(cursor);
-    leftHandle.setCursor(cursor);
-    rightHandle.setCursor(cursor);
-    leftGrippy.setCursor(cursor);
-    rightGrippy.setCursor(cursor);
-
-    slidingWindow.addChild(leftHandleBackground);
-    slidingWindow.addChild(leftHandle);
-    slidingWindow.addChild(leftGrippy);
-    slidingWindow.addChild(rightHandleBackground);
-    slidingWindow.addChild(rightHandle);
-    slidingWindow.addChild(rightGrippy);
-  }
-
-  // sets cursor AFTER adding child since toolkit adds a group and the cursor would be set on group instead
-  slidingWindow.setCursor('move');
-  this.addChild(slidingWindow);
-
-  // border above time axis
-  if (vertical)
-  {
-    if (this.isRTL())
-      var timeAxisTopBar = new dvt.Line(this.getCtx(), this.getTimeAxisWidth(), 0, this.getTimeAxisWidth(), height, 'tab');
-    else
-      timeAxisTopBar = new dvt.Line(this.getCtx(), width - this.getTimeAxisWidth(), 0, width - this.getTimeAxisWidth(), height, 'tab');
-  }
-  else
-  {
-    if (this.isOverviewAbove())
-      timeAxisTopBar = new dvt.Line(this.getCtx(), 0, this.getTimeAxisHeight(), width, this.getTimeAxisHeight(), 'tab');
-    else
-      timeAxisTopBar = new dvt.Line(this.getCtx(), 0, height - this.getTimeAxisHeight(), width, height - this.getTimeAxisHeight(), 'tab');
-  }
-  timeAxisTopBar.setSolidStroke(this._timeAxisBarColor, this._timeAxisBarOpacity);
-
-  // Do not antialias the time axis top bar
-  timeAxisTopBar.setPixelHinting(true);
-  this._timeAxisTopBar = timeAxisTopBar;
-
-  this.addChild(timeAxisTopBar);
-
-  if (this.isLeftAndRightFilterRendered())
-  {
-    if (vertical)
-    {
-      var leftBackground = new dvt.Rect(this.getCtx(), 0, 0, width, 0, 'lbg');
-      var rightBackground = new dvt.Rect(this.getCtx(), 0, 0, width, 0, 'rbg');
-    }
-    else
-    {
-      leftBackground = new dvt.Rect(this.getCtx(), 0, 0, 0, height, 'lbg');
-      rightBackground = new dvt.Rect(this.getCtx(), 0, 0, 0, height, 'rbg');
-    }
-
-    leftBackground.setSolidFill(this._leftFilterPanelColor, this._leftFilterPanelAlpha);
-    this.addChild(leftBackground);
-    rightBackground.setSolidFill(this._rightFilterPanelColor, this._rightFilterPanelAlpha);
-    this.addChild(rightBackground);
-
-    // the left and right background resize handle are needed for touch because the touch area for resize handle goes
-    // beyond the handle and into the left and right background area, so we'll need something on top of the background
-    if (dvt.OverviewUtils.supportsTouch() && handleStart != undefined)
-    {
-      var handleSize = this.getHandleStart();
-      if (vertical)
-      {
-        var leftBackgroundResizeHandle = new dvt.Rect(this.getCtx(), 0, 0, width, handleStart, 'lbgrh');
-        var rightBackgroundResizeHandle = new dvt.Rect(this.getCtx(), 0, 0, width, handleStart, 'rbgrh');
-      }
-      else
-      {
-        leftBackgroundResizeHandle = new dvt.Rect(this.getCtx(), 0, 0, handleStart, height, 'lbgrh');
-        rightBackgroundResizeHandle = new dvt.Rect(this.getCtx(), 0, 0, handleStart, height, 'rbgrh');
-      }
-
-      leftBackgroundResizeHandle.setSolidFill(this._leftFilterPanelColor, 0);
-      this.addChild(leftBackgroundResizeHandle);
-      rightBackgroundResizeHandle.setSolidFill(this._rightFilterPanelColor, 0);
-      this.addChild(rightBackgroundResizeHandle);
-    }
-  }
-};
-
-// renders the grippy from an image
-dvt.Overview.prototype.createGrippyImage = function(width, height)
-{
-  var posX = (width - this._handleWidth) / 2;
-  var posY = (height - this._handleHeight) / 2;
-  var grippy = new dvt.Image(this.getCtx(), this._handleBackgroundImage, posX, posY, this._handleWidth, this._handleHeight, 'grpy');
-  grippy.setMouseEnabled(false);
-  return grippy;
-};
-
-// renders the dots in the grippy
-dvt.Overview.prototype.createGrippy = function(handlePos)
-{
-  var grippy = new dvt.Container(this.getCtx(), 'grpy');
-  var gap = 2; // gap between dots
-  var count = 9;  // how many dots to draw
-  var color = this._handleTextureColor; // color of the dots
-
-  if (this.isVertical())
-  {
-    var startx = 8 + handlePos;  // start x location of dots relative to container
-    var starty = 3;  // start y location of dots relative to container
-    for (var i = 0; i < count; i++)
-    {
-      var dot = new dvt.Line(this.getCtx(), startx + i * gap, starty, startx + i * gap + 1, starty, 'dot1' + i);
-      dot.setSolidStroke(color);
-      grippy.addChild(dot);
-
-      starty = starty + gap;
-      dot = new dvt.Line(this.getCtx(), (startx + 1) + i * gap, starty, (startx + 1) + i * gap + 1, starty, 'dot2' + i);
-      dot.setSolidStroke(color);
-      grippy.addChild(dot);
-
-      starty = starty + gap;
-      dot = new dvt.Line(this.getCtx(), startx + i * gap, starty, startx + i * gap + 1, starty, 'dot3' + i);
-      dot.setSolidStroke(color);
-      grippy.addChild(dot);
-
-      starty = 3;
-    }
-
-    dot = new dvt.Line(this.getCtx(), startx + count * gap, starty, startx + count * gap + 1, starty, 'dot4');
-    dot.setSolidStroke(color);
-    grippy.addChild(dot);
-    starty = starty + gap * 2;
-    dot = new dvt.Line(this.getCtx(), startx + count * gap, starty, startx + count * gap + 1, starty, 'dot5');
-    dot.setSolidStroke(color);
-    grippy.addChild(dot);
-  }
-  else
-  {
-    startx = 3;  // start x location of dots relative to container
-    starty = 8 + handlePos;  // start y location of dots relative to container
-    for (i = 0; i < count; i++)
-    {
-      dot = new dvt.Line(this.getCtx(), startx, starty + i * gap, startx, starty + i * gap + 1, 'dot1' + i);
-      dot.setSolidStroke(color);
-      grippy.addChild(dot);
-
-      startx = startx + gap;
-      dot = new dvt.Line(this.getCtx(), startx, (starty + 1) + i * gap, startx, (starty + 1) + i * gap + 1, 'dot2' + i);
-      dot.setSolidStroke(color);
-      grippy.addChild(dot);
-
-      startx = startx + gap;
-      dot = new dvt.Line(this.getCtx(), startx, starty + i * gap, startx, starty + i * gap + 1, 'dot3' + i);
-      dot.setSolidStroke(color);
-      grippy.addChild(dot);
-
-      startx = 3;
-    }
-
-    dot = new dvt.Line(this.getCtx(), startx, starty + count * gap, startx, starty + count * gap + 1, 'dot4');
-    dot.setSolidStroke(color);
-    grippy.addChild(dot);
-    startx = startx + gap * 2;
-    dot = new dvt.Line(this.getCtx(), startx, starty + count * gap, startx, starty + count * gap + 1, 'dot5');
-    dot.setSolidStroke(color);
-    grippy.addChild(dot);
-  }
-
-  // Do not antialias the grippy
-  grippy.setPixelHinting(true);
-
-  return grippy;
-};
-
-dvt.Overview.prototype.updateSlidingWindow = function(width, height)
-{
-  var vertical = this.isVertical();
-
-  var window = this.getSlidingWindow();
-  var size = this.getOverviewSize();
-  var actualSize = vertical ? this.Height : this.Width;
-
-  var timelineWidth = this._width;
-  var start = this._start;
-  var end = this._end;
-  var renderStart = this._renderStart;
-
-  // first get the date using the width of timeline overview as position relative to the overall timeline
-  var rangeStartTime = dvt.OverviewUtils.getPositionDate(start, end, 0, timelineWidth);
-  var rangeEndTime = dvt.OverviewUtils.getPositionDate(start, end, actualSize, timelineWidth);
-
-  // now find the position relative to the width of timeline overview
-  var rangeStartPos = this.getDatePosition(rangeStartTime);
-  var rangeEndPos = Math.min(actualSize, this.getDatePosition(rangeEndTime));
-  var renderStartPos = this.getDatePosition(renderStart);
-
-  var newLeft = renderStartPos;
-  var newWidth = rangeEndPos - rangeStartPos;
-
-  if (this.isHorizontalRTL())
-    this.setSlidingWindowPos(window, size - renderStartPos - newWidth);
-  else
-    this.setSlidingWindowPos(window, newLeft);
-  this.setSlidingWindowSize(window, newWidth);
-
-  this.ScrollTimeAxis();
-
-  // update increment as well
-  this._increment = this.calculateIncrement(size);
-};
-
-dvt.Overview.prototype.createBorderAroundSlidingWindow = function(width, height)
-{
-  // add the left and right grip last since we want them over the markers
-  var slidingWindow = this.getSlidingWindow();
-  var halfBorderWidth = dvt.Overview._DEFAULT_WINDOW_BORDER_WIDTH / 2;
-  if (this.isVertical())
-  {
-    var top = slidingWindow.getY();
-    var topCenter = top + halfBorderWidth;
-    var bottom = top + slidingWindow.getHeight();
-    var bottomCenter = bottom - halfBorderWidth;
-    var left = 0;
-    var leftCenter = halfBorderWidth;
-    var right = width;
-    var rightCenter = right - halfBorderWidth;
-
-    var leftHandle = new dvt.Line(this.getCtx(), left, topCenter, width, topCenter, 'lh');
-    var rightHandle = new dvt.Line(this.getCtx(), left, bottomCenter, width, bottomCenter, 'rh');
-
-    // leftTopBar and rightTopBar are only visible in fusion skins
-    var leftTopBar = new dvt.Line(this.getCtx(), leftCenter, 0, leftCenter, top, 'ltb');
-    var rightTopBar = new dvt.Line(this.getCtx(), leftCenter, bottom, leftCenter, height, 'rtb');
-
-    var bottomBar = new dvt.Line(this.getCtx(), rightCenter, top, rightCenter, bottom, 'bb');
-    var topBar = new dvt.Line(this.getCtx(), leftCenter, top, leftCenter, bottom, 'tb');
-  }
-  else
-  {
-    top = 0;
-    topCenter = top + halfBorderWidth;
-    bottom = height;
-    bottomCenter = bottom - halfBorderWidth;
-    left = slidingWindow.getX();
-    leftCenter = left + halfBorderWidth;
-    right = left + slidingWindow.getWidth();
-    rightCenter = right - halfBorderWidth;
-
-    leftHandle = new dvt.Line(this.getCtx(), leftCenter, top, leftCenter, bottom, 'lh');
-    rightHandle = new dvt.Line(this.getCtx(), rightCenter, top, rightCenter, bottom, 'rh');
-
-    /* This mode is not currently implemented ...
-    if (this.isOverviewAbove())
-    {
-        leftTopBar = new dvt.Line(this.getCtx(), 0, height-1, left, height-1, "ltb");
-        rightTopBar = new dvt.Line(this.getCtx(), right, height-1, width, height-1, "rtb");
-        bottomBar = new dvt.Line(this.getCtx(), left, 1, right, 1, "bb");
-        topBar = new dvt.Line(this.getCtx(), left, height-1, right, height-1, "tb");
-    }
-    else ... */
-
-    // leftTopBar and rightTopBar are only visible in fusion skins
-    leftTopBar = new dvt.Line(this.getCtx(), 0, topCenter, left + 1, topCenter, 'ltb');
-    rightTopBar = new dvt.Line(this.getCtx(), right - 1, topCenter, width, topCenter, 'rtb');
-
-    bottomBar = new dvt.Line(this.getCtx(), left, bottomCenter, right, bottomCenter, 'bb');
-    topBar = new dvt.Line(this.getCtx(), left, topCenter, right, topCenter, 'tb');
-  }
-
-  // Do not antialias the sliding window borders
-  leftHandle.setPixelHinting(true);
-  rightHandle.setPixelHinting(true);
-  leftTopBar.setPixelHinting(true);
-  rightTopBar.setPixelHinting(true);
-  bottomBar.setPixelHinting(true);
-  topBar.setPixelHinting(true);
-
-  if (this._windowBorderLeftStyle != 'none')
-    leftHandle.setSolidStroke(this._windowBorderLeftColor);
-  this.addChild(leftHandle);
-
-  if (this._windowBorderRightStyle != 'none')
-    rightHandle.setSolidStroke(this._windowBorderRightColor);
-  this.addChild(rightHandle);
-
-  if (this._borderTopStyle != 'none' && this._borderTopColor)
-  {
-    leftTopBar.setSolidStroke(this._borderTopColor);
-    rightTopBar.setSolidStroke(this._borderTopColor);
-  }
-  this.addChild(leftTopBar);
-  this.addChild(rightTopBar);
-
-  if (this._windowBorderBottomStyle != 'none')
-    bottomBar.setSolidStroke(this._windowBorderBottomColor);
-  this.addChild(bottomBar);
-
-  if (this._windowBorderTopStyle != 'none')
-    topBar.setSolidStroke(this._windowBorderTopColor);
-  this.addChild(topBar);
-};
-
-dvt.Overview.prototype.createResizeArrow = function()
-{
-  if (this.isVertical())
-  {
-    var arrowCmds = dvt.PathUtils.moveTo(6, 0) +
-        dvt.PathUtils.lineTo(0, 5) +
-        dvt.PathUtils.lineTo(5, 5) +
-        dvt.PathUtils.lineTo(5, 17) +
-        dvt.PathUtils.lineTo(0, 17) +
-        dvt.PathUtils.lineTo(6, 22) +
-        dvt.PathUtils.lineTo(12, 17) +
-        dvt.PathUtils.lineTo(7, 17) +
-        dvt.PathUtils.lineTo(7, 5) +
-        dvt.PathUtils.lineTo(12, 5) +
-        dvt.PathUtils.closePath();
-  }
-  else
-  {
-    arrowCmds = dvt.PathUtils.moveTo(5, 0) +
-        dvt.PathUtils.lineTo(0, 6) +
-        dvt.PathUtils.lineTo(5, 12) +
-        dvt.PathUtils.lineTo(5, 7) +
-        dvt.PathUtils.lineTo(17, 7) +
-        dvt.PathUtils.lineTo(17, 12) +
-        dvt.PathUtils.lineTo(22, 6) +
-        dvt.PathUtils.lineTo(17, 0) +
-        dvt.PathUtils.lineTo(17, 4) +
-        dvt.PathUtils.lineTo(5, 4) +
-        dvt.PathUtils.lineTo(5, 0) +
-        dvt.PathUtils.closePath();
-  }
-
-  var arrow = new dvt.Path(this.getCtx(), arrowCmds, 'arr');
-  arrow.setSolidFill('#ffffff');
-  arrow.setSolidStroke('#000000');
-  arrow.setVisible(false);
-  this.addChild(arrow);
-
-  return arrow;
-};
 
 // orientation independent method
 dvt.Overview.prototype.setRectPos = function(rect, pos)
@@ -1201,280 +866,51 @@ dvt.Overview.prototype.getSlidingWindowPos = function(slidingWindow)
     return slidingWindow.getTranslateX();
 };
 
-dvt.Overview.prototype.setSlidingWindowPos = function(slidingWindow, pos)
+dvt.Overview.prototype.getSlidingWindowPosX = function(slidingWindow)
 {
-  // make sure it cannot be negative
-  pos = Math.max(0, pos);
+  return slidingWindow.getTranslateX();
+};
 
-  if (this.isVertical())
-    slidingWindow.setTranslateY(pos);
-  else
-    slidingWindow.setTranslateX(pos);
+dvt.Overview.prototype.getSlidingWindowPosY = function(slidingWindow)
+{
+  return slidingWindow.getTranslateY();
+};
+
+dvt.Overview.prototype.setSlidingWindowPosX = function(slidingWindow, xPos)
+{
+  xPos = Math.max(this.getMinimumPositionX(), xPos);
+  slidingWindow.setTranslateX(xPos);
 
   if (this.isLeftAndRightFilterRendered())
   {
     var leftBackground = this.getLeftBackground();
-    leftBackground.setWidth(pos);
-    var rightStart = pos + this.getSlidingWindowSize(slidingWindow);
+    leftBackground.setWidth(xPos);
+    var rightStart = xPos + this.getSlidingWindowSize(slidingWindow);
     var rightBackground = this.getRightBackground();
     rightBackground.setX(rightStart);
     rightBackground.setWidth(Math.max(0, this.Width - rightStart));
-
+ 
     // updates the background resize handle for touch
     if (dvt.OverviewUtils.supportsTouch() && !this.isFeatureOff('zoom'))
     {
       var handleStart = this.getHandleStart();
       var leftBackgroundHandle = this.getLeftBackgroundHandle();
-      leftBackgroundHandle.setX(pos - handleStart);
+      leftBackgroundHandle.setX(xPos - handleStart);
       var rightBackgroundHandle = this.getRightBackgroundHandle();
       rightBackgroundHandle.setX(rightStart);
     }
   }
+};
+
+dvt.Overview.prototype.setSlidingWindowPosY = function(slidingWindow, yPos)
+{
+  yPos = Math.max(this.getMinimumPositionY(), yPos);
+  slidingWindow.setTranslateY(yPos);
 };
 
 dvt.Overview.prototype.getSlidingWindowSize = function(slidingWindow)
 {
   return this.getRectSize(slidingWindow);
-};
-
-dvt.Overview.prototype.setSlidingWindowSize = function(slidingWindow, size)
-{
-  // make sure it's greater than the minimum window size
-  size = Math.max(this.getMinimumWindowSize(), size);
-
-  // make sure it does not exceed overview
-  size = Math.min(this.isVertical() ? this.Height : this.Width, size);
-
-  this.setRectSize(slidingWindow, size);
-
-  // update left and right filter if one is specified
-  if (this.isLeftAndRightFilterRendered())
-  {
-    var rightStart = this.getSlidingWindowPos(slidingWindow) + size;
-    var rightBackground = this.getRightBackground();
-    rightBackground.setX(rightStart);
-    rightBackground.setWidth(Math.max(0, this.Width - rightStart));
-
-    // updates the background resize handle for touch
-    if (dvt.OverviewUtils.supportsTouch() && !this.isFeatureOff('zoom'))
-    {
-      var rightBackgroundHandle = this.getRightBackgroundHandle();
-      rightBackgroundHandle.setX(rightStart);
-    }
-  }
-
-  // if resize feature is off then there's nothing else to do
-  if (this.isFeatureOff('zoom'))
-    return;
-
-  // update the resize handles
-  var rightHandleBackground = slidingWindow.getChildAt(3);
-  var rightHandle = slidingWindow.getChildAt(4);
-  var rightGrippy = slidingWindow.getChildAt(5);
-  if (this.isVertical())
-  {
-    rightHandle.setTranslateY(size);
-    rightHandleBackground.setTranslateY(size - this.getHandleSize());
-    rightGrippy.setTranslateY(size - this.getGrippySize());
-  }
-  else
-  {
-    rightHandle.setTranslateX(size);
-    rightHandleBackground.setTranslateX(size - this.getHandleSize());
-    rightGrippy.setTranslateX(size - this.getGrippySize());
-  }
-};
-
-dvt.Overview.prototype.calculateIncrement = function(overviewWidth)
-{
-  var timelineWidth = this._width;
-  var start = this._start;
-  var end = this._end;
-
-  // get the date diff for 1 pixel
-  var day1 = dvt.OverviewUtils.getPositionDate(start, end, 1, overviewWidth);
-  var day2 = dvt.OverviewUtils.getPositionDate(start, end, 2, overviewWidth);
-
-  // now map it back to whole timeline for position
-  var pos1 = dvt.OverviewUtils.getDatePosition(start, end, day1, timelineWidth);
-  var pos2 = dvt.OverviewUtils.getDatePosition(start, end, day2, timelineWidth);
-
-  var inc = pos2 - pos1;
-  return inc;
-};
-
-dvt.Overview.prototype.updateTimeAxis = function(width, height)
-{
-  if (this._ticks == null)
-    return;
-
-  var vertical = this.isVertical();
-  var size = this.getOverviewSize();
-
-  var start = this._start;
-  var end = this._end;
-
-  for (var i = 0; i < this._ticks.length; i++)
-  {
-    var child = this._ticks[i];
-
-    var time = parseInt(child['time'], 10);
-    var time_pos = this.getDatePosition(time);
-    var label = child['label'];
-
-    var maxWidth = 0;
-    if (i + 1 < this._ticks.length)
-    {
-      var next_time = parseInt(this._ticks[i + 1]['time'], 10);
-      var next_time_pos = this.getDatePosition(next_time);
-      maxWidth = next_time_pos - time_pos;
-    }
-    else
-    {
-      // last label
-      maxWidth = size - time_pos;
-    }
-
-    if (this.isHorizontalRTL())
-      time_pos = size - time_pos;
-
-    if (vertical)
-      maxWidth = this.Width;
-
-    maxWidth -= (dvt.Overview._DEFAULT_AXIS_LABEL_PADDING * 2);
-    this.addTick(time_pos, width, height, 'tick' + i);
-    this.addLabel(time_pos, label, width, height, maxWidth, 'label' + i);
-  }
-};
-
-// adds a tick mark
-dvt.Overview.prototype.addTick = function(pos, width, height, id)
-{
-  if (this.isVertical())
-    var line = new dvt.Line(this.getCtx(), 0, pos, width, pos, id);
-  else
-    line = new dvt.Line(this.getCtx(), pos, 0, pos, height, id);
-  var stroke = new dvt.SolidStroke(this._timeIndicatorColor);
-  stroke.setStyle(dvt.Stroke.DASHED, 3);
-  line.setStroke(stroke);
-
-  // Do not antialias tick marks
-  line.setPixelHinting(true);
-
-  this.addChild(line);
-};
-
-// add a label in time axis
-dvt.Overview.prototype.addLabel = function(pos, text, width, height, maxWidth, id, labelStyle)
-{
-  labelStyle = labelStyle || new dvt.CSSStyle('font-weight:bold');
-
-  if (this.isVertical())
-  {
-    var label = new dvt.OutputText(this.getCtx(), text, 4, pos, id);
-    label.setCSSStyle(labelStyle);
-    if (this.isRTL())
-    {
-      var dim = label.getDimensions();
-      label.setX(Math.max(4, this.Width - dim.w - 4));
-    }
-  }
-  else
-  {
-    if (this.isOverviewAbove())
-      var y = 2;
-    else
-      y = height - this.getTimeAxisHeight() + 2;
-
-    var padding = dvt.Overview._DEFAULT_AXIS_LABEL_PADDING;
-    label = new dvt.OutputText(this.getCtx(), text, pos + padding, y, id);
-    label.setCSSStyle(labelStyle);
-    if (this.isHorizontalRTL())
-    {
-      dim = label.getDimensions();
-      label.setX(pos - Math.min(dim.w, maxWidth) - padding);
-    }
-  }
-
-  dvt.TextUtils.fitText(label, maxWidth, Infinity, this);
-
-  // save the raw text for tooltip
-  label._rawText = label.getUntruncatedTextString();
-};
-
-dvt.Overview.prototype.updateCurrentTime = function(width, height)
-{
-  // return if current time is invalid or outside of the time range
-  if (this._currentTime == null || isNaN(this._currentTime) || this._currentTime < this._start || this._currentTime > this._end)
-    return;
-
-  var time_pos = this.getDatePosition(this._currentTime);
-
-  if (this.isVertical())
-    var line = new dvt.Line(this.getCtx(), 0, time_pos, width, time_pos, 'ocd');
-  else
-  {
-    if (this.isRTL())
-      time_pos = width - time_pos;
-    line = new dvt.Line(this.getCtx(), time_pos, 0, time_pos, height, 'ocd');
-  }
-  line.setSolidStroke(this._currentTimeIndicatorColor);
-
-  // Do not antialias current time line
-  line.setPixelHinting(true);
-
-  this.addChild(line);
-};
-
-dvt.Overview.prototype.parseFilledTimeRanges = function(width, height)
-{
-  if (this._formattedTimeRanges == null)
-    return;
-
-  // draw filled time ranges so that it is over the sliding window but under the markers
-  var start = this._start;
-  var end = this._end;
-
-  for (var i = 0; i < this._formattedTimeRanges.length; i++)
-  {
-    var ftr = this._formattedTimeRanges[i];
-    this.addFilledTimeRange(ftr, start, end, width, height);
-  }
-};
-
-dvt.Overview.prototype.addFilledTimeRange = function(elem, start, end, width, height)
-{
-  var rangeStart = parseInt(elem['rs'], 10);
-  var rangeEnd = parseInt(elem['re'], 10);
-  var color = elem['c'];
-
-  if (rangeStart != null && rangeEnd != null)
-  {
-    var size = this.getOverviewSize();
-
-    var rangeStart_pos = this.getDatePosition(rangeStart);
-    var rangeEnd_pos = this.getDatePosition(rangeEnd);
-    var rangeWidth = rangeEnd_pos - rangeStart_pos;
-    if (this.isHorizontalRTL())
-    {
-      rangeStart_pos = size - rangeStart_pos - rangeWidth;
-      rangeEnd_pos = size - rangeEnd_pos - rangeWidth;
-    }
-
-    if (this.isVertical())
-      var displayable = new dvt.Rect(this.getCtx(), 0, rangeStart_pos, width - this.getTimeAxisWidth(), rangeWidth, 'ftr');
-    else
-      displayable = new dvt.Rect(this.getCtx(), rangeStart_pos, this.isOverviewAbove() ? this.getTimeAxisHeight() : 0, rangeWidth, height - this.getTimeAxisHeight(), 'ftr');
-
-    if (color != null)
-      displayable.setSolidFill(color, 0.4);
-    displayable.setCursor('move');
-
-    // Do not antialias filled time range
-    displayable.setPixelHinting(true);
-
-    this.addChild(displayable);
-  }
 };
 
 dvt.Overview.prototype.parseDataXML = function(width, height)
@@ -1483,15 +919,13 @@ dvt.Overview.prototype.parseDataXML = function(width, height)
 
 
 /************************** sliding window animation *********************************************/
-dvt.Overview.prototype.animateSlidingWindow = function(newLeft, newWidth)
+dvt.Overview.prototype.animateSlidingWindow = function(newX, newY)
 {
   var slidingWindow = this.getSlidingWindow();
-  var handleBackground = slidingWindow.getChildAt(3);
-  var handle = slidingWindow.getChildAt(4);
-  var grippy = slidingWindow.getChildAt(5);
 
-  // first check if sliding window move or resize at all
-  if (newWidth == undefined && newLeft == this.getSlidingWindowPos(slidingWindow))
+  // first check if sliding window moved or resized at all
+  if ((newX == undefined || newX == this.getSlidingWindowPosX(slidingWindow)) &&
+      (newY == undefined || newY == this.getSlidingWindowPosY(slidingWindow)))
     return;
 
   var leftHandle = this.getLeftHandle();
@@ -1501,135 +935,122 @@ dvt.Overview.prototype.animateSlidingWindow = function(newLeft, newWidth)
   var bottomBar = this.getBottomBar();
   var topBar = this.getTopBar();
 
-  if (this.isVertical())
-  {
-    var posGetter = slidingWindow.getTranslateY;
-    var posSetter = slidingWindow.setTranslateY;
-    var sizeGetter = slidingWindow.getHeight;
-    var sizeSetter = slidingWindow.setHeight;
-    var leftHandlePos1Getter = leftHandle.getY1;
-    var leftHandlePos1Setter = leftHandle.setY1;
-    var leftHandlePos2Getter = leftHandle.getY2;
-    var leftHandlePos2Setter = leftHandle.setY2;
-    var rightHandlePos1Getter = rightHandle.getY1;
-    var rightHandlePos1Setter = rightHandle.setY1;
-    var rightHandlePos2Getter = rightHandle.getY2;
-    var rightHandlePos2Setter = rightHandle.setY2;
-    var leftTopBarPosGetter = leftTopBar.getY2;
-    var leftTopBarPosSetter = leftTopBar.setY2;
-    var rightTopBarPosGetter = rightTopBar.getY1;
-    var rightTopBarPosSetter = rightTopBar.setY1;
-    var bottomBarPos1Getter = bottomBar.getY1;
-    var bottomBarPos1Setter = bottomBar.setY1;
-    var bottomBarPos2Getter = bottomBar.getY2;
-    var bottomBarPos2Setter = bottomBar.setY2;
-    var topBarPos1Getter = topBar.getY1;
-    var topBarPos1Setter = topBar.setY1;
-    var topBarPos2Getter = topBar.getY2;
-    var topBarPos2Setter = topBar.setY2;
-
-    if (handle != null && grippy != null)
-    {
-      var handleGetter = handle.getTranslateY;
-      var handleSetter = handle.setTranslateY;
-      var grippyGetter = grippy.getTranslateY;
-      var grippySetter = grippy.setTranslateY;
-    }
-  }
-  else
-  {
-    posGetter = slidingWindow.getTranslateX;
-    posSetter = slidingWindow.setTranslateX;
-    sizeGetter = slidingWindow.getWidth;
-    sizeSetter = slidingWindow.setWidth;
-    leftHandlePos1Getter = leftHandle.getX1;
-    leftHandlePos1Setter = leftHandle.setX1;
-    leftHandlePos2Getter = leftHandle.getX2;
-    leftHandlePos2Setter = leftHandle.setX2;
-    rightHandlePos1Getter = rightHandle.getX1;
-    rightHandlePos1Setter = rightHandle.setX1;
-    rightHandlePos2Getter = rightHandle.getX2;
-    rightHandlePos2Setter = rightHandle.setX2;
-    leftTopBarPosGetter = leftTopBar.getX2;
-    leftTopBarPosSetter = leftTopBar.setX2;
-    rightTopBarPosGetter = rightTopBar.getX1;
-    rightTopBarPosSetter = rightTopBar.setX1;
-    bottomBarPos1Getter = bottomBar.getX1;
-    bottomBarPos1Setter = bottomBar.setX1;
-    bottomBarPos2Getter = bottomBar.getX2;
-    bottomBarPos2Setter = bottomBar.setX2;
-    topBarPos1Getter = topBar.getX1;
-    topBarPos1Setter = topBar.setX1;
-    topBarPos2Getter = topBar.getX2;
-    topBarPos2Setter = topBar.setX2;
-
-    if (handle != null && grippy != null)
-    {
-      handleGetter = handle.getTranslateX;
-      handleSetter = handle.setTranslateX;
-      grippyGetter = grippy.getTranslateX;
-      grippySetter = grippy.setTranslateX;
-    }
-  }
-
-  // make sure it doesn't go over
-  var minPos = this.getMinimumPosition();
-  var maxPos = this.getMaximumPosition();
-  var slidingWindowSize = this.getSlidingWindowSize(slidingWindow);
-  if (newWidth != undefined)
-    newLeft = Math.max(minPos, Math.min(maxPos - newWidth, newLeft));
-  else
-    newLeft = Math.max(minPos, Math.min(maxPos - slidingWindowSize, newLeft));
-
-  // sliding window
+  var playAnimator = false;
   var animator = this.isAnimationOnClick() ? new dvt.Animator(this.getCtx(), 0.5, 0, dvt.Easing.linear) : null;
-  this.animateProperty(animator, slidingWindow, posGetter, posSetter, newLeft);
-  if (newWidth != undefined)
+
+  if (this.isVerticalScrollingEnabled() && newY != null)
   {
-    this.animateProperty(animator, slidingWindow, sizeGetter, sizeSetter, newWidth);
-    if (handle != null)
-      this.animateProperty(animator, handle, handleGetter, handleSetter, newWidth);
-    if (handleBackground != null)
-      this.animateProperty(animator, handleBackground, handleGetter, handleSetter, newWidth - this.getHandleSize());
-    if (grippy != null)
-      this.animateProperty(animator, grippy, grippyGetter, grippySetter, newWidth - this.getGrippySize());
+    var posYGetter = slidingWindow.getTranslateY;
+    var posYSetter = slidingWindow.setTranslateY;
+    var leftHandleY1Getter = leftHandle.getY1;
+    var leftHandleY1Setter = leftHandle.setY1;
+    var leftHandleY2Getter = leftHandle.getY2;
+    var leftHandleY2Setter = leftHandle.setY2;
+    var rightHandleY1Getter = rightHandle.getY1;
+    var rightHandleY1Setter = rightHandle.setY1;
+    var rightHandleY2Getter = rightHandle.getY2;
+    var rightHandleY2Setter = rightHandle.setY2;
+    var bottomBarY1Getter = bottomBar.getY1;
+    var bottomBarY1Setter = bottomBar.setY1;
+    var bottomBarY2Getter = bottomBar.getY2;
+    var bottomBarY2Setter = bottomBar.setY2;
+    var topBarY1Getter = topBar.getY1;
+    var topBarY1Setter = topBar.setY1;
+    var topBarY2Getter = topBar.getY2;
+    var topBarY2Setter = topBar.setY2;
+
+    // make sure it doesn't go over
+    var minPosY = this.getMinimumPositionY();
+    var maxPosY = this.getMaximumPositionY();
+    var slidingWindowHeight = slidingWindow.getHeight();
+    newY = Math.max(minPosY, Math.min(maxPosY - slidingWindowHeight, newY));
+
+    this.animateProperty(animator, slidingWindow, posYGetter, posYSetter, newY);
+
+    if (!this.isVertical())
+    {
+      // left and right handles
+      this.animateProperty(animator, leftHandle, leftHandleY1Getter, leftHandleY1Setter, newY);
+      this.animateProperty(animator, leftHandle, leftHandleY2Getter, leftHandleY2Setter, newY + slidingWindowHeight);
+      this.animateProperty(animator, rightHandle, rightHandleY1Getter, rightHandleY1Setter, newY);
+      this.animateProperty(animator, rightHandle, rightHandleY2Getter, rightHandleY2Setter, newY + slidingWindowHeight);
+      
+      // top and bottom borders
+      this.animateProperty(animator, bottomBar, bottomBarY1Getter, bottomBarY1Setter, newY + slidingWindowHeight);
+      this.animateProperty(animator, topBar, topBarY1Getter, topBarY1Setter, newY);
+      this.animateProperty(animator, bottomBar, bottomBarY2Getter, bottomBarY2Setter, newY + slidingWindowHeight);
+      this.animateProperty(animator, topBar, topBarY2Getter, topBarY2Setter, newY);
+    }
+    else
+    {
+      // left and right handles
+      this.animateProperty(animator, leftHandle, leftHandleY1Getter, leftHandleY1Setter, newY);
+      this.animateProperty(animator, leftHandle, leftHandleY2Getter, leftHandleY2Setter, newY);
+      this.animateProperty(animator, rightHandle, rightHandleY1Getter, rightHandleY1Setter, newY + slidingWindowHeight);
+      this.animateProperty(animator, rightHandle, rightHandleY2Getter, rightHandleY2Setter, newY + slidingWindowHeight);
+      
+      // top and bottom borders
+      this.animateProperty(animator, bottomBar, bottomBarY1Getter, bottomBarY1Setter, newY);
+      this.animateProperty(animator, topBar, topBarY1Getter, topBarY1Setter, newY);
+      this.animateProperty(animator, bottomBar, bottomBarY2Getter, bottomBarY2Setter, newY + slidingWindowHeight);
+      this.animateProperty(animator, topBar, topBarY2Getter, topBarY2Setter, newY + slidingWindowHeight);
+
+      // left and right top bar
+      this.animateProperty(animator, leftTopBar, leftTopBar.getY2, leftTopBar.setY2, newY + 1);
+      this.animateProperty(animator, rightTopBar, rightTopBar.getY1, rightTopBar.setY1, newY + slidingWindowHeight - 1);
+    }
+
+    playAnimator = true;
   }
-
-  // left and right handles
-  this.animateProperty(animator, leftHandle, leftHandlePos1Getter, leftHandlePos1Setter, newLeft);
-  this.animateProperty(animator, leftHandle, leftHandlePos2Getter, leftHandlePos2Setter, newLeft);
-
-  if (newWidth != undefined)
+  if (this.isHorizontalScrollingEnabled() && newX != null)
   {
-    this.animateProperty(animator, rightHandle, rightHandlePos1Getter, rightHandlePos1Setter, newLeft + newWidth);
-    this.animateProperty(animator, rightHandle, rightHandlePos2Getter, rightHandlePos2Setter, newLeft + newWidth);
-  }
-  else
-  {
-    this.animateProperty(animator, rightHandle, rightHandlePos1Getter, rightHandlePos1Setter, newLeft + slidingWindowSize);
-    this.animateProperty(animator, rightHandle, rightHandlePos2Getter, rightHandlePos2Setter, newLeft + slidingWindowSize);
-  }
+    var posXGetter = slidingWindow.getTranslateX;
+    var posXSetter = slidingWindow.setTranslateX;
+    var leftHandleX1Getter = leftHandle.getX1;
+    var leftHandleX1Setter = leftHandle.setX1;
+    var leftHandleX2Getter = leftHandle.getX2;
+    var leftHandleX2Setter = leftHandle.setX2;
+    var rightHandleX1Getter = rightHandle.getX1;
+    var rightHandleX1Setter = rightHandle.setX1;
+    var rightHandleX2Getter = rightHandle.getX2;
+    var rightHandleX2Setter = rightHandle.setX2;
+    var bottomBarX1Getter = bottomBar.getX1;
+    var bottomBarX1Setter = bottomBar.setX1;
+    var bottomBarX2Getter = bottomBar.getX2;
+    var bottomBarX2Setter = bottomBar.setX2;
+    var topBarX1Getter = topBar.getX1;
+    var topBarX1Setter = topBar.setX1;
+    var topBarX2Getter = topBar.getX2;
+    var topBarX2Setter = topBar.setX2;
 
-  // left and right top bar
-  this.animateProperty(animator, leftTopBar, leftTopBarPosGetter, leftTopBarPosSetter, newLeft + 1);
+    // make sure it doesn't go over
+    var minPosX = this.getMinimumPositionX();
+    var maxPosX = this.getMaximumPositionX();
+    var slidingWindowWidth = slidingWindow.getWidth();
+    newX = Math.max(minPosX, Math.min(maxPosX - slidingWindowWidth, newX));
 
-  if (newWidth != undefined)
-    this.animateProperty(animator, rightTopBar, rightTopBarPosGetter, rightTopBarPosSetter, newLeft + newWidth - 1);
-  else
-    this.animateProperty(animator, rightTopBar, rightTopBarPosGetter, rightTopBarPosSetter, newLeft + slidingWindowSize - 1);
+    this.animateProperty(animator, slidingWindow, posXGetter, posXSetter, newX);
 
-  this.animateProperty(animator, bottomBar, bottomBarPos1Getter, bottomBarPos1Setter, newLeft);
-  this.animateProperty(animator, topBar, topBarPos1Getter, topBarPos1Setter, newLeft);
+    // left and right handles
+    this.animateProperty(animator, leftHandle, leftHandleX1Getter, leftHandleX1Setter, newX);
+    this.animateProperty(animator, leftHandle, leftHandleX2Getter, leftHandleX2Setter, newX);
+    this.animateProperty(animator, rightHandle, rightHandleX1Getter, rightHandleX1Setter, newX + slidingWindowWidth);
+    this.animateProperty(animator, rightHandle, rightHandleX2Getter, rightHandleX2Setter, newX + slidingWindowWidth);
 
-  if (newWidth != undefined)
-  {
-    this.animateProperty(animator, bottomBar, bottomBarPos2Getter, bottomBarPos2Setter, newLeft + newWidth);
-    this.animateProperty(animator, topBar, topBarPos2Getter, topBarPos2Setter, newLeft + newWidth);
-  }
-  else
-  {
-    this.animateProperty(animator, bottomBar, bottomBarPos2Getter, bottomBarPos2Setter, newLeft + slidingWindowSize);
-    this.animateProperty(animator, topBar, topBarPos2Getter, topBarPos2Setter, newLeft + slidingWindowSize);
+    // left and right top bar
+    if (!this.isVertical())
+    {
+      this.animateProperty(animator, leftTopBar, leftTopBar.getX2, leftTopBar.setX2, newX + 1);
+      this.animateProperty(animator, rightTopBar, rightTopBar.getX1, rightTopBar.setX1, newX + slidingWindowWidth - 1);
+    }
+
+    // top and bottom borders
+    this.animateProperty(animator, bottomBar, bottomBarX1Getter, bottomBarX1Setter, newX);
+    this.animateProperty(animator, topBar, topBarX1Getter, topBarX1Setter, newX);
+    this.animateProperty(animator, bottomBar, bottomBarX2Getter, bottomBarX2Setter, newX + slidingWindowWidth);
+    this.animateProperty(animator, topBar, topBarX2Getter, topBarX2Setter, newX + slidingWindowWidth);
+
+    playAnimator = true;
   }
 
   if (this.isLeftAndRightFilterRendered())
@@ -1637,22 +1058,18 @@ dvt.Overview.prototype.animateSlidingWindow = function(newLeft, newWidth)
     var leftBackground = this.getLeftBackground();
     var leftBackgroundGetter = leftBackground.getWidth;
     var leftBackgroundSetter = leftBackground.setWidth;
-    this.animateProperty(animator, leftBackground, leftBackgroundGetter, leftBackgroundSetter, newLeft);
-
-    var rightStart = newLeft + slidingWindowSize;
+    this.animateProperty(animator, leftBackground, leftBackgroundGetter, leftBackgroundSetter, newX);
+ 
+    var rightStart = newX + slidingWindowWidth;
     var rightBackground = this.getRightBackground();
     var rightBackgroundGetter = rightBackground.getWidth;
     var rightBackgroundSetter = rightBackground.setWidth;
     var rightBackgroundPosGetter = rightBackground.getX;
     var rightBackgroundPosSetter = rightBackground.setX;
-
-    if (this.isVertical())
-      var timelineSize = this.Height;
-    else
-      timelineSize = this.Width;
-    this.animateProperty(animator, rightBackground, rightBackgroundGetter, rightBackgroundSetter, timelineSize - rightStart);
+ 
+    this.animateProperty(animator, rightBackground, rightBackgroundGetter, rightBackgroundSetter, this.Width - rightStart);
     this.animateProperty(animator, rightBackground, rightBackgroundPosGetter, rightBackgroundPosSetter, rightStart);
-
+ 
     if (dvt.OverviewUtils.supportsTouch() && !this.isFeatureOff('zoom'))
     {
       var handleStart = this.getHandleStart();
@@ -1662,13 +1079,14 @@ dvt.Overview.prototype.animateSlidingWindow = function(newLeft, newWidth)
       var rightBackgroundHandle = this.getRightBackgroundHandle();
       var rightBackgroundHandleGetter = rightBackgroundHandle.getX;
       var rightBackgroundHandleSetter = rightBackgroundHandle.setX;
-
-      this.animateProperty(animator, leftBackgroundHandle, leftBackgroundHandleGetter, leftBackgroundHandleSetter, newLeft - handleStart);
+ 
+      this.animateProperty(animator, leftBackgroundHandle, leftBackgroundHandleGetter, leftBackgroundHandleSetter, newX - handleStart);
       this.animateProperty(animator, rightBackgroundHandle, rightBackgroundHandleGetter, rightBackgroundHandleSetter, rightStart);
     }
+    playAnimator = true;
   }
 
-  if (animator != null)
+  if (animator != null && playAnimator)
     animator.play();
 };
 
@@ -1698,28 +1116,8 @@ dvt.Overview.prototype.HandleShapeMouseOver = function(event)
     return;
   }
 
-  if (this._resizeArrow != null && this.isHandle(drawable))
-  {
-    var relPos = this.getCtx().pageToStageCoords(event.pageX, event.pageY);
-    relPos = this.stageToLocal(relPos);
-    if (this.isVertical())
-    {
-      this._resizeArrow.setTranslate(relPos.x + 6, relPos.y - 10);
-    }
-    else
-    {
-      this._resizeArrow.setTranslate(relPos.x - 6, relPos.y - 20);
-    }
-    this._resizeArrow.setVisible(true);
-  }
-
   if (drawable.getId() == 'window' || drawable.getId() == 'ftr' || drawable.getId() == 'arr' || this.isHandle(drawable))
-  {
-    if (this.isFlashEnvironment())
-      this.setCursor('move');
-
     return;
-  }
 
   return drawable;
 };
@@ -1733,10 +1131,6 @@ dvt.Overview.prototype.HandleShapeMouseOut = function(event)
   var drawable = this._findDrawable(event);
   if (drawable == null)
     return;
-
-  // dismiss resize arrow
-  if (this.isHandle(drawable) && this._resizeArrow != null)
-    this._resizeArrow.setVisible(false);
 
   return drawable;
 };
@@ -1762,49 +1156,58 @@ dvt.Overview.prototype.HandleShapeClick = function(event, pageX, pageY)
 
     var relPos = this.getCtx().pageToStageCoords(pageX, pageY);
     relPos = this.stageToLocal(relPos);
-    if (this.isVertical())
-    {
-      var pos = relPos.y;
-      var size = this.Height;
-    }
-    else
-    {
-      pos = relPos.x;
-      size = this.Width;
-    }
 
     // scroll sliding window
     var slidingWindow = this.getSlidingWindow();
-    var newPos = pos - this.getRectSize(slidingWindow) / 2;
-    this.animateSlidingWindow(newPos);
+    if (this.isVerticalScrollingEnabled())
+    {
+      var posY = relPos.y;
+      var height = this.Height;
+      var newPosY = posY - slidingWindow.getHeight() / 2;
+    }
+    if (this.isHorizontalScrollingEnabled())
+    {
+      var posX = relPos.x;
+      var width = this.Width;
+      var newPosX = posX - slidingWindow.getWidth() / 2;
 
-    if (this.isHorizontalRTL())
-      pos = this.Width - pos;
+      if (this.isRTL())
+        posX = width - posX;
+    }
 
-    var time = this.getPositionDate(pos);
+    this.animateSlidingWindow(newPosX, newPosY);
 
     // scroll timeline
     var evt = new dvt.OverviewEvent(dvt.OverviewEvent.SUBTYPE_SCROLL_TIME);
-    evt.setTime(time);
-
-    // make sure position is in bound
-    newPos = Math.max(0, Math.min(newPos, size - this.getRectSize(slidingWindow)));
-
-    if (this.isHorizontalRTL())
+    if (newPosX != null)
     {
-      var newStartTime = this.getPositionDate(this.Width - (newPos + this.getRectSize(slidingWindow)));
-      var newEndTime = this.getPositionDate(this.Width - newPos);
-    }
-    else
-    {
-      newStartTime = this.getPositionDate(newPos);
-      newEndTime = this.getPositionDate(newPos + this.getRectSize(slidingWindow));
-    }
-    evt.setNewStartTime(newStartTime);
-    evt.setNewEndTime(newEndTime);
+      var slidingWindowWidth = slidingWindow.getWidth();
+      // make sure position is in bound
+      newPosX = Math.max(this.getMinimumPositionX(), Math.min(newPosX, width - slidingWindowWidth));
 
+      if (this.isRTL())
+      {
+        var newX1 = this.getXPositionDate(width - (newPosX + slidingWindowWidth));
+        var newX2 = this.getXPositionDate(width - newPosX);
+      }
+      else
+      {
+        newX1 = this.getXPositionDate(newPosX);
+        newX2 = this.getXPositionDate(newPosX + slidingWindowWidth);
+      }
+      evt.setNewX1(newX1);
+      evt.setNewX2(newX2);
+    }
+    if (newPosY != null)
+    {
+      var slidingWindowHeight = slidingWindow.getHeight();
+      // make sure position is in bound
+      newPosY = Math.max(this.getMinimumPositionY(), Math.min(newPosY, height - slidingWindowHeight));
+
+      evt.setNewY1(this.getYPositionDate(newPosY));
+      evt.setNewY2(this.getYPositionDate(newPosY + slidingWindowHeight));
+    }
     this.dispatchEvent(evt);
-
     return;
   }
 
@@ -1833,29 +1236,19 @@ dvt.Overview.prototype.beginDragPan = function(event, compX, compY)
     if (this.isHandle(drawable))
     {
       var slidingWindow = this.getSlidingWindow();
-      if (this.isHorizontalRTL())
-      {
-        this._oldEndPos = this.Width - slidingWindow.getX();
-        this._oldStartPos = this._oldEndPos - slidingWindow.getWidth();
-      }
-      else
-      {
-        this._oldStartPos = slidingWindow.getX();
-        this._oldEndPos = this._oldStartPos + slidingWindow.getWidth();
-      }
 
-      if (drawable.getParent().getId() == 'grpy')
+      if (drawable.getParent().getId() == 'hgrpy' || drawable.getParent().getId() == 'vgrpy')
         drawable = drawable.getParent();
 
       var drawableId = drawable.getId();
 
-      if (drawableId == 'grpy')
+      if (drawableId == 'hgrpy' || drawableId == 'vgrpy')
       {
         drawable = slidingWindow.getChildBefore(drawable);
         drawableId = drawable.getId();
       }
 
-      if (drawableId == 'lh' || drawableId == 'rh')
+      if (drawableId == 'lh' || drawableId == 'rh' || drawableId == 'th' || drawableId == 'bh')
       {
         drawable = slidingWindow.getChildBefore(drawable);
         drawableId = drawable.getId();
@@ -1867,20 +1260,41 @@ dvt.Overview.prototype.beginDragPan = function(event, compX, compY)
       if (drawableId == 'rbgrh')
         drawable = slidingWindow.getChildAt(slidingWindow.getNumChildren() - 3);
 
-      // drawable should be lhb or rhb
-      // temporarily increase size of handle to capture wider area and prevent cursor from changing
-      // only do this for non touch since we won't run into cursor issue
-      if (!dvt.OverviewUtils.supportsTouch())
+      if (this.isLeftOrRightHandle(drawable))
       {
-        if (this.isVertical())
+        this._isHorizontalResize = true;
+        if (this.isRTL())
         {
-          drawable.setY(0 - dvt.Overview.HANDLE_PADDING_SIZE);
-          drawable.setHeight((drawable.getHeight() + dvt.Overview.HANDLE_PADDING_SIZE) * 2);
+          this._oldEndPosX = this.Width - slidingWindow.getX();
+          this._oldStartPosX = this._oldEndPosX - slidingWindow.getWidth();
         }
         else
         {
+          this._oldStartPosX = slidingWindow.getX();
+          this._oldEndPosX = this._oldStartPosX + slidingWindow.getWidth();
+        }
+        // drawable should be lhb or rhb
+        // temporarily increase size of handle to capture wider area and prevent cursor from changing
+        // only do this for non touch since we won't run into cursor issue
+        if (!dvt.OverviewUtils.supportsTouch())
+        {
           drawable.setX(0 - dvt.Overview.HANDLE_PADDING_SIZE);
           drawable.setWidth((drawable.getWidth() + dvt.Overview.HANDLE_PADDING_SIZE) * 2);
+        }
+      }
+      else
+      {
+        this._isHorizontalResize = false;
+        this._oldStartPosY = slidingWindow.getY();
+        this._oldEndPosY = this._oldStartPosY + slidingWindow.getHeight();
+
+        // drawable should be lhb or rhb
+        // temporarily increase size of handle to capture wider area and prevent cursor from changing
+        // only do this for non touch since we won't run into cursor issue
+        if (!dvt.OverviewUtils.supportsTouch())
+        {
+          drawable.setY(0 - dvt.Overview.HANDLE_PADDING_SIZE);
+          drawable.setHeight((drawable.getHeight() + dvt.Overview.HANDLE_PADDING_SIZE) * 2);
         }
       }
 
@@ -1954,12 +1368,12 @@ dvt.Overview.prototype.endDragPan = function()
       // reset the temporarily resized handle
       if (!dvt.OverviewUtils.supportsTouch())
       {
-        if (this.isVertical())
+        if (this.isTopOrBottomHandle(this._moveDrawable))
         {
           this._moveDrawable.setY(0);
           this._moveDrawable.setHeight(this.getHandleSize());
         }
-        else
+        else if (this.isLeftOrRightHandle(this._moveDrawable))
         {
           this._moveDrawable.setX(0);
           this._moveDrawable.setWidth(this.getHandleSize());
@@ -1993,17 +1407,15 @@ dvt.Overview.prototype.contDragPan = function(event, compX, compY)
     this._initY = compY;
 
     if (this._moveDrawable.getId() == 'window')
-    {
       this.handleWindowDragPositioning(event, diffX, diffY);
-    }
     else if (this._moveDrawable.getId() == 'lh' || this._moveDrawable.getId() == 'lhb')
-    {
-      this.handleLeftHandleDragPositioning(event, diffX, diffY);
-    }
+      this.handleLeftOrRightHandleDragPositioning(event, diffX, true);
     else if (this._moveDrawable.getId() == 'rh' || this._moveDrawable.getId() == 'rhb')
-    {
-      this.handleRightHandleDragPositioning(event, diffX, diffY);
-    }
+      this.handleLeftOrRightHandleDragPositioning(event, diffX, false);
+    else if (this._moveDrawable.getId() == 'th' || this._moveDrawable.getId() == 'thb')
+      this.handleTopOrBottomHandleDragPositioning(event, diffY, true);
+    else if (this._moveDrawable.getId() == 'bh' || this._moveDrawable.getId() == 'bhb')
+      this.handleTopOrBottomHandleDragPositioning(event, diffY, false);
   }
 };
 
@@ -2096,117 +1508,7 @@ dvt.Overview.prototype.stopDragAction = function()
   this.endDragPan();
 };
 
-/**
- * Handles keyboard event on the overview.
- * @param {Event} event the keyboard event
- */
-dvt.Overview.prototype.HandleKeyDown = function(event) 
-{
-  var keyCode = event.keyCode;
-  if (keyCode === dvt.KeyboardEvent.LEFT_ARROW || keyCode === dvt.KeyboardEvent.RIGHT_ARROW)
-  {
-    var func = event.shiftKey ? this.handleRightHandleDragPositioning : this.handleWindowDragPositioning;
-    var delta = keyCode === dvt.KeyboardEvent.LEFT_ARROW ? -1 : 1;
-    func.call(this, event, delta, delta);
-  }
-};
-
-
-/**
- * Handles keyboard event on the overview.
- * @param {Event} event the keyboard event
- */
-dvt.Overview.prototype.HandleKeyUp = function(event) 
-{
-  var keyCode = event.keyCode;
-  if (keyCode === dvt.KeyboardEvent.LEFT_ARROW || keyCode === dvt.KeyboardEvent.RIGHT_ARROW)
-  {
-    var func = event.shiftKey ? this.finishHandleDrag : this.finishWindowDrag;
-    var delta = keyCode === dvt.KeyboardEvent.LEFT_ARROW ? -1 : 1;
-    func.call(this, delta, delta);
-  }
-};
 /************************** end event handling *********************************************/
-
-/***************************** window scrolling triggered by timeline *********************************************/
-// called by peer
-dvt.Overview.prototype.ScrollToStart = function()
-{
-  var slidingWindow = this.getSlidingWindow();
-  var totalWidth = this.Width;
-  if (this.isHorizontalRTL())
-    this.setSlidingWindowPos(slidingWindow, totalWidth - this.getSlidingWindowSize(slidingWindow));
-  else
-    this.setSlidingWindowPos(slidingWindow, 0);
-
-  this.ScrollTimeAxis();
-};
-
-dvt.Overview.prototype.ScrollToEnd = function()
-{
-  var slidingWindow = this.getSlidingWindow();
-  var totalWidth = this.Width;
-  if (this.isHorizontalRTL())
-    this.setSlidingWindowPos(slidingWindow, 0);
-  else
-    this.setSlidingWindowPos(slidingWindow, totalWidth - this.getSlidingWindowSize(slidingWindow));
-
-  this.ScrollTimeAxis();
-};
-
-dvt.Overview.prototype.ScrollByAmount = function(amount)
-{
-  var slidingWindow = this.getSlidingWindow();
-  // todo: rounding makes this inaccurate at some point, perhaps a way to sync up the scroll pos with actual data points?
-  var actualAmount = amount / this._increment;
-
-  if (this.isVertical())
-    var maxAmount = this.Height - slidingWindow.getHeight();
-  else
-  {
-    maxAmount = this.Width - slidingWindow.getWidth();
-    if (this.isRTL())
-      actualAmount = 0 - actualAmount;
-  }
-
-  this.setSlidingWindowPos(slidingWindow, Math.min(maxAmount, this.getSlidingWindowPos(slidingWindow) + actualAmount));
-
-  this.ScrollTimeAxis();
-};
-
-// called by timeline peer keyboard navigation methods
-dvt.Overview.prototype.longScrollToPos = function(pos)
-{
-  var actualAmount = pos / this._increment;
-  if (this.isHorizontalRTL())
-    actualAmount = 0 - actualAmount;
-
-  this.animateSlidingWindow(actualAmount);
-};
-
-// called by timeline peer on restore position after zoom
-dvt.Overview.prototype.ScrollToPos = function(pos)
-{
-  var slidingWindow = this.getSlidingWindow();
-  var actualAmount = pos / this._increment;
-  if (this.isHorizontalRTL())
-    actualAmount = 0 - actualAmount;
-
-  this.setSlidingWindowPos(slidingWindow, actualAmount);
-  this.ScrollTimeAxis();
-};
-
-
-/**
- * Called by apps to scroll the overview window to a particular time
- * @public
- */
-dvt.Overview.prototype.scrollToTime = function(time)
-{
-  var pos = Math.max(0, dvt.OverviewUtils.getDatePosition(this._start, this._end, time, this._width));
-  this.longScrollToPos(pos);
-};
-/************************** end window scrolling triggered by timeline *********************************************/
 
 
 /***************************** window scrolling and resizing *********************************************/
@@ -2223,105 +1525,101 @@ dvt.Overview.prototype.finishWindowDrag = function(deltaX, deltaY)
 dvt.Overview.prototype.fireScrollEvent = function(type, deltaX, deltaY)
 {
   var slidingWindow = this.getSlidingWindow();
-  var pos = this.getSlidingWindowPos(slidingWindow);
-  var size = this.getRectSize(slidingWindow);
-  var minPos = this.getMinimumPosition();
-  var maxPos = this.getMaximumPosition();
-
-  if (this.isVertical())
-    var delta = deltaY;
-  else
-    delta = deltaX;
-
-  if ((pos + delta) <= minPos)
-  {
-    // hit the top
-    this.setSlidingWindowPos(slidingWindow, minPos);
-    if (this.isHorizontalRTL())
-      var scrollTo = dvt.OverviewEvent.END_POS;
-    else
-      scrollTo = dvt.OverviewEvent.START_POS;
-  }
-  else if (pos + size + delta >= maxPos)
-  {
-    // hit the bottom
-    this.setSlidingWindowPos(slidingWindow, maxPos - size);
-    if (this.isHorizontalRTL())
-      scrollTo = dvt.OverviewEvent.START_POS;
-    else
-      scrollTo = dvt.OverviewEvent.END_POS;
-  }
-  else
-  {
-    this.setSlidingWindowPos(slidingWindow, pos + delta);
-    if (this.isHorizontalRTL())
-      scrollTo = (maxPos - size - pos - this._leftMargin) * this._increment;
-    else
-      scrollTo = (pos - this._leftMargin) * this._increment;
-  }
-
-  // sync window tima axis
-  this.ScrollTimeAxis();
 
   // scroll timeline
   var evt = new dvt.OverviewEvent(type);
-  evt.setPosition(scrollTo);
+  var triggerEvent = false;
 
-  if (this.isHorizontalRTL())
+  if (this.isHorizontalScrollingEnabled() && deltaX != 0)
   {
-    var newStartTime = this.getPositionDate(this.Width - (pos + this.getRectSize(slidingWindow)));
-    var newEndTime = this.getPositionDate(this.Width - pos);
+    var posX = this.getSlidingWindowPosX(slidingWindow);
+    var width = slidingWindow.getWidth();
+    var minPosX = this.getMinimumPositionX();
+    var maxPosX = this.getMaximumPositionX();
+
+    if ((posX + deltaX) <= minPosX)
+    {
+      // hit the left side
+      this.setSlidingWindowPosX(slidingWindow, minPosX);
+    }
+    else if (posX + width + deltaX >= maxPosX)
+    {
+      // hit the bottom
+      this.setSlidingWindowPosX(slidingWindow, maxPosX - width);
+    }
+    else
+    {
+      this.setSlidingWindowPosX(slidingWindow, posX + deltaX);
+    }
+
+    if (this.isRTL())
+    {
+      var newX1 = this.getXPositionDate(this.Width - (posX + width));
+      var newX2 = this.getXPositionDate(this.Width - posX);
+    }
+    else
+    {
+      newX1 = this.getXPositionDate(posX);
+      newX2 = this.getXPositionDate(posX + width);
+    }
+    evt.setNewX1(newX1);
+    evt.setNewX2(newX2);
+    triggerEvent = true;
   }
-  else
+  if (this.isVerticalScrollingEnabled() && deltaY != 0)
   {
-    newStartTime = this.getPositionDate(pos);
-    newEndTime = this.getPositionDate(pos + this.getRectSize(slidingWindow));
+    var posY = this.getSlidingWindowPosY(slidingWindow);
+    var height = slidingWindow.getHeight();
+    var minPosY = this.getMinimumPositionY();
+    var maxPosY = this.getMaximumPositionY();
+
+    if ((posY + deltaY) <= minPosY)
+    {
+      // hit the left side
+      this.setSlidingWindowPosY(slidingWindow, minPosY);
+    }
+    else if (posY + height + deltaY >= maxPosY)
+    {
+      // hit the bottom
+      this.setSlidingWindowPosY(slidingWindow, maxPosY - height);
+    }
+    else
+    {
+      this.setSlidingWindowPosY(slidingWindow, posY + deltaY);
+    }
+    evt.setNewY1(this.getYPositionDate(posY));
+    evt.setNewY2(this.getYPositionDate(posY + height));
+    triggerEvent = true;
   }
-  evt.setNewStartTime(newStartTime);
-  evt.setNewEndTime(newEndTime);
 
-  this.dispatchEvent(evt);
+  if (triggerEvent)
+  {
+    DvtOverviewRenderer._updateBorderAroundSlidingWindow(this);
+    this.dispatchEvent(evt);
+  }
 };
 
-dvt.Overview.prototype.handleLeftHandleDragPositioning = function(event, deltaX, deltaY)
+dvt.Overview.prototype.handleLeftOrRightHandleDragPositioning = function(event, delta, isLeft)
 {
-  this.handleLeftOrRightHandleDragPositioning(event, deltaX, deltaY, true);
-};
-
-dvt.Overview.prototype.handleRightHandleDragPositioning = function(event, deltaX, deltaY)
-{
-  this.handleLeftOrRightHandleDragPositioning(event, deltaX, deltaY, false);
-};
-
-dvt.Overview.prototype.handleLeftOrRightHandleDragPositioning = function(event, deltaX, deltaY, isLeft)
-{
-  var size = this.getOverviewSize();
-  if (this.isVertical())
-    var delta = deltaY;
-  else
-    delta = deltaX;
-
   if (delta == 0)
     return;
 
   var slidingWindow = this.getSlidingWindow();
-  var windowPos = this.getSlidingWindowPos(slidingWindow);
-  var windowSize = this.getSlidingWindowSize(slidingWindow);
+  var windowPos = this.getSlidingWindowPosX(slidingWindow);
+  var windowWidth = slidingWindow.getWidth();
+
   if (isLeft)
   {
     // make sure width of sliding window is larger than minimum
-    if (windowSize - delta <= this.getMinimumWindowSize())
+    if (windowWidth - delta <= this.getMinimumWindowWidth())
       return;
 
     // make sure position of left handle is not less than minimum (delta is negative when moving handle to the left)
-    if (windowPos + delta <= this.getMinimumPosition())
+    if (windowPos + delta <= this.getMinimumPositionX())
       return;
 
     // window should only resize when the cursor is back to where the handle is
-    if (this.isVertical())
-      var relPos = this.getCtx().pageToStageCoords(this.getPageX(event), this.getPageY(event)).y;
-    else
-      relPos = this.getCtx().pageToStageCoords(this.getPageX(event), this.getPageY(event)).x;
+    var relPos = this.getCtx().pageToStageCoords(this.getPageX(event), this.getPageY(event)).x;
     relPos = this.stageToLocal(relPos);
 
     if (delta > 0 && relPos <= windowPos)
@@ -2329,69 +1627,141 @@ dvt.Overview.prototype.handleLeftOrRightHandleDragPositioning = function(event, 
     else if (delta < 0 && relPos >= windowPos)
       return;
 
-    this.setSlidingWindowPos(slidingWindow, windowPos + delta);
-    this.setSlidingWindowSize(slidingWindow, windowSize - delta);
+    this.setSlidingWindowPosX(slidingWindow, windowPos + delta);
+    DvtOverviewRenderer._setSlidingWindowWidth(this, slidingWindow, windowWidth - delta);
   }
   else
   {
     // make sure width of sliding window is larger than minimum
-    if (windowSize + delta <= this.getMinimumWindowSize())
+    if (windowWidth + delta <= this.getMinimumWindowWidth())
       return;
 
     // make sure position of right handle is not less than minimum
-    if (windowPos + windowSize + delta >= this.getMaximumPosition())
+    if (windowPos + windowWidth + delta >= this.getMaximumPositionX())
       return;
 
     // window should only resize when the cursor is back to where the handle is
-    if (this.isVertical())
-      relPos = this.getCtx().pageToStageCoords(this.getPageX(event), this.getPageY(event)).y;
-    else
-      relPos = this.getCtx().pageToStageCoords(this.getPageX(event), this.getPageY(event)).x;
+    relPos = this.getCtx().pageToStageCoords(this.getPageX(event), this.getPageY(event)).x;
     relPos = this.stageToLocal(relPos);
 
-    if (delta > 0 && relPos <= windowPos + windowSize)
+    if (delta > 0 && relPos <= windowPos + windowWidth)
       return;
-    else if (delta < 0 && relPos >= windowPos + windowSize)
+    else if (delta < 0 && relPos >= windowPos + windowWidth)
       return;
 
-    this.setSlidingWindowSize(slidingWindow, windowSize + delta);
+    DvtOverviewRenderer._setSlidingWindowWidth(this, slidingWindow, windowWidth + delta);
   }
 
   // sync with time axis
-  this.ScrollTimeAxis();
-
-  // dynamically update contents of timeline (time axis, position of items etc.)
-  var time = this.getPositionDate(this.getSlidingWindowSize(slidingWindow));
-
-  // if we know the position and date we can calculate the new width
-  var newSize = (size * (this._end - this._start)) / (time - this._start);
+  DvtOverviewRenderer._updateBorderAroundSlidingWindow(this);
 
   // tell event handler that time range is changing
   if (this.isRangeChangingSupported())
   {
     var evt = new dvt.OverviewEvent(dvt.OverviewEvent.SUBTYPE_RANGECHANGING);
-    evt.setNewSize(newSize);
-    evt.setEndHandle(this.isHorizontalRTL() ? isLeft : !isLeft);
-    if (isLeft)
-      evt.setExpand((delta < 0));
-    else
-      evt.setExpand((delta > 0));
 
-    if (this.isHorizontalRTL())
+    if (this.isRTL())
     {
-      var newStartTime = this.getPositionDate(this.Width - (this.getSlidingWindowPos(slidingWindow) + this.getRectSize(slidingWindow)));
-      var newEndTime = this.getPositionDate(this.Width - this.getSlidingWindowPos(slidingWindow));
+      var newX1 = this.getXPositionDate(this.Width - (this.getSlidingWindowPosX(slidingWindow) + slidingWindow.getWidth()));
+      var newX2 = this.getXPositionDate(this.Width - this.getSlidingWindowPosX(slidingWindow));
     }
     else
     {
-      newStartTime = this.getPositionDate(this.getSlidingWindowPos(slidingWindow));
-      newEndTime = this.getPositionDate(this.getSlidingWindowPos(slidingWindow) + this.getRectSize(slidingWindow));
+      newX1 = this.getXPositionDate(this.getSlidingWindowPosX(slidingWindow));
+      newX2 = this.getXPositionDate(this.getSlidingWindowPosX(slidingWindow) + slidingWindow.getWidth());
     }
-    evt.setNewStartTime(newStartTime);
-    evt.setNewEndTime(newEndTime);
+    evt.setNewX1(newX1);
+    evt.setNewX2(newX2);
 
     this.dispatchEvent(evt);
   }
+};
+
+dvt.Overview.prototype.handleTopOrBottomHandleDragPositioning = function(event, delta, isTop)
+{
+  if (delta == 0)
+    return;
+
+  var slidingWindow = this.getSlidingWindow();
+  var windowPos = this.getSlidingWindowPosY(slidingWindow);
+  var windowHeight = slidingWindow.getHeight();
+
+  if (isTop)
+  {
+    // make sure width of sliding window is larger than minimum
+    if (windowHeight - delta <= this.getMinimumWindowHeight())
+      return;
+
+    // make sure position of top handle is not less than minimum (delta is negative when moving handle to the top)
+    if (windowPos + delta <= this.getMinimumPositionY())
+      return;
+
+    // window should only resize when the cursor is back to where the handle is
+    var relPos = this.getCtx().pageToStageCoords(this.getPageX(event), this.getPageY(event)).y;
+    relPos = this.stageToLocal(relPos);
+
+    if (delta > 0 && relPos <= windowPos)
+      return;
+    else if (delta < 0 && relPos >= windowPos)
+      return;
+
+    this.setSlidingWindowPosY(slidingWindow, windowPos + delta);
+    DvtOverviewRenderer._setSlidingWindowHeight(this, slidingWindow, windowHeight - delta);
+  }
+  else
+  {
+    // make sure width of sliding window is larger than minimum
+    if (windowHeight + delta <= this.getMinimumWindowHeight())
+      return;
+
+    // make sure position of bottom handle is not less than minimum
+    if (windowPos + windowHeight + delta >= this.getMaximumPositionY())
+      return;
+
+    // window should only resize when the cursor is back to where the handle is
+    relPos = this.getCtx().pageToStageCoords(this.getPageX(event), this.getPageY(event)).y;
+    relPos = this.stageToLocal(relPos);
+
+    if (delta > 0 && relPos <= windowPos + windowHeight)
+      return;
+    else if (delta < 0 && relPos >= windowPos + windowHeight)
+      return;
+
+    DvtOverviewRenderer._setSlidingWindowHeight(this, slidingWindow, windowHeight + delta);
+  }
+
+  // sync with time axis
+  DvtOverviewRenderer._updateBorderAroundSlidingWindow(this);
+
+  // tell event handler that time range is changing
+  if (this.isRangeChangingSupported())
+  {
+    var evt = new dvt.OverviewEvent(dvt.OverviewEvent.SUBTYPE_RANGECHANGING);
+
+    var newY1 = this.getYPositionDate(this.getSlidingWindowPosY(slidingWindow));
+    var newY2 = this.getYPositionDate(this.getSlidingWindowPosY(slidingWindow) + slidingWindow.getHeight());
+
+    evt.setNewY1(newY1);
+    evt.setNewY2(newY2);
+
+    this.dispatchEvent(evt);
+  }
+};
+
+/**
+ * Whether or not horizontal scrolling is enabled.
+ */
+dvt.Overview.prototype.isHorizontalScrollingEnabled = function()
+{
+  return (this._xMin != null && this._xMax != null);
+};
+
+/**
+ * Whether or not vertical scrolling is enabled.
+ */
+dvt.Overview.prototype.isVerticalScrollingEnabled = function()
+{
+  return (this._yMin != null && this._yMax != null);
 };
 
 // whether to fire a range changing event, which will be fired continuously when the sliding window is resize
@@ -2402,66 +1772,44 @@ dvt.Overview.prototype.isRangeChangingSupported = function()
 
 dvt.Overview.prototype.finishHandleDrag = function(deltaX, deltaY)
 {
-  var start = this._start;
-  var end = this._end;
-  var oldSize = this._width;
-  var size = this.getOverviewSize();
-
   var slidingWindow = this.getSlidingWindow();
-  var time = this.getPositionDate(this.getRectSize(slidingWindow));
+  var evt = new dvt.OverviewEvent(dvt.OverviewEvent.SUBTYPE_RANGECHANGE);
 
-  // if we know the position and date we can calculate the new width
-  var newSize = (size * (end - start)) / (time - start);
-
-  var oldStartTime = this.getPositionDate(this._oldStartPos);
-  var oldEndTime = this.getPositionDate(this._oldEndPos);
-  if (this.isHorizontalRTL())
+  if (this._isHorizontalResize)
   {
-    var newStartTime = this.getPositionDate(this.Width - (this.getSlidingWindowPos(slidingWindow) + this.getRectSize(slidingWindow)));
-    var newEndTime = this.getPositionDate(this.Width - this.getSlidingWindowPos(slidingWindow));
+    var oldX1 = this.getXPositionDate(this._oldStartPosX);
+    var oldX2 = this.getXPositionDate(this._oldEndPosX);
+    if (this.isRTL())
+    {
+      var newX1 = this.getXPositionDate(this.Width - (this.getSlidingWindowPosX(slidingWindow) + slidingWindow.getWidth()));
+      var newX2 = this.getXPositionDate(this.Width - this.getSlidingWindowPosX(slidingWindow));
+    }
+    else
+    {
+      newX1 = this.getXPositionDate(this.getSlidingWindowPosX(slidingWindow));
+      newX2 = this.getXPositionDate(this.getSlidingWindowPosX(slidingWindow) + slidingWindow.getWidth());
+    }
+    evt.setOldX1(oldX1);
+    evt.setOldX2(oldX2);
+    evt.setNewX1(newX1);
+    evt.setNewX2(newX2);
   }
   else
   {
-    newStartTime = this.getPositionDate(this.getSlidingWindowPos(slidingWindow));
-    newEndTime = this.getPositionDate(this.getSlidingWindowPos(slidingWindow) + this.getRectSize(slidingWindow));
+    var oldY1 = this.getYPositionDate(this._oldStartPosY);
+    var oldY2 = this.getYPositionDate(this._oldEndPosY);
+    var newY1 = this.getYPositionDate(this.getSlidingWindowPosY(slidingWindow));
+    var newY2 = this.getYPositionDate(this.getSlidingWindowPosY(slidingWindow) + slidingWindow.getHeight());
+    evt.setOldY1(oldY1);
+    evt.setOldY2(oldY2);
+    evt.setNewY1(newY1);
+    evt.setNewY2(newY2);
   }
 
   // alert peer of time range change
-  var evt = new dvt.OverviewEvent(dvt.OverviewEvent.SUBTYPE_RANGECHANGE);
-  evt.setOldSize(oldSize);
-  evt.setNewSize(newSize);
-  evt.setOldStartTime(oldStartTime);
-  evt.setOldEndTime(oldEndTime);
-  evt.setNewStartTime(newStartTime);
-  evt.setNewEndTime(newEndTime);
   this.dispatchEvent(evt);
 };
 
-// scroll time axis to match sliding window
-// sync all parts of overview
-dvt.Overview.prototype.ScrollTimeAxis = function()
-{
-  var slidingWindow = this.getSlidingWindow();
-  var halfBorderWidth = dvt.Overview._DEFAULT_WINDOW_BORDER_WIDTH / 2;
-  var left = this.getSlidingWindowPos(slidingWindow);
-  var leftCenter = left + halfBorderWidth;
-  var right = left + this.getSlidingWindowSize(slidingWindow);
-  var rightCenter = right - halfBorderWidth;
-
-  var leftHandle = this.getLeftHandle();
-  var rightHandle = this.getRightHandle();
-  var leftTopBar = this.getLeftTopBar();
-  var rightTopBar = this.getRightTopBar();
-  var bottomBar = this.getBottomBar();
-  var topBar = this.getTopBar();
-
-  this.setLinePos(leftHandle, leftCenter, leftCenter);
-  this.setLinePos(rightHandle, rightCenter, rightCenter);
-  this.setLinePos(leftTopBar, -1, left);
-  this.setLinePos(rightTopBar, this.getLinePos1(rightHandle), -1);
-  this.setLinePos(bottomBar, this.getLinePos1(leftHandle), this.getLinePos1(rightHandle));
-  this.setLinePos(topBar, this.getLinePos1(leftHandle), this.getLinePos1(rightHandle));
-};
 /**************************end window scrolling and resizing *********************************************/
 
 
@@ -2603,21 +1951,28 @@ dvt.OverviewParser.prototype.ParseRootAttributes = function(options)
   // animation related options
   ret.animationOnClick = options['animationOnClick'];
 
-  if (options['startTime'] != null)
-    ret.start = options['startTime'];
-  if (options['endTime'] != null)
-    ret.end = options['endTime'];
+  if (options['xMin'] != null)
+    ret.xMin = options['xMin'];
+  if (options['xMax'] != null)
+    ret.xMax = options['xMax'];
 
-  // start and end time are MANDATORY and start time must be before end time
-  if (ret.start == null)
-    ret.start = (new Date()).getTime();
-  if (ret.end == null || ret.end <= ret.start)
-    ret.end = ret.start + 1000 * 60 * 60 * 24;
+  if (options['x1'] != null)
+    ret.x1 = options['x1'];
+  if (options['x2'] != null)
+    ret.x2 = options['x2'];
+
+  if (options['yMin'] != null)
+    ret.yMin = options['yMin'];
+  if (options['yMax'] != null)
+    ret.yMax = options['yMax'];
+
+  if (options['y1'] != null)
+    ret.y1 = options['y1'];
+  if (options['y2'] != null)
+    ret.y2 = options['y2'];
 
   if (options['currentTime'] != null)
     ret.currentTime = options['currentTime'];
-  if (options['initialFocusTime'] != null)
-    ret.initialFocusTime = options['initialFocusTime'];
 
   ret.orientation = 'horizontal';
   if (options['orientation'] != null)
@@ -2627,32 +1982,6 @@ dvt.OverviewParser.prototype.ParseRootAttributes = function(options)
   ret.minimumWindowSize = options['minimumWindowSize'];
   ret.leftMargin = options['leftMargin'];
   ret.rightMargin = options['rightMargin'];
-
-  // the time where the viewport of the associated view ends and the width is also MANDATORY
-  if (options['viewportEndTime'] != null)
-  {
-    var viewportEndTime = options['viewportEndTime'];
-    var viewportStartTime = ret.start;
-
-    // if viewport start time is specified
-    if (options['viewportStartTime'] != null && options['viewportStartTime'] < viewportEndTime)
-      viewportStartTime = options['viewportStartTime'];
-
-    // calculate the overall width of the container (i.e. timeline/chart)
-    // if viewportEndPos wasn't specified, use width of overview, this basically assumes the width of the overview is
-    // the same as the width of the view that the overview is associated with (timeline or chart)
-    if (options['viewportEndPos'] != null)
-      ret.width = this.calculateWidth(ret.start, ret.end, viewportStartTime, viewportEndTime, options['viewportEndPos']);
-    else
-      ret.width = this.calculateWidth(ret.start, ret.end, viewportStartTime, viewportEndTime, this._view.Width);
-
-    ret.renderStart = viewportStartTime;
-  }
-  else
-    ret.renderStart = ret.start;
-
-  if (ret.width == 0)
-    ret.width = 1000; // just some arbitrary default...
 
   ret.overviewPosition = 'below';
   ret.selectionMode = 'none';
@@ -2712,21 +2041,14 @@ dvt.OverviewEvent.SUBTYPE_RANGECHANGE = 'rangeChange';
 dvt.OverviewEvent.SUBTYPE_RANGECHANGING = 'rangeChanging';
 
 // keys to look up value
-dvt.OverviewEvent.TIME_KEY = 'time';
-dvt.OverviewEvent.POS_KEY = 'pos';
-
-dvt.OverviewEvent.OLD_SIZE_KEY = 'oldSize';
-dvt.OverviewEvent.NEW_SIZE_KEY = 'newSize';
-dvt.OverviewEvent.OLD_START_TIME_KEY = 'oldStartTime';
-dvt.OverviewEvent.NEW_START_TIME_KEY = 'newStartTime';
-dvt.OverviewEvent.OLD_END_TIME_KEY = 'oldEndTime';
-dvt.OverviewEvent.NEW_END_TIME_KEY = 'newEndTime';
-
-dvt.OverviewEvent.EXPAND_KEY = 'expand';
-dvt.OverviewEvent.END_HANDLE_KEY = 'endHandle';
-
-dvt.OverviewEvent.START_POS = -1;
-dvt.OverviewEvent.END_POS = -2;
+dvt.OverviewEvent.OLD_X1_KEY = 'oldX1';
+dvt.OverviewEvent.NEW_X1_KEY = 'newX1';
+dvt.OverviewEvent.OLD_Y1_KEY = 'oldY1';
+dvt.OverviewEvent.NEW_Y1_KEY = 'newY1';
+dvt.OverviewEvent.OLD_X2_KEY = 'oldX2';
+dvt.OverviewEvent.NEW_X2_KEY = 'newX2';
+dvt.OverviewEvent.OLD_Y2_KEY = 'oldY2';
+dvt.OverviewEvent.NEW_Y2_KEY = 'newY2';
 
 dvt.OverviewEvent.prototype.getSubType = function() 
 {
@@ -2734,111 +2056,86 @@ dvt.OverviewEvent.prototype.getSubType = function()
 };
 
 
-/****** scroll to time **************/
-dvt.OverviewEvent.prototype.setTime = function(time) 
-{
-  this.addParam(dvt.OverviewEvent.TIME_KEY, time);
-};
-
-dvt.OverviewEvent.prototype.getTime = function() 
-{
-  return this.getParamValue(dvt.OverviewEvent.TIME_KEY);
-};
-
-
 /*********** range change ************/
-dvt.OverviewEvent.prototype.setOldSize = function(oldSize) 
+
+dvt.OverviewEvent.prototype.setOldX1 = function(oldX1) 
 {
-  this.addParam(dvt.OverviewEvent.OLD_SIZE_KEY, oldSize);
+  this.addParam(dvt.OverviewEvent.OLD_X1_KEY, oldX1);
 };
 
-dvt.OverviewEvent.prototype.getOldSize = function() 
+dvt.OverviewEvent.prototype.getOldX1 = function() 
 {
-  return this.getParamValue(dvt.OverviewEvent.OLD_SIZE_KEY);
+  return this.getParamValue(dvt.OverviewEvent.OLD_X1_KEY);
 };
 
-dvt.OverviewEvent.prototype.setNewSize = function(newSize) 
+dvt.OverviewEvent.prototype.setNewX1 = function(newX1) 
 {
-  this.addParam(dvt.OverviewEvent.NEW_SIZE_KEY, newSize);
+  this.addParam(dvt.OverviewEvent.NEW_X1_KEY, newX1);
 };
 
-dvt.OverviewEvent.prototype.getNewSize = function() 
+dvt.OverviewEvent.prototype.getNewX1 = function() 
 {
-  return this.getParamValue(dvt.OverviewEvent.NEW_SIZE_KEY);
+  return this.getParamValue(dvt.OverviewEvent.NEW_X1_KEY);
 };
 
-dvt.OverviewEvent.prototype.setOldStartTime = function(oldStartTime) 
+dvt.OverviewEvent.prototype.setOldY1 = function(oldY1) 
 {
-  this.addParam(dvt.OverviewEvent.OLD_START_TIME_KEY, oldStartTime);
+  this.addParam(dvt.OverviewEvent.OLD_Y1_KEY, oldY1);
 };
 
-dvt.OverviewEvent.prototype.getOldStartTime = function() 
+dvt.OverviewEvent.prototype.getOldY1 = function() 
 {
-  return this.getParamValue(dvt.OverviewEvent.OLD_START_TIME_KEY);
+  return this.getParamValue(dvt.OverviewEvent.OLD_Y1_KEY);
 };
 
-dvt.OverviewEvent.prototype.setNewStartTime = function(newStartTime) 
+dvt.OverviewEvent.prototype.getNewY1 = function() 
 {
-  this.addParam(dvt.OverviewEvent.NEW_START_TIME_KEY, newStartTime);
+  return this.getParamValue(dvt.OverviewEvent.NEW_Y1_KEY);
 };
 
-dvt.OverviewEvent.prototype.getNewStartTime = function() 
+dvt.OverviewEvent.prototype.setNewY1 = function(newY1) 
 {
-  return this.getParamValue(dvt.OverviewEvent.NEW_START_TIME_KEY);
+  this.addParam(dvt.OverviewEvent.NEW_Y1_KEY, newY1);
 };
 
-dvt.OverviewEvent.prototype.setOldEndTime = function(oldEndTime) 
+dvt.OverviewEvent.prototype.setOldX2 = function(oldX2) 
 {
-  this.addParam(dvt.OverviewEvent.OLD_END_TIME_KEY, oldEndTime);
+  this.addParam(dvt.OverviewEvent.OLD_X2_KEY, oldX2);
 };
 
-dvt.OverviewEvent.prototype.getOldEndTime = function() 
+dvt.OverviewEvent.prototype.getOldX2 = function() 
 {
-  return this.getParamValue(dvt.OverviewEvent.OLD_END_TIME_KEY);
+  return this.getParamValue(dvt.OverviewEvent.OLD_X2_KEY);
 };
 
-dvt.OverviewEvent.prototype.setNewEndTime = function(newEndTime) 
+dvt.OverviewEvent.prototype.setNewX2 = function(newX2) 
 {
-  this.addParam(dvt.OverviewEvent.NEW_END_TIME_KEY, newEndTime);
+  this.addParam(dvt.OverviewEvent.NEW_X2_KEY, newX2);
 };
 
-dvt.OverviewEvent.prototype.getNewEndTime = function() 
+dvt.OverviewEvent.prototype.getNewX2 = function() 
 {
-  return this.getParamValue(dvt.OverviewEvent.NEW_END_TIME_KEY);
+  return this.getParamValue(dvt.OverviewEvent.NEW_X2_KEY);
 };
 
-
-/*********** range changing ************/
-dvt.OverviewEvent.prototype.setExpand = function(expand) 
+dvt.OverviewEvent.prototype.setOldY2 = function(oldY2) 
 {
-  this.addParam(dvt.OverviewEvent.EXPAND_KEY, expand);
+  this.addParam(dvt.OverviewEvent.OLD_Y2_KEY, oldY2);
 };
 
-dvt.OverviewEvent.prototype.isExpand = function() 
+dvt.OverviewEvent.prototype.getOldY2 = function() 
 {
-  return this.getParamValue(dvt.OverviewEvent.EXPAND_KEY);
+  return this.getParamValue(dvt.OverviewEvent.OLD_Y2_KEY);
 };
 
-dvt.OverviewEvent.prototype.setEndHandle = function(endHandle) 
+dvt.OverviewEvent.prototype.setNewY2 = function(newY2) 
 {
-  this.addParam(dvt.OverviewEvent.END_HANDLE_KEY, endHandle);
+  this.addParam(dvt.OverviewEvent.NEW_Y2_KEY, newY2);
 };
 
-dvt.OverviewEvent.prototype.isEndHandle = function() 
+dvt.OverviewEvent.prototype.getNewY2 = function() 
 {
-  return this.getParamValue(dvt.OverviewEvent.END_HANDLE_KEY);
-};
-
-
-/************* scroll to pos ***************/
-dvt.OverviewEvent.prototype.setPosition = function(pos) 
-{
-  this.addParam(dvt.OverviewEvent.POS_KEY, pos);
-};
-
-dvt.OverviewEvent.prototype.getPosition = function() 
-{
-  return this.getParamValue(dvt.OverviewEvent.POS_KEY);
+  return this.getParamValue(dvt.OverviewEvent.NEW_Y2_KEY);
 };
 
 /**
@@ -2930,11 +2227,6 @@ DvtOverviewEventManager.prototype._onMouseDragStart = function(event)
   if (event.button != dvt.MouseEvent.RIGHT_CLICK_BUTTON)
   {
     var relPos = this._getRelativePosition(event.pageX, event.pageY);
-    dvt.EventManager.consumeEvent(event);
-    // since event propagation is stopped, need to manually set focus
-    var stage = this.getCtx().getStage();
-    var wrappingDiv = stage.getSVGRoot().parentNode;
-    wrappingDiv.focus();
     return this._overview.beginDragPan(event, relPos.x, relPos.y);
   }
   return false;
@@ -2948,7 +2240,6 @@ DvtOverviewEventManager.prototype._onMouseDragStart = function(event)
 DvtOverviewEventManager.prototype._onMouseDragMove = function(event)
 {
   var relPos = this._getRelativePosition(event.pageX, event.pageY);
-  event.stopPropagation();
   this._overview.contDragPan(event, relPos.x, relPos.y);
   return true;
 };
@@ -2960,7 +2251,6 @@ DvtOverviewEventManager.prototype._onMouseDragMove = function(event)
  */
 DvtOverviewEventManager.prototype._onMouseDragEnd = function(event)
 {
-  event.stopPropagation();
   this._overview.endDragPan();
   // Clear the stage absolute position cache
   this._stageAbsolutePosition = null;
@@ -3021,12 +2311,1007 @@ dvt.exportProperty(dvt, 'Overview', dvt.Overview);
 dvt.exportProperty(dvt.Overview.prototype, 'render', dvt.Overview.prototype.render);
 
 /**
+ * Renderer for dvt.Overview.
+ * @class
+ */
+var DvtOverviewRenderer = new Object();
+
+dvt.Obj.createSubclass(DvtOverviewRenderer, dvt.Obj);
+
+/**
+ * Renders an overview.
+ * @param {dvt.Overview} overview The overview being rendered.
+ */
+DvtOverviewRenderer.renderOverview = function(overview)
+{
+  if (overview.isBackgroundRendered())
+    DvtOverviewRenderer._renderBackground(overview);
+
+  var interactive = (overview._callback != null || overview._callbackObj != null);
+
+  if (interactive)
+    DvtOverviewRenderer._renderSlidingWindow(overview);
+
+  DvtOverviewRenderer._renderTimeAxis(overview);
+  DvtOverviewRenderer._parseFilledTimeRanges(overview);
+  DvtOverviewRenderer._updateCurrentTime(overview);
+
+  // render data
+  overview.parseDataXML(overview.Width, overview.Height);
+
+  if (interactive)
+  {
+    DvtOverviewRenderer._createBorderAroundSlidingWindow(overview);
+    
+    // updates the position and width of sliding window and borders around window
+    DvtOverviewRenderer._updateSlidingWindow(overview);
+  }
+};
+
+/**
+ * Renders the background of an overview.
+ * @param {dvt.Overview} overveiw The overview being rendered.
+ * @private
+ */
+DvtOverviewRenderer._renderBackground = function(overview)
+{
+  // draw a background shape covering all area to capture all mouse events
+  var background = new dvt.Rect(overview.getCtx(), 0, 0, overview.Width, overview.Height, 'bg');
+  background.setSolidFill(overview._overviewBackgroundColor);
+
+  // Do not antialias the background
+  background.setPixelHinting(true);
+
+  overview.addChild(background);
+};
+
+/**
+ * Renders the sliding window of an overveiw.
+ * @param {dvt.Overview} overview The overview being rendered.
+ * @private
+ */
+DvtOverviewRenderer._renderSlidingWindow = function(overview)
+{
+  var width = overview.Width;
+  var height = overview.Height;
+
+  // draw sliding window first so that it is under the markers
+  var slidingWindow = new dvt.Rect(overview.getCtx(), 0, 0, width, height, 'window');
+  slidingWindow.setSolidFill(overview._windowBackgroundColor, overview._windowBackgroundAlpha);
+
+  // Do not antialias the Timeline Overview
+  slidingWindow.setPixelHinting(true);
+
+  if (!overview.isFeatureOff('zoom'))
+  {
+    var handleSize = overview.getHandleSize();
+    var handleStart = overview.getHandleStart();
+    var grippySize = overview.getGrippySize();
+
+    if (overview.isVerticalScrollingEnabled())
+    {
+      var slidingWindowWidth = overview.getSlidingWindowWidth();
+      
+      var topHandleCmds = dvt.PathUtils.moveTo(0, 0) +
+          dvt.PathUtils.quadTo(3, 6, 8, 8) +
+                  dvt.PathUtils.lineTo(28, 8) +
+                  dvt.PathUtils.quadTo(33, 6, 36, 0);
+      dvt.PathUtils.closePath();
+      var bottomHandleCmds = dvt.PathUtils.moveTo(0, 0) +
+          dvt.PathUtils.quadTo(3, -6, 8, -8) +
+                  dvt.PathUtils.lineTo(28, -8) +
+                  dvt.PathUtils.quadTo(33, -6, 36, 0);
+      dvt.PathUtils.closePath();
+      var topHandleBackground = new dvt.Rect(overview.getCtx(), 0, 0, slidingWindowWidth, handleSize, 'thb');
+      var bottomHandleBackground = new dvt.Rect(overview.getCtx(), 0, 0, slidingWindowWidth, handleSize, 'bhb');
+      cursor = 'row-resize';
+
+      if (overview._vertHandleBackgroundImage)
+      {
+        var topGrippy = DvtOverviewRenderer._createGrippyImage(overview, slidingWindowWidth, grippySize, true);
+        var bottomGrippy = DvtOverviewRenderer._createGrippyImage(overview, slidingWindowWidth, grippySize, true);
+      }
+      else
+      {
+        topGrippy = DvtOverviewRenderer._createGrippy(overview, true);
+        bottomGrippy = DvtOverviewRenderer._createGrippy(overview, true);
+      }
+      
+      topHandleBackground.setSolidFill(overview._windowBackgroundColor, 0);
+      bottomHandleBackground.setSolidFill(overview._windowBackgroundColor, 0);
+
+      // Do not antialias the handle backgrounds
+      topHandleBackground.setPixelHinting(true);
+      bottomHandleBackground.setPixelHinting(true);
+
+      var topHandle = new dvt.Path(overview.getCtx(), topHandleCmds, 'th');
+      var bottomHandle = new dvt.Path(overview.getCtx(), bottomHandleCmds, 'bh');
+      topHandle.setSolidFill(overview._handleFillColor);
+      topHandle.setSolidStroke(overview._handleFillColor);
+      bottomHandle.setSolidFill(overview._handleFillColor);
+      bottomHandle.setSolidStroke(overview._handleFillColor);
+
+      // if the handle color is the same as the background color, it should not have antialiasing so it does not appear visible
+      if (overview._windowBackgroundColor == overview._handleFillColor)
+      {
+        topHandle.setPixelHinting(true);
+        bottomHandle.setPixelHinting(true);
+      }
+
+      // sets the resize cursor
+      topHandleBackground.setCursor(cursor);
+      bottomHandleBackground.setCursor(cursor);
+      topHandle.setCursor(cursor);
+      bottomHandle.setCursor(cursor);
+      topGrippy.setCursor(cursor);
+      bottomGrippy.setCursor(cursor);
+
+      slidingWindow.addChild(topHandleBackground);
+      overview._windowTopHandleBackground = topHandleBackground;
+      slidingWindow.addChild(topHandle);
+      overview._windowTopHandle = topHandle;
+      slidingWindow.addChild(topGrippy);
+      overview._windowTopGrippy = topGrippy;
+      slidingWindow.addChild(bottomHandleBackground);
+      overview._windowBottomHandleBackground = bottomHandleBackground;
+      slidingWindow.addChild(bottomHandle);
+      overview._windowBottomHandle = bottomHandle;
+      slidingWindow.addChild(bottomGrippy);
+      overview._windowBottomGrippy = bottomGrippy;
+    }
+    if (overview.isHorizontalScrollingEnabled())
+    {
+      var slidingWindowHeight = overview.getSlidingWindowHeight();
+      
+      var leftHandleCmds = dvt.PathUtils.moveTo(0, 0) +
+          dvt.PathUtils.quadTo(6, 3, 8, 8) +
+                  dvt.PathUtils.lineTo(8, 28) +
+                  dvt.PathUtils.quadTo(6, 33, 0, 36);
+      dvt.PathUtils.closePath();
+      var rightHandleCmds = dvt.PathUtils.moveTo(0, 0) +
+          dvt.PathUtils.quadTo(-6, 3, -8, 8) +
+                  dvt.PathUtils.lineTo(-8, 28) +
+                  dvt.PathUtils.quadTo(-6, 33, 0, 36);
+      dvt.PathUtils.closePath();
+      var leftHandleBackground = new dvt.Rect(overview.getCtx(), 0 - handleStart, 0, handleSize, slidingWindowHeight, 'lhb');
+      var rightHandleBackground = new dvt.Rect(overview.getCtx(), handleStart, 0, handleSize, slidingWindowHeight, 'rhb');
+      var cursor = 'col-resize';
+
+      if (overview._horHandleBackgroundImage)
+      {
+        var leftGrippy = DvtOverviewRenderer._createGrippyImage(overview, grippySize, slidingWindowHeight, false);
+        var rightGrippy = DvtOverviewRenderer._createGrippyImage(overview, grippySize, slidingWindowHeight, false);
+      }
+      else
+      {
+        leftGrippy = DvtOverviewRenderer._createGrippy(overview, false);
+        rightGrippy = DvtOverviewRenderer._createGrippy(overview, false);
+      }
+      
+      leftHandleBackground.setSolidFill(overview._windowBackgroundColor, 0);
+      rightHandleBackground.setSolidFill(overview._windowBackgroundColor, 0);
+
+      // Do not antialias the handle backgrounds
+      leftHandleBackground.setPixelHinting(true);
+      rightHandleBackground.setPixelHinting(true);
+
+      var leftHandle = new dvt.Path(overview.getCtx(), leftHandleCmds, 'lh');
+      var rightHandle = new dvt.Path(overview.getCtx(), rightHandleCmds, 'rh');
+      leftHandle.setSolidFill(overview._handleFillColor);
+      leftHandle.setSolidStroke(overview._handleFillColor);
+      rightHandle.setSolidFill(overview._handleFillColor);
+      rightHandle.setSolidStroke(overview._handleFillColor);
+
+      // if the handle color is the same as the background color, it should not have antialiasing so it does not appear visible
+      if (overview._windowBackgroundColor == overview._handleFillColor)
+      {
+        leftHandle.setPixelHinting(true);
+        rightHandle.setPixelHinting(true);
+      }
+
+      // sets the resize cursor
+      leftHandleBackground.setCursor(cursor);
+      rightHandleBackground.setCursor(cursor);
+      leftHandle.setCursor(cursor);
+      rightHandle.setCursor(cursor);
+      leftGrippy.setCursor(cursor);
+      rightGrippy.setCursor(cursor);
+
+      slidingWindow.addChild(leftHandleBackground);
+      overview._windowLeftHandleBackground = leftHandleBackground;
+      slidingWindow.addChild(leftHandle);
+      overview._windowLeftHandle = leftHandle;
+      slidingWindow.addChild(leftGrippy);
+      overview._windowLeftGrippy = leftGrippy;
+      slidingWindow.addChild(rightHandleBackground);
+      overview._windowRightHandleBackground = rightHandleBackground;
+      slidingWindow.addChild(rightHandle);
+      overview._windowRightHandle = rightHandle;
+      slidingWindow.addChild(rightGrippy);
+      overview._windowRightGrippy = rightGrippy;
+    }
+  }
+
+  // sets cursor AFTER adding child since toolkit adds a group and the cursor would be set on group instead
+  slidingWindow.setCursor('move');
+  overview.addChild(slidingWindow);
+
+  DvtOverviewRenderer._renderTimeAxisTopBar(overview);
+  DvtOverviewRenderer._renderLeftAndRightFilters(overview, handleStart);
+};
+
+/**
+ * Renders the grippy from an image.
+ * @param {dvt.Overview} overview The overview being rendered.
+ * @param {number} width The window width.
+ * @param {number} height The window height.
+ * @param {boolean} isVertical Whether or not this is a vertical grippy.
+ * @private
+ */
+DvtOverviewRenderer._createGrippyImage = function(overview, width, height, isVertical)
+{
+  if (!isVertical)
+  {
+    var posX = (width - overview._horHandleWidth) / 2;
+    var grippy = new dvt.Image(overview.getCtx(), overview._horHandleBackgroundImage, posX, 0, overview._horHandleWidth, overview._horHandleHeight, 'hgrpy');
+  }
+  else
+  {
+    var posY = (height - overview._vertHandleHeight) / 2;
+    grippy = new dvt.Image(overview.getCtx(), overview._vertHandleBackgroundImage, 0, posY, overview._vertHandleWidth, overview._vertHandleHeight, 'vgrpy');
+  }
+  grippy.setMouseEnabled(false);
+  return grippy;
+};
+
+/**
+ * Renders the dots in the grippy.
+ * @param {dvt.Overview} overview The overview being rendered.
+ * @param {boolean} isVertical Whether or not this is a vertical grippy.
+ * @private
+ */
+DvtOverviewRenderer._createGrippy = function(overview, isVertical)
+{
+  var gap = 2; // gap between dots
+  var count = 9;  // how many dots to draw
+  var color = overview._handleTextureColor; // color of the dots
+
+  if (isVertical)
+  {
+    var grippy = new dvt.Container(overview.getCtx(), 'vgrpy');
+    var startx = 8;
+    var starty = 3;  // start y location of dots relative to container
+    for (var i = 0; i < count; i++)
+    {
+      var dot = new dvt.Line(overview.getCtx(), startx + i * gap, starty, startx + i * gap + 1, starty, 'dot1' + i);
+      dot.setSolidStroke(color);
+      grippy.addChild(dot);
+
+      starty = starty + gap;
+      dot = new dvt.Line(overview.getCtx(), (startx + 1) + i * gap, starty, (startx + 1) + i * gap + 1, starty, 'dot2' + i);
+      dot.setSolidStroke(color);
+      grippy.addChild(dot);
+
+      starty = starty + gap;
+      dot = new dvt.Line(overview.getCtx(), startx + i * gap, starty, startx + i * gap + 1, starty, 'dot3' + i);
+      dot.setSolidStroke(color);
+      grippy.addChild(dot);
+
+      starty = 3;
+    }
+
+    dot = new dvt.Line(overview.getCtx(), startx + count * gap, starty, startx + count * gap + 1, starty, 'dot4');
+    dot.setSolidStroke(color);
+    grippy.addChild(dot);
+    starty = starty + gap * 2;
+    dot = new dvt.Line(overview.getCtx(), startx + count * gap, starty, startx + count * gap + 1, starty, 'dot5');
+    dot.setSolidStroke(color);
+    grippy.addChild(dot);
+  }
+  else
+  {
+    grippy = new dvt.Container(overview.getCtx(), 'hgrpy');
+    startx = 3;  // start x location of dots relative to container
+    starty = 8;
+    for (i = 0; i < count; i++)
+    {
+      dot = new dvt.Line(overview.getCtx(), startx, starty + i * gap, startx, starty + i * gap + 1, 'dot1' + i);
+      dot.setSolidStroke(color);
+      grippy.addChild(dot);
+
+      startx = startx + gap;
+      dot = new dvt.Line(overview.getCtx(), startx, (starty + 1) + i * gap, startx, (starty + 1) + i * gap + 1, 'dot2' + i);
+      dot.setSolidStroke(color);
+      grippy.addChild(dot);
+
+      startx = startx + gap;
+      dot = new dvt.Line(overview.getCtx(), startx, starty + i * gap, startx, starty + i * gap + 1, 'dot3' + i);
+      dot.setSolidStroke(color);
+      grippy.addChild(dot);
+
+      startx = 3;
+    }
+
+    dot = new dvt.Line(overview.getCtx(), startx, starty + count * gap, startx, starty + count * gap + 1, 'dot4');
+    dot.setSolidStroke(color);
+    grippy.addChild(dot);
+    startx = startx + gap * 2;
+    dot = new dvt.Line(overview.getCtx(), startx, starty + count * gap, startx, starty + count * gap + 1, 'dot5');
+    dot.setSolidStroke(color);
+    grippy.addChild(dot);
+  }
+
+  // Do not antialias the grippy
+  grippy.setPixelHinting(true);
+
+  return grippy;
+};
+
+/**
+ * Renders the border of the sliding window of an overveiw.
+ * @param {dvt.Overview} overview The overview being rendered.
+ * @private
+ */
+DvtOverviewRenderer._createBorderAroundSlidingWindow = function(overview)
+{
+  var width = overview.Width;
+  var height = overview.Height;
+
+  // add the left and right grip last since we want them over the markers
+  var slidingWindow = overview.getSlidingWindow();
+  var halfBorderWidth = DvtOverviewStyleUtils._DEFAULT_WINDOW_BORDER_WIDTH / 2;
+  if (overview.isVertical())
+  {
+    var top = slidingWindow.getY();
+    var topCenter = top + halfBorderWidth;
+    var bottom = top + slidingWindow.getHeight();
+    var bottomCenter = bottom - halfBorderWidth;
+    var left = 0;
+    var leftCenter = halfBorderWidth;
+    var right = width;
+    var rightCenter = right - halfBorderWidth;
+
+    var leftHandle = new dvt.Line(overview.getCtx(), left, topCenter, width, topCenter, 'lh');
+    var rightHandle = new dvt.Line(overview.getCtx(), left, bottomCenter, width, bottomCenter, 'rh');
+
+    // leftTopBar and rightTopBar are only visible in fusion skins
+    var leftTopBar = new dvt.Line(overview.getCtx(), leftCenter, 0, leftCenter, top, 'ltb');
+    var rightTopBar = new dvt.Line(overview.getCtx(), leftCenter, bottom, leftCenter, height, 'rtb');
+
+    var bottomBar = new dvt.Line(overview.getCtx(), rightCenter, top, rightCenter, bottom, 'bb');
+    var topBar = new dvt.Line(overview.getCtx(), leftCenter, top, leftCenter, bottom, 'tb');
+  }
+  else
+  {
+    top = 0;
+    topCenter = top + halfBorderWidth;
+    bottom = height;
+    bottomCenter = bottom - halfBorderWidth;
+    left = slidingWindow.getX();
+    leftCenter = left + halfBorderWidth;
+    right = left + slidingWindow.getWidth();
+    rightCenter = right - halfBorderWidth;
+
+    leftHandle = new dvt.Line(overview.getCtx(), leftCenter, top, leftCenter, bottom, 'lh');
+    rightHandle = new dvt.Line(overview.getCtx(), rightCenter, top, rightCenter, bottom, 'rh');
+
+    // leftTopBar and rightTopBar are only visible in fusion skins
+    leftTopBar = new dvt.Line(overview.getCtx(), 0, topCenter, left + 1, topCenter, 'ltb');
+    rightTopBar = new dvt.Line(overview.getCtx(), right - 1, topCenter, width, topCenter, 'rtb');
+
+    bottomBar = new dvt.Line(overview.getCtx(), left, bottomCenter, right, bottomCenter, 'bb');
+    topBar = new dvt.Line(overview.getCtx(), left, topCenter, right, topCenter, 'tb');
+  }
+
+  // Do not antialias the sliding window borders
+  leftHandle.setPixelHinting(true);
+  rightHandle.setPixelHinting(true);
+  leftTopBar.setPixelHinting(true);
+  rightTopBar.setPixelHinting(true);
+  bottomBar.setPixelHinting(true);
+  topBar.setPixelHinting(true);
+
+  if (overview._windowBorderLeftStyle != 'none')
+    leftHandle.setSolidStroke(overview._windowBorderLeftColor);
+  overview.addChild(leftHandle);
+  overview._leftHandle = leftHandle;
+
+  if (overview._windowBorderRightStyle != 'none')
+    rightHandle.setSolidStroke(overview._windowBorderRightColor);
+  overview.addChild(rightHandle);
+  overview._rightHandle = rightHandle;
+
+  if (overview._borderTopStyle != 'none' && overview._borderTopColor)
+  {
+    leftTopBar.setSolidStroke(overview._borderTopColor);
+    rightTopBar.setSolidStroke(overview._borderTopColor);
+  }
+  overview.addChild(leftTopBar);
+  overview.addChild(rightTopBar);
+
+  if (overview._windowBorderBottomStyle != 'none')
+    bottomBar.setSolidStroke(overview._windowBorderBottomColor);
+  overview.addChild(bottomBar);
+
+  if (overview._windowBorderTopStyle != 'none')
+    topBar.setSolidStroke(overview._windowBorderTopColor);
+  overview.addChild(topBar);
+};
+
+/**
+ * Updates the border positioning of the sliding window of an overveiw.
+ * @param {dvt.Overview} overview The overview being rendered.
+ * @private
+ */
+DvtOverviewRenderer._updateBorderAroundSlidingWindow = function(overview)
+{
+  var slidingWindow = overview.getSlidingWindow();
+  var halfBorderWidth = DvtOverviewStyleUtils._DEFAULT_WINDOW_BORDER_WIDTH / 2;
+
+  var leftHandle = overview.getLeftHandle();
+  var rightHandle = overview.getRightHandle();
+  var leftTopBar = overview.getLeftTopBar();
+  var rightTopBar = overview.getRightTopBar();
+  var bottomBar = overview.getBottomBar();
+  var topBar = overview.getTopBar();
+
+  if (overview.isVertical())
+  {
+    if (overview.isHorizontalScrollingEnabled())
+    {
+      var slidingWindowWidth = slidingWindow.getWidth();
+      var slidingWindowPosX = overview.getSlidingWindowPosX(slidingWindow);
+      var leftCenter = slidingWindowPosX + halfBorderWidth;
+      var rightCenter = slidingWindowPosX + slidingWindowWidth - halfBorderWidth;
+
+      overview.setLinePosX(leftHandle, leftCenter, rightCenter);
+      overview.setLinePosX(rightHandle, leftCenter, rightCenter);
+      overview.setLinePosX(topBar, leftCenter, leftCenter);
+      overview.setLinePosX(bottomBar, rightCenter, rightCenter);
+    }
+    if (overview.isVerticalScrollingEnabled())
+    {
+      var slidingWindowHeight = slidingWindow.getHeight();
+      var slidingWindowPosY = overview.getSlidingWindowPosY(slidingWindow);
+      var topCenter = slidingWindowPosY + halfBorderWidth;
+      var bottomCenter = slidingWindowPosY + slidingWindowHeight - halfBorderWidth;
+
+      overview.setLinePosY(leftHandle, topCenter, topCenter);
+      overview.setLinePosY(rightHandle, bottomCenter, bottomCenter);
+      overview.setLinePosY(topBar, topCenter, bottomCenter);
+      overview.setLinePosY(bottomBar, topCenter, bottomCenter);
+    }
+  }
+  else
+  {
+    if (overview.isHorizontalScrollingEnabled())
+    {
+      slidingWindowWidth = slidingWindow.getWidth();
+      slidingWindowPosX = overview.getSlidingWindowPosX(slidingWindow);
+      leftCenter = slidingWindowPosX + halfBorderWidth;
+      rightCenter = slidingWindowPosX + slidingWindowWidth - halfBorderWidth;
+
+      overview.setLinePosX(leftHandle, leftCenter, leftCenter);
+      overview.setLinePosX(rightHandle, rightCenter, rightCenter);
+      overview.setLinePosX(topBar, leftCenter, rightCenter);
+      overview.setLinePosX(bottomBar, leftCenter, rightCenter);
+    }
+
+    if (overview.isVerticalScrollingEnabled())
+    {
+      slidingWindowHeight = slidingWindow.getHeight();
+      slidingWindowPosY = overview.getSlidingWindowPosY(slidingWindow);
+      topCenter = slidingWindowPosY + halfBorderWidth;
+      bottomCenter = slidingWindowPosY + slidingWindowHeight - halfBorderWidth;
+
+      overview.setLinePosY(leftHandle, topCenter, bottomCenter);
+      overview.setLinePosY(rightHandle, topCenter, bottomCenter);
+      overview.setLinePosY(topBar, topCenter, topCenter);
+      overview.setLinePosY(bottomBar, bottomCenter, bottomCenter);
+    }
+  }
+
+  overview.setLinePos(leftTopBar, -1, overview.getSlidingWindowPos(slidingWindow));
+  overview.setLinePos(rightTopBar, overview.getLinePos1(rightHandle), -1);
+};
+
+/**
+ * Updates the positioning of the sliding window of an overveiw.
+ * @param {dvt.Overview} overview The overview being rendered.
+ * @private
+ */
+DvtOverviewRenderer._updateSlidingWindow = function(overview)
+{
+  var window = overview.getSlidingWindow();
+  var width = overview.Width;
+  var height = overview.Height;
+
+  // find the position relative to the width of timeline overview
+  if (overview.isHorizontalScrollingEnabled())
+  {
+    var x1Pos = Math.max(overview.getMinimumPositionX(), dvt.OverviewUtils.getDatePosition(overview._xMin, overview._xMax, overview._x1, width));
+    var x2Pos = Math.min(overview.getMaximumPositionX(), Math.max(overview.getMinimumPositionX(), dvt.OverviewUtils.getDatePosition(overview._xMin, overview._xMax, overview._x2, width)));
+
+    if (overview.isRTL())
+      overview.setSlidingWindowPosX(window, width - x2Pos);
+    else
+      overview.setSlidingWindowPosX(window, x1Pos);
+    DvtOverviewRenderer._setSlidingWindowWidth(overview, window, x2Pos - x1Pos);
+  }
+  else
+    DvtOverviewRenderer._setSlidingWindowWidth(overview, window, width);
+  if (overview.isVerticalScrollingEnabled())
+  {
+    var y1Pos = Math.max(overview.getMinimumPositionY(), dvt.OverviewUtils.getDatePosition(overview._yMin, overview._yMax, overview._y1, height));
+    var y2Pos = Math.min(overview.getMaximumPositionY(), Math.max(overview.getMinimumPositionY(), dvt.OverviewUtils.getDatePosition(overview._yMin, overview._yMax, overview._y2, height)));
+
+    overview.setSlidingWindowPosY(window, y1Pos);
+    DvtOverviewRenderer._setSlidingWindowHeight(overview, window, y2Pos - y1Pos);
+  }
+  else
+    DvtOverviewRenderer._setSlidingWindowHeight(overview, window, height);
+
+  DvtOverviewRenderer._updateBorderAroundSlidingWindow(overview);
+};
+
+/**
+ * Updates the width of the sliding window of an overveiw.
+ * @param {dvt.Overview} overview The overview being rendered.
+ * @param {dvt.Rectangle} slidingWindow The sliding window of the overview.
+ * @param {number} width The new width of the sliding window.
+ * @private
+ */
+DvtOverviewRenderer._setSlidingWindowWidth = function(overview, slidingWindow, width)
+{
+  // make sure the width is within the maximum and minimum sizes specified
+  width = Math.min(overview.getMaximumWindowWidth(), Math.max(overview.getMinimumWindowWidth(), width));
+  slidingWindow.setWidth(width);
+
+  // update left and right filter if one is specified
+  if (overview.isLeftAndRightFilterRendered())
+  {
+    var rightStart = overview.getSlidingWindowPosX(slidingWindow) + width;
+    var rightBackground = overview.getRightBackground();
+    rightBackground.setX(rightStart);
+    rightBackground.setWidth(Math.max(0, overview.Width - rightStart));
+ 
+    // updates the background resize handle for touch
+    if (dvt.OverviewUtils.supportsTouch() && !overview.isFeatureOff('zoom'))
+    {
+      var rightBackgroundHandle = overview.getRightBackgroundHandle();
+      rightBackgroundHandle.setX(rightStart);
+    }
+  }
+  
+  // if resize feature is off then there's nothing else to do
+  if (overview.isFeatureOff('zoom'))
+    return;
+
+  // update the resize handles
+  if (overview.isHorizontalScrollingEnabled())
+  {
+    var rightHandleBackground = overview._windowRightHandleBackground;
+    var rightHandle = overview._windowRightHandle;
+    var rightGrippy = overview._windowRightGrippy;
+
+    rightHandle.setTranslateX(width);
+    rightHandleBackground.setTranslateX(width - overview.getHandleSize());
+    rightGrippy.setTranslateX(width - overview.getGrippySize());
+  }
+  if (overview.isVerticalScrollingEnabled())
+  {
+    var handleX = (slidingWindow.getWidth() - 36) / 2;
+    if (overview._vertHandleBackgroundImage)
+      var grippyX = (width - overview._vertHandleWidth) / 2;
+    else
+      grippyX = handleX;
+
+    var topHandleBackground = overview._windowTopHandleBackground;
+    var topHandle = overview._windowTopHandle;
+    var topGrippy = overview._windowTopGrippy;
+
+    topHandle.setTranslateX(handleX);
+    topHandleBackground.setWidth(width);
+    topGrippy.setTranslateX(grippyX);
+    
+    var bottomHandleBackground = overview._windowBottomHandleBackground;
+    var bottomHandle = overview._windowBottomHandle;
+    var bottomGrippy = overview._windowBottomGrippy;
+
+    bottomHandle.setTranslateX(handleX);
+    bottomHandleBackground.setWidth(width);
+    bottomGrippy.setTranslateX(grippyX);
+  }
+};
+
+/**
+ * Updates the height of the sliding window of an overveiw.
+ * @param {dvt.Overview} overview The overview being rendered.
+ * @param {dvt.Rectangle} slidingWindow The sliding window of the overview.
+ * @param {number} height The new height of the sliding window.
+ * @private
+ */
+DvtOverviewRenderer._setSlidingWindowHeight = function(overview, slidingWindow, height)
+{
+  // make sure the height is within the maximum and minimum sizes specified
+  height = Math.min(overview.getMaximumWindowHeight(), Math.max(overview.getMinimumWindowHeight(), height));
+  slidingWindow.setHeight(height);
+
+  // if resize feature is off then there's nothing else to do
+  if (overview.isFeatureOff('zoom'))
+    return;
+
+  // update the resize handles
+  if (overview.isHorizontalScrollingEnabled())
+  {
+    var handleY = (height - 36) / 2;
+    if (overview._horHandleBackgroundImage)
+      var grippyY = (height - overview._horHandleHeight) / 2;
+    else
+      grippyY = handleY;
+
+    var leftHandleBackground = overview._windowLeftHandleBackground;
+    var leftHandle = overview._windowLeftHandle;
+    var leftGrippy = overview._windowLeftGrippy;
+
+    leftHandle.setTranslateY(handleY);
+    leftHandleBackground.setHeight(height);
+    leftGrippy.setTranslateY(grippyY);
+
+    var rightHandleBackground = overview._windowRightHandleBackground;
+    var rightHandle = overview._windowRightHandle;
+    var rightGrippy = overview._windowRightGrippy;
+
+    rightHandle.setTranslateY(handleY);
+    rightHandleBackground.setHeight(height);
+    rightGrippy.setTranslateY(grippyY);
+  }
+  if (overview.isVerticalScrollingEnabled())
+  {
+    var bottomHandleBackground = overview._windowBottomHandleBackground;
+    var bottomHandle = overview._windowBottomHandle;
+    var bottomGrippy = overview._windowBottomGrippy;
+
+    bottomHandle.setTranslateY(height);
+    bottomHandleBackground.setTranslateY(height - overview.getHandleSize());
+    bottomGrippy.setTranslateY(height - overview.getGrippySize());
+  }
+};
+
+/**
+ * Renders the top bar of the time axis of an overveiw.
+ * @param {dvt.Overview} overview The overview being rendered.
+ * @private
+ */
+DvtOverviewRenderer._renderTimeAxisTopBar = function(overview)
+{
+  var width = overview.Width;
+  var height = overview.Height;
+
+  // border above time axis
+  if (overview.isVertical())
+  {
+    if (overview.isRTL())
+      var timeAxisTopBar = new dvt.Line(overview.getCtx(), overview.getTimeAxisWidth(), 0, overview.getTimeAxisWidth(), height, 'tab');
+    else
+      timeAxisTopBar = new dvt.Line(overview.getCtx(), width - overview.getTimeAxisWidth(), 0, width - overview.getTimeAxisWidth(), height, 'tab');
+  }
+  else
+  {
+    if (overview.isOverviewAbove())
+      timeAxisTopBar = new dvt.Line(overview.getCtx(), 0, overview.getTimeAxisHeight(), width, overview.getTimeAxisHeight(), 'tab');
+    else
+      timeAxisTopBar = new dvt.Line(overview.getCtx(), 0, height - overview.getTimeAxisHeight(), width, height - overview.getTimeAxisHeight(), 'tab');
+  }
+  timeAxisTopBar.setSolidStroke(overview._timeAxisBarColor, overview._timeAxisBarOpacity);
+
+  // Do not antialias the time axis top bar
+  timeAxisTopBar.setPixelHinting(true);
+  overview._timeAxisTopBar = timeAxisTopBar;
+
+  overview.addChild(timeAxisTopBar);
+};
+
+/**
+ * Renders the left and right filters of an overveiw.
+ * @param {dvt.Overview} overview The overview being rendered.
+ * @param {nubmer} handleStart The start position of the window handle.
+ * @private
+ */
+DvtOverviewRenderer._renderLeftAndRightFilters = function(overview, handleStart)
+{
+  var width = overview.Width;
+  var height = overview.Height;
+
+  if (overview.isLeftAndRightFilterRendered())
+  {
+    if (overview.isVertical())
+    {
+      var leftBackground = new dvt.Rect(overview.getCtx(), 0, 0, width, 0, 'lbg');
+      var rightBackground = new dvt.Rect(overview.getCtx(), 0, 0, width, 0, 'rbg');
+    }
+    else
+    {
+      leftBackground = new dvt.Rect(overview.getCtx(), 0, 0, 0, height, 'lbg');
+      rightBackground = new dvt.Rect(overview.getCtx(), 0, 0, 0, height, 'rbg');
+    }
+ 
+    leftBackground.setSolidFill(overview._leftFilterPanelColor, overview._leftFilterPanelAlpha);
+    overview.addChild(leftBackground);
+    rightBackground.setSolidFill(overview._rightFilterPanelColor, overview._rightFilterPanelAlpha);
+    overview.addChild(rightBackground);
+ 
+    // the left and right background resize handle are needed for touch because the touch area for resize handle goes
+    // beyond the handle and into the left and right background area, so we'll need something on top of the background
+    if (dvt.OverviewUtils.supportsTouch() && handleStart != undefined)
+    {
+      if (overview.isVertical())
+      {
+        var leftBackgroundResizeHandle = new dvt.Rect(overview.getCtx(), 0, 0, width, handleStart, 'lbgrh');
+        var rightBackgroundResizeHandle = new dvt.Rect(overview.getCtx(), 0, 0, width, handleStart, 'rbgrh');
+      }
+      else
+      {
+        leftBackgroundResizeHandle = new dvt.Rect(overview.getCtx(), 0, 0, handleStart, height, 'lbgrh');
+        rightBackgroundResizeHandle = new dvt.Rect(overview.getCtx(), 0, 0, handleStart, height, 'rbgrh');
+      }
+ 
+      leftBackgroundResizeHandle.setSolidFill(overview._leftFilterPanelColor, 0);
+      overview.addChild(leftBackgroundResizeHandle);
+      rightBackgroundResizeHandle.setSolidFill(overview._rightFilterPanelColor, 0);
+      overview.addChild(rightBackgroundResizeHandle);
+    }
+  }
+};
+
+/**
+ * Renders the time axis of the overview.
+ * @param {dvt.Overview} overview The overview being rendered.
+ * @private
+ */
+DvtOverviewRenderer._renderTimeAxis = function(overview)
+{
+  if (overview._ticks == null)
+    return;
+
+  var width = overview.Width;
+  var height = overview.Height;
+  var vertical = overview.isVertical();
+  var size = overview.getOverviewSize();
+
+  for (var i = 0; i < overview._ticks.length; i++)
+  {
+    var child = overview._ticks[i];
+
+    var time = parseInt(child['time'], 10);
+    if (vertical)
+      var time_pos = overview.getDateYPosition(time);
+    else
+      time_pos = overview.getDateXPosition(time);
+    var label = child['label'];
+
+    var maxWidth = 0;
+    if (i + 1 < overview._ticks.length)
+    {
+      var next_time = parseInt(overview._ticks[i + 1]['time'], 10);
+      if (vertical)
+        var next_time_pos = overview.getDateYPosition(next_time);
+      else
+        next_time_pos = overview.getDateXPosition(next_time);
+      maxWidth = next_time_pos - time_pos;
+    }
+    else
+    {
+      // last label
+      maxWidth = size - time_pos;
+    }
+
+    if (overview.isHorizontalRTL())
+      time_pos = size - time_pos;
+
+    if (vertical)
+      maxWidth = width;
+
+    maxWidth -= (DvtOverviewStyleUtils._DEFAULT_AXIS_LABEL_PADDING * 2);
+    DvtOverviewRenderer._addTick(overview, time_pos, width, height, 'tick' + i);
+    DvtOverviewRenderer._addLabel(overview, time_pos, label, height, maxWidth, 'label' + i, overview._labelStyle);
+  }
+};
+
+/**
+ * Creates a tick mark of the time axis.
+ * @param {dvt.Overview} overview The overview being rendered.
+ * @param {number} pos The position of the tick mark.
+ * @param {number} width The width of the tick mark.
+ * @param {number} height The height of the tick mark.
+ * @param {String} id The id of the tick mark.
+ * @private
+ */
+DvtOverviewRenderer._addTick = function(overview, pos, width, height, id)
+{
+  if (overview.isVertical())
+    var line = new dvt.Line(overview.getCtx(), 0, pos, width, pos, id);
+  else
+    line = new dvt.Line(overview.getCtx(), pos, 0, pos, height, id);
+  var stroke = new dvt.SolidStroke(overview._timeIndicatorColor);
+  stroke.setStyle(dvt.Stroke.DASHED, 3);
+  line.setStroke(stroke);
+
+  // Do not antialias tick marks
+  line.setPixelHinting(true);
+
+  overview.addChild(line);
+};
+
+/**
+ * Creates a label of the time axis.
+ * @param {dvt.Overview} overview The overview being rendered.
+ * @param {number} pos The position of the label.
+ * @param {String} text The text of the label.
+ * @param {number} height The height of the label.
+ * @param {number} maxWidth The maximum width of the label.
+ * @param {String} id The id of the label.
+ * @param {dvt.CSSStyle} labelStyle The styling of the label.
+ * @private
+ */
+DvtOverviewRenderer._addLabel = function(overview, pos, text, height, maxWidth, id, labelStyle)
+{
+  if (overview.isVertical())
+  {
+    var label = new dvt.OutputText(overview.getCtx(), text, 4, pos, id);
+    label.setCSSStyle(labelStyle);
+    if (overview.isRTL())
+    {
+      var dim = label.getDimensions();
+      label.setX(Math.max(4, overview.Width - dim.w - 4));
+    }
+  }
+  else
+  {
+    if (overview.isOverviewAbove())
+      var y = 2;
+    else
+      y = height - overview.getTimeAxisHeight() + 2;
+
+    var padding = DvtOverviewStyleUtils._DEFAULT_AXIS_LABEL_PADDING;
+    label = new dvt.OutputText(overview.getCtx(), text, pos + padding, y, id);
+    label.setCSSStyle(labelStyle);
+    if (overview.isHorizontalRTL())
+    {
+      dim = label.getDimensions();
+      label.setX(pos - Math.min(dim.w, maxWidth) - padding);
+    }
+  }
+
+  dvt.TextUtils.fitText(label, maxWidth, Infinity, overview);
+
+  // save the raw text for tooltip
+  label._rawText = label.getUntruncatedTextString();
+};
+
+/**
+ * Parses through formatted time ranges.
+ * @param {dvt.Overview} overview The overview being rendered.
+ * @private
+ */
+DvtOverviewRenderer._parseFilledTimeRanges = function(overview)
+{
+  if (overview._formattedTimeRanges == null)
+    return;
+
+  // draw filled time ranges so that it is over the sliding window but under the markers
+  for (var i = 0; i < overview._formattedTimeRanges.length; i++)
+  {
+    var ftr = overview._formattedTimeRanges[i];
+    DvtOverviewRenderer._addFilledTimeRange(overview, ftr, overview.Width, overview.Height);
+  }
+};
+
+/**
+ * Creates a formatted time range.
+ * @param {dvt.Overview} overview The overview being rendered.
+ * @param {object} elem The formatted time range.
+ * @param {number} width The width of the overview.
+ * @param {number} height The height of the overview.
+ * @private
+ */
+DvtOverviewRenderer._addFilledTimeRange = function(overview, elem, width, height)
+{
+  var rangeStart = parseInt(elem['rs'], 10);
+  var rangeEnd = parseInt(elem['re'], 10);
+
+  if (rangeStart != null && rangeEnd != null)
+  {
+    var color = elem['c'];
+    var size = overview.getOverviewSize();
+
+    if (!overview.isVertical())
+    {
+      var rangeStart_pos = overview.getDateXPosition(rangeStart);
+      var rangeEnd_pos = overview.getDateXPosition(rangeEnd);
+    }
+    else
+    {
+      rangeStart_pos = overview.getDateYPosition(rangeStart);
+      rangeEnd_pos = overview.getDateYPosition(rangeEnd);
+    }
+    var rangeWidth = rangeEnd_pos - rangeStart_pos;
+    if (overview.isHorizontalRTL())
+    {
+      rangeStart_pos = size - rangeStart_pos - rangeWidth;
+      rangeEnd_pos = size - rangeEnd_pos - rangeWidth;
+    }
+
+    if (overview.isVertical())
+      var displayable = new dvt.Rect(overview.getCtx(), 0, rangeStart_pos, width - overview.getTimeAxisWidth(), rangeWidth, 'ftr');
+    else
+      displayable = new dvt.Rect(overview.getCtx(), rangeStart_pos, overview.isOverviewAbove() ? overview.getTimeAxisHeight() : 0, rangeWidth, height - overview.getTimeAxisHeight(), 'ftr');
+
+    if (color != null)
+      displayable.setSolidFill(color, 0.4);
+    displayable.setCursor('move');
+
+    // Do not antialias filled time range
+    displayable.setPixelHinting(true);
+
+    overview.addChild(displayable);
+  }
+};
+
+/**
+ * Updates the current time of the overview.
+ * @param {dvt.Overview} overview The overview being rendered.
+ * @private
+ */
+DvtOverviewRenderer._updateCurrentTime = function(overview)
+{
+  var width = overview.Width;
+  var height = overview.Height;
+
+  // return if current time is invalid or outside of the time range
+  if (overview._currentTime == null || isNaN(overview._currentTime) || overview._currentTime < overview._xMin || overview._currentTime > overview._xMax)
+    return;
+
+  if (overview.isVertical())
+  {
+    var time_pos = overview.getDateYPosition(overview._currentTime);
+    var line = new dvt.Line(overview.getCtx(), 0, time_pos, width, time_pos, 'ocd');
+  }
+  else
+  {
+    time_pos = overview.getDateXPosition(overview._currentTime);
+    if (overview.isRTL())
+      time_pos = width - time_pos;
+    line = new dvt.Line(overview.getCtx(), time_pos, 0, time_pos, height, 'ocd');
+  }
+  line.setSolidStroke(overview._currentTimeIndicatorColor);
+
+  // Do not antialias current time line
+  line.setPixelHinting(true);
+
+  overview.addChild(line);
+};
+/**
  * Style related utility functions for dvt.Overview.
  * @class
  */
 var DvtOverviewStyleUtils = new Object();
 
 dvt.Obj.createSubclass(DvtOverviewStyleUtils, dvt.Obj);
+
+/**
+ * Attribute for axis label padding.
+ * @const
+ * @private
+ */
+DvtOverviewStyleUtils._DEFAULT_AXIS_LABEL_PADDING = 5;
+
+/**
+ * Attribute for default window border width.
+ * @const
+ * @private
+ */
+DvtOverviewStyleUtils._DEFAULT_WINDOW_BORDER_WIDTH = 1;
 
 /**
  * Gets the handle fill color.
@@ -3057,40 +3342,73 @@ DvtOverviewStyleUtils.getHandleTextureColor = function(options)
 /**
  * Gets the handle background image.
  * @param {object} options The object containing data and specifications for the component.
+ * @param {boolean} isVertical Whether or not this is the vertical handle.
  * @return {string} The handle background image.
  */
-DvtOverviewStyleUtils.getHandleBackgroundImage = function(options)
+DvtOverviewStyleUtils.getHandleBackgroundImage = function(options, isVertical)
 {
-  if (options['_hbi'] != null)
-    return options['_hbi'];
+  if (!isVertical)
+  {
+    if (options['_hbi'] != null)
+      return options['_hbi'];
+    else
+      return options['style']['handleBackgroundImage'];
+  }
   else
-    return options['style']['handleBackgroundImage'];
+  {
+    if (options['_vhbi'] != null)
+      return options['_vhbi'];
+    else
+      return options['style']['vertHandleBackgroundImage'];
+  }
 };
 
 /**
  * Gets the handle width.
  * @param {object} options The object containing data and specifications for the component.
+ * @param {boolean} isVertical Whether or not this is the vertical handle.
  * @return {number} The handle width.
  */
-DvtOverviewStyleUtils.getHandleWidth = function(options)
+DvtOverviewStyleUtils.getHandleWidth = function(options, isVertical)
 {
-  if (options['_hw'] != null)
-    return options['_hw'];
+  if (!isVertical)
+  {
+    if (options['_hw'] != null)
+      return options['_hw'];
+    else
+      return options['style']['handleWidth'];
+  }
   else
-    return options['style']['handleWidth'];
+  {
+    if (options['_vhw'] != null)
+      return options['_vhw'];
+    else
+      return options['style']['vertHandleWidth'];
+  }
 };
 
 /**
  * Gets the handle height.
  * @param {object} options The object containing data and specifications for the component.
+ * @param {boolean} isVertical Whether or not this is the vertical handle.
  * @return {number} The handle height.
  */
-DvtOverviewStyleUtils.getHandleHeight = function(options)
+DvtOverviewStyleUtils.getHandleHeight = function(options, isVertical)
 {
-  if (options['_hh'] != null)
-    return options['_hh'];
+  if (!isVertical)
+  {
+    if (options['_hh'] != null)
+      return options['_hh'];
+    else
+      return options['style']['handleHeight'];
+  }
   else
-    return options['style']['handleHeight'];
+  {
+    if (options['_vhh'] != null)
+      return options['_vhh'];
+    else
+      return options['style']['vertHandleHeight'];
+  }
 };
 
 /**

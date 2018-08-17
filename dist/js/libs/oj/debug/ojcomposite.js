@@ -507,7 +507,8 @@ define(['ojs/ojcore', 'promise', 'ojs/ojcustomelement', 'ojs/ojcomposite-knockou
  *               <td class="rt">value</td>
  *               <td>yes</td>
  *               <td>{object}</td>
- *               <td>An optional default value for a property. Only supported on the top level property and will not be evaluated if set on nested subproperties.</td>
+ *               <td>An optional default value for a property. For complex properties, the default value can be specified as an object for
+ *                   top level property or at the leaf subproperty levels, but not both.</td>
  *             </tr>
  *             <tr>
  *               <td class="rt">writeback</td>
@@ -2301,14 +2302,7 @@ oj.CollectionUtils.copyInto(oj.CompositeElementBridge.proto,
       var value = bOuterSet ? propertyTracker.peek() : propertyTracker();
       if (value === undefined)
       {
-        value = propertyMeta['value'];
-        // Make a copy if the default value is an Object or Array to prevent modification
-        // of the metadata copy and store in the propertyTracker so we have a copy
-        // to modify in place for the object case
-        if (Array.isArray(value))
-          value = value.slice();
-        else if (typeof value === 'object')
-          value = oj.CollectionUtils.copyInto({}, value, undefined, true);
+        value = this._BRIDGE.GetDefaultValue(propertyMeta);
         propertyTracker(value);
       }
       return value;
@@ -2597,19 +2591,6 @@ oj.CompositeElementBridge.register = function(tagName, descriptor)
       oj.Logger.warn("Composite registered'" + tagName.toLowerCase() + "' without Metadata.");
       metadata = {};
     }
-    else
-    {
-      // Check that the component name, version, and JET versions are defined in the metadata
-      var name = metadata['name'];
-      if (!name)
-        oj.Logger.warn('Warning registering composite %s. Required property "name" missing from metadata.', tagName);
-      else if (tagName != name)
-        oj.Logger.warn('Warning registering composite %s. Registered name: %s does not match name: %s provided in metadata.', tagName, tagName, name);
-      if (!metadata['version'])
-        oj.Logger.warn('Warning registering composite %s. Required property "version" missing from metadata.', tagName);
-      if (!metadata['jetVersion'])
-        oj.Logger.warn('Warning registering composite %s. Required composite "jetVersion" missing from metadata.', tagName);
-    }
     var view = descrip[oj.BaseCustomElementBridge.DESC_KEY_VIEW];
     if (view == null)
       throw new Error("Cannot register composite '" + tagName.toLowerCase() + "' without a View.");
@@ -2808,6 +2789,5 @@ oj.CompositeElementBridge._isDocumentFragment = function(content)
     return content && content.nodeType === 11;
   }
 };
-
 
 });

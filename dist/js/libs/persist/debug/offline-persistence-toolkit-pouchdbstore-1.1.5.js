@@ -3,7 +3,7 @@
  * All rights reserved.
  */
 
-define('PersistenceStore',[], function () {
+define('persist/PersistenceStore',[], function () {
   'use strict';
   
   /**
@@ -201,7 +201,7 @@ define('PersistenceStore',[], function () {
  * All rights reserved.
  */
 
-define('impl/storageUtils',['./logger'], function (logger) {
+define('persist/impl/storageUtils',['./logger'], function (logger) {
   'use strict';
   
   /**
@@ -15242,7 +15242,7 @@ exports.parse = function (str) {
  * All rights reserved.
  */
 
-define('impl/pouchDBPersistenceStore',["../PersistenceStore", "../impl/storageUtils", "pouchdb", "./logger"],
+define('persist/impl/pouchDBPersistenceStore',["../PersistenceStore", "../impl/storageUtils", "pouchdb", "./logger"],
        function (PersistenceStore, storageUtils, PouchDB, logger) {
   'use strict';
 
@@ -15261,27 +15261,24 @@ define('impl/pouchDBPersistenceStore',["../PersistenceStore", "../impl/storageUt
     this._version = (options && options.version) || '0';
     var dbname = this._name + this._version;
     this._db = new PouchDB(dbname);
+    this._index = (options && options.index) ? options.index : null;
+    return this._createIndex();
+  };
 
-    if (!options || !options.index) {
+  PouchDBPersistenceStore.prototype._createIndex = function () {
+    if (!this._index || !this._db.createIndex) {
       return Promise.resolve();
     } else {
       var self = this;
-      var indexArray = options.index;
-      var indexName = self._name + indexArray.toString().replace(",", "").replace(".","");
+      var indexName = self._name + self._index.toString().replace(",", "").replace(".","");
       var indexSyntax = {
         index: {
-          fields: indexArray,
+          fields: self._index,
           name: indexName
         }
       };
       // createIndex if using the find plugin
-      if (self._db.createIndex) {
-        return self._db.createIndex(indexSyntax).then(function () {
-          return Promise.resolve();
-        });
-      } else {
-        return Promise.resolve();
-      }
+      return self._db.createIndex(indexSyntax);
     }
   };
 
@@ -15535,17 +15532,10 @@ define('impl/pouchDBPersistenceStore',["../PersistenceStore", "../impl/storageUt
         return Promise.resolve();
       });
     } else {
-      return self._db.allDocs({include_docs: true}).then(function (result) {
-        if (result && result.rows && result.rows.length) {
-          var promises = result.rows.map(function (element) {
-            this._db.remove(element.doc);
-          }, self);
-          return Promise.all(promises);
-        } else {
-          return Promise.resolve();
-        }
-      }).then(function () {
-        return Promise.resolve();
+      return self._db.destroy().then(function () {
+        var dbname = self._name + self._version;
+        self._db = new PouchDB(dbname);
+        return self._createIndex();
       });
     }
   };
@@ -15651,7 +15641,7 @@ define('impl/pouchDBPersistenceStore',["../PersistenceStore", "../impl/storageUt
  * All rights reserved.
  */
 
-define('pouchDBPersistenceStoreFactory',["./impl/pouchDBPersistenceStore"],
+define('persist/pouchDBPersistenceStoreFactory',["./impl/pouchDBPersistenceStore"],
        function(PouchDBPersistenceStore) {
   'use strict';
 
@@ -15694,7 +15684,7 @@ define('pouchDBPersistenceStoreFactory',["./impl/pouchDBPersistenceStore"],
  * All rights reserved.
  */
 
-define('persistenceStoreFactory',[], function () {
+define('persist/persistenceStoreFactory',[], function () {
   'use strict';
   
   /**

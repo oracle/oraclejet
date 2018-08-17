@@ -324,19 +324,23 @@ var ArrayDataProvider = /** @class */ (function () {
                 for (i = 0; i < changes.length; i++) {
                     index = changes[i].index;
                     status = changes[i].status;
+                    var iKey = self._getId(changes[i].value);
                     for (j = 0; j < changes.length; j++) {
                         if (j != i &&
                             index === changes[j].index &&
                             status !== changes[j]['status'] &&
                             updatedIndexes.indexOf(i) < 0 &&
                             removeDuplicate.indexOf(i) < 0) {
-                            if (status === 'deleted') {
-                                removeDuplicate.push(i);
-                                updatedIndexes.push(j);
-                            }
-                            else {
-                                removeDuplicate.push(j);
-                                updatedIndexes.push(i);
+                            // Squash delete and add only if they have the same index and either no key or same key
+                            if (iKey == null || oj.Object.compareValues(iKey, self._getId(changes[j].value))) {
+                                if (status === 'deleted') {
+                                    removeDuplicate.push(i);
+                                    updatedIndexes.push(j);
+                                }
+                                else {
+                                    removeDuplicate.push(j);
+                                    updatedIndexes.push(i);
+                                }
                             }
                         }
                     }
@@ -344,12 +348,8 @@ var ArrayDataProvider = /** @class */ (function () {
                 for (i = 0; i < changes.length; i++) {
                     if (updatedIndexes.indexOf(i) >= 0) {
                         var key = self._getKeys()[changes[i].index];
-                        var updatedKey = self._getId(changes[i].value);
-                        if (updatedKey != null &&
-                            !oj.Object.compareValues(updatedKey, key)) {
-                            key = updatedKey;
-                            self._getKeys()[changes[i].index] = key;
-                        }
+                        // By this time, updatedIndexes contains indexes of "added" entries in "changes" array that
+                        // have matching "deleted" entries with same keys, which should be the same as the old keys.
                         keyArray.push(key);
                         dataArray.push(changes[i].value);
                         indexArray.push(changes[i].index);
@@ -945,4 +945,5 @@ oj.EventTargetMixin.applyMixin(ArrayDataProvider);
 /**
  * End of jsdoc
  */
+  return ArrayDataProvider;
 });

@@ -12,7 +12,413 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
       
        function(oj, $, compCore)
 {
-
+//%COMPONENT_METADATA%
+var __oj_table_metadata = 
+{
+  "properties": {
+    "accessibility": {
+      "type": "Object<string, string>",
+      "properties": {
+        "rowHeader": {
+          "type": "string"
+        }
+      }
+    },
+    "as": {
+      "type": "string",
+      "value": ""
+    },
+    "columns": {
+      "type": "Array<Object>",
+      "writeback": true
+    },
+    "columnsDefault": {
+      "type": "object",
+      "properties": {
+        "className": {
+          "type": "string"
+        },
+        "field": {
+          "type": "string"
+        },
+        "footerClassName": {
+          "type": "string"
+        },
+        "footerRenderer": {
+          "type": "function"
+        },
+        "footerStyle": {
+          "type": "string"
+        },
+        "footerTemplate": {
+          "type": "string",
+          "properties": {
+            "componentElement": {
+              "type": "Element"
+            }
+          }
+        },
+        "headerClassName": {
+          "type": "string"
+        },
+        "headerRenderer": {
+          "type": "function"
+        },
+        "headerStyle": {
+          "type": "string"
+        },
+        "headerTemplate": {
+          "type": "string",
+          "properties": {
+            "componentElement": {
+              "type": "Element"
+            },
+            "data": {
+              "type": "object"
+            }
+          }
+        },
+        "headerText": {
+          "type": "string"
+        },
+        "renderer": {
+          "type": "function"
+        },
+        "resizable": {
+          "type": "string",
+          "enumValues": [
+            "disabled",
+            "enabled"
+          ],
+          "value": "disabled"
+        },
+        "sortProperty": {
+          "type": "string"
+        },
+        "sortable": {
+          "type": "string",
+          "enumValues": [
+            "auto",
+            "disabled",
+            "enabled"
+          ],
+          "value": "auto"
+        },
+        "style": {
+          "type": "string"
+        },
+        "template": {
+          "type": "string",
+          "properties": {
+            "componentElement": {
+              "type": "Element"
+            },
+            "data": {
+              "type": "object"
+            },
+            "row": {
+              "type": "object"
+            },
+            "index": {
+              "type": "number"
+            },
+            "columnIndex": {
+              "type": "number"
+            },
+            "key": {
+              "type": "any"
+            },
+            "mode": {
+              "type": "string"
+            }
+          }
+        },
+        "width": {
+          "type": "number"
+        }
+      }
+    },
+    "currentRow": {
+      "type": "object",
+      "writeback": true
+    },
+    "data": {
+      "type": "oj.DataProvider|oj.TableDataSource"
+    },
+    "display": {
+      "type": "string",
+      "enumValues": [
+        "grid",
+        "list"
+      ],
+      "value": "list"
+    },
+    "dnd": {
+      "type": "object",
+      "properties": {
+        "drag": {
+          "type": "object",
+          "properties": {
+            "rows": {
+              "type": "object",
+              "properties": {
+                "dataTypes": {
+                  "type": "string|Array<string>"
+                },
+                "dragStart": {
+                  "type": "function"
+                },
+                "drag": {
+                  "type": "function"
+                },
+                "dragEnd": {
+                  "type": "function"
+                }
+              }
+            }
+          }
+        },
+        "drop": {
+          "type": "object",
+          "properties": {
+            "columns": {
+              "type": "object",
+              "properties": {
+                "dataTypes": {
+                  "type": "string|Array<string>"
+                },
+                "dragEnter": {
+                  "type": "function"
+                },
+                "dragOver": {
+                  "type": "function"
+                },
+                "dragLeave": {
+                  "type": "function"
+                },
+                "drop": {
+                  "type": "function"
+                }
+              }
+            },
+            "rows": {
+              "type": "object",
+              "properties": {
+                "dataTypes": {
+                  "type": "string|Array<string>"
+                },
+                "dragEnter": {
+                  "type": "function"
+                },
+                "dragOver": {
+                  "type": "function"
+                },
+                "dragLeave": {
+                  "type": "function"
+                },
+                "drop": {
+                  "type": "function"
+                }
+              }
+            }
+          }
+        },
+        "reorder": {
+          "type": "object",
+          "properties": {
+            "columns": {
+              "type": "string",
+              "enumValues": [
+                "disabled",
+                "enabled"
+              ],
+              "value": "disabled"
+            }
+          }
+        }
+      }
+    },
+    "editMode": {
+      "type": "string",
+      "enumValues": [
+        "none",
+        "rowEdit"
+      ],
+      "value": "none"
+    },
+    "firstSelectedRow": {
+      "type": "object",
+      "writeback": true,
+      "readOnly": true,
+      "value": {
+        "key": null,
+        "data": null
+      }
+    },
+    "horizontalGridVisible": {
+      "type": "string",
+      "enumValues": [
+        "auto",
+        "disabled",
+        "enabled"
+      ],
+      "value": "auto"
+    },
+    "rowRenderer": {
+      "type": "function"
+    },
+    "scrollPolicy": {
+      "type": "string",
+      "enumValues": [
+        "auto",
+        "loadMoreOnScroll"
+      ],
+      "value": "auto"
+    },
+    "scrollPolicyOptions": {
+      "type": "object",
+      "properties": {
+        "fetchSize": {
+          "type": "number",
+          "value": 25
+        },
+        "maxCount": {
+          "type": "number",
+          "value": 500
+        }
+      }
+    },
+    "selection": {
+      "type": "Array<Object>",
+      "writeback": true,
+      "value": []
+    },
+    "selectionMode": {
+      "type": "Object<string, string>",
+      "properties": {
+        "column": {
+          "type": "string",
+          "enumValues": [
+            "multiple",
+            "single"
+          ]
+        },
+        "row": {
+          "type": "string",
+          "enumValues": [
+            "multiple",
+            "single"
+          ]
+        }
+      }
+    },
+    "selectionRequired": {
+      "type": "boolean",
+      "value": false
+    },
+    "translations": {
+      "type": "object",
+      "value": {},
+      "properties": {
+        "labelAccSelectionAffordanceBottom": {
+          "type": "string"
+        },
+        "labelAccSelectionAffordanceTop": {
+          "type": "string"
+        },
+        "labelDisableNonContiguousSelection": {
+          "type": "string"
+        },
+        "labelEditRow": {
+          "type": "string"
+        },
+        "labelEnableNonContiguousSelection": {
+          "type": "string"
+        },
+        "labelResize": {
+          "type": "string"
+        },
+        "labelResizePopupSpinner": {
+          "type": "string"
+        },
+        "labelResizePopupSubmit": {
+          "type": "string"
+        },
+        "labelSelectAndEditRow": {
+          "type": "string"
+        },
+        "labelSelectColum": {
+          "type": "string"
+        },
+        "labelSelectRow": {
+          "type": "string"
+        },
+        "labelSort": {
+          "type": "string"
+        },
+        "labelSortAsc": {
+          "type": "string"
+        },
+        "labelSortDsc": {
+          "type": "string"
+        },
+        "msgColumnResizeWidthValidation": {
+          "type": "string"
+        },
+        "msgFetchingData": {
+          "type": "string"
+        },
+        "msgInitializing": {
+          "type": "string"
+        },
+        "msgNoData": {
+          "type": "string"
+        },
+        "msgScrollPolicyMaxCountDetail": {
+          "type": "string"
+        },
+        "msgScrollPolicyMaxCountSummary": {
+          "type": "string"
+        },
+        "msgStatusSortAscending": {
+          "type": "string"
+        },
+        "msgStatusSortDescending": {
+          "type": "string"
+        }
+      }
+    },
+    "verticalGridVisible": {
+      "type": "string",
+      "enumValues": [
+        "auto",
+        "disabled",
+        "enabled"
+      ],
+      "value": "auto"
+    }
+  },
+  "methods": {
+    "getContextByNode": {},
+    "getDataForVisibleRow": {},
+    "refresh": {},
+    "refreshRow": {},
+    "setProperty": {},
+    "getProperty": {},
+    "setProperties": {},
+    "getNodeBySubId": {},
+    "getSubIdByNode": {}
+  },
+  "events": {
+    "ojAnimateStart": {},
+    "ojAnimateEnd": {},
+    "ojBeforeCurrentRow": {},
+    "ojBeforeRowEdit": {},
+    "ojBeforeRowEditEnd": {},
+    "ojSort": {}
+  },
+  "extension": {}
+};
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
@@ -314,7 +720,6 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
            * on HTML5 Drag and Drop to learn how to use it.
            * 
            * @type {Object}
-           * @default {'drag': null, 'drop': null, 'reorder': {'columns' :'disabled'}}
            * @expose
            * @instance
            * @memberof! oj.ojTable
@@ -354,7 +759,6 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
              * @memberof! oj.ojTable
              * @instance
              * @type {Object}
-             * @default null
              */
             'drag': null,
             /**
@@ -410,6 +814,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
              * @memberof! oj.ojTable
              * @instance
              * @type {Object}
+             * @default null
              */
             /**
              * An object that describes drop functionlity.
@@ -421,7 +826,6 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
              * @memberof! oj.ojTable
              * @instance
              * @type {Object}
-             * @default null
              */
             'drop': null,
             /**
@@ -462,6 +866,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
              * @memberof! oj.ojTable
              * @instance
              * @type {Object}
+             * @default null
              */
             /**
              * @typedef {object} oj.ojTable.DropRowContext
@@ -502,6 +907,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
              * @memberof! oj.ojTable
              * @instance
              * @type {Object}
+             * @default null
              */
             /**
              * An object that describes reorder functionlity.
@@ -513,7 +919,6 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
              * @memberof! oj.ojTable
              * @instance
              * @type {Object}
-             * @default {'columns' :'disabled'}
              */
             'reorder': {
               /**
@@ -532,7 +937,6 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
                * @ojvalue {string} 'enabled' Enable column reordering
                * @ojvalue {string} 'disabled' Disable column reordering
                * @default "disabled"
-               * @ojwriteback
                */
               'columns' :'disabled'
             }
@@ -695,7 +1099,6 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
            * @instance
            * @memberof! oj.ojTable
            * @type {Object|null}
-           * @default {'fetchSize': 25, 'maxCount': 500}
            *
            * @example <caption>Initialize the component, overriding some scroll-policy-options values and leaving the others intact:</caption>
            * &lt;!-- Using dot notation -->
@@ -947,6 +1350,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
            * @public
            * @instance
            * @memberof! oj.ojTable
+           * @ojwriteback
            * @type {Array.<Object>|null}
            * @default null
            * @example <caption>Initialize the table with the <code class="prettyprint">columns</code> attribute specified:</caption>
@@ -1271,6 +1675,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
                * @type {string|null}
                * @ojsignature {target:"Type", value:"?"}
                * @default null
+               * @ojtranslatable
                */
               headerText: null,
               /**
@@ -1476,7 +1881,6 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
            * @instance
            * @memberof! oj.ojTable
            * @type {Object}
-           * @default null
            *
            * @example <caption>Initialize the component, overriding some columns defaults and leaving the others intact:</caption>
            * &lt;!-- Using dot notation -->
@@ -1759,6 +2163,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
                * @type {string|null}
                * @default null
                * @ojsignature {target:"Type", value:"?"}
+               * @ojtranslatable
                */
               headerText: null,
               /**
@@ -4232,15 +4637,25 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
         }
       },
       /**
-       * Add all the rows contained in the input array.
-       * @param {Array} rows Array of row contexts to add
+       * Add all the rows contained in the event detail.
+       * @param {Object} eventDetail Event detail
        * @private
        */
-      _executeTableBodyRowsAdd: function(rows)
+      _executeTableBodyRowsAdd: function(eventDetail)
       {
         var self = this;
         this._queueTask(function()
         {
+          // This function will try to find the row index from the DOM, so it must
+          // be called right before we're ready to update the UI.  If we call it
+          // outside of this queued task, the DOM may have changed from other
+          // data operations, and the row index can be wrong.
+          var rows = self._getRowsFromEventDetailAdd(eventDetail);
+          if (rows.length == 0)
+          {
+            return;
+          }
+
           // see if we should batch add
           // only batch if we are adding a block of contiguous rows
           var batchAdd = false;
@@ -4315,20 +4730,31 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
         });
       },
       /**
-       * Change all the rows contained in the input array.
-       * @param {Array} rows Array of row contexts to change
+       * Change all the rows contained in the event detail.
+       * @param {Object} eventDetail Event detail
        * @param {number} startIndex index of first row in the table in the data source
        * @private
        */
-      _executeTableBodyRowsChange: function(rows, startIndex)
+      _executeTableBodyRowsChange: function(eventDetail, startIndex)
       {
         var self = this;
-        var i, tableBodyRow, rowsCount = rows.length;
-        var updatedTableBodyRows = [];
-        var rowIdxArray = [];
 
         this._queueTask(function()
         {
+          // This function will try to find the row index from the DOM, so it must
+          // be called right before we're ready to update the UI.  If we call it
+          // outside of this queued task, the DOM may have changed from other
+          // data operations, and the row index can be wrong.
+          var rows = self._getRowsFromEventDetailChange(eventDetail);
+          if (rows.length == 0)
+          {
+            return;
+          }
+
+          var i, tableBodyRow, rowsCount = rows.length;
+          var updatedTableBodyRows = [];
+          var rowIdxArray = [];
+
           for (i = 0; i < rowsCount; i++)
           {
             tableBodyRow = self._refreshTableBodyRow(rows[i].rowIdx, rows[i].row);
@@ -4348,22 +4774,33 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
         });
       },
       /**
-       * Change all the rows contained in the input array.
-       * @param {Array} rows Array of row contexts to change
+       * Remove all the rows contained in the event detail.
+       * @param {Object} eventDetail event detail
        * @private
        */
-      _executeTableBodyRowsRemove: function(rows)
+      _executeTableBodyRowsRemove: function(eventDetail)
       {
-        // sort array
-        rows.sort(function(a, b) {
-          return b.rowIdx - a.rowIdx;
-        });
         var self = this;
-        var currentRow = this._getCurrentRow();
-        var currentRowIndex = currentRow != null ? currentRow['rowIndex'] : 0;
-        var currentRowKey = currentRow != null ? currentRow['rowKey'] : null;
         this._queueTask(function()
         {
+          // This function will try to find the row index from the DOM, so it must
+          // be called right before we're ready to update the UI.  If we call it
+          // outside of this queued task, the DOM may have changed from other
+          // data operations, and the row index can be wrong.
+          var rows = self._getRowsFromEventDetailRemove(eventDetail);
+          if (rows.length == 0)
+          {
+            return;
+          }
+
+          // sort array
+          rows.sort(function(a, b) {
+            return b.rowIdx - a.rowIdx;
+          });
+          var currentRow = self._getCurrentRow();
+          var currentRowIndex = currentRow != null ? currentRow['rowIndex'] : 0;
+          var currentRowKey = currentRow != null ? currentRow['rowKey'] : null;
+
           // first check if we are removing all rows. If so, we can do a removeAll
           var remainingRowIdxArray = [];
           var rowIdxArray = [];
@@ -5479,9 +5916,16 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
         {
           var popup = this._getTableDomUtils().getContextMenuResizePopup();
           popup.setAttribute('data-oj-columnIdx', columnIdx);
-          var columnRect = headerColumn != null ? headerColumn.getBoundingClientRect() : tableBodyCell.getBoundingClientRect();
+          var target = headerColumn || tableBodyCell;
+          var columnWidth = target.getBoundingClientRect().width;
+
+          // getBoundingClientRect returns the border-box width, while ojtable interprets columns[].width
+          // as padding + content width, so we have to substract the border width from the ClientRect.
+          var style = window.getComputedStyle(target);
+          columnWidth = columnWidth - parseFloat(style['border-left-width']) - parseFloat(style['border-right-width']);
+
           var spinner = document.getElementById(this._getTableDomUtils().getTableId() + '_resize_popup_spinner');
-          $(spinner).ojInputNumber('option', 'value', Math.round(columnRect.width));
+          $(spinner).ojInputNumber('option', 'value', Math.round(columnWidth));
           var launcher = headerColumn != null ? headerColumn : tableBodyCell != null ? tableBodyCell : this.getTable();
           $(popup).ojPopup('open', launcher);
         }
@@ -5628,6 +6072,106 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
         }
       },
       /**
+       * Return row info from add event detail
+       * @param {Object} eventDetail event detail
+       * @return {Array} Array of row info
+       * @private
+       */
+      _getRowsFromEventDetailAdd: function(eventDetail)
+      {
+        var dataprovider = this._getData();
+        var eventData = eventDetail[this._CONST_DATA];
+        var eventIndexes = eventDetail[this._CONST_INDEXES];
+        var eventKeys = [];
+        eventDetail[this._CONST_KEYS].forEach(function(key) {
+          eventKeys.push(key);
+        });
+        var eventAfterKeys = [];
+        if (eventDetail[this._CONST_AFTERKEYS] != null) {
+          eventDetail[this._CONST_AFTERKEYS].forEach(function(key) {
+            eventAfterKeys.push(key);
+          });
+        }
+        if (!(eventData instanceof Array))
+        {
+          eventData = [eventData];
+        }
+        var offset = 0;
+        if (this._isPagingModelDataProvider()) 
+        {
+          offset = dataprovider.getStartItemIndex();
+        }
+        
+        var metadataSource = null;
+        
+        if (dataprovider instanceof oj.TableDataSourceAdapter)
+        {
+          if (oj.FlattenedTreeTableDataSource && dataprovider.tableDataSource instanceof oj.FlattenedTreeTableDataSource)
+          {
+            metadataSource = dataprovider.tableDataSource;
+          }
+          else if (oj.PagingTableDataSource && 
+            dataprovider.tableDataSource instanceof oj.PagingTableDataSource &&
+            oj.FlattenedTreeTableDataSource && 
+            dataprovider.tableDataSource.dataSource instanceof oj.FlattenedTreeTableDataSource)
+          {
+            metadataSource = dataprovider.tableDataSource.dataSource;
+          }
+        }
+        
+        var rowArray = [];
+        var rowIdx;
+        var eventIndex;
+        var eventAfterKey;
+        var metadata = null;
+        var tableBodyRows = this._getTableDomUtils().getTableBodyRows();
+        var rowCount = tableBodyRows != null ? tableBodyRows.length : 0;
+        var i, eventDataCount = eventData.length;
+        
+        // if specified, afterKeys takes precendence over indexes
+        for (i = 0; i < eventDataCount; i++)
+        {
+          eventAfterKey = eventAfterKeys != null ? eventAfterKeys[i] : '';
+          rowIdx = this._getRowIdxForRowKey(eventAfterKey);
+          if (rowIdx != null && 
+            rowIdx >= 0) {
+            // insertion is before the afterKey
+            eventIndex = rowIdx + offset;
+          } else if (eventIndexes[i] >= 0) {
+            // if the afterKey is not in the table
+            // then use if index has been specified
+            eventIndex = eventIndexes[i];
+          } else {
+            // afterKey was not found and index was
+            // not specified. eventIndex is just set as
+            // the previous one + 1. If the first item
+            // then just append
+            if (i == 0) {
+              eventIndex = rowCount;
+            } else {
+              eventIndex = eventIndexes[i - 1] + 1;
+            }
+          }
+          eventIndexes[i] = eventIndex;
+        }
+        for (i = 0; i < eventDataCount; i++)
+        {
+          rowIdx = eventIndexes[i] - offset;
+          if (rowIdx !== undefined)
+          {
+            if (metadataSource)
+            {
+              metadata = metadataSource._getMetadata(rowIdx);
+            }
+            var row = {'data': eventData[i], 'metadata': metadata, 'key': eventKeys[i], 'index': eventIndexes[i]};
+
+            rowArray.push({row: row, rowIdx: rowIdx});
+          }
+        }
+
+        return rowArray;
+      },
+      /**
        * Callback handler for rows added into the datasource. Add a new tr and refresh the DOM
        * at the row index and refresh the table dimensions to accomodate the new
        * row
@@ -5638,100 +6182,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
       {
         try
         {
-          var self = this;
-          var dataprovider = this._getData();
-          var eventData = eventDetail[this._CONST_DATA];
-          var eventIndexes = eventDetail[this._CONST_INDEXES];
-          var eventKeys = [];
-          eventDetail[this._CONST_KEYS].forEach(function(key) {
-            eventKeys.push(key);
-          });
-          var eventAfterKeys = [];
-          if (eventDetail[this._CONST_AFTERKEYS] != null) {
-            eventDetail[this._CONST_AFTERKEYS].forEach(function(key) {
-              eventAfterKeys.push(key);
-            });
-          }
-          if (!(eventData instanceof Array))
-          {
-            eventData = [eventData];
-          }
-          var offset = 0;
-          if (this._isPagingModelDataProvider()) 
-          {
-            offset = dataprovider.getStartItemIndex();
-          }
-          
-          var metadataSource = null;
-          
-          if (dataprovider instanceof oj.TableDataSourceAdapter)
-          {
-            if (oj.FlattenedTreeTableDataSource && dataprovider.tableDataSource instanceof oj.FlattenedTreeTableDataSource)
-            {
-              metadataSource = dataprovider.tableDataSource;
-            }
-            else if (oj.PagingTableDataSource && 
-              dataprovider.tableDataSource instanceof oj.PagingTableDataSource &&
-              oj.FlattenedTreeTableDataSource && 
-              dataprovider.tableDataSource.dataSource instanceof oj.FlattenedTreeTableDataSource)
-            {
-              metadataSource = dataprovider.tableDataSource.dataSource;
-            }
-          }
-          
-          var rowArray = [];
-          var rowIdx;
-          var eventIndex;
-          var eventAfterKey;
-          var metadata = null;
-          var tableBodyRows = this._getTableDomUtils().getTableBodyRows();
-          var rowCount = tableBodyRows != null ? tableBodyRows.length : 0;
-          var i, eventDataCount = eventData.length;
-          
-          // if specified, afterKeys takes precendence over indexes
-          for (i = 0; i < eventDataCount; i++)
-          {
-            eventAfterKey = eventAfterKeys != null ? eventAfterKeys[i] : '';
-            rowIdx = this._getRowIdxForRowKey(eventAfterKey);
-            if (rowIdx != null && 
-              rowIdx >= 0) {
-              // insertion is before the afterKey
-              eventIndex = rowIdx + offset;
-            } else if (eventIndexes[i] >= 0) {
-              // if the afterKey is not in the table
-              // then use if index has been specified
-              eventIndex = eventIndexes[i];
-            } else {
-              // afterKey was not found and index was
-              // not specified. eventIndex is just set as
-              // the previous one + 1. If the first item
-              // then just append
-              if (i == 0) {
-                eventIndex = rowCount;
-              } else {
-                eventIndex = eventIndexes[i - 1] + 1;
-              }
-            }
-            eventIndexes[i] = eventIndex;
-          }
-          for (i = 0; i < eventDataCount; i++)
-          {
-            rowIdx = eventIndexes[i] - offset;
-            if (rowIdx !== undefined)
-            {
-              if (metadataSource)
-              {
-                metadata = metadataSource._getMetadata(rowIdx);
-              }
-              var row = {'data': eventData[i], 'metadata': metadata, 'key': eventKeys[i], 'index': eventIndexes[i]};
-
-              rowArray.push({row: row, rowIdx: rowIdx});
-            }
-          }
-          if (rowArray.length > 0)
-          {
-            this._executeTableBodyRowsAdd(rowArray);
-          }
+          this._executeTableBodyRowsAdd(eventDetail);
         }
         catch (e)
         {
@@ -5743,6 +6194,37 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
         }
       },
       /**
+       * Return row info from change event detail
+       * @param {Object} eventDetail event detail
+       * @return {Array} Array of row info
+       * @private
+       */
+      _getRowsFromEventDetailChange: function(eventDetail)
+      {
+        var eventData = eventDetail[this._CONST_DATA];
+        var eventKeys = [];
+        eventDetail[this._CONST_KEYS].forEach(function(key) {
+          eventKeys.push(key);
+        });
+        if (!(eventData instanceof Array))
+        {
+          eventData = [eventData];
+        }
+        var rowArray = [];
+        var i, eventDataCount = eventData.length;
+        for (i = 0; i < eventDataCount; i++)
+        {
+          var rowIdx = this._getRowIdxForRowKey(eventKeys[i]);
+          if (rowIdx !== undefined)
+          {
+            var row = {'data': eventData[i], 'key': eventKeys[i], 'index': rowIdx};
+            rowArray.push({row: row, rowIdx: rowIdx});
+          }
+        }
+
+        return rowArray;
+      },
+      /**
        * Callback handler for row change in the datasource. Refresh the changed
        * row.
        * @param {Object} eventDetail event detail
@@ -5752,32 +6234,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
       {
         try
         {
-          var self = this;
-          var eventData = eventDetail[this._CONST_DATA];
-          var eventKeys = [];
-          eventDetail[this._CONST_KEYS].forEach(function(key) {
-            eventKeys.push(key);
-          });
-          if (!(eventData instanceof Array))
-          {
-            eventData = [eventData];
-          }
-          var rowArray = [];
-          var i, eventDataCount = eventData.length;
-          for (i = 0; i < eventDataCount; i++)
-          {
-            var rowIdx = this._getRowIdxForRowKey(eventKeys[i]);
-            if (rowIdx !== undefined)
-            {
-              var row = {'data': eventData[i], 'key': eventKeys[i], 'index': rowIdx};
-              rowArray.push({row: row, rowIdx: rowIdx});
-            }
-          }
-          
-          if (rowArray.length > 0)
-          {
-            this._executeTableBodyRowsChange(rowArray);
-          }
+          this._executeTableBodyRowsChange(eventDetail);
         }
         catch (e)
         {
@@ -5787,6 +6244,37 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
         {
           this._clearDataWaitingState();
         }
+      },
+      /**
+       * Return row info from remove event detail
+       * @param {Object} eventDetail event detail
+       * @return {Array} Array of row info
+       * @private
+       */
+      _getRowsFromEventDetailRemove: function(eventDetail)
+      {
+        var eventData = eventDetail[this._CONST_DATA];
+        var eventKeys = [];
+        eventDetail[this._CONST_KEYS].forEach(function(key) {
+          eventKeys.push(key);
+        });
+        if (!(eventData instanceof Array))
+        {
+          eventData = [eventData];
+        }
+        var rowArray = [];
+        var i, eventDataCount = eventData.length
+        for (i = 0; i < eventDataCount; i++)
+        {
+          var rowIdx = this._getRowIdxForRowKey(eventKeys[i]);
+          if (rowIdx !== undefined)
+          {
+            var row = {'data': eventData[i], 'key': eventKeys[i], 'index': rowIdx};
+            rowArray.push({row: row, rowIdx: rowIdx});
+          }
+        }
+
+        return rowArray;
       },
       /**
        * Callback handler for row removed in the datasource. Remove the row DOM from the
@@ -5800,32 +6288,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise', 'ojdnd', 'ojs/
       {
         try
         {
-          var self = this;
-          var eventData = eventDetail[this._CONST_DATA];
-          var eventKeys = [];
-          eventDetail[this._CONST_KEYS].forEach(function(key) {
-            eventKeys.push(key);
-          });
-          if (!(eventData instanceof Array))
-          {
-            eventData = [eventData];
-          }
-          var rowArray = [];
-          var i, eventDataCount = eventData.length
-          for (i = 0; i < eventDataCount; i++)
-          {
-            var rowIdx = this._getRowIdxForRowKey(eventKeys[i]);
-            if (rowIdx !== undefined)
-            {
-              var row = {'data': eventData[i], 'key': eventKeys[i], 'index': rowIdx};
-              rowArray.push({row: row, rowIdx: rowIdx});
-            }
-          }
-
-          if (rowArray.length > 0)
-          {
-            this._executeTableBodyRowsRemove(rowArray);
-          }
+          this._executeTableBodyRowsRemove(eventDetail);
         }
         catch (e)
         {
@@ -10148,10 +10611,17 @@ oj.TableDndContext.prototype._getOverRowIndex = function(event)
 {
   var newRowIndex;
   var jqOverRow = $(event.target).closest(oj.TableDomUtils.DOM_ELEMENT._TR);
-  var context = this.component.getContextByNode(event.target);
-  if (context && context['subId'] == 'oj-table-cell')
+
+  // Find the index from the DOM directly instead of calling TableDomUtils.getElementRowIdx.  There was a change in
+  // TableDomUtils.getElementRowIdx to use cached elements so it's not accurate for dnd purpose.
+  var jqCell = $(event.target).closest('.' + oj.TableDomUtils.CSS_CLASSES._TABLE_DATA_CELL_CLASS);
+  if (jqCell.length > 0)
   {
-    newRowIndex = context['rowIndex'];
+    var tableBodyRow = this._getTableDomUtils().getFirstAncestor(jqCell[0], oj.TableDomUtils.CSS_CLASSES._TABLE_DATA_ROW_CLASS);
+    if (tableBodyRow != null)
+    {
+      newRowIndex = $(tableBodyRow).index();
+    }
   }
   else if (jqOverRow && jqOverRow.hasClass(oj.TableDomUtils.CSS_CLASSES._TABLE_DATA_ROW_DRAG_INDICATOR_BEFORE_CLASS))
   {
@@ -10826,7 +11296,10 @@ oj.TableDndContext.prototype._setDragRowsDataTransfer = function(event, dataType
   if (rowDataArray.length)
   {
     this._setDragRowsData(event.originalEvent, dataTypes, rowDataArray);
-    
+
+    // Call _destroyDragImage before creating a new one in case the last drag image was not removed.
+    // This could happen sometimes in some versions of Chrome.
+    this._destroyDragImage();
     this._dragImage = this._setDragRowsImage(event.originalEvent, 
                                              $(event.currentTarget).closest(oj.TableDomUtils.DOM_ELEMENT._TABLE).parent()[0],
                                              selArray);
@@ -14581,6 +15054,21 @@ oj.TableDomUtils.prototype._removeTableDimensionsStyling = function()
 };
 
 /**
+ * Get style related to box width of an element
+ * @param {Object} style - the style of an element
+ * @return {Object} An object with boxSizing, borderWidth, and paddingWidth properties
+ * @private
+ * @memberof oj.TableDomUtils
+ */
+oj.TableDomUtils.prototype._getBoxStyle = function(style)
+{
+  return {boxSizing: style[oj.TableDomUtils.CSS_PROP._BOX_SIZING],
+          borderWidth: (parseFloat(style[oj.TableDomUtils.CSS_PROP._BORDER_RIGHT_WIDTH]) || 0) + (parseFloat(style[oj.TableDomUtils.CSS_PROP._BORDER_LEFT_WIDTH]) || 0),
+          paddingWidth: (parseFloat(style[oj.TableDomUtils.CSS_PROP._PADDING_RIGHT]) || 0) + (parseFloat(style[oj.TableDomUtils.CSS_PROP._PADDING_LEFT]) || 0)
+         };
+};
+
+/**
  * Iterate through the columns and get and then set the widths
  * for the columns and first row this is so that when we re-apply the styling
  * the headers and footers will align with the cells
@@ -14591,11 +15079,11 @@ oj.TableDomUtils.prototype._setColumnWidths = function()
 {
   var columns = this.component._getColumnDefs();
   var columnWidths = [];
-  var columnPaddingWidths = [];
+  var columnBoxStyles = [];
   var headerColumnDivMinHeights = [];
-  var tableBodyCellPaddingWidths = [];
-  var footerPaddingWidths = [];
-  var defaultColumnPaddingWidth, defaultTableBodyCellPaddingWidth, headerRenderer, cellRenderer = null;
+  var tableBodyCellBoxStyles = [];
+  var footerBoxStyles = [];
+  var defaultColumnBoxStyle, defaultTableBodyCellBoxStyle, headerRenderer, cellRenderer = null;
   this._forcedWidthColumns = []
   var i, j, headerColumnCell, headerColumnCellStyle, headerColumnDiv, headerColumnTextDiv, footerCell, footerCellStyle, columnWidth, forceWidth, columnsCount = columns.length;
   for (i = 0; i < columnsCount; i++)
@@ -14619,18 +15107,18 @@ oj.TableDomUtils.prototype._setColumnWidths = function()
       columnWidths[i] = columnWidth;
       headerRenderer = this.component._getColumnRenderer(i, 'header');
       
-      if (!defaultColumnPaddingWidth && headerRenderer == null)
+      if (!defaultColumnBoxStyle && headerRenderer == null)
       {
-        defaultColumnPaddingWidth = (parseFloat(headerColumnCellStyle[oj.TableDomUtils.CSS_PROP._PADDING_RIGHT]) || 0) + (parseFloat(headerColumnCellStyle[oj.TableDomUtils.CSS_PROP._PADDING_LEFT]) || 0);
-        columnPaddingWidths[i] = defaultColumnPaddingWidth;
+        defaultColumnBoxStyle = this._getBoxStyle(headerColumnCellStyle);
+        columnBoxStyles[i] = defaultColumnBoxStyle;
       }
       else if (headerRenderer != null)
       {
-        columnPaddingWidths[i] = (parseFloat(headerColumnCellStyle[oj.TableDomUtils.CSS_PROP._PADDING_RIGHT]) || 0) + (parseFloat(headerColumnCellStyle[oj.TableDomUtils.CSS_PROP._PADDING_LEFT]) || 0);
+        columnBoxStyles[i] = this._getBoxStyle(headerColumnCellStyle);
       }
       else
       {
-        columnPaddingWidths[i] = defaultColumnPaddingWidth;
+        columnBoxStyles[i] = defaultColumnBoxStyle;
       }
       // also determine the header heights
       headerColumnTextDiv = headerColumnCell.querySelectorAll('.' + oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_TEXT_CLASS);
@@ -14645,7 +15133,7 @@ oj.TableDomUtils.prototype._setColumnWidths = function()
   var tableBodyRows = this.getTableBodyRows();
   if (tableBodyRows != null && tableBodyRows.length > 0)
   {
-    var tableBodyCell, tableBodyCellStyle, tableBodyCellPaddingWidth, adjustedColumnWidth;
+    var tableBodyCell, tableBodyCellStyle, tableBodyCellBoxStyle, adjustedColumnWidth;
     for (i = 0; i < columnsCount; i++)
     {
 
@@ -14657,26 +15145,26 @@ oj.TableDomUtils.prototype._setColumnWidths = function()
         if (this.component._hasRowOrCellRendererOrTemplate(i))
         {
           tableBodyCellStyle = window.getComputedStyle(tableBodyCell);
-          tableBodyCellPaddingWidth = (parseFloat(tableBodyCellStyle[oj.TableDomUtils.CSS_PROP._PADDING_RIGHT]) || 0) + (parseFloat(tableBodyCellStyle[oj.TableDomUtils.CSS_PROP._PADDING_LEFT]) || 0);
+          tableBodyCellBoxStyle = this._getBoxStyle(tableBodyCellStyle);
         }
         else
         {
-          if (!defaultTableBodyCellPaddingWidth)
+          if (!defaultTableBodyCellBoxStyle)
           {
             tableBodyCellStyle = window.getComputedStyle(tableBodyCell);
-            defaultTableBodyCellPaddingWidth = (parseFloat(tableBodyCellStyle[oj.TableDomUtils.CSS_PROP._PADDING_RIGHT]) || 0) + (parseFloat(tableBodyCellStyle[oj.TableDomUtils.CSS_PROP._PADDING_LEFT]) || 0);
+            defaultTableBodyCellBoxStyle = this._getBoxStyle(tableBodyCellStyle);
           }
-          tableBodyCellPaddingWidth = defaultTableBodyCellPaddingWidth;
+          tableBodyCellBoxStyle = defaultTableBodyCellBoxStyle;
         }
-        tableBodyCellPaddingWidths[i] = tableBodyCellPaddingWidth;
+        tableBodyCellBoxStyles[i] = tableBodyCellBoxStyle;
         adjustedColumnWidth = null;
-        if (tableBodyCellPaddingWidth > columnPaddingWidths[i])
+        if (tableBodyCellBoxStyle.paddingWidth > columnBoxStyles[i].paddingWidth)
         {
-          adjustedColumnWidth = columnWidths[i] - tableBodyCellPaddingWidth + columnPaddingWidths[i];
+          adjustedColumnWidth = columnWidths[i] - tableBodyCellBoxStyle.paddingWidth + columnBoxStyles[i].paddingWidth;
         }
         else
         {
-          adjustedColumnWidth = columnWidths[i] + columnPaddingWidths[i] - tableBodyCellPaddingWidth;
+          adjustedColumnWidth = columnWidths[i] + columnBoxStyles[i].paddingWidth - tableBodyCellBoxStyle.paddingWidth;
         }
         adjustedColumnWidths[i] = adjustedColumnWidth;
       }
@@ -14689,7 +15177,7 @@ oj.TableDomUtils.prototype._setColumnWidths = function()
     if (footerCell != null)
     {
       footerCellStyle = window.getComputedStyle(footerCell);
-      footerPaddingWidths[i] = (parseFloat(footerCellStyle[oj.TableDomUtils.CSS_PROP._PADDING_RIGHT]) || 0) + (parseFloat(footerCellStyle[oj.TableDomUtils.CSS_PROP._PADDING_LEFT]) || 0);
+      footerBoxStyles[i] = this._getBoxStyle(footerCellStyle);
     }
   }
 
@@ -14715,7 +15203,10 @@ oj.TableDomUtils.prototype._setColumnWidths = function()
       }
       else
       {
-        forceWidth = columnWidths[i] - columnPaddingWidths[i] + oj.TableDomUtils.CSS_VAL._PX;
+        // ojtable columns width is interpreted as padding + content width, so we either have to
+        // add in the border width or substract the padding width based on the box-sizing style.
+        forceWidth = columnWidths[i] + ((columnBoxStyles[i].boxSizing === 'border-box') ? columnBoxStyles[i].borderWidth : -columnBoxStyles[i].paddingWidth);
+        forceWidth += oj.TableDomUtils.CSS_VAL._PX;
         headerColumnCell.style[oj.TableDomUtils.CSS_PROP._MIN_WIDTH] = forceWidth;
         headerColumnCell.style[oj.TableDomUtils.CSS_PROP._WIDTH] = forceWidth;
         headerColumnCell.style[oj.TableDomUtils.CSS_PROP._MAX_WIDTH] = forceWidth;
@@ -14731,7 +15222,10 @@ oj.TableDomUtils.prototype._setColumnWidths = function()
       }
       else
       {
-        forceWidth = columnWidths[i] - tableBodyCellPaddingWidths[i] + oj.TableDomUtils.CSS_VAL._PX;
+        // ojtable columns width is interpreted as padding + content width, so we either have to
+        // add in the border width or substract the padding width based on the box-sizing style.
+        forceWidth = columnWidths[i] + ((tableBodyCellBoxStyles[i].boxSizing === 'border-box') ? tableBodyCellBoxStyles[i].borderWidth : -tableBodyCellBoxStyles[i].paddingWidth);
+        forceWidth +=  oj.TableDomUtils.CSS_VAL._PX;
         for (j = 0; j < tableBodyRows.length; j++)
         {
           tableBodyCell = this.getTableBodyCell(j, i, null);
@@ -14748,20 +15242,23 @@ oj.TableDomUtils.prototype._setColumnWidths = function()
       if (!this._forcedWidthColumns[i])
       {
         // adjust the padding widths if the footer has more padding
-        if ( footerPaddingWidths[i] > columnPaddingWidths[i])
+        if ( footerBoxStyles[i].paddingWidth > columnBoxStyles[i].paddingWidth)
         {
-          adjustedColumnWidth = columnWidths[i] -  footerPaddingWidths[i] + columnPaddingWidths[i];
+          adjustedColumnWidth = columnWidths[i] -  footerBoxStyles[i].paddingWidth + columnBoxStyles[i].paddingWidth;
         }
         else
         {
-          adjustedColumnWidth = columnWidths[i] + columnPaddingWidths[i] -  footerPaddingWidths[i];
+          adjustedColumnWidth = columnWidths[i] + columnBoxStyles[i].paddingWidth -  footerBoxStyles[i].paddingWidth;
         }
 
         footerCell.style[oj.TableDomUtils.CSS_PROP._MIN_WIDTH] = adjustedColumnWidth + oj.TableDomUtils.CSS_VAL._PX;
       }
       else
       {
-        forceWidth = columnWidths[i] - footerPaddingWidths[i] + oj.TableDomUtils.CSS_VAL._PX;
+        // ojtable columns width is interpreted as padding + content width, so we either have to
+        // add in the border width or substract the padding width based on the box-sizing style.
+        forceWidth = columnWidths[i] + ((footerBoxStyles[i].boxSizing === 'border-box') ? footerBoxStyles[i].borderWidth : -footerBoxStyles[i].paddingWidth);
+        forceWidth +=  oj.TableDomUtils.CSS_VAL._PX;
         footerCell.style[oj.TableDomUtils.CSS_PROP._MIN_WIDTH] = forceWidth;
         footerCell.style[oj.TableDomUtils.CSS_PROP._WIDTH] = forceWidth;
         footerCell.style[oj.TableDomUtils.CSS_PROP._MAX_WIDTH] = forceWidth;
@@ -14971,6 +15468,7 @@ oj.TableDomUtils.CSS_PROP =
     _BORDER_TOP: 'border-top',
     _BORDER_BOTTOM_WIDTH: 'border-bottom-width',
     _BORDER_LEFT_WIDTH: 'border-left-width',
+    _BORDER_RIGHT_WIDTH: 'border-right-width',
     _MARGIN_BOTTOM: 'margin-bottom',
     _VERTICAL_ALIGN: 'vertical-align',
     _CURSOR: 'cursor',
@@ -15335,44 +15833,46 @@ oj.TableRendererUtils.tableBodyCellDefaultRenderer = function(component, rowIdx,
   }
   
   var cellRenderer = component._getColumnRenderer(columnIdx, 'cell');
-  var cellContext = this.getRendererContextObject(component, tableBodyCell, {'row': row});
-  // Copy additional properties to top-level context to work with custom element
-  var rendererContext = {'cellContext': cellContext,
-                         'columnIndex': columnIdx,
-                         'data': data,
-                         'row': $.extend({}, row['data']),
-                         'componentElement': cellContext['componentElement'],
-                         'parentElement': cellContext['parentElement']};
+  var cellSlotTemplate = component._getSlotTemplate(column['template']);
+  if (!cellRenderer && !cellSlotTemplate) {
+    data = oj.TableRendererUtils._getVal(data);
+    var textValue = data == null ? '' : data;
+    tableBodyCell.appendChild(document.createTextNode(textValue)); //@HTMLUpdateOK
+  } else {
+    var cellContext = this.getRendererContextObject(component, tableBodyCell, {'row': row});
+    // Copy additional properties to top-level context to work with custom element
+    var rendererContext = {'cellContext': cellContext,
+                           'columnIndex': columnIdx,
+                           'data': data,
+                           'row': $.extend({}, row['data']),
+                           'componentElement': cellContext['componentElement'],
+                           'parentElement': cellContext['parentElement']};
 
-  if (cellRenderer)
-  {
-    var cellColumnContent = cellRenderer(rendererContext);
-
-    if (cellColumnContent != null)
+    if (cellRenderer)
     {
-      // if the renderer returned a value then we set it as the content
-      // for the cell. Use jquery append() for this as a convenience because 
-      // cellColumnContent could be a Node element or arbitrary content and 
-      // we don't want to write code to convert everything to Node type and call 
-      // appendChild.
-      $(tableBodyCell).append(cellColumnContent); //@HTMLUpdateOK
+      var cellColumnContent = cellRenderer(rendererContext);
+
+      if (cellColumnContent != null)
+      {
+        // if the renderer returned a value then we set it as the content
+        // for the cell. Use jquery append() for this as a convenience because 
+        // cellColumnContent could be a Node element or arbitrary content and 
+        // we don't want to write code to convert everything to Node type and call 
+        // appendChild.
+        $(tableBodyCell).append(cellColumnContent); //@HTMLUpdateOK
+      }
+      else
+      {
+        // if the renderer didn't return a value then the existing
+        // cell was manipulated. So get it and set the required
+        // attributes just in case it was replaced or the attributes
+        // got removed
+        tableBodyCell = $(tableBodyRow).children(':not(' + '.' + oj.TableDomUtils.CSS_CLASSES._TABLE_DATA_CELL_ACC_SELECT_CLASS + ')')[columnIdx];
+        component._getTableDomUtils().setTableBodyCellAttributes(rowIdx, row['key'], rowHashCode, columnIdx, tableBodyCell);
+        component._getTableDomUtils().styleTableBodyCell(columnIdx, tableBodyCell, false);
+      }
     }
     else
-    {
-      // if the renderer didn't return a value then the existing
-      // cell was manipulated. So get it and set the required
-      // attributes just in case it was replaced or the attributes
-      // got removed
-      tableBodyCell = $(tableBodyRow).children(':not(' + '.' + oj.TableDomUtils.CSS_CLASSES._TABLE_DATA_CELL_ACC_SELECT_CLASS + ')')[columnIdx];
-      component._getTableDomUtils().setTableBodyCellAttributes(rowIdx, row['key'], rowHashCode, columnIdx, tableBodyCell);
-      component._getTableDomUtils().styleTableBodyCell(columnIdx, tableBodyCell, false);
-    }
-  }
-  else
-  {
-    var cellSlotTemplate = component._getSlotTemplate(column['template']);
-    
-    if (cellSlotTemplate)
     {
       var componentElement = component._getRootElement();
       var templateEngine = component._getTemplateEngine();
@@ -15390,12 +15890,6 @@ oj.TableRendererUtils.tableBodyCellDefaultRenderer = function(component, rowIdx,
         });
         component._hasCellTemplate = true;
       }
-    }
-    else
-    {
-      data = oj.TableRendererUtils._getVal(data);
-      var textValue = data == null ? '' : data;
-      tableBodyCell.appendChild(document.createTextNode(textValue)); //@HTMLUpdateOK
     }
   }
 };
@@ -16388,299 +16882,13 @@ oj.TableResizeUtils.CSS_CLASSES =
  * @memberof oj.ojTable
  */
 
-(function() {
-var ojTableMeta = {
-  "properties": {
-    "accessibility": {
-      "type": "Object",
-      "properties": {
-        "rowHeader": {
-          "type": "string"
-        }
-      }
-    },
-    "as": {
-      "type": "string"
-    },
-    "columns": {
-      "type": "Array<Object>",
-      "writeback": true
-    },
-    "columnsDefault": {
-      "type": "Object",
-      "properties": {
-        "className": {
-          "type": "string"
-        },
-        "field": {
-          "type": "string"
-        },
-        "footerClassName": {
-          "type": "string"
-        },
-        "footerRenderer": {},
-        "footerStyle": {
-          "type": "string"
-        },
-        "footerTemplate": {
-          "type": "string"
-        },
-        "headerClassName": {
-          "type": "string"
-        },
-        "headerRenderer": {},
-        "headerStyle": {
-          "type": "string"
-        },
-        "headerTemplate": {
-          "type": "string"
-        },
-        "headerText": {
-          "type": "string"
-        },
-        "renderer": {},
-        "resizable": {
-          "type": "string"
-        },
-        "sortable": {
-          "type": "string",
-          "enumValues": ["auto", "enabled", "disabled", "none"]
-        },
-        "sortProperty": {
-          "type": "string"
-        },
-        "style": {
-          "type": "string"
-        },
-        "template": {
-          "type": "string"
-        },
-        "width": {
-          "type": "number"
-        }
-      }
-    },
-    "currentRow": {
-      "type": "Object",
-      "writeback": true
-    },
-    "data": {},
-    "display": {
-      "type": "string",
-      "enumValues": ["list", "grid"]
-    },
-    "dnd": {
-      "type": "Object",
-      "properties": {
-        "drag": {
-          "type": "Object",
-          "properties": {
-            "rows": {
-              "type": "Object",
-              "properties": {
-                "dataTypes": {"type": "string|Array<string>"},
-                "dragStart": {},
-                "drag": {},
-                "dragEnd": {}
-              }
-            }
-          }
-        },
-        "drop": {
-          "type": "Object",
-          "properties": {
-            "columns": {
-              "type": "Object",
-              "properties": {
-                "dataTypes": {"type": "string|Array<string>"},
-                "dragEnter": {},
-                "dragOver": {},
-                "dragLeave": {},
-                "drop": {}
-              }
-            },
-            "rows": {
-              "type": "Object",
-              "properties": {
-                "dataTypes": {"type": "string|Array<string>"},
-                "dragEnter": {},
-                "dragOver": {},
-                "dragLeave": {},
-                "drop": {}
-              }
-            }
-          }
-        },
-        "reorder": {
-          "type": "Object",
-          "properties": {
-            "columns": {
-              "type": "string",
-              "enumValues": ["disabled", "enabled"]
-            }
-          }
-        }
-      }
-    },
-    "editMode": {
-      "type": "string",
-      "enumValues": ["none", "rowEdit"]
-    },
-    "firstSelectedRow": {
-      "type": "Object",
-      "writeback": true
-    },
-    "horizontalGridVisible": {
-      "type": "string",
-      "enumValues": ["auto", "enabled", "disabled"]
-    },
-    "rowRenderer": {},
-    "scrollPolicy": {
-      "type": "string",
-      "enumValues": ["auto", "loadMoreOnScroll"]
-    },
-    "scrollPolicyOptions": {
-      "type": "Object",
-      "properties": {
-        "fetchSize": {
-          "type": "number"
-        },
-        "maxCount": {
-          "type": "number"
-        }
-      }
-    },
-    "selection": {
-      "type": "Array<Object>",
-      "writeback": true
-    },
-    "selectionMode": {
-      "type": "Object",
-      "properties": {
-        "row": {
-          "type": "string",
-          "enumValues": ["single", "multiple"]
-        },
-        "column": {
-          "type": "string",
-          "enumValues": ["single", "multiple"]
-        }
-      }
-    },
-    "selectionRequired": {
-      "type": "boolean"
-    },
-    "translations": {
-      "type": "Object",
-      "properties": {
-        "labelAccSelectionAffordanceBottom": {
-          "type": "string"
-        },
-        "labelAccSelectionAffordanceTop": {
-          "type": "string"
-        },
-        "labelDisableNonContiguousSelection": {
-          "type": "string"
-        },
-        "labelEditRow": {
-          "type": "string",
-          "value": "Edit Row"
-        },
-        "labelEnableNonContiguousSelection": {
-          "type": "string"
-        },
-        "labelResize": {
-          "type": "string"
-        },
-        "labelResizePopupSpinner": {
-          "type": "string"
-        },
-        "labelResizePopupSubmit": {
-          "type": "string"
-        },
-        "labelSelectAndEditRow": {
-          "type": "string",
-          "value": "Select And Edit Row"
-        },
-        "labelSelectColum": {
-          "type": "string",
-          "value": "Select Column"
-        },
-        "labelSelectRow": {
-          "type": "string",
-          "value": "Select Row"
-        },
-        "labelSort": {
-          "type": "string",
-          "value": "Sort"
-        },
-        "labelSortAsc": {
-          "type": "string",
-          "value": "Sort Ascending"
-        },
-        "labelSortDsc": {
-          "type": "string",
-          "value": "Sort Descending"
-        },
-        "msgColumnResizeWidthValidation": {
-          "type": "string",
-          "value": "Width value must be an integer."
-        },
-        "msgFetchingData": {
-          "type": "string",
-          "value": "Fetching Data..."
-        },
-        "msgInitializing": {
-          "type": "string",
-          "value": "Initializing..."
-        },
-        "msgNoData": {
-          "type": "string",
-          "value": "No data to display."
-        },
-        "msgScrollPolicyMaxCountDetail": {
-          "type": "string",
-          "value": "Please reload with smaller data set."
-        },
-        "msgScrollPolicyMaxCountSummary": {
-          "type": "string",
-          "value": "Exceeded maximum rows for table scrolling."
-        },
-        "msgStatusSortAscending": {
-          "type": "string",
-          "value": "{0} sorted in ascending order."
-        },
-        "msgStatusSortDescending": {
-          "type": "string",
-          "value": "{0} sorted in descending order."
-        }
-      }
-    },
-    "verticalGridVisible": {
-      "type": "string",
-      "enumValues": ["auto", "enabled", "disabled"]
-    }
-  },
-  "methods": {
-    "getContextByNode": {},
-    "getDataForVisibleRow": {},
-    "refreshRow": {},
-  },
-  "events": {
-    "animateEnd": {},
-    "animateStart": {},
-    "beforeCurrentRow": {},
-    "beforeRowEdit": {},
-    "beforeRowEditEnd": {},
-    "sort": {}
-  },
-  "extension": {
-    _INNER_ELEM: 'table',
-    _WIDGET_NAME: "ojTable"
-  }
-};
-oj.CustomElementBridge.registerMetadata('oj-table', 'baseComponent', ojTableMeta);
-oj.CustomElementBridge.register('oj-table', {'metadata': oj.CustomElementBridge.getMetadata('oj-table')});
-})();
+/* global __oj_table_metadata:false */
+
+(function () {
+  __oj_table_metadata.extension._WIDGET_NAME = 'ojTable';
+  __oj_table_metadata.extension._INNER_ELEM = 'table';
+  oj.CustomElementBridge.registerMetadata('oj-table', 'baseComponent', __oj_table_metadata);
+  oj.CustomElementBridge.register('oj-table', { metadata: oj.CustomElementBridge.getMetadata('oj-table') });
+}());
 
 });

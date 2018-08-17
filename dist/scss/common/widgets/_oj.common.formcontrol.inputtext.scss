@@ -149,11 +149,24 @@
 
       width: 100%;
     }
+
     /* Styling for text-align */
-    .oj-form-control-text-align-right .oj-inputtext-input
+    .oj-form-control-text-align-right .oj-inputtext-input,
+    .oj-form-control-text-align-right .oj-inputpassword-input,
+    .oj-form-control-text-align-right .oj-textarea-input
     {
       text-align: right;
     }
+    .oj-form-control-text-align-start .oj-inputtext-input,
+    .oj-form-control-text-align-start .oj-inputpassword-input,
+    .oj-form-control-text-align-start .oj-textarea-input
+    {
+      @include oj-bidi-property(
+        $property: 'text-align',
+        $startOrEnd: start,
+        $important: false) ;
+    }
+
     // When size is provided, set width to auto to allow proper sizing
     .oj-inputtext-input[size],
     .oj-inputpassword-input[size],

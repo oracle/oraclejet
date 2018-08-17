@@ -96,5 +96,20 @@
     .oj-diagram-link.oj-invalid-drop {
       cursor: no-drop;
     }
+    
+    .oj-diagram-overview {
+      background-color:$dvtDiagramOverviewBgColor;
+    }
+    .oj-diagram-overview-viewport {
+      background-color:$dvtDiagramOverviewWindowBgColor;
+      border-color:$dvtDiagramOverviewWindowBorderColor;
+    }
+    .oj-diagram-overview-node {
+      fill:$dvtDiagramOverviewNodeBgColor;
+    }
+    .oj-diagram-overview-container-node {
+      fill:$dvtDiagramOverviewNodeBgColor;
+      fill-opacity:.25;
+    }
   }
 }

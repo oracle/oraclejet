@@ -8,7 +8,34 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
       
        function(oj, $)
 {
+ 
 
+var __oj_toolbar_metadata = 
+{
+  "properties": {
+    "chroming": {
+      "type": "string",
+      "enumValues": [
+        "full",
+        "half",
+        "outlined"
+      ]
+    },
+    "translations": {
+      "type": "object",
+      "value": {}
+    }
+  },
+  "methods": {
+    "refresh": {},
+    "setProperty": {},
+    "getProperty": {},
+    "setProperties": {},
+    "getNodeBySubId": {},
+    "getSubIdByNode": {}
+  },
+  "extension": {}
+};
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
@@ -848,19 +875,11 @@ oj.Components.setDefaultOptions({
         })
     }
 });
-(function() {
-var ojToolbarMeta = {
-  "properties": {
-    "chroming": {
-      "type": "string",
-      "enumValues": ["half", "full", "outlined"]
-    }
-  },
-  "extension": {
-    _WIDGET_NAME: "ojToolbar"
-  }
-};
-oj.CustomElementBridge.registerMetadata('oj-toolbar', 'baseComponent', ojToolbarMeta);
-oj.CustomElementBridge.register('oj-toolbar', {'metadata': oj.CustomElementBridge.getMetadata('oj-toolbar')});
-})();
+/* global __oj_toolbar_metadata:false */
+(function () {
+  __oj_toolbar_metadata.extension._WIDGET_NAME = 'ojToolbar';
+  oj.CustomElementBridge.registerMetadata('oj-toolbar', 'baseComponent', __oj_toolbar_metadata);
+  oj.CustomElementBridge.register('oj-toolbar', { metadata: oj.CustomElementBridge.getMetadata('oj-toolbar') });
+}());
+
 });

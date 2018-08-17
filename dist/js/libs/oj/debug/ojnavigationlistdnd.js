@@ -14,8 +14,6 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojnavigationlist', 'ojs/ojlistviewdnd'], fu
  * @param {Object} navlist the NavigationList instance
  * @constructor
  */
-if (typeof oj.ListViewDndContext != "undefined")
-{
   oj.NavigationListDndContext = function (navlist) {
     oj.NavigationListDndContext.superclass.constructor.call(this, navlist);
   };
@@ -182,5 +180,5 @@ if (typeof oj.ListViewDndContext != "undefined")
     return items;                    
   };
 
-}
+
 });

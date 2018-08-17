@@ -1,13 +1,9 @@
 {
   "name": "oj-buttonset-one",
-  "version": "5.1.0",
-  "jetVersion": "5.1.0",
+  "version": "5.2.0",
+  "jetVersion": "5.2.0",
   "displayName": "Buttonset One",
-  "preview": true,
-  "roles": [
-    "button",
-    "radiogroup"
-  ],
+  "type": "core",
   "styleClasses": [
     {
       "styleGroup": [
@@ -26,7 +22,7 @@
   "properties": {
     "chroming": {
       "description": "Indicates in what states the buttonset has chrome (background and border).",
-      "type": "string|undefined",
+      "type": "string",
       "displayName": "Chroming",
       "enumValues": [
         "full",
@@ -95,9 +91,10 @@
       }
     },
     "translations": {
-      "description": "A collection of translated resources from the translation bundle, or null if this\ncomponent has no resources. Resources may be accessed and overridden individually or collectively, as seen in the examples. If the component does not contain any translatable resource, the default value of this attribute will be \nnull. If not, an object containing all resources relevant to the component.\n\nIf this component has translations, their documentation immediately follows this doc entry.",
-      "type": "Object|null",
+      "description": "A collection of translated resources from the translation bundle, or null if this component has no resources.",
+      "type": "object|null",
       "displayName": "Translations",
+      "value": {},
       "translatable": true
     },
     "value": {
@@ -146,7 +143,7 @@
         {
           "name": "properties",
           "description": "An object containing the property and value pairs to set.",
-          "type": "Object"
+          "type": "object"
         }
       ],
       "return": "void"

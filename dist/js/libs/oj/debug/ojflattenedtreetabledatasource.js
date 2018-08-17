@@ -308,7 +308,7 @@ oj.FlattenedTreeTableDataSource.prototype.expand = function(rowKey)
 oj.FlattenedTreeTableDataSource.prototype.get = function(id, options)
 {
   // only works for expanded keys
-  var rowIdx = this._data.getIndex(Object(id));
+  var rowIdx = this._data.getIndex(id);
   var row = this._rows['data'][rowIdx];
   var wrappedRow = this._wrapWritableValue(row);
   var result = {'data': wrappedRow, 'key': id, 'index': rowIdx};

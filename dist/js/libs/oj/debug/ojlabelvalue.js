@@ -11,6 +11,33 @@ define(['ojs/ojcore', 'ojs/ojcomponentcore', 'ojs/ojlabel'],
        function(oj)
 {
 
+var __oj_label_value_metadata = 
+{
+  "properties": {
+    "labelEdge": {
+      "type": "string",
+      "enumValues": [
+        "inherit",
+        "start",
+        "top"
+      ],
+      "value": "inherit"
+    },
+    "labelWidth": {
+      "type": "string",
+      "value": "inherit"
+    }
+  },
+  "methods": {
+    "setProperty": {},
+    "getProperty": {},
+    "setProperties": {},
+    "refresh": {},
+    "getNodeBySubId": {},
+    "getSubIdByNode": {}
+  },
+  "extension": {}
+};
 /**
  * Copyright (c) 2017, Oracle and/or its affiliates.
  * All rights reserved.
@@ -67,8 +94,9 @@ define(['ojs/ojcore', 'ojs/ojcomponentcore', 'ojs/ojlabel'],
  * @default "inherit"
  * @ojvalue {string} "start" Label is inline with the start of its value component
  * @ojvalue {string} "top" Label is on top of its value component
+ * @ojvalue {string} "inherit"  Label will inherit label-edge from its closest custom element ancestor element.
  * @desc Specifies how the label is aligned with its value component.
- * <p>If the value is 'inherit', it will inherit label-edge from it's closest custom element ancestor element.  If the ancestor doesn't have a label-width attribute, the default is "top".</p>
+ * <p>If the value is 'inherit', it will inherit label-edge from its closest custom element ancestor element. If the ancestor doesn't have a label-width attribute, the default is "top".</p>
  *
  * @example <caption>Initialize the oj-label-value with the <code class="prettyprint">label-edge</code> attribute specified:</caption>
  * &lt;oj-label-value label-edge="top">
@@ -93,7 +121,7 @@ define(['ojs/ojcore', 'ojs/ojcomponentcore', 'ojs/ojlabel'],
  * @default "inherit"
  * @desc Specifies the label width.
  * <p>This can be any legal <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/width">CSS width</a> or 'inherit',
- * which will inherit label-width from it's closest custom element ancestor element.  If the value is "inherit" and ancestor doesn't have a label-width attribute, the default is "33%".</p>
+ * which will inherit label-width from its closest custom element ancestor element.  If the value is "inherit" and ancestor doesn't have a label-width attribute, the default is "33%".</p>
  *
  * @example <caption>Initialize the oj-form-layout with the <code class="prettyprint">label-width</code> attribute specified:</caption>
  * &lt;oj-form-layout label-width="50%">
@@ -161,26 +189,6 @@ define(['ojs/ojcore', 'ojs/ojcomponentcore', 'ojs/ojlabel'],
  * @instance
  */
 
-/**
- * @ignore
- */
-var ojLabelValueMeta = {
-  properties: {
-    labelEdge: {
-      type: 'string',
-      enumValues: ['start', 'top', 'inherit'],
-      value: 'inherit'
-    },
-    labelWidth: {
-      type: 'string',
-      value: 'inherit'
-    }    
-  },
-  extension: {
-    _CONSTRUCTOR: ojLabelValue
-  }
-};
-Object.freeze(ojLabelValueMeta);
 
 /**
  * The _ojLabelValue constructor function. 
@@ -188,6 +196,7 @@ Object.freeze(ojLabelValueMeta);
  * @constructor
  * @private
  */
+// eslint-disable-next-line no-unused-vars
 function ojLabelValue(context) {
   var self = this;
   var element = context.element;
@@ -313,8 +322,12 @@ function ojLabelValue(context) {
   };
 }
 
-oj.CustomElementBridge.registerMetadata('oj-label-value', null, ojLabelValueMeta);
-oj.CustomElementBridge.register('oj-label-value',
-                                { metadata: oj.CustomElementBridge.getMetadata('oj-label-value') });
+/* global __oj_label_value_metadata:false */
+/* global ojLabelValue */
+(function () {
+  __oj_label_value_metadata.extension._CONSTRUCTOR = ojLabelValue;
+  oj.CustomElementBridge.registerMetadata('oj-label-value', null, __oj_label_value_metadata);
+  oj.CustomElementBridge.register('oj-label-value', { metadata: oj.CustomElementBridge.getMetadata('oj-label-value') });
+}());
 
 });

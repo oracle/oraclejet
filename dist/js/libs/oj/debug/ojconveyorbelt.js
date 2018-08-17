@@ -7,7 +7,36 @@
 define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
        function(oj, $)
 {
-
+//%COMPONENT_METADATA%
+var __oj_conveyor_belt_metadata = 
+{
+  "properties": {
+    "contentParent": {
+      "type": "string"
+    },
+    "orientation": {
+      "type": "string",
+      "enumValues": [
+        "horizontal",
+        "vertical"
+      ],
+      "value": "horizontal"
+    },
+    "translations": {
+      "type": "object",
+      "value": {}
+    }
+  },
+  "methods": {
+    "refresh": {},
+    "setProperty": {},
+    "getProperty": {},
+    "setProperties": {},
+    "getNodeBySubId": {},
+    "getSubIdByNode": {}
+  },
+  "extension": {}
+};
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
@@ -2878,23 +2907,11 @@ var _RESIZE_LISTENER_COLLAPSE_EVENT_TIMEOUT = 25;
 // end static members and functions ////////////////////////////////////////////
 
 }()); // end of ConveyorBelt wrapper function
-(function() {
-var ojConveyorBeltMeta = {
-  "properties": {
-    "contentParent": {
-      "type": "string"
-    },
-    "orientation": {
-      "type": "string",
-      "enumValues": ["horizontal", "vertical"]
-    }
-  },
-  "extension": {
-    _WIDGET_NAME: "ojConveyorBelt"
-  }
-};
-oj.CustomElementBridge.registerMetadata('oj-conveyor-belt', 'baseComponent', ojConveyorBeltMeta);
-oj.CustomElementBridge.register('oj-conveyor-belt', {'metadata': oj.CustomElementBridge.getMetadata('oj-conveyor-belt')});
-})();
+/* global __oj_conveyor_belt_metadata:false */
+(function () {
+  __oj_conveyor_belt_metadata.extension._WIDGET_NAME = 'ojConveyorBelt';
+  oj.CustomElementBridge.registerMetadata('oj-conveyor-belt', 'baseComponent', __oj_conveyor_belt_metadata);
+  oj.CustomElementBridge.register('oj-conveyor-belt', { metadata: oj.CustomElementBridge.getMetadata('oj-conveyor-belt') });
+}());
 
 });

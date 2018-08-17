@@ -3,7 +3,7 @@
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
-define(['jquery','./DvtToolkit', './DvtPanZoomCanvas'], function($, dvt) {
+define(['jquery','./DvtToolkit', './DvtPanZoomCanvas','./DvtOverview'], function($, dvt) {
   // Internal use only.  All APIs and functionality are subject to change at any time.
 
 (function(dvt) {
@@ -2392,6 +2392,9 @@ dvt.BaseDiagram.prototype.ConstrainPanning = function(x, y, w, h, zoom) {
   pzc.setMinPanY(minPanY);
   pzc.setMaxPanX(maxPanX);
   pzc.setMaxPanY(maxPanY);
+  if (this.Overview) {
+    this.Overview.updateConstraints(minPanX,minPanY,maxPanX,maxPanY);
+  }
 };
 
 /**
@@ -5124,6 +5127,734 @@ DvtDiagramStyleUtils.getAnimationOnDataChange = function(diagram) {
 };
 
 /**
+ * Utility functions for dvt.Diagram overview window
+ * @class
+ */
+var DvtDiagramOverviewUtils = {};
+
+dvt.Obj.createSubclass(DvtDiagramOverviewUtils, dvt.Obj, 'DvtDiagramOverviewUtils');
+
+/**
+ * @protected
+ * Calculates the overview window viewport from a pan zoom canvas matrix
+ * @param {dvt.Diagram} diagram the parent diagram component
+ */
+DvtDiagramOverviewUtils.CalcViewportFromMatrix = function(diagram) {
+  var contentMatrix = diagram.getPanZoomCanvas().getContentPaneMatrix();
+  var defViewport = new dvt.Rectangle(0, 0, diagram.getWidth(), diagram.getHeight());
+  var dx = contentMatrix.getTx();
+  var dy = contentMatrix.getTy();
+  var dz = contentMatrix.getA();
+  var newX = defViewport.x - dx / dz;
+  var newY = defViewport.y - dy / dz;
+  var newWidth = defViewport.w / dz;
+  var newHeight = defViewport.h / dz;
+  var adjViewport = new dvt.Rectangle(newX, newY, newWidth, newHeight);
+  return adjViewport;
+};
+
+/**
+ * @protected
+ * Creates the overview window instance for the diagram
+ * @param {dvt.Diagram} diagram the parent diagram component
+ * @return {dvt.Overview} the overview window
+ */
+DvtDiagramOverviewUtils.CreateOverviewWindow = function(diagram) {
+  var overview = new DvtDiagramOverview(diagram);
+  diagram.addChild(overview);
+  overview.render();
+  DvtDiagramOverviewUtils._positionOverviewWindow(diagram, overview);
+  var dims = overview.getDimensionsWithStroke();
+  var clipPath = new dvt.ClipPath(diagram.getId() + 'dgr_ovClip');
+  //give clip path an extra space
+  clipPath.addRect(overview.getTranslateX() -1, overview.getTranslateY() -1, dims.w+1, dims.h+1);
+  overview.setClipPath(clipPath);
+  overview.UpdateViewport();
+  return overview;
+};
+
+/**
+ * @protected
+ * Creates content for the overview window based on the current state of the diagram
+ * @param {dvt.Diagram} diagram the parent diagram component
+ * @param {DvtDiagramOverview} overview the overview component
+ * @param {number} width overview width
+ * @param {number} height overview height
+ * @return {dvt.Container} content for the overview window
+ */
+DvtDiagramOverviewUtils.CreateOverviewContent = function(diagram, overview, width, height) {
+  var ovContent = new dvt.Container(diagram.getCtx());
+  ovContent.setMouseEnabled(false);
+  overview.Nodes = {};
+  
+  var rootNodes = diagram.GetRootNodeObjects();
+  if (rootNodes.length > 0) {
+    rootNodes.forEach(function(node) {
+      DvtDiagramOverviewUtils.CreateOverviewNode(diagram, overview, node, ovContent);
+    });
+    DvtDiagramOverviewUtils.ZoomToFitOverviewContent(diagram, overview, ovContent, width, height);
+  }
+  return ovContent;
+};
+
+/**
+ * @protected
+ * Creates overview node
+ * @param {dvt.Diagram} diagram the parent diagram component
+ * @param {DvtDiagramOverview} overview the overview component
+ * @param {DvtDiagramNode} node the diagram node object that has to be shown in the overview
+ * @param {dvt.Container} container container to attach the node
+ */
+DvtDiagramOverviewUtils.CreateOverviewNode = function(diagram, overview, node, container) {
+  if (!node)
+    return;
+  var ovNode = DvtDiagramOverviewUtils._createOverviewNodeShape(diagram, node);
+  DvtDiagramOverviewUtils._positionOverviewNode(node, ovNode);
+  overview.Nodes[node.getId()] = ovNode;
+  container.addChild(ovNode);
+  
+  if (node.isDisclosed()) {
+    ovNode._ovChildNodePane = new dvt.Container(diagram.getCtx());
+    ovNode.addChild(ovNode._ovChildNodePane);
+    var cp = node.getContainerPadding();
+    ovNode._ovChildNodePane.setTranslate(cp.left,cp.top);
+    node.getChildNodeIds().forEach(function(childId) {
+      var childNode = diagram.getNodeById(childId);
+      DvtDiagramOverviewUtils.CreateOverviewNode(diagram, overview, childNode, ovNode._ovChildNodePane);
+    })
+  }
+};
+
+/**
+ * @protected
+ * Updates the overview window instance for the diagram:
+ *           window position, nodes positions, clip path
+ * @param {dvt.Diagram} diagram the parent diagram component
+ * @param {DvtDiagramOverview} overview the overview component
+ */
+DvtDiagramOverviewUtils.UpdateOverviewWindow = function(diagram, overview) {
+  DvtDiagramOverviewUtils._positionOverviewWindow(diagram, overview);
+  DvtDiagramOverviewUtils._updateOverviewNodes(diagram, overview);
+  if (Object.keys(overview.Nodes).length !== 0)
+    DvtDiagramOverviewUtils.ZoomToFitOverviewContent(diagram, overview, overview.Content, overview.Width, overview.Height);
+  overview.UpdateViewport();
+  //update clip path
+  var dims = overview.getDimensionsWithStroke();
+  overview.setClipPath(null);
+  var clipPath = new dvt.ClipPath(diagram.getId() + 'dgr_ovClip');
+  //give clip path an extra space
+  clipPath.addRect(overview.getTranslateX() -1, overview.getTranslateY() -1, dims.w+1, dims.h+1);
+  overview.setClipPath(clipPath);
+};
+
+/**
+ * @protected
+ * Updates diagram content. Used for partial updates
+ * @param {dvt.Diagram} diagram the parent diagram component
+ * @param {DvtDiagramOverview} overview the overview component
+ * @param {string} type event type
+ * @param {object} event event object
+ */
+DvtDiagramOverviewUtils.UpdateOverviewContent = function(diagram, overview, type, event) {
+  var eventNodes = event['data']['nodes'];
+  if (!eventNodes || eventNodes.length === 0)
+    return;
+
+  var parentId = event['parentId'];
+  var parentNode = parentId ? diagram.getNodeById(parentId) : null;
+  var nodesToUpdate = [];
+  
+  if (type == 'add') {
+    //When adding child nodes from container,
+    //find root parent and update the subtree.
+    if (parentNode) {
+      var rootNode = DvtDiagramOverviewUtils._findRootNode(diagram, parentNode);
+      DvtDiagramOverviewUtils._removeNode(diagram, overview, rootNode.getId());
+      nodesToUpdate.push(rootNode);
+    }
+    else {
+      eventNodes.forEach(function(nodeData){
+        nodesToUpdate.push(diagram.getNodeById(nodeData.id));
+      });
+    }
+  }
+  else if (type == 'change') {
+    // find all roots to update
+    // rerender starting with roots
+    var roots = {};
+    eventNodes.forEach(function(nodeData){
+      var rootNode = DvtDiagramOverviewUtils._findRootNode(diagram, diagram.getNodeById(nodeData.id));
+      if (rootNode)
+        roots[rootNode.getId()] = rootNode;
+    });
+    for (var nodeId in roots) {
+      DvtDiagramOverviewUtils._removeNode(diagram, overview, nodeId);
+      nodesToUpdate.push(roots[nodeId]);
+    }
+  }
+  else if (type == 'remove') {
+    //When removing child nodes from container,
+    //find root parent and update the subtree
+    if (parentNode) { 
+      var rootNode = DvtDiagramOverviewUtils._findRootNode(diagram, parentNode);
+      DvtDiagramOverviewUtils._removeNode(diagram, overview, rootNode.getId());
+      nodesToUpdate.push(rootNode);
+    }
+    else {
+      //remove nodes
+      eventNodes.forEach(function(nodeData){
+        DvtDiagramOverviewUtils._removeNode(diagram, overview, nodeData.id);
+      });
+    }
+  }
+  nodesToUpdate.forEach(function(node) {
+    // rerender each node
+    DvtDiagramOverviewUtils.CreateOverviewNode(diagram, overview, node, overview.Content);
+  });
+};
+
+/**
+ * @protected
+ * Transforms a point from diagram content to viewport coordinates
+ * @param {number} cx content x position
+ * @param {number} cy content y position
+ * @param {dvt.Container} content overview content
+ * @return {dvt.Point} point in viewport coordinates
+ */
+DvtDiagramOverviewUtils.TransformFromContentToViewportCoords = function(cx, cy, content) {
+  var tx = content.getTranslateX();
+  var ty = content.getTranslateY();
+  var sx = content.getScaleX();
+  var sy = content.getScaleY();
+
+  var vx = (cx * sx) + tx;
+  var vy = (cy * sy) + ty;
+  return new dvt.Point(vx, vy);
+};
+
+/**
+ * @protected
+ * Transforms a point from overview viewport to diagram content coordinates
+ * @param {number} vx viewport x position
+ * @param {number} vy viewport y position
+ * @param {dvt.Container} content overview content
+ * @return {dvt.Point} point in content coordinates
+ */
+DvtDiagramOverviewUtils.TransformFromViewportToContentCoords = function(vx, vy, content) {
+  var tx = content.getTranslateX();
+  var ty = content.getTranslateY();
+  var sx = content.getScaleX();
+  var sy = content.getScaleY();
+
+  var cx = (vx - tx) / sx;
+  var cy = (vy - ty) / sy;
+  return new dvt.Point(cx, cy);
+};
+
+/**
+ * @protected
+ * Zooms to fit diagram content into the overview window
+ * @param {dvt.Diagram} diagram the parent diagram component
+ * @param {DvtDiagramOverview} overview the overview window
+ * @param {dvt.Container} ovContent overview window content
+ * @param {number} width overview width
+ * @param {number} height overview height
+ */
+DvtDiagramOverviewUtils.ZoomToFitOverviewContent = function(diagram, overview, ovContent, width, height) {
+  var diagram = overview.Diagram;
+  var fitBounds = overview.Diagram._cachedViewBounds;
+  
+  var dims = fitBounds ? fitBounds : diagram.GetViewBounds();
+  var dz = DvtDiagramOverviewUtils._calcOverviewScale(diagram, dims, width, height);
+  ovContent.setScale(dz, dz);
+
+  var tx = (width - dims.w * dz) / 2 - dims.x * dz;
+  var ty = (height - dims.h * dz) / 2 - dims.y * dz;
+  ovContent.setTranslate(tx, ty);
+};
+
+/**
+ * @private
+ * Calculates scale for the overview content
+ * @param {dvt.Diagram} diagram the parent diagram component
+ * @param {object} ztfBounds zoom-to-fit dimensions for the diagram content
+ * @param {number} width overview width
+ * @param {number} height overview height
+ */
+DvtDiagramOverviewUtils._calcOverviewScale = function(diagram, ztfBounds, width, height) 
+{
+  var cw = width - 20; //use 10px padding for the content from each side
+  var ch = height - 20; //use 10px padding for the content from each side
+  var dzx = cw / ztfBounds.w;
+  var dzy = ch / ztfBounds.h;
+  var dz = Math.min(dzx, dzy);
+  return dz;
+};
+
+/**
+ * @private
+ * Creates overview node shape for the given diagram node
+ * @param {dvt.Diagram} diagram the parent diagram component
+ * @param {DvtDiagramNode} node the diagram node object that has to be shown in the overview
+ * @return {dvt.SimpleMarker} a marker that represents a diagram node in the overview
+ */
+DvtDiagramOverviewUtils._createOverviewNodeShape = function(diagram, node) {
+  var ovIconData = diagram.Options.styleDefaults._overviewStyles.node;
+  if (node.getData()['overview'])
+    ovIconData = dvt.JsonUtils.merge(node.getData()['overview']['icon'], ovIconData);
+  
+  // determine node shape using the following rules:
+  // - the container shape is always 'rectangle'
+  // - custom node with 'inherit' shape turns into 'rectangle', otherwise it can use built-in shape/svg path
+  // - standard node can either 'inherit' the shape from main node or use specified built-in shape/svg path
+  var iconShape = ovIconData['shape'];
+  if (node.isDisclosed() || (diagram.Options.renderer && iconShape == 'inherit')) {
+    iconShape = 'rectangle';
+  }
+  else if (iconShape == 'inherit') {
+    iconShape = node.getData()['icon']['shape'];
+  }
+  var dims = node.getLayoutBounds();
+  var iconWidth = dims.w;
+  var iconHeight = dims.h;
+  var ovNode = new dvt.SimpleMarker(diagram.getCtx(), iconShape, dvt.CSSStyle.SKIN_ALTA, iconWidth / 2, iconHeight / 2, iconWidth, iconHeight, 0);
+  
+  //apply styles - svg style and class names
+  var className = node.isDisclosed() ? 'oj-diagram-overview-container-node' : 'oj-diagram-overview-node';
+  if (ovIconData['svgClassName'])
+    className += ' ' + ovIconData['svgClassName'];
+  ovNode.setStyle(ovIconData['svgStyle']).setClassName(className);
+  return ovNode;
+};
+
+/**
+ * @private
+ * Finds a root node for the given diagram node. Used for partial updates
+ * @param {dvt.Diagram} diagram the parent diagram component
+ * @param {DvtDiagramNode} node a diagram node
+ * @return {DvtDiagramNode} root node for the given diagram node
+ */
+DvtDiagramOverviewUtils._findRootNode = function(diagram, node) {
+  var rootNode = node;
+  var groupId = node ? node.getGroupId() : null;
+  while(groupId) {
+    rootNode = diagram.getNodeById(groupId) ? diagram.getNodeById(groupId) : rootNode;
+    groupId = rootNode.getGroupId();
+  }
+  return rootNode;
+};
+
+/**
+ * @private
+ * Positions overview node based on postion of the diagram node
+ * @param {DvtDiagramNode} node diagram node
+ * @param {dvt.SimpleMarker} ovNode overview node
+ */
+DvtDiagramOverviewUtils._positionOverviewNode = function(node, ovNode) {
+  var tx = node.getTranslateX();
+  var ty = node.getTranslateY();
+  ovNode.setTranslate(tx, ty);
+};
+
+/**
+ * @private
+ * Positions overview window within the component
+ * @param {dvt.Diagram} diagram the parent diagram component
+ * @param {DvtDiagramOverview} overview the overview component
+ */
+DvtDiagramOverviewUtils._positionOverviewWindow = function(diagram, overview) {
+  var overviewDims = overview.getDimensionsWithStroke();
+  var halign = diagram.Options['overview']['halign'];
+  var valign = diagram.Options['overview']['valign'];
+  var overviewWidth = overviewDims.w;
+  var overviewHeight = overviewDims.h;
+  var availableWidth = diagram.Width;
+  var availableHeight = diagram.Height;
+  
+  switch(halign) {
+    case 'start': 
+      halign = dvt.Agent.isRightToLeft(diagram.getCtx()) ? 'right' : 'left';
+      break;
+    case 'end': 
+      halign = dvt.Agent.isRightToLeft(diagram.getCtx()) ? 'left' : 'right'; 
+      break;
+    default: break;
+  }
+  
+  var positionX = halign == 'center' ? (availableWidth - overviewWidth)/2 :
+                  halign == 'right' ? availableWidth - overviewWidth :
+                  0;
+  var positionY = valign == 'middle' ? (availableHeight - overviewHeight)/2 :
+                  valign == 'bottom' ? availableHeight - overviewHeight :
+                  0;
+  overview.setTranslate(positionX, positionY);
+};
+
+/**
+ * @private
+ * Removes overview node if exists. Used for partual updates
+ * @param {dvt.Diagram} diagram the parent diagram component
+ * @param {DvtDiagramOverview} overview the overview component
+ * @param {string} nodeId the node id
+ */
+DvtDiagramOverviewUtils._removeNode = function(diagram, overview, nodeId) {
+  var ovNode = overview.Nodes[nodeId];
+  if (ovNode)
+    ovNode.getParent().removeChild(ovNode);
+};
+
+/**
+ * @private
+ * Updates positions of the overview nodes
+ * @param {dvt.Diagram} diagram the parent diagram component
+ * @param {DvtDiagramOverview} overview the overview component
+ */
+DvtDiagramOverviewUtils._updateOverviewNodes = function(diagram, overview) {
+  for (var nodeId in overview.Nodes) {
+    var node = diagram.getNodeById(nodeId);
+    var ovNode = overview.Nodes[nodeId];
+    if (node && ovNode)
+      DvtDiagramOverviewUtils._positionOverviewNode(node, ovNode);
+    else if (ovNode && !node) { 
+      // node could be removed by partial update
+      // it should be already removed from DOM
+      // now just remove the reference to it
+      delete overview.Nodes[nodeId];
+    }
+  }
+};
+/**
+ * Overview window for diagram.
+ * @param {dvt.Diagram} diagram The parent diagram who owns the overview.
+ * @class
+ * @constructor
+ * @extends {dvt.Overview}
+ */
+var DvtDiagramOverview = function(diagram) {
+  this.Init(diagram.getCtx(), diagram.processEvent, diagram);
+  this.Diagram = diagram;
+  this._id = diagram.getId() + '_overview';
+};
+
+dvt.Obj.createSubclass(DvtDiagramOverview, dvt.Overview);
+
+/**
+ * Creates diagram content
+ * @override
+ */
+DvtDiagramOverview.prototype.parseDataXML = function(width, height) {
+  this.Content = DvtDiagramOverviewUtils.CreateOverviewContent(this.Diagram, this, width, height);
+  this.addChild(this.Content);
+  this.Content.setMouseEnabled(false);
+};
+
+/**
+ * Override to change styles, interation and update viewport
+ * @override
+ */
+DvtDiagramOverview.prototype.render = function() {
+  var width = Math.min(this.Diagram.Width, this.Diagram.Options.overview.width);
+  var height = Math.min(this.Diagram.Height, this.Diagram.Options.overview.height);
+  var styleMap = this.Diagram.Options.styleDefaults._overviewStyles;
+  var options = {
+      'xMin': 0,
+      'xMax': width,
+      'yMin': 0,
+      'yMax': height,
+      'x1': 0,
+      'x2': width,
+      'y1': 0,
+      'y2': height,
+      'style' : {
+        'overviewBackgroundColor': styleMap.overview.backgroundColor,
+        'windowBackgroundColor': styleMap.viewport.backgroundColor,
+        'windowBorderTopColor': styleMap.viewport.borderColor,
+        'windowBorderRightColor': styleMap.viewport.borderColor,
+        'windowBorderBottomColor': styleMap.viewport.borderColor,
+        'windowBorderLeftColor': styleMap.viewport.borderColor,
+        'timeAxisBarColor': '#00000000' // render time axis bar invisible - diagram does not need it
+      },
+      'animationOnClick' : 'off',
+      'featuresOff' : 'zoom'
+  };
+  var isEmpty = this.Diagram.GetAllRoots().length === 0 ? true: false;
+  this._viewportConstraints = {
+    xMin: isEmpty ? 0 : -Number.MAX_VALUE, 
+    yMin: isEmpty ? 0 : -Number.MAX_VALUE, 
+    xMax: isEmpty ? width : Number.MAX_VALUE, 
+    yMax: isEmpty ? height : Number.MAX_VALUE
+  };
+  if (!this.Diagram.IsPanningEnabled()) {
+    this.setMouseEnabled(false);
+  }
+  // now call super to render the scrollbar
+  DvtDiagramOverview.superclass.render.call(this, options, width, height);
+};
+
+/**
+ * @override
+ */
+DvtDiagramOverview.prototype.animateUpdate = function(animationHandler, oldDiagramOverview) {
+  // animate content  - fade in/out and matrix
+  this.Content.setAlpha(0);
+  animationHandler.add(new dvt.AnimFadeIn(this.getCtx(), this.Content, animationHandler.getAnimationDuration()), DvtDiagramDataAnimationHandler.UPDATE);
+  
+  var idx = this.getChildIndex(this.Content);
+  this.addChildAt(oldDiagramOverview.Content, idx+1);
+  var removeFunc = function() {
+    oldDiagramOverview.Content.getParent().removeChild(oldDiagramOverview.Content);
+  };
+  var fadeOutAnim = new dvt.AnimFadeOut(this.getCtx(), oldDiagramOverview.Content, animationHandler.getAnimationDuration());
+  dvt.Playable.appendOnEnd(fadeOutAnim, removeFunc);
+  animationHandler.add(fadeOutAnim, DvtDiagramDataAnimationHandler.UPDATE);
+    
+  //animate viewport
+  var customContentAnim = new dvt.CustomAnimation(this.getCtx(), null, animationHandler.getAnimationDuration());  
+  var oldAnimationParams = oldDiagramOverview.GetAnimationParams();
+  var newAnimationParams = this.GetAnimationParams();
+  this.SetAnimationParams(oldAnimationParams);
+  customContentAnim.getAnimator().addProp(dvt.Animator.TYPE_NUMBER_ARRAY, this, this.GetAnimationParams, this.SetAnimationParams, newAnimationParams);
+  
+  animationHandler.add(customContentAnim, DvtDiagramDataAnimationHandler.UPDATE);
+};
+
+/**
+ * Updates panning constraints for the overview viewport using panning constraints for the main diagram
+ * @param {number} minPanX min x coordinate for the diagram content
+ * @param {number} minPanY min y coordinate for the diagram content
+ * @param {number} maxPanX max x coordinate for the diagram content
+ * @param {number} maxPanY max y coordinate for the diagram content
+ */
+DvtDiagramOverview.prototype.updateConstraints = function (minPanX,minPanY,maxPanX,maxPanY) {
+  var zoom = this.Diagram.getPanZoomCanvas().getZoom();
+  
+  // maxPanX/maxPanY: bottom right point for the content with zoom adjustment corresponds to top left point in overview viewport
+  // minPanX,minPanY: top left point for the content with zoom adjustment corresponds to bottom right point in overview viewport
+  var topLeft = DvtDiagramOverviewUtils.TransformFromContentToViewportCoords(- maxPanX / zoom, - maxPanY / zoom, this.Content);
+  var bottomRight = DvtDiagramOverviewUtils.TransformFromContentToViewportCoords(- minPanX / zoom, - minPanY / zoom, this.Content);
+  var width = this._viewportPosition.x2 - this._viewportPosition.x1;
+  var height = this._viewportPosition.y2 - this._viewportPosition.y1;
+  var panDirection = this.Diagram.getPanDirection();
+  
+  this._viewportConstraints = {
+      xMin: panDirection === 'y' ? this._viewportPosition.x1 : topLeft.x,
+      xMax: panDirection === 'y' ? this._viewportPosition.x2 : bottomRight.x + width,
+      yMin: panDirection === 'x' ? this._viewportPosition.y1 : topLeft.y,
+      yMax: panDirection === 'x' ? this._viewportPosition.y2 : bottomRight.y + height
+  };
+};
+
+/**
+ * @override
+ */
+DvtDiagramOverview.prototype.getMinimumPositionX = function()
+{
+  return this._viewportConstraints.xMin;
+};
+
+/**
+ * @override
+ */
+DvtDiagramOverview.prototype.getMinimumPositionY = function()
+{
+  return this._viewportConstraints.yMin;
+};
+
+/**
+ * @override
+ */
+DvtDiagramOverview.prototype.getMaximumPositionX = function()
+{
+  return this._viewportConstraints.xMax;
+};
+
+/**
+ * @override
+ */
+DvtDiagramOverview.prototype.getMaximumPositionY = function()
+{
+  return this._viewportConstraints.yMax;
+};
+
+/**
+ * @override
+ */
+DvtDiagramOverview.prototype.getMinimumWindowWidth = function()
+{
+  return 0;
+};
+
+/**
+ * @override
+ */
+DvtDiagramOverview.prototype.getMaximumWindowWidth = function()
+{
+  return Number.MAX_VALUE;
+};
+
+/**
+ * @override
+ */
+DvtDiagramOverview.prototype.getMinimumWindowHeight = function()
+{
+  return 0;
+};
+
+/**
+ * @override
+ */
+DvtDiagramOverview.prototype.getMaximumWindowHeight = function()
+{
+  return Number.MAX_VALUE;
+};
+
+/**
+ * Updates overview viewport
+ * @protected
+ */
+DvtDiagramOverview.prototype.UpdateViewport = function() {
+  if (this._bCancelUpdateViewport)
+    return;
+  var newViewport = DvtDiagramOverviewUtils.CalcViewportFromMatrix(this.Diagram);
+  var topLeft = DvtDiagramOverviewUtils.TransformFromContentToViewportCoords(newViewport.x, newViewport.y, this.Content);
+  var bottomRight = DvtDiagramOverviewUtils.TransformFromContentToViewportCoords(newViewport.x + newViewport.w, newViewport.y + newViewport.h, this.Content);
+  this._viewportPosition = {x1: topLeft.x, x2: bottomRight.x, y1: topLeft.y, y2: bottomRight.y};
+  this.setViewportRange(topLeft.x, bottomRight.x, topLeft.y, bottomRight.y);
+};
+
+/**
+ * Viewport change handler
+ * @protected
+ */
+DvtDiagramOverview.prototype.HandleViewportChange = function(event) {
+  var newX1 = event.getNewX1() !== undefined ? event.getNewX1() : this._viewportPosition.x1;
+  var newY1 = event.getNewY1() !== undefined ? event.getNewY1() : this._viewportPosition.y1;
+  var oldTopLeft = DvtDiagramOverviewUtils.TransformFromViewportToContentCoords(this._viewportPosition.x1, this._viewportPosition.y1, this.Content);
+  var newTopLeft = DvtDiagramOverviewUtils.TransformFromViewportToContentCoords(newX1, newY1, this.Content);
+  
+  this._viewportPosition.x1 = newX1;
+  this._viewportPosition.y1 = newY1;
+
+  var zoom = this.Diagram.getPanZoomCanvas().getZoom();
+  var dx = ((newTopLeft.x - oldTopLeft.x) * zoom);
+  var dy = ((newTopLeft.y - oldTopLeft.y) * zoom);
+  if (dx !== 0 || dy !== 0) {
+    this._bCancelUpdateViewport = true;  // cancel HandleViewportChange as redundant
+    this.Diagram.getPanZoomCanvas().panBy(-dx, -dy);
+    this._bCancelUpdateViewport = false;
+  }
+};
+
+/**
+ * Returns the animation params for the viewport.
+ * @return {array} params
+ * @private
+ */
+DvtDiagramOverview.prototype.GetAnimationParams = function() {
+  var params = [];
+  var slidingWindow = this.getSlidingWindow();
+  var leftHandle = this.getLeftHandle();
+  var rightHandle = this.getRightHandle();
+  var bottomBar = this.getBottomBar();
+  var topBar = this.getTopBar();
+  
+  params.push(slidingWindow.getTranslateX());
+  params.push(slidingWindow.getTranslateY());
+  params.push(slidingWindow.getWidth());
+  params.push(slidingWindow.getHeight());
+  
+  params.push(leftHandle.getX1());
+  params.push(leftHandle.getY1());
+  params.push(leftHandle.getX2());
+  params.push(leftHandle.getY2());
+  
+  params.push(rightHandle.getX1());
+  params.push(rightHandle.getY1());
+  params.push(rightHandle.getX2());
+  params.push(rightHandle.getY2());
+  
+  params.push(bottomBar.getX1());
+  params.push(bottomBar.getY1());
+  params.push(bottomBar.getX2());
+  params.push(bottomBar.getY2());
+
+  params.push(topBar.getX1());
+  params.push(topBar.getY1());
+  params.push(topBar.getX2());
+  params.push(topBar.getY2());
+  
+  return params;
+};
+
+/**
+ * Updates the animation params for the viewport.
+ * @param {array} params
+ * @protected
+ */
+DvtDiagramOverview.prototype.SetAnimationParams = function(params) {
+  var slidingWindow = this.getSlidingWindow();
+  var leftHandle = this.getLeftHandle();
+  var rightHandle = this.getRightHandle();
+  var bottomBar = this.getBottomBar();
+  var topBar = this.getTopBar();
+  
+  var i = 0;
+  slidingWindow.setTranslateX(params[i++]);
+  slidingWindow.setTranslateY(params[i++]);
+  slidingWindow.setWidth(params[i++]);
+  slidingWindow.setHeight(params[i++]);
+  
+  leftHandle.setX1(params[i++]);
+  leftHandle.setY1(params[i++]);
+  leftHandle.setX2(params[i++]);
+  leftHandle.setY2(params[i++]);
+  
+  rightHandle.setX1(params[i++]);
+  rightHandle.setY1(params[i++]);
+  rightHandle.setX2(params[i++]);
+  rightHandle.setY2(params[i++]);
+  
+  bottomBar.setX1(params[i++]);
+  bottomBar.setY1(params[i++]);
+  bottomBar.setX2(params[i++]);
+  bottomBar.setY2(params[i++]);
+  
+  topBar.setX1(params[i++]);
+  topBar.setY1(params[i++]);
+  topBar.setX2(params[i++]);
+  topBar.setY2(params[i++]);
+};
+
+/**
+ * Creates a container that contains overview properties needed for partial update animation
+ * @protected
+ */ 
+DvtDiagramOverview.prototype.CreateAnimationClone = function() {
+  var overviewClone = new dvt.Container(this.getCtx(), this.getId());
+  overviewClone.setMouseEnabled(false);
+  var ovContentClone = new dvt.Container(this.getCtx(), 'ovContentClone');
+  overviewClone.addChild(ovContentClone);
+  overviewClone.Content = ovContentClone;
+  overviewClone.Nodes = {};
+  overviewClone.Diagram = this.Diagram;
+  
+  var rootNodes = this.Diagram.GetRootNodeObjects();
+  if (rootNodes.length > 0) {
+    rootNodes.forEach(function(node) {
+      DvtDiagramOverviewUtils.CreateOverviewNode(overviewClone.Diagram, overviewClone, node, ovContentClone);
+    });
+    DvtDiagramOverviewUtils.ZoomToFitOverviewContent(overviewClone.Diagram, overviewClone, ovContentClone, this.Width, this.Height);
+  }
+  
+  var cloneAnimationParams = this.GetAnimationParams();
+  overviewClone.GetAnimationParams = function(){
+    return cloneAnimationParams;
+  };
+  
+  return overviewClone;
+};
+
+/**
  * @param {dvt.Context} context The rendering context.
  * @param {function} callback The function that should be called to dispatch component events.
  * @param {object} callbackObj The optional object instance on which the callback function is defined.
@@ -5226,6 +5957,10 @@ dvt.Diagram.prototype.ResetNodesAndLinks = function() {
   this.getOptions()['links'] = [];
   this._allNodeIdsMap = {};
   this._unresolvedNodeIds = [];
+  if (this.Overview) {
+    this.removeChild(this.Overview);
+    this.Overview = null;
+  }
 };
 
 /**
@@ -5271,6 +6006,7 @@ dvt.Diagram.prototype.animateUpdate = function(animationHandler, oldDiagramState
   var newLinks = oldDiagramState.IsPartialUpdate ? oldDiagramState.getNewLinks() : this.GetAllLinkObjects();
   animationHandler.constructAnimation(oldDiagramState.getNodes(), newNodes);
   animationHandler.constructAnimation(oldDiagramState.getLinks(), newLinks);
+  animationHandler.constructAnimation([oldDiagramState.Overview], [this.Overview]);
   animationHandler.add(playable, DvtDiagramDataAnimationHandler.UPDATE);
 };
 
@@ -5418,6 +6154,20 @@ dvt.Diagram.prototype._setDataSourceListeners = function(dataSource, attach) {
 };
 
 /**
+ * Adds data source listeners. Used on connect.
+ */
+dvt.Diagram.prototype.addDataSourceEventListeners = function() {
+  this._setDataSourceListeners(this.getOptions()['data'], true);
+};
+
+/**
+ * Removes data source listeners. Used on disconnect.
+ */
+dvt.Diagram.prototype.removeDataSourceEventListeners = function() {
+  this._setDataSourceListeners(this.getOptions()['data'], false);
+};
+
+/**
  * @override
  */
 dvt.Diagram.prototype.Render = function() {
@@ -5510,6 +6260,14 @@ dvt.Diagram.prototype._processContent = function(bEmptyDiagram) {
     pzc.setPanDirection(this.getPanDirection());
     pzc.setZoomingEnabled(this.IsZoomingEnabled());
     pzc.setZoomToFitEnabled(this.IsZoomingEnabled());
+  }
+  
+  // add overview window
+  if (!this.Overview  && this.Options.overview && this.Options.overview.rendered == 'on') {
+    this.Overview = DvtDiagramOverviewUtils.CreateOverviewWindow(this);
+  }
+  else if (this.Overview) {
+    DvtDiagramOverviewUtils.UpdateOverviewWindow(this, this.Overview);
   }
 
   this._oldPanZoomCanvas = null;
@@ -5669,6 +6427,14 @@ dvt.Diagram.prototype.processEvent = function(event, source) {
   }
   else if (type == 'selection') {
     this.getOptions()['selection'] = event['selection'];
+  }
+  else if (type == dvt.OverviewEvent.TYPE) {
+    var subtype = event.getSubType();
+    if (subtype == dvt.OverviewEvent.SUBTYPE_SCROLL_POS ||
+        subtype == dvt.OverviewEvent.SUBTYPE_SCROLL_TIME) {
+      this.Overview.HandleViewportChange(event);
+    }
+    return;
   }
   if (event) {
     this.dispatchEvent(event);
@@ -5936,8 +6702,21 @@ dvt.Diagram.prototype.GetRootNodeObjects = function() {
 /**
  * @override
  */
+dvt.Diagram.prototype.HandlePanEvent = function(event) {
+  dvt.Diagram.superclass.HandlePanEvent.call(this, event)
+  if (this.Overview) {
+    this.Overview.UpdateViewport();
+  }
+};
+
+/**
+ * @override
+ */
 dvt.Diagram.prototype.HandleZoomEvent = function(event) {
   dvt.Diagram.superclass.HandleZoomEvent.call(this, event);
+  if (this.Overview) {
+    this.Overview.UpdateViewport();
+  }
   var subType = event.getSubType();
   switch (subType) {
     case dvt.ZoomEvent.SUBTYPE_ADJUST_PAN_CONSTRAINTS:
@@ -6753,7 +7532,7 @@ dvt.Diagram.prototype.handleDataSourceChangeEvent = function(type, event) {
   }
 
   this._currentViewport = this.getPanZoomCanvas().getViewport();
-  //reset pan constrains
+  //reset pan constraints
   if (this.IsPanningEnabled()) {
     var pzc = this.getPanZoomCanvas();
     pzc.setMinPanY(null);
@@ -6840,6 +7619,7 @@ dvt.Diagram.prototype.handleDataSourceChangeEvent = function(type, event) {
         function() {
           if (renderCount === thisRef._renderCount) {
             thisRef._partialUpdate = true;
+            thisRef._updateOverview(type, event);
             thisRef._processContent(false);
             thisRef._partialUpdate = false;
           }
@@ -6856,6 +7636,18 @@ dvt.Diagram.prototype.handleDataSourceChangeEvent = function(type, event) {
   }
   else {
     this._processContent(emptyDiagram);
+  }
+};
+
+/**
+ * Updates overview window if exists according to the event type and data - changes, adds or remvoes nodes and links
+ * @param {string} type event type
+ * @param {Object} event DiagramDataSource event
+ * @private
+ */
+dvt.Diagram.prototype._updateOverview = function(type, event) {
+  if (this.Overview) {
+    DvtDiagramOverviewUtils.UpdateOverviewContent(this, this.Overview, type, event);
   }
 };
 
@@ -6921,8 +7713,10 @@ dvt.Diagram.prototype._updateLayoutContext = function(type, event) {
       for (i = 0; i < nodes.length; i++) {
         nodeId = nodes[i]['id'];
         nc = layoutContext.getNodeById(nodeId);
-        nc.Reset();
-        nc.UpdateParentNodes();
+        if (nc) {
+          nc.Reset();
+          nc.UpdateParentNodes();
+        }
       }
     }
     if (links) {
@@ -7231,6 +8025,18 @@ DvtDiagramDefaults.VERSION_1 = {
     'animationDuration': 500,
     'hoverBehaviorDelay': 200,
     '_highlightAlpha' : .1,
+    '_overviewStyles': {
+      'overview': {
+        'backgroundColor':'rgb(228,229,230)'
+      },
+      'viewport': {
+        'backgroundColor':'rgb(255,255,255)',
+        'borderColor': 'rgb(74,76,78)'
+      },
+      'node': {
+        'shape': 'inherit'
+      }
+    },
     'nodeDefaults': {
       '_containerStyle' : new dvt.CSSStyle('border-color:#abb3ba;background-color:#f9f9f9;border-width:.5px;border-radius:1px;padding-top:20px;padding-left:20px;padding-bottom:20px;padding-right:20px;'),
       'labelStyle': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_BOLD_12 + 'color:#383A47'),
@@ -7334,6 +8140,9 @@ DvtDiagramDataAnimationState.prototype.Init = function(diagram, type, event) {
   this._processedObjMap = {};
   this.PanZoomMatrix = this._diagram.getPanZoomCanvas().getContentPane().getMatrix();
   this.IsPartialUpdate = type && event ? true : false;
+  if (diagram.Overview) {
+    this.Overview = this.IsPartialUpdate ? diagram.Overview.CreateAnimationClone() : diagram.Overview;
+  }
   this.NodesMap = this._diagram.GetAllNodesMap();
   this.LinksMap = this._diagram.GetAllLinksMap();
   this._setNodes(type, event);

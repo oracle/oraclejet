@@ -4,12 +4,13 @@
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
-define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore'],
+define(['ojs/ojcore', 'jquery', 'hammerjs', 'promise', 'ojs/ojjquery-hammer', 'ojs/ojcomponentcore'],
        /*
         * @param {Object} oj 
         * @param {jQuery} $
+        * @param {jQuery} Hammer
         */
-       function(oj, $)
+       function(oj, $, Hammer)
  
 {
 
@@ -17,6 +18,8 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore'],
  * Copyright (c) 2015, Oracle and/or its affiliates.
  * All rights reserved.
  */
+
+/* global Hammer:false Promise:false */
 
 /**
  * @class oj.PullToRefreshUtils
@@ -31,6 +34,9 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore'],
  * can use the callback to provide their own panel.  When the release happens, the refresh function will be invoked and application should
  * use this to execute any logic required to refresh the content inside the panel.  For example, fetching new content for the ListView inside
  * the container.  The application must resolve or reject the Promise so that this class can do the necessary cleanup.
+ *
+ * <p>Warning: The pull to refresh gesture will not work with drag and drop enabled components. Drag and drop must be disabled in the component if
+ * use of pull to refresh is needed.
  *
  * <h3 id="touch-section">
  *   Touch End User Information
@@ -68,7 +74,9 @@ oj.PullToRefreshUtils = {};
  */
 oj.PullToRefreshUtils.setupPullToRefresh = function(element, refreshFunc, options)
 {
-    var outer, content, panel, checkTolerance, threshold, start, height, movex, icon, iconOffset, lastIconClass, title, ratio, iconClass;
+    var outer, content, panel, checkTolerance, threshold, start, height, movex, icon, iconOffset, lastIconClass, title, ratio, iconClass, mOptions, isTouch, type;
+
+    isTouch = oj.DomUtils.isTouchSupported();
 
     // make sure we are clean
     oj.PullToRefreshUtils.tearDownPullToRefresh(element);
@@ -84,8 +92,20 @@ oj.PullToRefreshUtils.setupPullToRefresh = function(element, refreshFunc, option
     panel = $(element);
     panel.prepend(outer); //@HTMLUpdateOK; outer is created by the component
 
+    if (isTouch) {
+        type = 'touch';
+    } else {
+        type = 'pan';
+        mOptions = {
+            recognizers: [
+                [Hammer.Pan, { direction: Hammer.DIRECTION_VERTICAL }]
+            ] };
+        panel.ojHammer(mOptions);
+    }
+
     panel
-    .on("touchstart.pulltorefresh", function(event) 
+    .ojHammer(mOptions)
+    .on(type + "start.pulltorefresh", function(event) 
     {
         // checks if we are still refreshing
         if ($.data(content[0], "data-pullstart") != null)
@@ -122,13 +142,17 @@ oj.PullToRefreshUtils.setupPullToRefresh = function(element, refreshFunc, option
             // hide it
             content.css("height", 0);
             content.removeClass("oj-pulltorefresh-transition");
-            $.data(content[0], "data-pullstart", event.originalEvent.touches[0].clientY);
-            $.data(content[0], "data-pullstart-horiz", event.originalEvent.touches[0].clientX);
+            if (isTouch) {
+                $.data(content[0], 'data-pullstart', event.originalEvent.touches[0].clientY);
+                $.data(content[0], 'data-pullstart-horiz', event.originalEvent.touches[0].clientX);
+            } else {
+                $.data(content[0], 'data-pullstart', 0);
+            }
 
             checkTolerance = true;
         }
     })
-    .on("touchmove.pulltorefresh", function(event) 
+    .on(type + "move.pulltorefresh", function(event) 
     {
         // first checks whether if the pull had started
         start = $.data(content[0], "data-pullstart");
@@ -138,7 +162,7 @@ oj.PullToRefreshUtils.setupPullToRefresh = function(element, refreshFunc, option
         }
 
         // see how far it's been pull
-        height = event.originalEvent.touches[0].clientY - parseInt(start, 10);
+        height = isTouch ? event.originalEvent.touches[0].clientY - parseInt(start, 10) : event.gesture.deltaY;
 
         // wrong direction
         if (height < 0)
@@ -164,7 +188,7 @@ oj.PullToRefreshUtils.setupPullToRefresh = function(element, refreshFunc, option
 
         if (checkTolerance)
         {
-            movex = event.originalEvent.touches[0].clientX - parseInt($.data(content[0], "data-pullstart-horiz"), 10);
+            movex = isTouch ? event.originalEvent.touches[0].clientX - parseInt($.data(content[0], 'data-pullstart-horiz'), 10) : event.gesture.deltaX;
             // check if the intention is swipe left, if it is don't show the panel yet
             if (Math.abs(movex) > height)
             {
@@ -210,11 +234,11 @@ oj.PullToRefreshUtils.setupPullToRefresh = function(element, refreshFunc, option
             oj.PullToRefreshUtils._showHideDefaultText(content, height > iconOffset);            
         }
     })
-    .on("touchcancel.pulltorefresh", function(event) 
+    .on(type + "cancel.pulltorefresh", function(event) 
     {
         oj.PullToRefreshUtils._cleanup(content);
     })
-    .on("touchend.pulltorefresh", function(event) 
+    .on(type + "end.pulltorefresh", function(event) 
     {
         // first checks whether if the pull had started
         start = $.data(content[0], "data-pullstart");
@@ -520,8 +544,6 @@ oj.PullToRefreshUtils._renderAccessibleLink = function(element, panel, refreshFu
             content = panel.children().last();
             oj.PullToRefreshUtils._handlePull(event, content, options);
             oj.PullToRefreshUtils._handleRelease(event, element, content, refreshFunc);
-
-            refreshFunc();
         });
 
     status = $(document.createElement("div"));

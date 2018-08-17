@@ -1,9 +1,9 @@
 {
   "name": "oj-chart-group",
-  "version": "5.1.0",
-  "jetVersion": "5.1.0",
+  "version": "5.2.0",
+  "jetVersion": "5.2.0",
   "displayName": "Chart Group",
-  "preview": true,
+  "type": "core",
   "description": "ojChartGroup",
   "properties": {
     "drilling": {
@@ -30,7 +30,7 @@
     },
     "labelStyle": {
       "description": "The CSS style object defining the style of the group label text. Supports color, fontFamily, fontSize, fontStyle, fontWeight, textDecoration, cursor, backgroundColor, borderColor, borderRadius, and borderWidth properties. Only applies to a categorical axis.",
-      "type": "Object",
+      "type": "object",
       "displayName": "Label Style",
       "value": null
     },

@@ -211,10 +211,6 @@ dvt.TagCloud.prototype.select = function(selection) {
  */
 dvt.TagCloud.prototype.SetOptions = function(options) {
   if (options) {
-    // transfer data passed via DataProvider to the items property where our code expects it
-    if (options['data']) {
-      options['items'] = options['data'];
-    }
     // Combine the user options with the defaults and store
     this.Options = this.Defaults.calcOptions(options);
   }

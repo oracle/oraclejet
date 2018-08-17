@@ -7,8 +7,105 @@
 define(['ojs/ojcore', 'jquery', 'knockout', 'hammerjs', 'ojs/ojjquery-hammer', 'ojs/ojknockout', 'ojs/ojcomposite', 'ojs/ojanimation', 'ojs/ojbutton', 'ojs/ojvalidation-datetime'], 
        function(oj, $, ko, Hammer)
 {
+ 
 
-
+var __oj_message_metadata = 
+{
+  "properties": {
+    "message": {
+      "type": "object",
+      "properties": {
+        "autoTimeout": {
+          "type": "number",
+          "value": -1
+        },
+        "category": {
+          "type": "string",
+          "value": ""
+        },
+        "closeAffordance": {
+          "type": "string",
+          "enumValues": [
+            "defaults",
+            "none"
+          ],
+          "value": "defaults"
+        },
+        "detail": {
+          "type": "string",
+          "value": ""
+        },
+        "icon": {
+          "type": "string",
+          "value": ""
+        },
+        "severity": {
+          "type": "string",
+          "enumValues": [
+            "confirmation",
+            "error",
+            "info",
+            "none",
+            "warning"
+          ],
+          "value": "none"
+        },
+        "sound": {
+          "type": "string",
+          "value": "none"
+        },
+        "summary": {
+          "type": "string",
+          "value": ""
+        },
+        "timestamp": {
+          "type": "string",
+          "value": ""
+        }
+      }
+    },
+    "translations": {
+      "type": "object",
+      "value": {},
+      "properties": {
+        "categories": {
+          "type": "object",
+          "properties": {
+            "confirmation": {
+              "type": "string"
+            },
+            "error": {
+              "type": "string"
+            },
+            "info": {
+              "type": "string"
+            },
+            "warning": {
+              "type": "string"
+            }
+          }
+        },
+        "labelCloseIcon": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "methods": {
+    "close": {},
+    "setProperty": {},
+    "getProperty": {},
+    "setProperties": {},
+    "getNodeBySubId": {},
+    "getSubIdByNode": {}
+  },
+  "events": {
+    "ojClose": {},
+    "ojAnimateStart": {},
+    "ojAnimateEnd": {}
+  },
+  "extension": {}
+};
 /**
  * Copyright (c) 2017, Oracle and/or its affiliates.
  * All rights reserved.
@@ -128,7 +225,6 @@ define(['ojs/ojcore', 'jquery', 'knockout', 'hammerjs', 'ojs/ojjquery-hammer', '
  * @instance
  * @since 5.0.0
  * @type {Object}
- * @default {"icon": "", 'category': "", "severity": "none", "summary": "", "detail": "", "autoTimeout": -1, "closeAffordance": "defaults", "sound": "none"}
  * @ojsignature { target: "Type",
  *                value: "oj.ojMessage.Message",
  *                jsdocOverride: true}
@@ -429,6 +525,7 @@ define(['ojs/ojcore', 'jquery', 'knockout', 'hammerjs', 'ojs/ojjquery-hammer', '
  *
  * @member
  * @name translations
+ * @ojshortdesc A collection of translated resources from the translation bundle, or null if this component has no resources.
  * @memberof! oj.ojMessage
  * @instance
  * @ojtranslatable
@@ -658,128 +755,6 @@ define(['ojs/ojcore', 'jquery', 'knockout', 'hammerjs', 'ojs/ojjquery-hammer', '
  */
 
 
-var _MESSAGE_METADATA =
-  {
-    name: 'oj-message',
-    displayName: 'oj-message',
-    version: '1.0.0',
-    jetVersion: '^5.0.0',
-    properties: {
-      message: {
-        type: 'object',
-        writeback: false,
-        value: {
-          icon: '',
-          category: '',
-          severity: 'none',
-          summary: '',
-          detail: '',
-          autoTimeout: -1,
-          closeAffordance: 'defaults',
-          sound: 'none' },
-        properties: {
-          icon: {
-            type: 'string',
-            value: ''
-          },
-          category: {
-            type: 'string',
-            value: ''
-          },
-          severity: {
-            type: 'string',
-            enumValues: ['error', 'warning', 'confirmation', 'info', 'none'],
-            value: 'none'
-          },
-          timestamp: {
-            type: 'string',
-            value: ''
-          },
-          summary: {
-            type: 'string',
-            value: ''
-          },
-          detail: {
-            type: 'string',
-            value: ''
-          },
-          autoTimeout: {
-            type: 'number',
-            translatable: false,
-            value: -1
-          },
-          closeAffordance: {
-            type: 'string',
-            enumValues: ['none', 'defaults'],
-            value: 'defaults'
-          },
-          sound: {
-            type: 'string',
-            value: 'none'
-          }
-        }
-      },
-
-      translations: {
-        type: 'object',
-        writeback: false,
-        value: { labelCloseIcon: '' },
-        properties: {
-          labelCloseIcon: {
-            type: 'string',
-            translatable: true
-          }
-        }
-      }
-    },
-
-    methods: {
-      close: {
-      }
-    },
-
-    events: {
-      ojAnimateEnd: {
-        bubbles: true,
-        cancelable: false,
-        detail: {
-          action: { type: 'string',
-            enumValues: ['open', 'close']
-          },
-          element: { type: 'Element' }
-        }
-      },
-      ojAnimateStart: {
-        bubbles: true,
-        cancelable: false,
-        detail: {
-          action: { type: 'string',
-            enumValues: ['open', 'close']
-          },
-          element: { type: 'Element' },
-          endCallback: { type: 'function' }
-        }
-      },
-      ojClose: {
-        bubbles: true,
-        cancelable: false,
-        detail: {
-          message: { type: 'object' }
-        }
-      },
-      ojOpen: {
-        bubbles: true,
-        cancelable: false,
-        detail: {
-          message: { type: 'object' }
-        }
-      },
-    },
-
-    slots: {
-    }
-  };
-
 var _MESSAGE_VIEW =
   '<div :id="[[containerId]]" class="oj-message-container" on-keydown="[[handleKeydown]]">' +
   '  <div class="oj-message-header">' +
@@ -848,9 +823,6 @@ function MessageViewModel(context) {
 
   // Store a reference to the properties for any later use
   this._properties = context.properties;
-
-
-  this._initDefaultTranslations();
   this._createObservables();
 }
 
@@ -948,6 +920,10 @@ MessageViewModel.prototype._propertyChanged = function (detail) {
   if (subPropertyChanged(detail, 'translations', 'labelCloseIcon')) {
     this.computedLabelCloseIcon(this._computeLabelCloseIcon());
   }
+
+  if (subPropertyChanged(detail, 'translations', 'categories')) {
+    this.computedCategory(this._computeCategory());
+  }
 };
 
 MessageViewModel.prototype._registerSwipeHandler = function () {
@@ -1041,9 +1017,12 @@ MessageViewModel.prototype._computeSeverity = function () {
   
   if (oj.StringUtils.isEmptyOrUndefined(message.severity)) {
     return MessageViewModel._getMessageDefault('severity');
-  };
-  
-  return message.severity;
+  }
+
+  // oj.Message has 'fatal' severity which is no different from 'error', oj-message does not support
+  //  'fatal' for this reason. Map 'fatal' to 'error' just to be compatible with cases where the
+  //  message stream could come from existing oj.Message sources.
+  return (message.severity === 'fatal') ? 'error' : message.severity;
 };
 
 MessageViewModel.prototype._computeTimestamp = function () {
@@ -1092,10 +1071,26 @@ MessageViewModel.prototype._computeCategory = function () {
 
   if (!oj.StringUtils.isEmptyOrUndefined(message.category)) {
     return message.category;
-  };
-  
-  var mappedCategory = oj.Translations.getComponentTranslations('oj-ojMessage').categories;
-  return mappedCategory[this._computeSeverity()];
+  }
+
+  var severity = this._computeSeverity();
+  var translations = this._properties.translations;
+
+  var translatedCategory = (translations && translations.categories) ?
+                            translations.categories[severity] : '';
+
+  if (oj.StringUtils.isEmptyOrUndefined(translatedCategory)) {
+    // Ideally the custom element bridge should have set the translations sub-properties in this
+    //  precedence (which is what the baseComponent in JQUI world did):
+    //  1. Instance level override provided by app dev
+    //  2. Localized value obtained from the bundle
+    // However custom element bridge is not doing #2 (discussing with architects), fine to fetch
+    //  from bundle in lieu of #2.
+    translatedCategory = oj.Translations.getComponentTranslations('oj-ojMessage')
+                          .categories[severity];
+  }
+
+  return translatedCategory;
 };
 
 MessageViewModel.prototype._computeAutoTimeout = function () {
@@ -1164,6 +1159,7 @@ MessageViewModel.prototype._computeLabelCloseIcon = function () {
   var translations = this._properties.translations;
   
   if (oj.StringUtils.isEmptyOrUndefined(translations.labelCloseIcon)) {
+    // see comments in _computeCategory() that applies here as well
     return oj.Translations.getTranslatedString('oj-ojMessage.labelCloseIcon');
   };
   
@@ -1322,14 +1318,6 @@ MessageViewModel.prototype._createObservables = function () {
   this.computedLabelCloseIcon = ko.observable(this._computeLabelCloseIcon());
   this.computedSummary = ko.observable(this._computeSummary());
   this.computedDetail = ko.observable(this._computeDetail());
-};
-
-MessageViewModel.prototype._initDefaultTranslations = function () {
-  var properties = this._properties;
-
-  if (oj.StringUtils.isEmptyOrUndefined(properties.translations.labelCloseIcon)) {
-    properties.translations.labelCloseIcon = this._computeLabelCloseIcon();
-  }
 };
 
 MessageViewModel._getMessageDefault = function (propName) {
@@ -1562,11 +1550,12 @@ OperationMediator.prototype.isOperationPending = function (operation, callback) 
   return isPending;
 };
 
+/* global __oj_message_metadata */
 oj.Composite.register('oj-message',
   {
     view: _MESSAGE_VIEW,
     viewModel: MessageViewModel,
-    metadata: _MESSAGE_METADATA
+    metadata: __oj_message_metadata
   });
 
 });

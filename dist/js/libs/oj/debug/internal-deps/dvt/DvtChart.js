@@ -644,7 +644,7 @@ dvt.Chart.prototype.processEvent = function(event, source) {
     var actionDone = subtype == dvt.OverviewEvent.SUBTYPE_SCROLL_TIME ||
                      subtype == dvt.OverviewEvent.SUBTYPE_SCROLL_END ||
                      subtype == dvt.OverviewEvent.SUBTYPE_RANGECHANGE;
-    event = this._processScrollbarEvent(event.getNewStartTime(), event.getNewEndTime(), actionDone, source);
+    event = this._processScrollbarEvent(event.getNewX1(), event.getNewX2(), actionDone, source);
   }
 
   else if (type == dvt.SimpleScrollbarEvent.TYPE)
@@ -7670,13 +7670,6 @@ DvtChartOverview.prototype._renderChart = function(options, width, height) {
 
 
 /**
- * @override
- */
-DvtChartOverview.prototype.createBackground = function(width, height) {
-  // pass. Handled by _renderChart().
-};
-
-/**
  * Override to change some of the styles
  * @override
  */
@@ -7722,6 +7715,12 @@ DvtChartOverview.prototype.getBackgroundChart = function() {
   return this._chart;
 };
 
+/**
+ * @override
+ */
+DvtChartOverview.prototype.isBackgroundRendered = function() {
+  return false;
+};
 
 /**
  * Renders filters beside the sliding window
@@ -22396,10 +22395,10 @@ DvtChartRenderer._renderScrollbars = function(chart, horizScrollbarDim, vertScro
   // Render x-axis overview scrollbar
   if (chart.overview) {
     var ovOptions = {
-      'startTime': chart.xAxis.getLinearGlobalMin(),
-      'endTime': chart.xAxis.getLinearGlobalMax(),
-      'viewportStartTime': chart.xAxis.getLinearViewportMin(),
-      'viewportEndTime': chart.xAxis.getLinearViewportMax(),
+      'xMin': chart.xAxis.getLinearGlobalMin(),
+      'xMax': chart.xAxis.getLinearGlobalMax(),
+      'x1': chart.xAxis.getLinearViewportMin(),
+      'x2': chart.xAxis.getLinearViewportMax(),
       'minimumWindowSize': chart.xAxis.getInfo().getMinimumExtent(),
       'chart': dvt.JsonUtils.clone(options)
     };

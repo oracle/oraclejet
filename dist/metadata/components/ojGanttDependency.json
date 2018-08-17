@@ -1,0 +1,68 @@
+{
+  "name": "oj-gantt-dependency",
+  "version": "5.2.0",
+  "jetVersion": "5.2.0",
+  "displayName": "Gantt Dependency",
+  "type": "core",
+  "description": "ojGanttDependency",
+  "properties": {
+    "predecessorTaskId": {
+      "description": "The identifier for the predecessor task. This must reference a task in Gantt.",
+      "type": "any",
+      "displayName": "Predecessor Task Id"
+    },
+    "shortDesc": {
+      "description": "The description of the dependency line. This is used for accessibility.",
+      "type": "string",
+      "displayName": "Short Desc",
+      "value": null
+    },
+    "successorTaskId": {
+      "description": "The identifier for the successor task. This must reference a task in Gantt.",
+      "type": "any",
+      "displayName": "Successor Task Id"
+    },
+    "svgClassName": {
+      "description": "A space delimited list of CSS style classes to apply to the dependency line.",
+      "type": "string",
+      "displayName": "Svg Class Name",
+      "value": ""
+    },
+    "svgStyle": {
+      "description": "The CSS style defining the style of the dependency line.",
+      "type": "object",
+      "displayName": "Svg Style",
+      "value": {}
+    },
+    "type": {
+      "description": "The type of dependency.",
+      "type": "string",
+      "displayName": "Type",
+      "value": "finishStart",
+      "enumValues": [
+        "finishFinish",
+        "finishStart",
+        "startFinish",
+        "startStart"
+      ],
+      "propertyEditorValues": {
+        "finishFinish": {
+          "description": "predecessor task must finish before successor task can finish",
+          "displayName": "Finish Finish"
+        },
+        "finishStart": {
+          "description": "predecessor task must finish before successor task can start",
+          "displayName": "Finish Start"
+        },
+        "startFinish": {
+          "description": "predecessor task must start before successor task can finish",
+          "displayName": "Start Finish"
+        },
+        "startStart": {
+          "description": "predecessor task must start before successor task can start",
+          "displayName": "Start Start"
+        }
+      }
+    }
+  }
+}

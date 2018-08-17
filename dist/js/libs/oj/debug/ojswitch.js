@@ -16,7 +16,118 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue'],
         */
        function(oj, $)
 {
-
+//%COMPONENT_METADATA%
+var __oj_switch_metadata = 
+{
+  "properties": {
+    "describedBy": {
+      "type": "string"
+    },
+    "disabled": {
+      "type": "boolean",
+      "value": false
+    },
+    "displayOptions": {
+      "type": "object",
+      "properties": {
+        "converterHint": {
+          "type": "Array<string>|string",
+          "value": [
+            "placeholder",
+            "notewindow"
+          ]
+        },
+        "helpInstruction": {
+          "type": "Array<string>|string",
+          "value": [
+            "notewindow"
+          ]
+        },
+        "messages": {
+          "type": "Array<string>|string",
+          "value": [
+            "inline"
+          ]
+        },
+        "validatorHint": {
+          "type": "Array<string>|string",
+          "value": [
+            "notewindow"
+          ]
+        }
+      }
+    },
+    "help": {
+      "type": "object",
+      "properties": {
+        "instruction": {
+          "type": "string"
+        }
+      }
+    },
+    "helpHints": {
+      "type": "object",
+      "properties": {
+        "definition": {
+          "type": "string",
+          "value": ""
+        },
+        "source": {
+          "type": "string",
+          "value": ""
+        }
+      }
+    },
+    "labelHint": {
+      "type": "string",
+      "value": ""
+    },
+    "messagesCustom": {
+      "type": "Array<Object>",
+      "writeback": true,
+      "value": []
+    },
+    "readonly": {
+      "type": "boolean",
+      "value": false
+    },
+    "translations": {
+      "type": "object",
+      "value": {}
+    },
+    "valid": {
+      "type": "string",
+      "writeback": true,
+      "enumValues": [
+        "invalidHidden",
+        "invalidShown",
+        "pending",
+        "valid"
+      ],
+      "readOnly": true
+    },
+    "value": {
+      "type": "boolean",
+      "writeback": true,
+      "value": false
+    }
+  },
+  "methods": {
+    "refresh": {},
+    "reset": {},
+    "showMessages": {},
+    "setProperty": {},
+    "getProperty": {},
+    "setProperties": {},
+    "getNodeBySubId": {},
+    "getSubIdByNode": {}
+  },
+  "events": {
+    "ojAnimateStart": {},
+    "ojAnimateEnd": {}
+  },
+  "extension": {}
+};
  /**
  * Copyright (c) 2015, Oracle and/or its affiliates.
  * All rights reserved.
@@ -55,7 +166,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue'],
    * the oj-switch component enhances <code class="prettyprint">input</code>
    * element and manages the selection of Boolean values.
    * </p>
-   *
+   * {@ojinclude "name":"validationAndMessagingDoc"}
    * <h3 id="touch-section">
    *   Touch End User Information
    *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#touch-section"></a>
@@ -446,11 +557,11 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue'],
       if (this.option('disabled') || this.option('readOnly')) {
         if (this.option('disabled')) {
           rootElement.addClass('oj-disabled');
+          $(this.switchThumb).removeAttr('tabindex');
         } else {
           rootElement.addClass('oj-read-only');
           $(this.switchThumb).html(this._setReadOnlyValue()); // @HTMLUpdateOK internal strings
         }
-        $(this.switchThumb).removeAttr('tabindex');
       }
 
       if (this.option('value')) {
@@ -517,7 +628,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue'],
       keyup: function (event) {
         // ENTER and SPACE will change the switch
         if (event.which === $.ui.keyCode.ENTER || event.which === $.ui.keyCode.SPACE) {
-          this._SetValue(!this.option('value'), event);
+          this._SetValueReturnBoolean(!this.option('value'), event);
         }
       },
       mousedown: function (event) {
@@ -530,7 +641,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue'],
       mouseup: function (event) {
         // LEFT MOUSE BUTTON will change the switch
         if (event.which === 1) {
-          this._SetValue(!this.option('value'), event);
+          this._SetValueReturnBoolean(!this.option('value'), event);
         }
       },
       mouseleave: function (event) {
@@ -548,7 +659,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue'],
           event.preventDefault();
       },
       "touchend": function (event) {
-        this._SetValue(!this.option('value'), event);
+        this._SetValueReturnBoolean(!this.option('value'), event);
       }
     },
 
@@ -802,26 +913,13 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue'],
  * var node = myComponent.getNodeBySubId({'subId': 'oj-switch-thumb'});
  */
 
-(function() {
-var ojSwitchMeta = {
-  "properties": {
-    "value": {
-      "type": "boolean",
-      "writeback": true
-    },
-    "readonly": {
-      "type": "boolean"
-    }
-  },
-  "methods": {
-  },
-  "extension": {
-    _ALIASED_PROPS: {"readonly": "readOnly"},
-    _INNER_ELEM: 'input',
-    _WIDGET_NAME: "ojSwitch"
-  }
-};
-oj.CustomElementBridge.registerMetadata('oj-switch', 'editableValue', ojSwitchMeta);
-oj.CustomElementBridge.register('oj-switch', {'metadata': oj.CustomElementBridge.getMetadata('oj-switch')});
-})();
+/* global __oj_switch_metadata:false */
+(function () {
+  __oj_switch_metadata.extension._WIDGET_NAME = 'ojSwitch';
+  __oj_switch_metadata.extension._INNER_ELEM = 'input';
+  __oj_switch_metadata.extension._ALIASED_PROPS = { readonly: 'readOnly' };
+  oj.CustomElementBridge.registerMetadata('oj-switch', 'editableValue', __oj_switch_metadata);
+  oj.CustomElementBridge.register('oj-switch', { metadata: oj.CustomElementBridge.getMetadata('oj-switch') });
+}());
+
 });

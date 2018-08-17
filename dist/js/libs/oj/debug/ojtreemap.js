@@ -6,7 +6,375 @@
 "use strict";
 define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/internal-deps/dvt/DvtTreeView'], function(oj, $, comp, base, dvt)
 {
+ 
 
+var __oj_treemap_metadata = 
+{
+  "properties": {
+    "animationDuration": {
+      "type": "number"
+    },
+    "animationOnDataChange": {
+      "type": "string",
+      "enumValues": [
+        "auto",
+        "none"
+      ],
+      "value": "none"
+    },
+    "animationOnDisplay": {
+      "type": "string",
+      "enumValues": [
+        "auto",
+        "none"
+      ],
+      "value": "none"
+    },
+    "animationUpdateColor": {
+      "type": "string",
+      "value": ""
+    },
+    "colorLabel": {
+      "type": "string",
+      "value": ""
+    },
+    "displayLevels": {
+      "type": "number",
+      "value": 1.7976931348623157e+308
+    },
+    "drilling": {
+      "type": "string",
+      "enumValues": [
+        "off",
+        "on"
+      ],
+      "value": "off"
+    },
+    "groupGaps": {
+      "type": "string",
+      "enumValues": [
+        "all",
+        "none",
+        "outer"
+      ],
+      "value": "outer"
+    },
+    "hiddenCategories": {
+      "type": "Array<string>",
+      "writeback": true,
+      "value": []
+    },
+    "highlightMatch": {
+      "type": "string",
+      "enumValues": [
+        "all",
+        "any"
+      ],
+      "value": "all"
+    },
+    "highlightedCategories": {
+      "type": "Array<string>",
+      "writeback": true,
+      "value": []
+    },
+    "hoverBehavior": {
+      "type": "string",
+      "enumValues": [
+        "dim",
+        "none"
+      ],
+      "value": "none"
+    },
+    "hoverBehaviorDelay": {
+      "type": "number",
+      "value": 200
+    },
+    "isolatedNode": {
+      "type": "string",
+      "writeback": true,
+      "value": ""
+    },
+    "layout": {
+      "type": "string",
+      "enumValues": [
+        "sliceAndDiceHorizontal",
+        "sliceAndDiceVertical",
+        "squarified"
+      ],
+      "value": "squarified"
+    },
+    "nodeContent": {
+      "type": "object",
+      "properties": {
+        "renderer": {
+          "type": "function"
+        }
+      }
+    },
+    "nodeDefaults": {
+      "type": "object",
+      "properties": {
+        "groupLabelDisplay": {
+          "type": "string",
+          "enumValues": [
+            "header",
+            "node",
+            "off"
+          ],
+          "value": "header"
+        },
+        "header": {
+          "type": "object",
+          "properties": {
+            "backgroundColor": {
+              "type": "string"
+            },
+            "borderColor": {
+              "type": "string"
+            },
+            "hoverBackgroundColor": {
+              "type": "string"
+            },
+            "hoverInnerColor": {
+              "type": "string"
+            },
+            "hoverOuterColor": {
+              "type": "string"
+            },
+            "isolate": {
+              "type": "string",
+              "enumValues": [
+                "off",
+                "on"
+              ],
+              "value": "on"
+            },
+            "labelHalign": {
+              "type": "string",
+              "enumValues": [
+                "center",
+                "end",
+                "start"
+              ],
+              "value": "start"
+            },
+            "labelStyle": {
+              "type": "object"
+            },
+            "selectedBackgroundColor": {
+              "type": "string"
+            },
+            "selectedInnerColor": {
+              "type": "string"
+            },
+            "selectedOuterColor": {
+              "type": "string"
+            },
+            "useNodeColor": {
+              "type": "string",
+              "enumValues": [
+                "off",
+                "on"
+              ],
+              "value": "off"
+            }
+          }
+        },
+        "hoverColor": {
+          "type": "string"
+        },
+        "labelDisplay": {
+          "type": "string",
+          "enumValues": [
+            "node",
+            "off"
+          ],
+          "value": "node"
+        },
+        "labelHalign": {
+          "type": "string",
+          "enumValues": [
+            "center",
+            "end",
+            "start"
+          ],
+          "value": "center"
+        },
+        "labelMinLength": {
+          "type": "number",
+          "value": 1
+        },
+        "labelStyle": {
+          "type": "object"
+        },
+        "labelValign": {
+          "type": "string",
+          "enumValues": [
+            "bottom",
+            "center",
+            "top"
+          ],
+          "value": "center"
+        },
+        "selectedInnerColor": {
+          "type": "string"
+        },
+        "selectedOuterColor": {
+          "type": "string"
+        }
+      }
+    },
+    "nodeSeparators": {
+      "type": "string",
+      "enumValues": [
+        "bevels",
+        "gaps"
+      ],
+      "value": "gaps"
+    },
+    "nodes": {
+      "type": "Array<Object>|Promise"
+    },
+    "rootNode": {
+      "type": "string",
+      "value": ""
+    },
+    "selection": {
+      "type": "Array<string>",
+      "writeback": true,
+      "value": []
+    },
+    "selectionMode": {
+      "type": "string",
+      "enumValues": [
+        "multiple",
+        "none",
+        "single"
+      ],
+      "value": "multiple"
+    },
+    "sizeLabel": {
+      "type": "string",
+      "value": ""
+    },
+    "sorting": {
+      "type": "string",
+      "enumValues": [
+        "off",
+        "on"
+      ],
+      "value": "off"
+    },
+    "tooltip": {
+      "type": "object",
+      "properties": {
+        "renderer": {
+          "type": "function"
+        }
+      }
+    },
+    "touchResponse": {
+      "type": "string",
+      "enumValues": [
+        "auto",
+        "touchStart"
+      ],
+      "value": "auto"
+    },
+    "trackResize": {
+      "type": "string",
+      "enumValues": [
+        "off",
+        "on"
+      ],
+      "value": "on"
+    },
+    "translations": {
+      "type": "object",
+      "value": {},
+      "properties": {
+        "componentName": {
+          "type": "string"
+        },
+        "labelAndValue": {
+          "type": "string"
+        },
+        "labelClearSelection": {
+          "type": "string"
+        },
+        "labelColor": {
+          "type": "string"
+        },
+        "labelCountWithTotal": {
+          "type": "string"
+        },
+        "labelDataVisualization": {
+          "type": "string"
+        },
+        "labelInvalidData": {
+          "type": "string"
+        },
+        "labelNoData": {
+          "type": "string"
+        },
+        "labelSize": {
+          "type": "string"
+        },
+        "stateCollapsed": {
+          "type": "string"
+        },
+        "stateDrillable": {
+          "type": "string"
+        },
+        "stateExpanded": {
+          "type": "string"
+        },
+        "stateHidden": {
+          "type": "string"
+        },
+        "stateIsolated": {
+          "type": "string"
+        },
+        "stateMaximized": {
+          "type": "string"
+        },
+        "stateMinimized": {
+          "type": "string"
+        },
+        "stateSelected": {
+          "type": "string"
+        },
+        "stateUnselected": {
+          "type": "string"
+        },
+        "stateVisible": {
+          "type": "string"
+        },
+        "tooltipIsolate": {
+          "type": "string"
+        },
+        "tooltipRestore": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "methods": {
+    "getNode": {},
+    "getContextByNode": {},
+    "refresh": {},
+    "setProperty": {},
+    "getProperty": {},
+    "setProperties": {},
+    "getNodeBySubId": {},
+    "getSubIdByNode": {}
+  },
+  "events": {
+    "ojBeforeDrill": {},
+    "ojDrill": {}
+  },
+  "extension": {}
+};
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
@@ -136,6 +504,7 @@ oj.__registerWidget('oj.ojTreemap', $['oj']['dvtBaseComponent'],
      * @memberof oj.ojTreemap
      * @instance
      * @type {string}
+     * @ojformat color
      * @default ""
      */
     animationUpdateColor: "",
@@ -209,7 +578,6 @@ oj.__registerWidget('oj.ojTreemap', $['oj']['dvtBaseComponent'],
      * @memberof oj.ojTreemap
      * @instance
      * @type {Object}
-     * @default {"renderer" : null}
      */
     nodeContent: {
       /**
@@ -245,7 +613,6 @@ oj.__registerWidget('oj.ojTreemap', $['oj']['dvtBaseComponent'],
      * @memberof oj.ojTreemap
      * @instance
      * @type {Object}
-     * @default {"renderer" : null}
      */
     tooltip: {
       /**
@@ -334,7 +701,6 @@ oj.__registerWidget('oj.ojTreemap', $['oj']['dvtBaseComponent'],
      * @memberof oj.ojTreemap
      * @instance
      * @type {Object}
-     * @default {"labelDisplay": "node", "groupLabelDisplay": "header", "labelHalign": "center", "labelMinLength": 1, "labelValign": "center", "header": {"labelHalign": "start", "isolate": "on", "useNodeColor": "off"}}
      */
     nodeDefaults: {
       /**
@@ -422,6 +788,7 @@ oj.__registerWidget('oj.ojTreemap', $['oj']['dvtBaseComponent'],
        * @memberof! oj.ojTreemap
        * @instance
        * @type {string}
+       * @ojformat color
        */
       hoverColor: undefined,
        
@@ -432,6 +799,7 @@ oj.__registerWidget('oj.ojTreemap', $['oj']['dvtBaseComponent'],
        * @memberof! oj.ojTreemap
        * @instance
        * @type {string}
+       * @ojformat color
        */
       selectedInnerColor: undefined,
       
@@ -442,6 +810,7 @@ oj.__registerWidget('oj.ojTreemap', $['oj']['dvtBaseComponent'],
        * @memberof! oj.ojTreemap
        * @instance
        * @type {string}
+       * @ojformat color
        */
       selectedOuterColor: undefined,
        
@@ -453,7 +822,6 @@ oj.__registerWidget('oj.ojTreemap', $['oj']['dvtBaseComponent'],
        * @memberof! oj.ojTreemap
        * @instance
        * @type {Object}
-       * @default {"labelHalign": "start", "isolate": "on", "useNodeColor": "off"}
        */
       header: {
         /**
@@ -463,6 +831,7 @@ oj.__registerWidget('oj.ojTreemap', $['oj']['dvtBaseComponent'],
          * @memberof! oj.ojTreemap
          * @instance
          * @type {string}
+         * @ojformat color
          */
         backgroundColor: undefined,
         
@@ -473,6 +842,7 @@ oj.__registerWidget('oj.ojTreemap', $['oj']['dvtBaseComponent'],
          * @memberof! oj.ojTreemap
          * @instance
          * @type {string}
+         * @ojformat color
          */
         borderColor: undefined,
          
@@ -483,6 +853,7 @@ oj.__registerWidget('oj.ojTreemap', $['oj']['dvtBaseComponent'],
          * @memberof! oj.ojTreemap
          * @instance
          * @type {string}
+         * @ojformat color
          */
         hoverBackgroundColor: undefined,
          
@@ -493,6 +864,7 @@ oj.__registerWidget('oj.ojTreemap', $['oj']['dvtBaseComponent'],
          * @memberof! oj.ojTreemap
          * @instance
          * @type {string}
+         * @ojformat color
          */
         hoverInnerColor: undefined, 
         /**
@@ -502,6 +874,7 @@ oj.__registerWidget('oj.ojTreemap', $['oj']['dvtBaseComponent'],
          * @memberof! oj.ojTreemap
          * @instance
          * @type {string}
+         * @ojformat color
          */
         hoverOuterColor: undefined,
          
@@ -512,6 +885,7 @@ oj.__registerWidget('oj.ojTreemap', $['oj']['dvtBaseComponent'],
          * @memberof! oj.ojTreemap
          * @instance
          * @type {string}
+         * @ojformat color
          */
         selectedBackgroundColor: undefined,
          
@@ -522,6 +896,7 @@ oj.__registerWidget('oj.ojTreemap', $['oj']['dvtBaseComponent'],
          * @memberof! oj.ojTreemap
          * @instance
          * @type {string}
+         * @ojformat color
          */
         selectedInnerColor: undefined,
          
@@ -532,6 +907,7 @@ oj.__registerWidget('oj.ojTreemap', $['oj']['dvtBaseComponent'],
          * @memberof! oj.ojTreemap
          * @instance
          * @type {string}
+         * @ojformat color
          */
         selectedOuterColor: undefined,
          
@@ -1133,6 +1509,7 @@ oj.__registerWidget('oj.ojTreemap', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojTreemap
  * @instance
  * @type {string}
+ * @ojformat color
  * @default null
  */
 /**
@@ -1279,7 +1656,6 @@ oj.__registerWidget('oj.ojTreemap', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojTreemap
  * @instance
  * @type {Object}
- * @default null
  */
 /**
  * The horizontal alignment of the header title.
@@ -1364,289 +1740,15 @@ oj.__registerWidget('oj.ojTreemap', $['oj']['dvtBaseComponent'],
  * @ojnodecontext oj-treemap-node
  * @memberof oj.ojTreemap
  */
+/* global __oj_treemap_metadata:false */
 /**
  * Ignore tag only needed for DVTs that have jsDoc in separate _doc.js files.
  * @ignore
  */
-(function() {
-var ojTreemapMeta = {
-  "properties": {
-    "animationDuration": {
-      "type": "number"
-    },
-    "animationOnDataChange": {
-      "type": "string",
-      "enumValues": ["auto", "none"]
-    },
-    "animationOnDisplay": {
-      "type": "string",
-      "enumValues": ["auto", "none"]
-    },
-    "animationUpdateColor": {
-      "type": "string"
-    },
-    "colorLabel": {
-      "type": "string"
-    },
-    "displayLevels": {
-      "type": "number"
-    },
-    "drilling": {
-      "type": "string",
-      "enumValues": ["on", "off"]
-    },
-    "groupGaps": {
-      "type": "string",
-      "enumValues": ["all", "none", "outer"]
-    },
-    "hiddenCategories": {
-      "type": "Array<string>",
-      "writeback": true
-    },
-    "highlightedCategories": {
-      "type": "Array<string>",
-      "writeback": true
-    },
-    "highlightMatch": {
-      "type": "string",
-      "enumValues": ["any", "all"]
-    },
-    "hoverBehavior": {
-      "type": "string",
-      "enumValues": ["dim", "none"]
-    },
-    "hoverBehaviorDelay": {
-      "type": "number"
-    },    "isolatedNode": {
-      "type": "string",
-      "writeback": true
-    },
-    "layout": {
-      "type": "string",
-      "enumValues": ["sliceAndDiceHorizontal", "sliceAndDiceVertical", "squarified"]
-    },
-    "nodeDefaults": {
-      "type": "object",
-      "properties": {
-        "groupLabelDisplay": {
-          "type": "string",
-          "enumValues": ["node", "off", "header"]
-        },
-        "header": {
-          "type": "object",
-          "properties": {
-            "backgroundColor": {
-              "type": "string"
-            },
-            "borderColor": {
-              "type": "string"
-            },
-            "hoverBackgroundColor": {
-              "type": "string"
-            },
-            "hoverInnerColor": {
-              "type": "string"
-            },
-            "hoverOuterColor": {
-              "type": "string"
-            },
-            "isolate": {
-              "type": "string",
-              "enumValues": ["on", "off"]
-            },
-            "labelHalign": {
-              "type": "string",
-              "enumValues": ["center", "end", "start"] 
-            },
-            "labelStyle": {
-              "type": "object"
-            },
-            "selectedBackgroundColor": {
-              "type": "string"
-            },
-            "selectedInnerColor": {
-              "type": "string"
-            },
-            "selectedOuterColor": {
-              "type": "string"
-            },
-            "useNodeColor": {
-              "type": "string",
-              "enumValues": ["on", "off"]
-            }
-          }
-        },
-        "hoverColor": {
-          "type": "string"
-        },
-        "labelDisplay": {
-          "type": "string",
-          "enumValues": ["off", "node"]
-        },
-        "labelHalign": {
-          "type": "string",
-          "enumValues": ["start", "end", "center"]
-        },
-        "labelStyle": {
-          "type": "object"
-        },
-        "labelValign": {
-          "type": "string",
-          "enumValues": ["top", "bottom", "center"]
-        },
-        "selectedInnerColor": {
-          "type": "string"
-        },
-        "selectedOuterColor": {
-          "type": "string"
-        }
-      }
-    },
-    "nodes": {
-      "type": "Array<object>|Promise"
-    },
-    "nodeContent": {
-      "type": "object",
-      "properties": {
-        "renderer": {}
-      }
-    },
-    "nodeSeparators": {
-      "type": "string",
-      "enumValues": ["bevels", "gap"]
-    },
-    "rootNode": {
-      "type": "string"
-    },
-    "selection": {
-      "type": "Array<string>",
-      "writeback": true
-    },
-    "selectionMode": {
-      "type": "string",
-      "enumValues": ["none", "single", "multiple"]
-    },
-    "sizeLabel": {
-      "type": "string"
-    },
-    "sorting": {
-      "type": "string",
-      "enumValues": ["on", "off"]
-    },
-    "tooltip": {
-      "type": "object",
-      "properties": {
-        "renderer": {}
-      }
-    },
-    "touchResponse": {
-      "type": "string",
-      "enumValues": ["touchStart", "auto"]
-    },
-    "translations": {
-      "type": "Object",
-      "properties": {
-        "componentName": {
-          "type": "string",
-          "value": "Treemap"
-        },
-        "labelAndValue": {
-          "type": "string",
-          "value": "{0}: {1}"
-        },
-        "labelClearSelection": {
-          "type": "string",
-          "value": "Clear Selection"
-        },
-        "labelColor": {
-          "type": "string",
-          "value": "Color"
-        },
-        "labelCountWithTotal": {
-          "type": "string",
-          "value": "{0} of {1}"
-        },
-        "labelDataVisualization": {
-          "type": "string",
-          "value": "Data Visualization"
-        },
-        "labelInvalidData": {
-          "type": "string",
-          "value": "Invalid data"
-        },
-        "labelNoData": {
-          "type": "string",
-          "value": "No data to display"
-        },
-        "labelSize": {
-          "type": "string",
-          "value": "Size"
-        },
-        "stateCollapsed": {
-          "type": "string",
-          "value": "Collapsed"
-        },
-        "stateDrillable": {
-          "type": "string",
-          "value": "Drillable"
-        },
-        "stateExpanded": {
-          "type": "string",
-          "value": "Expanded"
-        },
-        "stateHidden": {
-          "type": "string",
-          "value": "Hidden"
-        },
-        "stateIsolated": {
-          "type": "string",
-          "value": "Isolated"
-        },
-        "stateMaximized": {
-          "type": "string",
-          "value": "Maximized"
-        },
-        "stateMinimized": {
-          "type": "string",
-          "value": "Minimized"
-        },
-        "stateSelected": {
-          "type": "string",
-          "value": "Selected"
-        },
-        "stateUnselected": {
-          "type": "string",
-          "value": "Unselected"
-        },
-        "stateVisible": {
-          "type": "string",
-          "value": "Visible"
-        },
-        "tooltipIsolate": {
-          "type": "string",
-          "value": "Isolate"
-        },
-        "tooltipRestore": {
-          "type": "string",
-          "value": "Restore"
-        }
-      }
-    }
-  },
-  "events": {
-    "beforeDrill": {},
-    "drill": {}
-  },
-  "methods": {
-    "getContextByNode": {},
-    "getNode": {}
-  },
-  "extension": {
-    _WIDGET_NAME: "ojTreemap"
-  }
-};
-oj.CustomElementBridge.registerMetadata('oj-treemap', 'dvtBaseComponent', ojTreemapMeta);
-oj.CustomElementBridge.register('oj-treemap', {'metadata': oj.CustomElementBridge.getMetadata('oj-treemap')});
-})();
+(function () {
+  __oj_treemap_metadata.extension._WIDGET_NAME = 'ojTreemap';
+  oj.CustomElementBridge.registerMetadata('oj-treemap', 'dvtBaseComponent', __oj_treemap_metadata);
+  oj.CustomElementBridge.register('oj-treemap', { metadata: oj.CustomElementBridge.getMetadata('oj-treemap') });
+}());
 
 });

@@ -12,6 +12,188 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojoption'],
        function(oj, $)
 {
 
+var __oj_button_metadata = 
+{
+  "properties": {
+    "chroming": {
+      "type": "string",
+      "enumValues": [
+        "full",
+        "half",
+        "outlined"
+      ]
+    },
+    "disabled": {
+      "type": "boolean",
+      "value": false
+    },
+    "display": {
+      "type": "string",
+      "enumValues": [
+        "all",
+        "icons"
+      ],
+      "value": "all"
+    },
+    "translations": {
+      "type": "object",
+      "value": {}
+    }
+  },
+  "methods": {
+    "refresh": {},
+    "setProperty": {},
+    "getProperty": {},
+    "setProperties": {},
+    "getNodeBySubId": {},
+    "getSubIdByNode": {}
+  },
+  "events": {
+    "ojAction": {}
+  },
+  "extension": {}
+};
+var __oj_buttonset_many_metadata = 
+{
+  "properties": {
+    "chroming": {
+      "type": "string",
+      "enumValues": [
+        "full",
+        "half",
+        "outlined"
+      ]
+    },
+    "disabled": {
+      "type": "boolean",
+      "value": false
+    },
+    "display": {
+      "type": "string",
+      "enumValues": [
+        "all",
+        "icons"
+      ],
+      "value": "all"
+    },
+    "focusManagement": {
+      "type": "string",
+      "enumValues": [
+        "none",
+        "oneTabstop"
+      ],
+      "value": "oneTabstop"
+    },
+    "translations": {
+      "type": "object",
+      "value": {}
+    },
+    "value": {
+      "type": "Array<any>",
+      "writeback": true
+    }
+  },
+  "methods": {
+    "refresh": {},
+    "setProperty": {},
+    "getProperty": {},
+    "setProperties": {},
+    "getNodeBySubId": {},
+    "getSubIdByNode": {}
+  },
+  "extension": {}
+};
+var __oj_buttonset_one_metadata = 
+{
+  "properties": {
+    "chroming": {
+      "type": "string",
+      "enumValues": [
+        "full",
+        "half",
+        "outlined"
+      ]
+    },
+    "disabled": {
+      "type": "boolean",
+      "value": false
+    },
+    "display": {
+      "type": "string",
+      "enumValues": [
+        "all",
+        "icons"
+      ],
+      "value": "all"
+    },
+    "focusManagement": {
+      "type": "string",
+      "enumValues": [
+        "none",
+        "oneTabstop"
+      ],
+      "value": "oneTabstop"
+    },
+    "translations": {
+      "type": "object",
+      "value": {}
+    },
+    "value": {
+      "type": "any",
+      "writeback": true
+    }
+  },
+  "methods": {
+    "refresh": {},
+    "setProperty": {},
+    "getProperty": {},
+    "setProperties": {},
+    "getNodeBySubId": {},
+    "getSubIdByNode": {}
+  },
+  "extension": {}
+};
+var __oj_menu_button_metadata = 
+{
+  "properties": {
+    "chroming": {
+      "type": "string",
+      "enumValues": [
+        "full",
+        "half",
+        "outlined"
+      ]
+    },
+    "disabled": {
+      "type": "boolean",
+      "value": false
+    },
+    "display": {
+      "type": "string",
+      "enumValues": [
+        "all",
+        "icons"
+      ],
+      "value": "all"
+    },
+    "translations": {
+      "type": "object",
+      "value": {}
+    }
+  },
+  "methods": {
+    "refresh": {},
+    "setProperty": {},
+    "getProperty": {},
+    "setProperties": {},
+    "getNodeBySubId": {},
+    "getSubIdByNode": {}
+  },
+  "events": {
+    "ojAction": {}
+  },
+  "extension": {}
+};
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
@@ -524,7 +706,7 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
             // so the only way to disable an anchor button at create time is via the API.  At refresh time, JQUI did look
             // for the .oj-disabled class, but our refresh doesn't handle disabled.)
             this.option('disabled',
-                        !!this.element.prop( "disabled" ),
+                        !!this.element[0].disabled,
                         {'_context': {internalSet: true}}); // writeback not needed since "not in constructorOptions" means "not bound"
         }
 
@@ -532,7 +714,7 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
         {
             this.keepDomLabel = true;
             this.option('label',
-                        this.type === "inputPush" ? this.buttonElement.val() : this.buttonElement.html(), // @HTMLUpdateOK getter not setter
+                        this.type === "inputPush" ? this.buttonElement.val() : this.buttonElement[0].innerHTML, // @HTMLUpdateOK getter not setter
                         {'_context': {internalSet: true}}); // writeback not needed since "not in constructorOptions" means "not bound"
         }
 
@@ -555,14 +737,14 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
         this.menuEventNamespace = this.eventNamespace + "menu";
 
         this._initButtonTypes2();
-        this.hasTitle = !!this.rootElement.attr( "title" );
+        this.hasTitle = !!this.rootElement.getAttribute( "title" );
 
         var self = this,
             options = this.options,
             toggleButton = this._isToggle,
             activeClass = !toggleButton ? "oj-active" : "";
 
-        this.rootElement.addClass( BASE_CLASSES );
+        _addClasses(this.rootElement, BASE_CLASSES);
         _setChromingClass(this.rootElement, this.options.chroming);
 
         // Called for touchend/cancel on both button and document.  Listening only on button isn't completely reliable
@@ -570,27 +752,35 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
         // document runs the risk that we won't hear it because someone eats it.  Could use capture listener to dodge
         // that risk, but just listening on both seems to work great.
         var endHandler = function() {
-            self.rootElement.removeClass( activeClass );
-            self.rootElement.removeClass( "oj-hover" );
+            if (activeClass) {
+              self.rootElement.classList.remove( activeClass );
+            }
+            self.rootElement.classList.remove( "oj-hover" );
             self._toggleDefaultClasses();
         };
 
+        if (oj.DomUtils.isTouchSupported()) {
+            this.buttonElement
+                .bind( "touchstart" + this.eventNamespace, function() {
+                    if ( self._IsEffectivelyDisabled() )
+                        return;
+
+                    if (activeClass) {
+                      self.rootElement.classList.add( activeClass );
+                    }
+                    self._toggleDefaultClasses();
+
+                    // don't pass "touchend touchcancel", due to semantics of one() : it's called once per event type.
+                    // It's almost always touchend, not touchcancel, that is fired, so the touchend listeners would pile up.
+                    // The likelihood is very small that the double edge case would occur where both endHandler is needed,
+                    // AND the touch ends with touchcancel rather than touchend, and the result would only be that the hover
+                    // style sticks to the button.
+                    self.document.one("touchend", endHandler);
+                })
+                .bind( "touchend" + this.eventNamespace + " " + "touchcancel" + this.eventNamespace, endHandler)
+        }
+
         this.buttonElement
-            .bind( "touchstart" + this.eventNamespace, function() {
-                if ( self._IsEffectivelyDisabled() )
-                    return;
-
-                self.rootElement.addClass( activeClass );
-                self._toggleDefaultClasses();
-
-                // don't pass "touchend touchcancel", due to semantics of one() : it's called once per event type.
-                // It's almost always touchend, not touchcancel, that is fired, so the touchend listeners would pile up.
-                // The likelihood is very small that the double edge case would occur where both endHandler is needed,
-                // AND the touch ends with touchcancel rather than touchend, and the result would only be that the hover
-                // style sticks to the button.
-                self.document.one("touchend", endHandler);
-            })
-            .bind( "touchend" + this.eventNamespace + " " + "touchcancel" + this.eventNamespace, endHandler)
             .bind( "mouseenter" + this.eventNamespace, function() {
                 if ( self._IsEffectivelyDisabled() )
                     return;
@@ -598,18 +788,21 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
                 // do this for real mouse enters, but not 300ms after a tap
                 if (!oj.DomUtils.recentTouchEnd()) {
                     if ( this === _lastActive )
-                        self.rootElement.addClass( "oj-active" );
+                        self.rootElement.classList.add( "oj-active" );
 
-                    self.rootElement.addClass( "oj-hover" )
-                                    .removeClass( "oj-default oj-focus-only" );
+                    self.rootElement.classList.add( "oj-hover" );
+                    self.rootElement.classList.remove( "oj-default" );
+                    self.rootElement.classList.remove( "oj-focus-only" );
                }
             })
             .bind( "mouseleave" + this.eventNamespace, function() {
-                self.rootElement.removeClass( "oj-hover" );
+                self.rootElement.classList.remove( "oj-hover" );
 
                 if ( self._IsEffectivelyDisabled() )
                     return;
-                self.rootElement.removeClass( activeClass );
+                if (activeClass) {
+                  self.rootElement.classList.remove( activeClass );
+                }
                 self._toggleDefaultClasses();
             });
 
@@ -631,8 +824,8 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
         // before ours, e.g. if their KO click binding is before the ojComponent binding.
         if (this._IsCustomElement())
         {
-            this.rootElement[0].addEventListener("click", this._disabledClickHandler, true);
-            this.rootElement[0].addEventListener("click", this._ojActionClickHandler, false);
+            this.rootElement.addEventListener("click", this._disabledClickHandler, true);
+            this.rootElement.addEventListener("click", this._ojActionClickHandler, false);
         }
         else
         {
@@ -640,7 +833,7 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
         }
         
         this._focusable({
-            'element': this.rootElement,
+            'element': $(this.rootElement),
             'applyHighlight': true,
             'afterToggle' : function() {
                 self._toggleDefaultClasses();
@@ -758,8 +951,9 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
                     // do this for real mousedowns, but not 300ms after a tap
                     if ( event.which === 1 && !oj.DomUtils.recentTouchEnd() )
                     {
-                        self.rootElement.addClass( "oj-active" )
-                                        .removeClass( "oj-default oj-focus-only" );
+                        self.rootElement.classList.add( "oj-active" );
+                        self.rootElement.classList.remove( "oj-default" );
+                        self.rootElement.classList.remove( "oj-focus-only" );
                         _lastActive = this;
                         self.document.one( "mouseup", function() { // TODO: prob need capture listener like Menu for reliability
                             _lastActive = null;
@@ -769,7 +963,7 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
                 .bind( "mouseup" + this.eventNamespace, function() {
                     if ( self._IsEffectivelyDisabled() )
                         return false;
-                    self.rootElement.removeClass( "oj-active" );
+                    self.rootElement.classList.remove( "oj-active" );
                     self._toggleDefaultClasses();
                 })
                 .bind( "keydown" + this.eventNamespace, function(event) {
@@ -793,14 +987,15 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
                         event.preventDefault(); // prevent scrolling down one page when clicking anchor button via Spacebar.  Only prevent for anchor!
                     }
                     if ( (isSpace && !isAnchor) || event.keyCode === $.ui.keyCode.ENTER ) {
-                        self.rootElement.addClass( "oj-active" )
-                                        .removeClass( "oj-default oj-focus-only" );
+                        self.rootElement.classList.add( "oj-active" );
+                        self.rootElement.classList.remove( "oj-default" );
+                        self.rootElement.classList.remove( "oj-focus-only" );
                     }
                 })
                 // see #8559, we bind to blur here in case the button element loses
                 // focus between keydown and keyup, it would be left in an "active" state
                 .bind( "keyup" + this.eventNamespace + " blur" + this.eventNamespace, function() {
-                    self.rootElement.removeClass( "oj-active" );
+                    self.rootElement.classList.remove( "oj-active" );
                     self._toggleDefaultClasses();
                 });
 
@@ -809,10 +1004,10 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
                 //Chrome is not updating document.activeElement on click of <a> which is needed for ojPopup and
                 //setting tabIndex to a non-negative value will fix this. Refer 
                 // isNaN(..) returns true when tabIndex is undefined (or 'undefined', which the original impl checked for...)
-                var tabIndex = this.buttonElement.attr( "tabindex" );
+                var tabIndex = this.buttonElement[0].getAttribute( "tabindex" );
                 if( tabIndex === null || isNaN(tabIndex) ) // Don't override if user already set a tabIndex.
                 {
-                    this.buttonElement.attr( "tabindex", "0" );
+                    this.buttonElement[0].setAttribute( "tabindex", "0" );
                 }
             }
         } // end of: if (checkbox) {} else if (radio) {} else {}
@@ -845,7 +1040,7 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
         // For toggle buttons, launcher must be the hidden focusable input, but for Shift-F10 we want the CM aligned to the root element, not that
         // launcher.  rootElement works for push buttons too.
         this._OpenContextMenu(event, eventType, {
-            "position": {"of": eventType==="keyboard" ? this.rootElement : event}
+            "position": {"of": eventType==="keyboard" ? $(this.rootElement) : event}
         });
     },
 
@@ -874,7 +1069,13 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
         });
 
         // be sure to not remove the context menu slot
-        $(rootElem).children().not(elem).not("[slot='contextMenu']").remove();
+        var children = rootElem.children;
+        for (var len = children.length, idx = len - 1; idx >= 0; idx--) {
+          var child = children[idx];
+          if (child !== elem && child.getAttribute('slot') !== 'contextMenu') {
+            rootElem.removeChild(child);
+          }
+        }
         
         // all slots are now within the inner button element
         var slots = oj.BaseCustomElementBridge.getSlotMap(elem);
@@ -891,21 +1092,21 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
                         if (currentText.nodeType === 3)
                         {
                             wrapperSpan = document.createElement('span');
-                            $(currentText).replaceWith(wrapperSpan);  // @HTMLUpdateOK
+                            currentText.parentNode.insertBefore(wrapperSpan, currentText);  // @HTMLUpdateOK
                             wrapperSpan.appendChild(currentText);
                         }
-                        $(wrapperSpan).addClass('oj-button-text');
-                        self._setTextSpanIdAndLabelledBy($(wrapperSpan));
+                        wrapperSpan.classList.add('oj-button-text');
+                        self._setTextSpanIdAndLabelledBy(wrapperSpan);
                     }
                     else if (slotName === "startIcon")
                     {
-                        $(node).addClass('oj-button-icon');
-                        $(node).addClass('oj-start');
+                        node.classList.add('oj-button-icon');
+                        node.classList.add('oj-start');
                     }
                     else if (slotName === "endIcon")
                     {
-                        $(node).addClass('oj-button-icon');
-                        $(node).addClass('oj-end');
+                        node.classList.add('oj-button-icon');
+                        node.classList.add('oj-end');
                     }
                     else if (slotName === "menu")
                     {
@@ -924,9 +1125,12 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
         });
 
         // wrap button content in a label for consistent DOM/theming structure
-        var wrapperDiv = $('<div>');
-        wrapperDiv.addClass('oj-button-label');
-        $(elem).children().wrapAll(wrapperDiv);  // @HTMLUpdateOK
+        var wrapperDiv = document.createElement('div');
+        wrapperDiv.className = 'oj-button-label';
+        while (elem.hasChildNodes()) {
+          wrapperDiv.appendChild(elem.firstChild);  // @HTMLUpdateOK
+        }
+        elem.appendChild(wrapperDiv);  // @HTMLUpdateOK
     },
     
     // Helper function to return the correct menu reference between custom element and non custom element components.
@@ -943,10 +1147,11 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
     {
         // for toggle buttons (radio/checkbox), element is <input>, buttonElement is <label>,
         // and rootElement is a new wrapper element we create.  This is true in JQUI; in CustomElements not exposing toggle buttons.
-        if ( this.element.is("input[type=checkbox]") ) {
+        var elem = this.element[0];
+        if (elem.tagName === 'INPUT' && elem.type === 'checkbox') {
             this.type = "checkbox";
             this._isToggle = true;
-        } else if ( this.element.is("input[type=radio]") ) {
+        } else if (elem.tagName === 'INPUT' && elem.type === 'radio') {
             this.type = "radio";
             this._isToggle = true;
         }
@@ -954,11 +1159,11 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
         // for push buttons (next 3 cases), element, buttonElement, and rootElement are all the same elem in JQUI.
         // In CustomElements, element and buttonElement are the same elem, and rootElement is the parent custom element.
         // We ignore <label> if present.
-        else if ( this.element.is("input[type=button],input[type=submit],input[type=reset]") )
+        else if (elem.tagName === 'INPUT' && (elem.type === 'button' || elem.type === 'submit' || elem.type === 'reset'))
             this.type = "inputPush";
-        else if ( this.element.is("button"))
+        else if (elem.tagName === 'BUTTON')
             this.type = "button";
-        else if ( this.element.is("a"))
+        else if (elem.tagName === 'A')
             this.type = "anchor";
         else
             throw new Error("JET Button not supported on this element type");
@@ -966,7 +1171,7 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
         if ( this._isToggle )
         {
             // TBD: rather than requiring the label to be supplied, should we just create one for them if it's not there?
-            var labelSelector = "label[for='" + this.element.attr("id") + "']";
+            var labelSelector = "label[for='" + this.element[0].getAttribute("id") + "']";
             this.buttonElement = this.element.siblings().filter( labelSelector );
         } else {
             this.buttonElement = this.element;
@@ -976,34 +1181,39 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
     // Part 2 of type-specific component init, called from _ComponentCreate().
     _initButtonTypes2: function() // Private, not an override (not in base class).  Method name unquoted so will be safely optimized (renamed) by GCC as desired.
     {
+        var elem = this.element[0];
         if ( this._isToggle )
         {
-            this.buttonElement.addClass( "oj-button-label" );
+            this.buttonElement[0].classList.add( "oj-button-label" );
 
-            this.element
-                .addClass( "oj-button-input oj-helper-hidden-accessible" )
-                .attr("data-oj-internal", "") // automation support
-                .add(this.buttonElement) // doesn't mutate this.element
-                .wrapAll("<span></span>"); // add root node around label/input.  @HTMLUpdateOK trusted string
+            elem.classList.add('oj-button-input');
+            elem.classList.add('oj-helper-hidden-accessible');
+            elem.setAttribute('data-oj-internal', ''); // automation support
+            var spanElem = document.createElement('span');
+            this.element[0].parentNode.insertBefore(spanElem, this.buttonElement[0]);
+            spanElem.appendChild(this.buttonElement[0]); // add root node around label/input.  @HTMLUpdateOK trusted string
+            spanElem.appendChild(this.element[0]); // add root node around label/input.  @HTMLUpdateOK trusted string
 
-            this.rootElement = this.element.parent(); // the new root
-            this.rootElement.addClass( "oj-button-jqui oj-button-toggle" );
+            this.rootElement = this.element[0].parentNode; // the new root
+            this.rootElement.classList.add( "oj-button-jqui" );
+            this.rootElement.classList.add( "oj-button-toggle" );
 
-            var checked = this.element[0].checked;
+            var checked = elem.checked;
             if ( checked ) {
-                this.rootElement.addClass( "oj-selected" )
-                                .removeClass( "oj-default oj-focus-only" );
+                this.rootElement.classList.add( "oj-selected" )
+                this.rootElement.classList.remove( "oj-default" );
+                this.rootElement.classList.remove( "oj-focus-only" );
             }
             // else no need to removeClass since this code runs only at create time
 
         } else
         {
             if (this._IsCustomElement()) {
-                this.rootElement = this.element.parent();
-                this.element.addClass("oj-button-button");
+                this.rootElement = elem.parentNode;
+                elem.classList.add("oj-button-button");
             } else {
-                this.rootElement = this.element;
-                this.element.addClass("oj-button-jqui");
+                this.rootElement = elem;
+                elem.classList.add("oj-button-jqui");
             }
         }
     },
@@ -1021,7 +1231,7 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
      */
     widget: function() // Override of public base class method.  Method name needn't be quoted since is in externs.js.
     {
-        return this.rootElement;
+        return $(this.rootElement);
     },
 
     _destroy: function() // Override of protected base class method.  Method name needn't be quoted since is in externs.js.
@@ -1031,11 +1241,11 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
         this.buttonElement[0].removeEventListener("click", this._ojActionClickHandler, false);
 
         // TBD: won't need this after the restore-attrs feature is in place.
-        this.element
-            .removeClass( "oj-helper-hidden-accessible" )
-            .removeAttr("aria-labelledby")
-            .removeUniqueId();
-
+        var elem = this.element[0];
+        elem.classList.remove('oj-helper-hidden-accessible');
+        elem.removeAttribute('aria-labelledby');
+        this.element.removeUniqueId();
+    
         // If disabled, we want to run the "changing from disabled to enabled" part of callee, to restore original tabindex.
         // If enabled, don't want to run any part of callee.
         if (this.options.disabled)
@@ -1045,18 +1255,21 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
 
         // TBD: won't need this after the restore-attrs feature is in place.
         if ( !isToggle )
-            this.rootElement.removeClass( BASE_CLASSES + " oj-button-jqui " + STATE_CLASSES + " " + TYPE_CLASSES + " " + CHROMING_CLASSES );
+            _removeClasses(this.rootElement, BASE_CLASSES + " oj-button-jqui " + STATE_CLASSES + " " + TYPE_CLASSES + " " + CHROMING_CLASSES );
 
-        this.buttonElement.html( this.buttonElement.find(".oj-button-text").html() ); // @HTMLUpdateOK reparent existing DOM
+        var buttonText = this.buttonElement[0].querySelector('.oj-button-text');
+        if (buttonText) {
+          this.buttonElement[0].innerHTML = buttonText.innerHTML; // @HTMLUpdateOK reparent existing DOM
+        }
 
         if ( !isToggle )
         {
             // TBD: won't need this after the restore-attrs feature is in place.
             if ( !this.hasTitle )
-                this.rootElement.removeAttr( "title" );
+                this.rootElement.removeAttribute( "title" );
         } else
         {
-            this.buttonElement.removeClass( "oj-button-label" ); // TBD: won't need this after the restore-attrs feature is in place.
+            this.buttonElement[0].classList.remove( "oj-button-label" ); // TBD: won't need this after the restore-attrs feature is in place.
 
             // : If the button is stamped out by a KO foreach (with or without a containing buttonset), and the foreach
             // observable is updated to no longer include the button, then _destroy() is called.  Due to the ordering of tasks, if
@@ -1098,29 +1311,35 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
     // - If option is being set to true, it's removed .oj-hover/focus/focus-highlight/active.  (See comment below.)
     _updateEffectivelyDisabled: function()
     {
+        var elem = this.element[0];
         var effectivelyDisabled = this._IsEffectivelyDisabled();
 
         // Unlike JQUI, root element should have exactly one of .oj-enabled and .oj-disabled at any point in time, for all flavors of Button.
         // _setOption._super() sets .oj-disabled to potentially wrong value since it doesn't know about "effectively disabled".  This fixes it up.
-        this.rootElement.toggleClass( "oj-disabled", effectivelyDisabled );
-        this.rootElement.toggleClass( "oj-enabled", !effectivelyDisabled ); // _setOption._super() doesn't try to set this
-
+        if (effectivelyDisabled) {
+            this.rootElement.classList.add('oj-disabled');
+            this.rootElement.classList.remove('oj-enabled'); // _setOption._super() doesn't try to set this
+        } else {
+            this.rootElement.classList.remove('oj-disabled');
+            this.rootElement.classList.add('oj-enabled'); // _setOption._super() doesn't try to set this
+        }
+  
         if (this.type !== "anchor") // i.e. <button> or <input> (including type=radio|checkbox|other)
         {
             // <button> and <input> (including type=radio|checkbox|other) have this property, but <a> doesn't
-            this.element.prop( "disabled", effectivelyDisabled ); // JQUI's _setOption sets this for <a>'s too, which seems harmless but is incorrect.
+            elem.disabled = effectivelyDisabled; // JQUI's _setOption sets this for <a>'s too, which seems harmless but is incorrect.
 
             // _setOption._super() puts aria-disabled on the rootElement.  Per A11y team, don't put aria-disabled on element already having disabled
             // attr.  (And if we DID apply aria-disabled, for radios/checkboxes it should go on the element / input, not the buttonElement / label or rootElement,
             // so the _setOption._super() behavior used by JQUI button is doubly wrong.)  Further, _setOption._super() can set it wrong since it doesn't know
             // about "effectively disabled".  This fixes it up.
-            this.rootElement.removeAttr( "aria-disabled" );
+            this.rootElement.removeAttribute( "aria-disabled" );
         } else { // else is <a>
             // _setOption._super() puts aria-disabled on the rootElement. For <a>'s, element and rootElement are both the <a> in JQUI,
             // but are different in CustomElements.  aria-disabled belongs on element.  Also, the value it sets is potentially wrong since it
             // doesn't know about "effectively disabled".
-            this.element.attr( "aria-disabled", effectivelyDisabled ); // set element attr to correct value in both JQUI and Custom Elements.
-            if (this._IsCustomElement()) this.rootElement.removeAttr( "aria-disabled" );
+            elem.setAttribute( "aria-disabled", effectivelyDisabled ); // set element attr to correct value in both JQUI and Custom Elements.
+            if (this._IsCustomElement()) this.rootElement.removeAttribute( "aria-disabled" );
         }
 
         if (effectivelyDisabled)
@@ -1128,7 +1347,7 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
             // TBD: when the handling of oj-active in baseComponent._setOption("disabled") is finalized, review whether this should be handled there instead.
             // baseComponent._setOption("disabled") removes oj-active, oj-hover, oj-focus, and oj-focus-highlight, but _updateEffectivelyDisabled is called in a number of other
             // cases too, so do it here too to be safe.
-            this.widget().removeClass("oj-active oj-default oj-focus-only oj-hover oj-focus oj-focus-highlight");
+            _removeClasses(this.widget()[0], "oj-active oj-default oj-focus-only oj-hover oj-focus oj-focus-highlight");
             _lastActive = null; // avoid (very slight) possibility that first mouseIn after button is subsequently re-enabled will set oj-active
 
             // when disabling a menu button, dismiss the menu if open
@@ -1215,11 +1434,12 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
 
                 if ( this.checked )
                 {
-                    $radioWidget.rootElement.addClass( "oj-selected" )
-                                            .removeClass( "oj-default oj-focus-only" );
+                    $radioWidget.rootElement.classList.add( "oj-selected" );
+                    $radioWidget.rootElement.classList.remove( "oj-default" );
+                    $radioWidget.rootElement.classList.remove( "oj-focus-only" );
                 } else
                 {
-                    $radioWidget.rootElement.removeClass( "oj-selected" );
+                    $radioWidget.rootElement.classList.remove( "oj-selected" );
                     $radioWidget._toggleDefaultClasses();
                 }
             });
@@ -1227,11 +1447,12 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
         {
             if ( this.element[0].checked )
             {
-                this.rootElement.addClass( "oj-selected" )
-                                .removeClass( "oj-default oj-focus-only" );
+                this.rootElement.classList.add( "oj-selected" );
+                this.rootElement.classList.remove( "oj-default" );
+                this.rootElement.classList.remove( "oj-focus-only" );
             } else
             {
-                this.rootElement.removeClass( "oj-selected" );
+                this.rootElement.classList.remove( "oj-selected" );
                 this._toggleDefaultClasses();
             }
         }
@@ -1265,23 +1486,27 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
      */
     _setLabelOnDomAtCreateTime: function() // Private, not an override (not in base class).  Method name unquoted so will be safely optimized (renamed) by GCC as desired.
     {
-        var buttonElement = this.buttonElement;
-        var textSpan = $( "<span class='oj-button-text'></span>", this.document[0] );
+        var buttonElement = this.buttonElement[0];
+        var textSpan = document.createElement('span');
+        textSpan.className = 'oj-button-text';
 
         if (this.keepDomLabel) {
-            textSpan.append(buttonElement.contents()); // @HTMLUpdateOK reparent existing DOM
+            while (buttonElement.hasChildNodes()) {
+                textSpan.appendChild(buttonElement.firstChild); // @HTMLUpdateOK reparent existing DOM
+            }
         } else {
-            buttonElement.empty();
-            textSpan.text(this.options.label); // performs escaping; e.g. if label is <a>foo</a>, then text() replaces the span's contents with a text node containing that literal string (rather than setting innerHtml).
-        }
+            buttonElement.innerHTML = '';
+            textSpan.textContent = this.options.label; // performs escaping; e.g. if label is <a>foo</a>, then text() replaces the span's contents with a text node containing that literal string (rather than setting innerHtml).
+          }
 
         // Due to FF bug (see Bugzilla's Bug 984869), <button> with flex/inline-flex display doesn't work. Workaround by wrapping <button> contents with a <div> and setting the latter display flex/inline-flex
         if (this.type === "button") {
-            var contentContainer = $("<div></div>").addClass("oj-button-label");
-            contentContainer.append(textSpan); // @HTMLUpdateOK append span containing trusted content and existing DOM, per above comments on lines referencing textSpan.
-            this.element.append(contentContainer); // @HTMLUpdateOK attach detached wrapped DOM created from trusted string and existing DOM
-        } else {
-            buttonElement.append(textSpan); // @HTMLUpdateOK attach detached DOM created from trusted string and existing DOM
+            var contentContainer = document.createElement('div');
+            contentContainer.className = 'oj-button-label';
+            contentContainer.appendChild(textSpan); // @HTMLUpdateOK append span containing trusted content and existing DOM, per above comments on lines referencing textSpan.
+            this.element[0].appendChild(contentContainer); // @HTMLUpdateOK attach detached wrapped DOM created from trusted string and existing DOM
+          } else {
+            buttonElement.appendChild(textSpan); // @HTMLUpdateOK attach detached DOM created from trusted string and existing DOM
         }
 
         // Need to set "aria-labelledby" attribute of (button/anchor) element to point to label span as fix for  (accessibility: icon-only button label is read twice by screen reader)
@@ -1289,13 +1514,13 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
         if ((this.type === "button" || this.type === "anchor") && !this.element[0].hasAttribute('aria-label')  && !this.element[0].hasAttribute('aria-labelledby') ) {
             this._setTextSpanIdAndLabelledBy(textSpan);
         }
-        return textSpan;
+        return $(textSpan);
     },
 
     _setTextSpanIdAndLabelledBy: function(textSpan)
     {
-        textSpan.uniqueId(); // assign id so that this.element can have "aria-labelledby" attribute pointing to the textspan
-        this.element.attr("aria-labelledby", textSpan.attr("id"));
+        $(textSpan).uniqueId(); // assign id so that this.element can have "aria-labelledby" attribute pointing to the textspan
+        this.element[0].setAttribute("aria-labelledby", textSpan.getAttribute("id"));
     },
 
     /*
@@ -1316,9 +1541,9 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
         if ( this.type === "inputPush" ) { // <input type=button|submit|reset> doesn't support child nodes, thus no icons, etc.
             this._setLabelOnDomOfSpanlessButton();
         } else {
-            var textSpan = this.buttonElement.find( '.oj-button-text' );
-            textSpan.text(this.options.label); // performs escaping; e.g. if label is <a>foo</a>, then text() replaces the span's contents with a text node containing that literal string (rather than setting innerHtml).
-            this._setDisplayOptionOnDom(textSpan);
+            var textSpan = this.buttonElement[0].querySelector( '.oj-button-text' );
+            textSpan.textContent = this.options.label; // performs escaping; e.g. if label is <a>foo</a>, then text() replaces the span's contents with a text node containing that literal string (rather than setting innerHtml).
+            this._setDisplayOptionOnDom($(textSpan));
         }
     },
 
@@ -1353,39 +1578,49 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
      */
     _setIconOnDom: function(isStart) // Private, not an override (not in base class).  Method name unquoted so will be safely optimized (renamed) by GCC as desired.
     {
-        var contentContainer = this.buttonElement;
+        var contentContainer = this.buttonElement[0];
         if (this.type === "button")
-            contentContainer = this.element.children("div.oj-button-label");
+            contentContainer = this.element.children("div.oj-button-label")[0];
 
         if (isStart) {
             var iconSpanSelector = '.oj-button-icon.oj-start';
             var standardIconClasses = 'oj-button-icon oj-start';
             var appIconClass = this.options.icons.start;
             var lastIvar = "_lastStartIcon";
-            var pendTo = "prependTo";
         } else {
             iconSpanSelector = '.oj-button-icon.oj-end';
             standardIconClasses = 'oj-button-icon oj-end';
             appIconClass = this.options.icons.end;
             lastIvar = "_lastEndIcon";
-            pendTo = "appendTo";
         }
 
-        var iconSpan = contentContainer.find( iconSpanSelector );
+        var iconSpan = contentContainer.querySelectorAll( iconSpanSelector );
+        var idx;
+        var icon;
 
         if ( appIconClass ) {
             if ( iconSpan.length ) {
                 // remove the app icon class we set last time
                 var oldAppIconClass = this[lastIvar];
-                iconSpan.removeClass(oldAppIconClass);
+                for (idx = 0; idx < iconSpan.length; idx++) {
+                    icon = iconSpan[idx];
+                    _removeClasses(icon, oldAppIconClass);
+                    _addClasses(icon, appIconClass);
+                }
             } else {
-                iconSpan = $( "<span></span>" )
-                    .addClass( standardIconClasses )
-                    [pendTo]( contentContainer ); // @HTMLUpdateOK append or prepend trusted new DOM to button elem
+                var spanElem = document.createElement('span');
+                spanElem.className = standardIconClasses + ' ' + appIconClass;
+                if (isStart) {
+                    contentContainer.insertBefore(spanElem, contentContainer.firstChild); // @HTMLUpdateOK prepend trusted new DOM to button elem
+                } else {
+                    contentContainer.appendChild(spanElem); // @HTMLUpdateOK append trusted new DOM to button elem
+                }
             }
-            iconSpan.addClass( appIconClass );
         } else {
-            iconSpan.remove();
+            for (idx = 0; idx < iconSpan.length; idx++) {
+                icon = iconSpan[idx];
+                icon.parentNode.removeChild(icon);
+            }
         }
 
         // remember the app icon class we set, so we can remove it next time
@@ -1439,20 +1674,23 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
 
         if ( atLeastOneIcon && displayIsIcons )
         {
-            textSpan.addClass( "oj-helper-hidden-accessible" );
+            if (textSpan[0]) {
+                textSpan[0].classList.add( "oj-helper-hidden-accessible" );
+            }
 
             if ( !this.hasTitle )
             {
-                var buttonText = /** @type {string} */
-                                 (textSpan.text());
-                this.rootElement.attr( "title", $.trim( buttonText ) ); // use buttonText, which is escaped, not options.label, which isn't!
+                var buttonText = textSpan[0] ? textSpan[0].textContent : '';
+                this.rootElement.setAttribute('title', $.trim(buttonText)); // use buttonText, which is escaped, not options.label, which isn't!
             }
         } else
         {
-            textSpan.removeClass( "oj-helper-hidden-accessible" );
+            if (textSpan[0]) {
+                textSpan[0].classList.remove('oj-helper-hidden-accessible');
+            }
 
             if ( !this.hasTitle )
-                this.rootElement.removeAttr( "title" );
+                this.rootElement.removeAttribute( "title" );
         }
 
         var buttonClass =
@@ -1466,8 +1704,8 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
                             ? "oj-button-text-icon-start"
                             : "oj-button-text-icon-end";
 
-        this.rootElement.removeClass( TYPE_CLASSES )
-                        .addClass( buttonClass );
+        _removeClasses(this.rootElement, TYPE_CLASSES );
+        this.rootElement.classList.add( buttonClass );
     },
 
     // Anchors are the only Button type lacking a native disabled API, so this tabindex logic is needed to prevent
@@ -1518,19 +1756,20 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
                 || this._getEnclosingContainerElement("toolbar").length)
             return;
 
+        var elem = this.element[0];
         if (disabled) { // enabled button becoming disabled, at create time or later. (Not destroy time, since that logic only passes disabled=false.)
             // If the existing tabindex is unset (attr() returns undefined) or invalid (not a (stringified) integer), set the
             // ivar to null, in which case when we later restore the old value, we just clear the attr.  Obviously correct
             // in unset case. For invalid case, we prefer not to set anything invalid on the dom, and per MDN
             // unset and invalid tabindexes are handled the same.
-            var attr = this.element.attr("tabindex");
+            var attr = elem.getAttribute("tabindex");
             this._oldAnchorTabIndex = this._isInteger(Number(attr)) ? attr: null;
 
-            this.element.attr("tabindex", -1);
+            elem.setAttribute("tabindex", -1);
         } else { // disabled button becoming enabled after create time, incl. destroy time.  (Not create time, since that logic only passes disabled=true.)
             this._oldAnchorTabIndex == null
-                ? this.element.removeAttr("tabindex")
-                : this.element.attr("tabindex", this._oldAnchorTabIndex);
+                ? elem.removeAttribute("tabindex")
+                : elem.setAttribute("tabindex", this._oldAnchorTabIndex);
             // no need to clear ivar
         };
     },
@@ -1557,7 +1796,7 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
     // Returns non-null JQ object that's length 1 iff this button is contained in a container of the specified type
     _getEnclosingContainerElement: function(component)
     {
-        return this.rootElement.closest(this._selectorMap[component]);
+        return $(this.rootElement).closest(this._selectorMap[component]);
     },
 
     // component param is "buttonset" or "toolbar"
@@ -1580,7 +1819,7 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
      */
     _setupMenuButton: function(oldMenuOption) // Private, not an override (not in base class).  Method name unquoted so will be safely optimized (renamed) by GCC as desired.
     {
-        if ( this._getMenuNode() && this.element.is("input")) // both push and toggle buttons based on <input>
+        if ( this._getMenuNode() && this.element[0].tagName === 'INPUT') // both push and toggle buttons based on <input>
             throw new Error("Menu Button functionality is not supported on input elements.");
 
         this._removeMenuBehavior(oldMenuOption);
@@ -1598,7 +1837,7 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
                         return true;
                     } else if (event.which === $.ui.keyCode.ESCAPE)
                     {
-                        var bubbleEscUp = !self.rootElement.hasClass('oj-selected');
+                        var bubbleEscUp = !self.rootElement.classList.contains('oj-selected');
 						self._dismissMenu(self._getMenuNode(), event);
                         return bubbleEscUp;
                     }
@@ -1743,10 +1982,10 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
         // If menu has neither aria-label nor aria-labelledby after menu.open() calls the beforeOpen listeners, then set aria-labelledby
         // referencing the menu button, and remove it when the menu is closed.  This approach provides a useful default while allowing
         // the menu to be shared by several launchers.
-        if (!menuElem.attr("aria-label") && !menuElem.attr("aria-labelledby")) {
+        if (!menuElem[0].getAttribute("aria-label") && !menuElem[0].getAttribute("aria-labelledby")) {
             this.element.uniqueId(); // add id if not already there
             this._setAriaLabelledBy = true;
-            menuElem.attr("aria-labelledby", this.element.attr("id"));
+            menuElem[0].setAttribute("aria-labelledby", this.element[0].getAttribute("id"));
         }
 
         // Per UX requirements, menuButtons should look pressed/checked iff the menu is open:
@@ -1759,8 +1998,9 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
         //calling open on a already open menu now first dismisses it.  the button
         //dismissal handler removes the "oj-select" style.  move the logic that sets
         //the oj-select to after the menu is open.
-        this.rootElement.addClass( "oj-selected" )
-                        .removeClass( "oj-default oj-focus-only" );
+        this.rootElement.classList.add( "oj-selected" );
+        this.rootElement.classList.remove( "oj-default" );
+        this.rootElement.classList.remove( "oj-focus-only" );
     },
 
     /*
@@ -1804,7 +2044,7 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
         //console.log(this.options.label + ": button._menuDismissHandler called");
         // Since only push buttons are supported for menu buttons, the only reason for .oj-selected to be present is if it's an open menu button,
         // so we remove the class since the menu is being dismissed.
-        this.rootElement.removeClass( "oj-selected" );
+        this.rootElement.classList.remove( "oj-selected" );
         this._toggleDefaultClasses();
 
         this._menuVisible = false;
@@ -1819,20 +2059,29 @@ oj.__registerWidget("oj.ojButton", $['oj']['baseComponent'],
      */
     _toggleDefaultClasses: function()
     {
-        var otherStates = this.rootElement.is( ".oj-hover, .oj-active, .oj-selected, .oj-disabled" );
+        var otherStates = $(this.rootElement).is( ".oj-hover, .oj-active, .oj-selected, .oj-disabled" );
         var defaultState, focusedOnly;
 
         if (otherStates) {
             defaultState = false;
             focusedOnly = false;
         } else {
-            var focused = this.rootElement.is( ".oj-focus" );
+            var focused = $(this.rootElement).is( ".oj-focus" );
             defaultState = !focused;
             focusedOnly = focused;
         }
 
-        this.rootElement.toggleClass( "oj-default", defaultState );
-        this.rootElement.toggleClass( "oj-focus-only", focusedOnly );
+        if (defaultState) {
+            this.rootElement.classList.add('oj-default');
+        } else {
+            this.rootElement.classList.remove('oj-default');
+        }
+
+        if (focusedOnly) {
+            this.rootElement.classList.add('oj-focus-only');
+        } else {
+            this.rootElement.classList.remove('oj-focus-only');
+        }
     }
 
     // API doc for inherited methods with no JS in this file:
@@ -2475,7 +2724,7 @@ oj.__registerWidget("oj.ojButtonset", $['oj']['baseComponent'],
          * @name chroming
          * @memberof oj.ojButtonsetOne
          * @instance
-         * @type {string|undefined}
+         * @type {string}
          * @ojvalue {string} "full" In typical themes, full-chrome buttons always have chrome.
          * @ojvalue {string} "half" In typical themes, half-chrome buttons acquire chrome only in their hover, active, and selected states. Half-chroming is recommended for buttons in a toolbar.
          *     (This is the toolbar default in most themes.)
@@ -2734,9 +2983,10 @@ oj.__registerWidget("oj.ojButtonset", $['oj']['baseComponent'],
     {
         var type = $.type(checked);
         var valid, allCheckboxes;
+        var elem = this.element[0];
                 
         // whether buttonset contains exclusively checkboxes, therefore is buttonset many
-        allCheckboxes = (this.element[0].tagName === 'OJ-BUTTONSET-MANY' || ($buttons.length > 0 && $buttons.filter("input[type=checkbox]").length === $buttons.length));
+        allCheckboxes = (elem.tagName === 'OJ-BUTTONSET-MANY' || ($buttons.length > 0 && $buttons.filter("input[type=checkbox]").length === $buttons.length));
         
         // requires an array in buttonset many case
         if (allCheckboxes && type != "array")
@@ -2756,7 +3006,7 @@ oj.__registerWidget("oj.ojButtonset", $['oj']['baseComponent'],
         
         valid = valid || checked===null;
 
-        if (!valid && (!this._IsCustomElement() || $buttons.length === this.element.children().length))
+        if (!valid && (!this._IsCustomElement() || $buttons.length === elem.children.length))
         {
             throw new Error("Invalid 'checked' value set on JET Buttonset: " + checked);
         }
@@ -2857,7 +3107,7 @@ oj.__registerWidget("oj.ojButtonset", $['oj']['baseComponent'],
     _getOjOptionFromInput: function(input)
     {
         // oj option is first child of preceeding label
-        return $(input).prev().children()[0];
+        return input.previousElementSibling.children[0];
     },
 
     // if all buttons are radios with same group, returns value attr of selected radio (string), or null if none selected
@@ -2969,7 +3219,7 @@ oj.__registerWidget("oj.ojButtonset", $['oj']['baseComponent'],
     _processOjOptions: function ()
     {
         var self = this;
-        var ojOptions = this.element.find("oj-option");
+        var ojOptions = this.element[0].querySelectorAll("oj-option");
 
         $.each(ojOptions, function(i, option) {
             option["customOptionRenderer"] = self._customOptionRenderer.bind(self);
@@ -2985,8 +3235,6 @@ oj.__registerWidget("oj.ojButtonset", $['oj']['baseComponent'],
 
     // Wrap the oj option in a label and add an input as a sibling
     _addOptionDecoration: function(option) {
-        var ojOption = $(option);
-
         // add classes to slots and wrap text if applicable
         this._addOptionClasses(option);
 
@@ -2999,18 +3247,18 @@ oj.__registerWidget("oj.ojButtonset", $['oj']['baseComponent'],
         var disabled = option.disabled;
 
         // create label/input to decorate oj option
-        var input = $('<input>');
-        var label = $('<label>');
+        var input = document.createElement('input');
+        var label = document.createElement('label');
 
         // input needs an id so label can set the for attribute
-        input.uniqueId();
-        input.prop('value', value);
-        input.prop('type', type);
-        input.prop('disabled', disabled);
+        $(input).uniqueId();
+        input.value = value;
+        input.type = type;
+        input.disabled = disabled;
 
         // set the label for attribute
-        var id = input[0].id;
-        label.prop('for', id);
+        var id = input.id;
+        label.htmlFor = id;
 
         // if a radio buttonset need a uniform name, create one using the first input id
         if (isOne)
@@ -3019,13 +3267,13 @@ oj.__registerWidget("oj.ojButtonset", $['oj']['baseComponent'],
             {
                 this._name = '_n_' + id;
             }
-            input.prop('name', this._name);
+            input.name = this._name;
         }
 
         // rearrange the dom
-        ojOption.before(label);  // @HTMLUpdateOK
-        label.append(ojOption);  // @HTMLUpdateOK
-        label.after(input);  // @HTMLUpdateOK
+        option.parentNode.insertBefore(label, option);  // @HTMLUpdateOK
+        label.appendChild(option);  // @HTMLUpdateOK
+        label.parentNode.insertBefore(input, label.nextElementSibling);  // @HTMLUpdateOK
 
         // reset buttonset group properties
         this._setup(false);
@@ -3035,21 +3283,21 @@ oj.__registerWidget("oj.ojButtonset", $['oj']['baseComponent'],
     // remove the dom that we generated excluding the wrapped span
     // destroy the button and leave just what was originally there
     _removeOptionDecoration: function(option) {
-        var ojOption = $(option);
-        var parentLabel = ojOption.parent();
+        var parentLabel = option.parentNode;
 
-        if (parentLabel.prop('tagName') === 'LABEL')
+        if (parentLabel.tagName === 'LABEL')
         {
             this._removeOptionClasses(option);
 
-            var input = parentLabel.siblings(".oj-button-input")
+            var input = $(parentLabel).siblings(".oj-button-input")
 
             input.ojButton('destroy');
 
             input.removeUniqueId();
 
             input.remove();
-            parentLabel.replaceWith(option);  // @HTMLUpdateOK
+            parentLabel.parentNode.insertBefore(option, parentLabel);  // @HTMLUpdateOK
+            parentLabel.parentNode.removeChild(parentLabel);  // @HTMLUpdateOK
         }
     },
 
@@ -3062,8 +3310,8 @@ oj.__registerWidget("oj.ojButtonset", $['oj']['baseComponent'],
 
         if (startIcon)
         {
-            $(startIcon).addClass('oj-button-icon');
-            $(startIcon).addClass('oj-start');
+            startIcon.classList.add('oj-button-icon');
+            startIcon.classList.add('oj-start');
         }
 
         if (text)
@@ -3074,19 +3322,19 @@ oj.__registerWidget("oj.ojButtonset", $['oj']['baseComponent'],
                 var wrapperSpan = currentText;
                 if (currentText.nodeType === 3)
                 {
-                    wrapperSpan = $('<span>');
-                    $(currentText).replaceWith(wrapperSpan);  // @HTMLUpdateOK
-                    wrapperSpan.append(currentText);  // @HTMLUpdateOK
+                    wrapperSpan = document.createElement('span');
+                    currentText.parentNode.insertBefore(wrapperSpan, currentText);  // @HTMLUpdateOK
+                    wrapperSpan.appendChild(currentText);  // @HTMLUpdateOK
                 }
 
-                $(wrapperSpan).addClass('oj-button-text');
+                wrapperSpan.classList.add('oj-button-text');
             }
         }
 
         if (endIcon)
         {
-            $(endIcon).addClass('oj-button-icon');
-            $(endIcon).addClass('oj-end');
+            endIcon.classList.add('oj-button-icon');
+            endIcon.classList.add('oj-end');
         }
     },
 
@@ -3099,22 +3347,22 @@ oj.__registerWidget("oj.ojButtonset", $['oj']['baseComponent'],
 
         if (startIcon)
         {
-            $(startIcon).removeClass('oj-button-icon');
-            $(startIcon).removeClass('oj-start');
+            startIcon.classList.remove('oj-button-icon');
+            startIcon.classList.remove('oj-start');
         }
 
         if (text)
         {
             for (var i = 0; i < text.length; i++)
             {
-                $(text[i]).removeClass('oj-button-text');
+                text[i].classList.remove('oj-button-text');
             }
         }
 
         if (endIcon)
         {
-            $(endIcon).removeClass('oj-button-icon');
-            $(endIcon).removeClass('oj-end');
+            endIcon.classList.remove('oj-button-icon');
+            endIcon.classList.remove('oj-end');
         }
     },
 
@@ -3157,9 +3405,10 @@ oj.__registerWidget("oj.ojButtonset", $['oj']['baseComponent'],
     {
         this._super();
 
-        this.element
-            .attr(oj.Components._OJ_CONTAINER_ATTR, this['widgetName'])
-            .addClass( "oj-buttonset oj-component" )
+        var elem = this.element[0];
+        elem.setAttribute(oj.Components._OJ_CONTAINER_ATTR, this.widgetName);
+        elem.classList.add('oj-buttonset');
+        elem.classList.add('oj-component');
         this._setRole(this.options.focusManagement);
 
         if (this._IsCustomElement())
@@ -3192,10 +3441,11 @@ oj.__registerWidget("oj.ojButtonset", $['oj']['baseComponent'],
 
     _setRole: function(focusManagement)
     {
+        var elem = this.element[0];
         if (focusManagement === "oneTabstop")
-            this.element.attr( "role", "toolbar" );
+            elem.setAttribute( "role", "toolbar" );
         else
-            this.element.removeAttr( "role" );
+            elem.removeAttribute( "role" );
     },
 
     _setOption: function( key, value, flags ) // Override of protected base class method.  Method name needn't be quoted since is in externs.js.
@@ -3220,7 +3470,7 @@ oj.__registerWidget("oj.ojButtonset", $['oj']['baseComponent'],
         } else if ( key === "focusManagement" ) {
             this._setRole(value);
         } else if ( key === "chroming" ) {
-            _setChromingClass(this.element, value);
+            _setChromingClass(this.element[0], value);
 
             // refresh the buttons to make them re-fetch their chroming option, in case it's still set to the default dynamic getter,
             // which takes its value from the containing buttonset or toolbar if present.
@@ -3255,8 +3505,9 @@ oj.__registerWidget("oj.ojButtonset", $['oj']['baseComponent'],
     _setup: function(isCreate) // Private, not an override (not in base class).  Method name unquoted so will be safely optimized (renamed) by GCC as desired.
     {
         var self = this;
+        var elem = this.element[0];
         this.isRtl = this._GetReadingDirection() === "rtl";
-        _setChromingClass(this.element, this.options.chroming);
+        _setChromingClass(elem, this.options.chroming);
 
         if ((isCreate && !this.initCheckedFromDom && !this._IsCustomElement()))
         {
@@ -3281,8 +3532,12 @@ oj.__registerWidget("oj.ojButtonset", $['oj']['baseComponent'],
 
         // buttonset styling should only be applied if this is a multi-button buttonset.  When a single button is wrapped in a buttonset, that's an implementation
         // detail to get the "checked" option; users still see it as a standalone button, and it should be themed as such.
-        this.element.toggleClass("oj-buttonset-multi", this.$buttons.length>1);
-
+        if (this.$buttons.length > 1) {
+            elem.classList.add('oj-buttonset-multi');
+        } else {
+            elem.classList.remove('oj-buttonset-multi');
+        }
+    
         this.$buttons
             // refresh any buttons underneath us that already exist, like JQUI does
             // TBD:  Now that Bset has a checked option, the recursive refreshing of the Bset's buttons is necessary in more cases than before.
@@ -3300,21 +3555,20 @@ oj.__registerWidget("oj.ojButtonset", $['oj']['baseComponent'],
             // Create buttons underneath us
             .not( ":oj-button" )
                 .ojButton({'display': this.options.display}) // sets .oj-selected
-            .end()
-
-            // Update rounded corners, etc.
-            .map(function() {
-                return $( this ).ojButton( "widget" )[ 0 ];
-            })
-                .removeClass( "oj-buttonset-first oj-buttonset-last" )
-                .filter( ":first" )
-                    .addClass( "oj-buttonset-first" )
-                .end()
-                .filter( ":last" )
-                    .addClass( "oj-buttonset-last" )
-                .end()
             .end();
 
+        // Update rounded corners, etc.
+        for (var i = 0, len = this.$buttons.length; i < len; i++) {
+            var btn = this.$buttons.eq(i).ojButton('widget')[0];
+            btn.classList.remove('oj-buttonset-first');
+            btn.classList.remove('oj-buttonset-last');
+            if (i === 0) {
+                btn.classList.add('oj-buttonset-first');
+            } else if (i === (len - 1)) {
+                btn.classList.add('oj-buttonset-last');
+            }
+        }
+      
         // Must do this after creating the buttons above since callee calls Button API.
         // Must do this before the focus mgmt code, which needs to know which buttons are effectively disabled.
         // Must do this at refresh time, not just create time, in case new buttons were added to the Bset (whether
@@ -3472,8 +3726,12 @@ oj.__registerWidget("oj.ojButtonset", $['oj']['baseComponent'],
         if ( button !== last) {
             //console.log("setting tab stop to " + $button.attr("id"));  console.log("$(last).length:");  console.log($(last).length);
 
-            $(last).attr( "tabindex", "-1" ); // no-op iff $(last) is empty iff (see comment above)
-            $button.attr( "tabindex", "0" ); // no-op iff $button is empty iff (see comment above)
+            if (last) {
+                last.setAttribute('tabindex', '-1'); // no-op iff $(last) is empty iff (see comment above)
+            }
+            if ($button[0]) {
+                $button[0].setAttribute('tabindex', '0'); // no-op iff $button is empty iff (see comment above)
+            }
             this._lastTabStop = button;
         }
     },
@@ -3484,7 +3742,7 @@ oj.__registerWidget("oj.ojButtonset", $['oj']['baseComponent'],
         switch (event.which) {
             case $.ui.keyCode.UP:   // up arrow
             case $.ui.keyCode.DOWN: // down arrow
-                if ( $button.attr("type")!="radio" )
+                if ( $button[0].getAttribute("type")!="radio" )
                     break;
                 // fall thru for radio only.  See comments below.
             case $.ui.keyCode.LEFT:  // left arrow
@@ -3521,10 +3779,10 @@ oj.__registerWidget("oj.ojButtonset", $['oj']['baseComponent'],
 
     _destroy: function() // Override of protected base class method.  Method name needn't be quoted since is in externs.js.
     {
-        this.element
-            .removeClass( "oj-buttonset oj-component " + CHROMING_CLASSES )
-            .removeAttr(oj.Components._OJ_CONTAINER_ATTR)
-            .removeAttr( "role" );
+        var elem = this.element[0];
+        _removeClasses(elem, 'oj-buttonset oj-component ' + CHROMING_CLASSES);
+        elem.removeAttribute(oj.Components._OJ_CONTAINER_ATTR);
+        elem.removeAttribute('role');
 
         if (this.options.focusManagement==="oneTabstop")
             this.$buttons.attr( "tabindex", "0" );
@@ -3676,10 +3934,10 @@ var BUTTON_EVENT_NAMESPACE = ".ojButton",
     },
 
     // SECURITY NOTE: To avoid injection attacks, do NOT compute the class via string concatenation, i.e. don't do "oj-button-" + chroming + "-chrome"
-    _setChromingClass = function( $elem, chroming )
+    _setChromingClass = function( elem, chroming )
     {
-        $elem.removeClass(CHROMING_CLASSES)
-             .addClass(_chromingMap[chroming]);
+        _removeClasses(elem, CHROMING_CLASSES);
+        elem.classList.add(_chromingMap[chroming]);
     },
 
     /**
@@ -3762,6 +4020,46 @@ var BUTTON_EVENT_NAMESPACE = ".ojButton",
         "buttonset": ["ojToolbar"]
     },
 
+    _addClasses = function(elem, classes) {
+        var oldClasses = elem.className;
+        if (oldClasses) {
+          var oldClassArray = oldClasses.split(' ');
+          var newClassArray = classes.split(' ');
+          for (var i = newClassArray.length; i >= 0; i--) {
+            if (oldClassArray.indexOf(newClassArray[i]) >= 0) {
+              newClassArray.splice(i, 1);
+            }
+          }
+          if (newClassArray.length > 0) {
+            // eslint-disable-next-line no-param-reassign
+            elem.className = oldClasses + ' ' + newClassArray.join(' ');
+          }
+        } else {
+          // eslint-disable-next-line no-param-reassign
+          elem.className = classes;
+        }
+    },
+     
+    _removeClasses = function(elem, classes) {
+        var oldClasses = elem.className;
+        if (oldClasses) {
+          var oldClassArray = oldClasses.split(' ');
+          var removeClassArray = classes.split(' ');
+          var changed = false;
+          for (var i = 0; i < removeClassArray.length; i++) {
+            var idx = oldClassArray.indexOf(removeClassArray[i]);
+            if (idx >= 0) {
+              oldClassArray.splice(idx, 1);
+              changed = true;
+            }
+          }
+          if (changed) {
+            // eslint-disable-next-line no-param-reassign
+            elem.className = oldClassArray.join(' ');
+          }
+        }
+    },
+
     _getChromingDefault = function( componentName, element, actualContainers )
     {
         var containerConstructor = _findContainer(element, actualContainers, _interestingContainers[componentName]);
@@ -3791,130 +4089,48 @@ oj.Components.setDefaultOptions({
 });
 
 }() ); // end of Button / Buttonset wrapper function
-(function() {
-var ojButtonMeta = {
-  "properties": {
-    "chroming": {
-      "type": "string",
-      "enumValues": ["full", "half", "outlined"]
-    },
-    "disabled": {
-      "type": "boolean"
-    },
-    "display": {
-      "type": "string",
-      "enumValues": ["all", "icons"]
+/* global __oj_button_metadata */
+(function () {
+  __oj_button_metadata.extension._WIDGET_NAME = 'ojButton';
+  oj.CustomElementBridge.registerMetadata('oj-button', 'baseComponent', __oj_button_metadata);
+  oj.CustomElementBridge.register('oj-button', {
+    metadata: oj.CustomElementBridge.getMetadata('oj-button'),
+    innerDomFunction: function (element) {
+      return element.getAttribute('href') ? 'a' : 'button';
     }
-  },
-  "events": {
-    "action" : {}
-  },
-  "extension": {
-    _WIDGET_NAME: "ojButton"
-  }
-};
-oj.CustomElementBridge.registerMetadata('oj-button', 'baseComponent', ojButtonMeta);
-oj.CustomElementBridge.register('oj-button', {
-  'metadata': oj.CustomElementBridge.getMetadata('oj-button'),
-  'innerDomFunction': function(element) {
-    return element.getAttribute("href") ? 'a' : 'button';
-  }
-});
+  });
 })();
 
-(function() {
-var ojMenuButtonMeta = {
-  "properties": {
-    "chroming": {
-      "type": "string",
-      "enumValues": ["full", "half", "outlined"]
-    },
-    "disabled": {
-      "type": "boolean"
-    },
-    "display": {
-      "type": "string",
-      "enumValues": ["all", "icons"]
+/* global __oj_menu_button_metadata */
+(function () {
+  __oj_menu_button_metadata.extension._WIDGET_NAME = 'ojButton';
+  oj.CustomElementBridge.registerMetadata('oj-menu-button', 'baseComponent', __oj_menu_button_metadata);
+  oj.CustomElementBridge.register('oj-menu-button', {
+    metadata: oj.CustomElementBridge.getMetadata('oj-menu-button'),
+    innerDomFunction: function (element) {
+      return element.getAttribute('href') ? 'a' : 'button';
     }
-  },
-  "extension": {
-    _WIDGET_NAME: "ojButton"
-  }
-};
-oj.CustomElementBridge.registerMetadata('oj-menu-button', 'baseComponent', ojMenuButtonMeta);
-oj.CustomElementBridge.register('oj-menu-button', {
-  'metadata': oj.CustomElementBridge.getMetadata('oj-menu-button'),
-  'innerDomFunction': function(element) {
-    return element.getAttribute("href") ? 'a' : 'button';
-  }
-});
-})();
+  });
+}());
 
-(function() {
-var ojButtonSetOneMeta = {
-  "properties": {
-    "chroming": {
-      "type": "string",
-      "enumValues": ["full", "half", "outlined"]
-    },
-    "disabled": {
-      "type": "boolean"
-    },
-    "display": {
-      "type": "string",
-      "enumValues": ["all", "icons"]
-    },
-    "focusManagement": {
-      "type": "string",
-      "enumValues": ["oneTabstop", "none"]
-    },
-    "value": {
-      "type": "any",
-      "writeback": true
-      }
-  },
-  "extension": {
-    _WIDGET_NAME: "ojButtonset",
-    _ALIASED_PROPS: {"value": "checked"}
-  }
-};
-oj.CustomElementBridge.registerMetadata('oj-buttonset-one', 'baseComponent', ojButtonSetOneMeta);
-oj.CustomElementBridge.register('oj-buttonset-one', {
-  'metadata': oj.CustomElementBridge.getMetadata('oj-buttonset-one')
-});
-})();
+/* global __oj_buttonset_one_metadata */
+(function () {
+  __oj_buttonset_one_metadata.extension._WIDGET_NAME = 'ojButtonset';
+  __oj_buttonset_one_metadata.extension._ALIASED_PROPS = { value: 'checked' };
+  oj.CustomElementBridge.registerMetadata('oj-buttonset-one', 'baseComponent', __oj_buttonset_one_metadata);
+  oj.CustomElementBridge.register('oj-buttonset-one', {
+    metadata: oj.CustomElementBridge.getMetadata('oj-buttonset-one')
+  });
+}());
 
-(function() {
-var ojButtonSetManyMeta = {
-  "properties": {
-    "chroming": {
-      "type": "string",
-      "enumValues": ["full", "half", "outlined"]
-    },
-    "disabled": {
-      "type": "boolean"
-    },
-    "display": {
-      "type": "string",
-      "enumValues": ["all", "icons"]
-    },
-    "focusManagement": {
-      "type": "string",
-      "enumValues": ["oneTabstop", "none"]
-    },
-    "value": {
-      "type": "Array",
-      "writeback": true
-      }
-  },
-  "extension": {
-    _WIDGET_NAME: "ojButtonset",
-    _ALIASED_PROPS: {"value": "checked"}
-  }
-};
-oj.CustomElementBridge.registerMetadata('oj-buttonset-many', 'baseComponent', ojButtonSetManyMeta);
-oj.CustomElementBridge.register('oj-buttonset-many', {
-  'metadata': oj.CustomElementBridge.getMetadata('oj-buttonset-many')
-});
-})();
+/* global __oj_buttonset_many_metadata */
+(function () {
+  __oj_buttonset_many_metadata.extension._WIDGET_NAME = 'ojButtonset';
+  __oj_buttonset_many_metadata.extension._ALIASED_PROPS = { value: 'checked' };
+  oj.CustomElementBridge.registerMetadata('oj-buttonset-many', 'baseComponent', __oj_buttonset_many_metadata);
+  oj.CustomElementBridge.register('oj-buttonset-many', {
+    metadata: oj.CustomElementBridge.getMetadata('oj-buttonset-many')
+  });
+}());
+
 });

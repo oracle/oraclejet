@@ -1,12 +1,9 @@
 {
   "name": "oj-sunburst",
-  "version": "5.1.0",
-  "jetVersion": "5.1.0",
+  "version": "5.2.0",
+  "jetVersion": "5.2.0",
   "displayName": "Sunburst",
-  "preview": true,
-  "roles": [
-    "application"
-  ],
+  "type": "core",
   "description": "An interactive data visualization in which hierarchical data is represented in concentric rings.  Each ring segment is proportionally sized relative to the other segments at a given level.",
   "properties": {
     "animationDuration": {
@@ -55,7 +52,8 @@
       "description": "The color that is displayed during a data change animation when a node is updated.",
       "type": "string",
       "displayName": "Animation Update Color",
-      "value": ""
+      "value": "",
+      "format": "color"
     },
     "colorLabel": {
       "description": "Specifies the label describing the color metric of the sunburst. This label will be used in the legend.",
@@ -153,33 +151,32 @@
     },
     "nodeDefaults": {
       "description": "An object defining default properties for the nodes. Component CSS classes should be used to set component wide styling. This API should be used only for styling a specific instance of the component. Properties specified on this object may be overridden by specifications on the sunburst nodes. Some property default values come from the CSS and varies based on theme.",
-      "type": "Object",
+      "type": "object",
       "displayName": "Node Defaults",
-      "value": {
-        "borderWidth": 1,
-        "showDisclosure": "off",
-        "labelMinLength": 1,
-        "labelDisplay": "auto",
-        "labelHalign": "center"
-      },
       "properties": {
         "borderColor": {
           "description": "The default border color of the nodes.",
-          "type": "string"
+          "type": "string",
+          "displayName": "Border Color",
+          "format": "color"
         },
         "borderWidth": {
           "description": "The default border width of the nodes.",
           "type": "number",
+          "displayName": "Border Width",
           "value": 1,
           "units": "pixels"
         },
         "hoverColor": {
           "description": "The color of the node hover feedback. The default value comes from the CSS and varies based on theme.",
-          "type": "string"
+          "type": "string",
+          "displayName": "Hover Color",
+          "format": "color"
         },
         "labelDisplay": {
           "description": "The label display behavior for the nodes. More labels are generally displayed when using rotation, with the trade off of readability. When auto is used, rotated or horizontal labels will be used based on the client browser and platform.",
           "type": "string",
+          "displayName": "Label Display",
           "value": "auto",
           "enumValues": [
             "auto",
@@ -205,6 +202,7 @@
         "labelHalign": {
           "description": "The horizontal alignment for labels displayed within the node. Only applies to rotated text.",
           "type": "string",
+          "displayName": "Label Halign",
           "value": "center",
           "enumValues": [
             "center",
@@ -226,23 +224,30 @@
         "labelMinLength": {
           "description": "The minimum number of visible characters needed in order to render a truncated label. If the minimum is not met when calculating the truncated label then the label is not displayed.",
           "type": "number",
+          "displayName": "Label Min Length",
           "value": 1
         },
         "labelStyle": {
           "description": "The CSS style object defining the style of the label. The default value comes from the CSS and varies based on theme.",
-          "type": "Object"
+          "type": "object",
+          "displayName": "Label Style"
         },
         "selectedInnerColor": {
           "description": "The inner color of the node selection feedback. The default value comes from the CSS and varies based on theme.",
-          "type": "string"
+          "type": "string",
+          "displayName": "Selected Inner Color",
+          "format": "color"
         },
         "selectedOuterColor": {
           "description": "The outer color of the node selection feedback. The default value comes from the CSS and varies based on theme.",
-          "type": "string"
+          "type": "string",
+          "displayName": "Selected Outer Color",
+          "format": "color"
         },
         "showDisclosure": {
           "description": "Specifies whether to display the expand/collapse button on hover. If the button is clicked, the expanded attribute is updated with the new array of node ids.",
           "type": "string",
+          "displayName": "Show Disclosure",
           "value": "off",
           "enumValues": [
             "off",
@@ -270,26 +275,33 @@
             "borderColor": {
               "description": "The border color of the node.",
               "type": "string",
-              "value": null
+              "displayName": "Border Color",
+              "value": null,
+              "format": "color"
             },
             "borderWidth": {
               "description": "The border width of the node.",
               "type": "number",
+              "displayName": "Border Width",
               "value": null
             },
             "categories": {
               "description": "An optional array of category strings corresponding to this data item. This enables highlighting and filtering of individual data items through interactions with the legend and other visualization elements. The categories array of each node is required to be a superset of the categories array of its parent node. If not specified, the ids of the node and its ancestors will be used.",
               "type": "Array<string>",
+              "displayName": "Categories",
               "value": null
             },
             "color": {
               "description": "The fill color of the node.",
               "type": "string",
-              "value": null
+              "displayName": "Color",
+              "value": null,
+              "format": "color"
             },
             "drilling": {
               "description": "Specifies whether drilling is enabled for the node. Drillable nodes will show a pointer cursor on hover and fire an ojDrill event on click (double click if selection is enabled). To enable drilling for all nodes at once, use the drilling attribute in the top level.",
               "type": "string",
+              "displayName": "Drilling",
               "value": "inherit",
               "enumValues": [
                 "inherit",
@@ -311,16 +323,19 @@
             "id": {
               "description": "The id of the node.",
               "type": "string",
+              "displayName": "Id",
               "value": null
             },
             "label": {
               "description": "The label for this node.",
               "type": "string",
+              "displayName": "Label",
               "value": null
             },
             "labelDisplay": {
               "description": "The label display behavior for the nodes. More labels are generally displayed when using rotation, with the trade off of readability. When auto is used, rotated or horizontal labels will be used based on the client browser and platform.",
               "type": "string",
+              "displayName": "Label Display",
               "value": "auto",
               "enumValues": [
                 "auto",
@@ -346,6 +361,7 @@
             "labelHalign": {
               "description": "The horizontal alignment for labels displayed within the node. Only applies to rotated text.",
               "type": "string",
+              "displayName": "Label Halign",
               "value": "center",
               "enumValues": [
                 "center",
@@ -366,17 +382,20 @@
             },
             "labelStyle": {
               "description": "The CSS style object defining the style of the label.",
-              "type": "Object",
+              "type": "object",
+              "displayName": "Label Style",
               "value": null
             },
             "nodes": {
               "description": "An array of objects with properties for the child nodes.",
               "type": "Array<Object>",
+              "displayName": "Nodes",
               "value": null
             },
             "pattern": {
               "description": "The pattern used to fill the node.",
               "type": "string",
+              "displayName": "Pattern",
               "value": "none",
               "enumValues": [
                 "largeChecker",
@@ -438,11 +457,13 @@
             "radius": {
               "description": "The radius of the node relative to the other nodes.",
               "type": "number",
+              "displayName": "Radius",
               "value": 1
             },
             "selectable": {
               "description": "Specifies whether or not the node will be selectable.",
               "type": "string",
+              "displayName": "Selectable",
               "value": "auto",
               "enumValues": [
                 "auto",
@@ -460,11 +481,13 @@
             "shortDesc": {
               "description": "The description of this node. This is used for accessibility and also for customizing the tooltip text.",
               "type": "string",
+              "displayName": "Short Desc",
               "value": null
             },
             "showDisclosure": {
               "description": "Specifies whether to display the expand/collapse button on hover for a specific node. If the button is clicked, the expanded attribute is updated with the new array of node ids.",
               "type": "string",
+              "displayName": "Show Disclosure",
               "value": "inherit",
               "enumValues": [
                 "inherit",
@@ -486,16 +509,19 @@
             "svgClassName": {
               "description": "The CSS style class to apply to the node. The style class and inline style will override any other styling specified through the properties. For tooltip interactivity, it's recommended to also pass a representative color to the node color attribute.",
               "type": "string",
+              "displayName": "Svg Class Name",
               "value": null
             },
             "svgStyle": {
               "description": "The inline style to apply to the node. The style class and inline style will override any other styling specified through the properties. For tooltip interactivity, it's recommended to also pass a representative color to the node color attribute.",
-              "type": "Object",
+              "type": "object",
+              "displayName": "Svg Style",
               "value": null
             },
             "value": {
               "description": "The relative size of the node.",
               "type": "number",
+              "displayName": "Value",
               "value": null
             }
           }
@@ -510,15 +536,13 @@
     },
     "rootNodeContent": {
       "description": "An object defining custom root node content for the sunburst.",
-      "type": "Object",
+      "type": "object",
       "displayName": "Root Node Content",
-      "value": {
-        "renderer": null
-      },
       "properties": {
         "renderer": {
           "description": "A function that returns custom root node content. The function takes a dataContext argument, provided by the sunburst, with the following properties: outerBounds: Object containing (x, y, width, height) of the rectangle circumscribing the root node area. The x and y coordinates are relative to the top, left corner of the element. innerBounds: Object containing (x, y, width, height) of the rectangle inscribed in the root node area. The x and y coordinates are relative to the top, left corner of the element. id: The id of the root node. data: The data object of the root node. componentElement: The sunburst element. The function should return an Object with the following property: insert: HTMLElement - HTML element, which will be overlaid on top of the sunburst. This HTML element will block interactivity of the sunburst by default, but the CSS pointer-events property can be set to 'none' on this element if the sunburst's interactivity is desired. ",
           "type": "function",
+          "displayName": "Renderer",
           "value": null
         }
       }
@@ -606,15 +630,13 @@
     },
     "tooltip": {
       "description": "An object containing an optional callback function for tooltip customization.",
-      "type": "Object",
+      "type": "object",
       "displayName": "Tooltip",
-      "value": {
-        "renderer": null
-      },
       "properties": {
         "renderer": {
           "description": "A function that returns a custom tooltip. The function takes a dataContext argument, provided by the sunburst, with the following properties: parentElement: The tooltip element. The function can directly modify or append content to this element. id: The id of the hovered node. label: The label of the hovered node. value: The value of the hovered node. radius: The radius of the hovered node. color: The color of the hovered node. data: The data object of the hovered node. componentElement: The sunburst element. The function should return an Object that contains only one of the two properties: insert: HTMLElement | string - An HTML element, which will be appended to the tooltip, or a tooltip string. preventDefault: true - Indicates that the tooltip should not be displayed. It is not necessary to return {preventDefault:false} to display tooltip, since this is a default behavior. ",
           "type": "function",
+          "displayName": "Renderer",
           "value": null
         }
       }
@@ -656,115 +678,116 @@
       }
     },
     "translations": {
-      "description": "A collection of translated resources from the translation bundle, or null if this\ncomponent has no resources. Resources may be accessed and overridden individually or collectively, as seen in the examples. If the component does not contain any translatable resource, the default value of this attribute will be \nnull. If not, an object containing all resources relevant to the component.\n\nIf this component has translations, their documentation immediately follows this doc entry.",
-      "type": "Object|null",
+      "description": "A collection of translated resources from the translation bundle, or null if this component has no resources.",
+      "type": "object|null",
       "displayName": "Translations",
+      "value": {},
       "translatable": true,
       "properties": {
         "componentName": {
           "description": "Used to describe the data visualization type for accessibility.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "Sunburst"
+          "displayName": "Component Name"
         },
         "labelAndValue": {
           "description": "Used to display a label and its value.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "{0}: {1}"
+          "displayName": "Label And Value"
         },
         "labelClearSelection": {
           "description": "Text shown for clearing multiple selection on touch devices.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "Clear Selection"
+          "displayName": "Label Clear Selection"
         },
         "labelColor": {
           "description": "Used for the color label.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "Color"
+          "displayName": "Label Color"
         },
         "labelCountWithTotal": {
           "description": "Used to display a count out of a total.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "{0} of {1}"
+          "displayName": "Label Count With Total"
         },
         "labelDataVisualization": {
           "description": "Label for data visualizations used for accessibility.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "Data Visualization"
+          "displayName": "Label Data Visualization"
         },
         "labelInvalidData": {
           "description": "Text shown when the component receives invalid data.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "Invalid data"
+          "displayName": "Label Invalid Data"
         },
         "labelNoData": {
           "description": "Text shown when the component receives no data.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "No data to display"
+          "displayName": "Label No Data"
         },
         "labelSize": {
           "description": "Used for the size label.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "Size"
+          "displayName": "Label Size"
         },
         "stateCollapsed": {
           "description": "Used to describe the collapsed state for accessibility.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "Collapsed"
+          "displayName": "State Collapsed"
         },
         "stateDrillable": {
           "description": "Used to describe a drillable object for accessibility.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "Drillable"
+          "displayName": "State Drillable"
         },
         "stateExpanded": {
           "description": "Used to describe the expanded state for accessibility.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "Expanded"
+          "displayName": "State Expanded"
         },
         "stateHidden": {
           "description": "Used to describe the hidden state for accessibility.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "Hidden"
+          "displayName": "State Hidden"
         },
         "stateIsolated": {
           "description": "Used to describe the isolated state for accessibility.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "Isolated"
+          "displayName": "State Isolated"
         },
         "stateMaximized": {
           "description": "Used to describe the maximized state for accessibility.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "Maximized"
+          "displayName": "State Maximized"
         },
         "stateMinimized": {
           "description": "Used to describe the minimized state for accessibility.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "Minimized"
+          "displayName": "State Minimized"
         },
         "stateSelected": {
           "description": "Used to describe the selected state for accessibility.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "Selected"
+          "displayName": "State Selected"
         },
         "stateUnselected": {
           "description": "Used to describe the unselected state for accessibility.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "Unselected"
+          "displayName": "State Unselected"
         },
         "stateVisible": {
           "description": "Used to describe the visible state for accessibility.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "Visible"
+          "displayName": "State Visible"
         },
         "tooltipCollapse": {
           "description": "Used for the collapse tooltip.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "Collapse"
+          "displayName": "Tooltip Collapse"
         },
         "tooltipExpand": {
           "description": "Used for the expand tooltip.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "Expand"
+          "displayName": "Tooltip Expand"
         }
       }
     }
@@ -779,7 +802,7 @@
           "type": "Array"
         }
       ],
-      "return": "Object|null"
+      "return": "object|null"
     },
     "getContextByNode": {
       "description": "Returns an object with context for the given child DOM node. This will always contain the subid for the node,\ndefined as the 'subId' property on the context object. Additional component specific information may also be included.\n\nFor more details on returned objects, see context objects.",
@@ -790,7 +813,7 @@
           "type": "Element"
         }
       ],
-      "return": "Object|null"
+      "return": "object|null"
     },
     "refresh": {
       "description": "Refreshes the component.",
@@ -829,7 +852,7 @@
         {
           "name": "properties",
           "description": "An object containing the property and value pairs to set.",
-          "type": "Object"
+          "type": "object"
         }
       ],
       "return": "void"
@@ -854,7 +877,7 @@
         },
         "data": {
           "description": "the data object of the drilled node",
-          "type": "Object"
+          "type": "object"
         }
       }
     },
@@ -867,7 +890,7 @@
         },
         "data": {
           "description": "the data object of the drilled node",
-          "type": "Object"
+          "type": "object"
         }
       }
     },
@@ -880,7 +903,7 @@
         },
         "data": {
           "description": "the data object of the node to expand",
-          "type": "Object"
+          "type": "object"
         }
       }
     },
@@ -893,7 +916,7 @@
         },
         "data": {
           "description": "the data object of the expanded node",
-          "type": "Object"
+          "type": "object"
         }
       }
     },
@@ -906,7 +929,7 @@
         },
         "data": {
           "description": "the data object of the node to collapse",
-          "type": "Object"
+          "type": "object"
         }
       }
     },
@@ -919,7 +942,7 @@
         },
         "data": {
           "description": "the data object of the collapsed node",
-          "type": "Object"
+          "type": "object"
         }
       }
     }

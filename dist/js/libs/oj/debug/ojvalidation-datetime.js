@@ -715,7 +715,7 @@ oj.DateTimeConverterFactory = (function ()
      * 
      * @param {Object=} options an object literal used to provide an optional information to 
      * initialize the jet datetime converter. For details on what to pass for options, refer to 
-     * @link oj.IntlDateTimeConverter.
+     * {@link oj.IntlDateTimeConverter}.
      * 
      * @return {oj.IntlDateTimeConverter} 
      * @ojsignature {target: "Type", for: "options", value: "oj.IntlDateTimeConverter.ConverterOptions"}

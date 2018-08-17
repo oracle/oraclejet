@@ -1,12 +1,9 @@
 {
   "name": "oj-treemap",
-  "version": "5.1.0",
-  "jetVersion": "5.1.0",
+  "version": "5.2.0",
+  "jetVersion": "5.2.0",
   "displayName": "Treemap",
-  "preview": true,
-  "roles": [
-    "application"
-  ],
+  "type": "core",
   "description": "An interactive data visualization in which hierarchical data is represented across two dimensions by the size and color of nested rectangular nodes.",
   "properties": {
     "animationDuration": {
@@ -55,7 +52,8 @@
       "description": "The color that is displayed during a data change animation when a node is updated.",
       "type": "string",
       "displayName": "Animation Update Color",
-      "value": ""
+      "value": "",
+      "format": "color"
     },
     "colorLabel": {
       "description": "Specifies the label describing the color metric of the treemap. This label will be used in the legend.",
@@ -197,39 +195,26 @@
     },
     "nodeContent": {
       "description": "An object defining custom node content for the treemap. Only leaf nodes with no child nodes will have the custom content rendered.",
-      "type": "Object",
+      "type": "object",
       "displayName": "Node Content",
-      "value": {
-        "renderer": null
-      },
       "properties": {
         "renderer": {
           "description": "A function that returns custom node content. The function takes a dataContext argument, provided by the treemap, with the following properties: bounds: Object containing (x, y, width, height) of the node area. The x and y coordinates are relative to the top, left corner of the element. id: The id of the node. data: The data object of the node. componentElement: The treemap element. The function should return an Object with the following property: insert: HTMLElement - An HTML element, which will be overlaid on top of the treemap. This HTML element will block interactivity of the treemap by default, but the CSS pointer-events property can be set to 'none' on this element if the treemap's interactivity is desired. ",
           "type": "function",
+          "displayName": "Renderer",
           "value": null
         }
       }
     },
     "nodeDefaults": {
       "description": "An object defining default properties for the nodes. Component CSS classes should be used to set component wide styling. This API should be used only for styling a specific instance of the component. Properties specified on this object may be overridden by specifications on the treemap nodes. Some property default values come from the CSS and varies based on theme.",
-      "type": "Object",
+      "type": "object",
       "displayName": "Node Defaults",
-      "value": {
-        "labelDisplay": "node",
-        "groupLabelDisplay": "header",
-        "labelHalign": "center",
-        "labelMinLength": 1,
-        "labelValign": "center",
-        "header": {
-          "labelHalign": "start",
-          "isolate": "on",
-          "useNodeColor": "off"
-        }
-      },
       "properties": {
         "groupLabelDisplay": {
           "description": "The label display behavior for group nodes.",
           "type": "string",
+          "displayName": "Group Label Display",
           "value": "header",
           "enumValues": [
             "header",
@@ -250,36 +235,43 @@
         },
         "header": {
           "description": "An object defining default properties for the node header. Component CSS classes should be used to set component wide styling. This API should be used only for styling a specific instance of the component. Some property default values come from the CSS and varies based on theme.",
-          "type": "Object",
-          "value": {
-            "labelHalign": "start",
-            "isolate": "on",
-            "useNodeColor": "off"
-          },
+          "type": "object",
+          "displayName": "Header",
           "properties": {
             "backgroundColor": {
               "description": "The background color of the node headers. The default value comes from the CSS and varies based on theme.",
-              "type": "string"
+              "type": "string",
+              "displayName": "Background Color",
+              "format": "color"
             },
             "borderColor": {
               "description": "The border color of the node headers. The default value comes from the CSS and varies based on theme.",
-              "type": "string"
+              "type": "string",
+              "displayName": "Border Color",
+              "format": "color"
             },
             "hoverBackgroundColor": {
               "description": "The background color of the node hover feedback. The default value comes from the CSS and varies based on theme.",
-              "type": "string"
+              "type": "string",
+              "displayName": "Hover Background Color",
+              "format": "color"
             },
             "hoverInnerColor": {
               "description": "The inner color of the node hover feedback. The default value comes from the CSS and varies based on theme.",
-              "type": "string"
+              "type": "string",
+              "displayName": "Hover Inner Color",
+              "format": "color"
             },
             "hoverOuterColor": {
               "description": "The outer color of the node hover feedback. The default value comes from the CSS and varies based on theme.",
-              "type": "string"
+              "type": "string",
+              "displayName": "Hover Outer Color",
+              "format": "color"
             },
             "isolate": {
               "description": "Specifies whether isolate behavior is enabled on the node.",
               "type": "string",
+              "displayName": "Isolate",
               "value": "on",
               "enumValues": [
                 "off",
@@ -297,6 +289,7 @@
             "labelHalign": {
               "description": "The horizontal alignment of the header title.",
               "type": "string",
+              "displayName": "Label Halign",
               "value": "start",
               "enumValues": [
                 "center",
@@ -317,23 +310,31 @@
             },
             "labelStyle": {
               "description": "The CSS style string defining the style of the header title. The default value comes from the CSS and varies based on theme.",
-              "type": "Object"
+              "type": "object",
+              "displayName": "Label Style"
             },
             "selectedBackgroundColor": {
               "description": "The background color of the node selection feedback. The default value comes from the CSS and varies based on theme.",
-              "type": "string"
+              "type": "string",
+              "displayName": "Selected Background Color",
+              "format": "color"
             },
             "selectedInnerColor": {
               "description": "The inner color of the node selection feedback. The default value comes from the CSS and varies based on theme.",
-              "type": "string"
+              "type": "string",
+              "displayName": "Selected Inner Color",
+              "format": "color"
             },
             "selectedOuterColor": {
               "description": "The outer color of the node selection feedback. The default value comes from the CSS and varies based on theme.",
-              "type": "string"
+              "type": "string",
+              "displayName": "Selected Outer Color",
+              "format": "color"
             },
             "useNodeColor": {
               "description": "Specifies whether the node color should be displayed in the header.",
               "type": "string",
+              "displayName": "Use Node Color",
               "value": "off",
               "enumValues": [
                 "off",
@@ -352,11 +353,14 @@
         },
         "hoverColor": {
           "description": "The color of the node hover feedback. The default value comes from the CSS and varies based on theme.",
-          "type": "string"
+          "type": "string",
+          "displayName": "Hover Color",
+          "format": "color"
         },
         "labelDisplay": {
           "description": "The label display behavior for leaf nodes.",
           "type": "string",
+          "displayName": "Label Display",
           "value": "node",
           "enumValues": [
             "node",
@@ -374,6 +378,7 @@
         "labelHalign": {
           "description": "The horizontal alignment for labels displayed within the node.",
           "type": "string",
+          "displayName": "Label Halign",
           "value": "center",
           "enumValues": [
             "center",
@@ -395,16 +400,19 @@
         "labelMinLength": {
           "description": "The minimum number of visible characters needed in order to render a truncated label. If the minimum is not met when calculating the truncated label then the label is not displayed.",
           "type": "number",
+          "displayName": "Label Min Length",
           "value": 1,
           "units": "pixels"
         },
         "labelStyle": {
           "description": "The CSS style object defining the style of the label. The CSS white-space property can be defined with value \"nowrap\" to disable default text wrapping. The default value comes from the CSS and varies based on theme.",
-          "type": "Object"
+          "type": "object",
+          "displayName": "Label Style"
         },
         "labelValign": {
           "description": "The vertical alignment for labels displayed within the node.",
           "type": "string",
+          "displayName": "Label Valign",
           "value": "center",
           "enumValues": [
             "bottom",
@@ -425,11 +433,15 @@
         },
         "selectedInnerColor": {
           "description": "The inner color of the node selection feedback. The default value comes from the CSS and varies based on theme.",
-          "type": "string"
+          "type": "string",
+          "displayName": "Selected Inner Color",
+          "format": "color"
         },
         "selectedOuterColor": {
           "description": "The outer color of the node selection feedback. The default value comes from the CSS and varies based on theme.",
-          "type": "string"
+          "type": "string",
+          "displayName": "Selected Outer Color",
+          "format": "color"
         }
       }
     },
@@ -462,16 +474,20 @@
             "categories": {
               "description": "An optional array of category strings corresponding to this data item. This enables highlighting and filtering of individual data items through interactions with the legend and other visualization elements. The categories array of each node is required to be a superset of the categories array of its parent node. If not specified, the ids of the node and its ancestors will be used.",
               "type": "Array<string>",
+              "displayName": "Categories",
               "value": null
             },
             "color": {
               "description": "The fill color of the node.",
               "type": "string",
-              "value": null
+              "displayName": "Color",
+              "value": null,
+              "format": "color"
             },
             "drilling": {
               "description": "Specifies whether drilling is enabled for the node. Drillable nodes will show a pointer cursor on hover and fire an ojDrill event on click (double click if selection is enabled). To enable drilling for all nodes at once, use the drilling attribute in the top level.",
               "type": "string",
+              "displayName": "Drilling",
               "value": "inherit",
               "enumValues": [
                 "inherit",
@@ -493,6 +509,7 @@
             "groupLabelDisplay": {
               "description": "The label display behavior for group nodes.",
               "type": "string",
+              "displayName": "Group Label Display",
               "value": "header",
               "enumValues": [
                 "header",
@@ -513,12 +530,13 @@
             },
             "header": {
               "description": "An object defining the properties for the node header.",
-              "type": "Object",
-              "value": null,
+              "type": "object",
+              "displayName": "Header",
               "properties": {
                 "isolate": {
                   "description": "Specifies whether isolate behavior is enabled on the node.",
                   "type": "string",
+                  "displayName": "Isolate",
                   "value": "on",
                   "enumValues": [
                     "off",
@@ -536,6 +554,7 @@
                 "labelHalign": {
                   "description": "The horizontal alignment of the header title.",
                   "type": "string",
+                  "displayName": "Label Halign",
                   "value": "start",
                   "enumValues": [
                     "center",
@@ -556,12 +575,14 @@
                 },
                 "labelStyle": {
                   "description": "The CSS style object defining the style of the header title.",
-                  "type": "Object",
+                  "type": "object",
+                  "displayName": "Label Style",
                   "value": null
                 },
                 "useNodeColor": {
                   "description": "Specifies whether the node color should be displayed in the header.",
                   "type": "string",
+                  "displayName": "Use Node Color",
                   "value": "off",
                   "enumValues": [
                     "off",
@@ -581,16 +602,19 @@
             "id": {
               "description": "The id of the node.",
               "type": "string",
+              "displayName": "Id",
               "value": null
             },
             "label": {
               "description": "The label for this node.",
               "type": "string",
+              "displayName": "Label",
               "value": null
             },
             "labelDisplay": {
               "description": "The label display behavior for leaf nodes.",
               "type": "string",
+              "displayName": "Label Display",
               "value": "node",
               "enumValues": [
                 "node",
@@ -608,6 +632,7 @@
             "labelHalign": {
               "description": "The horizontal alignment for labels displayed within the node.",
               "type": "string",
+              "displayName": "Label Halign",
               "value": "center",
               "enumValues": [
                 "center",
@@ -628,12 +653,14 @@
             },
             "labelStyle": {
               "description": "The CSS style object defining the style of the label. The CSS white-space property can be defined with value \"nowrap\" to disable default text wrapping.",
-              "type": "Object",
+              "type": "object",
+              "displayName": "Label Style",
               "value": null
             },
             "labelValign": {
               "description": "The vertical alignment for labels displayed within the node.",
               "type": "string",
+              "displayName": "Label Valign",
               "value": "center",
               "enumValues": [
                 "bottom",
@@ -655,11 +682,13 @@
             "nodes": {
               "description": "An array of objects with properties for the child nodes.",
               "type": "Array<Object>",
+              "displayName": "Nodes",
               "value": null
             },
             "pattern": {
               "description": "The pattern used to fill the node.",
               "type": "string",
+              "displayName": "Pattern",
               "value": "none",
               "enumValues": [
                 "largeChecker",
@@ -721,6 +750,7 @@
             "selectable": {
               "description": "Specifies whether or not the node will be selectable.",
               "type": "string",
+              "displayName": "Selectable",
               "value": "auto",
               "enumValues": [
                 "auto",
@@ -738,21 +768,25 @@
             "shortDesc": {
               "description": "The description of this node. This is used for accessibility and also for customizing the tooltip text.",
               "type": "string",
+              "displayName": "Short Desc",
               "value": null
             },
             "svgClassName": {
               "description": "The CSS style class to apply to the node. The style class and inline style will override any other styling specified through the properties. For tooltip interactivity, it's recommended to also pass a representative color to the node color attribute.",
               "type": "string",
+              "displayName": "Svg Class Name",
               "value": null
             },
             "svgStyle": {
               "description": "The inline style to apply to the node. The style class and inline style will override any other styling specified through the properties. For tooltip interactivity, it's recommended to also pass a representative color to the node color attribute.",
-              "type": "Object",
+              "type": "object",
+              "displayName": "Svg Style",
               "value": null
             },
             "value": {
               "description": "The value of the node. The value determines the relative size of the node.",
               "type": "number",
+              "displayName": "Value",
               "value": null
             }
           }
@@ -820,15 +854,13 @@
     },
     "tooltip": {
       "description": "An object containing an optional callback function for tooltip customization.",
-      "type": "Object",
+      "type": "object",
       "displayName": "Tooltip",
-      "value": {
-        "renderer": null
-      },
       "properties": {
         "renderer": {
           "description": "A function that returns a custom tooltip. The function takes a dataContext argument, provided by the treemap, with the following properties: parentElement: The tooltip element. The function can directly modify or append content to this element. id: The id of the hovered node. label: The label of the hovered node. value: The value of the hovered node. color: The color of the hovered node. data: The data object of the hovered node. componentElement: The treemap element. The function should return an Object that contains only one of the two properties: insert: HTMLElement | string - An HTML element, which will be appended to the tooltip, or a tooltip string. preventDefault: true - Indicates that the tooltip should not be displayed. It is not necessary to return {preventDefault:false} to display tooltip, since this is a default behavior. ",
           "type": "function",
+          "displayName": "Renderer",
           "value": null
         }
       }
@@ -870,115 +902,116 @@
       }
     },
     "translations": {
-      "description": "A collection of translated resources from the translation bundle, or null if this\ncomponent has no resources. Resources may be accessed and overridden individually or collectively, as seen in the examples. If the component does not contain any translatable resource, the default value of this attribute will be \nnull. If not, an object containing all resources relevant to the component.\n\nIf this component has translations, their documentation immediately follows this doc entry.",
-      "type": "Object|null",
+      "description": "A collection of translated resources from the translation bundle, or null if this component has no resources.",
+      "type": "object|null",
       "displayName": "Translations",
+      "value": {},
       "translatable": true,
       "properties": {
         "componentName": {
           "description": "Used to describe the data visualization type for accessibility.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "Treemap"
+          "displayName": "Component Name"
         },
         "labelAndValue": {
           "description": "Used to display a label and its value.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "{0}: {1}"
+          "displayName": "Label And Value"
         },
         "labelClearSelection": {
           "description": "Text shown for clearing multiple selection on touch devices.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "Clear Selection"
+          "displayName": "Label Clear Selection"
         },
         "labelColor": {
           "description": "Used for the color label.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "Color"
+          "displayName": "Label Color"
         },
         "labelCountWithTotal": {
           "description": "Used to display a count out of a total.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "{0} of {1}"
+          "displayName": "Label Count With Total"
         },
         "labelDataVisualization": {
           "description": "Label for data visualizations used for accessibility.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "Data Visualization"
+          "displayName": "Label Data Visualization"
         },
         "labelInvalidData": {
           "description": "Text shown when the component receives invalid data.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "Invalid data"
+          "displayName": "Label Invalid Data"
         },
         "labelNoData": {
           "description": "Text shown when the component receives no data.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "No data to display"
+          "displayName": "Label No Data"
         },
         "labelSize": {
           "description": "Used for the size label.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "Size"
+          "displayName": "Label Size"
         },
         "stateCollapsed": {
           "description": "Used to describe the collapsed state for accessibility.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "Collapsed"
+          "displayName": "State Collapsed"
         },
         "stateDrillable": {
           "description": "Used to describe a drillable object for accessibility.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "Drillable"
+          "displayName": "State Drillable"
         },
         "stateExpanded": {
           "description": "Used to describe the expanded state for accessibility.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "Expanded"
+          "displayName": "State Expanded"
         },
         "stateHidden": {
           "description": "Used to describe the hidden state for accessibility.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "Hidden"
+          "displayName": "State Hidden"
         },
         "stateIsolated": {
           "description": "Used to describe the isolated state for accessibility.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "Isolated"
+          "displayName": "State Isolated"
         },
         "stateMaximized": {
           "description": "Used to describe the maximized state for accessibility.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "Maximized"
+          "displayName": "State Maximized"
         },
         "stateMinimized": {
           "description": "Used to describe the minimized state for accessibility.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "Minimized"
+          "displayName": "State Minimized"
         },
         "stateSelected": {
           "description": "Used to describe the selected state for accessibility.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "Selected"
+          "displayName": "State Selected"
         },
         "stateUnselected": {
           "description": "Used to describe the unselected state for accessibility.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "Unselected"
+          "displayName": "State Unselected"
         },
         "stateVisible": {
           "description": "Used to describe the visible state for accessibility.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "Visible"
+          "displayName": "State Visible"
         },
         "tooltipIsolate": {
           "description": "Used for the isolate tooltip.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "Isolate"
+          "displayName": "Tooltip Isolate"
         },
         "tooltipRestore": {
           "description": "Used for the restore tooltip.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "Restore"
+          "displayName": "Tooltip Restore"
         }
       }
     }
@@ -993,7 +1026,7 @@
           "type": "Array"
         }
       ],
-      "return": "Object|null"
+      "return": "object|null"
     },
     "getContextByNode": {
       "description": "Returns an object with context for the given child DOM node. This will always contain the subid for the node,\ndefined as the 'subId' property on the context object. Additional component specific information may also be included.\n\nFor more details on returned objects, see context objects.",
@@ -1004,7 +1037,7 @@
           "type": "Element"
         }
       ],
-      "return": "Object|null"
+      "return": "object|null"
     },
     "refresh": {
       "description": "Refreshes the component.",
@@ -1043,7 +1076,7 @@
         {
           "name": "properties",
           "description": "An object containing the property and value pairs to set.",
-          "type": "Object"
+          "type": "object"
         }
       ],
       "return": "void"
@@ -1059,7 +1092,7 @@
         },
         "data": {
           "description": "the data object of the drilled node",
-          "type": "Object"
+          "type": "object"
         }
       }
     },
@@ -1072,7 +1105,7 @@
         },
         "data": {
           "description": "the data object of the drilled node",
-          "type": "Object"
+          "type": "object"
         }
       }
     }

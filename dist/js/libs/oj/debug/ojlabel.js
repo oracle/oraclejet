@@ -12,7 +12,58 @@ define(['ojs/ojcore', 'jquery', 'hammerjs', 'ojs/ojjquery-hammer', 'ojs/ojcompon
         */
        function(oj, $, Hammer)
 {
-
+//%COMPONENT_METADATA%
+var __oj_label_metadata = 
+{
+  "properties": {
+    "for": {
+      "type": "string"
+    },
+    "help": {
+      "type": "object",
+      "value": {
+        "definition": null,
+        "source": null
+      },
+      "properties": {
+        "definition": {
+          "type": "string"
+        },
+        "source": {
+          "type": "string"
+        }
+      }
+    },
+    "labelId": {
+      "type": "string"
+    },
+    "showRequired": {
+      "type": "boolean",
+      "value": false
+    },
+    "translations": {
+      "type": "object",
+      "value": {},
+      "properties": {
+        "tooltipHelp": {
+          "type": "string"
+        },
+        "tooltipRequired": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "methods": {
+    "refresh": {},
+    "setProperty": {},
+    "getProperty": {},
+    "setProperties": {},
+    "getNodeBySubId": {},
+    "getSubIdByNode": {}
+  },
+  "extension": {}
+};
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
@@ -1891,51 +1942,13 @@ define(['ojs/ojcore', 'jquery', 'hammerjs', 'ojs/ojjquery-hammer', 'ojs/ojcompon
    */
 
 }());
-(function() {
-var ojLabelMeta = {
-  "properties": {
-    "help": {
-      "type": "Object",
-      "properties": {
-        "definition": {
-          "type": "string"
-        },
-        "source": {
-          "type": "string"
-        }
-      }
-    },
-    "showRequired": {
-      "type": "boolean"
-    },
-    "labelId": {
-      "type": "string"
-    },
-    "for": {
-      "type": "string"
-    },
-    "translations": {
-      "type": "Object",
-      "properties": {
-        "tooltipHelp": {
-          "type": "string",
-          "value": "Help"
-        },
-        "tooltipRequired": {
-          "type": "string",
-          "value": "Required"
-        }
-      }
-    }
-    
-  },
-  "extension": {
-    _INNER_ELEM: 'label',
-    _WIDGET_NAME: "ojLabel",
-    _GLOBAL_TRANSFER_ATTRS: ["accesskey"]
-  }
-};
-oj.CustomElementBridge.registerMetadata('oj-label', 'baseComponent', ojLabelMeta);
-oj.CustomElementBridge.register('oj-label', {'metadata': oj.CustomElementBridge.getMetadata('oj-label')});
-})();
+/* global __oj_label_metadata:false */
+(function () {
+  __oj_label_metadata.extension._WIDGET_NAME = 'ojLabel';
+  __oj_label_metadata.extension._INNER_ELEM = 'label';
+  __oj_label_metadata.extension._GLOBAL_TRANSFER_ATTRS = ['accesskey'];
+  oj.CustomElementBridge.registerMetadata('oj-label', 'baseComponent', __oj_label_metadata);
+  oj.CustomElementBridge.register('oj-label', { metadata: oj.CustomElementBridge.getMetadata('oj-label') });
+}());
+
 });

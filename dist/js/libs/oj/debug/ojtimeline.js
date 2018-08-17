@@ -6,6 +6,440 @@
 "use strict";
 define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojtime-base', 'ojs/internal-deps/dvt/DvtTimeline'], function (oj, $, comp, base, dvt)
 {
+  
+
+var __oj_timeline_metadata = 
+{
+  "properties": {
+    "animationOnDataChange": {
+      "type": "string",
+      "enumValues": [
+        "auto",
+        "none"
+      ],
+      "value": "none"
+    },
+    "animationOnDisplay": {
+      "type": "string",
+      "enumValues": [
+        "auto",
+        "none"
+      ],
+      "value": "none"
+    },
+    "end": {
+      "type": "string",
+      "value": ""
+    },
+    "majorAxis": {
+      "type": "object",
+      "properties": {
+        "converter": {
+          "type": "object",
+          "value": "{\"default\": null, \"seconds\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric', 'minute': '2-digit', 'second': '2-digit'}), \"minutes\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric', 'minute': '2-digit'}), \"hours\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric'}), \"days\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'numeric', 'day': '2-digit'}), \"weeks\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'numeric', 'day': '2-digit'}), \"months\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'long'}), \"quarters\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'long'}), \"years\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'year': 'numeric'})}",
+          "properties": {
+            "default": {
+              "type": "oj.Converter<string>"
+            },
+            "seconds": {
+              "type": "oj.Converter<string>",
+              "value": "oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({hour: numeric, minute: 2-digit, second: 2-digit})"
+            },
+            "minutes": {
+              "type": "oj.Converter<string>",
+              "value": "oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({hour: numeric, minute: 2-digit})"
+            },
+            "hours": {
+              "type": "oj.Converter<string>",
+              "value": "oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({hour: numeric})"
+            },
+            "days": {
+              "type": "oj.Converter<string>",
+              "value": "oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({month: numeric, day: 2-digit})"
+            },
+            "weeks": {
+              "type": "oj.Converter<string>",
+              "value": "oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({month: numeric, day: 2-digit})"
+            },
+            "months": {
+              "type": "oj.Converter<string>",
+              "value": "oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({month: long})"
+            },
+            "quarters": {
+              "type": "oj.Converter<string>",
+              "value": "oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({month: long})"
+            },
+            "years": {
+              "type": "oj.Converter<string>",
+              "value": "oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({year: numeric})"
+            }
+          }
+        },
+        "scale": {
+          "type": "string",
+          "enumValues": [
+            "days",
+            "hours",
+            "minutes",
+            "months",
+            "quarters",
+            "seconds",
+            "weeks",
+            "years"
+          ]
+        },
+        "svgStyle": {
+          "type": "object",
+          "value": {}
+        }
+      }
+    },
+    "minorAxis": {
+      "type": "object",
+      "properties": {
+        "converter": {
+          "type": "object",
+          "value": "{\"default\": null, \"seconds\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric', 'minute': '2-digit', 'second': '2-digit'}), \"minutes\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric', 'minute': '2-digit'}), \"hours\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric'}), \"days\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'numeric', 'day': '2-digit'}), \"weeks\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'numeric', 'day': '2-digit'}), \"months\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'long'}), \"quarters\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'long'}), \"years\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'year': 'numeric'})}",
+          "properties": {
+            "default": {
+              "type": "oj.Converter<string>"
+            },
+            "seconds": {
+              "type": "oj.Converter<string>",
+              "value": "oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({hour: numeric, minute: 2-digit, second: 2-digit})"
+            },
+            "minutes": {
+              "type": "oj.Converter<string>",
+              "value": "oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({hour: numeric, minute: 2-digit})"
+            },
+            "hours": {
+              "type": "oj.Converter<string>",
+              "value": "oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({hour: numeric})"
+            },
+            "days": {
+              "type": "oj.Converter<string>",
+              "value": "oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({month: numeric, day: 2-digit})"
+            },
+            "weeks": {
+              "type": "oj.Converter<string>",
+              "value": "oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({month: numeric, day: 2-digit})"
+            },
+            "months": {
+              "type": "oj.Converter<string>",
+              "value": "oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({month: long})"
+            },
+            "quarters": {
+              "type": "oj.Converter<string>",
+              "value": "oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({month: long})"
+            },
+            "years": {
+              "type": "oj.Converter<string>",
+              "value": "oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({year: numeric})"
+            }
+          }
+        },
+        "scale": {
+          "type": "string",
+          "enumValues": [
+            "days",
+            "hours",
+            "minutes",
+            "months",
+            "quarters",
+            "seconds",
+            "weeks",
+            "years"
+          ]
+        },
+        "svgStyle": {
+          "type": "object",
+          "value": {}
+        },
+        "zoomOrder": {
+          "type": "Array<string>"
+        }
+      }
+    },
+    "orientation": {
+      "type": "string",
+      "enumValues": [
+        "horizontal",
+        "vertical"
+      ],
+      "value": "horizontal"
+    },
+    "overview": {
+      "type": "object",
+      "properties": {
+        "rendered": {
+          "type": "string",
+          "enumValues": [
+            "off",
+            "on"
+          ],
+          "value": "off"
+        },
+        "svgStyle": {
+          "type": "object",
+          "value": {}
+        }
+      }
+    },
+    "referenceObjects": {
+      "type": "Array<Object>",
+      "value": []
+    },
+    "selection": {
+      "type": "Array<string>",
+      "writeback": true,
+      "value": []
+    },
+    "selectionMode": {
+      "type": "string",
+      "enumValues": [
+        "multiple",
+        "none",
+        "single"
+      ],
+      "value": "none"
+    },
+    "series": {
+      "type": "Array<Object>|Promise"
+    },
+    "start": {
+      "type": "string",
+      "value": ""
+    },
+    "styleDefaults": {
+      "type": "object",
+      "properties": {
+        "animationDuration": {
+          "type": "number"
+        },
+        "borderColor": {
+          "type": "string"
+        },
+        "item": {
+          "type": "object",
+          "value": {},
+          "properties": {
+            "backgroundColor": {
+              "type": "string"
+            },
+            "borderColor": {
+              "type": "string"
+            },
+            "descriptionStyle": {
+              "type": "object"
+            },
+            "hoverBackgroundColor": {
+              "type": "string"
+            },
+            "hoverBorderColor": {
+              "type": "string"
+            },
+            "selectedBackgroundColor": {
+              "type": "string"
+            },
+            "selectedBorderColor": {
+              "type": "string"
+            },
+            "titleStyle": {
+              "type": "object"
+            }
+          }
+        },
+        "majorAxis": {
+          "type": "object",
+          "value": {},
+          "properties": {
+            "labelStyle": {
+              "type": "object"
+            },
+            "separatorColor": {
+              "type": "string"
+            }
+          }
+        },
+        "minorAxis": {
+          "type": "object",
+          "value": {},
+          "properties": {
+            "backgroundColor": {
+              "type": "string"
+            },
+            "borderColor": {
+              "type": "string"
+            },
+            "labelStyle": {
+              "type": "object"
+            },
+            "separatorColor": {
+              "type": "string"
+            }
+          }
+        },
+        "overview": {
+          "type": "object",
+          "properties": {
+            "backgroundColor": {
+              "type": "string"
+            },
+            "labelStyle": {
+              "type": "object"
+            },
+            "window": {
+              "type": "object",
+              "value": {},
+              "properties": {
+                "backgroundColor": {
+                  "type": "string"
+                },
+                "borderColor": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "referenceObject": {
+          "type": "object",
+          "value": {},
+          "properties": {
+            "color": {
+              "type": "string"
+            }
+          }
+        },
+        "series": {
+          "type": "object",
+          "value": {},
+          "properties": {
+            "backgroundColor": {
+              "type": "string"
+            },
+            "colors": {
+              "type": "Array<string>"
+            },
+            "emptyTextStyle": {
+              "type": "object"
+            },
+            "labelStyle": {
+              "type": "object"
+            }
+          }
+        }
+      }
+    },
+    "trackResize": {
+      "type": "string",
+      "enumValues": [
+        "off",
+        "on"
+      ],
+      "value": "on"
+    },
+    "translations": {
+      "type": "object",
+      "value": {},
+      "properties": {
+        "accessibleItemDesc": {
+          "type": "string"
+        },
+        "accessibleItemEnd": {
+          "type": "string"
+        },
+        "accessibleItemStart": {
+          "type": "string"
+        },
+        "accessibleItemTitle": {
+          "type": "string"
+        },
+        "componentName": {
+          "type": "string"
+        },
+        "labelAndValue": {
+          "type": "string"
+        },
+        "labelClearSelection": {
+          "type": "string"
+        },
+        "labelCountWithTotal": {
+          "type": "string"
+        },
+        "labelDataVisualization": {
+          "type": "string"
+        },
+        "labelInvalidData": {
+          "type": "string"
+        },
+        "labelNoData": {
+          "type": "string"
+        },
+        "labelSeries": {
+          "type": "string"
+        },
+        "stateCollapsed": {
+          "type": "string"
+        },
+        "stateDrillable": {
+          "type": "string"
+        },
+        "stateExpanded": {
+          "type": "string"
+        },
+        "stateHidden": {
+          "type": "string"
+        },
+        "stateIsolated": {
+          "type": "string"
+        },
+        "stateMaximized": {
+          "type": "string"
+        },
+        "stateMinimized": {
+          "type": "string"
+        },
+        "stateSelected": {
+          "type": "string"
+        },
+        "stateUnselected": {
+          "type": "string"
+        },
+        "stateVisible": {
+          "type": "string"
+        },
+        "tooltipZoomIn": {
+          "type": "string"
+        },
+        "tooltipZoomOut": {
+          "type": "string"
+        }
+      }
+    },
+    "viewportEnd": {
+      "type": "string",
+      "value": ""
+    },
+    "viewportStart": {
+      "type": "string",
+      "value": ""
+    }
+  },
+  "methods": {
+    "getContextByNode": {},
+    "refresh": {},
+    "setProperty": {},
+    "getProperty": {},
+    "setProperties": {},
+    "getNodeBySubId": {},
+    "getSubIdByNode": {}
+  },
+  "events": {
+    "ojViewportChange": {}
+  },
+  "extension": {}
+};
 /**
  * @ojcomponent oj.ojTimeline
  * @ojdisplayname Timeline
@@ -151,6 +585,7 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtTimeComponent'],
      * @memberof oj.ojTimeline
      * @instance
      * @type {string}
+     * @ojformat date-time
      * @default ""
      *
      * @example <caption>Get or set the <code class="prettyprint">end</code> property after initialization:</caption>
@@ -168,7 +603,6 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtTimeComponent'],
      * @memberof oj.ojTimeline
      * @instance
      * @type {Object}
-     * @default {"converter": {"default": null, "seconds": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric', 'minute': '2-digit', 'second': '2-digit'}), "minutes": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric', 'minute': '2-digit'}), "hours": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric'}), "days": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'numeric', 'day': '2-digit'}), "weeks": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'numeric', 'day': '2-digit'}), "months": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'long'}), "quarters": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'long'}), "years": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'year': 'numeric'})}, "svgStyle": {}}
      *
      * @example <caption>Initialize the Timeline with the <code class="prettyprint">minor-axis</code> attribute specified:</caption>
      * &lt;!-- Using dot notation -->
@@ -271,7 +705,6 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtTimeComponent'],
      * @memberof oj.ojTimeline
      * @instance
      * @type {?Object}
-     * @default {"converter": {"default": null, "seconds": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric', 'minute': '2-digit', 'second': '2-digit'}), "minutes": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric', 'minute': '2-digit'}), "hours": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric'}), "days": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'numeric', 'day': '2-digit'}), "weeks": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'numeric', 'day': '2-digit'}), "months": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'long'}), "quarters": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'long'}), "years": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'year': 'numeric'})}, "svgStyle": {}}
      *
      * @example <caption>Initialize the Timeline with the <code class="prettyprint">major-axis</code> attribute specified:</caption>
      * &lt;!-- Using dot notation -->
@@ -382,7 +815,6 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtTimeComponent'],
      * @memberof oj.ojTimeline
      * @instance
      * @type {?Object}
-     * @default {"rendered": "off", "svgStyle": {}}
      *
      * @example <caption>Initialize the Timeline with the <code class="prettyprint">overview</code> attribute specified:</caption>
      * &lt;!-- Using dot notation -->
@@ -579,6 +1011,7 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtTimeComponent'],
      * @memberof oj.ojTimeline
      * @instance
      * @type {string}
+     * @ojformat date-time
      * @default ""
      * 
      * @example <caption>Initialize the Timeline with the <code class="prettyprint">start</code> attribute specified:</caption>
@@ -603,7 +1036,6 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtTimeComponent'],
      * @memberof oj.ojTimeline
      * @instance
      * @type {Object}
-     * @default {"item": {}, "minorAxis": {}, "majorAxis": {}, "overview": {"window": {}},  "referenceObject": {}, "series": {"colors": ["#237bb1", "#68c182", "#fad55c", "#ed6647", "#8561c8", "#6ddbdb", "#ffb54d", "#e371b2", "#47bdef", "#a2bf39", "#a75dba", "#f7f37b"]}}
      * 
      * @example <caption>Initialize the Timeline with the <code class="prettyprint">style-defaults</code> attribute specified:</caption>
      * &lt;!-- Using dot notation -->
@@ -648,6 +1080,7 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtTimeComponent'],
        * @memberof! oj.ojTimeline
        * @instance
        * @type {string}
+       * @ojformat color
        * @ojsignature {target: "Type", value: "?"}
        */
       borderColor: undefined,
@@ -671,6 +1104,7 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtTimeComponent'],
          * @memberof! oj.ojTimeline
          * @instance
          * @type {string}
+         * @ojformat color
          * @ojsignature {target: "Type", value: "?"}
          */
         backgroundColor: undefined,
@@ -682,6 +1116,7 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtTimeComponent'],
          * @memberof! oj.ojTimeline
          * @instance
          * @type {string}
+         * @ojformat color
          * @ojsignature {target: "Type", value: "?"}
          */
         borderColor: undefined,
@@ -704,6 +1139,7 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtTimeComponent'],
          * @memberof! oj.ojTimeline
          * @instance
          * @type {string}
+         * @ojformat color
          * @ojsignature {target: "Type", value: "?"}
          */
         hoverBackgroundColor: undefined,
@@ -715,6 +1151,7 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtTimeComponent'],
          * @memberof! oj.ojTimeline
          * @instance
          * @type {string}
+         * @ojformat color
          * @ojsignature {target: "Type", value: "?"}
          */
         hoverBorderColor: undefined,
@@ -726,6 +1163,7 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtTimeComponent'],
          * @memberof! oj.ojTimeline
          * @instance
          * @type {string}
+         * @ojformat color
          * @ojsignature {target: "Type", value: "?"}
          */
         selectedBackgroundColor: undefined,
@@ -737,6 +1175,7 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtTimeComponent'],
          * @memberof! oj.ojTimeline
          * @instance
          * @type {string}
+         * @ojformat color
          * @ojsignature {target: "Type", value: "?"}
          */
         selectedBorderColor: undefined,
@@ -772,6 +1211,7 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtTimeComponent'],
          * @memberof! oj.ojTimeline
          * @instance
          * @type {string}
+         * @ojformat color
          * @ojsignature {target: "Type", value: "?"}
          */
         backgroundColor: undefined,
@@ -783,6 +1223,7 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtTimeComponent'],
          * @memberof! oj.ojTimeline
          * @instance
          * @type {string}
+         * @ojformat color
          * @ojsignature {target: "Type", value: "?"}
          */
         borderColor: undefined,
@@ -805,6 +1246,7 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtTimeComponent'],
          * @memberof! oj.ojTimeline
          * @instance
          * @type {string}
+         * @ojformat color
          * @ojsignature {target: "Type", value: "?"}
          */
         separatorColor: undefined
@@ -841,6 +1283,7 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtTimeComponent'],
          * @memberof! oj.ojTimeline
          * @instance
          * @type {string}
+         * @ojformat color
          * @ojsignature {target: "Type", value: "?"}
          */
         separatorColor: undefined
@@ -854,7 +1297,6 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtTimeComponent'],
        * @instance
        * @type {Object}
        * @ojsignature {target: "Type", value: "?"}
-       * @default {}
        */
       overview: {
         /**
@@ -865,6 +1307,7 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtTimeComponent'],
          * @memberof! oj.ojTimeline
          * @instance
          * @type {string}
+         * @ojformat color
          * @ojsignature {target: "Type", value: "?"}
          */
         backgroundColor: undefined,
@@ -899,6 +1342,7 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtTimeComponent'],
            * @memberof! oj.ojTimeline
            * @instance
            * @type {string}
+           * @ojformat color
            * @ojsignature {target: "Type", value: "?"}
            */
           backgroundColor: undefined,
@@ -910,6 +1354,7 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtTimeComponent'],
            * @memberof! oj.ojTimeline
            * @instance
            * @type {string}
+           * @ojformat color
            * @ojsignature {target: "Type", value: "?"}
            */
           borderColor: undefined
@@ -935,6 +1380,7 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtTimeComponent'],
          * @memberof! oj.ojTimeline
          * @instance
          * @type {string}
+         * @ojformat color
          * @ojsignature {target: "Type", value: "?"}
          */
         color: undefined
@@ -948,7 +1394,7 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtTimeComponent'],
        * @instance
        * @type {Object}
        * @ojsignature {target: "Type", value: "?"}
-       * @default {"colors": ["#237bb1", "#68c182", "#fad55c", "#ed6647", "#8561c8", "#6ddbdb", "#ffb54d", "#e371b2", "#47bdef", "#a2bf39", "#a75dba", "#f7f37b"]}
+       * @default {}
        */
       series: {
         /**
@@ -959,6 +1405,7 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtTimeComponent'],
          * @memberof! oj.ojTimeline
          * @instance
          * @type {string}
+         * @ojformat color
          * @ojsignature {target: "Type", value: "?"}
          */
         backgroundColor: undefined,
@@ -971,7 +1418,6 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtTimeComponent'],
          * @instance
          * @type {Array.<string>}
          * @ojsignature {target: "Type", value: "?"}
-         * @default ["#237bb1", "#68c182", "#fad55c", "#ed6647", "#8561c8", "#6ddbdb", "#ffb54d", "#e371b2", "#47bdef", "#a2bf39", "#a75dba", "#f7f37b"]
          */
         colors: ["#237bb1", "#68c182", "#fad55c", "#ed6647", "#8561c8", "#6ddbdb", "#ffb54d", "#e371b2", "#47bdef", "#a2bf39", "#a75dba", "#f7f37b"],
         /**
@@ -1005,6 +1451,7 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtTimeComponent'],
      * @memberof oj.ojTimeline
      * @instance
      * @type {string}
+     * @ojformat date-time
      * @default ""
      *
      * @example <caption>Initialize the Timeline with the <code class="prettyprint">viewport-end</code> attribute specified:</caption>
@@ -1025,6 +1472,7 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtTimeComponent'],
      * @memberof oj.ojTimeline
      * @instance
      * @type {string}
+     * @ojformat date-time
      * @default ""
      *
      * @example <caption>Initialize the Timeline with the <code class="prettyprint">viewport-start</code> attribute specified:</caption>
@@ -1557,360 +2005,15 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtTimeComponent'],
  * @ojnodecontext oj-timeline-item
  * @memberof oj.ojTimeline
  */
+/* global __oj_timeline_metadata:false */
 /**
  * Ignore tag only needed for DVTs that have jsDoc in separate _doc.js files.
  * @ignore
  */
-(function() {
-var ojTimelineMeta = {
-  "properties": {
-    "animationOnDataChange": {
-      "type": "string",
-      "enumValues": ["auto", "none"]
-    },
-    "animationOnDisplay": {
-      "type": "string",
-      "enumValues": ["auto", "none"]
-    },
-    "end": {
-      "type": "string"
-    },
-    "majorAxis": {
-      "type": "object",
-      "properties": {
-        "converter": {
-          "type": "object",
-          "properties": {
-            "days": {},
-            "default": {},
-            "hours": {},
-            "minutes": {},
-            "months": {},
-            "quarters": {},
-            "seconds": {},
-            "weeks": {},
-            "years": {}
-          }
-        },
-        "scale": {
-          "type": "string",
-          "enumValues": ["seconds", "minutes", "hours", "days", "weeks", "months", "quarters", "years"]
-        },
-        "svgStyle": {
-          "type": "object"
-        }
-      }
-    },
-    "minorAxis": {
-      "type": "object",
-      "properties": {
-        "converter": {
-          "type": "object",
-          "properties": {
-            "days": {},
-            "default": {},
-            "hours": {},
-            "minutes": {},
-            "months": {},
-            "quarters": {},
-            "seconds": {},
-            "weeks": {},
-            "years": {}
-          }
-        },
-        "scale": {
-          "type": "string",
-          "enumValues": ["seconds", "minutes", "hours", "days", "weeks", "months", "quarters", "years"]
-        },
-        "svgStyle": {
-          "type": "object"
-        },
-        "zoomOrder": {
-          "type": "Array<string>"
-        }
-      }
-    },
-    "orientation": {
-      "type": "string",
-      "enumValues": ["horizontal", "vertical"]
-    },
-    "overview": {
-      "type": "object",
-      "properties": {
-        "rendered": {
-          "type": "string",
-          "enumValues": ["on", "off"]
-        },
-        "svgStyle": {
-          "type": "object"
-        }
-      }
-    },
-    "referenceObjects": {
-      "type": "Array<object>"
-    },
-    "selection": {
-      "type": "Array<string>",
-      "writeback": true
-    },
-    "selectionMode": {
-      "type": "string",
-      "enumValues": ["single", "multiple", "none"]
-    },
-    "series": {
-      "type": "Array<object>|Promise"
-    },
-    "start": {
-      "type": "string"
-    },
-    "styleDefaults": {
-      "type": "object",
-      "properties": {
-        "animationDuration": {
-          "type": "number"
-        },
-        "borderColor": {
-          "type": "string"
-        },
-        "item": {
-          "type": "object",
-          "properties": {
-            "item": {
-              "backgroundColor": {
-                "type": "string"
-              },
-              "borderColor": {
-                "type": "string"
-              },
-              "descriptionStyle": {
-                "type": "object"
-              },
-              "hoverBackgroundColor": {
-                "type": "string"
-              },
-              "hoverBorderColor": {
-                "type": "string"
-              },
-              "selectedBackgroundColor": {
-                "type": "string"
-              },
-              "selectedBorderColor": {
-                "type": "string"
-              },
-              "titleStyle": {
-                "type": "object"
-              }
-            }
-          }
-        },
-        "majorAxis": {
-          "type": "object",
-          "properties": {
-            "majorAxis": {
-              "labelStyle": {
-                "type": "object"
-              },
-              "separatorColor": {
-                "type": "string"
-              }
-            }
-          }
-        },
-        "minorAxis": {
-          "type": "object",
-          "properties": {
-            "minorAxis": {
-              "backgroundColor": {
-                "type": "string"
-              },
-              "borderColor": {
-                "type": "string"
-              },
-              "labelStyle": {
-                "type": "object"
-              },
-              "separatorColor": {
-                "type": "string"
-              }
-            }
-          }
-        },
-        "overview": {
-          "type": "object",
-          "properties": {
-            "overview": {
-              "backgroundColor": {
-                "type": "string"
-              },
-              "labelStyle": {
-                "type": "object"
-              },
-              "window": {
-                "type": "object",
-                "properties": {
-                  "window": {
-                    "backgroundColor": {
-                      "type": "string"
-                    },
-                    "borderColor": {
-                      "type": "string"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        },
-        "referenceObject": {
-          "type": "object",
-          "properties": {
-            "referenceObject": {
-              "color": {
-                "type": "string"
-              }
-            }
-          }
-        },
-        "series": {
-          "type": "object",
-          "properties": {
-            "series": {
-              "backgroundColor": {
-                "type": "string"
-              },
-              "colors": {
-                "type": "Array<string>"
-              },
-              "emptyTextStyle": {
-                "type": "object"
-              },
-              "labelStyle": {
-                "type": "object"
-              }
-            }
-          }
-        }
-      }
-    },
-    "translations": {
-      "type": "Object",
-      "properties": {
-        "accessibleItemDesc": {
-          "type": "string",
-          "value": "Description is {0}."
-        },
-        "accessibleItemEnd": {
-          "type": "string",
-          "value": "End time is {0}."
-        },
-        "accessibleItemStart": {
-          "type": "string",
-          "value": "Start time is {0}."
-        },
-        "accessibleItemTitle": {
-          "type": "string",
-          "value": "Title is {0}."
-        },
-        "componentName": {
-          "type": "string",
-          "value": "Timeline"
-        },
-        "labelAndValue": {
-          "type": "string",
-          "value": "{0}: {1}"
-        },
-        "labelClearSelection": {
-          "type": "string",
-          "value": "Clear Selection"
-        },
-        "labelCountWithTotal": {
-          "type": "string",
-          "value": "{0} of {1}"
-        },
-        "labelDataVisualization": {
-          "type": "string",
-          "value": "Data Visualization"
-        },
-        "labelInvalidData": {
-          "type": "string",
-          "value": "Invalid data"
-        },
-        "labelNoData": {
-          "type": "string",
-          "value": "No data to display"
-        },
-        "labelSeries": {
-          "type": "string",
-          "value": "Series"
-        },
-        "stateCollapsed": {
-          "type": "string",
-          "value": "Collapsed"
-        },
-        "stateDrillable": {
-          "type": "string",
-          "value": "Drillable"
-        },
-        "stateExpanded": {
-          "type": "string",
-          "value": "Expanded"
-        },
-        "stateHidden": {
-          "type": "string",
-          "value": "Hidden"
-        },
-        "stateIsolated": {
-          "type": "string",
-          "value": "Isolated"
-        },
-        "stateMaximized": {
-          "type": "string",
-          "value": "Maximized"
-        },
-        "stateMinimized": {
-          "type": "string",
-          "value": "Minimized"
-        },
-        "stateSelected": {
-          "type": "string",
-          "value": "Selected"
-        },
-        "stateUnselected": {
-          "type": "string",
-          "value": "Unselected"
-        },
-        "stateVisible": {
-          "type": "string",
-          "value": "Visible"
-        },
-        "tooltipZoomIn": {
-          "type": "string",
-          "value": "Zoom In"
-        },
-        "tooltipZoomOut": {
-          "type": "string",
-          "value": "Zoom Out"
-        }
-      }
-    },
-    "viewportEnd": {
-      "type": "string"
-    },
-    "viewportStart": {
-      "type": "string"
-    }
-  },
-  "methods": {
-    "getContextByNode": {}
-  },
-  "events": {
-    "viewportChange": {}
-  },
-  "extension": {
-    _WIDGET_NAME: "ojTimeline"
-  }
-};
-oj.CustomElementBridge.registerMetadata('oj-timeline', 'dvtTimeComponent', ojTimelineMeta);
-oj.CustomElementBridge.register('oj-timeline', {'metadata': oj.CustomElementBridge.getMetadata('oj-timeline')});
-})();
+(function () {
+  __oj_timeline_metadata.extension._WIDGET_NAME = 'ojTimeline';
+  oj.CustomElementBridge.registerMetadata('oj-timeline', 'dvtTimeComponent', __oj_timeline_metadata);
+  oj.CustomElementBridge.register('oj-timeline', { metadata: oj.CustomElementBridge.getMetadata('oj-timeline') });
+}());
+
 });

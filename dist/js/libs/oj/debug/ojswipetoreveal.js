@@ -110,6 +110,12 @@ oj.SwipeToRevealUtils.setupSwipeActions = function(elem, options)
     outerWrapper.on("touchstart.swipetoreveal", function(event)
     {
         drawerShown = false;
+
+        // prevent click event from firing when tapping on outer wrapper (like list item) while offcanvas is still open
+        if (drawer.hasClass('oj-offcanvas-open') && drawer[0].offsetWidth > 0 && !drawer[0].contains(event.target)) 
+        {
+            event.preventDefault();
+        }
     });
 
     drawer

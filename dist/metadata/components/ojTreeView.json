@@ -1,12 +1,9 @@
 {
   "name": "oj-tree-view",
-  "version": "5.1.0",
-  "jetVersion": "5.1.0",
+  "version": "5.2.0",
+  "jetVersion": "5.2.0",
   "displayName": "Tree View",
-  "preview": true,
-  "roles": [
-    "tree"
-  ],
+  "type": "core",
   "description": "Displays hierarchical relationships between the items in a tree.",
   "properties": {
     "currentItem": {
@@ -24,21 +21,18 @@
     },
     "dnd": {
       "description": "Enable drag and drop functionality.\nJET provides support for HTML5 Drag and Drop events. Please refer to mozilla.org/en-US/docs/Web/Guide/HTML/Drag_and_drop third party documentation \non HTML5 Drag and Drop to learn how to use it.",
-      "type": "Object",
+      "type": "object",
       "displayName": "Dnd",
-      "value": {
-        "drag": null,
-        "drop": null
-      },
       "properties": {
         "drag": {
           "description": "",
-          "type": "Object",
+          "type": "object",
+          "displayName": "Drag",
           "value": null,
           "properties": {
             "items": {
               "description": "If this object is specified, TreeView will initiate drag operation when the user drags on an item.",
-              "type": "Object",
+              "type": "object",
               "properties": {
                 "dataTypes": {
                   "description": "(optional) The MIME types to use for the dragged data in the dataTransfer object. This can be a string if there is only one\ntype, or an array of strings if multiple types are needed.\nFor example, if selected items of employee data are being dragged, dataTypes could be \"application/employees+json\". Drop targets can examine the data types and decide\nwhether to accept the data. A text input may only accept \"text\" data type, while a chart for displaying employee data may be configured to accept the \"application/employees+json\" type.\nFor each type in the array, dataTransfer.setData will be called with the specified type and the JSON version of the selected item data as the value. The selected item data \nis an array of objects, with each object representing a model object from the underlying data source. For example, if the underlying data is an oj.Collection, then this\nwould be a oj.Model object. Note that when static HTML is used, then the value would be the HTML string of the selected item.\nThis property is required unless the application calls setData itself in a dragStart callback function.",
@@ -62,12 +56,13 @@
         },
         "drop": {
           "description": "",
-          "type": "Object",
+          "type": "object",
+          "displayName": "Drop",
           "value": null,
           "properties": {
             "items": {
               "description": "An object that specifies callback functions to handle dropping items",
-              "type": "Object",
+              "type": "object",
               "properties": {
                 "dataTypes": {
                   "description": "A data type or an array of data types this component can accept.\nThis property is required unless dragEnter, dragOver, and drop callback functions are specified to handle the corresponding events.",
@@ -104,23 +99,128 @@
     },
     "item": {
       "description": "The item attribute contains a subset of attributes for items.",
-      "type": "Object",
+      "type": "object",
       "displayName": "Item",
       "properties": {
         "focusable": {
           "description": "A function that returns whether the item is focusable.\nA item that is not focusable cannot be clicked on or navigated to.\nSee itemContext in the introduction\nto see the object passed into the focusable function.\nIf no function is specified, then all the items will be focusable.",
           "type": "function",
-          "value": null
+          "displayName": "Focusable",
+          "value": null,
+          "properties": {
+            "componentElement": {
+              "description": "The TreeView element.",
+              "type": "Element"
+            },
+            "data": {
+              "description": "The data object of the item (not available for static content).",
+              "type": "D"
+            },
+            "depth": {
+              "description": "The depth of the item. The depth of the first level children under the invisible root is 1.",
+              "type": "number"
+            },
+            "index": {
+              "description": "The index of the item relative to its parent, where 0 is the index of the first item.",
+              "type": "number"
+            },
+            "key": {
+              "description": "The key of the item.",
+              "type": "K"
+            },
+            "leaf": {
+              "description": "Whether the item is a leaf item.",
+              "type": "boolean"
+            },
+            "parentElement": {
+              "description": "The TreeView item element. The renderer can use this to directly append content.",
+              "type": "Element"
+            },
+            "parentKey": {
+              "description": "The key of the parent item (not available for root item).",
+              "type": "K"
+            }
+          }
         },
         "renderer": {
           "description": "The renderer function that renders the contents of the item. See itemContext\nin the introduction to see the object passed into the renderer function.\nThe function should return one of the following: An Object with the following property: insert: HTMLElement | string - A string or a DOM element of the content inside the item. Nothing: If the developer chooses to manipulate the item element directly, the function should return nothing.\n",
           "type": "function",
-          "value": null
+          "displayName": "Renderer",
+          "value": null,
+          "properties": {
+            "componentElement": {
+              "description": "The TreeView element.",
+              "type": "Element"
+            },
+            "data": {
+              "description": "The data object of the item (not available for static content).",
+              "type": "D"
+            },
+            "depth": {
+              "description": "The depth of the item. The depth of the first level children under the invisible root is 1.",
+              "type": "number"
+            },
+            "index": {
+              "description": "The index of the item relative to its parent, where 0 is the index of the first item.",
+              "type": "number"
+            },
+            "key": {
+              "description": "The key of the item.",
+              "type": "K"
+            },
+            "leaf": {
+              "description": "Whether the item is a leaf item.",
+              "type": "boolean"
+            },
+            "parentElement": {
+              "description": "The TreeView item element. The renderer can use this to directly append content.",
+              "type": "Element"
+            },
+            "parentKey": {
+              "description": "The key of the parent item (not available for root item).",
+              "type": "K"
+            }
+          }
         },
         "selectable": {
           "description": "A function that returns whether the item can be selected.\nIf selectionMode is set to \"none\" this attribute is ignored.\nSee itemContext in the introduction\nto see the object passed into the selectable function. \nIf no function is specified, then all the items will be selectable.",
           "type": "function",
-          "value": null
+          "displayName": "Selectable",
+          "value": null,
+          "properties": {
+            "componentElement": {
+              "description": "The TreeView element.",
+              "type": "Element"
+            },
+            "data": {
+              "description": "The data object of the item (not available for static content).",
+              "type": "D"
+            },
+            "depth": {
+              "description": "The depth of the item. The depth of the first level children under the invisible root is 1.",
+              "type": "number"
+            },
+            "index": {
+              "description": "The index of the item relative to its parent, where 0 is the index of the first item.",
+              "type": "number"
+            },
+            "key": {
+              "description": "The key of the item.",
+              "type": "K"
+            },
+            "leaf": {
+              "description": "Whether the item is a leaf item.",
+              "type": "boolean"
+            },
+            "parentElement": {
+              "description": "The TreeView item element. The renderer can use this to directly append content.",
+              "type": "Element"
+            },
+            "parentKey": {
+              "description": "The key of the parent item (not available for root item).",
+              "type": "K"
+            }
+          }
         }
       }
     },
@@ -157,9 +257,10 @@
       }
     },
     "translations": {
-      "description": "A collection of translated resources from the translation bundle, or null if this\ncomponent has no resources. Resources may be accessed and overridden individually or collectively, as seen in the examples. If the component does not contain any translatable resource, the default value of this attribute will be \nnull. If not, an object containing all resources relevant to the component.\n\nIf this component has translations, their documentation immediately follows this doc entry.",
-      "type": "Object|null",
+      "description": "A collection of translated resources from the translation bundle, or null if this component has no resources.",
+      "type": "object|null",
       "displayName": "Translations",
+      "value": {},
       "translatable": true
     }
   },
@@ -173,7 +274,7 @@
           "type": "Element"
         }
       ],
-      "return": "Object|null"
+      "return": "object|null"
     },
     "refresh": {
       "description": "Refreshes the component.",
@@ -212,7 +313,7 @@
         {
           "name": "properties",
           "description": "An object containing the property and value pairs to set.",
-          "type": "Object"
+          "type": "object"
         }
       ],
       "return": "void"

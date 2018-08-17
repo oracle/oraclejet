@@ -6,7 +6,42 @@
 "use strict";
 define(['ojs/ojcore', 'knockout', 'ojs/ojmodule', 'ojs/ojcomposite'], function(oj, ko)
 {
+ 
 
+var __oj_module_metadata = 
+{
+  "properties": {
+    "animation": {
+      "type": "object"
+    },
+    "config": {
+      "type": "object",
+      "properties": {
+        "cleanupMode": {
+          "type": "string",
+          "enumValues": [
+            "none",
+            "onDisconnect"
+          ],
+          "value": "onDisconnect"
+        },
+        "view": {
+          "type": "Array<Node>"
+        },
+        "viewModel": {
+          "type": "object"
+        }
+      }
+    }
+  },
+  "events": {
+    "ojTransitionStart": {},
+    "ojViewConnected": {},
+    "ojTransitionEnd": {},
+    "ojViewDisconnected": {}
+  },
+  "extension": {}
+};
 /**
  * Copyright (c) 2017, Oracle and/or its affiliates.
  * All rights reserved.
@@ -76,7 +111,6 @@ define(['ojs/ojcore', 'knockout', 'ojs/ojmodule', 'ojs/ojcomposite'], function(o
  * @memberof! oj.ojModule
  * @instance
  * @type {Object}
- * @default null
  * @ojshortdesc An array of strings of allowed MIME types or file extensions that can be uploaded. If not specified, accept all file types
  *
  * @example <caption>Initialize the ojModule element with the <code class="prettyprint">config</code> attribute:</caption>
@@ -101,7 +135,7 @@ define(['ojs/ojcore', 'knockout', 'ojs/ojmodule', 'ojs/ojcomposite'], function(o
  * @memberof! oj.ojModule
  * @instance
  * @type {Array.<Node>}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 
 /**
@@ -114,7 +148,7 @@ define(['ojs/ojcore', 'knockout', 'ojs/ojmodule', 'ojs/ojcomposite'], function(o
  * @memberof! oj.ojModule
  * @instance
  * @type {Object}
- * @default <code class="prettyprint">null</code>
+ * @default null
  */
 
 /**
@@ -185,39 +219,8 @@ define(['ojs/ojcore', 'knockout', 'ojs/ojmodule', 'ojs/ojcomposite'], function(o
  * @property {Object} viewModel An array of DOM nodes that represent the disconnected View. The application can use the nodes to store them in cache.
  * @property {Array.<Node>} view ViewModel for the new View.
  */
- 
-var moduleMetadata =
-{
-  "properties": 
-  {
-    "config": 
-    {
-      "type": "object",
-      "properties": 
-      {
-        "viewModel": {"type": "object"},
-        "view": {"type": "array<object>"},
-        "cleanupMode": 
-        {
-          "type":"string",
-          "enumValues": ["onDisconnect", "none"],
-          "value": "onDisconnect"
-        }
-      }
-    },
-    "animation": {"type": "object"}
-  },
-  "events": 
-  {
-    "transitionStart": {},
-    "transitionEnd": {},
-    "viewConnected": {},
-    "viewDisconnected": {}
-  }
-};
 
-function moduleViewModel (context) 
-{
+function moduleViewModel(context) {
   var element = context.element;
   var props = context['properties'];
   var self = this;
@@ -269,12 +272,13 @@ var moduleValue = '{\"view\":$properties.config.view, \"viewModel\":$properties.
 
 var moduleView = "<!-- ko ojModule: "+ moduleValue +" --><!-- /ko -->";
 
+/* global __oj_module_metadata */
 oj.Composite.register('oj-module',
-{
-  "view": moduleView,
-  "metadata": moduleMetadata,
-  "viewModel": moduleViewModel
-});
+  {
+    view: moduleView,
+    metadata: __oj_module_metadata,
+    viewModel: moduleViewModel
+  });
 
 /**
  * A duck-typing interface that defines a contract for managing animations during the oj-module element View transitions. 

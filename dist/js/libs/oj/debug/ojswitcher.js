@@ -7,7 +7,25 @@
 define(['ojs/ojcore', 'ojs/ojcomponentcore', 'ojs/ojcustomelement'], 
        function(oj)
 {
-
+//%COMPONENT_METADATA%
+var __oj_switcher_metadata = 
+{
+  "properties": {
+    "value": {
+      "type": "string",
+      "value": ""
+    }
+  },
+  "methods": {
+    "setProperty": {},
+    "getProperty": {},
+    "setProperties": {},
+    "refresh": {},
+    "getNodeBySubId": {},
+    "getSubIdByNode": {}
+  },
+  "extension": {}
+};
 /**
  * Copyright (c) 2017, Oracle and/or its affiliates.
  * All rights reserved.
@@ -92,7 +110,7 @@ define(['ojs/ojcore', 'ojs/ojcomponentcore', 'ojs/ojcustomelement'],
  * @memberof oj.ojSwitcher
  * @instance
  * @type {string}
- * @default undefined
+ * @default ""
  * @ojshortdesc Gets and Sets value for this switcher.
  * @desc <code class="prettyprint">value</code> of the switcher. Setting <code class="prettyprint">value</code> will make all child elements with matching <code class="prettyprint">slot</code> attribute as visible and hides elements which are not matching.
  * @example <caption>Initialize the Switcher with the <code class="prettyprint">value</code> attribute specified:</caption>
@@ -103,27 +121,12 @@ define(['ojs/ojcore', 'ojs/ojcomponentcore', 'ojs/ojcustomelement'],
  * mySwitcher.value = 'settings';
  */
 
-/**
- * @ignore
- */
-var switcherMetadata =
-        {
-          "properties": {
-            "value": {
-              "type": "string",
-              "value": ""
-            }
-          },
-          "extension": {
-            _CONSTRUCTOR: ojSwitcher,
-            _CONTROLS_SUBTREE_HIDDEN: true
-          }
-        };
 
 /**
  * @constructor
  * @private
  */
+// eslint-disable-next-line no-unused-vars
 function ojSwitcher(context) {
   var ATTR_SWITCHER_SLOT = "slot";
   var SWITCHER_VALUE_ATTR = "value";
@@ -207,8 +210,7 @@ function ojSwitcher(context) {
         _applyValueToItem(item, key);
       });
     }
-    if (isInitialRender)
-      isInitialRender = false;
+    if (isInitialRender) { isInitialRender = false; }
   };
 
   function _applyValueToItem(item, itemSlotAttributeValue) {
@@ -224,7 +226,13 @@ function ojSwitcher(context) {
   }
 }
 
-oj.CustomElementBridge.registerMetadata('oj-switcher', null, switcherMetadata);
-oj.CustomElementBridge.register('oj-switcher', {'metadata': oj.CustomElementBridge.getMetadata('oj-switcher')});
+/* global __oj_switcher_metadata:false */
+/* global ojSwitcher:false */
+(function () {
+  __oj_switcher_metadata.extension._CONSTRUCTOR = ojSwitcher;
+  __oj_switcher_metadata.extension._CONTROLS_SUBTREE_HIDDEN = true;
+  oj.CustomElementBridge.registerMetadata('oj-switcher', null, __oj_switcher_metadata);
+  oj.CustomElementBridge.register('oj-switcher', { metadata: oj.CustomElementBridge.getMetadata('oj-switcher') });
+}());
 
 });

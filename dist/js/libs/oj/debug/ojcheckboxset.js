@@ -12,6 +12,136 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'ojs/ojradiocheckbox', 'o
        function(oj, $)
 {
 
+var __oj_checkboxset_metadata = 
+{
+  "properties": {
+    "describedBy": {
+      "type": "string"
+    },
+    "disabled": {
+      "type": "boolean",
+      "value": false
+    },
+    "displayOptions": {
+      "type": "object",
+      "properties": {
+        "converterHint": {
+          "type": "Array<string>|string",
+          "value": [
+            "placeholder",
+            "notewindow"
+          ]
+        },
+        "helpInstruction": {
+          "type": "Array<string>|string",
+          "value": [
+            "notewindow"
+          ]
+        },
+        "messages": {
+          "type": "Array<string>|string",
+          "value": [
+            "inline"
+          ]
+        },
+        "validatorHint": {
+          "type": "Array<string>|string",
+          "value": [
+            "notewindow"
+          ]
+        }
+      }
+    },
+    "help": {
+      "type": "object",
+      "properties": {
+        "instruction": {
+          "type": "string"
+        }
+      }
+    },
+    "helpHints": {
+      "type": "object",
+      "properties": {
+        "definition": {
+          "type": "string",
+          "value": ""
+        },
+        "source": {
+          "type": "string",
+          "value": ""
+        }
+      }
+    },
+    "labelHint": {
+      "type": "string",
+      "value": ""
+    },
+    "labelledBy": {
+      "type": "string"
+    },
+    "messagesCustom": {
+      "type": "Array<Object>",
+      "writeback": true,
+      "value": []
+    },
+    "required": {
+      "type": "boolean",
+      "value": false
+    },
+    "translations": {
+      "type": "object",
+      "value": {},
+      "properties": {
+        "required": {
+          "type": "object",
+          "properties": {
+            "hint": {
+              "type": "string"
+            },
+            "messageDetail": {
+              "type": "string"
+            },
+            "messageSummary": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "valid": {
+      "type": "string",
+      "writeback": true,
+      "enumValues": [
+        "invalidHidden",
+        "invalidShown",
+        "pending",
+        "valid"
+      ],
+      "readOnly": true
+    },
+    "value": {
+      "type": "Array<any>",
+      "writeback": true
+    }
+  },
+  "methods": {
+    "refresh": {},
+    "validate": {},
+    "reset": {},
+    "showMessages": {},
+    "setProperty": {},
+    "getProperty": {},
+    "setProperties": {},
+    "getNodeBySubId": {},
+    "getSubIdByNode": {}
+  },
+  "events": {
+    "ojAnimateStart": {},
+    "ojAnimateEnd": {}
+  },
+  "extension": {}
+};
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
@@ -249,9 +379,9 @@ oj.__registerWidget("oj.ojCheckboxset", $['oj']['editableValue'],
      * 
      * </p>
      * 
-     * @ojvalue {boolean} false - implies a value is not required to be provided by the user. 
+     * This property set to <code class="prettyprint">false</code> implies that a value is not required to be provided by the user.
      * This is the default.
-     * @ojvalue {boolean} true - implies a value is required to be provided by user and the 
+     * This property set to <code class="prettyprint">true</code> implies that a value is required to be provided by user and the
      * input's label will render a required icon. Additionally a required validator - 
      * {@link oj.RequiredValidator} - is implicitly used if no explicit required validator is set. 
      * An explicit required validator can be set by page authors using the validators option. 
@@ -330,6 +460,7 @@ oj.__registerWidget("oj.ojCheckboxset", $['oj']['editableValue'],
      * @access public
      * @instance
      * @memberof oj.ojCheckboxset
+     * @ojwriteback
      * @type {Array.<any>}
      */
     value: []
@@ -1574,49 +1705,11 @@ oj.__registerWidget("oj.ojCheckboxset", $['oj']['editableValue'],
 var _sValueChangeCheckFalse = {doValueChangeCheck: false};
 
 }());
-(function() {
-var ojCheckboxsetMeta = {
-  "properties": {
-    "disabled": {
-      "type": "boolean"
-    },
-    "labelledBy": {
-      "type": "string"
-    },
-    "required": {
-      "type": "boolean"
-    },  
-    "value": {
-      "type": "Array"
-    },
-    "translations": {
-      "type": "Object",
-      "properties": {
-        "required": {
-          "type": "Object",
-          "properties": {
-            "hint": {
-              "type": "string"
-            },
-            "messageDetail": {
-              "type": "string"
-            },
-            "messageSummary": {
-              "type": "string"
-            }
-          }
-        }
-      }
-    },
-  },
-  "methods": {
-    "validate": {}
-  },
-  "extension": {
-    _WIDGET_NAME: "ojCheckboxset"
-  }
-};
-oj.CustomElementBridge.registerMetadata('oj-checkboxset', 'editableValue', ojCheckboxsetMeta);
-oj.CustomElementBridge.register('oj-checkboxset', {'metadata': oj.CustomElementBridge.getMetadata('oj-checkboxset')});
-})();
+/* global __oj_checkboxset_metadata */
+(function () {
+  __oj_checkboxset_metadata.extension._WIDGET_NAME = 'ojCheckboxset';
+  oj.CustomElementBridge.registerMetadata('oj-checkboxset', 'editableValue', __oj_checkboxset_metadata);
+  oj.CustomElementBridge.register('oj-checkboxset', { metadata: oj.CustomElementBridge.getMetadata('oj-checkboxset') });
+}());
+
 });

@@ -1,15 +1,9 @@
 {
   "name": "oj-navigation-list",
-  "version": "5.1.0",
-  "jetVersion": "5.1.0",
+  "version": "5.2.0",
+  "jetVersion": "5.2.0",
   "displayName": "Navigation List",
-  "preview": true,
-  "roles": [
-    "menu",
-    "tree",
-    "listbox",
-    "toolbar"
-  ],
+  "type": "core",
   "styleClasses": [
     {
       "styleGroup": [
@@ -179,18 +173,72 @@
     },
     "item": {
       "description": "Customize the functionalities of each item in Navigation List.",
-      "type": "Object",
+      "type": "object",
       "displayName": "Item",
       "properties": {
         "renderer": {
           "description": "Gets and sets the renderer for the item.",
           "type": "function|null",
-          "value": null
+          "displayName": "Renderer",
+          "value": null,
+          "properties": {
+            "componentElement": {
+              "description": "oj-navigation-list element",
+              "type": "Element"
+            },
+            "datasource": {
+              "description": "A reference to the data source object. (Not available for static content)",
+              "type": "oj.DataProvider<K, D>"
+            },
+            "index": {
+              "description": "The index of the item, where 0 is the index of the first item.",
+              "type": "number"
+            },
+            "key": {
+              "description": "The Key of the item.",
+              "type": "any"
+            },
+            "data": {
+              "description": "The data object for the item.",
+              "type": "any"
+            },
+            "parentElement": {
+              "description": "The list item element. The renderer can use this to directly append content.",
+              "type": "Element"
+            }
+          }
         },
         "selectable": {
           "description": "Gets and sets whether the item can be selected.",
           "type": "function|boolean",
-          "value": true
+          "displayName": "Selectable",
+          "value": true,
+          "properties": {
+            "componentElement": {
+              "description": "oj-navigation-list element",
+              "type": "Element"
+            },
+            "datasource": {
+              "description": "A reference to the data source object. (Not available for static content)",
+              "type": "oj.DataProvider<K, D>"
+            },
+            "index": {
+              "description": "The index of the item, where 0 is the index of the first item.",
+              "type": "number"
+            },
+            "key": {
+              "description": "The Key of the item.",
+              "type": "any"
+            },
+            "data": {
+              "description": "The data object for the item.",
+              "type": "any"
+            },
+            "parentElement": {
+              "description": "The list item element. The renderer can use this to directly append content.",
+              "type": "Element"
+            }
+          }
         }
       }
     },
@@ -228,25 +276,26 @@
       "writeback": true
     },
     "translations": {
-      "description": "A collection of translated resources from the translation bundle, or null if this\ncomponent has no resources. Resources may be accessed and overridden individually or collectively, as seen in the examples. If the component does not contain any translatable resource, the default value of this attribute will be \nnull. If not, an object containing all resources relevant to the component.\n\nIf this component has translations, their documentation immediately follows this doc entry.",
-      "type": "Object|null",
+      "description": "A collection of translated resources from the translation bundle, or null if this component has no resources.",
+      "type": "object|null",
       "displayName": "Translations",
+      "value": {},
       "translatable": true,
       "properties": {
         "defaultRootLabel": {
           "description": "Provides properties to customize the title text used by Sliding Navigation List for root node. \n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "Navigation List"
+          "displayName": "Default Root Label"
         },
         "hierMenuBtnLabel": {
           "description": "Provides properties to customize the hover message text used by Sliding Navigation List as label for Hierarchical Menu button.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "Hierarchical Menu button"
+          "displayName": "Hier Menu Btn Label"
         },
         "previousIcon": {
           "description": "Provides properties to customize the hover message text used by Sliding Navigation List for previous button.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "Previous"
+          "displayName": "Previous Icon"
         }
       }
     }
@@ -261,7 +310,7 @@
           "type": "Element"
         }
       ],
-      "return": "Object|null"
+      "return": "object|null"
     },
     "refresh": {
       "description": "Refreshes the visual state of the Navigation List. JET components require a refresh() after the DOM is programmatically changed underneath the component. This method does not accept any arguments.",
@@ -300,7 +349,7 @@
         {
           "name": "properties",
           "description": "An object containing the property and value pairs to set.",
-          "type": "Object"
+          "type": "object"
         }
       ],
       "return": "void"

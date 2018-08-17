@@ -22,27 +22,24 @@ define(["../PersistenceStore", "../impl/storageUtils", "pouchdb", "./logger"],
     this._version = (options && options.version) || '0';
     var dbname = this._name + this._version;
     this._db = new PouchDB(dbname);
+    this._index = (options && options.index) ? options.index : null;
+    return this._createIndex();
+  };
 
-    if (!options || !options.index) {
+  PouchDBPersistenceStore.prototype._createIndex = function () {
+    if (!this._index || !this._db.createIndex) {
       return Promise.resolve();
     } else {
       var self = this;
-      var indexArray = options.index;
-      var indexName = self._name + indexArray.toString().replace(",", "").replace(".","");
+      var indexName = self._name + self._index.toString().replace(",", "").replace(".","");
       var indexSyntax = {
         index: {
-          fields: indexArray,
+          fields: self._index,
           name: indexName
         }
       };
       // createIndex if using the find plugin
-      if (self._db.createIndex) {
-        return self._db.createIndex(indexSyntax).then(function () {
-          return Promise.resolve();
-        });
-      } else {
-        return Promise.resolve();
-      }
+      return self._db.createIndex(indexSyntax);
     }
   };
 
@@ -296,17 +293,10 @@ define(["../PersistenceStore", "../impl/storageUtils", "pouchdb", "./logger"],
         return Promise.resolve();
       });
     } else {
-      return self._db.allDocs({include_docs: true}).then(function (result) {
-        if (result && result.rows && result.rows.length) {
-          var promises = result.rows.map(function (element) {
-            this._db.remove(element.doc);
-          }, self);
-          return Promise.all(promises);
-        } else {
-          return Promise.resolve();
-        }
-      }).then(function () {
-        return Promise.resolve();
+      return self._db.destroy().then(function () {
+        var dbname = self._name + self._version;
+        self._db = new PouchDB(dbname);
+        return self._createIndex();
       });
     }
   };

@@ -145,7 +145,8 @@
         
         // For mobile and tablet portrait, overlays and notification take almost full screen width
         //  Set it at 100% and consider a 10px margin either side.
-        .oj-messages-container:not(.oj-messages-inline) {
+        .oj-messages-general,
+        .oj-messages-notification {
           width: calc(100% - 20px);
           max-width: initial;
           min-width: initial;

@@ -7,7 +7,55 @@
 define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojdnd', 'ojs/ojanimation'],
        function(oj, $)
 {
+ 
 
+var __oj_masonry_layout_metadata = 
+{
+  "properties": {
+    "reorderHandle": {
+      "type": "string"
+    },
+    "translations": {
+      "type": "object",
+      "value": {},
+      "properties": {
+        "labelCut": {
+          "type": "string"
+        },
+        "labelPasteAfter": {
+          "type": "string"
+        },
+        "labelPasteBefore": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "methods": {
+    "refresh": {},
+    "resizeTile": {},
+    "insertTile": {},
+    "removeTile": {},
+    "setProperty": {},
+    "getProperty": {},
+    "setProperties": {},
+    "getNodeBySubId": {},
+    "getSubIdByNode": {}
+  },
+  "events": {
+    "ojAnimateStart": {},
+    "ojAnimateEnd": {},
+    "ojBeforeInsert": {},
+    "ojInsert": {},
+    "ojBeforeRemove": {},
+    "ojRemove": {},
+    "ojBeforeResize": {},
+    "ojResize": {},
+    "ojBeforeReorder": {},
+    "ojReorder": {}
+  },
+  "extension": {}
+};
 /**
  * Copyright (c) 2014, 2015, Oracle and/or its affiliates.
  * All rights reserved.
@@ -4813,52 +4861,11 @@ var _PX        = "px",
 // end static members and functions ////////////////////////////////////////////
 
 }()); // end of MasonryLayout wrapper function
-(function() {
-var ojMasonryLayoutMeta = {
-  "properties": {
-    "reorderHandle": {
-      "type": "string"
-    },
-    "translations": {
-      "type": "Object",
-      "properties": {
-        "labelCut": {
-          "type": "string",
-          "value": "Cut"
-        },
-        "labelPasteAfter": {
-          "type": "string",
-          "value": "Paste After"
-        },
-        "labelPasteBefore": {
-          "type": "string",
-          "value": "Paste Before"
-        }
-      }
-    }
-  },
-  "methods": {
-    "insertTile": {},
-    "removeTile": {},
-    "resizeTile": {}
-  },
-  "events": {
-    "animateEnd": {},
-    "animateStart": {},
-    "beforeInsert": {},
-    "beforeRemove": {},
-    "beforeReorder": {},
-    "beforeResize": {},
-    "insert": {},
-    "remove": {},
-    "reorder": {},
-    "resize": {},
-  },
-  "extension": {
-    _WIDGET_NAME: "ojMasonryLayout"
-  }
-};
-oj.CustomElementBridge.registerMetadata('oj-masonry-layout', 'baseComponent', ojMasonryLayoutMeta);
-oj.CustomElementBridge.register('oj-masonry-layout', {'metadata': oj.CustomElementBridge.getMetadata('oj-masonry-layout')});
-})();
+/* global __oj_masonry_layout_metadata:false */
+(function () {
+  __oj_masonry_layout_metadata.extension._WIDGET_NAME = 'ojMasonryLayout';
+  oj.CustomElementBridge.registerMetadata('oj-masonry-layout', 'baseComponent', __oj_masonry_layout_metadata);
+  oj.CustomElementBridge.register('oj-masonry-layout', { metadata: oj.CustomElementBridge.getMetadata('oj-masonry-layout') });
+}());
+
 });

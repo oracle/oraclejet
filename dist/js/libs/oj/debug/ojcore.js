@@ -45,12 +45,12 @@ var oj = _scope['oj'] =
    * @global
    * @member {string} version JET version numberr
    */
-  'version': "5.1.0",
+  'version': "5.2.0",
   /**
    * @global
    * @member {string} revision JET source code revision number
    */
-  'revision': "2018-06-06_15-03-03",
+  'revision': "2018-08-09_18-00-40",
           
   // This function is only meant to be used outside the library, so quoting the name
   // to avoid renaming is appropriate
@@ -1908,7 +1908,9 @@ oj.Config.setLocale = function(locale, callback)
       }
     }
     
-    require(requestedBundles,
+    require(
+      /* ojWebpackError: 'oj.Config.setLocale() is not supported when the ojs/ojcore module has been bundled by Webpack' */
+      requestedBundles,
       function(translations, localeElements)
       {
         ojt = translations;
@@ -1967,20 +1969,12 @@ oj.Config.getResourceUrl = function(relativePath)
   
   base = oj.Config._resourceBaseUrl;
   
-  if (base)
-  {
-    return base + (base.charAt(base.length-1) == '/' ? "" : '/') + relativePath;
+  if (base == null) {
+    base = oj.Config._getOjBaseUrl() || "";
   }
   
-  if (oj.__isAmdLoaderPresent())
-  {
-    // : use ojs/_foo_ instead of ojs/ojcore to handle the case when ojs.core ends up in a partition bundle
-    // in a different location
-    modulePath = require.toUrl("ojs/_foo_");
-    return modulePath.replace(/[^\/]*$/, "../" + relativePath);
-  }
-  
-  return relativePath;
+  var len = base.length;
+  return base + (len === 0 || base.charAt(len-1) == '/' ? "" : '/') + relativePath;
 };
 
 /**
@@ -2079,6 +2073,25 @@ oj.Config.logVersionInfo = function()
 {
     console.log(oj.Config.getVersionInfo());
 };
+
+/**
+ * This method gets replaced by JET's Webpack plugin to return the value provided as baseResourceUrl in the
+ * config for the plugin
+ * @private
+ * @ignore
+ */
+oj.Config._getOjBaseUrl = function() 
+{
+  var base = null;
+  if (oj.__isAmdLoaderPresent())
+  {
+    // : use ojs/_foo_ instead of ojs/ojcore to handle the case when ojs.core ends up in a partition bundle
+    // in a different location
+    var modulePath = require.toUrl("ojs/_foo_");
+    base = modulePath.replace(/[^\/]*$/, "../");
+  }
+  return base;
+}
 
 /**
  * Retrives JET's template engine for dealing with inline templates (currently internal only)

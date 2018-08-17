@@ -11,7 +11,262 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'ojs/ojvalidation-number'
         */
        function(oj, $)
 {
-
+//%COMPONENT_METADATA%
+var __oj_input_number_metadata = 
+{
+  "properties": {
+    "asyncValidators": {
+      "type": "Array<Object>",
+      "value": []
+    },
+    "autocomplete": {
+      "type": "string",
+      "value": "on",
+      "extension": {
+        "_COPY_TO_INNER_ELEM": true
+      }
+    },
+    "autofocus": {
+      "type": "boolean",
+      "value": false,
+      "extension": {
+        "_COPY_TO_INNER_ELEM": true
+      }
+    },
+    "converter": {
+      "type": "object",
+      "value": "oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_NUMBER).createConverter()",
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "options": {
+          "type": "object"
+        }
+      }
+    },
+    "describedBy": {
+      "type": "string"
+    },
+    "disabled": {
+      "type": "boolean",
+      "value": false
+    },
+    "displayOptions": {
+      "type": "object",
+      "properties": {
+        "converterHint": {
+          "type": "Array<string>|string",
+          "value": [
+            "placeholder",
+            "notewindow"
+          ]
+        },
+        "helpInstruction": {
+          "type": "Array<string>|string",
+          "value": [
+            "notewindow"
+          ]
+        },
+        "messages": {
+          "type": "Array<string>|string",
+          "value": [
+            "inline"
+          ]
+        },
+        "validatorHint": {
+          "type": "Array<string>|string",
+          "value": [
+            "notewindow"
+          ]
+        }
+      }
+    },
+    "help": {
+      "type": "object",
+      "properties": {
+        "instruction": {
+          "type": "string"
+        }
+      }
+    },
+    "helpHints": {
+      "type": "object",
+      "properties": {
+        "definition": {
+          "type": "string",
+          "value": ""
+        },
+        "source": {
+          "type": "string",
+          "value": ""
+        }
+      }
+    },
+    "labelHint": {
+      "type": "string",
+      "value": ""
+    },
+    "max": {
+      "type": "number"
+    },
+    "messagesCustom": {
+      "type": "Array<Object>",
+      "writeback": true,
+      "value": []
+    },
+    "min": {
+      "type": "number"
+    },
+    "name": {
+      "type": "string",
+      "value": "",
+      "extension": {
+        "_COPY_TO_INNER_ELEM": true
+      }
+    },
+    "placeholder": {
+      "type": "string",
+      "value": ""
+    },
+    "rawValue": {
+      "type": "string",
+      "writeback": true,
+      "readOnly": true
+    },
+    "readonly": {
+      "type": "boolean",
+      "value": false
+    },
+    "required": {
+      "type": "boolean",
+      "value": false
+    },
+    "step": {
+      "type": "number",
+      "value": 1
+    },
+    "translations": {
+      "type": "object",
+      "value": {},
+      "properties": {
+        "numberRange": {
+          "type": "object",
+          "properties": {
+            "hint": {
+              "type": "object",
+              "properties": {
+                "exact": {
+                  "type": "string"
+                },
+                "inRange": {
+                  "type": "string"
+                },
+                "max": {
+                  "type": "string"
+                },
+                "min": {
+                  "type": "string"
+                }
+              }
+            },
+            "messageDetail": {
+              "type": "object",
+              "properties": {
+                "exact": {
+                  "type": "string"
+                },
+                "rangeOverflow": {
+                  "type": "string"
+                },
+                "rangeUnderflow": {
+                  "type": "string"
+                }
+              }
+            },
+            "messageSummary": {
+              "type": "object",
+              "properties": {
+                "rangeOverflow": {
+                  "type": "string"
+                },
+                "rangeUnderflow": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "required": {
+          "type": "object",
+          "properties": {
+            "hint": {
+              "type": "string"
+            },
+            "messageDetail": {
+              "type": "string"
+            },
+            "messageSummary": {
+              "type": "string"
+            }
+          }
+        },
+        "tooltipDecrement": {
+          "type": "string"
+        },
+        "tooltipIncrement": {
+          "type": "string"
+        }
+      }
+    },
+    "valid": {
+      "type": "string",
+      "writeback": true,
+      "enumValues": [
+        "invalidHidden",
+        "invalidShown",
+        "pending",
+        "valid"
+      ],
+      "readOnly": true
+    },
+    "validators": {
+      "type": "Array<Object>",
+      "value": []
+    },
+    "value": {
+      "type": "number",
+      "writeback": true
+    },
+    "virtualKeyboard": {
+      "type": "string",
+      "enumValues": [
+        "auto",
+        "number",
+        "text"
+      ],
+      "value": "auto"
+    }
+  },
+  "methods": {
+    "refresh": {},
+    "stepDown": {},
+    "stepUp": {},
+    "validate": {},
+    "reset": {},
+    "showMessages": {},
+    "setProperty": {},
+    "getProperty": {},
+    "setProperties": {},
+    "getNodeBySubId": {},
+    "getSubIdByNode": {}
+  },
+  "events": {
+    "ojAnimateStart": {},
+    "ojAnimateEnd": {}
+  },
+  "extension": {}
+};
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
@@ -145,7 +400,120 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
 
   options:
   {
-    /** 
+      /**
+       * List of asynchronous validators used by the component when performing validation.
+       * Use <code class="prettyprint">async-validators</code> when you need to
+       * perform some validation work on the server. Otherwise, use
+       * <code class="prettyprint">validators</code>, which are synchronous.
+       * <p>
+       * Each item in the Array is an instance that duck types {@link oj.AsyncValidator}.
+       * Implicit validators created by a component when certain attributes
+       * are present (e.g. <code class="prettyprint">required</code> attribute) are separate from
+       * validators specified through the <code class="prettyprint">async-validators</code>
+       * attribute and the <code class="prettyprint">validators</code> attribute.
+       * At runtime when the component runs validation, it
+       * combines the implicit validators with the list specified through the
+       * <code class="prettyprint">validators</code>
+       * attribute and also the list specified through the
+       * <code class="prettyprint">async-validators</code> attribute.
+       * Error messages are shown as soon as each async validator returns;
+       * we do not wait until all the async validators finish to show errors.
+       * If the component's valid state changes for the worse, it is also updated
+       * as each validator returns so valid will be invalidShown
+       * as soon as the first validator has an Error.
+       * </p>
+       * <p> It is recommended that you show the
+       * value you are validating in the error message because if the async operation takes a while,
+       * the user could be typing in a new value when the error message comes back
+       * and might be confused what value the error is for. However, if the user enters a new value
+       * (like presses Enter or Tab), a new validation lifecycle will start
+       * and validation errors for the previous value will not be shown to the user.
+       * If you need to format the value for the error message,
+       * you can use
+       * <code class="prettyprint">oj.IntlConverterUtils.getConverterInstance(converterOption)</code>
+       * to get the converter instance,
+       * then call <code class="prettyprint">converter.format(value)</code>.
+       * </p>
+       * <p>
+       * Hints exposed by async-validators and validators are shown in the notewindow by default,
+       * or as determined by the 'validatorHint' property set on the
+       * <code class="prettyprint">display-options</code> attribute.
+       * </p>
+       * <p>Since async validators are run asynchronously, you should wait on the BusyContext before
+       * you check valid property or the value property. Alternatively you can add a callback to
+       * the onValidChanged or ojValueChanged events.
+       * </p>
+       * <p>
+       * The steps performed always, running validation and clearing messages is the same as
+       * for the <code class="prettyprint">{@link oj.ojInputNumber#validators}</code> attribute.
+       * </p>
+       * <br/>
+       * @example <caption>Create an Object that duck-types the oj.AsyncValidator interface.
+       * Bind the Object to the JET form component's async-validators attribute. The
+       * validator's 'validate' method will be called when the user changes the input.</caption>
+       *  self.asyncValidator1 = {
+       *    // required validate method
+       *    'validate': function(value) {
+       *      return new Promise(function(resolve, reject) {
+       *        var successful = someBackendMethod();
+       *        if (successful) {
+       *          resolve(true);
+       *        } else {
+       *          reject(new Error('The amount of purchase is too high. It is ' + value));
+       *        }
+       *      });
+       *    },
+       *    // optional hint attribute. hint shows up when user sets focus to input.
+       *    'hint': new Promise(function (resolve, reject) {
+       *      var formattedMaxPurchase = getSomeBackendFormattedMaxPurchase();
+       *      resolve(maxPurchase + " is the maximum.");
+       *    });
+       *  };
+       *  -- HTML --
+       *  &lt;oj-input-number value="{{value}}"
+       *  async-validators="[[[asyncValidator1]]]">&lt;/oj-input-number>
+       * @example <caption>Initialize the component with multiple AsyncValidator
+       * duck-typed instances:</caption>
+       * -- HTML --
+       * &lt;oj-input-number id="asyncValKo1" data-oj-context
+                  valid="{{koAsyncValid}}" value="{{koAsyncValue}}"
+                  required validators="[[[checkfoo, checkfooey]]]"
+                  async-validators="[[[asyncValidator1, asyncValidator2]]]">&lt;/oj-input-number>
+       *
+       * @example <caption>Get or set the <code class="prettyprint">asyncValidators</code>
+       * property after initialization:</caption>
+       * // getter
+       * var validators = myComp.asyncValidators;
+       *
+       * // setter
+       * var myValidators = [{
+       * 'validate' : function(value) {
+       *   return new Promise(function(resolve, reject) {
+       *   // mock server-side delay
+       *   setTimeout(function () {
+       *     if (value === 100 || value === 1000) {
+       *       resolve(true);
+       *     } else {
+       *       reject(new Error("value isn't 100 or 1000. It is " + value.));
+       *     }
+       *   },10);
+       *   });
+       * }
+       * }];
+       * myComp.asyncValidators = myValidators;
+       *
+       * @expose
+       * @access public
+       * @instance
+       * @memberof oj.ojInputNumber
+       * @ojsignature  { target: "Type",
+       *       value: "Array<oj.AsyncValidator<number>>",
+       *       jsdocOverride: true}
+       * @type {Array.<Object>}
+       * @default []
+       */
+        asyncValidators: [],
+        /**
      * Dictates component's autocomplete state. 
      * This attribute indicates whether the value of the control can be automatically
      * completed by the browser. The common values are "on" and "off".
@@ -302,7 +670,8 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
      * @memberof oj.ojInputNumber
      * @ojsignature {
      *    target: "Type",
-     *    value: "oj.Converter<number>|oj.Validation.FactoryRegisteredValidatorOrConverter"}
+     *    value: "oj.Converter<number>|oj.Validation.RegisteredConverter",
+     *    jsdocOverride: true}
      * @type {Object}
      */
     converter: oj.Validation.converterFactory(
@@ -441,7 +810,7 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
      * @access public
      * @instance
      * @memberof oj.ojInputNumber
-     * @type {string|undefined}
+     * @type {string}
      * @ojsignature {target:"Type", value:"string"}
      * @since 1.2.0
      * @readonly
@@ -512,9 +881,9 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
      * 
      * </p>
      * 
-     * @ojvalue {boolean} false - implies a value is not required to be provided by the user. 
+     * This property set to <code class="prettyprint">false</code> implies that a value is not required to be provided by the user.
      * This is the default.
-     * @ojvalue {boolean} true - implies a value is required to be provided by user and the 
+     * This property set to <code class="prettyprint">true</code> implies that a value is required to be provided by user and the
      * input's label will render a required icon. Additionally a required validator - 
      * {@link oj.RequiredValidator} - is implicitly used if no explicit required validator is set. 
      * An explicit required validator can be set by page authors using the validators attribute. 
@@ -585,8 +954,8 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
      * */
     step: 1,
     /** 
-         * List of validators used by component along with the implicit component validators
-         * when performing validation. Each item is either an
+         * List of synchronous validators used by component along with asynchronous validators
+         * and the implicit component validators when performing validation. Each item is either an
      * instance that duck types {@link oj.Validator}, or is an Object literal containing the 
          * properties listed below.
      * <p>
@@ -597,8 +966,9 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
          * is set, an implicit {@link oj.NumberRangeValidator} is created.
          * At runtime when the component runs validation, it
          * combines all the implicit validators with all the validators 
-         * specified through this <code class="prettyprint">validators</code> attribute, and runs 
-         * all of them.
+         * specified through this <code class="prettyprint">validators</code> attribute
+         * and the <code class="prettyprint">async-validators</code> attribute, and
+         * runs all of them.
          * </p>
          * <p>
      * Hints exposed by validators are shown in the notewindow by default, or as determined by the 
@@ -613,7 +983,7 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
      * 
      * <h4>Steps Performed Always</h4>
      * <ul>
-     * <li>The cached list of validator instances are cleared and new validator hints is pushed to 
+         * <li>The cached list of validator instances are cleared and new validator hints are pushed to
      * messaging. E.g., notewindow displays the new hint(s).
      * </li>
      * </ul>
@@ -623,8 +993,9 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
      * <li>if component is valid when validators changes, component does nothing other than the 
      * steps it always performs.</li>
      * <li>if component is invalid and is showing messages when 
-     * <code class="prettyprint">validators</code> changes then all component messages are cleared 
-     * and full validation run using the display value on the component. 
+         * <code class="prettyprint">validators</code> or
+         * <code class="prettyprint">async-validators</code> changes then all component messages
+         *  are cleared and full validation run using the display value on the component.
      * <ul>
      *   <li>if there are validation errors, then <code class="prettyprint">value</code> 
      *   property is not updated and the error is shown. 
@@ -661,13 +1032,21 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
      *                     "messageDetail": "You must enter at least 3 letters or numbers"}}]'>
      * &lt;/oj-input-number>      
      * 
-     * 
-     * @example <caption>Initialize the component with multiple validator instances:</caption>
-     * var validator1 = new MyCustomValidator({'foo': 'A'}); 
-     * var validator2 = new MyCustomValidator({'foo': 'B'});
-     * var validators = [validator1,validator2];<br/>
+         * @example <caption>Initialize the component with a custom validator:</caption>
+         * // A custom validator whose validate method, ensures that the value is not 100.
+         * self.no100Validator = {
+         *   'validate' : function (value) {
+         *      value = value + "";
+         *      if (value === 100) {
+         *        throw new oj.ValidatorError("You cannot enter a value that is 100!!");
+         *      }
+         *      return true;
+         *    }
+         *  };
      * ...
-     * &lt;oj-input-number validators='[[validators]]'>
+         * HTML
+         * ----
+         * &lt;oj-input-number validators='[[[no100Validator,someOtherValidator]]]'>
      * &lt;/oj-input-number>      
      * 
      * @example <caption>Get or set the <code class="prettyprint">validators</code> property after initialization:</caption>
@@ -682,12 +1061,13 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
      * @instance
      * @memberof oj.ojInputNumber
      * @ojsignature  { target: "Type", 
-     *       value: "Array<oj.Validator<number>|oj.Validation.FactoryRegisteredValidatorOrConverter>|null",
+     *       value: "Array<oj.Validator<number>|oj.Validation.RegisteredValidator>",
      *       jsdocOverride: true}
-     * @type {Array.<Object>|undefined}
+     * @type {Array.<Object>}
+         * @default []
      */
-    
-    validators: undefined,    
+
+     validators: [],
     /**
      * The value of the component. Value must be a number or null.
      * 
@@ -783,13 +1163,13 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
     {
       subId = locator['subId'];
       if (subId === "oj-inputnumber-up") {
-        node = this.widget().find(".oj-inputnumber-up")[0];
+        node = this.widget()[0].querySelector(".oj-inputnumber-up");
       }
       if (subId === "oj-inputnumber-down") {
-        node = this.widget().find(".oj-inputnumber-down")[0];
+        node = this.widget()[0].querySelector(".oj-inputnumber-down");
       }
       if (subId === "oj-inputnumber-input") {
-        node = this.widget().find(".oj-inputnumber-input")[0];
+        node = this.widget()[0].querySelector(".oj-inputnumber-input");
       }
     }
     // Non-null locators have to be handled by the component subclasses
@@ -801,15 +1181,15 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
 
     if (node != null)
     {
-      if(node === this.widget().find(".oj-inputnumber-up")[0])
+      if(node === this.widget()[0].querySelector(".oj-inputnumber-up"))
       {
         subId = {'subId': "oj-inputnumber-up"};
       }
-      else if(node === this.widget().find(".oj-inputnumber-down")[0])
+      else if(node === this.widget()[0].querySelector(".oj-inputnumber-down"))
       {
         subId = {'subId': "oj-inputnumber-down"};
       }
-      else if(node === this.widget().find(".oj-inputnumber-input")[0])
+      else if(node === this.widget()[0].querySelector(".oj-inputnumber-input"))
       {
         subId = {'subId': "oj-inputnumber-input"};
       }
@@ -888,7 +1268,7 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
    */
   widget: function()
   {
-    return this.uiInputNumber;
+    return $(this.uiInputNumber);
   },
 
   // P R O T E C T E D    C O N S T A N T S   A N D   M E T H O D S
@@ -1016,7 +1396,7 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
     // like keydown will update the value and update the buttons.
     this._on(this._events);
     
-    this._focusable( this.uiInputNumber );
+    this._focusable( $(this.uiInputNumber) );
   },
   /**
    * Performs post processing after _SetOption() is called. Different options when changed perform
@@ -1048,8 +1428,11 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
       case "validators":
         this._AfterSetOptionValidators(option);
         break;
-      case "converter":
-        this._AfterSetOptionConverter(option);
+          case 'asyncValidators':
+            this._AfterSetOptionAsyncValidators(option);
+            break;
+          case 'converter':
+            this._AfterSetOptionConverter(option);
         break;           
       case "virtualKeyboard":
         this._SetInputType(this._ALLOWED_TYPES);
@@ -1117,7 +1500,7 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
     {
       // value option can be updated directly (i.e., programmatically or through user interaction) 
       // or updated indirectly as a result of some other option changing - e.g., converter, 
-      // validators, required etc. See _updateValue() method for details.
+          // validators, required etc. See _updateValueAsync() method for details.
       // When value changes directly due to programatic intervention (usually page author does this) 
       // then update this.initialValue.
       if (!doNotClearMessages) 
@@ -1186,7 +1569,24 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
    * @protected
    */
   _AfterSetOptionValidators : oj.EditableValueUtils._AfterSetOptionValidators,
-  /**
+        /**
+        * When async-validators attribute changes, take the following steps.
+        *
+        * - Clear the cached normalized list of all validator instances. push new hints to messaging.<br/>
+        * - if component is valid -> validators changes -> no change<br/>
+        * - if component is invalid has messagesShown -> validators changes -> clear all component
+        * messages and re-run full validation on displayValue. if there are no errors push value to
+        * model;<br/>
+        * - if component is invalid has messagesHidden -> validators changes -> do nothing; doesn't change
+        * the required-ness of component <br/>
+        * - messagesCustom is not cleared.<br/>
+        * @memberof oj.ojInputNumber
+        * @instance
+        * @protected
+        */
+      _AfterSetOptionAsyncValidators:
+        oj.EditableValueUtils._AfterSetOptionAsyncValidators,
+      /**
    * Performs post processing after converter option changes by taking the following steps.
    * 
    * - always push new converter hint to messaging <br/>
@@ -1242,8 +1642,17 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
    * @protected
    */
   _GetNormalizedValidatorsFromOption : oj.EditableValueUtils._GetNormalizedValidatorsFromOption,
-  
-  /**
+       /**
+       * This returns an array of all async validators
+       * normalized from the async-validators attribute set on the component. <br/>
+       * @return {Array} of validators.
+       * @memberof oj.ojInputNumber
+       * @instance
+       * @protected
+       */
+      _GetNormalizedAsyncValidatorsFromOption:
+        oj.EditableValueUtils._GetNormalizedAsyncValidatorsFromOption,
+      /**
    * Called to find out if aria-required is unsupported.
    * @memberof oj.ojInputNumber
    * @instance
@@ -1282,7 +1691,7 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
 
 
     // the superclass calls _Refresh. Our _Refresh calls _updateButtons
-    // and _refreshAriaMinMaxValue.
+        // and refreshes aria-valuenow/valuetext/valuemin/valuemax
     // call _super with the newly coerced 'value' property.
     this._super(key, coercedValue, flags);
 
@@ -1300,13 +1709,22 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
     if (key === "disabled")
     {
       // force it to be a boolean. this is what/how ojbutton, EditableValue does.
-      this.element.prop("disabled", !!value);
+      this.element[0].disabled = !!value;
     }
     // when a dom element supports readonly, use that, and not aria-readonly.
     // having both is an error
     if (key === "readOnly")
     {
-      this.element.prop("readonly", !!value);
+      var readOnly = !!value;
+
+      // Create the buttonset if readOnly is false and there is no buttonset
+      if (!readOnly && this.buttonSet == null) {
+        var valuenow = this._getConvertedDisplayValue();
+        this._createOjButtonset();
+        this._updateButtons(valuenow);
+      }
+
+      this.element[0].readOnly = readOnly;
       this._refreshStateTheming("readOnly", this.options.readOnly);
       this._refreshRoleSpinbutton("readOnly", this.options.readOnly);
     }
@@ -1323,15 +1741,17 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
     var ret = this._super();
 
     // destroy the buttonset
-    this.buttonSet.ojButtonset("destroy");
-    this.buttonSet.remove();
-    this.upButton = null;
-    this.downButton = null;
-    this.buttonSet = null;
+    if (this.buttonSet) {
+      this.buttonSet.ojButtonset("destroy");
+      this.buttonSet.remove();
+      this.upButton = null;
+      this.downButton = null;
+      this.buttonSet = null;
+    }
     this.initialValue = null;
 
     //  - DomUtils.unwrap() will avoid unwrapping if the node is being destroyed by Knockout
-    oj.DomUtils.unwrap(this.element, this.uiInputNumber);
+    oj.DomUtils.unwrap(this.element, $(this.uiInputNumber));
     clearTimeout(this.timer);
     return ret;
   },
@@ -1498,7 +1918,7 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
     {
       this._start();
       
-      this._repeat(null, $(event.currentTarget).hasClass("oj-inputnumber-up") ? 1 : -1, event);
+      this._repeat(null, event.currentTarget.classList.contains("oj-inputnumber-up") ? 1 : -1, event);
     },
     "touchend .oj-inputnumber-button": function(event)
     {
@@ -1514,7 +1934,7 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
       {
         this._start();
 
-        this._repeat(null, $(event.currentTarget).hasClass("oj-inputnumber-up") ? 1 : -1, event);
+        this._repeat(null, event.currentTarget.classList.contains("oj-inputnumber-up") ? 1 : -1, event);
       }
     },
     "mouseup .oj-inputnumber-button": function(event)
@@ -1527,7 +1947,7 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
     "mouseenter .oj-inputnumber-button.oj-enabled": function(event)
     {
       // button will add oj-active if mouse was down while mouseleave and kept down
-      if (!$(event.currentTarget).hasClass("oj-active"))
+      if (!event.currentTarget.classList.contains("oj-active"))
       {
         return;
       }
@@ -1535,7 +1955,7 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
       {
         this._start();
 
-        this._repeat(null, $(event.currentTarget).hasClass("oj-inputnumber-up") ? 1 : -1, event);
+        this._repeat(null, event.currentTarget.classList.contains("oj-inputnumber-up") ? 1 : -1, event);
       }
     },
     // TODO: do we really want to consider this a stop?
@@ -1581,26 +2001,28 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
    */
   _setup: function()
   {
-
-    // add/update translated strings to buttons
-    var incrementString =
-            this.getTranslatedString(this._BUNDLE_KEY._TOOLTIP_INCREMENT);
-    var decrementString =
-            this.getTranslatedString(this._BUNDLE_KEY._TOOLTIP_DECREMENT);
+    if (this.options.readOnly !== true) {
+      // add/update translated strings to buttons
+      var incrementString =
+              this.getTranslatedString(this._BUNDLE_KEY._TOOLTIP_INCREMENT);
+      var decrementString =
+              this.getTranslatedString(this._BUNDLE_KEY._TOOLTIP_DECREMENT);
+      this.upButton.ojButton({label: incrementString});
+      this.downButton.ojButton({label: decrementString});
+    }
     var valuenow = this._getConvertedDisplayValue();
-    this.upButton.ojButton({label: incrementString});
-    this.downButton.ojButton({label: decrementString});
     this._refreshAriaMinMaxValue(valuenow);
     this._updateButtons(valuenow);
     // update element DOM for readOnly
     if (typeof this.options['readOnly'] === "boolean")
     {
-      this.element.prop("readonly", this.options['readOnly']);
+      this.element[0].readOnly = this.options['readOnly'];
     }
     this._refreshStateTheming("readOnly", this.options.readOnly);
     this._refreshRoleSpinbutton("readOnly", this.options.readOnly);
     
     this._refreshRequired(this.options['required']);
+        // aria-valuenow/valuetext/valuemin/valuemax and updateButtons are updated via _Refresh(value);
   },
   // Mark internal JET components for automation support. The automation
   // support needs to know while traversing the nodes that the JET button/buttonset 
@@ -1611,23 +2033,36 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
    */
   _markInternalComponents: function ()
   {
-     this.upButton.attr('data-oj-internal', '');
-     this.downButton.attr('data-oj-internal', '');
-     this.buttonSet.attr('data-oj-internal', '');
+     this.upButton[0].setAttribute('data-oj-internal', '');
+     this.downButton[0].setAttribute('data-oj-internal', '');
+     this.buttonSet[0].setAttribute('data-oj-internal', '');
   },
   /**
    * @private
    * @memberof oj.ojInputNumber
    */
-  _createOjButtonset: function()
-  {
-    var $upButton = this.uiInputNumber.find(".oj-inputnumber-up");
-    var $downButton = this.uiInputNumber.find(".oj-inputnumber-down");
-    var buttonsetDiv = $upButton[0].parentNode;
-    this.upButton = $upButton.ojButton({display: 'icons',
-      icons: {start: 'oj-component-icon oj-inputnumber-up-icon'}})
-    this.downButton = $downButton.ojButton({display: 'icons',
-      icons: {start: 'oj-component-icon oj-inputnumber-down-icon'}})
+  _createOjButtonset: function () {
+    var buttonSetObj = this._createButtonset();
+    this.inputNumberWrapper.appendChild(buttonSetObj.buttonSet); // @HTMLUpdateOK
+
+    // As the buttons are not in the keyboard sequence at first
+    // we decided it makes sense to add aria-hidden="true" to them
+    // and rely on the up/down arrow keys. However, now we decided to remove aria-hidden because
+    // in voiceover there is no way to access the up/down buttons otherwise.
+    // Still, voiceover is broken due to this webkit bug
+    //  - ios: input number doesn't support vo because of webkit bug
+    var buttons = this.uiInputNumber.querySelectorAll('.oj-inputnumber-button');
+    for (var i = 0, len = buttons ? buttons.length : 0; i < len; i++) {
+      buttons[i].setAttribute('tabIndex', '-1');
+    }
+
+    var buttonsetDiv = buttonSetObj.upButton.parentNode;
+    this.upButton = $(buttonSetObj.upButton).ojButton({ display: 'icons',
+      label: this.getTranslatedString(this._BUNDLE_KEY._TOOLTIP_INCREMENT),
+      icons: {start: 'oj-component-icon oj-inputnumber-up-icon'}});
+    this.downButton = $(buttonSetObj.downButton).ojButton({ display: 'icons',
+      label: this.getTranslatedString(this._BUNDLE_KEY._TOOLTIP_DECREMENT),
+      icons: {start: 'oj-component-icon oj-inputnumber-down-icon'}});
     this.buttonSet = $(buttonsetDiv).ojButtonset({focusManagement: 'none'});
     this._markInternalComponents();
   },
@@ -1637,46 +2072,49 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
    */
   _draw: function()
   {
-    var element = this.element;
+    var element = this.element[0];
     var widgetId;
     
-    this.uiInputNumber = element.addClass("oj-inputnumber-input")         
-            .wrap(this._uiInputNumberHtml()).parent() // @HTMLUpdateOK
-            // add buttons          
-            .append(this._buttonHtml()); // @HTMLUpdateOK
+    element.classList.add('oj-inputnumber-input');
+    var spanElem = document.createElement('span');
+    spanElem.className = 'oj-inputnumber-wrapper';
+    element.parentNode.insertBefore(spanElem, element); // @HTMLUpdateOK
+    spanElem.appendChild(element); // @HTMLUpdateOK
+    this.inputNumberWrapper = spanElem;
+    this.uiInputNumber = spanElem;
+
     if (this.OuterWrapper) 
     {
-      this.uiInputNumber = $(this.OuterWrapper).append(this.uiInputNumber); // @HTMLUpdateOK
-      this.uiInputNumber.addClass("oj-inputnumber oj-component");
+      this.OuterWrapper.appendChild(spanElem); // @HTMLUpdateOK
+      this.uiInputNumber = this.OuterWrapper;
+      this.uiInputNumber.classList.add('oj-inputnumber');
+      this.uiInputNumber.classList.add('oj-component');
     }
     else 
     {
-      this.uiInputNumber = this.uiInputNumber.wrap("<div class='oj-inputnumber oj-component'></div>").parent(); // @HTMLUpdateOK
+      var divElem = document.createElement('div');
+      divElem.className = 'oj-inputnumber oj-component';
+      spanElem.parentNode.insertBefore(divElem, spanElem); // @HTMLUpdateOK
+      divElem.appendChild(spanElem); // @HTMLUpdateOK
+      this.uiInputNumber = divElem;
     }
     
     if (this._IsCustomElement())
     {
       // if it is a custom element, then set the sub-id on the input so if they have a oj-label
       // pointing to it with the 'for' attrbiute, JAWS will read the label.
-      widgetId = this.widget().attr("id");
+      widgetId = this.widget()[0].getAttribute("id");
       if (widgetId)
         oj.EditableValueUtils.setSubIdForCustomLabelFor(this._GetContentElement()[0], widgetId);
     }
     //
     // TODO: need to save off attributes and reset on destroy generically.
-    this.saveType = element.prop("type");
+    this.saveType = element.type;
     this._SetInputType(this._ALLOWED_TYPES);
 
-
-    // As the buttons are not in the keyboard sequence at first
-    // we decided it makes sense to add aria-hidden="true" to them
-    // and rely on the up/down arrow keys. However, now we decided to remove aria-hidden because
-    // in voiceover there is no way to access the up/down buttons otherwise.
-    // Still, voiceover is broken due to this webkit bug
-    //  - ios: input number doesn't support vo because of webkit bug 
-    this.uiInputNumber.find(".oj-inputnumber-button")
-        .attr("tabIndex", "-1");
-    this._createOjButtonset();
+    if (this.options.readOnly !== true) {
+      this._createOjButtonset();
+    }
 
   },
   /**
@@ -1717,11 +2155,21 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
    * @private
    * @memberof oj.ojInputNumber
    */
-  _buttonHtml: function()
-  {
-    return "<div class='oj-buttonset-width-auto'>" +
-      "<button type='button' class='oj-inputnumber-button oj-inputnumber-down'></button>" +
-      "<button type='button' class='oj-inputnumber-button oj-inputnumber-up'></button></div>";
+  _createButtonset: function () {
+    var buttonSet = document.createElement('div');
+    buttonSet.className = 'oj-buttonset-width-auto';
+
+    var downButton = document.createElement('button');
+    downButton.setAttribute('type', 'button');
+    downButton.className = 'oj-inputnumber-button oj-inputnumber-down';
+    buttonSet.appendChild(downButton);
+
+    var upButton = document.createElement('button');
+    upButton.setAttribute('type', 'button');
+    upButton.className = 'oj-inputnumber-button oj-inputnumber-up';
+    buttonSet.appendChild(upButton);
+
+    return { buttonSet: buttonSet, downButton: downButton, upButton: upButton };
   },
   /**
    * @private
@@ -1747,12 +2195,12 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
     // we do a quick css check to see if it is disabled.
     if (steps > 0)
     {
-      if (this.upButton.hasClass("oj-disabled"))
+      if (this.upButton[0].classList.contains("oj-disabled"))
         stopRepeat = true;
     }
     else
     {
-      if (this.downButton.hasClass("oj-disabled"))
+      if (this.downButton[0].classList.contains("oj-disabled"))
         stopRepeat = true;
     }
     // repeat spinning as long as the key is down and min/max isn't reached
@@ -1774,6 +2222,9 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
     this._spin(steps * this.options.step, event);
   },
   /**
+       * This gets called when the user clicks the up/down buttons or the up/down arrows
+       * on the keyboard, or the app dev calls stepUp/stepDown. We need to get the current
+       * value, convert it to a number, update it by the step, then validate the new value.
    * @private
    * @memberof oj.ojInputNumber
    * @param {Number} step - Number of steps to increment.
@@ -2049,8 +2500,8 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
 
     // to prevent the overhead of disabling a button that is already disabled, check to see
     // if it is already disabled already.
-    downButtonDisabledAlready = downButton.hasClass("oj-disabled");
-    upButtonDisabledAlready = upButton.hasClass("oj-disabled");
+    downButtonDisabledAlready = downButton[0].classList.contains("oj-disabled");
+    upButtonDisabledAlready = upButton[0].classList.contains("oj-disabled");
       
     if (options.disabled || valuenow === undefined || 
        (isMaxOptNonNull && isMinOptNonNull && maxOpt === minOpt && valuenow === maxOpt))
@@ -2135,6 +2586,7 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
     valuenow = this._getConvertedDisplayValue();
     this._refreshAriaMinMaxValue(valuenow);
     this._updateButtons(valuenow);
+        // run full validation
     // _SetValue triggers valuechange event
     this._SetValue(val, event);
   },
@@ -2295,7 +2747,11 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
     if (Object.keys(this._OPTION_TO_CSS_MAPPING).indexOf(option) != -1)
     {
       // value is a boolean
-      this.widget().toggleClass(this._OPTION_TO_CSS_MAPPING[option], !!value);
+      if (value) {
+        this.widget()[0].classList.add(this._OPTION_TO_CSS_MAPPING[option]);
+      } else {
+        this.widget()[0].classList.remove(this._OPTION_TO_CSS_MAPPING[option]);
+      }
     }
   },
   /**
@@ -2313,9 +2769,9 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
     // if readonly is true, remove role spinbutton
     // if readonly is false, add role spinbutton
     if (readOnly)
-      this.element.removeAttr("role");
+      this.element[0].removeAttribute("role");
     else
-      this.element.attr("role", "spinbutton");
+      this.element[0].setAttribute("role", "spinbutton");
   },
   /* updates the aria-value information */
   /**
@@ -2324,13 +2780,9 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
    */
   _refreshAriaMinMaxValue: function(valuenow)
   {
-    var element = this.element;
-
-    element.attr(
-            {
-              "aria-valuemin": this.options.min, "aria-valuemax": this.options.max,
-              "aria-valuenow": valuenow
-            });
+    this._setAttr('aria-valuemin', this.options.min);
+    this._setAttr('aria-valuemax', this.options.max);
+    this._setAttr('aria-valuenow', valuenow);
     this._refreshAriaText(valuenow);
   },
   /* updates the aria-text if needed */
@@ -2343,8 +2795,31 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
     var element = this.element;
     var valuetext = element.val();
 
-    if (!this._CompareOptionValues("value", "" + valuenow, valuetext))
-      element.attr({"aria-valuetext": valuetext});
+    if (valuetext !== '' && !this._CompareOptionValues('value', '' + valuenow, valuetext)) 
+    {
+      this._setAttr('aria-valuetext', valuetext);
+    } 
+    else 
+    {
+      this._setAttr('aria-valuetext', null);
+    }
+  },
+  /**
+   * Set an element attribute using jQuery logic.
+   * This allows easy replacement of jQuery attr() calls.
+   * @param {string} attrName the attribute to set
+   * @param {any} value the attribute value
+       * @private
+       * @memberof oj.ojInputNumber
+   */
+  _setAttr: function (attrName, value) {
+    if (value !== undefined) {
+      if (value === null) {
+        this.element[0].removeAttribute(attrName);
+      } else {
+        this.element[0].setAttribute(attrName, value);
+      }
+    }
   },
   /**
    * step the inputnumber value up or down
@@ -2378,6 +2853,15 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
    * @ignore
    */
   _ValidateReturnBoolean: oj.EditableValueUtils._ValidateReturnBoolean,
+
+      /**
+       * the validate method that returns a Promise
+       * @memberof oj.ojInputNumber
+       * @instance
+       * @protected
+       * @ignore
+       */
+      _ValidateReturnPromise: oj.EditableValueUtils._ValidateReturnPromise,
 
   // API doc for inherited methods with no JS in this file:
 
@@ -2438,65 +2922,71 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
      * @memberof oj.ojInputNumber
      */
 
-    /**
-     * <table class="keyboard-table">
-     *   <thead>
-     *     <tr>
-     *       <th>Target</th>
-     *       <th>Key</th>
-     *       <th>Action</th>
-     *     </tr>
-     *   </thead>
-     *   <tbody>
-     *     <tr>
-     *       <td rowspan="4">Input</td>
-     *       <td><kbd>Enter</kbd> or <kbd>Tab</kbd></td>
-     *       <td>Submit the value you typed in the input field.</td>
-     *     </tr>
-     *     <tr>
-     *       <td><kbd>Tab In</kbd></td>
-     *       <td>Set focus to input. If hints, help.instruction or messages exist in a notewindow,
-     *       pop up the notewindow.</td>
-     *     </tr>
-     *     <tr>
-     *       <td><kbd>UpArrow</kbd></td>
-     *       <td>Increment the number.</td>
-     *     </tr>
-     *     <tr>
-     *       <td><kbd>DownArrow</kbd></td>
-     *       <td>Decrement the number.</td>
-     *     </tr>
-     *   </tbody>
-     * </table>
-     *
-     *
-     * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
-     * @memberof oj.ojInputNumber
-     */
-    /**
-     * {@ojinclude "name":"ojStylingDocIntro"}
-     * 
-     * <table class="generic-table styling-table">
-     *   <thead>
-     *     <tr>
-     *       <th>{@ojinclude "name":"ojStylingDocClassHeader"}</th>
-     *       <th>{@ojinclude "name":"ojStylingDocDescriptionHeader"}</th>
-     *     </tr>
-     *   </thead>
-     *   <tbody>
-     *     <tr>
-     *       <td>oj-form-control-text-align-right</td>
-     *       <td>Aligns the text to the right regardless of the reading direction,
-                 this is normally used for right aligning numbers 
-     *       </td>
-     *     </tr>
-     *   </tbody>
-     * </table>
-     *
-     * @ojfragment stylingDoc - Used in Styling section of classdesc, and standalone Styling doc
-     * @memberof oj.ojInputNumber
-     */
-});
+      /**
+       * <table class="keyboard-table">
+       *   <thead>
+       *     <tr>
+       *       <th>Target</th>
+       *       <th>Key</th>
+       *       <th>Action</th>
+       *     </tr>
+       *   </thead>
+       *   <tbody>
+       *     <tr>
+       *       <td rowspan="4">Input</td>
+       *       <td><kbd>Enter</kbd> or <kbd>Tab</kbd></td>
+       *       <td>Submit the value you typed in the input field.</td>
+       *     </tr>
+       *     <tr>
+       *       <td><kbd>Tab In</kbd></td>
+       *       <td>Set focus to input. If hints, help.instruction or messages exist in a notewindow,
+       *       pop up the notewindow.</td>
+       *     </tr>
+       *     <tr>
+       *       <td><kbd>UpArrow</kbd></td>
+       *       <td>Increment the number.</td>
+       *     </tr>
+       *     <tr>
+       *       <td><kbd>DownArrow</kbd></td>
+       *       <td>Decrement the number.</td>
+       *     </tr>
+       *   </tbody>
+       * </table>
+       *
+       *
+       * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
+       * @memberof oj.ojInputNumber
+       */
+      /**
+       * {@ojinclude "name":"ojStylingDocIntro"}
+       * <p>The form control text align style classes can be applied to the component, or an ancestor element. When
+       * applied to an ancestor element, all form components that support the text align style classes will be affected.
+       *
+       * <table class="generic-table styling-table">
+       *   <thead>
+       *     <tr>
+       *       <th>{@ojinclude "name":"ojStylingDocClassHeader"}</th>
+       *       <th>{@ojinclude "name":"ojStylingDocDescriptionHeader"}</th>
+       *     </tr>
+       *   </thead>
+       *   <tbody>
+       *     <tr>
+       *       <td>oj-form-control-text-align-right</td>
+       *       <td>Aligns the text to the right regardless of the reading direction.
+       *           This is normally used for right aligning numbers
+       *       </td>
+       *     </tr>
+       *     <tr>
+       *       <td>oj-form-control-text-align-start</td>
+       *       <td>Aligns the text to the left in ltr and to the right in rtl</td>
+       *     </tr>
+       *   </tbody>
+       * </table>
+       *
+       * @ojfragment stylingDoc - Used in Styling section of classdesc, and standalone Styling doc
+       * @memberof oj.ojInputNumber
+       */
+    });
 
 // -----------------------------------------------------------------------------
 // "private static members" shared by all inputNumbers
@@ -2533,152 +3023,15 @@ oj.__registerWidget("oj.ojInputNumber", $['oj']['editableValue'],
  * var node = myComp.getNodeBySubId('oj-inputnumber-input');
  */
 }() ); // end of inputNumber wrapper function
-(function() {
-var ojInputNumberMeta = {
-  "properties": {
-    "autocomplete": {
-      "type": "string",
-      "extension": {
-        _COPY_TO_INNER_ELEM: true
-      }
-    },
-    "autofocus": {
-      "type": "boolean",
-      "extension": {
-        _COPY_TO_INNER_ELEM: true
-      }
-    },
-    "converter": {
-      "type": "Object"
-    },
-    "max": {
-      "type": "number"
-    },
-    "min": {
-      "type": "number"
-    },
-    "name": {
-      "type": "string",
-      "extension": {
-        _COPY_TO_INNER_ELEM: true
-      }
-    },
-    "placeholder": {
-      "type": "string"
-    },
-    "rawValue": {
-      "type": "string",
-      "writeback": true,
-      "readOnly": true
-    },
-    "readonly": {
-      "type": "boolean"
-    },
-    "required": {
-      "type": "boolean"
-    },    
-    "step": {
-      "type": "number"
-    },
-    "translations": {
-      "type": "Object",
-      "properties": {
-        "numberRange": {
-          "type": "Object",
-          "properties": {
-            "hint": {
-              "type": "Object",
-              "properties": {
-                "exact": {
-                  "type": "string"
-                },
-                "inRange": {
-                  "type": "string"
-                },
-                "max": {
-                  "type": "string"
-                },
-                "min": {
-                  "type": "string"
-                }
-              }
-            },
-            "messageDetail": {
-              "type": "Object",
-              "properties": {
-                "exact": {
-                  "type": "string"
-                },
-                "rangeOverflow": {
-                  "type": "string"
-                },
-                "rangeUnderflow": {
-                  "type": "string"
-                }
-              }
-            },
-            "messageSummary": {
-              "type": "Object",
-              "properties": {
-                "rangeOverflow": {
-                  "type": "string"
-                },
-                "rangeUnderflow": {
-                  "type": "string"
-                }
-              }
-            }
-          }
-        },
-        "required": {
-          "type": "Object",
-          "properties": {
-            "hint": {
-              "type": "string"
-            },
-            "messageDetail": {
-              "type": "string"
-            },
-            "messageSummary": {
-              "type": "string"
-            }
-          }
-        },
-        "tooltipDecrement": {
-          "type": "string",
-          "value": "Decrement"
-        },
-        "tooltipIncrement": {
-          "type": "string",
-          "value": "Increment"
-        }
-      }
-    },
-    "validators": {
-      "type": "Array"
-    },
-    "value": {
-      "type": "number",
-      "writeback": true
-    },
-    "virtualKeyboard": {
-      "type": "string",
-      "enumValues": ["auto", "number", "text"]
-    }
-  },
-  "methods": {
-    "stepDown": {},
-    "stepUp": {},
-    "validate": {}
-  },
-  "extension": {
-    _ALIASED_PROPS: {"readonly": "readOnly"},
-    _INNER_ELEM: 'input',
-    _WIDGET_NAME: "ojInputNumber",
-    _GLOBAL_TRANSFER_ATTRS: ["accesskey", "aria-label", "tabindex"]
-  }
-};
-oj.CustomElementBridge.registerMetadata('oj-input-number', 'editableValue', ojInputNumberMeta);
-oj.CustomElementBridge.register('oj-input-number', {'metadata': oj.CustomElementBridge.getMetadata('oj-input-number')});
-})();
+/* global __oj_input_number_metadata:false */
+(function () {
+  __oj_input_number_metadata.extension._WIDGET_NAME = 'ojInputNumber';
+  __oj_input_number_metadata.extension._ALIASED_PROPS = { readonly: 'readOnly' };
+  __oj_input_number_metadata.extension._INNER_ELEM = 'input';
+  __oj_input_number_metadata.extension._GLOBAL_TRANSFER_ATTRS = ['accesskey', 'aria-label', 'tabindex'];
+
+  oj.CustomElementBridge.registerMetadata('oj-input-number', 'editableValue', __oj_input_number_metadata);
+  oj.CustomElementBridge.register('oj-input-number', { metadata: oj.CustomElementBridge.getMetadata('oj-input-number') });
+}());
+
 });

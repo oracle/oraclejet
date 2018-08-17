@@ -8,7 +8,162 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
         'ojs/ojpopupcore', 'ojs/ojanimation'], 
        function(oj, $)
 {
+ 
 
+var __oj_popup_metadata = 
+{
+  "properties": {
+    "autoDismiss": {
+      "type": "string",
+      "enumValues": [
+        "focusLoss",
+        "none"
+      ],
+      "value": "focusLoss"
+    },
+    "chrome": {
+      "type": "string",
+      "enumValues": [
+        "default",
+        "none"
+      ],
+      "value": "default"
+    },
+    "initialFocus": {
+      "type": "string",
+      "enumValues": [
+        "auto",
+        "firstFocusable",
+        "none",
+        "popup"
+      ],
+      "value": "auto"
+    },
+    "modality": {
+      "type": "string",
+      "enumValues": [
+        "modal",
+        "modeless"
+      ],
+      "value": "modeless"
+    },
+    "position": {
+      "type": "object",
+      "properties": {
+        "at": {
+          "type": "object",
+          "properties": {
+            "horizontal": {
+              "type": "string",
+              "enumValues": [
+                "center",
+                "end",
+                "left",
+                "right",
+                "start"
+              ],
+              "value": "start"
+            },
+            "vertical": {
+              "type": "string",
+              "enumValues": [
+                "bottom",
+                "center",
+                "top"
+              ],
+              "value": "top"
+            }
+          }
+        },
+        "collision": {
+          "type": "string",
+          "enumValues": [
+            "fit",
+            "flip",
+            "flipcenter",
+            "flipfit",
+            "none"
+          ],
+          "value": "flip"
+        },
+        "my": {
+          "type": "object",
+          "properties": {
+            "horizontal": {
+              "type": "string",
+              "enumValues": [
+                "center",
+                "end",
+                "left",
+                "right",
+                "start"
+              ],
+              "value": "start"
+            },
+            "vertical": {
+              "type": "string",
+              "enumValues": [
+                "bottom",
+                "center",
+                "top"
+              ],
+              "value": "top"
+            }
+          }
+        },
+        "of": {
+          "type": "string|object"
+        },
+        "offset": {
+          "type": "object",
+          "properties": {
+            "x": {
+              "type": "number",
+              "value": 0
+            },
+            "y": {
+              "type": "number",
+              "value": 0
+            }
+          }
+        }
+      }
+    },
+    "tail": {
+      "type": "string",
+      "enumValues": [
+        "none",
+        "simple"
+      ],
+      "value": "none"
+    },
+    "translations": {
+      "type": "object",
+      "value": {}
+    }
+  },
+  "methods": {
+    "open": {},
+    "close": {},
+    "isOpen": {},
+    "refresh": {},
+    "setProperty": {},
+    "getProperty": {},
+    "setProperties": {},
+    "getNodeBySubId": {},
+    "getSubIdByNode": {}
+  },
+  "events": {
+    "ojBeforeOpen": {},
+    "ojOpen": {},
+    "ojBeforeClose": {},
+    "ojClose": {},
+    "ojFocus": {},
+    "ojAnimateStart": {},
+    "ojAnimateEnd": {}
+  },
+  "extension": {}
+};
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
@@ -95,7 +250,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
    * <a href="https://developer.mozilla.org/en-US/docs/Web/API/UIEvent/pageX">pageX</a>,
    * <a href="https://developer.mozilla.org/en-US/docs/Web/API/UIEvent/pageY">pageY</a>.
    *
-   * @property {"flip"|"fit"|"flipfit"|"none"} [collision] Rule for alternate alignment. <p>
+   * @property {"flip"|"fit"|"flipfit"|"flipcenter"|"none"} [collision] Rule for alternate alignment. <p>
    * <ul>
    *  <li><b>"flip"</b> the element to the opposite side of the target and the
    *             collision detection is run again to see if it will fit. Whichever side
@@ -104,6 +259,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
    * <li><b>"flipfit"</b> first applies the flip logic, placing the element
    *  on whichever side allows more of the element to be visible. Then the fit logic
    *  is applied to ensure as much of the element is visible as possible.</li>
+   * <li><b>flipcenter</b> first applies the flip rule and follows with center alignment.</li>
    * <li><b>"none"</b> no collision detection.</li>
    * </ul>
    */
@@ -175,7 +331,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
    * <p>For WAI-ARIA compliance, JET automatically adds
    * <code class="prettyprint">role="tooltip"</code> to the root popup dom element if not
    * already specificed. This is not a component property but rather the standard html
-   * <a href="https://www.w3.org/TR/wai-aria/roles">role</a> attribute. Depending on how the
+   * <a href="https://www.w3.org/WAI/PF/aria/roles">role</a> attribute. Depending on how the
    * popup is used in the page, the page developer should choose from the following:
    * <ul>
    *   <li>"tooltip" defines contextual popup that displays a description for an element.</li>
@@ -392,7 +548,6 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
            * @memberof oj.ojPopup
            * @instance
            * @type {Object}
-           * @default {"my":{"vertical" :"start", "horizontal": "top"}, "at": {"vertical": "start", "horizontal": "bottom"}, "collision": "flip"}
            * @ojsignature { target: "Type",
            *                value: "oj.ojPopup.Position",
            *                jsdocOverride: true}
@@ -556,7 +711,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
                * @instance
                * @alias position.of
                * @name position.of
-               * @type {string|{x: number, y: number}| undefined}
+               * @type {string|{x: number, y: number}}
                */
               'of' : undefined,
               /**
@@ -576,6 +731,7 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
                * @ojvalue {string} "flipfit" first applies the flip logic, placing the element
                *  on whichever side allows more of the element to be visible. Then the fit logic
                *  is applied to ensure as much of the element is visible as possible.
+               * @ojvalue {string} "flipcenter" first applies the flip rule and follows with center alignment.
                * @ojvalue {string} "none" no collision detection.
                */
               'collision' : 'flip'
@@ -2383,98 +2539,11 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore',
    * @memberof oj.ojPopup
    */
 
+/* global __oj_popup_metadata:false */
 (function () {
-  var ojPopupMeta = {
-    "properties" : {
-      "autoDismiss" : {
-        "type" : "string",
-        "enumValues" : ["focusLoss", "none"]
-      },
-      "chrome" : {
-        "type" : "string",
-        "enumValues" : ["default", "none"]
-      },
-      "initialFocus" : {
-        "type" : "string",
-        "enumValues" : ["auto", "none", "firstFocusable", "popup"]
-      },
-      "modality" : {
-        "type" : "string",
-        "enumValues" : ["modeless", "modal"]
-      },
-      "position" : {
-        "type" : "object",
-        "properties" : {
-          "my" : {
-            "type" : "object|string",
-            "properties" : {
-              "horizontal" : {
-                "type" : "string",
-                "enumValues" : ["start", "end", "left", "center", "right"]
-              },
-              "vertical" : {
-                "type" : "string",
-                "enumValues" : ["top", "center", "bottom"]
-              }
-            }
-          },
-          "at" : {
-            "type" : "object|string",
-            "properties" : {
-              "horizontal" : {
-                "type" : "string",
-                "enumValues" : ["start", "end", "left", "center", "right"]
-              },
-              "vertical" : {
-                "type" : "string",
-                "enumValues" : ["top", "center", "bottom"]
-              }
-            }
-          },
-          "offset" : {
-            "type" : "object",
-            "properties" : {
-              "x" : {
-                "type" : "number"
-              },
-              "y" : {
-                "type" : "number"
-              }
-            }
-          },
-          "of" : {
-            "type" : "string|object"
-          },
-          "collision" : {
-            "type" : "string",
-            "enumValues" : ["flip", "fit", "flipfit", "flipcenter", "none"]
-          }
-        }
-      },
-      "tail" : {
-        "type" : "string",
-        "enumValues" : ["simple", "none"]
-      }
-    },
-    "events" : {
-      "beforeOpen" : {},
-      "open" : {},
-      "beforeClose" : {},
-      "close" : {},
-      "focus" : {},
-      "animateStart" : {},
-      "animateEnd" : {}
-    },
-    "methods" : {
-      "close" : {},
-      "isOpen" : {},
-      "open" : {}
-    },
-    "extension" : {
-      _WIDGET_NAME : "ojPopup"
-    }
-  };
-  oj.CustomElementBridge.registerMetadata('oj-popup', 'baseComponent', ojPopupMeta);
-  oj.CustomElementBridge.register('oj-popup', {'metadata' : oj.CustomElementBridge.getMetadata('oj-popup')});
-})();
+  __oj_popup_metadata.extension._WIDGET_NAME = 'ojPopup';
+  oj.CustomElementBridge.registerMetadata('oj-popup', 'baseComponent', __oj_popup_metadata);
+  oj.CustomElementBridge.register('oj-popup', { metadata: oj.CustomElementBridge.getMetadata('oj-popup') });
+}());
+
 });

@@ -1,12 +1,9 @@
 {
   "name": "oj-n-box",
-  "version": "5.1.0",
-  "jetVersion": "5.1.0",
+  "version": "5.2.0",
+  "jetVersion": "5.2.0",
   "displayName": "N Box",
-  "preview": true,
-  "roles": [
-    "application"
-  ],
+  "type": "core",
   "description": "An interactive data visualization (typically found in Human Capital Management applications) in which employees are grouped and compared across two dimensions.  Each dimension can be split into multiple ranges.",
   "properties": {
     "animationOnDataChange": {
@@ -92,16 +89,19 @@
             "column": {
               "description": "The id of the column containing this cell.",
               "type": "string",
+              "displayName": "Column",
               "value": null
             },
             "label": {
               "description": "The text for the cell label.",
               "type": "string",
+              "displayName": "Label",
               "value": null
             },
             "labelHalign": {
               "description": "The halign value for the cell label.",
               "type": "string",
+              "displayName": "Label Halign",
               "value": "start",
               "enumValues": [
                 "center",
@@ -122,42 +122,50 @@
             },
             "labelStyle": {
               "description": "The CSS style object defining the style of the cell label.",
-              "type": "Object",
+              "type": "object",
+              "displayName": "Label Style",
               "value": null
             },
             "maximizedSvgClassName": {
               "description": "The CSS style class for this cell. Used for customizing the maximized cell background and border.",
               "type": "string",
+              "displayName": "Maximized Svg Class Name",
               "value": null
             },
             "maximizedSvgStyle": {
               "description": "The CSS style object for this cell. Used for customizing the maximized cell background and border.",
-              "type": "Object",
+              "type": "object",
+              "displayName": "Maximized Svg Style",
               "value": null
             },
             "minimizedSvgClassName": {
               "description": "The CSS style class for this cell. Used for customizing the minimized cell background and border.",
               "type": "string",
+              "displayName": "Minimized Svg Class Name",
               "value": null
             },
             "minimizedSvgStyle": {
               "description": "The CSS style object for this cell. Used for customizing the minimized cell background and border.",
-              "type": "Object",
+              "type": "object",
+              "displayName": "Minimized Svg Style",
               "value": null
             },
             "row": {
               "description": "The id of the row containing this cell.",
               "type": "string",
+              "displayName": "Row",
               "value": null
             },
             "shortDesc": {
               "description": "The description of this cell. This is used for accessibility.",
               "type": "string",
+              "displayName": "Short Desc",
               "value": null
             },
             "showCount": {
               "description": "Determines when to display the cell count label (extra info displayed after primary cell label). \"off\" never show the count label. \"on\" always show the count label. Show countLabel value if specified, otherwise use a simple node count. \"auto\" show the count label if countLabel attribute is defined.",
               "type": "string",
+              "displayName": "Show Count",
               "value": "auto",
               "enumValues": [
                 "auto",
@@ -179,11 +187,13 @@
             "svgClassName": {
               "description": "The CSS style class for this cell. Used for customizing the cell background and border.",
               "type": "string",
+              "displayName": "Svg Class Name",
               "value": null
             },
             "svgStyle": {
               "description": "The CSS style object for this cell. Used for customizing the cell background and border.",
-              "type": "Object",
+              "type": "object",
+              "displayName": "Svg Style",
               "value": null
             }
           }
@@ -201,16 +211,19 @@
             "id": {
               "description": "The id of the column. Used to identify this column.",
               "type": "string",
+              "displayName": "Id",
               "value": null
             },
             "label": {
               "description": "The text for the column label.",
               "type": "string",
+              "displayName": "Label",
               "value": null
             },
             "labelStyle": {
               "description": "The CSS style object defining the style of the column label.",
-              "type": "Object",
+              "type": "object",
+              "displayName": "Label Style",
               "value": null
             }
           }
@@ -380,71 +393,88 @@
             "borderColor": {
               "description": "The color of the node border.",
               "type": "string",
-              "value": null
+              "displayName": "Border Color",
+              "value": null,
+              "format": "color"
             },
             "borderWidth": {
               "description": "The width of the node border.",
               "type": "number",
+              "displayName": "Border Width",
               "value": null
             },
             "categories": {
               "description": "An optional array of additional category strings corresponding to this data item. This enables highlighting and filtering of individual data items through interactions with other visualization elements. Defaults to node's id if unspecified.",
               "type": "Array<string>",
+              "displayName": "Categories",
               "value": null
             },
             "color": {
               "description": "The background color of this node.",
               "type": "string",
-              "value": null
+              "displayName": "Color",
+              "value": null,
+              "format": "color"
             },
             "column": {
               "description": "The column id for this node.",
               "type": "string",
+              "displayName": "Column",
               "value": null
             },
             "groupCategory": {
               "description": "The group category this node belongs to. Nodes with the same groupCategory will be grouped together.",
               "type": "string",
+              "displayName": "Group Category",
               "value": null
             },
             "icon": {
               "description": "Defines the primary icon for this node.",
-              "type": "Object",
-              "value": null,
+              "type": "object",
+              "displayName": "Icon",
               "properties": {
                 "borderColor": {
                   "description": "The border color of this icon.",
                   "type": "string",
-                  "value": null
+                  "displayName": "Border Color",
+                  "value": null,
+                  "format": "color"
                 },
                 "borderRadius": {
                   "description": "The border radius of this icon. CSS border-radius values accepted. Note that non-% values (including unitless) get interpreted as 'px'.",
                   "type": "string",
+                  "displayName": "Border Radius",
                   "value": null
                 },
                 "borderWidth": {
                   "description": "The border width of this icon.",
                   "type": "number",
+                  "displayName": "Border Width",
                   "value": null
                 },
                 "color": {
                   "description": "The fill color of this icon.",
                   "type": "string",
-                  "value": null
+                  "displayName": "Color",
+                  "value": null,
+                  "format": "color"
                 },
                 "height": {
                   "description": "The height of this icon.",
                   "type": "number",
+                  "displayName": "Height",
                   "value": null
                 },
                 "opacity": {
                   "description": "The opacity of this icon.",
                   "type": "number",
+                  "displayName": "Opacity",
                   "value": null
                 },
                 "pattern": {
                   "description": "The fill pattern of this icon.",
                   "type": "string",
+                  "displayName": "Pattern",
                   "value": "none",
                   "enumValues": [
                     "largeChecker",
@@ -506,6 +536,7 @@
                 "shape": {
                   "description": "The shape of this icon. Can take the name of a built-in shape or the svg path commands for a custom shape.",
                   "type": "string",
+                  "displayName": "Shape",
                   "value": null,
                   "enumValues": [
                     "circle",
@@ -555,21 +586,25 @@
                 "source": {
                   "description": "The URL of an image to display for this icon.",
                   "type": "string",
+                  "displayName": "Source",
                   "value": null
                 },
                 "svgClassName": {
                   "description": "The CSS style class defining the style of this icon.",
                   "type": "string",
+                  "displayName": "Svg Class Name",
                   "value": null
                 },
                 "svgStyle": {
                   "description": "The CSS style object defining the style of this icon.",
-                  "type": "Object",
+                  "type": "object",
+                  "displayName": "Svg Style",
                   "value": null
                 },
                 "width": {
                   "description": "The width of this icon.",
                   "type": "number",
+                  "displayName": "Width",
                   "value": null
                 }
               }
@@ -577,51 +612,63 @@
             "id": {
               "description": "The id of this node.",
               "type": "string",
+              "displayName": "Id",
               "value": null
             },
             "indicatorColor": {
               "description": "The background color for the indicator section of this node.",
               "type": "string",
-              "value": null
+              "displayName": "Indicator Color",
+              "value": null,
+              "format": "color"
             },
             "indicatorIcon": {
               "description": "Defines the indicator icon for this node.",
-              "type": "Object",
-              "value": null,
+              "type": "object",
+              "displayName": "Indicator Icon",
               "properties": {
                 "borderColor": {
                   "description": "The border color of this indicator icon.",
                   "type": "string",
-                  "value": null
+                  "displayName": "Border Color",
+                  "value": null,
+                  "format": "color"
                 },
                 "borderRadius": {
                   "description": "The border radius of this indicator icon. CSS border-radius values accepted. Note that non-% values (including unitless) get interpreted as 'px'.",
                   "type": "string",
+                  "displayName": "Border Radius",
                   "value": null
                 },
                 "borderWidth": {
                   "description": "The border width of this indicator icon.",
                   "type": "number",
+                  "displayName": "Border Width",
                   "value": null
                 },
                 "color": {
                   "description": "The fill color of this indicator icon.",
                   "type": "string",
-                  "value": null
+                  "displayName": "Color",
+                  "value": null,
+                  "format": "color"
                 },
                 "height": {
                   "description": "The height of this indicator icon.",
                   "type": "number",
+                  "displayName": "Height",
                   "value": null
                 },
                 "opacity": {
                   "description": "The opacity of this indicator icon.",
                   "type": "number",
+                  "displayName": "Opacity",
                   "value": null
                 },
                 "pattern": {
                   "description": "The fill pattern of this indicator icon.",
                   "type": "string",
+                  "displayName": "Pattern",
                   "value": "none",
                   "enumValues": [
                     "largeChecker",
@@ -683,6 +730,7 @@
                 "shape": {
                   "description": "The shape of this indicator icon. Can take the name of a built-in shape or the svg path commands for a custom shape.",
                   "type": "string",
+                  "displayName": "Shape",
                   "value": null,
                   "enumValues": [
                     "circle",
@@ -732,21 +780,25 @@
                 "source": {
                   "description": "The URL of an image to display for this indicator icon.",
                   "type": "string",
+                  "displayName": "Source",
                   "value": null
                 },
                 "svgClassName": {
                   "description": "The CSS style class defining the style of this indicator icon.",
                   "type": "string",
+                  "displayName": "Svg Class Name",
                   "value": null
                 },
                 "svgStyle": {
                   "description": "The CSS style object defining the style of this indicator icon.",
-                  "type": "Object",
+                  "type": "object",
+                  "displayName": "Svg Style",
                   "value": null
                 },
                 "width": {
                   "description": "The width of this indicator icon.",
                   "type": "number",
+                  "displayName": "Width",
                   "value": null
                 }
               }
@@ -754,41 +806,49 @@
             "label": {
               "description": "The text for the node label.",
               "type": "string",
+              "displayName": "Label",
               "value": null
             },
             "row": {
               "description": "The row id for this node.",
               "type": "string",
+              "displayName": "Row",
               "value": null
             },
             "secondaryLabel": {
               "description": "The text for the secondary node label.",
               "type": "string",
+              "displayName": "Secondary Label",
               "value": null
             },
             "shortDesc": {
               "description": "The description of this node. This is used for accessibility and also for customizing the tooltip text.",
               "type": "string",
+              "displayName": "Short Desc",
               "value": null
             },
             "svgClassName": {
               "description": "The CSS style class defining the style of this node.",
               "type": "string",
+              "displayName": "Svg Class Name",
               "value": null
             },
             "svgStyle": {
               "description": "The CSS style object defining the style of this node.",
-              "type": "Object",
+              "type": "object",
+              "displayName": "Svg Style",
               "value": null
             },
             "xPercentage": {
               "description": "An optional horizontal position (as a percentage) to be used in the average position calculation when grouping across cells.",
               "type": "number",
+              "displayName": "X Percentage",
               "value": null
             },
             "yPercentage": {
               "description": "An optional vertical position (as a percentage) to be used in the average position calculation when grouping across cells.",
               "type": "number",
+              "displayName": "Y Percentage",
               "value": null
             }
           }
@@ -798,7 +858,8 @@
     "otherColor": {
       "description": "The color for the \"other\" group nodes.",
       "type": "string",
-      "displayName": "Other Color"
+      "displayName": "Other Color",
+      "format": "color"
     },
     "otherThreshold": {
       "description": "The threshold for aggregating nodes into an \"other\" group node.",
@@ -817,16 +878,19 @@
             "id": {
               "description": "The id of the row. Used to identify this row.",
               "type": "string",
+              "displayName": "Id",
               "value": null
             },
             "label": {
               "description": "The text for the row label.",
               "type": "string",
+              "displayName": "Label",
               "value": null
             },
             "labelStyle": {
               "description": "The CSS style object defining the style of the row label.",
-              "type": "Object",
+              "type": "object",
+              "displayName": "Label Style",
               "value": null
             }
           }
@@ -870,51 +934,24 @@
     },
     "styleDefaults": {
       "description": "An object defining the style defaults for this NBox.",
-      "type": "Object",
+      "type": "object",
       "displayName": "Style Defaults",
-      "value": {
-        "cellDefaults": {
-          "labelHalign": "start",
-          "showCount": "auto"
-        },
-        "hoverBehaviorDelay": 200,
-        "nodeDefaults": {
-          "iconDefaults": {
-            "color": "",
-            "height": 0,
-            "opacity": 1,
-            "pattern": "none",
-            "shape": "square",
-            "source": "",
-            "width": 0
-          },
-          "indicatorColor": "",
-          "indicatorIconDefaults": {
-            "color": "",
-            "opacity": 1,
-            "pattern": "none",
-            "shape": "square",
-            "source": ""
-          }
-        }
-      },
       "properties": {
         "animationDuration": {
           "description": "The duration of the animations in milliseconds. The default value comes from the CSS and varies based on theme.",
           "type": "number",
+          "displayName": "Animation Duration",
           "units": "milliseconds"
         },
         "cellDefaults": {
           "description": "An object defining the style defaults for cells.",
-          "type": "Object",
-          "value": {
-            "labelHalign": "start",
-            "showCount": "auto"
-          },
+          "type": "object",
+          "displayName": "Cell Defaults",
           "properties": {
             "labelHalign": {
               "description": "The halign value for the cell label.",
               "type": "string",
+              "displayName": "Label Halign",
               "value": "start",
               "enumValues": [
                 "center",
@@ -935,19 +972,23 @@
             },
             "labelStyle": {
               "description": "The CSS style object defining the style of the cell labels. The default value comes from the CSS and varies based on theme.",
-              "type": "Object"
+              "type": "object",
+              "displayName": "Label Style"
             },
             "maximizedSvgStyle": {
               "description": "The CSS style object defining the styles of the cell background and border when the cell is maximized. The default value comes from the CSS and varies based on theme.",
-              "type": "Object"
+              "type": "object",
+              "displayName": "Maximized Svg Style"
             },
             "minimizedSvgStyle": {
               "description": "The CSS style object defining the styles of the cell background and border when the cell is minimized. The default value comes from the CSS and varies based on theme.",
-              "type": "Object"
+              "type": "object",
+              "displayName": "Minimized Svg Style"
             },
             "showCount": {
               "description": "Determines when to display the cell count label.",
               "type": "string",
+              "displayName": "Show Count",
               "value": "auto",
               "enumValues": [
                 "auto",
@@ -968,104 +1009,96 @@
             },
             "svgStyle": {
               "description": "The CSS style object defining the styles of the cell background and border. The default value comes from the CSS and varies based on theme.",
-              "type": "Object"
+              "type": "object",
+              "displayName": "Svg Style"
             }
           }
         },
         "columnLabelStyle": {
           "description": "The CSS style object defining the style of the column labels. The default value comes from the CSS and varies based on theme.",
-          "type": "Object"
+          "type": "object",
+          "displayName": "Column Label Style"
         },
         "columnsTitleStyle": {
           "description": "The CSS style object defining the style of the columns title. The default value comes from the CSS and varies based on theme.",
-          "type": "Object"
+          "type": "object",
+          "displayName": "Columns Title Style"
         },
         "hoverBehaviorDelay": {
           "description": "Specifies initial hover delay in ms for highlighting data items.",
           "type": "number",
+          "displayName": "Hover Behavior Delay",
           "value": 200,
           "units": "milliseconds"
         },
         "nodeDefaults": {
           "description": "An object defining the style defaults for nodes.",
-          "type": "Object",
-          "value": {
-            "iconDefaults": {
-              "color": "",
-              "height": 0,
-              "opacity": 1,
-              "pattern": "none",
-              "shape": "square",
-              "source": "",
-              "width": 0
-            },
-            "indicatorColor": "",
-            "indicatorIconDefaults": {
-              "color": "",
-              "opacity": 1,
-              "pattern": "none",
-              "shape": "square",
-              "source": ""
-            }
-          },
+          "type": "object",
+          "displayName": "Node Defaults",
           "properties": {
             "borderColor": {
               "description": "The default color of the node borders. The default value varies based on theme.",
-              "type": "string"
+              "type": "string",
+              "displayName": "Border Color",
+              "format": "color"
             },
             "borderWidth": {
               "description": "The default width of the node borders. The default value varies based on theme.",
               "type": "number",
+              "displayName": "Border Width",
               "units": "pixels"
             },
             "color": {
               "description": "The default background color of the nodes. The default value comes from the CSS and varies based on theme.",
-              "type": "string"
+              "type": "string",
+              "displayName": "Color",
+              "format": "color"
             },
             "iconDefaults": {
               "description": "An object defining the style defaults for the node icons.",
-              "type": "Object",
-              "value": {
-                "color": "",
-                "height": 0,
-                "opacity": 1,
-                "pattern": "none",
-                "shape": "square",
-                "source": "",
-                "width": 0
-              },
+              "type": "object",
+              "displayName": "Icon Defaults",
               "properties": {
                 "borderColor": {
                   "description": "The default border color of the node icons. The default value varies based on theme.",
-                  "type": "string"
+                  "type": "string",
+                  "displayName": "Border Color",
+                  "format": "color"
                 },
                 "borderRadius": {
                   "description": "The default border radius of the node icons. CSS border-radius values accepted. Note that non-% values (including unitless) get interpreted as 'px'. The default value varies based on theme.",
-                  "type": "string"
+                  "type": "string",
+                  "displayName": "Border Radius"
                 },
                 "borderWidth": {
                   "description": "The default border width of the node icons. The default value varies based on theme.",
-                  "type": "number"
+                  "type": "number",
+                  "displayName": "Border Width"
                 },
                 "color": {
                   "description": "The default fill color of the node icons.",
                   "type": "string",
-                  "value": ""
+                  "displayName": "Color",
+                  "value": "",
+                  "format": "color"
                 },
                 "height": {
                   "description": "The default height of the node icons. If the value is 0, the height will be automatically based on the remaining node contents.",
                   "type": "number",
+                  "displayName": "Height",
                   "value": 0,
                   "units": "pixels"
                 },
                 "opacity": {
                   "description": "The default opacity of the node icons.",
                   "type": "number",
+                  "displayName": "Opacity",
                   "value": 1
                 },
                 "pattern": {
                   "description": "The default fill pattern of the node icons.",
                   "type": "string",
+                  "displayName": "Pattern",
                   "value": "none",
                   "enumValues": [
                     "largeChecker",
@@ -1127,6 +1160,7 @@
                 "shape": {
                   "description": "The default shape of the node icons. Can take the name of a built-in shape or the svg path commands for a custom shape.",
                   "type": "string",
+                  "displayName": "Shape",
                   "value": "square",
                   "enumValues": [
                     "circle",
@@ -1176,11 +1210,13 @@
                 "source": {
                   "description": "The URL of an image to display by default for the node icons.",
                   "type": "string",
+                  "displayName": "Source",
                   "value": ""
                 },
                 "width": {
                   "description": "The default width of the node icons. If the value is 0, the width will be automatically based on the remaining node contents.",
                   "type": "number",
+                  "displayName": "Width",
                   "value": 0
                 }
               }
@@ -1188,49 +1224,54 @@
             "indicatorColor": {
               "description": "The default background color of the node indicator sections.",
               "type": "string",
-              "value": ""
+              "displayName": "Indicator Color",
+              "value": "",
+              "format": "color"
             },
             "indicatorIconDefaults": {
               "description": "An object defining the style defaults for the node indicator icons.",
-              "type": "Object",
-              "value": {
-                "color": "",
-                "opacity": 1,
-                "pattern": "none",
-                "shape": "square",
-                "source": ""
-              },
+              "type": "object",
+              "displayName": "Indicator Icon Defaults",
               "properties": {
                 "borderColor": {
                   "description": "The default border color of the node indicator icons. The default value varies based on theme.",
-                  "type": "string"
+                  "type": "string",
+                  "displayName": "Border Color",
+                  "format": "color"
                 },
                 "borderRadius": {
                   "description": "The default border radius of the node indicator icons. CSS border-radius values accepted. Note that non-% values (including unitless) get interpreted as 'px'. The default value varies based on theme.",
-                  "type": "string"
+                  "type": "string",
+                  "displayName": "Border Radius"
                 },
                 "borderWidth": {
                   "description": "The default border width of the node indicator icons. The default value varies based on theme.",
-                  "type": "number"
+                  "type": "number",
+                  "displayName": "Border Width"
                 },
                 "color": {
                   "description": "The default fill color of the node indicator icons.",
                   "type": "string",
-                  "value": ""
+                  "displayName": "Color",
+                  "value": "",
+                  "format": "color"
                 },
                 "height": {
                   "description": "The default height of the node indicator icons. The default value varies based on theme.",
                   "type": "number",
+                  "displayName": "Height",
                   "units": "pixels"
                 },
                 "opacity": {
                   "description": "The default opacity of the node indicator icons.",
                   "type": "number",
+                  "displayName": "Opacity",
                   "value": 1
                 },
                 "pattern": {
                   "description": "The default fill pattern of the node indicator icons.",
                   "type": "string",
+                  "displayName": "Pattern",
                   "value": "none",
                   "enumValues": [
                     "largeChecker",
@@ -1292,6 +1333,7 @@
                 "shape": {
                   "description": "The default shape of the node indicator icons. Can take the name of a built-in shape or the svg path commands for a custom shape.",
                   "type": "string",
+                  "displayName": "Shape",
                   "value": "square",
                   "enumValues": [
                     "circle",
@@ -1341,47 +1383,51 @@
                 "source": {
                   "description": "The URL of an image to display by default for the node indicator icons.",
                   "type": "string",
+                  "displayName": "Source",
                   "value": null
                 },
                 "width": {
                   "description": "The default width of the node indicator icons. The default value varies based on theme.",
                   "type": "number",
+                  "displayName": "Width",
                   "units": "pixels"
                 }
               }
             },
             "labelStyle": {
               "description": "The CSS style object defining the style of the node labels. The default value comes from the CSS and varies based on theme.",
-              "type": "Object"
+              "type": "object",
+              "displayName": "Label Style"
             },
             "secondaryLabelStyle": {
               "description": "The CSS style object defining the style of the node secondary labels. The default value comes from the CSS and varies based on theme.",
-              "type": "Object"
+              "type": "object",
+              "displayName": "Secondary Label Style"
             }
           }
         },
         "rowLabelStyle": {
           "description": "The CSS style object defining the style of the row labels. The default value comes from the CSS and varies based on theme.",
-          "type": "Object"
+          "type": "object",
+          "displayName": "Row Label Style"
         },
         "rowsTitleStyle": {
           "description": "The CSS style object defining the style of the rows title. The default value comes from the CSS and varies based on theme.",
-          "type": "Object",
+          "type": "object",
+          "displayName": "Rows Title Style",
           "value": null
         }
       }
     },
     "tooltip": {
       "description": "An object containing an optional callback function for tooltip customization.",
-      "type": "Object",
+      "type": "object",
       "displayName": "Tooltip",
-      "value": {
-        "renderer": null
-      },
       "properties": {
         "renderer": {
           "description": "A function that returns a custom tooltip for the NBox nodes. The function takes a dataContext argument, provided by the NBox, with the following properties: parentElement: The tooltip element. The function can directly modify or append content to this element. id: The id of the hovered node. label: The label of the hovered node. secondaryLabel: The secondary label of the hovered node. color: The color of the hovered node. indicatorColor: The indicator color of the hovered node. row: The id of the row containing the hovered node. column: The id of the column containing the hovered node. componentElement: The NBox element. The function should return an Object that contains only one of the two properties: insert: HTMLElement | string - An HTML element, which will be appended to the tooltip, or a tooltip string. preventDefault: true - Indicates that the tooltip should not be displayed. It is not necessary to return {preventDefault:false} to display tooltip, since this is a default behavior. ",
           "type": "function|null",
+          "displayName": "Renderer",
           "value": null
         }
       }
@@ -1423,120 +1469,121 @@
       }
     },
     "translations": {
-      "description": "A collection of translated resources from the translation bundle, or null if this\ncomponent has no resources. Resources may be accessed and overridden individually or collectively, as seen in the examples. If the component does not contain any translatable resource, the default value of this attribute will be \nnull. If not, an object containing all resources relevant to the component.\n\nIf this component has translations, their documentation immediately follows this doc entry.",
-      "type": "Object|null",
+      "description": "A collection of translated resources from the translation bundle, or null if this component has no resources.",
+      "type": "object|null",
       "displayName": "Translations",
+      "value": {},
       "translatable": true,
       "properties": {
         "componentName": {
           "description": "Used to describe the data visualization type for accessibility.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "NBox"
+          "displayName": "Component Name"
         },
         "highlightedCount": {
           "description": "Used to indicate number of highlighted nodes in a cell.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "{0}/{1}"
+          "displayName": "Highlighted Count"
         },
         "labelAdditionalData": {
           "description": "Used for node overflow button\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "Additional Data"
+          "displayName": "Label Additional Data"
         },
         "labelAndValue": {
           "description": "Used to display a label and its value.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "{0}: {1}"
+          "displayName": "Label And Value"
         },
         "labelClearSelection": {
           "description": "Text shown for clearing multiple selection on touch devices.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "Clear Selection"
+          "displayName": "Label Clear Selection"
         },
         "labelCountWithTotal": {
           "description": "Used to display a count out of a total.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "{0} of {1}"
+          "displayName": "Label Count With Total"
         },
         "labelDataVisualization": {
           "description": "Label for data visualizations used for accessibility.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "Data Visualization"
+          "displayName": "Label Data Visualization"
         },
         "labelGroup": {
           "description": "Used to indicate group info for nbox drawer and group nodes for accessibility.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "Group"
+          "displayName": "Label Group"
         },
         "labelInvalidData": {
           "description": "Text shown when the component receives invalid data.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "Invalid data"
+          "displayName": "Label Invalid Data"
         },
         "labelNoData": {
           "description": "Text shown when the component receives no data.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "No data to display"
+          "displayName": "Label No Data"
         },
         "labelOther": {
           "description": "Used for the other label which aggregates small data values.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "Other"
+          "displayName": "Label Other"
         },
         "labelSize": {
           "description": "Used to indicate size of node drawer and group nodes for accessibility.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "Size"
+          "displayName": "Label Size"
         },
         "stateCollapsed": {
           "description": "Used to describe the collapsed state for accessibility.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "Collapsed"
+          "displayName": "State Collapsed"
         },
         "stateDrillable": {
           "description": "Used to describe a drillable object for accessibility.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "Drillable"
+          "displayName": "State Drillable"
         },
         "stateExpanded": {
           "description": "Used to describe the expanded state for accessibility.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "Expanded"
+          "displayName": "State Expanded"
         },
         "stateHidden": {
           "description": "Used to describe the hidden state for accessibility.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "Hidden"
+          "displayName": "State Hidden"
         },
         "stateIsolated": {
           "description": "Used to describe the isolated state for accessibility.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "Isolated"
+          "displayName": "State Isolated"
         },
         "stateMaximized": {
           "description": "Used to describe the maximized state for accessibility.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "Maximized"
+          "displayName": "State Maximized"
         },
         "stateMinimized": {
           "description": "Used to describe the minimized state for accessibility.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "Minimized"
+          "displayName": "State Minimized"
         },
         "stateSelected": {
           "description": "Used to describe the selected state for accessibility.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "Selected"
+          "displayName": "State Selected"
         },
         "stateUnselected": {
           "description": "Used to describe the unselected state for accessibility.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "Unselected"
+          "displayName": "State Unselected"
         },
         "stateVisible": {
           "description": "Used to describe the visible state for accessibility.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "Visible"
+          "displayName": "State Visible"
         }
       }
     }
@@ -1559,7 +1606,7 @@
           "type": "string"
         }
       ],
-      "return": "Object|null"
+      "return": "object|null"
     },
     "getColumnsTitle": {
       "description": "Get the NBox columns title.",
@@ -1578,7 +1625,7 @@
           "type": "string"
         }
       ],
-      "return": "Object|null"
+      "return": "object|null"
     },
     "getCell": {
       "description": "Returns an object with the following properties for automation testing verification of the NBox cell at the specified row and column values.",
@@ -1594,7 +1641,7 @@
           "type": "string"
         }
       ],
-      "return": "Object|null"
+      "return": "object|null"
     },
     "getGroupBehavior": {
       "description": "Get the NBox group behavior.",
@@ -1609,11 +1656,11 @@
           "type": "String"
         }
       ],
-      "return": "Object|null"
+      "return": "object|null"
     },
     "getDialog": {
       "description": "Returns an object with the following properties for automation testing verification of the currently active NBox dialog.",
-      "return": "Object|null"
+      "return": "object|null"
     },
     "getContextByNode": {
       "description": "Returns an object with context for the given child DOM node. This will always contain the subid for the node,\ndefined as the 'subId' property on the context object. Additional component specific information may also be included.\n\nFor more details on returned objects, see context objects.",
@@ -1624,7 +1671,7 @@
           "type": "Element"
         }
       ],
-      "return": "Object|null"
+      "return": "object|null"
     },
     "refresh": {
       "description": "Refreshes the component.",
@@ -1663,7 +1710,7 @@
         {
           "name": "properties",
           "description": "An object containing the property and value pairs to set.",
-          "type": "Object"
+          "type": "object"
         }
       ],
       "return": "void"

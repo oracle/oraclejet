@@ -122,7 +122,12 @@ oj.BaseCustomElementBridge.proto =
     return property;
   },
 
-  HandleAttributeChanged: function(element, attr, oldValue, newValue) {},
+  GetDefaultValue: function (propertyMeta) {
+    return oj.BaseCustomElementBridge._consolidateDefaults(propertyMeta);
+  },
+
+  // eslint-disable-next-line no-unused-vars
+  HandleAttributeChanged: function (element, attr, oldValue, newValue) {},
 
   HandleBindingsApplied: function(element, bindingContext) {},
 
@@ -1129,10 +1134,9 @@ oj.BaseCustomElementBridge.__ParseAttrValue = function(elem, attr, prop, val, me
 /**
  * @ignore
  */
-oj.BaseCustomElementBridge.__ProcessEventListeners = function(metadata, bConvertName) 
-{
-  metadata = oj.CollectionUtils.copyInto({}, metadata, undefined, true, 1);
-  metadata['properties'] = metadata['properties'] || {};
+oj.BaseCustomElementBridge.__ProcessEventListeners = function (_metadata) {
+  var metadata = oj.CollectionUtils.copyInto({}, _metadata, undefined, true, 1);
+  metadata.properties = metadata.properties || {};
   oj.BaseCustomElementBridge._enumerateMetadataForKey(null, metadata, 'properties',
     function(proto, property, propertyMeta)
     {
@@ -1142,11 +1146,9 @@ oj.BaseCustomElementBridge.__ProcessEventListeners = function(metadata, bConvert
     }
   );
   oj.BaseCustomElementBridge._enumerateMetadataForKey(null, metadata, 'events',
-    function(proto, event, eventMeta)
-    {
-      var eventName = bConvertName ? oj.__AttributeUtils.eventTriggerToEventType(event) : event;
-      var eventListenerProperty = oj.__AttributeUtils.eventTypeToEventListenerProperty(eventName);
-      metadata['properties'][eventListenerProperty] = {_derived:true, _eventListener:true};
+    function (proto, event) {
+      var eventListenerProperty = oj.__AttributeUtils.eventTypeToEventListenerProperty(event);
+      metadata.properties[eventListenerProperty] = { _derived: true, _eventListener: true };
     }
   );
   return metadata;
@@ -1226,6 +1228,43 @@ var _UNIQUE_INCR = 0;
 var _UNIQUE = '_ojcustomelem';
 
 /**
+ * Default values can be specified at the top level or at leaf subproperties.
+ * This utility walks complex property subproperties to generate default value
+ * @property {object} metadata
+ * @ignore
+ */
+oj.BaseCustomElementBridge._consolidateDefaults = function (metadata) {
+  var defaultValue = metadata.value;
+  if (defaultValue !== undefined) {
+    // Make a copy if the default value is an Object or Array to prevent modification
+    // of the metadata copy and store in the propertyTracker so we have a copy
+    // to modify in place for the object case
+    if (Array.isArray(defaultValue)) {
+      return defaultValue.slice();
+    } else if (typeof defaultValue === 'object') {
+      return oj.CollectionUtils.copyInto({}, defaultValue, undefined, true);
+    }
+    return defaultValue;
+  }
+  // If top level metadata isn't specified, check subproperties.
+  // Note that we are not handling cases where both top level and subproperty
+  // default values are provided, leaving that to auditing and build tools to check.
+  var subMeta = metadata.properties;
+  if (subMeta) {
+    var complexDefault = {};
+    var keys = Object.keys(subMeta);
+    for (var i = 0; i < keys.length; i++) {
+      var subpropDefault = oj.BaseCustomElementBridge._consolidateDefaults(subMeta[keys[i]]);
+      if (subpropDefault !== undefined) {
+        complexDefault[keys[i]] = subpropDefault;
+      }
+    }
+    return (Object.keys(complexDefault).length > 0) ? complexDefault : undefined;
+  }
+  return undefined;
+};
+
+/**
  * @ignore
  */
 oj.BaseCustomElementBridge._registry = {};
@@ -1302,10 +1341,7 @@ oj.BaseCustomElementBridge.__DelayedPromise = function()
       _resolve(value);
     }
   };
-}
-
-
-
+};
 
 /** 
  * @ojoverviewdoc CustomElementOverview - JET Custom Elements

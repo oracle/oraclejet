@@ -1,12 +1,9 @@
 {
   "name": "oj-menu",
-  "version": "5.1.0",
-  "jetVersion": "5.1.0",
+  "version": "5.2.0",
+  "jetVersion": "5.2.0",
   "displayName": "Menu",
-  "preview": true,
-  "roles": [
-    "menu"
-  ],
+  "type": "core",
   "description": "Displays a popup menu with support for touch, mouse, and keyboard interactions.",
   "properties": {
     "disabled": {
@@ -17,12 +14,13 @@
     },
     "openOptions": {
       "description": "A collection of settings impacting the launch of a menu. These openOptions may be accessed and overridden individually or collectively, as seen in the examples. The values set here can be overridden on a per-launch basis by passing the corresponding params into the open method. Those per-launch values can be further customized by a ojBeforeOpen listener. The built-in [menu button]ojMenuButton and [context menu]baseComponent#contextMenu functionality overrides some of the Menu's openOptions, for WAI-ARIA compliance and other reasons. Thus, if the app really wants to customize those values, it must do so in a ojBeforeOpen listener. If the built-in menu button or context menu functionality is modified in this way, it is the app's responsibility to ensure that the result is both correct and accessible.",
-      "type": "Object",
+      "type": "object",
       "displayName": "Open Options",
       "properties": {
         "display": {
           "description": "Determines whether the menu is displayed as a dropDown menu or a sheet menu. The default value is \"auto\", in which case the behavior is a function of the screen width and the $menuDropDownThresholdWidth SASS variable. For example, if that variable is set to 768px, then for screen widths of 768px and larger, the menu will display as a dropDown, and for screen widths less than 768px, the menu will display as a sheet. To avoid disorienting the user, if the screen width changes while the menu is already open (e.g. due to a device rotation), the display may not change until the next launch. Sheet menus are not appropriate when submenus are present. Thus, menus having submenus are always displayed as a dropDown, regardless of the values of this option and the SASS variable. If the SASS variable is set to 0 or a huge value such as 99999px, then all menus with display set to \"auto\" will always display as a dropDown or sheet, respectively.",
           "type": "string",
+          "displayName": "Display",
           "value": "auto",
           "enumValues": [
             "auto",
@@ -47,6 +45,7 @@
         "initialFocus": {
           "description": "Determines focus behavior when the menu is initially opened.",
           "type": "string",
+          "displayName": "Initial Focus",
           "value": "menu",
           "enumValues": [
             "firstItem",
@@ -71,19 +70,23 @@
         "launcher": {
           "description": "The DOM node (which may or may not be a JET element) that launches this menu. This node must be focusable, as focus is returned to it upon menu dismissal. The launcher must either be specified in this component option, or on each menu launch -- see open() and ojBeforeOpen.",
           "type": "string|Element",
+          "displayName": "Launcher",
           "value": null
         },
         "position": {
           "description": "Determines the position of a dropDown menu when launched via the open() method or via menu button or context menu functionality. Ignored for sheet menus. The \"my\" and \"at\" properties define aligment points relative to the menu and other element. The \"my\" property represents the menu's alignment where the \"at\" property represents the other element that can be identified by \"of\" or defauts to the launcher when the menu opens. The values of these properties describe horizontal and vertical alignments. JET supports start and end values wherever left and right are supported. The start value means \"left in LTR; right in RTL\", while the end value means \"right in LTR; left in RTL.\" Menu also supports the following extended syntax for the of field: The \"event\" keyword means \"position the menu relative to the UI event that opened the menu.\" The \"launcher\" keyword means \"position the menu relative to the launcher element.\" By default, when the of field is not set, the menu is positioned relative to the launcher. The default position value varies between menus and submenus as follows: Top level menu default: { my: { horizontal: \"start\", vertical: \"top\" }, at: { horizontal: \"start\", vertical: \"bottom\" }, offset: { x: 0, y: 0 }, collision: \"flipfit\" } Submenu default: { my: { horizontal: \"start\", vertical: \"top\" }, at: { horizontal: \"end\", vertical: \"top\" }, offset: { x: 0, y: 0 }, collision: \"flipfit\" } Deprecated v5.0.0 jQuery UI position syntax; Use of a percent unit with \"my\" or \"at\" is not supported.",
-          "type": "Object",
+          "type": "object",
+          "displayName": "Position",
           "properties": {
             "at": {
               "description": "Defines which position on the target element (\"of\") to align the positioned element against.",
-              "type": "Object",
+              "type": "object",
+              "displayName": "At",
               "properties": {
                 "horizontal": {
                   "description": "Defines the horizontal alignment of what the menu is aligned to. For top-level menus, the default value is \"start\". For submenus, the default value is \"end\".",
                   "type": "string",
+                  "displayName": "Horizontal",
                   "enumValues": [
                     "center",
                     "end",
@@ -114,6 +117,7 @@
                 "vertical": {
                   "description": "Defines the vertical alignment of what the menu is aligned to. For top-level menus, the default value is \"bottom\". For submenus, the default value is \"top\".",
                   "type": "string",
+                  "displayName": "Vertical",
                   "enumValues": [
                     "bottom",
                     "center",
@@ -136,10 +140,12 @@
             "collision": {
               "description": "Rule for alternate alignment.",
               "type": "string",
+              "displayName": "Collision",
               "value": "flipfit",
               "enumValues": [
                 "fit",
                 "flip",
+                "flipcenter",
                 "flipfit",
                 "none"
               ],
@@ -151,6 +157,10 @@
                 "flip": {
                   "description": "the element to the opposite side of the target and the collision detection is run again to see if it will fit. Whichever side allows more of the element to be visible will be used.",
                   "displayName": "Flip"
+                },
+                "flipcenter": {
+                  "description": "first applies the flip rule and follows with center alignment.",
+                  "displayName": "Flipcenter"
                 },
                 "flipfit": {
                   "description": "first applies the flip logic, placing the element on whichever side allows more of the element to be visible. Then the fit logic is applied to ensure as much of the element is visible as possible.",
@@ -164,11 +174,13 @@
             },
             "my": {
               "description": "Defines which edge on the menu to align with the target (\"of\") element.",
-              "type": "Object",
+              "type": "object",
+              "displayName": "My",
               "properties": {
                 "horizontal": {
                   "description": "Defines the horizontal alignment of the menu.",
                   "type": "string",
+                  "displayName": "Horizontal",
                   "value": "start",
                   "enumValues": [
                     "center",
@@ -200,6 +212,7 @@
                 "vertical": {
                   "description": "Defines the vertical alignment of the menu.",
                   "type": "string",
+                  "displayName": "Vertical",
                   "value": "top",
                   "enumValues": [
                     "bottom",
@@ -222,20 +235,24 @@
             },
             "of": {
               "description": "Which element to position the menu against. The default is the launcher argument passed to the open method. If the value is a string, it should be a selector or the literal string value of window. Otherwise, a point of x,y. When a point is used, the values are relative to the whole document. Page horizontal and vertical scroll offsets need to be factored into this point - see UIEvent pageX, pageY.",
-              "type": "string|Object|undefined"
+              "type": "string|object",
+              "displayName": "Of"
             },
             "offset": {
               "description": "Defines a point offset in pixels from the (\"my\") alignment.",
-              "type": "Object",
+              "type": "object",
+              "displayName": "Offset",
               "properties": {
                 "x": {
                   "description": "Horizontal aligment offset.",
                   "type": "number",
+                  "displayName": "X",
                   "value": 0
                 },
                 "y": {
                   "description": "Vertical alignment offset.",
                   "type": "number",
+                  "displayName": "Y",
                   "value": 0
                 }
               }
@@ -245,15 +262,16 @@
       }
     },
     "translations": {
-      "description": "A collection of translated resources from the translation bundle, or null if this\ncomponent has no resources. Resources may be accessed and overridden individually or collectively, as seen in the examples. If the component does not contain any translatable resource, the default value of this attribute will be \nnull. If not, an object containing all resources relevant to the component.\n\nIf this component has translations, their documentation immediately follows this doc entry.",
-      "type": "Object|null",
+      "description": "A collection of translated resources from the translation bundle, or null if this component has no resources.",
+      "type": "object|null",
       "displayName": "Translations",
+      "value": {},
       "translatable": true,
       "properties": {
         "labelCancel": {
           "description": "Label for the \"Cancel\" menu item.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "Cancel"
+          "displayName": "Label Cancel"
         }
       }
     }
@@ -269,12 +287,14 @@
         {
           "name": "event",
           "description": "What triggered the menu launch. May be null. May be omitted if subsequent params are omitted.",
-          "type": "Object"
+          "type": "object",
+          "optional": true
         },
         {
           "name": "openOptions",
           "description": "Options to merge with the openOptions option. May be null. May be omitted if subsequent params are omitted.",
-          "type": "Object"
+          "type": "object",
+          "optional": true
         }
       ],
       "return": "void"
@@ -312,7 +332,7 @@
         {
           "name": "properties",
           "description": "An object containing the property and value pairs to set.",
-          "type": "Object"
+          "type": "object"
         }
       ],
       "return": "void"

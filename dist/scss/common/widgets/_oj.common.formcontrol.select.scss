@@ -67,6 +67,39 @@
       }
     }
 
+    /* Styling for text-align */
+    .oj-form-control-text-align-start .oj-select-choice
+    {
+      @include oj-bidi-property(
+        $property: 'text-align',
+        $startOrEnd: start,
+        $important: false) ;
+    }
+
+    /* Styling for native render mode text-align */
+    .oj-form-control-text-align-start .oj-select-select
+    {
+      @include oj-bidi-property(
+        $property: 'text-align',
+        $startOrEnd: start,
+        $important: false) ;
+
+      @include oj-ltr() {
+        direction: ltr;
+      }
+    
+      @include oj-rtl() {
+        direction: rtl;
+      }
+    }
+    .oj-form-control-text-align-start .oj-select-choices li
+    {
+      @include oj-bidi-property(
+        $property: 'float',
+        $startOrEnd: start,
+        $important: false) ;
+    }
+
     /* multi-select */
 
     /* 

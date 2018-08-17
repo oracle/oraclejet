@@ -10,7 +10,34 @@ define(['ojs/ojcore', 'ojs/ojcomponentcore'],
         */
        function(oj)
 {
+ 
 
+var __oj_validation_group_metadata = 
+{
+  "properties": {
+    "valid": {
+      "type": "string",
+      "writeback": true,
+      "enumValues": [
+        "invalidHidden",
+        "invalidShown",
+        "pending",
+        "valid"
+      ],
+      "readOnly": true
+    }
+  },
+  "methods": {
+    "setProperty": {},
+    "getProperty": {},
+    "setProperties": {},
+    "showMessages": {},
+    "focusOn": {},
+    "getNodeBySubId": {},
+    "getSubIdByNode": {}
+  },
+  "extension": {}
+};
 /**
  * Copyright (c) 2017, Oracle and/or its affiliates.
  * All rights reserved.
@@ -171,36 +198,13 @@ define(['ojs/ojcore', 'ojs/ojcomponentcore'],
  * myComponent.setProperties({"prop1": "value1", "prop2.subprop": "value2", "prop3": "value3"});
  */ 
 
-
-/**
- * @ignore
- */
-var ojValidationGroupMeta = {
-  "properties": {
-    "valid": {
-      "type": "string",
-      "enumValues": ["valid", "invalidShown", "invalidHidden", "pending"],
-      "readOnly": true,
-      "writeback": true
-    }
-  },
-  "methods": {
-    "focusOn": {},
-    "showMessages": {}
-  },
-  "extension": {
-    _CONSTRUCTOR: ojValidationGroup
-  }
-};
-Object.freeze(ojValidationGroupMeta);
-
-
 /**
  * The _ojValidationGroup constructor function.
  * 
  * @constructor
  * @private
  */
+// eslint-disable-next-line no-unused-vars
 function ojValidationGroup(context) {
   
   var FIRST_INVALID_SHOWN_KEY = "@firstInvalidShown";
@@ -970,7 +974,14 @@ function ojValidationGroup(context) {
   }
 }
 
-oj.CustomElementBridge.registerMetadata('oj-validation-group', null, ojValidationGroupMeta);
-oj.CustomElementBridge.register('oj-validation-group', 
-  {'metadata': oj.CustomElementBridge.getMetadata('oj-validation-group')});
+/* global __oj_validation_group_metadata:false */
+/* global ojValidationGroup */
+(function () {
+  __oj_validation_group_metadata.extension._CONSTRUCTOR = ojValidationGroup;
+  Object.freeze(__oj_validation_group_metadata);
+  oj.CustomElementBridge.registerMetadata('oj-validation-group', null, __oj_validation_group_metadata);
+  oj.CustomElementBridge.register('oj-validation-group',
+  { metadata: oj.CustomElementBridge.getMetadata('oj-validation-group') });
+}());
+
 });

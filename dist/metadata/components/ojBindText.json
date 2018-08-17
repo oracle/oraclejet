@@ -1,9 +1,9 @@
 {
   "name": "oj-bind-text",
-  "version": "5.1.0",
-  "jetVersion": "5.1.0",
+  "version": "5.2.0",
+  "jetVersion": "5.2.0",
   "displayName": "Bind Text",
-  "preview": true,
+  "type": "core",
   "description": "Binds a text node to an expression.",
   "properties": {
     "value": {

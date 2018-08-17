@@ -5,11 +5,137 @@
  */
 "use strict";
 define(['ojs/ojcore', 'jquery', 'knockout', 'ojs/ojknockout', 'ojs/ojcomposite',
-        'promise', 'ojs/ojpopupcore', 'ojs/ojanimation', 'ojs/ojmessage'], 
+        'promise', 'ojs/ojpopupcore', 'ojs/ojanimation', 'ojs/ojmessage', 'ojs/ojdataprovider'], 
        function(oj, $, ko)
 {
+ 
 
-
+var __oj_messages_metadata = 
+{
+  "properties": {
+    "display": {
+      "type": "string",
+      "enumValues": [
+        "general",
+        "notification"
+      ],
+      "value": "general"
+    },
+    "messages": {
+      "type": "Array<Object>|oj.DataProvider"
+    },
+    "position": {
+      "type": "object",
+      "properties": {
+        "at": {
+          "type": "object",
+          "properties": {
+            "horizontal": {
+              "type": "string",
+              "enumValues": [
+                "center",
+                "end",
+                "left",
+                "right",
+                "start"
+              ]
+            },
+            "vertical": {
+              "type": "string",
+              "enumValues": [
+                "bottom",
+                "center",
+                "top"
+              ]
+            }
+          }
+        },
+        "collision": {
+          "type": "string",
+          "enumValues": [
+            "fit",
+            "flip",
+            "flipfit",
+            "none"
+          ]
+        },
+        "my": {
+          "type": "object",
+          "properties": {
+            "horizontal": {
+              "type": "string",
+              "enumValues": [
+                "center",
+                "end",
+                "left",
+                "right",
+                "start"
+              ]
+            },
+            "vertical": {
+              "type": "string",
+              "enumValues": [
+                "bottom",
+                "center",
+                "top"
+              ]
+            }
+          }
+        },
+        "of": {
+          "type": "string"
+        },
+        "offset": {
+          "type": "object",
+          "properties": {
+            "x": {
+              "type": "number"
+            },
+            "y": {
+              "type": "number"
+            }
+          }
+        }
+      }
+    },
+    "translations": {
+      "type": "object",
+      "value": {},
+      "properties": {
+        "ariaLiveRegion": {
+          "type": "object",
+          "properties": {
+            "navigationFromKeyboard": {
+              "type": "string"
+            },
+            "navigationToKeyboard": {
+              "type": "string"
+            },
+            "navigationToTouch": {
+              "type": "string"
+            },
+            "newMessage": {
+              "type": "string"
+            }
+          }
+        },
+        "labelLandmark": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "methods": {
+    "close": {},
+    "closeAll": {},
+    "setProperty": {},
+    "getProperty": {},
+    "setProperties": {},
+    "getNodeBySubId": {},
+    "getSubIdByNode": {}
+  },
+  "extension": {}
+};
 /* jslint browser: true*/
 /*
  ** Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
@@ -23,6 +149,7 @@ define(['ojs/ojcore', 'jquery', 'knockout', 'ojs/ojknockout', 'ojs/ojcomposite',
  * @ojstatus preview
  * @ojsignature {target: "Type", value:"class ojMessages extends JetElement<ojMessagesSettableProperties>"}
  * @ojtsimport ojmessage
+ * @ojtsimport ojdataprovider
  *
  * @classdesc
  * <h3 id="messageOverview-section">
@@ -204,28 +331,37 @@ define(['ojs/ojcore', 'jquery', 'knockout', 'ojs/ojknockout', 'ojs/ojcomposite',
 /////////////
 
 /**
- *<p> Specifies the array of structured message data used to display the individual messages.
+ *<p> Specifies the collection of structured message data used to display the individual messages.
  * Instead of providing multiple oj-message as children, this property can be used to conveniently
  * specify the required data as a single collection. Individual message will be automatically
  * created based on this data. See {@link oj.ojMessage.Message} for message values.</p>
- *<p> More information about the structured 'Message' data can be found in documentation for
- *'message' attribute of <code class="prettyprint">oj-message</code> element.</p>
+ * <p> More information about the structured 'Message' data can be found in documentation for
+ * 'message' attribute of <code class="prettyprint">oj-message</code> element.</p>
  *
+ * The collection can be two types:
+ * <li>an array of oj.ojMessage.Message objects.</li>
+ * <li>oj.ArrayDataProvider of oj.ojMessage.Message objects. Look at {@link oj.ArrayDataProvider} for more available options.</li>
  * @example <caption>Initialize component with <code class="prettyprint">messages</code> attribute:</caption>
+ * //example with 'messages' attribute is  an array of oj.ojMessage.Message objects.
  * &lt;!-- emailNotifications is an array of messages, with each entry being of 'Message' type -->
  * &lt;oj-messages messages="[[emailNotifications]]">&lt;/oj-messages>
- *
+ * //example with 'messages' attribute of type dataprovider. See the documentation for {@link oj.ArrayDataProvider} for more details on the available options.
+ * &lt;oj-messages messages="[[dataProvider]]">&lt;/oj-messages>
+ * &lt;!-- dataProvider is an oj.ArrayDataProvider, with each entry being of 'Message' type -->
  * @example <caption>Get or set the <code class="prettyprint">messages</code> property after initialization:</caption>
  *
  * // getter
  * var messages = myMessages.messages;
  *
- * // setter
+ * // setter example using a messages array
  * myMessages.messages = [{"severity": "error", "summary": "Some summary 1", "detail": "Some detail 1"},
  *                        {"severity": "warning", "summary": "Some summary 2", "detail": "Some detail 2"}];
- *
+ * // setter example using DataProvider
+ * var messages = [{"severity": "error", "summary": "Some summary 1", "detail": "Some detail 1"},
+ *                {"severity": "warning", "summary": "Some summary 2", "detail": "Some detail 2"}];
+ * myMessages.messages = new oj.ArrayDataProvider(messages);
  * @expose
- * @type {null | Array.<Object>}
+ * @type {null | Array.<Object> | oj.DataProvider}
  * @name messages
  * @default null
  * @instance
@@ -233,7 +369,7 @@ define(['ojs/ojcore', 'jquery', 'knockout', 'ojs/ojknockout', 'ojs/ojcomposite',
  * @access public
  * @memberof! oj.ojMessages
  * @ojsignature { target: "Type",
- *                value: "Array<oj.ojMessage.Message>|null",
+ *                value: "Array<oj.ojMessage.Message> | null | oj.DataProvider<any, oj.ojMessage.Message>",
  *                jsdocOverride: true}
 **/
 
@@ -245,7 +381,7 @@ define(['ojs/ojcore', 'jquery', 'knockout', 'ojs/ojknockout', 'ojs/ojcomposite',
  * or to communicate some background activity.</p>
  *
  * The presentation of the message is inline by default.  However, when a
- * {@link oj.ojMessages#position} property is provided, the presentation will be an overlay.
+ * {@link oj.ojMessages#position}property is provided, the presentation will be an overlay.
  * The alignment of the overlay will default based on the <code>display</code> property.  The
  * defaults are defined by the theme.
  *
@@ -324,7 +460,6 @@ define(['ojs/ojcore', 'jquery', 'knockout', 'ojs/ojknockout', 'ojs/ojcomposite',
  * @expose
  * @memberof! oj.ojMessages
  * @instance
- * @default {"horizontal" : "center", "vertical" : "top"}
  * @alias position.my
  * @name position.my
  * @type {Object}
@@ -500,6 +635,7 @@ define(['ojs/ojcore', 'jquery', 'knockout', 'ojs/ojknockout', 'ojs/ojcomposite',
  * @expose
  * @type {Object}
  * @name translations
+ * @ojshortdesc A collection of translated resources from the translation bundle, or null if this component has no resources.
  * @memberof! oj.ojMessages
  * @ojtranslatable
  * @member
@@ -672,128 +808,20 @@ define(['ojs/ojcore', 'jquery', 'knockout', 'ojs/ojknockout', 'ojs/ojcomposite',
  * </ul>
  */
 
-var _MESSAGES_METADATA =
-  {
-    name: 'oj-messages',
-    displayName: 'oj-messages',
-    version: '1.0.0',
-    jetVersion: '^5.0.0',
-    properties: {
-      messages: {
-        type: 'Array<object>',
-        writeback: false,
-        value: null
-      },
-
-      display: {
-        type: 'string',
-        enumValues: ['general', 'notification'],
-        translatable: false,
-        value: 'general'
-      },
-
-      position: {
-        type: 'object',
-        translatable: false,
-        properties: {
-          my: {
-            type: 'object|string',
-            properties: {
-              horizontal: {
-                type: 'string',
-                enumValues: ['start', 'end', 'left', 'center', 'right']
-              },
-              vertical: {
-                type: 'string',
-                enumValues: ['top', 'center', 'bottom']
-              }
-            }
-          },
-          at: {
-            type: 'object|string',
-            properties: {
-              horizontal: {
-                type: 'string',
-                enumValues: ['start', 'end', 'left', 'center', 'right']
-              },
-              vertical: {
-                type: 'string',
-                enumValues: ['top', 'center', 'bottom']
-              }
-            }
-          },
-          offset: {
-            type: 'object',
-            properties: {
-              x: {
-                type: 'number'
-              },
-              y: {
-                type: 'number'
-              }
-            }
-          },
-          of: {
-            type: 'string|object'
-          },
-          collision: {
-            type: 'string',
-            enumValues: ['flip', 'fit', 'flipfit', 'flipcenter', 'none']
-          }
-        }
-      },
-
-      translations: {
-        type: 'object',
-        writeback: false,
-        value: { labelLandmark: '' },
-        properties: {
-          labelLandmark: {
-            type: 'string',
-            translatable: true
-          }
-        }
-      }
-    },
-
-    methods: {
-      close: {
-        params: [
-          {
-            name: 'message',
-            type: 'object'
-          }
-        ]
-      },
-      closeAll: {
-        params: [
-          {
-            name: 'filter',
-            type: 'function'
-          }
-        ]
-      }
-    }
-
-  };
-
 var _MESSAGES_VIEW =
   '<div role="presentation" :id="[[containerId]]" :class="[[containerSelectors]]" ' +
   '     on-oj-open="[[handleOpen]]" on-oj-close="[[handleClose]]" ' +
   '     on-oj-animate-start="[[handleAnimateStart]]">' +
   '  <oj-bind-slot>' +
   '  </oj-bind-slot>' +
-//  - switch back to jet when observable inserts are recognized
-//  '  <oj-bind-for-each data="[[$props.messages]]" as="item">' +
-//  '    <template>' +
-//  '      <oj-message message="{{item.data}}">' +
-//  '      </oj-message>' +
-//  '    </template>' +
-//  '  </oj-bind-for-each>' +
-  '    <!-- ko foreach: $props.messages -->' +
-  '    <oj-message message="[[$data]]">' +
-  '    </oj-message>' +
-  '    <!-- /ko -->' +
+  '  <oj-bind-if test="[[$props.messages]]">' +
+  '    <oj-bind-for-each data="[[$props.messages]]" >' +
+  '      <template>' +
+  '        <oj-message message="{{$current.data}}">' +
+  '        </oj-message>' +
+  '      </template>' +
+  '    </oj-bind-for-each>' +
+  '  <oj-bind-if>' +
   '</div>';
 
 function MessagesViewModel(context) {
@@ -941,15 +969,38 @@ MessagesViewModel.prototype._handleOpen = function (event) {
   var message = event.detail.message;
 
   var translations = oj.Translations.getComponentTranslations('oj-ojMessage').categories;
-  var category = !message.category ? translations[message.severity] : message.category;
+
+  // oj.Message has 'fatal' severity which is no different from 'error', oj-message does not support
+  //  'fatal' for this reason. Map 'fatal' to 'error' just to be compatible with cases where the
+  //  message stream could come from existing oj.Message sources.
+  var severity = message.severity === 'fatal' ? 'error' : message.severity;
+  var category = !message.category ? translations[severity] : message.category;
   var options = { category: category, summary: message.summary };
 
   var liveRegion = this._getLiveRegion();
-  var text = oj.Translations.getTranslatedString('oj-ojMessages.ariaLiveRegion.newMessage',
-                 options);
+  var text = this._getTranslationsDefault('ariaLiveRegion.newMessage', options);
   liveRegion.announce(text);
 
   this._refresh();  // re-evaluate the position as the overlay size can change.
+};
+
+MessagesViewModel.prototype._getTranslationsDefault = function (key, options) {
+  var val = this._properties.translations;
+  var keySegments = key.split('.');
+
+  // key is a dot separated qualifier, break it so we can use in [] notation to access sub-props
+  for (var i = 0; (i < keySegments.length) && val; i++) {
+    val = val[keySegments[i]];
+  }
+
+  if (oj.StringUtils.isEmptyOrUndefined(val)) {
+    val = oj.Translations.getTranslatedString(['oj-ojMessages', key].join('.'), options);
+  } else if (options) {
+    // if app dev specified and we have params, insert those for tokens possible in the val
+    val = oj.Translations.applyParameters(val, options);
+  }
+
+  return val;
 };
 
 MessagesViewModel.prototype._handleClose = function (event) {
@@ -1146,11 +1197,14 @@ MessagesViewModel.prototype._getDefaultSlotMessageElements = function () {
   // we just need to deal with "default" slot
   var body = slotMap[''];  // default slot
   for (var i = 0; body && i < body.length; i++) {
-    // any element child node of oj-messages must be a oj-message. Do this validation at times.
+    // any element child node of oj-messages must be a oj-message, do this validation at times.
     if (body[i].nodeName !== 'OJ-MESSAGE') {
-      oj.Logger.error(["JET oj-messages id='", toSelector(this._composite),
-        "': can contain only oj-message children in its default slot. ",
-        "Found a child element id='", toSelector(body[i]), "'."].join(''));
+      // we included oj-bind-if in our view def, so make an exception
+      if (body[i].nodeName !== 'OJ-BIND-IF') {
+        oj.Logger.error(["JET oj-messages id='", toSelector(this._composite),
+          "': can contain only oj-message children in its default slot. ",
+          "Found a child element id='", toSelector(body[i]), "'."].join(''));
+      }
     } else {
       messageElements.push(body[i]);
     }
@@ -1304,9 +1358,11 @@ MessagesViewModel.prototype._announceNavigation = function (isFocusWithin) {
     key = isVOSupported ? 'ariaLiveRegion.navigationToTouch' : 'ariaLiveRegion.navigationToKeyboard';
   }
 
-  var liveRegion = this._getLiveRegion();
-  var message = oj.Translations.getTranslatedString(['oj-ojMessages', key].join('.'));
-  liveRegion.announce(message);
+  if (key) {
+    var liveRegion = this._getLiveRegion();
+    var message = this._getTranslationsDefault(key);
+    liveRegion.announce(message);
+  }
 };
 
 MessagesViewModel.prototype._getLiveRegion = function () {
@@ -1350,9 +1406,9 @@ MessagesViewModel.prototype._computeLabelLandmark = function () {
   var properties = this._properties;
   
   if (oj.StringUtils.isEmptyOrUndefined(properties.translations.labelLandmark)) {
-    return oj.Translations.getTranslatedString('oj-ojMessages.labelLandmark');
-  };
-  
+    return this._getTranslationsDefault('labelLandmark');
+  }
+
   return properties.translations.labelLandmark;
 };
 
@@ -1675,11 +1731,12 @@ LiveRegion._getLiveRegion = function () {
 
 LiveRegion._LIVE_REGION_ID = '__oj_messages_arialiveregion';
 
+/* global __oj_messages_metadata */
 oj.Composite.register('oj-messages',
   {
     view: _MESSAGES_VIEW,
     viewModel: MessagesViewModel,
-    metadata: _MESSAGES_METADATA
+    metadata: __oj_messages_metadata
   });
 
 });

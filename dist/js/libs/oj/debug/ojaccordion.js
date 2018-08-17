@@ -8,6 +8,38 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojcollapsible'],
        function(oj, $)
 {
 
+var __oj_accordion_metadata = 
+{
+  "properties": {
+    "expanded": {
+      "type": "Array<string>|Array<number>|Array<Object>",
+      "writeback": true
+    },
+    "multiple": {
+      "type": "boolean",
+      "value": false
+    },
+    "translations": {
+      "type": "object",
+      "value": {}
+    }
+  },
+  "methods": {
+    "refresh": {},
+    "setProperty": {},
+    "getProperty": {},
+    "setProperties": {},
+    "getNodeBySubId": {},
+    "getSubIdByNode": {}
+  },
+  "events": {
+    "ojBeforeExpand": {},
+    "ojExpand": {},
+    "ojBeforeCollapse": {},
+    "ojCollapse": {}
+  },
+  "extension": {}
+};
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
@@ -987,28 +1019,10 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojcollapsible'],
     });
 }());
 
+/* global __oj_accordion_metadata:false */
 (function () {
-  var ojAccordionMeta = {
-    properties: {
-      expanded: {
-        type: 'Array',
-        writeback: true
-      },
-      multiple: {
-        type: 'boolean'
-      }
-    },
-    events: {
-      beforeCollapse: {},
-      beforeExpand: {},
-      collapse: {},
-      expand: {}
-    },
-    extension: {
-      _WIDGET_NAME: 'ojAccordion'
-    }
-  };
-  oj.CustomElementBridge.registerMetadata('oj-accordion', 'baseComponent', ojAccordionMeta);
+  __oj_accordion_metadata.extension._WIDGET_NAME = 'ojAccordion';
+  oj.CustomElementBridge.registerMetadata('oj-accordion', 'baseComponent', __oj_accordion_metadata);
   oj.CustomElementBridge.register('oj-accordion', { metadata: oj.CustomElementBridge.getMetadata('oj-accordion') });
 }());
 

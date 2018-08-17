@@ -1,16 +1,17 @@
 {
   "name": "oj-chart-series",
-  "version": "5.1.0",
-  "jetVersion": "5.1.0",
+  "version": "5.2.0",
+  "jetVersion": "5.2.0",
   "displayName": "Chart Series",
-  "preview": true,
+  "type": "core",
   "description": "ojChartSeries",
   "properties": {
     "areaColor": {
       "description": "The area color of the series. Only applies if series type is area or lineWithArea.",
       "type": "string",
       "displayName": "Area Color",
-      "value": null
+      "value": null,
+      "format": "color"
     },
     "areaSvgClassName": {
       "description": "The CSS style class to apply if series type is area or lineWithArea. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the color attribute.",
@@ -20,7 +21,7 @@
     },
     "areaSvgStyle": {
       "description": "The inline style to apply if series type is area or lineWithArea. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the color attribute.",
-      "type": "Object",
+      "type": "object",
       "displayName": "Area Svg Style",
       "value": null
     },
@@ -46,7 +47,8 @@
       "description": "The border color of the series.",
       "type": "string",
       "displayName": "Border Color",
-      "value": null
+      "value": null,
+      "format": "color"
     },
     "borderWidth": {
       "description": "The border width of the series.",
@@ -57,73 +59,87 @@
     },
     "boxPlot": {
       "description": "An object containing the style properties of the box plot series.",
-      "type": "Object",
+      "type": "object",
       "displayName": "Box Plot",
-      "value": null,
       "properties": {
         "medianSvgClassName": {
           "description": "The CSS style class to apply to the median line.",
           "type": "string",
+          "displayName": "Median Svg Class Name",
           "value": null
         },
         "medianSvgStyle": {
           "description": "The CSS inline style to apply to the median line.",
-          "type": "Object",
+          "type": "object",
+          "displayName": "Median Svg Style",
           "value": null
         },
         "q2Color": {
           "description": "The color of the Q2 segment of the box.",
           "type": "string",
-          "value": null
+          "displayName": "Q2 Color",
+          "value": null,
+          "format": "color"
         },
         "q2SvgClassName": {
           "description": "The CSS style class to apply to the Q2 segment of the box. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the q2Color attribute.",
           "type": "string",
+          "displayName": "Q2 Svg Class Name",
           "value": null
         },
         "q2SvgStyle": {
           "description": "The CSS inline style to apply to the Q2 segment of the box. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the q2Color attribute.",
-          "type": "Object",
+          "type": "object",
+          "displayName": "Q2 Svg Style",
           "value": null
         },
         "q3Color": {
           "description": "The color of the Q3 segment of the box.",
           "type": "string",
-          "value": null
+          "displayName": "Q3 Color",
+          "value": null,
+          "format": "color"
         },
         "q3SvgClassName": {
           "description": "The CSS style class to apply to the Q3 segment of the box. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the q3Color attribute.",
           "type": "string",
+          "displayName": "Q3 Svg Class Name",
           "value": null
         },
         "q3SvgStyle": {
           "description": "The CSS inline style to apply to the Q3 segment of the box. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the q3Color attribute.",
-          "type": "Object",
+          "type": "object",
+          "displayName": "Q3 Svg Style",
           "value": null
         },
         "whiskerEndLength": {
           "description": "Specifies the length of the whisker ends in pixels (e.g. '9px') or as a percentage of the box width (e.g. '50%').",
           "type": "string",
+          "displayName": "Whisker End Length",
           "value": null
         },
         "whiskerEndSvgClassName": {
           "description": "The CSS style class to apply to the whisker ends.",
           "type": "string",
+          "displayName": "Whisker End Svg Class Name",
           "value": null
         },
         "whiskerEndSvgStyle": {
           "description": "The CSS inline style to apply to the whisker ends.",
-          "type": "Object",
+          "type": "object",
+          "displayName": "Whisker End Svg Style",
           "value": null
         },
         "whiskerSvgClassName": {
           "description": "The CSS style class to apply to the whisker stems.",
           "type": "string",
+          "displayName": "Whisker Svg Class Name",
           "value": null
         },
         "whiskerSvgStyle": {
           "description": "The CSS inline style to apply to the whisker stems.",
-          "type": "Object",
+          "type": "object",
+          "displayName": "Whisker Svg Style",
           "value": null
         }
       }
@@ -138,7 +154,8 @@
       "description": "The color of the series.",
       "type": "string",
       "displayName": "Color",
-      "value": null
+      "value": null,
+      "format": "color"
     },
     "displayInLegend": {
       "description": "Defines whether the series should be shown in the legend. When set to 'auto', the series will not be displayed in the legend if it has null data or if it is a stock, funnel, or pyramid series.",
@@ -260,7 +277,8 @@
       "description": "The color of the data markers, if different from the series color.",
       "type": "string",
       "displayName": "Marker Color",
-      "value": null
+      "value": null,
+      "format": "color"
     },
     "markerDisplayed": {
       "description": "Defines whether the data markers should be displayed. Only applies to line, area, scatter, and bubble series. If auto, the markers will be displayed whenever the data points are not connected by a line.",
@@ -345,7 +363,7 @@
     },
     "markerSvgStyle": {
       "description": "The inline style to apply to the data markers. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the marker color attribute.",
-      "type": "Object",
+      "type": "object",
       "displayName": "Marker Svg Style",
       "value": null
     },
@@ -470,7 +488,7 @@
     },
     "svgStyle": {
       "description": "The inline style to apply to the series. For series of type lineWithArea, this style will only be applied to the line if areaStyle is also specified.The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the color attribute.",
-      "type": "Object",
+      "type": "object",
       "displayName": "Svg Style",
       "value": null
     },

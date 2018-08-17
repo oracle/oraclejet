@@ -1,0 +1,122 @@
+{
+  "name": "oj-thematic-map-link",
+  "version": "5.2.0",
+  "jetVersion": "5.2.0",
+  "displayName": "Thematic Map Link",
+  "type": "core",
+  "description": "ojThematicMapLink",
+  "properties": {
+    "categories": {
+      "description": "An array of category strings corresponding to this link. This allows highlighting and filtering of links.\nBy default, the label is used as the link category.",
+      "type": "Array<string>",
+      "displayName": "Categories",
+      "value": []
+    },
+    "color": {
+      "description": "The link color.",
+      "type": "string",
+      "displayName": "Color",
+      "value": "",
+      "format": "color"
+    },
+    "endLocation": {
+      "description": "An object used to determine the end point of the link.",
+      "type": "object",
+      "displayName": "End Location",
+      "value": {},
+      "properties": {
+        "id": {
+          "description": "The marker or area id to be used as the end point.",
+          "type": "any",
+          "displayName": "Id"
+        },
+        "location": {
+          "description": "An identifier corresponding to a Feature provided in the mapProvider geo object\nto be used as the end point.",
+          "type": "string",
+          "displayName": "Location"
+        },
+        "x": {
+          "description": "The x coordinate which can represent latitude of the end point.",
+          "type": "number",
+          "displayName": "X"
+        },
+        "y": {
+          "description": "The y coordinate which can represent latitude of the end point.",
+          "type": "number",
+          "displayName": "Y"
+        }
+      }
+    },
+    "selectable": {
+      "description": "Specifies whether or not the link will be selectable.",
+      "type": "string",
+      "displayName": "Selectable",
+      "value": "auto",
+      "enumValues": [
+        "auto",
+        "off"
+      ],
+      "propertyEditorValues": {
+        "auto": {
+          "displayName": "Auto"
+        },
+        "off": {
+          "displayName": "Off"
+        }
+      }
+    },
+    "shortDesc": {
+      "description": "The text that displays in the link's tooltip.",
+      "type": "string",
+      "displayName": "Short Desc",
+      "value": ""
+    },
+    "startLocation": {
+      "description": "An object used to determine the start point of the link.",
+      "type": "object",
+      "displayName": "Start Location",
+      "value": {},
+      "properties": {
+        "id": {
+          "description": "The marker or area id to be used as the start point.",
+          "type": "any",
+          "displayName": "Id"
+        },
+        "location": {
+          "description": "An identifier corresponding to a Feature provided in the mapProvider geo object\nto be used as the start point.",
+          "type": "string",
+          "displayName": "Location"
+        },
+        "x": {
+          "description": "The x coordinate which can represent latitude of the start point.",
+          "type": "number",
+          "displayName": "X"
+        },
+        "y": {
+          "description": "The y coordinate which can represent latitude of the start point.",
+          "type": "number",
+          "displayName": "Y"
+        }
+      }
+    },
+    "svgClassName": {
+      "description": "The CSS style class defining the style of the link.",
+      "type": "string",
+      "displayName": "Svg Class Name",
+      "value": ""
+    },
+    "svgStyle": {
+      "description": "The CSS style object defining the style of the link.",
+      "type": "object",
+      "displayName": "Svg Style",
+      "value": {}
+    },
+    "width": {
+      "description": "The link width in pixels.",
+      "type": "number",
+      "displayName": "Width",
+      "value": 2,
+      "units": "\"pixels\""
+    }
+  }
+}

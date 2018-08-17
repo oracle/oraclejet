@@ -6,6 +6,149 @@
 "use strict";
 define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/internal-deps/dvt/DvtTimeAxis', 'ojs/ojvalidation-datetime'], function (oj, $, comp, base, dvt)
 {
+  
+
+var __oj_time_axis_metadata = 
+{
+  "properties": {
+    "converter": {
+      "type": "object",
+      "value": "{\r           \"default\": null,\r           \"seconds\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric', 'minute': '2-digit', 'second': '2-digit'}),\r           \"minutes\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric', 'minute': '2-digit'}),\r           \"hours\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric'}),\r           \"days\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'numeric', 'day': '2-digit'}),\r           \"weeks\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'numeric', 'day': '2-digit'}),\r           \"months\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'long'}),\r           \"quarters\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'long'}),\r           \"years\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'year': 'numeric'})\r         }",
+      "properties": {
+        "default": {
+          "type": "oj.Converter<string>"
+        },
+        "seconds": {
+          "type": "oj.Converter<string>",
+          "value": "oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({hour: numeric, minute: 2-digit, second: 2-digit})"
+        },
+        "minutes": {
+          "type": "oj.Converter<string>",
+          "value": "oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({hour: numeric, minute: 2-digit})"
+        },
+        "hours": {
+          "type": "oj.Converter<string>",
+          "value": "oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({hour: numeric})"
+        },
+        "days": {
+          "type": "oj.Converter<string>",
+          "value": "oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({month: numeric, day: 2-digit})"
+        },
+        "weeks": {
+          "type": "oj.Converter<string>",
+          "value": "oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({month: numeric, day: 2-digit})"
+        },
+        "months": {
+          "type": "oj.Converter<string>",
+          "value": "oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({month: long})"
+        },
+        "quarters": {
+          "type": "oj.Converter<string>",
+          "value": "oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({month: long})"
+        },
+        "years": {
+          "type": "oj.Converter<string>",
+          "value": "oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({year: numeric})"
+        }
+      }
+    },
+    "end": {
+      "type": "string",
+      "value": ""
+    },
+    "scale": {
+      "type": "string",
+      "enumValues": [
+        "days",
+        "hours",
+        "minutes",
+        "months",
+        "quarters",
+        "seconds",
+        "weeks",
+        "years"
+      ]
+    },
+    "start": {
+      "type": "string",
+      "value": ""
+    },
+    "trackResize": {
+      "type": "string",
+      "enumValues": [
+        "off",
+        "on"
+      ],
+      "value": "on"
+    },
+    "translations": {
+      "type": "object",
+      "value": {},
+      "properties": {
+        "componentName": {
+          "type": "string"
+        },
+        "labelAndValue": {
+          "type": "string"
+        },
+        "labelClearSelection": {
+          "type": "string"
+        },
+        "labelCountWithTotal": {
+          "type": "string"
+        },
+        "labelDataVisualization": {
+          "type": "string"
+        },
+        "labelInvalidData": {
+          "type": "string"
+        },
+        "labelNoData": {
+          "type": "string"
+        },
+        "stateCollapsed": {
+          "type": "string"
+        },
+        "stateDrillable": {
+          "type": "string"
+        },
+        "stateExpanded": {
+          "type": "string"
+        },
+        "stateHidden": {
+          "type": "string"
+        },
+        "stateIsolated": {
+          "type": "string"
+        },
+        "stateMaximized": {
+          "type": "string"
+        },
+        "stateMinimized": {
+          "type": "string"
+        },
+        "stateSelected": {
+          "type": "string"
+        },
+        "stateUnselected": {
+          "type": "string"
+        },
+        "stateVisible": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "methods": {
+    "refresh": {},
+    "setProperty": {},
+    "getProperty": {},
+    "setProperties": {},
+    "getNodeBySubId": {},
+    "getSubIdByNode": {}
+  },
+  "extension": {}
+};
 /**
  * Copyright (c) 2016, Oracle and/or its affiliates.
  * All rights reserved.
@@ -158,6 +301,7 @@ oj.__registerWidget('oj.ojTimeAxis', $['oj']['dvtBaseComponent'],
      * @memberof oj.ojTimeAxis
      * @instance
      * @type {string}
+     * @ojformat date-time
      * @default ""
      * 
      * @example <caption>Initialize the TimeAxis with the <code class="prettyprint">start</code> attribute specified:</caption>
@@ -178,6 +322,7 @@ oj.__registerWidget('oj.ojTimeAxis', $['oj']['dvtBaseComponent'],
      * @memberof oj.ojTimeAxis
      * @instance
      * @type {string}
+     * @ojformat date-time
      * @default ""
      * 
      * @example <caption>Initialize the TimeAxis with the <code class="prettyprint">end</code> attribute specified:</caption>
@@ -419,117 +564,15 @@ oj.__registerWidget('oj.ojTimeAxis', $['oj']['dvtBaseComponent'],
  * @property {oj.Converter.<string>} [years=oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'year': 'numeric'})] The converter (an object literal or instance that duck types {@link oj.Converter}) used for the 'years' scale. If not specified, the default converter will be used for this scale. See {@link oj.DateTimeConverterFactory} for details on creating built-in datetime converters.
  */
 
+/* global __oj_time_axis_metadata:false */
 /**
  * Ignore tag only needed for DVTs that have jsDoc in separate _doc.js files.
  * @ignore
  */
-(function() {
-var ojTimeAxisMeta = {
-  "properties": {
-    "converter": {
-      "type": "object",
-      "properties": {
-        "days": {},
-        "default": {},
-        "hours": {},
-        "minutes": {},
-        "months": {},
-        "quarters": {},
-        "seconds": {},
-        "weeks": {},
-        "years": {}
-      }
-    },
-    "end": {
-      "type": "string"
-    },
-    "scale": {
-      "type": "string",
-      "enumValues": ["seconds", "minutes", "hours", "days", "weeks", "months", "quarters", "years"]
-    },
-    "start": {
-      "type": "string"
-    },
-    "translations": {
-      "type": "Object",
-      "properties": {
-        "componentName": {
-          "type": "string",
-          "value": "Time Axis"
-        },
-        "labelAndValue": {
-          "type": "string",
-          "value": "{0}: {1}"
-        },
-        "labelClearSelection": {
-          "type": "string",
-          "value": "Clear Selection"
-        },
-        "labelCountWithTotal": {
-          "type": "string",
-          "value": "{0} of {1}"
-        },
-        "labelDataVisualization": {
-          "type": "string",
-          "value": "Data Visualization"
-        },
-        "labelInvalidData": {
-          "type": "string",
-          "value": "Invalid data"
-        },
-        "labelNoData": {
-          "type": "string",
-          "value": "No data to display"
-        },
-        "stateCollapsed": {
-          "type": "string",
-          "value": "Collapsed"
-        },
-        "stateDrillable": {
-          "type": "string",
-          "value": "Drillable"
-        },
-        "stateExpanded": {
-          "type": "string",
-          "value": "Expanded"
-        },
-        "stateHidden": {
-          "type": "string",
-          "value": "Hidden"
-        },
-        "stateIsolated": {
-          "type": "string",
-          "value": "Isolated"
-        },
-        "stateMaximized": {
-          "type": "string",
-          "value": "Maximized"
-        },
-        "stateMinimized": {
-          "type": "string",
-          "value": "Minimized"
-        },
-        "stateSelected": {
-          "type": "string",
-          "value": "Selected"
-        },
-        "stateUnselected": {
-          "type": "string",
-          "value": "Unselected"
-        },
-        "stateVisible": {
-          "type": "string",
-          "value": "Visible"
-        }
-      }
-    }
-  },
-  "methods": {},
-  "extension": {
-    _WIDGET_NAME: "ojTimeAxis"
-  }
-};
-oj.CustomElementBridge.registerMetadata('oj-time-axis', 'dvtBaseComponent', ojTimeAxisMeta);
-oj.CustomElementBridge.register('oj-time-axis', {'metadata': oj.CustomElementBridge.getMetadata('oj-time-axis')});
-})();
+(function () {
+  __oj_time_axis_metadata.extension._WIDGET_NAME = 'ojTimeAxis';
+  oj.CustomElementBridge.registerMetadata('oj-time-axis', 'dvtBaseComponent', __oj_time_axis_metadata);
+  oj.CustomElementBridge.register('oj-time-axis', { metadata: oj.CustomElementBridge.getMetadata('oj-time-axis') });
+}());
+
 });

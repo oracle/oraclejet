@@ -6,6 +6,10 @@
 "use strict";
 define(['ojs/ojcore', 'jquery', 'knockout', 'ojs/ojkoshared', 'customElements'], function(oj, $, ko)
 {
+var __oj_defer_metadata = 
+{
+  "extension": {}
+};
 /**
  * @protected
  * @ignore

@@ -10,7 +10,53 @@ define(['ojs/ojcore', 'ojs/ojcomponentcore', 'ojs/ojlabel'],
         */
        function(oj)
 {
-
+//%COMPONENT_METADATA%
+var __oj_form_layout_metadata = 
+{
+  "properties": {
+    "direction": {
+      "type": "string",
+      "enumValues": [
+        "column",
+        "row"
+      ],
+      "value": "column"
+    },
+    "labelEdge": {
+      "type": "string",
+      "enumValues": [
+        "start",
+        "top"
+      ],
+      "value": "top"
+    },
+    "labelWidth": {
+      "type": "string",
+      "value": "33%"
+    },
+    "labelWrapping": {
+      "type": "string",
+      "enumValues": [
+        "truncate",
+        "wrap"
+      ],
+      "value": "wrap"
+    },
+    "maxColumns": {
+      "type": "number",
+      "value": 1
+    }
+  },
+  "methods": {
+    "setProperty": {},
+    "getProperty": {},
+    "setProperties": {},
+    "refresh": {},
+    "getNodeBySubId": {},
+    "getSubIdByNode": {}
+  },
+  "extension": {}
+};
 /**
  * Copyright (c) 2017, Oracle and/or its affiliates.
  * All rights reserved.
@@ -179,6 +225,7 @@ define(['ojs/ojcore', 'ojs/ojcomponentcore', 'ojs/ojlabel'],
  * @instance
  * @type {number}
  * @default 1
+ * @ojmin 1
  * @desc Specifies the maximum number of columns.
  *
  * @example <caption>Initialize the oj-form-layout with the <code class="prettyprint">max-columns</code> attribute specified:</caption>
@@ -247,44 +294,11 @@ define(['ojs/ojcore', 'ojs/ojcomponentcore', 'ojs/ojlabel'],
  * @instance
  */ 
 
-/**
- * @ignore
- */
-var ojFormLayoutMeta = {
-  "properties": {
-    "direction": {
-      "type": "string",
-      "enumValues": ["column", "row"],
-      "value": "column"
-    },
-    "labelEdge": {
-      "type": "string",
-      "enumValues": ["start", "top"],
-      "value": "top"
-    },
-    "labelWidth": {
-      "type": "string",
-      "value": "33%"
-    },
-    "labelWrapping": {
-      "type": "string",
-      "enumValues": ["truncate", "wrap"],
-      "value": "wrap"
-    },
-    "maxColumns": {
-      "type": "number",
-      "value": 1
-    }
-  },
-  "extension": {
-    _CONSTRUCTOR: ojFormLayout
-  }
-};
-Object.freeze(ojFormLayoutMeta);
+/* global __oj_form_layout_metadata */
+Object.freeze(__oj_form_layout_metadata);
 
 // counter for the generation of unique ids.
 var _uidCounter = 0;
-
 
 /**
  * The _ojFormLayout constructor function.  This function adds a wrapper div with
@@ -293,6 +307,7 @@ var _uidCounter = 0;
  * @constructor
  * @private
  */
+// eslint-disable-next-line no-unused-vars
 function ojFormLayout(context) {
   var self = this;
   var element = context.element;
@@ -1074,6 +1089,7 @@ function ojFormLayout(context) {
     flexItem.style.width = width;
 
     flexContainer.appendChild(flexItem);
+    return flexItem;
   }
 
   function _addMissingFlexItems(flexContainer, count) {
@@ -1089,6 +1105,7 @@ function ojFormLayout(context) {
 
   function _addFlexDivs(label, elem, createOjFlex) {
     var ojFlex;
+    var emptyLabelFlexItem;
     var labelOjFlexItem;
     var elementOjFlexItem;
 
@@ -1102,7 +1119,7 @@ function ojFormLayout(context) {
     if (!elem) {
       // We need this zero width flex-item because we need to have pairs of flex-items
       // or the scss selectors for inline labels won't get picked up correctly.
-      _addEmptyFlexItem(ojFlex, "0px"); // create a zero width label flex-item div
+      emptyLabelFlexItem = _addEmptyFlexItem(ojFlex, '0px'); // create a zero width label flex-item div
     }
 
     labelOjFlexItem = _createDivElement('oj-flex-item');
@@ -1120,6 +1137,19 @@ function ojFormLayout(context) {
     if (elem) {
       elementOjFlexItem = _createDivElement("oj-flex-item");
       ojFlex.appendChild(elementOjFlexItem); // @HTMLUpdateOK append div containing trusted content.
+
+      if (element.direction === 'row' && element.labelEdge === 'top') {
+        // For the direction row case when labels are on top, we move the label into the value part,
+        // and make the label flex item 0px width and add the 'oj-formlayout-no-label-flex-item class
+        // to get the correct padding
+        elementOjFlexItem.appendChild(label);
+        labelOjFlexItem.style.webkitFlex = '0 1 0px';
+        labelOjFlexItem.style.flex = '0 1 0px';
+        labelOjFlexItem.style.maxWidth = '0px';
+        labelOjFlexItem.style.width = '0px';
+        labelOjFlexItem.classList.add('oj-formlayout-no-label-flex-item');
+        elementOjFlexItem.classList.add('oj-formlayout-no-label-flex-item');
+      }
       elementOjFlexItem.appendChild(elem); // @HTMLUpdateOK append element containing trusted content.
 
       // Set the flex style of the value flex item.
@@ -1127,6 +1157,11 @@ function ojFormLayout(context) {
       // remaining space left over by "label" flex items equally.  
       elementOjFlexItem.style.webkitFlex = "1 1 0";
       elementOjFlexItem.style.flex = "1 1 0";
+    } else {
+      // for the case where there is an empty label flex item with 0px width, we need to add this class
+      // so that we get the correct padding on the flex items
+      emptyLabelFlexItem.classList.add('oj-formlayout-no-label-flex-item');
+      labelOjFlexItem.classList.add('oj-formlayout-no-label-flex-item'); // This is actually the element
     }
 
     return ojFlex;
@@ -1276,7 +1311,12 @@ function ojFormLayout(context) {
   }
 }
 
-oj.CustomElementBridge.registerMetadata('oj-form-layout', null, ojFormLayoutMeta);
-oj.CustomElementBridge.register('oj-form-layout', {'metadata': oj.CustomElementBridge.getMetadata('oj-form-layout')});
+/* global __oj_form_layout_metadata:false */
+/* global ojFormLayout */
+(function () {
+  __oj_form_layout_metadata.extension._CONSTRUCTOR = ojFormLayout;
+  oj.CustomElementBridge.registerMetadata('oj-form-layout', null, __oj_form_layout_metadata);
+  oj.CustomElementBridge.register('oj-form-layout', { metadata: oj.CustomElementBridge.getMetadata('oj-form-layout') });
+}());
 
 });

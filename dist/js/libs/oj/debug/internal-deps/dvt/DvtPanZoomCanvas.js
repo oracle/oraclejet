@@ -5236,12 +5236,14 @@ dvt.PanZoomCanvasEventManager.prototype.OnMouseDown = function(event) {
  * @override
  */
 dvt.PanZoomCanvasEventManager.prototype.OnMouseMove = function(event) {
-  //Fix for  - chrome: single selection doesn't work.
-  //Intermittent bug - chrome sends mousemove event on click, that we treat as an attempt to pan,
-  //consume the event and prevent the selection.
-  //Check for position to verify if this is a legitimate mousemove
+  // Fixes for:
+  //  - chrome: single selection doesn't work
+  //  - node is not selected if mouse pointer is moved slightly - drag and drop
+  // Add a small tolerance for mouse moves before attempting to pan to avoid consuming the event
+  // and preventing the selection.
+  // Check for position to verify if this is a legitimate mousemove
   var pos = this._callbackObj.GetRelativeMousePosition(event);
-  if (pos.x === this._px && pos.y === this._py)
+  if (Math.abs(pos.x - this._px) <= 3 && Math.abs(pos.y - this._py) <= 3)
     return;
 
   if (this._bDown) {

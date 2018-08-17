@@ -8,6 +8,22 @@ define(['ojs/ojcore', 'jquery', 'knockout', 'ojs/ojcomponentcore', 'ojs/ojlistvi
        function(oj, $, ko)
 {
 
+var __oj_progress_list_metadata = 
+{
+  "properties": {
+    "data": {
+      "type": "oj.DataProvider|oj.TableDataSource"
+    }
+  },
+  "methods": {
+    "setProperty": {},
+    "getProperty": {},
+    "setProperties": {},
+    "getNodeBySubId": {},
+    "getSubIdByNode": {}
+  },
+  "extension": {}
+};
 /**
  * Copyright (c) 2017, Oracle and/or its affiliates.
  * All rights reserved.
@@ -333,18 +349,6 @@ oj.Composite.register('oj-progress-item',
  * myProgressList.data = dataProvider;
  */
 
-/**
- * @ignore
- */
-var progressListMetadata =
-  {
-    properties: {
-      data: {
-        type: 'Object'
-      }
-    }
-  };
-
 var progressListView =
   "<oj-list-view data-bind=\"attr: {id: $unique + '_list'}\"" +
   "              aria-label='list using array'" +
@@ -369,11 +373,12 @@ function progressListViewModel(context) {
   };
 }
 
+/* global __oj_progress_list_metadata */
 oj.Composite.register('oj-progress-list',
   {
     view: progressListView,
     viewModel: progressListViewModel,
-    metadata: progressListMetadata
+    metadata: __oj_progress_list_metadata
   });
 
 /**

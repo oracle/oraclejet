@@ -1,12 +1,9 @@
 {
   "name": "oj-list-view",
-  "version": "5.1.0",
-  "jetVersion": "5.1.0",
+  "version": "5.2.0",
+  "jetVersion": "5.2.0",
   "displayName": "List View",
-  "preview": true,
-  "roles": [
-    "grid"
-  ],
+  "type": "core",
   "styleClasses": [
     {
       "styleGroup": [
@@ -39,8 +36,7 @@
       "description": "Gets and sets the alias for the current item when referenced inside the item template.",
       "type": "string",
       "displayName": "As",
-      "value": "",
-      "preview": true
+      "value": ""
     },
     "currentItem": {
       "description": "Gets and sets the key of the item that should have keyboard focus.",
@@ -57,44 +53,41 @@
     },
     "dnd": {
       "description": "Customize the drag and drop features.",
-      "type": "Object",
+      "type": "object",
       "displayName": "Dnd",
-      "value": {
-        "drag": null,
-        "drop": null,
-        "reorder": {
-          "items": "disabled"
-        }
-      },
       "properties": {
         "drag": {
           "description": "Customize the drag functionalities.",
-          "type": "Object",
-          "value": null,
+          "type": "object",
+          "displayName": "Drag",
           "properties": {
             "items": {
               "description": "If this object is specified, listview will initiate drag operation when the user drags on either a drag handle, which is an element with oj-listview-drag-handle class, or\nselected items if no drag handle is set on the item.",
-              "type": "Object",
-              "value": null,
+              "type": "object",
+              "displayName": "Items",
               "properties": {
                 "dataTypes": {
                   "description": "The MIME types to use for the dragged data in the dataTransfer object. This can be a string if there is only one \ntype, or an array of strings if multiple types are needed.\nFor example, if selected items of employee data are being dragged, dataTypes could be \"application/employees+json\". Drop targets can examine the data types and decide\nwhether to accept the data. A text input may only accept \"text\" data type, while a chart for displaying employee data may be configured to accept the \"application/employees+json\" type.\nFor each type in the array, dataTransfer.setData will be called with the specified type and the JSON version of the selected item data as the value. The selected item data \nis an array of objects, with each object representing a model object from the underlying data source. For example, if the underlying data is an oj.Collection, then this\nwould be a oj.Model object. Note that when static HTML is used, then the value would be the html string of the selected item.\nThis property is required unless the application calls setData itself in a dragStart callback function.",
                   "type": "string|Array<string>",
+                  "displayName": "Data Types",
                   "value": null
                 },
                 "drag": {
                   "description": "An optional callback function that receives the \"drag\" event as argument.",
                   "type": "function",
+                  "displayName": "Drag",
                   "value": null
                 },
                 "dragEnd": {
                   "description": "An optional callback function that receives the \"dragend\" event as argument.",
                   "type": "function",
+                  "displayName": "Drag End",
                   "value": null
                 },
                 "dragStart": {
                   "description": "A callback function that receives the \"dragstart\" event and context information as arguments. The ontext information has the following properties: items: An array of items being dragged \n\nThis function can set its own data and drag image as needed. If dataTypes is specified, event.dataTransfer is already populated with the default data when this function is invoked.\nIf dataTypes is not specified, this function must call event.dataTransfer.setData to set the data or else the drag operation will be cancelled. In either case, the drag image is \nset to an image of the dragged rows on the listview.",
                   "type": "function",
+                  "displayName": "Drag Start",
                   "value": null
                 }
               }
@@ -103,38 +96,57 @@
         },
         "drop": {
           "description": "Customize the drop functionalities.",
-          "type": "Object",
-          "value": null,
+          "type": "object",
+          "displayName": "Drop",
           "properties": {
             "items": {
               "description": "An object that specifies callback functions to handle dropping items.",
-              "type": "Object",
-              "value": null,
+              "type": "object",
+              "displayName": "Items",
               "properties": {
                 "dataTypes": {
                   "description": "A data type or an array of data types this component can accept.\nThis property is required unless dragEnter, dragOver, and drop callback functions are specified to handle the corresponding events.",
                   "type": "string|Array<string>",
+                  "displayName": "Data Types",
                   "value": null
                 },
                 "dragEnter": {
                   "description": "An optional callback function that receives the \"dragenter\" event and context information as arguments. The context information has the following properties: item: the item being entered \n\nThis function should call event.preventDefault to indicate the dragged data can be accepted.",
                   "type": "function",
+                  "displayName": "Drag Enter",
                   "value": null
                 },
                 "dragLeave": {
                   "description": "An optional callback function that receives the \"dragleave\" event and context information as arguments. The context information has the following properties: item: the item that was last entered \n",
                   "type": "function",
+                  "displayName": "Drag Leave",
                   "value": null
                 },
                 "dragOver": {
                   "description": "An optional callback function that receives the \"dragover\" event and context information as arguments. The context information has the following properties: item: the item being dragged over \n\nSimilar to dragEnter, this function should call event.preventDefault to indicate the dragged data can be accepted.",
                   "type": "function",
+                  "displayName": "Drag Over",
                   "value": null
                 },
                 "drop": {
                   "description": "A callback function that receives the \"drop\" event and context information as arguments. The context information has the following properties: item: the item being dropped on position: the drop position relative to the item being dropped on reorder: true if the drop was a reorder in the same listview, false otherwise \n\nThis function should call event.preventDefault to indicate the dragged data is accepted.\nIf the application needs to look at the data for the item being dropped on, it can use the getDataForVisibleItem method.",
                   "type": "function",
-                  "value": null
+                  "displayName": "Drop",
+                  "value": null,
+                  "properties": {
+                    "item": {
+                      "description": "the item being dropped on",
+                      "type": "Element"
+                    },
+                    "position": {
+                      "description": "the drop position relative to the item being dropped on",
+                      "type": "'before'|'after'|'inside'"
+                    },
+                    "reorder": {
+                      "description": "true if the drop was a reorder in the same listview, false otherwise",
+                      "type": "boolean"
+                    }
+                  }
                 }
               }
             }
@@ -142,11 +154,13 @@
         },
         "reorder": {
           "description": "Customize the item reordering functionalities.",
-          "type": "Object",
+          "type": "object",
+          "displayName": "Reorder",
           "properties": {
             "items": {
               "description": "Enable or disable the item reordering functionalities.",
               "type": "string",
+              "displayName": "Items",
               "value": "disabled",
               "enumValues": [
                 "disabled",
@@ -196,7 +210,7 @@
     },
     "firstSelectedItem": {
       "description": "Gets the key and data of the first selected item. The first selected item is defined as the first\nkey returned by the selection property. The value of this property contains:\n\nkey - the key of the first selected item.\ndata - the data of the first selected item. If the selected item is not locally available, this will be null. If the data property is not set and that static HTML element is used as data, then this will be the item element.\n\nIf no items are selected then this property will return an object with both key and data properties set to null.",
-      "type": "Object",
+      "type": "object",
       "displayName": "First Selected Item",
       "value": {
         "key": null,
@@ -237,23 +251,128 @@
     },
     "item": {
       "description": "Customize the functionalities of each item on the list.",
-      "type": "Object",
+      "type": "object",
       "displayName": "Item",
       "properties": {
         "focusable": {
           "description": "Gets and sets whether item can receive keyboard focus.",
           "type": "boolean|function",
-          "value": true
+          "displayName": "Focusable",
+          "value": true,
+          "properties": {
+            "datasource": {
+              "description": "the data source/data provider",
+              "type": "oj.DataProvider<K, D>"
+            },
+            "index": {
+              "description": "the zero based index of the item, relative to its parent",
+              "type": "number"
+            },
+            "key": {
+              "description": "the key of the item",
+              "type": "K"
+            },
+            "data": {
+              "description": "the data object of the item",
+              "type": "D"
+            },
+            "parentElement": {
+              "description": "the item DOM element",
+              "type": "Element"
+            },
+            "depth": {
+              "description": "the depth of the item",
+              "type": "number"
+            },
+            "parentKey": {
+              "description": "the key of the parent item",
+              "type": "K"
+            },
+            "leaf": {
+              "description": "whether the item is a leaf",
+              "type": "boolean"
+            }
+          }
         },
         "renderer": {
           "description": "Gets and sets the renderer for the item.",
           "type": "null|function",
-          "value": null
+          "displayName": "Renderer",
+          "value": null,
+          "properties": {
+            "datasource": {
+              "description": "the data source/data provider",
+              "type": "oj.DataProvider<K, D>"
+            },
+            "index": {
+              "description": "the zero based index of the item, relative to its parent",
+              "type": "number"
+            },
+            "key": {
+              "description": "the key of the item",
+              "type": "K"
+            },
+            "data": {
+              "description": "the data object of the item",
+              "type": "D"
+            },
+            "parentElement": {
+              "description": "the item DOM element",
+              "type": "Element"
+            },
+            "depth": {
+              "description": "the depth of the item",
+              "type": "number"
+            },
+            "parentKey": {
+              "description": "the key of the parent item",
+              "type": "K"
+            },
+            "leaf": {
+              "description": "whether the item is a leaf",
+              "type": "boolean"
+            }
+          }
         },
         "selectable": {
           "description": "Gets and sets whether the item can be selected.",
           "type": "boolean|function",
-          "value": true
+          "displayName": "Selectable",
+          "value": true,
+          "properties": {
+            "datasource": {
+              "description": "the data source/data provider",
+              "type": "oj.DataProvider<K, D>"
+            },
+            "index": {
+              "description": "the zero based index of the item, relative to its parent",
+              "type": "number"
+            },
+            "key": {
+              "description": "the key of the item",
+              "type": "K"
+            },
+            "data": {
+              "description": "the data object of the item",
+              "type": "D"
+            },
+            "parentElement": {
+              "description": "the item DOM element",
+              "type": "Element"
+            },
+            "depth": {
+              "description": "the depth of the item",
+              "type": "number"
+            },
+            "parentKey": {
+              "description": "the key of the parent item",
+              "type": "K"
+            },
+            "leaf": {
+              "description": "whether the item is a leaf",
+              "type": "boolean"
+            }
+          }
         }
       }
     },
@@ -285,23 +404,26 @@
         "fetchSize": {
           "description": "The number of items to fetch in each block",
           "type": "number",
+          "displayName": "Fetch Size",
           "value": 25
         },
         "maxCount": {
           "description": "The maximum total number of items to fetch",
           "type": "number",
+          "displayName": "Max Count",
           "value": 500
         },
         "scroller": {
           "description": "The element which listview uses to determine the scroll position as well as the maximum scroll position. For example in a lot of mobile use cases where ListView occupies the entire screen, developers should set the scroller option to document.documentElement.",
           "type": "Element",
+          "displayName": "Scroller",
           "value": null
         }
       }
     },
     "scrollPosition": {
       "description": "Gets and sets the scroll position of list view.",
-      "type": "Object",
+      "type": "object",
       "displayName": "Scroll Position",
       "value": {
         "x": 0,
@@ -374,66 +496,79 @@
       "description": "Gets and sets whether there should be at least one item selected when selection is enabled.",
       "type": "boolean",
       "displayName": "Selection Required",
-      "value": false,
-      "preview": true
+      "value": false
     },
     "translations": {
-      "description": "A collection of translated resources from the translation bundle, or null if this\ncomponent has no resources. Resources may be accessed and overridden individually or collectively, as seen in the examples. If the component does not contain any translatable resource, the default value of this attribute will be \nnull. If not, an object containing all resources relevant to the component.\n\nIf this component has translations, their documentation immediately follows this doc entry.",
-      "type": "Object|null",
+      "description": "A collection of translated resources from the translation bundle, or null if this component has no resources.",
+      "type": "object|null",
       "displayName": "Translations",
+      "value": {},
       "translatable": true,
       "properties": {
         "accessibleNavigateSkipItems": {
           "description": "Provides properties to customize the screen reader text when focus skips a number of items as a result of up/down arrow navigation in card layout mode.",
-          "type": "string"
+          "type": "string",
+          "displayName": "Accessible Navigate Skip Items"
         },
         "accessibleReorderAfterItem": {
           "description": "Provides properties to customize the screen reader text when the tentative drop target is after a certain item.",
-          "type": "string"
+          "type": "string",
+          "displayName": "Accessible Reorder After Item"
         },
         "accessibleReorderBeforeItem": {
           "description": "Provides properties to customize the screen reader text when the tentative drop target is before a certain item.",
-          "type": "string"
+          "type": "string",
+          "displayName": "Accessible Reorder Before Item"
         },
         "accessibleReorderInsideItem": {
           "description": "Provides properties to customize the screen reader text when the tentative drop target is inside a certain item.",
-          "type": "string"
+          "type": "string",
+          "displayName": "Accessible Reorder Inside Item"
         },
         "accessibleReorderTouchInstructionText": {
           "description": "Provides properties to customize the screen reader touch instructional text for reordering items.",
-          "type": "string"
+          "type": "string",
+          "displayName": "Accessible Reorder Touch Instruction Text"
         },
         "indexerCharacters": {
           "description": "Provides properties to customize the characters to display in the Indexer.",
-          "type": "string"
+          "type": "string",
+          "displayName": "Indexer Characters"
         },
         "labelCopy": {
           "description": "Provides properties to customize the context menu copy label.\n\nSee the translations attribute for usage examples.",
-          "type": "string"
+          "type": "string",
+          "displayName": "Label Copy"
         },
         "labelCut": {
           "description": "Provides properties to customize the context menu cut label.\n\nSee the translations attribute for usage examples.",
-          "type": "string"
+          "type": "string",
+          "displayName": "Label Cut"
         },
         "labelPaste": {
           "description": "Provides properties to customize the context menu paste label.\n\nSee the translations attribute for usage examples.",
-          "type": "string"
+          "type": "string",
+          "displayName": "Label Paste"
         },
         "labelPasteAfter": {
           "description": "Provides properties to customize the context menu paste after label.\n\nSee the translations attribute for usage examples.",
-          "type": "string"
+          "type": "string",
+          "displayName": "Label Paste After"
         },
         "labelPasteBefore": {
           "description": "Provides properties to customize the context menu paste before label.\n\nSee the translations attribute for usage examples.",
-          "type": "string"
+          "type": "string",
+          "displayName": "Label Paste Before"
         },
         "msgFetchingData": {
           "description": "Provides properties to customize the message text used by ListView when waiting for data.\n\nSee the translations attribute for usage examples.",
-          "type": "string"
+          "type": "string",
+          "displayName": "Msg Fetching Data"
         },
         "msgNoData": {
           "description": "Provides properties to customize the message text used by ListView when there are no items.\n\nSee the translations attribute for usage examples.",
-          "type": "string"
+          "type": "string",
+          "displayName": "Msg No Data"
         }
       }
     }
@@ -452,7 +587,7 @@
           "type": "Element"
         }
       ],
-      "return": "Object|null"
+      "return": "object|null"
     },
     "getDataForVisibleItem": {
       "description": "Gets the raw data of an item.",
@@ -460,22 +595,25 @@
         {
           "name": "context",
           "description": "The context of the item to retrieve raw data.",
-          "type": "Object",
+          "type": "object",
           "properties": [
             {
               "name": "key",
               "description": "The key of the item. If both index and key are specified, then key takes precedence.",
-              "type": "any"
+              "type": "any",
+              "optional": true
             },
             {
               "name": "index",
               "description": "The index of the item relative to its parent.",
-              "type": "number"
+              "type": "number",
+              "optional": true
             },
             {
               "name": "parent",
               "description": "The parent node, not required if parent is the root.",
-              "type": "Element"
+              "type": "Element",
+              "optional": true
             }
           ]
         }
@@ -484,7 +622,7 @@
     },
     "getIndexerModel": {
       "description": "Gets the IndexerModel which can be used with the ojIndexer. The IndexerModel provided by ListView\nby defaults returns a list of locale dependent characters. See translations for the key used to return\nall characters. When a user selects a character in the ojIndexer ListView will scroll to the group \nheader (or the closest one) with the character as its prefix.",
-      "return": "Object"
+      "return": "object"
     },
     "scrollToItem": {
       "description": "Scrolls a loaded item to visible.",
@@ -492,7 +630,7 @@
         {
           "name": "item",
           "description": "An object with a 'key' property that identifies the item to scroll to.",
-          "type": "Object"
+          "type": "object"
         }
       ],
       "return": "void"
@@ -530,7 +668,7 @@
         {
           "name": "properties",
           "description": "An object containing the property and value pairs to set.",
-          "type": "Object"
+          "type": "object"
         }
       ],
       "return": "void"
@@ -694,7 +832,6 @@
     },
     "itemTemplate": {
       "description": "The itemTemplate slot is used to specify the template for rendering each item in the list. The slot must be a <template> element.\nThe content of the template could either include the <li> element, in which case that will be used as\nthe root of the item. Or it can be just the content which excludes the <li> element.\nWhen the template is executed for each item, it will have access to the binding context containing the following properties: $current - an object that contains information for the current item. (See the table below for a list of properties available on $current) alias - if as attribute was specified, the value will be used to provide an application-named alias for $current.\n",
-      "preview": true,
       "data": {
         "componentElement": {
           "description": "The <oj-list-view> custom element",
@@ -702,7 +839,7 @@
         },
         "data": {
           "description": "The data for the current item being rendered",
-          "type": "Object"
+          "type": "object"
         },
         "index": {
           "description": "The zero-based index of the curent item",

@@ -205,7 +205,7 @@
   }
 
   // in the 'across' case where you have multiple fields in the same row you need padding between the first field and the second label
-  .#{$selectorPrefix}-form-across > .oj-flex > .oj-flex-item:nth-child(2n+3) {
+  .#{$selectorPrefix}-form-across > .oj-flex > .oj-flex-item:nth-child(odd) {
      @include oj-ltr {
        padding-left: $labelInlineGutter;
      }
@@ -214,6 +214,7 @@
      }
   }
 
+  // Add padding to every even flex item, except the last one.
   .#{$selectorPrefix}-form-across > .oj-flex > .oj-flex-item:nth-child(even) {
      @include oj-ltr {
        padding-right: $labelInlineGutter;
@@ -222,6 +223,35 @@
        padding-left: $labelInlineGutter;
      }
   }
+  // For the form across, we need to remove the left/right padding from the .oj-flex div as the padding is
+  // on the even/odd .oj-flex-item divs (see above)
+  .oj-form.#{$selectorPrefix}-form-across > .oj-flex {
+    padding-left: 0;
+    padding-right: 0;
+  }
+  // For some reason, iOS theme applies padding to the .oj-form, so we need to undo that for the across case
+  // here so that we can specify the .#{$selectorPrefix}-form-across class
+  .oj-form.#{$selectorPrefix}-form-across {
+    @include oj-ltr()
+    {
+      padding-left: 0;
+    }
+    @include oj-rtl()
+    {
+      padding-right: 0;
+    }
+  }
+  .oj-form.#{$selectorPrefix}-form-across > .oj-flex {
+    @include oj-ltr()
+    {
+      padding-right: 0;
+    }
+    @include oj-rtl()
+    {
+      padding-left: 0;
+    }
+  }
+
 }
 
 //-------------------------------------------------------------------------------------------------

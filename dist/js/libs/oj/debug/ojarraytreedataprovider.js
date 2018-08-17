@@ -370,7 +370,6 @@ oj.EventTargetMixin.applyMixin(ArrayTreeDataProvider);
 
 /*jslint browser: true,devel:true*/
 /**
- * @ignore
  * @ojstatus preview
  * @since 5.1.0
  * @export

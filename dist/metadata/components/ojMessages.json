@@ -1,9 +1,9 @@
 {
   "name": "oj-messages",
-  "version": "5.1.0",
-  "jetVersion": "5.1.0",
+  "version": "5.2.0",
+  "jetVersion": "5.2.0",
   "displayName": "Messages",
-  "preview": true,
+  "type": "core",
   "styleClasses": [
     {
       "styleGroup": [
@@ -15,7 +15,7 @@
   "description": "Manages layout and display of messages.",
   "properties": {
     "display": {
-      "description": "Specifies the display purpose of messages. The valid values for display are\ngeneral and notification.\nGeneral messages are commonly rendered at the page level or section level, relating to the task\nthe user performed. Notification messages are typically used for reporting asynchronous events,\nor to communicate some background activity.\n\nThe presentation of the message is inline by default. However, when a\nojMessages#position property is provided, the presentation will be an overlay.\nThe alignment of the overlay will default based on the display property. The\ndefaults are defined by the theme.",
+      "description": "Specifies the display purpose of messages. The valid values for display are\ngeneral and notification.\nGeneral messages are commonly rendered at the page level or section level, relating to the task\nthe user performed. Notification messages are typically used for reporting asynchronous events,\nor to communicate some background activity.\n\nThe presentation of the message is inline by default. However, when a\nojMessages#positionproperty is provided, the presentation will be an overlay.\nThe alignment of the overlay will default based on the display property. The\ndefaults are defined by the theme.",
       "type": "string",
       "displayName": "Display",
       "value": "general",
@@ -35,24 +35,68 @@
       }
     },
     "messages": {
-      "description": " Specifies the array of structured message data used to display the individual messages.\nInstead of providing multiple oj-message as children, this property can be used to conveniently\nspecify the required data as a single collection. Individual message will be automatically\ncreated based on this data. See ojMessage.Message for message values. More information about the structured 'Message' data can be found in documentation for\n'message' attribute of oj-message element.",
-      "type": "null|Array<Object>",
+      "description": " Specifies the collection of structured message data used to display the individual messages.\nInstead of providing multiple oj-message as children, this property can be used to conveniently\nspecify the required data as a single collection. Individual message will be automatically\ncreated based on this data. See ojMessage.Message for message values. More information about the structured 'Message' data can be found in documentation for\n'message' attribute of oj-message element.\n\nThe collection can be two types:\nan array of oj.ojMessage.Message objects.\noj.ArrayDataProvider of oj.ojMessage.Message objects. Look at ArrayDataProvider for more available options.",
+      "type": "null|Array<Object>|oj.DataProvider",
       "displayName": "Messages",
-      "value": null
+      "value": null,
+      "extension": {
+        "vbcs": {
+          "itemProperties": {
+            "icon": {
+              "description": "Defines the icon representing the message.",
+              "type": "string"
+            },
+            "category": {
+              "description": "Defines category text of the message.",
+              "type": "string"
+            },
+            "severity": {
+              "description": "Defines severity of the message.",
+              "type": "\"error\"|\"warning\"|\"confirmation\"|\"info\"|\"none\""
+            },
+            "timestamp": {
+              "description": "Defines timestamp of the message.",
+              "type": "string"
+            },
+            "summary": {
+              "description": "Defines summary text of the message.",
+              "type": "string"
+            },
+            "detail": {
+              "description": "Defines detail text of the message.",
+              "type": "string"
+            },
+            "autoTimeout": {
+              "description": "Defines the time after which the message is to be closed automatically.",
+              "type": "number"
+            },
+            "closeAffordance": {
+              "description": "Defines UI affordance provided to close the message.",
+              "type": "\"none\"|\"defaults\""
+            },
+            "sound": {
+              "description": "Defines the sound to be played when message is open.",
+              "type": "string"
+            }
+          }
+        }
+      }
     },
     "position": {
       "description": "The position property defines the presentation style. The default presentation is inline,\ndefined by a null position property value. When a value is provide for the\nproperty, the presentation style will be an overaly \"popup\". The aligment of the overaly\nis defined by the position sub-properties.\n\nDefault position sub-properites are extended by the provided value. Defaults vary\nbased on the display property and provided by theme. The position\nproperty is used to establish the location where the messages popup overlay will appear\nrelative to another element.\n\nThe \"my\" and \"at\" properties defines aligment points relative to the popup and other\nelement. The \"my\" property represents the popups alignment where the \"at\" property\nrepresents the other element that can be identified by \"of\" or defauts to the launcher\nwhen the popup opens. The values of these properties describe horizontal and\nvertical alignments.",
-      "type": "Object|null",
+      "type": "object|null",
       "displayName": "Position",
       "value": null,
       "properties": {
         "at": {
           "description": "Defines which position on the target element (\"of\") to align the positioned element\nagainst.",
-          "type": "Object",
+          "type": "object",
+          "displayName": "At",
           "properties": {
             "horizontal": {
               "description": "Defines the horizontal alignment of what the messges overlay is aligned to.",
               "type": "string",
+              "displayName": "Horizontal",
               "enumValues": [
                 "center",
                 "end",
@@ -83,6 +127,7 @@
             "vertical": {
               "description": "Defines the vertical alignment of what the messages overlay is aligned to.",
               "type": "string",
+              "displayName": "Vertical",
               "enumValues": [
                 "bottom",
                 "center",
@@ -105,6 +150,7 @@
         "collision": {
           "description": "Rule for alternate alignment.",
           "type": "string",
+          "displayName": "Collision",
           "enumValues": [
             "fit",
             "flip",
@@ -132,15 +178,13 @@
         },
         "my": {
           "description": "Defines which edge on the messages overlay to align with the target (\"of\") element.",
-          "type": "Object",
-          "value": {
-            "horizontal": "center",
-            "vertical": "top"
-          },
+          "type": "object",
+          "displayName": "My",
           "properties": {
             "horizontal": {
               "description": "Defines the horizontal alignment of the messages overlay.",
               "type": "string",
+              "displayName": "Horizontal",
               "enumValues": [
                 "center",
                 "end",
@@ -171,6 +215,7 @@
             "vertical": {
               "description": "Defines the vertical alignment of the messages overlay.",
               "type": "string",
+              "displayName": "Vertical",
               "enumValues": [
                 "bottom",
                 "center",
@@ -192,34 +237,66 @@
         },
         "of": {
           "description": "Which element to position the messages overlay against.\n\nIf the value is a string, it should be a selector or the literal string value\nof window. Otherwise, a point of x,y. When a point\nis used, the values are relative to the whole document. Page horizontal and vertical\nscroll offsets need to be factored into this point - see UIEvent\npageX,\npageY.",
-          "type": "string"
+          "type": "string",
+          "displayName": "Of"
         },
         "offset": {
           "description": "Defines a point offset in pixels from the (\"my\") alignment.",
-          "type": "Object",
+          "type": "object",
+          "displayName": "Offset",
           "properties": {
             "x": {
               "description": "Horizontal aligment offset.",
-              "type": "number"
+              "type": "number",
+              "displayName": "X"
             },
             "y": {
               "description": "Vertical alignment offset.",
-              "type": "number"
+              "type": "number",
+              "displayName": "Y"
             }
           }
         }
       }
     },
     "translations": {
-      "description": "A collection of translated resources from the translation bundle, or null if this\ncomponent has no resources. Resources may be accessed and overridden individually or collectively, as seen in the examples.\n\nIf this component has translations, their documentation immediately follows this doc entry.",
-      "type": "Object",
+      "description": "A collection of translated resources from the translation bundle, or null if this component has no resources.",
+      "type": "object",
       "displayName": "Translations",
+      "value": {},
       "translatable": true,
       "properties": {
+        "ariaLiveRegion": {
+          "description": "Various contextual live region texts that oj-messages component will use for accessibility purpose.\n\nSee the translations attribute for usage examples.",
+          "type": "object",
+          "displayName": "Aria Live Region",
+          "properties": {
+            "navigationFromKeyboard": {
+              "description": "Text to guide keyboard users navigate to prior focussed element when the messages region gains focus.\n\nSee the translations attribute for usage examples.",
+              "type": "string",
+              "displayName": "Navigation From Keyboard"
+            },
+            "navigationToKeyboard": {
+              "description": "Text to guide keyboard users navigate to new displayed messages when focus is outside the messages popup.\n\nSee the translations attribute for usage examples.",
+              "type": "string",
+              "displayName": "Navigation To Keyboard"
+            },
+            "navigationToTouch": {
+              "description": "Text to guide touch screen (voice-over) users navigate to new displayed messages when focus is outside the messages popup.\n\nSee the translations attribute for usage examples.",
+              "type": "string",
+              "displayName": "Navigation To Touch"
+            },
+            "newMessage": {
+              "description": "Text representing the new displayed message. This text may contain tokens '{category}' and '{summary}', which will be replaced by the corresponding sub-property values in the data for the new message.\n\nSee the translations attribute for usage examples.",
+              "type": "string",
+              "displayName": "New Message"
+            }
+          }
+        },
         "labelLandmark": {
           "description": "Label for the landmark region for accessibility.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "Messages"
+          "displayName": "Label Landmark"
         }
       }
     }
@@ -231,7 +308,7 @@
         {
           "name": "associated",
           "description": "message instance of type ojMessage#message",
-          "type": "Object"
+          "type": "object"
         }
       ],
       "return": "void"
@@ -242,7 +319,8 @@
         {
           "name": "closeFilter",
           "description": "an optional callback function that will be passed an instance of type ojMessage#message for each child oj-message. If closeFilter returns true, the associated oj-message will be closed. Returning false will exclude the child message from closure. If a closeFilter is not passed, all child messages will be closed.",
-          "type": "function"
+          "type": "function",
+          "optional": true
         }
       ],
       "return": "void"
@@ -280,7 +358,7 @@
         {
           "name": "properties",
           "description": "An object containing the property and value pairs to set.",
-          "type": "Object"
+          "type": "object"
         }
       ],
       "return": "void"

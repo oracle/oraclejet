@@ -29,7 +29,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojdatasource-common', 'ojs/ojmodel'], funct
  * @extends oj.TableDataSource
  * @classdesc Object representing data available from an {@link oj.Collection} object, such as an external data source.  This data source can be used by [ListView]{@link oj.ojListView}, [NavigationList]{@link oj.ojNavigationList}, 
  *            [TabBar]{@link oj.ojTabBar}, and [Table]{@link oj.ojTable}.<br><br>
- *            See the <a href="../jetCookbook.html?component=table&demo=ojCollectionTable">Table - Using oj.Collection</a> demo for an example.<br><br>
+ *            See the <a href="../jetCookbook.html?component=crud&demo=table">Table - Using oj.Collection</a> demo for an example.<br><br>
  *            Refer to {@link oj.TableDataSource} for other data sources that represent tabular data.
  * @param {oj.Collection} data data supported by the components
  * @param {Object|null} [options] Options for the TableDataSource

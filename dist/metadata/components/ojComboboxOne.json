@@ -1,18 +1,30 @@
 {
   "name": "oj-combobox-one",
-  "version": "5.1.0",
-  "jetVersion": "5.1.0",
+  "version": "5.2.0",
+  "jetVersion": "5.2.0",
   "displayName": "Single-select Combobox",
-  "preview": true,
-  "roles": [
-    "combobox"
+  "type": "core",
+  "styleClasses": [
+    {
+      "styleGroup": [
+        "oj-form-control-text-align-start"
+      ],
+      "description": "Aligns the text to the left in ltr and to the right in rtl"
+    }
   ],
   "description": "A dropdown list that supports single selection, text input, and search filtering.",
   "properties": {
+    "asyncValidators": {
+      "description": "Specifies a list of async validators for performing async validation by the element.",
+      "type": "Array<Object>",
+      "displayName": "Async Validators",
+      "value": []
+    },
     "converter": {
       "description": "An object to convert value.",
-      "type": "Object|undefined",
+      "type": "object|null",
       "displayName": "Converter",
+      "value": null,
       "properties": {
         "type": {
           "description": "the conveter type registered with the oj.ConverterFactory. Supported type is 'number'. See ConverterFactory for details. E.g., {converter: {type: 'number'}",
@@ -20,7 +32,7 @@
         },
         "options": {
           "description": "optional Object literal of options that the converter expects. See IntlNumberConverter for options supported by the number converter. E.g., {converter: {type: 'number', options: {style: 'decimal'}}",
-          "type": "Object"
+          "type": "object"
         }
       }
     },
@@ -37,39 +49,41 @@
     },
     "displayOptions": {
       "description": "Customize how to display to the user the form field's messages, converter and validator hints and help instruction text.",
-      "type": "Object|undefined",
+      "type": "object",
       "displayName": "Display Options",
-      "value": {
-        "messages": [
-          "inline"
-        ],
-        "converterHint": [
-          "placeholder",
-          "notewindow"
-        ],
-        "validatorHint": [
-          "notewindow"
-        ],
-        "helpInstruction": [
-          "notewindow"
-        ]
-      },
       "properties": {
         "converterHint": {
-          "description": "supported values are 'placeholder', \n'notewindow', 'none'. The \ndefault value is ['placeholder', 'notewindow']. When there \nis already a placeholder set on the component, the converter hint falls back to display \ntype of 'notewindow'.\nTo change the default value you can do this - \nE.g. {'displayOptions: {'converterHint': ['none']}}",
-          "type": "Array<('placeholder'|'notewindow'|'none')>|'placeholder'|'notewindow'|'none'"
-        },
-        "validatorHint": {
-          "description": "supported values are 'notewindow', \n'none'.\nTo change the default value you can do this - \n{'displayOptions: {'validatorHint': ['none']}}",
-          "type": "Array<('notewindow'|'none')>|'notewindow'|'none'"
-        },
-        "messages": {
-          "description": "supported values are 'notewindow', \n'inline',\n'none'. The default is 'inline'. \nTo change the default value you can do this - \nE.g. {'displayOptions: {'messages': 'none'}}",
-          "type": "Array<('inline'|'notewindow'|'none')>|'inline'|'notewindow'|'none'"
+          "description": "Display options for auxilliary converter hint text that determines where it should be displayed in relation to the component.",
+          "type": "Array<string>|string",
+          "displayName": "Converter Hint",
+          "value": [
+            "placeholder",
+            "notewindow"
+          ]
         },
         "helpInstruction": {
-          "description": "supported values are 'notewindow', \n'none'.\nTo change the default value you can do this - \nE.g. displayOptions='{\"helpInstruction\": \"none\"}'",
-          "type": "Array<('notewindow'|'none')>|'notewindow'|'none'"
+          "description": "Display options for auxilliary help instruction text that determines where it should be displayed\nin relation to the component.",
+          "type": "Array<string>|string",
+          "displayName": "Help Instruction",
+          "value": [
+            "notewindow"
+          ]
+        },
+        "messages": {
+          "description": "Display options for auxilliary message text that determines where it should be displayed\nin relation to the component.",
+          "type": "Array<string>|string",
+          "displayName": "Messages",
+          "value": [
+            "inline"
+          ]
+        },
+        "validatorHint": {
+          "description": "Display options for auxilliary validator hint text that determines where it should be displayed\nin relation to the component.",
+          "type": "Array<string>|string",
+          "displayName": "Validator Hint",
+          "value": [
+            "notewindow"
+          ]
         }
       }
     },
@@ -78,7 +92,6 @@
       "type": "string",
       "displayName": "Filter On Open",
       "value": "none",
-      "preview": true,
       "enumValues": [
         "none",
         "rawValue"
@@ -96,13 +109,8 @@
     },
     "help": {
       "description": "Form component help information.\n\nThe properties supported on the help option are:",
-      "type": "Object",
+      "type": "object",
       "displayName": "Help",
-      "value": {
-        "help": {
-          "instruction": null
-        }
-      },
       "properties": {
         "instruction": {
           "description": "this represents advisory information for the component\nThe default value is null.",
@@ -112,22 +120,20 @@
     },
     "helpHints": {
       "description": "Represents hints for oj-form-layout element to \nrender help information on the label of the editable component.",
-      "type": "Object",
+      "type": "object",
       "displayName": "Help Hints",
-      "value": {
-        "definition": "",
-        "source": ""
-      },
       "translatable": true,
       "properties": {
         "definition": {
           "description": "Hint for help definition text associated with the label. \nIt is what shows up when the user hovers over the help icon, or tabs into the help icon, or press and holds the help icon on a mobile device. No formatted text is available for help definition attribute.\n\nSee the help-hints attribute for usage examples.",
           "type": "string",
+          "displayName": "Definition",
           "value": ""
         },
         "source": {
           "description": "Hint for help source URL associated with the label. \nIf present, a help icon will render next to the label. For security reasons we only support urls with protocol http: or https:. If the url doesn't comply we ignore it and throw an error. \nPass in an encoded URL since we do not encode the URL.\n\nSee the help-hints attribute for usage examples.",
           "type": "string",
+          "displayName": "Source",
           "value": ""
         }
       }
@@ -167,13 +173,13 @@
     },
     "optionsKeys": {
       "description": "Specify the key names to use in the options array. Depending on options-keys means that the signature of the data does not match what is supported by the options attribute. When using Typescript, this would result in a compilation error. Best practice is to use a oj.ListDataProviderView with data mapping as a replacement. However, for the app that must fetch data from a REST endpoint where the data fields do not match those that are supported by the options attribute, you may use the options-keys with any dataProvider that implements oj.DataProvider interface.",
-      "type": "Object",
+      "type": "object",
       "displayName": "Options Keys",
-      "value": null,
       "properties": {
         "childKeys": {
           "description": "The object for the child keys.",
-          "type": "Object",
+          "type": "object",
+          "displayName": "Child Keys",
           "value": null,
           "properties": {
             "label": {
@@ -190,30 +196,33 @@
             },
             "childKeys": {
               "description": "The object for the child keys.",
-              "type": "Object"
+              "type": "object"
             }
           }
         },
         "children": {
           "description": "The key name for the children.",
           "type": "string",
+          "displayName": "Children",
           "value": null
         },
         "label": {
           "description": "The key name for the label.",
           "type": "string",
+          "displayName": "Label",
           "value": null
         },
         "value": {
           "description": "The key name for the value.",
           "type": "string",
+          "displayName": "Value",
           "value": null
         }
       }
     },
     "pickerAttributes": {
       "description": "The style attributes for the drop down.",
-      "type": "Object",
+      "type": "object",
       "displayName": "Picker Attributes",
       "value": null
     },
@@ -237,39 +246,41 @@
       "value": false
     },
     "translations": {
-      "description": "A collection of translated resources from the translation bundle, or null if this\ncomponent has no resources. Resources may be accessed and overridden individually or collectively, as seen in the examples. If the component does not contain any translatable resource, the default value of this attribute will be \nnull. If not, an object containing all resources relevant to the component.\n\nIf this component has translations, their documentation immediately follows this doc entry.",
-      "type": "Object|null",
+      "description": "A collection of translated resources from the translation bundle, or null if this component has no resources.",
+      "type": "object|null",
       "displayName": "Translations",
+      "value": {},
       "translatable": true,
       "properties": {
         "filterFurther": {
           "description": "Text at the top of drop down when not all results are fetched and users need to filter further.",
           "type": "string",
-          "value": "More results available, please filter further."
+          "displayName": "Filter Further"
         },
         "noMatchesFound": {
           "description": "No options found text for drop down.",
           "type": "string",
-          "value": "No matches found"
+          "displayName": "No Matches Found"
         },
         "required": {
           "description": "Provides properties to customize the summary, detail and hint text used by the\nimplicit required validator associated to any editable component that supports the\nrequired option.\n\nSee the translations attribute and\nrequired option for usage examples.",
-          "type": "Object",
+          "type": "object",
+          "displayName": "Required",
           "properties": {
             "hint": {
               "description": "Hint text used by required validation error.\n\nSee the translations attribute for usage examples.",
               "type": "string",
-              "value": ""
+              "displayName": "Hint"
             },
             "messageDetail": {
               "description": "Message text that describes the details of the required validation error.\n\nSee the translations attribute for usage examples.",
               "type": "string",
-              "value": ""
+              "displayName": "Message Detail"
             },
             "messageSummary": {
               "description": "Message text for summarizing a required validation error.\n\nSee the translations attribute for usage examples.",
               "type": "string",
-              "value": ""
+              "displayName": "Message Summary"
             }
           }
         }
@@ -281,7 +292,6 @@
       "displayName": "Valid",
       "writeback": true,
       "readOnly": true,
-      "preview": true,
       "enumValues": [
         "invalidHidden",
         "invalidShown",
@@ -298,7 +308,7 @@
           "displayName": "Invalid Shown"
         },
         "pending": {
-          "description": "The component is waiting for the validation state to be determined.\nThe \"pending\" state is never set in this release of JET. It will be set in a future release.",
+          "description": "The component is waiting for the validation state to be determined.\nThe \"pending\" state is set at the start of the convert/validate process.",
           "displayName": "Pending"
         },
         "valid": {
@@ -309,8 +319,23 @@
     },
     "validators": {
       "description": "Specifies a list of validators for performing validation by the element.",
-      "type": "Array|undefined",
-      "displayName": "Validators"
+      "type": "Array",
+      "displayName": "Validators",
+      "value": [],
+      "extension": {
+        "vbcs": {
+          "itemProperties": {
+            "type": {
+              "description": "the name of the factory registered validator",
+              "type": "string"
+            },
+            "options": {
+              "description": "options to the validator",
+              "type": "object"
+            }
+          }
+        }
+      }
     },
     "value": {
       "description": "The value of the element.",
@@ -320,9 +345,10 @@
     },
     "valueOption": {
       "description": "The current value of the element and its associated display label.",
-      "type": "null|Object",
+      "type": "null|object",
       "displayName": "Value Option",
       "value": null,
+      "writeback": true,
       "properties": {
         "value": {
           "description": "current value of JET Combobox",
@@ -341,7 +367,6 @@
     },
     "validate": {
       "description": " All messages are cleared, including custom messages added by the app. If no converter is present then processing continues to next step. If a converter is present, the UI value is first converted (i.e., parsed). If there is a parse error then the messages are shown. If there are no validators setup for the component the value option is updated using the display value. Otherwise all validators are run in sequence using the parsed value from the previous step. The implicit required validator is run first if the component is marked required. When a validation error is encountered it is remembered and the next validator in the sequence is run. At the end of validation if there are errors, the messages are shown. If there were no errors, then the value option is updated. ",
-      "preview": true,
       "return": "Promise"
     },
     "reset": {
@@ -385,7 +410,7 @@
         {
           "name": "properties",
           "description": "An object containing the property and value pairs to set.",
-          "type": "Object"
+          "type": "object"
         }
       ],
       "return": "void"
@@ -394,7 +419,6 @@
   "events": {
     "ojValueUpdated": {
       "description": "Event handler for when the value is submitted by the user.",
-      "preview": true,
       "detail": {
         "value": {
           "description": "the current value",
@@ -450,8 +474,7 @@
       "description": "The contextMenu slot is set on the oj-menu within this element. \nThis is used to designate the JET Menu that this component should launch as a context menu on right-click, Shift-F10, Press & Hold, or component-specific gesture. \nIf specified, the browser's native context menu will be replaced by the JET Menu specified in this slot.\n\nThe application can register a listener for the Menu's ojBeforeOpen event. The listener can cancel the launch via event.preventDefault(), \nor it can customize the menu contents by editing the menu DOM directly, and then calling refresh() on the Menu.\n\nTo help determine whether it's appropriate to cancel the launch or customize the menu, the ojBeforeOpen listener can use component API's to determine which \ntable cell, chart item, etc., is the target of the context menu. See the JSDoc and demos of the individual components for details. \n\nKeep in mind that any such logic must work whether the context menu was launched via right-click, Shift-F10, Press & Hold, or component-specific touch gesture."
     },
     "end": {
-      "description": "The end slot is for replacing combobox one's drop down arrow and the divider. For example, a magnifying glass icon for a search field can be provided in this slot. When the slot is provided with empty content, nothing will be rendered in the slot. When the slot is not provided, the default drop down arrow icon and the divider will be rendered.",
-      "preview": true
+      "description": "The end slot is for replacing combobox one's drop down arrow and the divider. For example, a magnifying glass icon for a search field can be provided in this slot. When the slot is provided with empty content, nothing will be rendered in the slot. When the slot is not provided, the default drop down arrow icon and the divider will be rendered."
     }
   }
 }

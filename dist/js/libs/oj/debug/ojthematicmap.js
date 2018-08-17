@@ -6,6 +6,937 @@
 "use strict";
 define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/internal-deps/dvt/DvtThematicMap'], function(oj, $, comp, base, dvt)
 {
+  
+
+var __oj_thematic_map_metadata = 
+{
+  "properties": {
+    "animationDuration": {
+      "type": "number"
+    },
+    "animationOnDisplay": {
+      "type": "string",
+      "enumValues": [
+        "auto",
+        "none"
+      ],
+      "value": "none"
+    },
+    "areaData": {
+      "type": "oj.DataProvider"
+    },
+    "areas": {
+      "type": "Array<Object>|Promise"
+    },
+    "as": {
+      "type": "string",
+      "value": ""
+    },
+    "focusRenderer": {
+      "type": "function",
+      "properties": {
+        "color": {
+          "type": "string"
+        },
+        "componentElement": {
+          "type": "Element"
+        },
+        "data": {
+          "type": "object"
+        },
+        "id": {
+          "type": "any"
+        },
+        "itemData": {
+          "type": "object"
+        },
+        "label": {
+          "type": "string"
+        },
+        "location": {
+          "type": "string"
+        },
+        "parentElement": {
+          "type": "Element"
+        },
+        "previousState": {
+          "type": "object",
+          "properties": {
+            "hovered": {
+              "type": "boolean"
+            },
+            "selected": {
+              "type": "boolean"
+            },
+            "focused": {
+              "type": "boolean"
+            }
+          }
+        },
+        "renderDefaultFocus": {
+          "type": "function"
+        },
+        "renderDefaultHover": {
+          "type": "function"
+        },
+        "renderDefaultSelection": {
+          "type": "function"
+        },
+        "root": {
+          "type": "Element"
+        },
+        "state": {
+          "type": "object",
+          "properties": {
+            "hovered": {
+              "type": "boolean"
+            },
+            "selected": {
+              "type": "boolean"
+            },
+            "focused": {
+              "type": "boolean"
+            }
+          }
+        },
+        "x": {
+          "type": "number"
+        },
+        "y": {
+          "type": "number"
+        }
+      }
+    },
+    "hiddenCategories": {
+      "type": "Array<string>",
+      "writeback": true,
+      "value": []
+    },
+    "highlightMatch": {
+      "type": "string",
+      "enumValues": [
+        "all",
+        "any"
+      ],
+      "value": "all"
+    },
+    "highlightedCategories": {
+      "type": "Array<string>",
+      "writeback": true,
+      "value": []
+    },
+    "hoverBehavior": {
+      "type": "string",
+      "enumValues": [
+        "dim",
+        "none"
+      ],
+      "value": "none"
+    },
+    "hoverRenderer": {
+      "type": "function",
+      "properties": {
+        "color": {
+          "type": "string"
+        },
+        "componentElement": {
+          "type": "Element"
+        },
+        "data": {
+          "type": "object"
+        },
+        "id": {
+          "type": "any"
+        },
+        "itemData": {
+          "type": "object"
+        },
+        "label": {
+          "type": "string"
+        },
+        "location": {
+          "type": "string"
+        },
+        "parentElement": {
+          "type": "Element"
+        },
+        "previousState": {
+          "type": "object",
+          "properties": {
+            "hovered": {
+              "type": "boolean"
+            },
+            "selected": {
+              "type": "boolean"
+            },
+            "focused": {
+              "type": "boolean"
+            }
+          }
+        },
+        "renderDefaultFocus": {
+          "type": "function"
+        },
+        "renderDefaultHover": {
+          "type": "function"
+        },
+        "renderDefaultSelection": {
+          "type": "function"
+        },
+        "root": {
+          "type": "Element"
+        },
+        "state": {
+          "type": "object",
+          "properties": {
+            "hovered": {
+              "type": "boolean"
+            },
+            "selected": {
+              "type": "boolean"
+            },
+            "focused": {
+              "type": "boolean"
+            }
+          }
+        },
+        "x": {
+          "type": "number"
+        },
+        "y": {
+          "type": "number"
+        }
+      }
+    },
+    "initialZooming": {
+      "type": "string",
+      "enumValues": [
+        "auto",
+        "none"
+      ],
+      "value": "none"
+    },
+    "isolatedItem": {
+      "type": "any",
+      "value": "\"\""
+    },
+    "labelDisplay": {
+      "type": "string",
+      "enumValues": [
+        "auto",
+        "off",
+        "on"
+      ],
+      "value": "off"
+    },
+    "labelType": {
+      "type": "string",
+      "enumValues": [
+        "long",
+        "short"
+      ],
+      "value": "short"
+    },
+    "linkData": {
+      "type": "oj.DataProvider"
+    },
+    "links": {
+      "type": "Array<Object>|Promise"
+    },
+    "mapProvider": {
+      "type": "object",
+      "properties": {
+        "geo": {
+          "type": "object",
+          "value": {}
+        },
+        "propertiesKeys": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "value": ""
+            },
+            "longLabel": {
+              "type": "string",
+              "value": ""
+            },
+            "shortLabel": {
+              "type": "string",
+              "value": ""
+            }
+          }
+        }
+      }
+    },
+    "markerData": {
+      "type": "oj.DataProvider"
+    },
+    "markerZoomBehavior": {
+      "type": "string",
+      "enumValues": [
+        "fixed",
+        "zoom"
+      ],
+      "value": "fixed"
+    },
+    "markers": {
+      "type": "Array<Object>|Promise"
+    },
+    "maxZoom": {
+      "type": "number",
+      "value": 6
+    },
+    "panning": {
+      "type": "string",
+      "enumValues": [
+        "auto",
+        "none"
+      ],
+      "value": "none"
+    },
+    "renderer": {
+      "type": "function",
+      "properties": {
+        "color": {
+          "type": "string"
+        },
+        "componentElement": {
+          "type": "Element"
+        },
+        "data": {
+          "type": "object"
+        },
+        "id": {
+          "type": "any"
+        },
+        "itemData": {
+          "type": "object"
+        },
+        "label": {
+          "type": "string"
+        },
+        "location": {
+          "type": "string"
+        },
+        "parentElement": {
+          "type": "Element"
+        },
+        "previousState": {
+          "type": "object",
+          "properties": {
+            "hovered": {
+              "type": "boolean"
+            },
+            "selected": {
+              "type": "boolean"
+            },
+            "focused": {
+              "type": "boolean"
+            }
+          }
+        },
+        "renderDefaultFocus": {
+          "type": "function"
+        },
+        "renderDefaultHover": {
+          "type": "function"
+        },
+        "renderDefaultSelection": {
+          "type": "function"
+        },
+        "root": {
+          "type": "Element"
+        },
+        "state": {
+          "type": "object",
+          "properties": {
+            "hovered": {
+              "type": "boolean"
+            },
+            "selected": {
+              "type": "boolean"
+            },
+            "focused": {
+              "type": "boolean"
+            }
+          }
+        },
+        "x": {
+          "type": "number"
+        },
+        "y": {
+          "type": "number"
+        }
+      }
+    },
+    "selection": {
+      "type": "Array<any>",
+      "writeback": true,
+      "value": []
+    },
+    "selectionMode": {
+      "type": "string",
+      "enumValues": [
+        "multiple",
+        "none",
+        "single"
+      ],
+      "value": "none"
+    },
+    "selectionRenderer": {
+      "type": "function",
+      "properties": {
+        "color": {
+          "type": "string"
+        },
+        "componentElement": {
+          "type": "Element"
+        },
+        "data": {
+          "type": "object"
+        },
+        "id": {
+          "type": "any"
+        },
+        "itemData": {
+          "type": "object"
+        },
+        "label": {
+          "type": "string"
+        },
+        "location": {
+          "type": "string"
+        },
+        "parentElement": {
+          "type": "Element"
+        },
+        "previousState": {
+          "type": "object",
+          "properties": {
+            "hovered": {
+              "type": "boolean"
+            },
+            "selected": {
+              "type": "boolean"
+            },
+            "focused": {
+              "type": "boolean"
+            }
+          }
+        },
+        "renderDefaultFocus": {
+          "type": "function"
+        },
+        "renderDefaultHover": {
+          "type": "function"
+        },
+        "renderDefaultSelection": {
+          "type": "function"
+        },
+        "root": {
+          "type": "Element"
+        },
+        "state": {
+          "type": "object",
+          "properties": {
+            "hovered": {
+              "type": "boolean"
+            },
+            "selected": {
+              "type": "boolean"
+            },
+            "focused": {
+              "type": "boolean"
+            }
+          }
+        },
+        "x": {
+          "type": "number"
+        },
+        "y": {
+          "type": "number"
+        }
+      }
+    },
+    "styleDefaults": {
+      "type": "object",
+      "properties": {
+        "areaSvgStyle": {
+          "type": "object"
+        },
+        "dataAreaDefaults": {
+          "type": "object",
+          "value": {},
+          "properties": {
+            "borderColor": {
+              "type": "string"
+            },
+            "hoverColor": {
+              "type": "string"
+            },
+            "selectedInnerColor": {
+              "type": "string"
+            },
+            "selectedOuterColor": {
+              "type": "string"
+            }
+          }
+        },
+        "dataMarkerDefaults": {
+          "type": "object",
+          "properties": {
+            "borderColor": {
+              "type": "string"
+            },
+            "borderStyle": {
+              "type": "string",
+              "enumValues": [
+                "none",
+                "solid"
+              ],
+              "value": "solid"
+            },
+            "borderWidth": {
+              "type": "number",
+              "value": 0.5
+            },
+            "color": {
+              "type": "string"
+            },
+            "height": {
+              "type": "number",
+              "value": 8
+            },
+            "labelStyle": {
+              "type": "object",
+              "value": {}
+            },
+            "opacity": {
+              "type": "number",
+              "value": 1
+            },
+            "shape": {
+              "type": "string",
+              "value": "circle"
+            },
+            "width": {
+              "type": "number",
+              "value": 8
+            }
+          }
+        },
+        "hoverBehaviorDelay": {
+          "type": "number",
+          "value": 200
+        },
+        "labelStyle": {
+          "type": "object",
+          "value": {}
+        },
+        "linkDefaults": {
+          "type": "object",
+          "properties": {
+            "color": {
+              "type": "string"
+            },
+            "width": {
+              "type": "number",
+              "value": 2
+            }
+          }
+        }
+      }
+    },
+    "tooltip": {
+      "type": "object",
+      "properties": {
+        "renderer": {
+          "type": "function",
+          "properties": {
+            "color": {
+              "type": "string"
+            },
+            "componentElement": {
+              "type": "Element"
+            },
+            "data": {
+              "type": "object"
+            },
+            "id": {
+              "type": "any"
+            },
+            "itemData": {
+              "type": "object"
+            },
+            "label": {
+              "type": "string"
+            },
+            "location": {
+              "type": "string"
+            },
+            "locationName": {
+              "type": "string"
+            },
+            "parentElement": {
+              "type": "Element"
+            },
+            "tooltip": {
+              "type": "string"
+            },
+            "x": {
+              "type": "number"
+            },
+            "y": {
+              "type": "number"
+            }
+          }
+        }
+      }
+    },
+    "tooltipDisplay": {
+      "type": "string",
+      "enumValues": [
+        "auto",
+        "labelAndShortDesc",
+        "none",
+        "shortDesc"
+      ],
+      "value": "auto"
+    },
+    "touchResponse": {
+      "type": "string",
+      "enumValues": [
+        "auto",
+        "touchStart"
+      ],
+      "value": "auto"
+    },
+    "trackResize": {
+      "type": "string",
+      "enumValues": [
+        "off",
+        "on"
+      ],
+      "value": "on"
+    },
+    "translations": {
+      "type": "object",
+      "value": {},
+      "properties": {
+        "componentName": {
+          "type": "string"
+        },
+        "labelAndValue": {
+          "type": "string"
+        },
+        "labelClearSelection": {
+          "type": "string"
+        },
+        "labelCountWithTotal": {
+          "type": "string"
+        },
+        "labelDataVisualization": {
+          "type": "string"
+        },
+        "labelInvalidData": {
+          "type": "string"
+        },
+        "labelNoData": {
+          "type": "string"
+        },
+        "stateCollapsed": {
+          "type": "string"
+        },
+        "stateDrillable": {
+          "type": "string"
+        },
+        "stateExpanded": {
+          "type": "string"
+        },
+        "stateHidden": {
+          "type": "string"
+        },
+        "stateIsolated": {
+          "type": "string"
+        },
+        "stateMaximized": {
+          "type": "string"
+        },
+        "stateMinimized": {
+          "type": "string"
+        },
+        "stateSelected": {
+          "type": "string"
+        },
+        "stateUnselected": {
+          "type": "string"
+        },
+        "stateVisible": {
+          "type": "string"
+        }
+      }
+    },
+    "zooming": {
+      "type": "string",
+      "enumValues": [
+        "auto",
+        "none"
+      ],
+      "value": "none"
+    }
+  },
+  "methods": {
+    "getArea": {},
+    "getMarker": {},
+    "getLink": {},
+    "getContextByNode": {},
+    "refresh": {},
+    "setProperty": {},
+    "getProperty": {},
+    "setProperties": {},
+    "getNodeBySubId": {},
+    "getSubIdByNode": {}
+  },
+  "extension": {}
+};
+var __oj_thematic_map_area_metadata = 
+{
+  "properties": {
+    "categories": {
+      "type": "Array<string>",
+      "value": []
+    },
+    "color": {
+      "type": "string"
+    },
+    "label": {
+      "type": "string",
+      "value": ""
+    },
+    "labelStyle": {
+      "type": "object"
+    },
+    "location": {
+      "type": "string",
+      "value": ""
+    },
+    "opacity": {
+      "type": "number",
+      "value": 1
+    },
+    "selectable": {
+      "type": "string",
+      "enumValues": [
+        "auto",
+        "off"
+      ],
+      "value": "auto"
+    },
+    "shortDesc": {
+      "type": "string",
+      "value": ""
+    },
+    "svgClassName": {
+      "type": "string",
+      "value": ""
+    },
+    "svgStyle": {
+      "type": "object",
+      "value": {}
+    }
+  },
+  "extension": {}
+};
+var __oj_thematic_map_link_metadata = 
+{
+  "properties": {
+    "categories": {
+      "type": "Array<string>",
+      "value": []
+    },
+    "color": {
+      "type": "string",
+      "value": ""
+    },
+    "endLocation": {
+      "type": "object",
+      "value": {},
+      "properties": {
+        "id": {
+          "type": "any"
+        },
+        "location": {
+          "type": "string"
+        },
+        "x": {
+          "type": "number"
+        },
+        "y": {
+          "type": "number"
+        }
+      }
+    },
+    "selectable": {
+      "type": "string",
+      "enumValues": [
+        "auto",
+        "off"
+      ],
+      "value": "auto"
+    },
+    "shortDesc": {
+      "type": "string",
+      "value": ""
+    },
+    "startLocation": {
+      "type": "object",
+      "value": {},
+      "properties": {
+        "id": {
+          "type": "any"
+        },
+        "location": {
+          "type": "string"
+        },
+        "x": {
+          "type": "number"
+        },
+        "y": {
+          "type": "number"
+        }
+      }
+    },
+    "svgClassName": {
+      "type": "string",
+      "value": ""
+    },
+    "svgStyle": {
+      "type": "object",
+      "value": {}
+    },
+    "width": {
+      "type": "number",
+      "value": 2
+    }
+  },
+  "extension": {}
+};
+var __oj_thematic_map_marker_metadata = 
+{
+  "properties": {
+    "borderColor": {
+      "type": "string",
+      "value": ""
+    },
+    "borderStyle": {
+      "type": "string",
+      "enumValues": [
+        "none",
+        "solid"
+      ],
+      "value": "solid"
+    },
+    "borderWidth": {
+      "type": "number",
+      "value": 0.5
+    },
+    "categories": {
+      "type": "Array<string>",
+      "value": []
+    },
+    "color": {
+      "type": "string"
+    },
+    "height": {
+      "type": "number",
+      "value": 8
+    },
+    "label": {
+      "type": "string",
+      "value": ""
+    },
+    "labelPosition": {
+      "type": "string",
+      "enumValues": [
+        "bottom",
+        "center",
+        "top"
+      ],
+      "value": "center"
+    },
+    "labelStyle": {
+      "type": "object"
+    },
+    "location": {
+      "type": "string",
+      "value": ""
+    },
+    "opacity": {
+      "type": "number",
+      "value": 1
+    },
+    "rotation": {
+      "type": "number",
+      "value": 0
+    },
+    "selectable": {
+      "type": "string",
+      "enumValues": [
+        "auto",
+        "off"
+      ],
+      "value": "auto"
+    },
+    "shape": {
+      "type": "string",
+      "value": "circle"
+    },
+    "shortDesc": {
+      "type": "string",
+      "value": ""
+    },
+    "source": {
+      "type": "string",
+      "value": ""
+    },
+    "sourceHover": {
+      "type": "string",
+      "value": ""
+    },
+    "sourceHoverSelected": {
+      "type": "string",
+      "value": ""
+    },
+    "sourceSelected": {
+      "type": "string",
+      "value": ""
+    },
+    "svgClassName": {
+      "type": "string",
+      "value": ""
+    },
+    "svgStyle": {
+      "type": "object",
+      "value": {}
+    },
+    "value": {
+      "type": "number",
+      "value": 2
+    },
+    "width": {
+      "type": "number",
+      "value": 8
+    },
+    "x": {
+      "type": "number"
+    },
+    "y": {
+      "type": "number"
+    }
+  },
+  "extension": {}
+};
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
@@ -17,8 +948,19 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/in
  * @since 0.7
  * @ojstatus preview
  * @ojrole application
- * @ojshortdesc An interactive data visualization that displays data corresponding to geographic locations or regions.  Applications are required to supply a mapProvider for a valid thematic map.
- * @ojtsignore
+ * @ojshortdesc An interactive data visualization that displays data corresponding to geographic locations or regions.
+ *              Applications are required to supply a mapProvider for a valid thematic map.
+ * @ojtsimport ojdataprovider
+ * @ojsignature [{
+ *                target: "Type",
+ *                value: "class ojThematicMap<K, D> extends dvtBaseComponent<ojThematicMapSettableProperties<K, D>>"
+ *               },
+ *               {
+ *                target: "Type",
+ *                value: "ojThematicMapSettableProperties<K, D> extends dvtBaseComponentSettableProperties",
+ *                for: "SettableProperties"
+ *               }
+ *              ]
  *
  * @classdesc
  * <h3 id="thematicMapOverview-section">
@@ -88,7 +1030,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/in
  *   "geometry" objects of "type" Polygon and MutliPolgyon will be used for defining area boundaries.  All other "type" values
  *   will be skipped.  The Feature "properties" object is where the thematic map will look up area info like id, short
  *   label, and long label using the key mappings provided in the [propertiesKeys]{@link oj.ojThematicMap#mapProvider.propertiesKeys} property.
- *   See the thematic map <a href="../jetCookbook.html?component=thematicMap&demo=mapProvider">Map Provider Demo</a> for an example.
+ *   See the thematic map <a href="../jetCookbook.html?component=thematicMap&demo=basemaps">Map Provider Demo</a> for an example.
  * </p>
  * <p>
  *   If longitude/latitude coordinate data need to be rendered, the application should use a projection library to
@@ -148,10 +1090,36 @@ oj.__registerWidget('oj.ojThematicMap', $['oj']['dvtBaseComponent'],
        */
       animationOnDisplay: 'none',
       /**
-       * An array of objects that define a row of data for an area data layer. 
+       * The oj.DataProvider for the areas of the thematic map. It should provide data rows where each row will map data
+       * for a single thematic map data area. The row key will be used as the id for thematic map areas. Note that when
+       * using this attribute, a template for the <a href="#areaTemplate">areaTemplate</a> slot should be provided.
+       * @expose
+       * @name areaData
+       * @memberof oj.ojThematicMap
+       * @instance
+       * @type {oj.DataProvider|null}
+       * @ojsignature {target: "Type", value: "oj.DataProvider<K, D>|null"}
+       * @default null
+       *
+       * @example <caption>Initialize the thematic map with the
+       * <code class="prettyprint">area-data</code> attribute specified:</caption>
+       * &lt;oj-thematic-map area-data='[[areaDataProvider]]'>&lt;/oj-thematic-map>
+       *
+       * @example <caption>Get or set the <code class="prettyprint">areaData</code>
+       * property after initialization:</caption>
+       * // getter
+       * var value = myThematicMap.areaData;
+       *
+       * // setter
+       * myThematicMap.areaData = areaDataProvider;
+       */
+      areaData: null,
+      /**
+       * An array of objects that define a row of data for an area data layer.
        * Also accepts a Promise where no data will be rendered if the Promise is rejected. Regardless of the
        * set value type, we will wrap and return a Promise when accessing the areas property.
        * @expose
+       * @ojtsignore
        * @name areas
        * @memberof oj.ojThematicMap
        * @instance
@@ -181,6 +1149,16 @@ oj.__registerWidget('oj.ojThematicMap', $['oj']['dvtBaseComponent'],
        */
       areas: null,
       /**
+       * An alias for the $current context variable passed to slot content for the areaTemplate, markerTemplate, or linkTemplate slots.
+       * @expose
+       * @name as
+       * @memberof oj.ojThematicMap
+       * @instance
+       * @type {string}
+       * @default ""
+       */
+      as: '',
+      /**
        * An optional callback function to update the data item in response to changes in keyboard focus state.
        * @expose
        * @name focusRenderer
@@ -198,6 +1176,7 @@ oj.__registerWidget('oj.ojThematicMap', $['oj']['dvtBaseComponent'],
        * @name hiddenCategories
        * @memberof oj.ojThematicMap
        * @instance
+       * @ojwriteback
        * @type {Array.<string>}
        * @default []
        * 
@@ -224,6 +1203,7 @@ oj.__registerWidget('oj.ojThematicMap', $['oj']['dvtBaseComponent'],
        * @name highlightedCategories
        * @memberof oj.ojThematicMap
        * @instance
+       * @ojwriteback
        * @type {Array.<string>}
        * @default []
        * 
@@ -335,7 +1315,7 @@ oj.__registerWidget('oj.ojThematicMap', $['oj']['dvtBaseComponent'],
        * @name isolatedItem
        * @memberof oj.ojThematicMap
        * @instance
-       * @type {string}
+       * @type {any}
        * @default ""
        * 
        * @example <caption>Initialize the thematic map with the 
@@ -401,10 +1381,36 @@ oj.__registerWidget('oj.ojThematicMap', $['oj']['dvtBaseComponent'],
        */
       labelType: 'short',
       /**
+       * The oj.DataProvider for the links of the thematic map. It should provide data rows where each row will map data
+       * for a single thematic map data link. The row key will be used as the id for thematic map links. Note that when
+       * using this attribute, a template for the <a href="#linkTemplate">linkTemplate</a> slot should be provided.
+       * @expose
+       * @name linkData
+       * @memberof oj.ojThematicMap
+       * @instance
+       * @type {oj.DataProvider|null}
+       * @ojsignature {target: "Type", value: "oj.DataProvider<K, D>|null"}
+       * @default null
+       *
+       * @example <caption>Initialize the thematic map with the
+       * <code class="prettyprint">link-data</code> attribute specified:</caption>
+       * &lt;oj-thematic-map link-data='[[linkDataProvider]]'>&lt;/oj-thematic-map>
+       *
+       * @example <caption>Get or set the <code class="prettyprint">linkData</code>
+       * property after initialization:</caption>
+       * // getter
+       * var value = myThematicMap.linkData;
+       *
+       * // setter
+       * myThematicMap.linkData = linkDataProvider;
+       */
+      linkData: null,
+      /**
        * An array of objects that define the data for links.
        * Also accepts a Promise where no data will be rendered if the Promise is rejected. Regardless of the
        * set value type, we will wrap and return a Promise when accessing the links property.
        * @expose
+       * @ojtsignore
        * @name links
        * @memberof oj.ojThematicMap
        * @instance
@@ -440,7 +1446,6 @@ oj.__registerWidget('oj.ojThematicMap', $['oj']['dvtBaseComponent'],
        * @memberof oj.ojThematicMap
        * @instance
        * @type {Object}
-       * @default {"geo": {}, "propertiesKeys": {"id": "", "longLabel": "", "shortLabel": ""}}
        * 
        * @example <caption>Initialize the thematic map with the 
        * <code class="prettyprint">map-provider</code> attribute specified:</caption>
@@ -495,7 +1500,6 @@ oj.__registerWidget('oj.ojThematicMap', $['oj']['dvtBaseComponent'],
          * @memberof! oj.ojThematicMap
          * @instance
          * @type {Object}
-         * @default {}
          * 
          * @example <caption>See the <a href="#mapProvider">mapProvider</a> attribute for usage examples.</caption>
          */
@@ -541,10 +1545,36 @@ oj.__registerWidget('oj.ojThematicMap', $['oj']['dvtBaseComponent'],
         }
       },
       /**
+       * The oj.DataProvider for the markers of the thematic map. It should provide data rows where each row will map data
+       * for a single thematic map data marker. The row key will be used as the id for thematic map markers. Note that when
+       * using this attribute, a template for the <a href="#markerTemplate">markerTemplate</a> slot should be provided.
+       * @expose
+       * @name markerData
+       * @memberof oj.ojThematicMap
+       * @instance
+       * @type {oj.DataProvider|null}
+       * @ojsignature {target: "Type", value: "oj.DataProvider<K, D>|null"}
+       * @default null
+       *
+       * @example <caption>Initialize the thematic map with the
+       * <code class="prettyprint">marker-data</code> attribute specified:</caption>
+       * &lt;oj-thematic-map marker-data='[[markerDataProvider]]'>&lt;/oj-thematic-map>
+       *
+       * @example <caption>Get or set the <code class="prettyprint">markerData</code>
+       * property after initialization:</caption>
+       * // getter
+       * var value = myThematicMap.markerData;
+       *
+       * // setter
+       * myThematicMap.markerData = markerDataProvider;
+       */
+      markerData: null,
+      /**
        * An array of objects that define a row of data for a data layer.
        * Also accepts a Promise where no data will be rendered if the Promise is rejected. Regardless of the
        * set value type, we will wrap and return a Promise when accessing the markers property.
        * @expose
+       * @ojtsignore
        * @name markers
        * @memberof oj.ojThematicMap
        * @instance
@@ -663,7 +1693,7 @@ oj.__registerWidget('oj.ojThematicMap', $['oj']['dvtBaseComponent'],
        * @name selection
        * @memberof oj.ojThematicMap
        * @instance
-       * @type {Array.<string>}
+       * @type {Array.<any>}
        * @default []
        * @ojwriteback
        * 
@@ -729,7 +1759,6 @@ oj.__registerWidget('oj.ojThematicMap', $['oj']['dvtBaseComponent'],
        * @memberof oj.ojThematicMap
        * @instance
        * @type {Object}
-       * @default {"areaSvgStyle": {}, "dataAreaDefaults": {}, "dataMarkerDefaults": {"borderWidth": 0.5, "borderStyle": "solid", "height": 8, "labelStyle": {}, "opacity": 1, "shape": "circle", "width": 8},"hoverBehaviorDelay": 200, "labelStyle": {}, "linkDefaults": {"width": 2}}
        * @example <caption>Initialize the thematic map with the 
        * <code class="prettyprint">style-defaults</code> attribute specified:</caption>
        * <!-- Using dot notation -->
@@ -786,6 +1815,7 @@ oj.__registerWidget('oj.ojThematicMap', $['oj']['dvtBaseComponent'],
            * @memberof! oj.ojThematicMap
            * @instance
            * @type {string}
+           * @ojformat color
            * @ojsignature {target: "Type", value: "?"}
            * 
            * @example <caption>See the <a href="#styleDefaults">styleDefaults</a> attribute for usage examples.</caption>
@@ -798,18 +1828,20 @@ oj.__registerWidget('oj.ojThematicMap', $['oj']['dvtBaseComponent'],
            * @memberof! oj.ojThematicMap
            * @instance
            * @type {string}
+           * @ojformat color
            * @ojsignature {target: "Type", value: "?"}
            * 
            * @example <caption>See the <a href="#styleDefaults">styleDefaults</a> attribute for usage examples.</caption>
            */
           hoverColor: undefined,
           /**
-           * The outer selected data area border color. The default value comes from the CSS and varies based on theme.
+           * The inner selected data area border color. The default value comes from the CSS and varies based on theme.
            * @expose
            * @name styleDefaults.dataAreaDefaults.selectedInnerColor
            * @memberof! oj.ojThematicMap
            * @instance
            * @type {string}
+           * @ojformat color
            * @ojsignature {target: "Type", value: "?"}
            * 
            * @example <caption>See the <a href="#styleDefaults">styleDefaults</a> attribute for usage examples.</caption>
@@ -822,6 +1854,7 @@ oj.__registerWidget('oj.ojThematicMap', $['oj']['dvtBaseComponent'],
            * @memberof! oj.ojThematicMap
            * @instance
            * @type {string}
+           * @ojformat color
            * @ojsignature {target: "Type", value: "?"}
            * 
            * @example <caption>See the <a href="#styleDefaults">styleDefaults</a> attribute for usage examples.</caption>
@@ -836,7 +1869,6 @@ oj.__registerWidget('oj.ojThematicMap', $['oj']['dvtBaseComponent'],
          * @memberof! oj.ojThematicMap
          * @instance
          * @type {Object}
-         * @default  {"borderWidth": 0.5, "borderStyle": "solid", "height": 8, "labelStyle": {}, "opacity": 1, "shape": "circle", "width": 8}
          * @ojsignature {target: "Type", value: "?"}
          * 
          * @example <caption>See the <a href="#styleDefaults">styleDefaults</a> attribute for usage examples.</caption>
@@ -849,6 +1881,7 @@ oj.__registerWidget('oj.ojThematicMap', $['oj']['dvtBaseComponent'],
            * @memberof! oj.ojThematicMap
            * @instance
            * @type {string}
+           * @ojformat color
            * @ojsignature {target: "Type", value: "?"}
            * 
            * @example <caption>See the <a href="#styleDefaults">styleDefaults</a> attribute for usage examples.</caption>
@@ -890,6 +1923,7 @@ oj.__registerWidget('oj.ojThematicMap', $['oj']['dvtBaseComponent'],
            * @memberof! oj.ojThematicMap
            * @instance
            * @type {string}
+           * @ojformat color
            * @ojsignature {target: "Type", value: "?"}
            * 
            * @example <caption>See the <a href="#styleDefaults">styleDefaults</a> attribute for usage examples.</caption>
@@ -931,7 +1965,7 @@ oj.__registerWidget('oj.ojThematicMap', $['oj']['dvtBaseComponent'],
            * @memberof! oj.ojThematicMap
            * @instance
            * @type {number}
-           * @default  1
+           * @default 1
            * @ojsignature {target: "Type", value: "?"}
            * 
            * @example <caption>See the <a href="#styleDefaults">styleDefaults</a> attribute for usage examples.</caption>
@@ -945,8 +1979,8 @@ oj.__registerWidget('oj.ojThematicMap', $['oj']['dvtBaseComponent'],
            * @instance
            * @type {string}
            * @default  "circle"
-           * @ojsignature {target: "Type", value: "?'circle'|'diamond'|'ellipse'|'human'|'plus|'rectangle'|'square'|'star'|'triangleDown'|'triangleUp'|string"}
-           * 
+           * @ojsignature {target: "Type", value: "?'circle'|'diamond'|'ellipse'|'human'|'plus'|'rectangle'|'square'|'star'|'triangleDown'|'triangleUp'|string"}
+           *
            * @example <caption>See the <a href="#styleDefaults">styleDefaults</a> attribute for usage examples.</caption>
            */
           shape: 'circle',
@@ -1000,7 +2034,6 @@ oj.__registerWidget('oj.ojThematicMap', $['oj']['dvtBaseComponent'],
          * @memberof! oj.ojThematicMap
          * @instance
          * @type {Object}
-         * @default  {}
          * @ojsignature {target: "Type", value: "?"}
          * 
          * @example <caption>See the <a href="#styleDefaults">styleDefaults</a> attribute for usage examples.</caption>
@@ -1013,6 +2046,7 @@ oj.__registerWidget('oj.ojThematicMap', $['oj']['dvtBaseComponent'],
            * @memberof! oj.ojThematicMap
            * @instance
            * @type {string}
+           * @ojformat color
            * @ojsignature {target: "Type", value: "?"}
            * 
            * @example <caption>See the <a href="#styleDefaults">styleDefaults</a> attribute for usage examples.</caption>
@@ -1025,7 +2059,7 @@ oj.__registerWidget('oj.ojThematicMap', $['oj']['dvtBaseComponent'],
            * @memberof! oj.ojThematicMap
            * @instance
            * @type {number}
-           * @default  2
+           * @default 2
            * @ojunits "pixels"
            * @ojsignature {target: "Type", value: "?"}
            * 
@@ -1041,7 +2075,6 @@ oj.__registerWidget('oj.ojThematicMap', $['oj']['dvtBaseComponent'],
        * @memberof oj.ojThematicMap
        * @instance
        * @type {Object}
-       * @default {"renderer": null}
        * 
        * @example <caption>Initialize the thematic map with the 
        * <code class="prettyprint">tooltip</code> attribute specified:</caption>
@@ -1073,6 +2106,7 @@ oj.__registerWidget('oj.ojThematicMap', $['oj']['dvtBaseComponent'],
          * @memberof! oj.ojThematicMap
          * @instance
          * @type {function(Object):Object|null}
+         * @default null
          * @ojsignature {target: "Type", value: "((context: oj.ojThematicMap.TooltipContext) => ({insert: Element|string}|{preventDefault: boolean}))", jsdocOverride: true}
          * @example <caption>See the <a href="#tooltip">tooltip</a> attribute for usage examples.</caption>
          */
@@ -1474,31 +2508,33 @@ oj.__registerWidget('oj.ojThematicMap', $['oj']['dvtBaseComponent'],
      * @instance
      * @memberof oj.ojThematicMap
      */
-    _getContextHandler: function() {
-     var thisRef = this;
-     var contextHandlerFunc = function (parentElement, rootElement, data, state, previousState) {
-       var context = {
-         'component': oj.Components.__GetWidgetConstructor(thisRef.element),
-         'parentElement': parentElement,
-         'rootElement': rootElement,
-         'data': data,
-         'state': state,
-         'previousState': previousState,
-         'id': data['id'],
-         'label': data['label'],
-         'color': data['color'],
-         'location': data['location'],
-         'x': data['x'],
-         'y': data['y']
-       };
-       if (thisRef._IsCustomElement()) {
-        context['renderDefaultHover'] = thisRef.renderDefaultHover.bind(thisRef, context);
-        context['renderDefaultSelection'] = thisRef.renderDefaultSelection.bind(thisRef, context);
-        context['renderDefaultFocus'] = thisRef.renderDefaultFocus.bind(thisRef, context);
-       }
-       return thisRef._FixRendererContext(context);
-     }
-     return contextHandlerFunc;
+    _getContextHandler: function () {
+      var thisRef = this;
+      var contextHandlerFunc = function (parentElement, rootElement, data, itemData,
+        state, previousState) {
+        var context = {
+          component: oj.Components.__GetWidgetConstructor(thisRef.element),
+          parentElement: parentElement,
+          rootElement: rootElement,
+          data: data,
+          itemData: itemData,
+          state: state,
+          previousState: previousState,
+          id: data.id,
+          label: data.label,
+          color: data.color,
+          location: data.location,
+          x: data.x,
+          y: data.y
+        };
+        if (thisRef._IsCustomElement()) {
+          context.renderDefaultHover = thisRef.renderDefaultHover.bind(thisRef, context);
+          context.renderDefaultSelection = thisRef.renderDefaultSelection.bind(thisRef, context);
+          context.renderDefaultFocus = thisRef.renderDefaultFocus.bind(thisRef, context);
+        }
+        return thisRef._FixRendererContext(context);
+      };
+      return contextHandlerFunc;
     },
 
     /**
@@ -1812,14 +2848,14 @@ oj.__registerWidget('oj.ojThematicMap', $['oj']['dvtBaseComponent'],
     },
 
     // @inheritdoc
-    _GetComponentDeferredDataPaths : function() {
-      if (this._IsCustomElement())
-        return {'root': ['areas', 'markers', 'links']};
-      else
-        return {
-          'areaLayers': ['areaDataLayer/areas', 'areaDataLayer/markers', 'areaDataLayer/links'],
-          'pointDataLayers': ['markers', 'links']
-        };
+    _GetComponentDeferredDataPaths: function () {
+      if (this._IsCustomElement()) {
+        return { root: ['areas', 'markers', 'links', 'areaData', 'markerData', 'linkData'] };
+      }
+      return {
+        areaLayers: ['areaDataLayer/areas', 'areaDataLayer/markers', 'areaDataLayer/links'],
+        pointDataLayers: ['markers', 'links']
+      };
     },
 
     // @inheritdoc
@@ -2000,7 +3036,15 @@ oj.__registerWidget('oj.ojThematicMap', $['oj']['dvtBaseComponent'],
         return dataLayer;
       }
     },
-});
+    //* * @inheritdoc */
+    _GetSimpleDataProviderConfigs: function () {
+      return {
+        areaData: { templateName: 'areaTemplate', templateElementName: 'oj-thematic-map-area', resultPath: 'areas' },
+        linkData: { templateName: 'linkTemplate', templateElementName: 'oj-thematic-map-link', resultPath: 'links' },
+        markerData: { templateName: 'markerTemplate', templateElementName: 'oj-thematic-map-marker', resultPath: 'markers' }
+      };
+    }
+  });
 
 // Conditionally set the defaults for custom element vs widget syntax since we expose different APIs
 oj.Components.setDefaultOptions({
@@ -2172,9 +3216,10 @@ oj.Components.setDefaultOptions({
 
 /**
  * @typedef {Object} oj.ojThematicMap.Area
+ * @ojtsignore
  * @property {Array.<string>=}       categories An array of category strings corresponding to this area. This allows highlighting and filtering of areas.
  * @property {string=}       color The area color.
- * @property {string=}       id The identifier for this area.
+ * @property {any=}          id The identifier for this area. The id should be set by the application if the oj.DataProvider is not being used. The row key will be used as id in the oj.DataProvider case.
  * @property {string=}       label Text used for the area's label.
  * @property {Object=}       labelStyle The CSS style defining the label style for this area.
  * @property {string}        location An identifier corresponding to a Feature provided in the mapProvider geo object that this area is associated with.
@@ -2186,18 +3231,19 @@ oj.Components.setDefaultOptions({
  */
 /**
  * @typedef {Object} oj.ojThematicMap.Link
+ * @ojtsignore
  * @property {Array.<string>=}       categories An array of category strings corresponding to this link. This allows highlighting and filtering of links.
  * @property {string=}       color The link color.
- * @property {Object}       endLocation An object with used to determine the end point of the link.
- * @property {string=}       endLocation.id The marker or area id to be used as the end point.
+ * @property {Object}        endLocation An object with used to determine the end point of the link.
+ * @property {any=}          endLocation.id The marker or area id to be used as the end point.
  * @property {string=}       endLocation.location An identifier corresponding to a Feature provided in the mapProvider geo object to be used as the end point.
  * @property {number=}       endLocation.x The x coordinate which can represent latitude of the end point.
  * @property {number=}       endLocation.y The y coordinate which can represent longitude of the end point.
- * @property {string=}       id The identifier for this link.
+ * @property {any=}          id The identifier for this marker. The id should be set by the application if the oj.DataProvider is not being used. The row key will be used as id in the oj.DataProvider case.
  * @property {"auto"|"off"}  [selectable="auto"] Specifies whether or not the link will be selectable.
  * @property {string=}       shortDesc The text that displays in the links's tooltip.
- * @property {Object}       startLocation An object with used to determine the start point of the link.
- * @property {string=}       startLocation.id The marker or area id to be used as the start point.
+ * @property {Object}        startLocation An object with used to determine the start point of the link.
+ * @property {any=}          startLocation.id The marker or area id to be used as the start point.
  * @property {string=}       startLocation.location An identifier corresponding to a Feature provided in the mapProvider geo object to be used as the start point.
  * @property {number=}       startLocation.x The x coordinate which can represent latitude of the start point.
  * @property {number=}       startLocation.y The y coordinate which can represent longitude of the start point.
@@ -2207,21 +3253,22 @@ oj.Components.setDefaultOptions({
  */
 /**
  * @typedef {Object} oj.ojThematicMap.Marker
+ * @ojtsignore
  * @property {string=}       borderColor The marker border color.
  * @property {"solid"|"none"}    [borderStyle="solid"] The marker border style.
  * @property {number=}       borderWidth The marker border width in pixels.
  * @property {Array.<string>=}       categories An array of category strings corresponding to this marker. This allows highlighting and filtering of markers.
  * @property {string=}       color The marker color.
  * @property {number=}       height The pixel height for this marker. Note that this attribute will be ignored if a value is provided to calculate marker sizes.
- * @property {string=}       id The identifier for this link.
+ * @property {any=}       id The identifier for this marker. The id should be set by the application if the oj.DataProvider is not being used. The row key will be used as id in the oj.DataProvider case.
  * @property {string=}       label Text used for the marker's label.
  * @property {"bottom"|"center"|"top"}       [labelPosition="center"] Determines the label position relative to the marker.
  * @property {Object=}       labelStyle The CSS style object defining the style of the marker.
  * @property {string=}       location An identifier corresponding to a Feature provided in the mapProvider geo object that this marker is associated with.
  * @property {number=}       opacity The marker opacity.
  * @property {number=}       rotation The angle to rotate the marker in clockwise degrees around the marker center.
- * @property {"auto"|"off"}  [selectable="auto"] Specifies whether or not the link will be selectable.
- * @property {"circle"|"diamond"|"ellipse"|"human"|"plus"|"rectangle"|"square"|"star"|"triangleDown"|"triangleUp"|string}       
+ * @property {"auto"|"off"}  [selectable="auto"] Specifies whether or not the marker will be selectable.
+ * @property {"circle"|"diamond"|"ellipse"|"human"|"plus"|"rectangle"|"square"|"star"|"triangleDown"|"triangleUp"|string}
  *                           [shape="circle"] Specifies the shape of a marker. Can take the name of a built-in shape or the svg path commands for a custom shape.
  * @property {string=}       shortDesc The text that displays in the area's tooltip.
  * @property {string=}       source Specifies an URI specifying the location of the image resource to use for the marker instead of a built-in shape. 
@@ -2244,7 +3291,8 @@ oj.Components.setDefaultOptions({
  * @property {string}       color The color of the data item.
  * @property {Element}      componentElement The thematic map element.
  * @property {Object}       data The data object for a stamped data visualization.
- * @property {string}       id The id of the data item.
+ * @property {any}          id The id of the data item.
+ * @property {Object|null}  itemData The row data object for the hovered item. This will only be set if an oj.DataProvider is being used.
  * @property {string}       label The label of the data item.
  * @property {string|null}  location The location of the data item which can be null if x/y are set instead.
  * @property {Element}      parentElement An element that is part of a displayed subtree on the DOM. Modifications of the parentElement are not supported.
@@ -2263,20 +3311,6 @@ oj.Components.setDefaultOptions({
  * @property {number|null}  x The x coordinate of the data item which can be null if location is set instead.
  * @property {number|null}  y The y coordinate of the data item which can be null if location is set instead.
  */
-/**
- * @typedef {Object} oj.ojThematicMap.TooltipContext
- * @property {string|null} color The color of the hovered item or null if the hovered item if not associated with any data.
- * @property {Element} componentElement The thematic map element.
- * @property {Object|null} data The data object of the hovered item or null if the hovered item is not associated with any data.
- * @property {string|null} id The id of the hovered item or null if the hovered item if not associated with any data.
- * @property {string|null} label The data label of the hovered item or null if the hovered item if not associated with any data.
- * @property {string|null} location The location id of the hovered item which can be null if x/y are set instead.
- * @property {string|null} locationName The location name of the hovered item if location id is set.
- * @property {Element} parentElement The tooltip element. The function can directly modify or append content to this element.
- * @property {string} tooltip The default tooltip string constructed by the element if any.
- * @property {number} x The x coordinate of the hovered item which can be null if location is set instead.
- * @property {number} y The y coordinate of the hovered item which can be null if location is set instead.
- */
 
 // METHOD TYPEDEFS
 
@@ -2291,6 +3325,21 @@ oj.Components.setDefaultOptions({
  * @typedef {Object} oj.ojThematicMap.NodeContext
  * @property {string} subId The subId string identify the particular DOM node.
  * @property {number} index The zero based index of the thematic map item.
+ */
+/**
+ * @typedef {Object} oj.ojThematicMap.TooltipContext
+ * @property {string|null} color The color of the hovered item or null if the hovered item if not associated with any data.
+ * @property {Element} componentElement The thematic map element.
+ * @property {Object|null} data The data object of the hovered item or null if the hovered item is not associated with any data.
+ * @property {any|null} id The id of the hovered item or null if the hovered item if not associated with any data.
+ * @property {Object|null} itemData The row data object for the hovered item. This will only be set if an oj.DataProvider is being used.
+ * @property {string|null} label The data label of the hovered item or null if the hovered item if not associated with any data.
+ * @property {string|null} location The location id of the hovered item which can be null if x/y are set instead.
+ * @property {string|null} locationName The location name of the hovered item if location id is set.
+ * @property {Element} parentElement The tooltip element. The function can directly modify or append content to this element.
+ * @property {string} tooltip The default tooltip string constructed by the element if any.
+ * @property {number} x The x coordinate of the hovered item which can be null if location is set instead.
+ * @property {number} y The y coordinate of the hovered item which can be null if location is set instead.
  */
 
 // KEEP FOR WIDGET SYNTAX
@@ -2375,277 +3424,975 @@ oj.Components.setDefaultOptions({
  * @memberof oj.ojThematicMap
  */
 
+ // Slots
 
+/**
+ * <p>
+ *  The <code class="prettyprint">areaTemplate</code> slot is used to specify the template for
+ *  creating areas of the thematic map. The slot content must be wrapped in a &lt;template>
+ *  element. The content of the template should be a single &lt;oj-thematic-map-area> element.
+ *  See the [oj-thematic-map-area]{@link oj.ojThematicMapArea} doc for more details.
+ * </p>
+ * <p>
+ *  When the template is executed for each area, it will have access to the components's
+ *  binding context containing the following properties:
+ * </p>
+ * <ul>
+ *   <li>
+ *      $current - an object that contains information for the current area.
+ *      (See the table below for a list of properties available on $current)
+ *   </li>
+ *   <li>
+ *      alias - if 'as' attribute was specified, the value will be used to provide an
+ *      application-named alias for $current.
+ *   </li>
+ * </ul>
+ * @ojstatus preview
+ * @ojslot areaTemplate
+ * @memberof oj.ojThematicMap
+ * @property {Element} componentElement The &lt;oj-thematic-map> custom element
+ * @property {Object} data The data object for the current area
+ * @property {number} index The zero-based index of the curent area
+ * @property {any} key The key of the current area
+ *
+ * @example <caption>Initialize the thematic map with an inline area template specified:</caption>
+ * &lt;oj-thematic-map area-data='[[areaDataProvider]]' map-provider='[[mapProvider]]'>
+ *  &lt;template slot='areaTemplate'>
+ *    &lt;oj-thematic-map-area color='[[$current.data.color]]' location='[[$current.data.country]]'
+ *      short-desc='[[$current.data.shortDesc]]'>
+ *    &lt;/oj-thematic-map-area>
+ *  &lt;/template>
+ * &lt;/oj-thematic-map>
+ */
+
+/**
+ * <p>
+ *  The <code class="prettyprint">markerTemplate</code> slot is used to specify the template for
+ *  creating markers of the thematic map. The slot content must be wrapped in a &lt;template>
+ *  element. The content of the template should be a single &lt;oj-thematic-map-marker> element.
+ *  See the [oj-thematic-map-marker]{@link oj.ojThematicMapMarker} doc for more details.
+ * </p>
+ * <p>
+ *  When the template is executed for each marker, it will have access to the components's
+ *  binding context containing the following properties:
+ * </p>
+ * <ul>
+ *   <li>
+ *      $current - an object that contains information for the current marker.
+ *      (See the table below for a list of properties available on $current)
+ *   </li>
+ *   <li>
+ *      alias - if 'as' attribute was specified, the value will be used to provide an
+ *      application-named alias for $current.
+ *   </li>
+ * </ul>
+ * @ojstatus preview
+ * @ojslot markerTemplate
+ * @memberof oj.ojThematicMap
+ * @property {Element} componentElement The &lt;oj-thematic-map> custom element
+ * @property {Object} data The data object for the current marker
+ * @property {number} index The zero-based index of the curent marker
+ * @property {any} key The key of the current marker
+ *
+ * @example <caption>Initialize the thematic map with an inline marker template specified:</caption>
+ * &lt;oj-thematic-map marker-data='[[markerDataProvider]]' map-provider='[[mapProvider]]'>
+ *  &lt;template slot='markerTemplate'>
+ *    &lt;oj-thematic-map-marker color='[[$current.data.color]]' x='[[$current.data.lat]]'
+ *      y='[[$current.data.long]]' short-desc='[[$current.data.shortDesc]]'>
+ *    &lt;/oj-thematic-map-marker>
+ *  &lt;/template>
+ * &lt;/oj-thematic-map>
+ */
+
+/**
+ * <p>
+ *  The <code class="prettyprint">linkTemplate</code> slot is used to specify the template for
+ *  creating links of the thematic map. The slot content must be wrapped in a &lt;template>
+ *  element. The content of the template should be a single &lt;oj-thematic-map-link> element.
+ *  See the [oj-thematic-map-link]{@link oj.ojThematicMapLink} doc for more details.
+ * </p>
+ * <p>
+ *  When the template is executed for each link, it will have access to the components's
+ *  binding context containing the following properties:
+ * </p>
+ * <ul>
+ *   <li>
+ *      $current - an object that contains information for the current link.
+ *      (See the table below for a list of properties available on $current)
+ *   </li>
+ *   <li>
+ *      alias - if 'as' attribute was specified, the value will be used to provide an
+ *      application-named alias for $current.
+ *   </li>
+ * </ul>
+ * @ojstatus preview
+ * @ojslot linkTemplate
+ * @memberof oj.ojThematicMap
+ * @property {Element} componentElement The &lt;oj-thematic-map> custom element
+ * @property {Object} data The data object for the current link
+ * @property {number} index The zero-based index of the curent link
+ * @property {any} key The key of the current link
+ *
+ * @example <caption>Initialize the thematic map with an inline link template specified:</caption>
+ * &lt;oj-thematic-map link-data='[[linkDataProvider]]' map-provider='[[mapProvider]]'>
+ *  &lt;template slot='linkTemplate'>
+ *    &lt;oj-thematic-map-link startLocation='[[$current.data.startCoords]]' endLocation='[[$current.data.endCoords]]'
+ *      short-desc='[[$current.data.shortDesc]]'>
+ *    &lt;/oj-thematic-map-link>
+ *  &lt;/template>
+ * &lt;/oj-thematic-map>
+ */
+
+/**
+ * @ojcomponent oj.ojThematicMapArea
+ * @ojsignature {target: "Type", value:"class ojThematicMapArea extends JetElement<ojThematicMapAreaSettableProperties>"}
+ * @ojslotcomponent
+ * @since 5.2.0
+ * @ojstatus preview
+ *
+ * @classdesc
+ * <h3 id="overview">
+ *   JET Thematic Map Area
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#overview"></a>
+ * </h3>
+ *
+ * <p>
+ *  The oj-thematic-map-area element is used to declare properties for thematic map areas and is only valid as the
+ *  child of a template element for the [areaTemplate]{@link oj.ojThematicMap#areaTemplate}
+ *  slot of oj-thematic-map.
+ * </p>
+ *
+ * <pre class="prettyprint">
+ * <code>
+ * &lt;oj-thematic-map area-data='[[areaDataProvider]]' map-provider='[[mapProvider]]'>
+ *  &lt;template slot='areaTemplate'>
+ *    &lt;oj-thematic-map-area  color='[[$current.data.color]]' location='[[$current.data.country]]'>
+ *    &lt;/oj-thematic-map-area>
+ *  &lt;/template>
+ * &lt;/oj-thematic-map>
+ * </code>
+ * </pre>
+ */
+
+/**
+ * An array of category strings corresponding to this area. This allows highlighting and filtering of areas.
+ * By default, the label is used as the area category.
+ * @expose
+ * @name categories
+ * @memberof! oj.ojThematicMapArea
+ * @instance
+ * @type {Array.<string>}
+ * @default []
+ *
+ * @example <caption>Initialize the thematic map area with the
+ * <code class="prettyprint">categories</code> attribute specified:</caption>
+ * &lt;oj-thematic-map-area categories='[[$current.data.categories]]'>&lt;/oj-thematic-map-area>
+ */
+/**
+ * The area color. The default values come from the CSS classess and varies based on theme.
+ * @expose
+ * @name color
+ * @memberof! oj.ojThematicMapArea
+ * @instance
+ * @type {string}
+ * @ojformat color
+ * @default null
+ *
+ * @example <caption>Initialize the thematic map area with the
+ * <code class="prettyprint">color</code> attribute specified:</caption>
+ * &lt;oj-thematic-map-area color='[[$current.data.color]]'>&lt;/oj-thematic-map-area>
+ */
+/**
+ * Text used for the area's label.
+ * @expose
+ * @name label
+ * @memberof! oj.ojThematicMapArea
+ * @instance
+ * @type {string}
+ * @default ""
+ *
+ * @example <caption>Initialize the thematic map area with the
+ * <code class="prettyprint">label</code> attribute specified:</caption>
+ * &lt;oj-thematic-map-area label='[[$current.data.label]]'>&lt;/oj-thematic-map-area>
+ */
+/**
+ * The CSS style object defining the style of the area. The default values come from the CSS classess and varies based on theme.
+ * @expose
+ * @name labelStyle
+ * @memberof! oj.ojThematicMapArea
+ * @instance
+ * @type {object}
+ * @default null
+ *
+ * @example <caption>Initialize the thematic map area with the
+ * <code class="prettyprint">label-style</code> attribute specified:</caption>
+ * &lt;oj-thematic-map-area label-style='{"color":"black","fontSize":"12px"}'>&lt;/oj-thematic-map-area>
+ */
+/**
+ * An identifier corresponding to a Feature provided in the mapProvider geo object that this area is associated with.
+ * @expose
+ * @name location
+ * @memberof! oj.ojThematicMapArea
+ * @instance
+ * @type {string}
+ * @default ""
+ *
+ * @example <caption>Initialize the thematic map area with the
+ * <code class="prettyprint">location</code> attribute specified:</caption>
+ * &lt;oj-thematic-map-area location='[[$current.data.location}}'>&lt;/oj-thematic-map-area>
+ */
+/**
+ * The area opacity.
+ * @expose
+ * @name opacity
+ * @memberof! oj.ojThematicMapArea
+ * @instance
+ * @type {number}
+ * @ojmin 0
+ * @ojmax 1
+ * @default 1
+ *
+ * @example <caption>Initialize the thematic map area with the
+ * <code class="prettyprint">opacity</code> attribute specified:</caption>
+ * &lt;oj-thematic-map-area opacity='0.5'>&lt;/oj-thematic-map-area>
+ */
+/**
+ * Specifies whether or not the area will be selectable.
+ * @expose
+ * @name selectable
+ * @memberof! oj.ojThematicMapArea
+ * @instance
+ * @type {string}
+ * @ojvalue {string} "auto"
+ * @ojvalue {string} "off"
+ * @default "auto"
+ *
+ * @example <caption>Initialize the thematic map area with the
+ * <code class="prettyprint">selectable</code> attribute specified:</caption>
+ * &lt;oj-thematic-map-area selectable='off'>&lt;/oj-thematic-map-area>
+ */
+/**
+ * The text that displays in the area's tooltip.
+ * @expose
+ * @name shortDesc
+ * @memberof! oj.ojThematicMapArea
+ * @instance
+ * @type {string}
+ * @default ""
+ *
+ * @example <caption>Initialize the thematic map area with the
+ * <code class="prettyprint">short-desc</code> attribute specified:</caption>
+ * &lt;oj-thematic-map-area short-desc='[[$current.data.shortDesc]]'>&lt;/oj-thematic-map-area>
+ */
+/**
+ * The CSS style class defining the style of the area.
+ * @expose
+ * @name svgClassName
+ * @memberof! oj.ojThematicMapArea
+ * @instance
+ * @type {string}
+ * @default ""
+ *
+ * @example <caption>Initialize the thematic map area with the
+ * <code class="prettyprint">svg-class-name</code> attribute specified:</caption>
+ * &lt;oj-thematic-map-area svg-class-name='areaStyle'>&lt;/oj-thematic-map-area>
+ */
+/**
+ * The CSS style object defining the style of the area.
+ * @expose
+ * @name svgStyle
+ * @memberof! oj.ojThematicMapArea
+ * @instance
+ * @type {object}
+ * @default {}
+ *
+ * @example <caption>Initialize the thematic map area with the
+ * <code class="prettyprint">svg-style</code> attribute specified:</caption>
+ * &lt;oj-thematic-map-area svg-style='{"color": "red"}'>&lt;/oj-thematic-map-area>
+ */
+
+/**
+ * @ojcomponent oj.ojThematicMapLink
+ * @ojsignature {target: "Type", value:"class ojThematicMapLink extends JetElement<ojThematicMapLinkSettableProperties>"}
+ * @ojslotcomponent
+ * @since 5.2.0
+ * @ojstatus preview
+ *
+ * @classdesc
+ * <h3 id="overview">
+ *   JET Thematic Map Link
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#overview"></a>
+ * </h3>
+ *
+ * <p>
+ *  The oj-thematic-map-link element is used to declare properties for thematic map links and is only valid as the
+ *  child of a template element for the [linkTemplate]{@link oj.ojThematicMap#linkTemplate}
+ *  slot of oj-thematic-map.
+ * </p>
+ *
+ * <pre class="prettyprint">
+ * <code>
+ * &lt;oj-thematic-map link-data='[[linkDataProvider]]' map-provider='[[mapProvider]]'>
+ *  &lt;template slot='linkTemplate'>
+ *    &lt;oj-thematic-map-link  start-location='[[$current.data.start]]' end-location='[[$current.data.end]]'>
+ *    &lt;/oj-thematic-map-link>
+ *  &lt;/template>
+ * &lt;/oj-thematic-map>
+ * </code>
+ * </pre>
+ */
+
+/**
+ * An array of category strings corresponding to this link. This allows highlighting and filtering of links.
+ * By default, the label is used as the link category.
+ * @expose
+ * @name categories
+ * @memberof! oj.ojThematicMapLink
+ * @instance
+ * @type {Array.<string>}
+ * @default []
+ *
+ * @example <caption>Initialize the thematic map link with the
+ * <code class="prettyprint">categories</code> attribute specified:</caption>
+ * &lt;oj-thematic-map-link categories='[[$current.data.categories]]'>&lt;/oj-thematic-map-link>
+ */
+/**
+ * The link color.
+ * @expose
+ * @name color
+ * @memberof! oj.ojThematicMapLink
+ * @instance
+ * @type {string}
+ * @ojformat color
+ * @default ""
+ *
+ * @example <caption>Initialize the thematic map link with the
+ * <code class="prettyprint">color</code> attribute specified:</caption>
+ * &lt;oj-thematic-map-link color='[[$current.data.color]]'>&lt;/oj-thematic-map-link>
+ */
+/**
+ * An object used to determine the end point of the link.
+ * @expose
+ * @name endLocation
+ * @memberof! oj.ojThematicMapLink
+ * @instance
+ * @type {object}
+ * @default {}
+ *
+ * @example <caption>Initialize the thematic map with the
+ * <code class="prettyprint">end-location</code> attribute specified:</caption>
+ * <!-- Using dot notation -->
+ * &lt;oj-thematic-map-link end-location.x='[[$current.data.lat]] end-location.y='[[$current.data.long]]'>&lt;/oj-thematic-map-link>
+ *
+ * &lt;oj-thematic-map-link end-location='[[$current.data.end]]>&lt;/oj-thematic-map-link>
+ */
+ /**
+ * The marker or area id to be used as the end point.
+ * @expose
+ * @name endLocation.id
+ * @memberof! oj.ojThematicMapLink
+ * @instance
+ * @type {any=}
+ *
+ * @example <caption>See the <a href="#endLocation">endLocation</a> attribute for usage examples.</caption>
+ */
+ /**
+ * An identifier corresponding to a Feature provided in the mapProvider geo object
+ * to be used as the end point.
+ * @expose
+ * @name endLocation.location
+ * @memberof! oj.ojThematicMapLink
+ * @instance
+ * @type {string=}
+ *
+ * @example <caption>See the <a href="#endLocation">endLocation</a> attribute for usage examples.</caption>
+ */
+ /**
+ * The x coordinate which can represent latitude of the end point.
+ * @expose
+ * @name endLocation.x
+ * @memberof! oj.ojThematicMapLink
+ * @instance
+ * @type {number=}
+ *
+ * @example <caption>See the <a href="#endLocation">endLocation</a> attribute for usage examples.</caption>
+ */
+ /**
+ * The y coordinate which can represent latitude of the end point.
+ * @expose
+ * @name endLocation.y
+ * @memberof! oj.ojThematicMapLink
+ * @instance
+ * @type {number=}
+ *
+ * @example <caption>See the <a href="#endLocation">endLocation</a> attribute for usage examples.</caption>
+ */
+/**
+ * Specifies whether or not the link will be selectable.
+ * @expose
+ * @name selectable
+ * @memberof! oj.ojThematicMapLink
+ * @instance
+ * @type {string}
+ * @ojvalue {string} "auto"
+ * @ojvalue {string} "off"
+ * @default "auto"
+ *
+ * @example <caption>Initialize the thematic map link with the
+ * <code class="prettyprint">selectable</code> attribute specified:</caption>
+ * &lt;oj-thematic-map-link selectable='off'>&lt;/oj-thematic-map-link>
+ */
+/**
+ * The text that displays in the link's tooltip.
+ * @expose
+ * @name shortDesc
+ * @memberof! oj.ojThematicMapLink
+ * @instance
+ * @type {string}
+ * @default ""
+ *
+ * @example <caption>Initialize the thematic map link with the
+ * <code class="prettyprint">short-desc</code> attribute specified:</caption>
+ * &lt;oj-thematic-map-link short-desc='[[$current.data.shortDesc]]'>&lt;/oj-thematic-map-link>
+ */
+/**
+ * An object used to determine the start point of the link.
+ * @expose
+ * @name startLocation
+ * @memberof! oj.ojThematicMapLink
+ * @instance
+ * @type {object}
+ * @default {}
+ *
+ * @example <caption>Initialize the thematic map with the
+ * <code class="prettyprint">start-location</code> attribute specified:</caption>
+ * <!-- Using dot notation -->
+ * &lt;oj-thematic-map-link start-location.x='[[$current.data.lat]] start-location.y='[[$current.data.long]]'>&lt;/oj-thematic-map-link>
+ *
+ * &lt;oj-thematic-map-link start-location='[[$current.data.start]]>&lt;/oj-thematic-map-link>
+ */
+ /**
+ * The marker or area id to be used as the start point.
+ * @expose
+ * @name startLocation.id
+ * @memberof! oj.ojThematicMapLink
+ * @instance
+ * @type {any=}
+ *
+ * @example <caption>See the <a href="#startLocation">startLocation</a> attribute for usage examples.</caption>
+ */
+ /**
+ * An identifier corresponding to a Feature provided in the mapProvider geo object
+ * to be used as the start point.
+ * @expose
+ * @name startLocation.location
+ * @memberof! oj.ojThematicMapLink
+ * @instance
+ * @type {string=}
+ *
+ * @example <caption>See the <a href="#startLocation">startLocation</a> attribute for usage examples.</caption>
+ */
+ /**
+ * The x coordinate which can represent latitude of the start point.
+ * @expose
+ * @name startLocation.x
+ * @memberof! oj.ojThematicMapLink
+ * @instance
+ * @type {number=}
+ *
+ * @example <caption>See the <a href="#startLocation">startLocation</a> attribute for usage examples.</caption>
+ */
+ /**
+ * The y coordinate which can represent latitude of the start point.
+ * @expose
+ * @name startLocation.y
+ * @memberof! oj.ojThematicMapLink
+ * @instance
+ * @type {number=}
+ *
+ * @example <caption>See the <a href="#startLocation">startLocation</a> attribute for usage examples.</caption>
+ */
+/**
+ * The CSS style class defining the style of the link.
+ * @expose
+ * @name svgClassName
+ * @memberof! oj.ojThematicMapLink
+ * @instance
+ * @type {string}
+ * @default ""
+ *
+ * @example <caption>Initialize the thematic map link with the
+ * <code class="prettyprint">svg-class-name</code> attribute specified:</caption>
+ * &lt;oj-thematic-map-link svg-class-name='linkStyle'>&lt;/oj-thematic-map-link>
+ */
+/**
+ * The CSS style object defining the style of the link.
+ * @expose
+ * @name svgStyle
+ * @memberof! oj.ojThematicMapLink
+ * @instance
+ * @type {object}
+ * @default {}
+ *
+ * @example <caption>Initialize the thematic map link with the
+ * <code class="prettyprint">svg-style</code> attribute specified:</caption>
+ * &lt;oj-thematic-map-link svg-style='{"color": "red"}'>&lt;/oj-thematic-map-link>
+ */
+/**
+ * The link width in pixels.
+ * @expose
+ * @name width
+ * @memberof! oj.ojThematicMapLink
+ * @instance
+ * @type {number}
+ * @ojunits "pixels"
+ * @default 2
+ *
+ * @example <caption>Initialize the thematic map link with the
+ * <code class="prettyprint">width</code> attribute specified:</caption>
+ * &lt;oj-thematic-map-link width='3'>&lt;/oj-thematic-map-link>
+ */
+
+/**
+ * @ojcomponent oj.ojThematicMapMarker
+ * @ojsignature {target: "Type", value:"class ojThematicMapMarker extends JetElement<ojThematicMapMarkerSettableProperties>"}
+ * @ojslotcomponent
+ * @since 5.2.0
+ * @ojstatus preview
+ *
+ * @classdesc
+ * <h3 id="overview">
+ *   JET Thematic Map Marker
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#overview"></a>
+ * </h3>
+ *
+ * <p>
+ *  The oj-thematic-map-marker element is used to declare properties for thematic map markers and is only valid as the
+ *  child of a template element for the [markerTemplate]{@link oj.ojThematicMap#markerTemplate}
+ *  slot of oj-thematic-map.
+ * </p>
+ *
+ * <pre class="prettyprint">
+ * <code>
+ * &lt;oj-thematic-map marker-data='[[markerDataProvider]]' map-provider='[[mapProvider]]'>
+ *  &lt;template slot='markerTemplate'>
+ *    &lt;oj-thematic-map-marker  color='[[$current.data.color]]' value='[[$current.data.value]]'
+ *      x='[[$current.data.lat]]' y='[[$current.data.long]]'>
+ *    &lt;/oj-thematic-map-marker>
+ *  &lt;/template>
+ * &lt;/oj-thematic-map>
+ * </code>
+ * </pre>
+ */
+
+/**
+ * The marker border color.
+ * @expose
+ * @name borderColor
+ * @memberof! oj.ojThematicMapMarker
+ * @instance
+ * @type {string}
+ * @ojformat color
+ * @default ""
+ *
+ * @example <caption>Initialize the thematic map marker with the
+ * <code class="prettyprint">border-color</code> attribute specified:</caption>
+ * &lt;oj-thematic-map-marker border-color='3'>&lt;/oj-thematic-map-marker>
+ */
+/**
+ * The marker border style.
+ * @expose
+ * @name borderStyle
+ * @memberof! oj.ojThematicMapMarker
+ * @instance
+ * @type {string}
+ * @ojvalue {string} "solid"
+ * @ojvalue {string} "none"
+ * @default "solid"
+ *
+ * @example <caption>Initialize the thematic map marker with the
+ * <code class="prettyprint">border-style</code> attribute specified:</caption>
+ * &lt;oj-thematic-map-marker border-style='none'>&lt;/oj-thematic-map-marker>
+ */
+/**
+ * The marker border width in pixels.
+ * @expose
+ * @name borderWidth
+ * @memberof! oj.ojThematicMapMarker
+ * @instance
+ * @type {number}
+ * @ojunits "pixels"
+ * @default 0.5
+ *
+ * @example <caption>Initialize the thematic map marker with the
+ * <code class="prettyprint">border-width</code> attribute specified:</caption>
+ * &lt;oj-thematic-map-marker border-width='none'>&lt;/oj-thematic-map-marker>
+ */
+/**
+ * An array of category strings corresponding to this marker. This allows highlighting and filtering of markers.
+ * By default, the label is used as the marker category.
+ * @expose
+ * @name categories
+ * @memberof! oj.ojThematicMapMarker
+ * @instance
+ * @type {Array.<string>}
+ * @default []
+ *
+ * @example <caption>Initialize the thematic map marker with the
+ * <code class="prettyprint">categories</code> attribute specified:</caption>
+ * &lt;oj-thematic-map-marker categories='[[$current.data.categories]]'>&lt;/oj-thematic-map-marker>
+ */
+/**
+ * The marker color. The default values come from the CSS classess and varies based on theme.
+ * @expose
+ * @name color
+ * @memberof! oj.ojThematicMapMarker
+ * @instance
+ * @type {string}
+ * @ojformat color
+ * @default null
+ *
+ * @example <caption>Initialize the thematic map marker with the
+ * <code class="prettyprint">color</code> attribute specified:</caption>
+ * &lt;oj-thematic-map-marker color='[[$current.data.color]]'>&lt;/oj-thematic-map-marker>
+ */
+/**
+ * The marker height in pixels.
+ * @expose
+ * @name height
+ * @memberof! oj.ojThematicMapMarker
+ * @instance
+ * @type {number}
+ * @ojunits "pixels"
+ * @default 8
+ *
+ * @example <caption>Initialize the thematic map marker with the
+ * <code class="prettyprint">height</code> attribute specified:</caption>
+ * &lt;oj-thematic-map-marker height='3'>&lt;/oj-thematic-map-marker>
+ */
+/**
+ * Text used for the marker's label.
+ * @expose
+ * @name label
+ * @memberof! oj.ojThematicMapMarker
+ * @instance
+ * @type {string}
+ * @default ""
+ *
+ * @example <caption>Initialize the thematic map marker with the
+ * <code class="prettyprint">label</code> attribute specified:</caption>
+ * &lt;oj-thematic-map-marker label='[[$current.data.label]]'>&lt;/oj-thematic-map-marker>
+ */
+/**
+ * Determines the label position relative to the marker.
+ * @expose
+ * @name labelPosition
+ * @memberof! oj.ojThematicMapMarker
+ * @instance
+ * @type {string}
+ * @ojvalue {string} "bottom"
+ * @ojvalue {string} "center"
+ * @ojvalue {string} "top"
+ * @default "center"
+ *
+ * @example <caption>Initialize the thematic map marker with the
+ * <code class="prettyprint">label-position</code> attribute specified:</caption>
+ * &lt;oj-thematic-map-marker label-position='bottom'>&lt;/oj-thematic-map-marker>
+ */
+/**
+ * The CSS style object defining the style of the marker. The default values come from the CSS classess and varies based on theme.
+ * @expose
+ * @name labelStyle
+ * @memberof! oj.ojThematicMapMarker
+ * @instance
+ * @type {object}
+ * @default null
+ *
+ * @example <caption>Initialize the thematic map marker with the
+ * <code class="prettyprint">label-style</code> attribute specified:</caption>
+ * &lt;oj-thematic-map-marker label-style='{"color":"black","fontSize":"12px"}'>&lt;/oj-thematic-map-marker>
+ */
+/**
+ * An identifier corresponding to a Feature provided in the mapProvider geo object that this marker is associated with.
+ * @expose
+ * @name location
+ * @memberof! oj.ojThematicMapMarker
+ * @instance
+ * @type {string}
+ * @default ""
+ *
+ * @example <caption>Initialize the thematic map marker with the
+ * <code class="prettyprint">location</code> attribute specified:</caption>
+ * &lt;oj-thematic-map-marker location='[[$current.data.location}}'>&lt;/oj-thematic-map-marker>
+ */
+/**
+ * The marker opacity.
+ * @expose
+ * @name opacity
+ * @memberof! oj.ojThematicMapMarker
+ * @instance
+ * @type {number}
+ * @ojmin 0
+ * @ojmax 1
+ * @default 1
+ *
+ * @example <caption>Initialize the thematic map marker with the
+ * <code class="prettyprint">opacity</code> attribute specified:</caption>
+ * &lt;oj-thematic-map-marker opacity='0.5'>&lt;/oj-thematic-map-marker>
+ */
+/**
+ * The angle to rotate the marker in clockwise degrees around the marker center.
+ * @expose
+ * @name rotation
+ * @memberof! oj.ojThematicMapMarker
+ * @instance
+ * @type {number}
+ * @ojmin 0
+ * @ojmax 360
+ * @ojunits degree
+ * @default 0
+ *
+ * @example <caption>Initialize the thematic map marker with the
+ * <code class="prettyprint">rotation</code> attribute specified:</caption>
+ * &lt;oj-thematic-map-marker rotation='180'>&lt;/oj-thematic-map-marker>
+ */
+/**
+ * Specifies whether or not the marker will be selectable.
+ * @expose
+ * @name selectable
+ * @memberof! oj.ojThematicMapMarker
+ * @instance
+ * @type {string}
+ * @ojvalue {string} "auto"
+ * @ojvalue {string} "off"
+ * @default "auto"
+ *
+ * @example <caption>Initialize the thematic map marker with the
+ * <code class="prettyprint">selectable</code> attribute specified:</caption>
+ * &lt;oj-thematic-map-marker selectable='off'>&lt;/oj-thematic-map-marker>
+ */
+/**
+ * Specifies the shape of a marker. Can take the name of a built-in shape or the svg path commands for a custom shape.
+ * @expose
+ * @name shape
+ * @memberof! oj.ojThematicMapMarker
+ * @instance
+ * @type {string}
+ * @default  "circle"
+ * @ojsignature {target: "Type", value: "?'circle'|'diamond'|'ellipse'|'human'|'plus'|'rectangle'|'square'|'star'|'triangleDown'|'triangleUp'|string"}
+ *
+ * @example <caption>Initialize the thematic map marker with the
+ * <code class="prettyprint">shape</code> attribute specified:</caption>
+ * &lt;oj-thematic-map-marker shape='star'>&lt;/oj-thematic-map-marker>
+ */
+/**
+ * The text that displays in the marker's tooltip.
+ * @expose
+ * @name shortDesc
+ * @memberof! oj.ojThematicMapMarker
+ * @instance
+ * @type {string}
+ * @default ""
+ *
+ * @example <caption>Initialize the thematic map marker with the
+ * <code class="prettyprint">short-desc</code> attribute specified:</caption>
+ * &lt;oj-thematic-map-marker short-desc='[[$current.data.shortDesc]]'>&lt;/oj-thematic-map-marker>
+ */
+/**
+ * Specifies an URI specifying the location of the image resource to use for the marker instead of a built-in shape.
+ * The shape attribute is ignored if the source image is defined.
+ * @expose
+ * @name source
+ * @memberof! oj.ojThematicMapMarker
+ * @instance
+ * @type {string}
+ * @default ""
+ *
+ * @example <caption>Initialize the thematic map marker with the
+ * <code class="prettyprint">source</code> attribute specified:</caption>
+ * &lt;oj-thematic-map-marker source='[[$current.data.source]]'>&lt;/oj-thematic-map-marker>
+ */
+/**
+ * An optional URI specifying the location of the hover image resource. If not defined, the source image will be used.
+ * @expose
+ * @name sourceHover
+ * @memberof! oj.ojThematicMapMarker
+ * @instance
+ * @type {string}
+ * @default ""
+ *
+ * @example <caption>Initialize the thematic map marker with the
+ * <code class="prettyprint">source-hover</code> attribute specified:</caption>
+ * &lt;oj-thematic-map-marker source-hover='[[$current.data.sourceHover]]'>&lt;/oj-thematic-map-marker>
+ */
+/**
+ * An optional URI specifying the location of the selected image resource on hover. If not defined,
+ * the sourceSelected image will be used. If sourceSelected is not defined, then the source image will be used.
+ * * @expose
+ * @name sourceHoverSelected
+ * @memberof! oj.ojThematicMapMarker
+ * @instance
+ * @type {string}
+ * @default ""
+ *
+ * @example <caption>Initialize the thematic map marker with the
+ * <code class="prettyprint">source-hover-selected</code> attribute specified:</caption>
+ * &lt;oj-thematic-map-marker source-hover-selected='[[$current.data.sourceHoverSelected]]'>&lt;/oj-thematic-map-marker>
+ */
+/**
+ * An optional URI specifying the location of the selected image. If not defined, the source image will be used.
+ * @expose
+ * @name sourceSelected
+ * @memberof! oj.ojThematicMapMarker
+ * @instance
+ * @type {string}
+ * @default ""
+ *
+ * @example <caption>Initialize the thematic map marker with the
+ * <code class="prettyprint">source-selected</code> attribute specified:</caption>
+ * &lt;oj-thematic-map-marker source-selected='[[$current.data.sourceSelected]]'>&lt;/oj-thematic-map-marker>
+ */
+/**
+ * The CSS style class defining the style of the marker.
+ * @expose
+ * @name svgClassName
+ * @memberof! oj.ojThematicMapMarker
+ * @instance
+ * @type {string}
+ * @default ""
+ *
+ * @example <caption>Initialize the thematic map marker with the
+ * <code class="prettyprint">svg-class-name</code> attribute specified:</caption>
+ * &lt;oj-thematic-map-marker svg-class-name='markerStyle'>&lt;/oj-thematic-map-marker>
+ */
+/**
+ * The CSS style object defining the style of the marker.
+ * @expose
+ * @name svgStyle
+ * @memberof! oj.ojThematicMapMarker
+ * @instance
+ * @type {object}
+ * @default {}
+ *
+ * @example <caption>Initialize the thematic map marker with the
+ * <code class="prettyprint">svg-style</code> attribute specified:</caption>
+ * &lt;oj-thematic-map-marker svg-style='{"color": "red"}'>&lt;/oj-thematic-map-marker>
+ */
+/**
+ * A data value used to calculate the marker dimensions based on the range of all the data values
+ * and the element size. Markers with negative or zero data values will not be rendered. If specified,
+ * this value takes precedence over the width and height attributes.
+ * @expose
+ * @name value
+ * @memberof! oj.ojThematicMapMarker
+ * @instance
+ * @type {number}
+ * @ojunits "pixels"
+ * @default 2
+ *
+ * @example <caption>Initialize the thematic map marker with the
+ * <code class="prettyprint">value</code> attribute specified:</caption>
+ * &lt;oj-thematic-map-marker value='[[$current.data.value]]'>&lt;/oj-thematic-map-marker>
+ */
+/**
+ * The pixel width for this marker. Note that this attribute will be ignored if a value is provided to calculate marker.
+ * @expose
+ * @name width
+ * @memberof! oj.ojThematicMapMarker
+ * @instance
+ * @type {number}
+ * @ojunits "pixels"
+ * @default 8
+ *
+ * @example <caption>Initialize the thematic map marker with the
+ * <code class="prettyprint">width</code> attribute specified:</caption>
+ * &lt;oj-thematic-map-marker width='3'>&lt;/oj-thematic-map-marker>
+ */
+/**
+ * The x coordinate of the marker transformed using the map projection, which can be null if location is set instead.
+ * @expose
+ * @name x
+ * @memberof! oj.ojThematicMapMarker
+ * @instance
+ * @type {number|null}
+ * @default null
+ *
+ * @example <caption>Initialize the thematic map marker with the
+ * <code class="prettyprint">x</code> attribute specified:</caption>
+ * &lt;oj-thematic-map-marker x='[[$current.data.lat]]'>&lt;/oj-thematic-map-marker>
+ */
+/**
+ * The x coordinate of the marker transformed using the map projection, which can be null if location is set instead.
+ * @expose
+ * @name y
+ * @memberof! oj.ojThematicMapMarker
+ * @instance
+ * @type {number|null}
+ * @default null
+ *
+ * @example <caption>Initialize the thematic map marker with the
+ * <code class="prettyprint">y</code> attribute specified:</caption>
+ * &lt;oj-thematic-map-marker y='[[$current.data.long]]'>&lt;/oj-thematic-map-marker>
+ */
+
+/* global __oj_thematic_map_metadata:false */
 /**
  * Ignore tag only needed for DVTs that have jsDoc in separate _doc.js files.
  * @ignore
  */
-(function() {
-var ojThematicMapMeta = {
-  "properties": {
-    "animationDuration": {
-      "type": "number"
-    },
-    "animationOnDisplay": {
-      "type": "string",
-      "enumValues":  ["auto", "none"]
-    },
-    "areas": {
-      "type": "Array<object>|Promise"
-    },
-    "focusRenderer": {},
-    "hiddenCategories": {
-      "type": "Array<string>",
-      "writeback": true
-    },
-    "highlightedCategories": {
-      "type": "Array<string>",
-      "writeback": true
-    },
-    "highlightMatch": {
-      "type": "string"
-    },
-    "hoverBehavior": {
-      "type": "string",
-      "enumValues":  ["dim", "none"]
-    },
-    "hoverRenderer": {},
-    "initialZooming": {
-      "type": "string",
-      "enumValues":  ["auto", "none"]
-    },
-    "isolatedItem": {
-      "type": "string"
-    },
-    "labelDisplay": {
-      "type": "string",
-      "enumValues":  ["auto", "on", "off"]
-    },
-    "labelType": {
-      "type": "string",
-      "enumValues":  ["short", "long"]
-    },
-    "links": {
-      "type": "Array<object>|Promise"
-    },
-    "mapProvider": {
-      "type": "object",
-      "properties": {
-        "geo": {
-          "type": "object"
-        },
-        "propertiesKeys": {
-          "type": "object"
-        }
-      }
-    },
-    "markers": {
-      "type": "Array<object>|Promise"
-    },
-    "markerZoomBehavior": {
-      "type": "string",
-      "enumValues":  ["fixed", "zoom"]
-    },
-    "maxZoom": {
-      "type": "number"
-    },
-    "panning": {
-      "type": "string",
-      "enumValues":  ["none", "auto"]
-    },
-    "renderer": {},
-    "selection": {
-      "type": "Array<string>",
-      "writeback": true
-    },
-    "selectionMode": {
-      "type": "string",
-      "enumValues":  ["none", "single", "multiple"]
-    },
-    "selectionRenderer": {},
-    "styleDefaults": {
-      "type": "object",
-      "properties": {
-        "areaSvgStyle": {
-          "type": "object"
-        },
-        "dataAreaDefaults": {
-          "type": "object",
-          "properties": {
-            "borderColor": {
-              "type": "string"
-            },
-            "hoverColor": {
-              "type": "string"
-            },
-            "selectedInnerColor": {
-              "type": "string"
-            },
-            "selectedOuterColor": {
-              "type": "string"
-            }
-          }
-        },
-        "dataMarkerDefaults": {
-          "type": "object",
-          "properties": {
-            "borderColor": {
-              "type": "string"
-            },
-            "borderStyle": {
-              "type": "string",
-              "enumValues":  ["solid", "none"]
-            },
-            "borderWidth": {
-              "type": "number"
-            },
-            "color": {
-              "type": "string"
-            },
-            "height": {
-              "type": "number"
-            },
-            "labelStyle": {
-              "type": "object"
-            },
-            "opacity": {
-              "type": "number"
-            },
-            "shape": {
-              "type": "string"
-            },
-            "width": {
-              "type": "number"
-            }
-          }
-        },
-        "hoverBehaviorDelay": {
-          "type": "number"
-        },
-        "labelStyle": {
-          "type": "object"
-        },
-        "linkDefaults": {
-          "type": "object",
-          "properties": {
-            "color": {
-              "type": "string"
-            },
-            "width": {
-              "type": "number"
-            }
-          }
-        }
-      }
-    },
-    "tooltip": {
-      "type": "object",
-      "properties": {
-        "renderer": {}
-      }
-    },
-    "tooltipDisplay": {
-      "type": "string",
-      "enumValues":  ["auto", "shortDesc", "labelAndShortDesc", "none"]
-    },
-    "touchResponse": {
-      "type": "string",
-      "enumValues":  ["auto", "touchStart"]
-    },
-    "translations": {
-      "type": "Object",
-      "properties": {
-        "componentName": {
-          "type": "string",
-          "value": "Thematic Map"
-        },
-        "labelAndValue": {
-          "type": "string",
-          "value": "{0}: {1}"
-        },
-        "labelClearSelection": {
-          "type": "string",
-          "value": "Clear Selection"
-        },
-        "labelCountWithTotal": {
-          "type": "string",
-          "value": "{0} of {1}"
-        },
-        "labelDataVisualization": {
-          "type": "string",
-          "value": "Data Visualization"
-        },
-        "labelInvalidData": {
-          "type": "string",
-          "value": "Invalid data"
-        },
-        "labelNoData": {
-          "type": "string",
-          "value": "No data to display"
-        },
-        "stateCollapsed": {
-          "type": "string",
-          "value": "Collapsed"
-        },
-        "stateDrillable": {
-          "type": "string",
-          "value": "Drillable"
-        },
-        "stateExpanded": {
-          "type": "string",
-          "value": "Expanded"
-        },
-        "stateHidden": {
-          "type": "string",
-          "value": "Hidden"
-        },
-        "stateIsolated": {
-          "type": "string",
-          "value": "Isolated"
-        },
-        "stateMaximized": {
-          "type": "string",
-          "value": "Maximized"
-        },
-        "stateMinimized": {
-          "type": "string",
-          "value": "Minimized"
-        },
-        "stateSelected": {
-          "type": "string",
-          "value": "Selected"
-        },
-        "stateUnselected": {
-          "type": "string",
-          "value": "Unselected"
-        },
-        "stateVisible": {
-          "type": "string",
-          "value": "Visible"
-        }
-      }
-    },
-    "zooming": {
-      "type": "string",
-      "enumValues":  ["none", "auto"]
-    }
-  },
-  "methods": {
-    "getArea": {},
-    "getContextByNode": {},
-    "getLink": {},
-    "getMarker": {}
-  },
-  "extension": {
-    _WIDGET_NAME: "ojThematicMap"
-  }
-};
-oj.CustomElementBridge.registerMetadata('oj-thematic-map', 'dvtBaseComponent', ojThematicMapMeta);
+(function () {
+  __oj_thematic_map_metadata.extension._WIDGET_NAME = 'ojThematicMap';
+  oj.CustomElementBridge.registerMetadata('oj-thematic-map', 'dvtBaseComponent', __oj_thematic_map_metadata);
 // Get the combined meta of superclass which contains a shape parse function generator
-var dvtMeta = oj.CustomElementBridge.getMetadata('oj-thematic-map');
-oj.CustomElementBridge.register('oj-thematic-map', {
-  'metadata': dvtMeta,
-  'parseFunction': dvtMeta['extension']._DVT_PARSE_FUNC({'style-defaults.data-marker-defaults.shape': true})
-});
-})();
+  var dvtMeta = oj.CustomElementBridge.getMetadata('oj-thematic-map');
+  oj.CustomElementBridge.register('oj-thematic-map', {
+    metadata: dvtMeta,
+    parseFunction: dvtMeta.extension._DVT_PARSE_FUNC({
+      'style-defaults.data-marker-defaults.shape': true
+    })
+  });
+}());
+
+/* global __oj_thematic_map_area_metadata:false */
+(function () {
+  __oj_thematic_map_area_metadata.extension._CONSTRUCTOR = function () {};
+  oj.CustomElementBridge.registerMetadata('oj-thematic-map-area', null, __oj_thematic_map_area_metadata);
+  oj.CustomElementBridge.register('oj-thematic-map-area', {
+    metadata: oj.CustomElementBridge.getMetadata('oj-thematic-map-area')
+  });
+}());
+
+/* global __oj_thematic_map_link_metadata:false */
+(function () {
+  __oj_thematic_map_link_metadata.extension._CONSTRUCTOR = function () {};
+  oj.CustomElementBridge.registerMetadata('oj-thematic-map-link', null, __oj_thematic_map_link_metadata);
+  oj.CustomElementBridge.register('oj-thematic-map-link', {
+    metadata: oj.CustomElementBridge.getMetadata('oj-thematic-map-link')
+  });
+}());
+
+
+/* global __oj_thematic_map_marker_metadata:false */
+(function () {
+  __oj_thematic_map_marker_metadata.extension._CONSTRUCTOR = function () {};
+  oj.CustomElementBridge.registerMetadata('oj-thematic-map-marker', null, __oj_thematic_map_marker_metadata);
+  var _MARKER_SHAPE_ENUMS = {
+    circle: true,
+    diamond: true,
+    ellipse: true,
+    human: true,
+    plus: true,
+    rectangle: true,
+    square: true,
+    star: true,
+    triangleDown: true,
+    triangleUp: true
+  };
+  var dvtBaseMetadata = oj.CustomElementBridge.getMetadata('dvtBaseComponent');
+  oj.CustomElementBridge.register('oj-thematic-map-marker', {
+    metadata: oj.CustomElementBridge.getMetadata('oj-thematic-map-marker'),
+    parseFunction: dvtBaseMetadata.extension._DVT_PARSE_FUNC({ shape: true }, _MARKER_SHAPE_ENUMS)
+  });
+}());
+
 });

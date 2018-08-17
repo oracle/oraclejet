@@ -13,6 +13,38 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojswipetoreveal', 'ojs/ojoption'],
  
 {
 
+var __oj_swipe_actions_metadata = 
+{
+  "properties": {
+    "translations": {
+      "type": "object",
+      "value": {},
+      "properties": {
+        "ariaHideActionsDescription": {
+          "type": "string"
+        },
+        "ariaShowEndActionsDescription": {
+          "type": "string"
+        },
+        "ariaShowStartActionsDescription": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "methods": {
+    "refresh": {},
+    "setProperty": {},
+    "getProperty": {},
+    "setProperties": {},
+    "getNodeBySubId": {},
+    "getSubIdByNode": {}
+  },
+  "events": {
+    "ojAction": {}
+  },
+  "extension": {}
+};
 /**
  * Copyright (c) 2018, Oracle and/or its affiliates.
  * All rights reserved.
@@ -911,17 +943,13 @@ oj.__registerWidget('oj.ojSwipeActions', $['oj']['baseComponent'],
  * @memberof oj.ojSwipeActions
  */
 
-(function() {
-var ojSwipeActionsMeta = {
-  "properties": {},
-  "events": {
-    "action": {}
-  },
-  "extension": {
-    _WIDGET_NAME: "ojSwipeActions"
-  }
-};
-oj.CustomElementBridge.registerMetadata('oj-swipe-actions', 'baseComponent', ojSwipeActionsMeta);
-oj.CustomElementBridge.register('oj-swipe-actions', {'metadata': oj.CustomElementBridge.getMetadata('oj-swipe-actions')});
-})();
+/* global __oj_swipe_actions_metadata:false */
+(function () {
+  __oj_swipe_actions_metadata.extension._WIDGET_NAME = 'ojSwipeActions';
+  oj.CustomElementBridge.registerMetadata('oj-swipe-actions', 'baseComponent', __oj_swipe_actions_metadata);
+  oj.CustomElementBridge.register('oj-swipe-actions', {
+    metadata: oj.CustomElementBridge.getMetadata('oj-swipe-actions')
+  });
+}());
+
 });

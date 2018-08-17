@@ -1,9 +1,9 @@
 {
   "name": "oj-train",
-  "version": "5.1.0",
-  "jetVersion": "5.1.0",
+  "version": "5.2.0",
+  "jetVersion": "5.2.0",
   "displayName": "Train",
-  "preview": true,
+  "type": "core",
   "styleClasses": [
     {
       "styleGroup": [
@@ -17,18 +17,46 @@
     "selectedStep": {
       "description": "Indicates the id of the current selected step.",
       "type": "string",
-      "displayName": "Selected Step"
+      "displayName": "Selected Step",
+      "writeback": true
     },
     "steps": {
       "description": "The array of step objects.",
       "type": "Array<Object>",
       "displayName": "Steps",
-      "required": true
+      "required": true,
+      "extension": {
+        "vbcs": {
+          "itemProperties": {
+            "id": {
+              "description": "string id of the step",
+              "type": "string"
+            },
+            "label": {
+              "description": "string label of the step",
+              "type": "string"
+            },
+            "disabled": {
+              "description": "boolean indicates whether the step is disabled",
+              "type": "boolean"
+            },
+            "visited": {
+              "description": "boolean indicates whether the step has been visited",
+              "type": "boolean"
+            },
+            "messageType": {
+              "description": "string the type of message icon displayed on the step",
+              "type": "\"info\"|\"error\"|\"fatal\"|\"warning\""
+            }
+          }
+        }
+      }
     },
     "translations": {
-      "description": "A collection of translated resources from the translation bundle, or null if this\ncomponent has no resources. Resources may be accessed and overridden individually or collectively, as seen in the examples. If the component does not contain any translatable resource, the default value of this attribute will be \nnull. If not, an object containing all resources relevant to the component.\n\nIf this component has translations, their documentation immediately follows this doc entry.",
-      "type": "Object|null",
+      "description": "A collection of translated resources from the translation bundle, or null if this component has no resources.",
+      "type": "object|null",
       "displayName": "Translations",
+      "value": {},
       "translatable": true
     }
   },
@@ -42,7 +70,7 @@
           "type": "string"
         }
       ],
-      "return": "Object|null"
+      "return": "object|null"
     },
     "getNextSelectableStep": {
       "description": "Returns the id of the next selectable step based on the current selectedStep.",
@@ -63,32 +91,37 @@
         {
           "name": "stepProperties",
           "description": "The set of step properties to update. Will overwrite any previously set values.",
-          "type": "Object",
+          "type": "object",
           "properties": [
             {
               "name": "id",
               "description": "id of step",
-              "type": "string"
+              "type": "string",
+              "optional": true
             },
             {
               "name": "label",
               "description": "label of step",
-              "type": "string"
+              "type": "string",
+              "optional": true
             },
             {
               "name": "disabled",
               "description": "whether step is disabled",
-              "type": "boolean"
+              "type": "boolean",
+              "optional": true
             },
             {
               "name": "visited",
               "description": "whether step has been visited",
-              "type": "boolean"
+              "type": "boolean",
+              "optional": true
             },
             {
               "name": "messageType",
               "description": "type of message displayed",
-              "type": "\"info\"|\"error\"|\"fatal\"|\"warning\""
+              "type": "\"info\"|\"error\"|\"fatal\"|\"warning\"",
+              "optional": true
             }
           ]
         }
@@ -132,7 +165,7 @@
         {
           "name": "properties",
           "description": "An object containing the property and value pairs to set.",
-          "type": "Object"
+          "type": "object"
         }
       ],
       "return": "void"

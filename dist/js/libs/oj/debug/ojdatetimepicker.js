@@ -8,7 +8,1920 @@ define(['ojs/ojcore', 'jquery', 'hammerjs', 'ojs/ojeditablevalue',
         'ojs/ojinputtext', 'ojs/ojvalidation-datetime', 'ojs/ojpopup', 'ojs/ojbutton', 'ojs/ojanimation'],
        function(oj, $, Hammer, compCore, inputText, validation)
 {
-
+//%COMPONENT_METADATA%
+var __oj_date_picker_metadata = 
+{
+  "properties": {
+    "asyncValidators": {
+      "type": "Array<Object>",
+      "value": []
+    },
+    "autocomplete": {
+      "type": "string",
+      "value": "on",
+      "extension": {
+        "_COPY_TO_INNER_ELEM": true
+      }
+    },
+    "autofocus": {
+      "type": "boolean",
+      "value": false,
+      "extension": {
+        "_COPY_TO_INNER_ELEM": true
+      }
+    },
+    "converter": {
+      "type": "object",
+      "value": "oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({\"day\":\"2-digit\",\"month\":\"2-digit\",\"year\":\"2-digit\"})",
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "options": {
+          "type": "object"
+        }
+      }
+    },
+    "datePicker": {
+      "type": "object",
+      "properties": {
+        "changeMonth": {
+          "type": "string",
+          "enumValues": [
+            "none",
+            "select"
+          ],
+          "value": "select"
+        },
+        "changeYear": {
+          "type": "string",
+          "enumValues": [
+            "none",
+            "select"
+          ],
+          "value": "select"
+        },
+        "currentMonthPos": {
+          "type": "number",
+          "value": 0
+        },
+        "daysOutsideMonth": {
+          "type": "string",
+          "enumValues": [
+            "hidden",
+            "selectable",
+            "visible"
+          ],
+          "value": "hidden"
+        },
+        "footerLayout": {
+          "type": "string",
+          "enumValues": [
+            "",
+            "today"
+          ],
+          "value": "today"
+        },
+        "numberOfMonths": {
+          "type": "number",
+          "value": 1
+        },
+        "showOn": {
+          "type": "string",
+          "enumValues": [
+            "focus",
+            "image"
+          ],
+          "value": "focus"
+        },
+        "stepBigMonths": {
+          "type": "number",
+          "value": 12
+        },
+        "stepMonths": {
+          "type": "string|number",
+          "value": "numberOfMonths"
+        },
+        "weekDisplay": {
+          "type": "string",
+          "enumValues": [
+            "none",
+            "number"
+          ],
+          "value": "none"
+        },
+        "yearRange": {
+          "type": "string",
+          "value": "c-10:c+10"
+        }
+      }
+    },
+    "dayFormatter": {
+      "type": "function"
+    },
+    "dayMetaData": {
+      "type": "object"
+    },
+    "describedBy": {
+      "type": "string"
+    },
+    "disabled": {
+      "type": "boolean",
+      "value": false
+    },
+    "displayOptions": {
+      "type": "object",
+      "properties": {
+        "converterHint": {
+          "type": "Array<string>|string",
+          "value": [
+            "placeholder",
+            "notewindow"
+          ]
+        },
+        "helpInstruction": {
+          "type": "Array<string>|string",
+          "value": [
+            "notewindow"
+          ]
+        },
+        "messages": {
+          "type": "Array<string>|string",
+          "value": [
+            "inline"
+          ]
+        },
+        "validatorHint": {
+          "type": "Array<string>|string",
+          "value": [
+            "notewindow"
+          ]
+        }
+      }
+    },
+    "help": {
+      "type": "object",
+      "properties": {
+        "instruction": {
+          "type": "string"
+        }
+      }
+    },
+    "helpHints": {
+      "type": "object",
+      "properties": {
+        "definition": {
+          "type": "string",
+          "value": ""
+        },
+        "source": {
+          "type": "string",
+          "value": ""
+        }
+      }
+    },
+    "keyboardEdit": {
+      "type": "string",
+      "enumValues": [
+        "disabled",
+        "enabled"
+      ],
+      "value": "disabled"
+    },
+    "labelHint": {
+      "type": "string",
+      "value": ""
+    },
+    "max": {
+      "type": "string"
+    },
+    "messagesCustom": {
+      "type": "Array<Object>",
+      "writeback": true,
+      "value": []
+    },
+    "min": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string",
+      "value": "",
+      "extension": {
+        "_COPY_TO_INNER_ELEM": true
+      }
+    },
+    "pickerAttributes": {
+      "type": "object",
+      "properties": {
+        "style": {
+          "type": "string"
+        },
+        "class": {
+          "type": "string"
+        }
+      }
+    },
+    "placeholder": {
+      "type": "string"
+    },
+    "rawValue": {
+      "type": "string",
+      "writeback": true,
+      "readOnly": true
+    },
+    "readonly": {
+      "type": "boolean",
+      "value": false
+    },
+    "renderMode": {
+      "type": "string",
+      "enumValues": [
+        "jet",
+        "native"
+      ],
+      "value": "jet\r\rDefault value depends on the theme. In alta-android, alta-ios and alta-windows themes, the\rdefault is native and its jet for alta web theme."
+    },
+    "required": {
+      "type": "boolean",
+      "value": false
+    },
+    "translations": {
+      "type": "object",
+      "value": {},
+      "properties": {
+        "currentText": {
+          "type": "string"
+        },
+        "dateRestriction": {
+          "type": "object",
+          "properties": {
+            "hint": {
+              "type": "string"
+            },
+            "messageDetail": {
+              "type": "string"
+            },
+            "messageSummary": {
+              "type": "string"
+            }
+          }
+        },
+        "dateTimeRange": {
+          "type": "object",
+          "properties": {
+            "hint": {
+              "type": "object",
+              "properties": {
+                "inRange": {
+                  "type": "string"
+                },
+                "max": {
+                  "type": "string"
+                },
+                "min": {
+                  "type": "string"
+                }
+              }
+            },
+            "messageDetail": {
+              "type": "object",
+              "properties": {
+                "rangeOverflow": {
+                  "type": "string"
+                },
+                "rangeUnderflow": {
+                  "type": "string"
+                }
+              }
+            },
+            "messageSummary": {
+              "type": "object",
+              "properties": {
+                "rangeOverflow": {
+                  "type": "string"
+                },
+                "rangeUnderflow": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "nextText": {
+          "type": "string"
+        },
+        "prevText": {
+          "type": "string"
+        },
+        "regexp": {
+          "type": "object",
+          "properties": {
+            "messageDetail": {
+              "type": "string"
+            },
+            "messageSummary": {
+              "type": "string"
+            }
+          }
+        },
+        "required": {
+          "type": "object",
+          "properties": {
+            "hint": {
+              "type": "string"
+            },
+            "messageDetail": {
+              "type": "string"
+            },
+            "messageSummary": {
+              "type": "string"
+            }
+          }
+        },
+        "tooltipCalendar": {
+          "type": "string"
+        },
+        "tooltipCalendarDisabled": {
+          "type": "string"
+        },
+        "tooltipCalendarTime": {
+          "type": "string"
+        },
+        "tooltipCalendarTimeDisabled": {
+          "type": "string"
+        },
+        "weekHeader": {
+          "type": "string"
+        }
+      }
+    },
+    "valid": {
+      "type": "string",
+      "writeback": true,
+      "enumValues": [
+        "invalidHidden",
+        "invalidShown",
+        "pending",
+        "valid"
+      ],
+      "readOnly": true
+    },
+    "validators": {
+      "type": "Array<Object>",
+      "value": []
+    },
+    "value": {
+      "type": "string",
+      "writeback": true
+    }
+  },
+  "methods": {
+    "hide": {},
+    "refresh": {},
+    "show": {},
+    "validate": {},
+    "reset": {},
+    "showMessages": {},
+    "setProperty": {},
+    "getProperty": {},
+    "setProperties": {},
+    "getNodeBySubId": {},
+    "getSubIdByNode": {}
+  },
+  "events": {
+    "ojAnimateStart": {},
+    "ojAnimateEnd": {}
+  },
+  "extension": {}
+};
+var __oj_date_time_picker_metadata = 
+{
+  "properties": {
+    "asyncValidators": {
+      "type": "Array<Object>",
+      "value": []
+    },
+    "autocomplete": {
+      "type": "string",
+      "value": "on",
+      "extension": {
+        "_COPY_TO_INNER_ELEM": true
+      }
+    },
+    "autofocus": {
+      "type": "boolean",
+      "value": false,
+      "extension": {
+        "_COPY_TO_INNER_ELEM": true
+      }
+    },
+    "converter": {
+      "type": "object",
+      "value": "oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({\"day\": \"2-digit\", \"month\": \"2-digit\", \"year\": \"2-digit\", \"hour\": \"2-digit\", \"minute\": \"2-digit\"})",
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "options": {
+          "type": "object"
+        }
+      }
+    },
+    "datePicker": {
+      "type": "object",
+      "properties": {
+        "changeMonth": {
+          "type": "string",
+          "enumValues": [
+            "none",
+            "select"
+          ],
+          "value": "select"
+        },
+        "changeYear": {
+          "type": "string",
+          "enumValues": [
+            "none",
+            "select"
+          ],
+          "value": "select"
+        },
+        "currentMonthPos": {
+          "type": "number",
+          "value": 0
+        },
+        "daysOutsideMonth": {
+          "type": "string",
+          "enumValues": [
+            "hidden",
+            "selectable",
+            "visible"
+          ],
+          "value": "hidden"
+        },
+        "footerLayout": {
+          "type": "string",
+          "enumValues": [
+            "",
+            "today"
+          ],
+          "value": "today"
+        },
+        "numberOfMonths": {
+          "type": "number",
+          "value": 1
+        },
+        "showOn": {
+          "type": "string",
+          "enumValues": [
+            "focus",
+            "image"
+          ],
+          "value": "focus"
+        },
+        "stepBigMonths": {
+          "type": "number",
+          "value": 12
+        },
+        "stepMonths": {
+          "type": "string|number",
+          "value": "numberOfMonths"
+        },
+        "weekDisplay": {
+          "type": "string",
+          "enumValues": [
+            "none",
+            "number"
+          ],
+          "value": "none"
+        },
+        "yearRange": {
+          "type": "string",
+          "value": "c-10:c+10"
+        }
+      }
+    },
+    "dayFormatter": {
+      "type": "function"
+    },
+    "dayMetaData": {
+      "type": "object"
+    },
+    "describedBy": {
+      "type": "string"
+    },
+    "disabled": {
+      "type": "boolean",
+      "value": false
+    },
+    "displayOptions": {
+      "type": "object",
+      "properties": {
+        "converterHint": {
+          "type": "Array<string>|string",
+          "value": [
+            "placeholder",
+            "notewindow"
+          ]
+        },
+        "helpInstruction": {
+          "type": "Array<string>|string",
+          "value": [
+            "notewindow"
+          ]
+        },
+        "messages": {
+          "type": "Array<string>|string",
+          "value": [
+            "inline"
+          ]
+        },
+        "validatorHint": {
+          "type": "Array<string>|string",
+          "value": [
+            "notewindow"
+          ]
+        }
+      }
+    },
+    "help": {
+      "type": "object",
+      "properties": {
+        "instruction": {
+          "type": "string"
+        }
+      }
+    },
+    "helpHints": {
+      "type": "object",
+      "properties": {
+        "definition": {
+          "type": "string",
+          "value": ""
+        },
+        "source": {
+          "type": "string",
+          "value": ""
+        }
+      }
+    },
+    "keyboardEdit": {
+      "type": "string",
+      "enumValues": [
+        "disabled"
+      ],
+      "value": "disabled"
+    },
+    "labelHint": {
+      "type": "string",
+      "value": ""
+    },
+    "max": {
+      "type": "string"
+    },
+    "messagesCustom": {
+      "type": "Array<Object>",
+      "writeback": true,
+      "value": []
+    },
+    "min": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string",
+      "value": "",
+      "extension": {
+        "_COPY_TO_INNER_ELEM": true
+      }
+    },
+    "pickerAttributes": {
+      "type": "object",
+      "properties": {
+        "style": {
+          "type": "string"
+        },
+        "class": {
+          "type": "string"
+        }
+      }
+    },
+    "placeholder": {
+      "type": "string"
+    },
+    "rawValue": {
+      "type": "string",
+      "writeback": true,
+      "readOnly": true
+    },
+    "readonly": {
+      "type": "boolean",
+      "value": false
+    },
+    "renderMode": {
+      "type": "string",
+      "enumValues": [
+        "jet"
+      ],
+      "value": "jet"
+    },
+    "required": {
+      "type": "boolean",
+      "value": false
+    },
+    "timePicker": {
+      "type": "object",
+      "properties": {
+        "footerLayout": {
+          "type": "string",
+          "enumValues": [
+            "",
+            "now"
+          ],
+          "value": ""
+        },
+        "showOn": {
+          "type": "string",
+          "enumValues": [
+            "focus",
+            "image"
+          ],
+          "value": "focus"
+        },
+        "timeIncrement": {
+          "type": "string",
+          "value": "00:05:00:00"
+        }
+      }
+    },
+    "translations": {
+      "type": "object",
+      "value": {},
+      "properties": {
+        "cancel": {
+          "type": "string"
+        },
+        "currentText": {
+          "type": "string"
+        },
+        "dateRestriction": {
+          "type": "object",
+          "properties": {
+            "hint": {
+              "type": "string"
+            },
+            "messageDetail": {
+              "type": "string"
+            },
+            "messageSummary": {
+              "type": "string"
+            }
+          }
+        },
+        "dateTimeRange": {
+          "type": "object",
+          "properties": {
+            "hint": {
+              "type": "object",
+              "properties": {
+                "inRange": {
+                  "type": "string"
+                },
+                "max": {
+                  "type": "string"
+                },
+                "min": {
+                  "type": "string"
+                }
+              }
+            },
+            "messageDetail": {
+              "type": "object",
+              "properties": {
+                "rangeOverflow": {
+                  "type": "string"
+                },
+                "rangeUnderflow": {
+                  "type": "string"
+                }
+              }
+            },
+            "messageSummary": {
+              "type": "object",
+              "properties": {
+                "rangeOverflow": {
+                  "type": "string"
+                },
+                "rangeUnderflow": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "done": {
+          "type": "string"
+        },
+        "nextText": {
+          "type": "string"
+        },
+        "prevText": {
+          "type": "string"
+        },
+        "regexp": {
+          "type": "object",
+          "properties": {
+            "messageDetail": {
+              "type": "string"
+            },
+            "messageSummary": {
+              "type": "string"
+            }
+          }
+        },
+        "required": {
+          "type": "object",
+          "properties": {
+            "hint": {
+              "type": "string"
+            },
+            "messageDetail": {
+              "type": "string"
+            },
+            "messageSummary": {
+              "type": "string"
+            }
+          }
+        },
+        "tooltipCalendar": {
+          "type": "string"
+        },
+        "tooltipCalendarDisabled": {
+          "type": "string"
+        },
+        "tooltipCalendarTime": {
+          "type": "string"
+        },
+        "tooltipCalendarTimeDisabled": {
+          "type": "string"
+        },
+        "weekHeader": {
+          "type": "string"
+        }
+      }
+    },
+    "valid": {
+      "type": "string",
+      "writeback": true,
+      "enumValues": [
+        "invalidHidden",
+        "invalidShown",
+        "pending",
+        "valid"
+      ],
+      "readOnly": true
+    },
+    "validators": {
+      "type": "Array<Object>",
+      "value": []
+    },
+    "value": {
+      "type": "string"
+    }
+  },
+  "methods": {
+    "show": {},
+    "showTimePicker": {},
+    "hideTimePicker": {},
+    "refresh": {},
+    "hide": {},
+    "validate": {},
+    "reset": {},
+    "showMessages": {},
+    "setProperty": {},
+    "getProperty": {},
+    "setProperties": {},
+    "getNodeBySubId": {},
+    "getSubIdByNode": {}
+  },
+  "events": {
+    "ojAnimateStart": {},
+    "ojAnimateEnd": {}
+  },
+  "extension": {}
+};
+var __oj_input_date_metadata = 
+{
+  "properties": {
+    "asyncValidators": {
+      "type": "Array<Object>",
+      "value": []
+    },
+    "autocomplete": {
+      "type": "string",
+      "value": "on",
+      "extension": {
+        "_COPY_TO_INNER_ELEM": true
+      }
+    },
+    "autofocus": {
+      "type": "boolean",
+      "value": false,
+      "extension": {
+        "_COPY_TO_INNER_ELEM": true
+      }
+    },
+    "converter": {
+      "type": "object",
+      "value": "oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({\"day\":\"2-digit\",\"month\":\"2-digit\",\"year\":\"2-digit\"})",
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "options": {
+          "type": "object"
+        }
+      }
+    },
+    "datePicker": {
+      "type": "object",
+      "properties": {
+        "changeMonth": {
+          "type": "string",
+          "enumValues": [
+            "none",
+            "select"
+          ],
+          "value": "select"
+        },
+        "changeYear": {
+          "type": "string",
+          "enumValues": [
+            "none",
+            "select"
+          ],
+          "value": "select"
+        },
+        "currentMonthPos": {
+          "type": "number",
+          "value": 0
+        },
+        "daysOutsideMonth": {
+          "type": "string",
+          "enumValues": [
+            "hidden",
+            "selectable",
+            "visible"
+          ],
+          "value": "hidden"
+        },
+        "footerLayout": {
+          "type": "string",
+          "enumValues": [
+            "",
+            "today"
+          ],
+          "value": "today"
+        },
+        "numberOfMonths": {
+          "type": "number",
+          "value": 1
+        },
+        "showOn": {
+          "type": "string",
+          "enumValues": [
+            "focus",
+            "image"
+          ],
+          "value": "focus"
+        },
+        "stepBigMonths": {
+          "type": "number",
+          "value": 12
+        },
+        "stepMonths": {
+          "type": "string|number",
+          "value": "numberOfMonths"
+        },
+        "weekDisplay": {
+          "type": "string",
+          "enumValues": [
+            "none",
+            "number"
+          ],
+          "value": "none"
+        },
+        "yearRange": {
+          "type": "string",
+          "value": "c-10:c+10"
+        }
+      }
+    },
+    "dayFormatter": {
+      "type": "function"
+    },
+    "dayMetaData": {
+      "type": "object"
+    },
+    "describedBy": {
+      "type": "string"
+    },
+    "disabled": {
+      "type": "boolean",
+      "value": false
+    },
+    "displayOptions": {
+      "type": "object",
+      "properties": {
+        "converterHint": {
+          "type": "Array<string>|string",
+          "value": [
+            "placeholder",
+            "notewindow"
+          ]
+        },
+        "helpInstruction": {
+          "type": "Array<string>|string",
+          "value": [
+            "notewindow"
+          ]
+        },
+        "messages": {
+          "type": "Array<string>|string",
+          "value": [
+            "inline"
+          ]
+        },
+        "validatorHint": {
+          "type": "Array<string>|string",
+          "value": [
+            "notewindow"
+          ]
+        }
+      }
+    },
+    "help": {
+      "type": "object",
+      "properties": {
+        "instruction": {
+          "type": "string"
+        }
+      }
+    },
+    "helpHints": {
+      "type": "object",
+      "properties": {
+        "definition": {
+          "type": "string",
+          "value": ""
+        },
+        "source": {
+          "type": "string",
+          "value": ""
+        }
+      }
+    },
+    "keyboardEdit": {
+      "type": "string",
+      "enumValues": [
+        "disabled",
+        "enabled"
+      ]
+    },
+    "labelHint": {
+      "type": "string",
+      "value": ""
+    },
+    "max": {
+      "type": "string"
+    },
+    "messagesCustom": {
+      "type": "Array<Object>",
+      "writeback": true,
+      "value": []
+    },
+    "min": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string",
+      "value": "",
+      "extension": {
+        "_COPY_TO_INNER_ELEM": true
+      }
+    },
+    "pickerAttributes": {
+      "type": "object",
+      "properties": {
+        "style": {
+          "type": "string"
+        },
+        "class": {
+          "type": "string"
+        }
+      }
+    },
+    "placeholder": {
+      "type": "string"
+    },
+    "rawValue": {
+      "type": "string",
+      "writeback": true,
+      "readOnly": true
+    },
+    "readonly": {
+      "type": "boolean",
+      "value": false
+    },
+    "renderMode": {
+      "type": "string",
+      "enumValues": [
+        "jet",
+        "native"
+      ]
+    },
+    "required": {
+      "type": "boolean",
+      "value": false
+    },
+    "translations": {
+      "type": "object",
+      "value": {},
+      "properties": {
+        "currentText": {
+          "type": "string"
+        },
+        "dateRestriction": {
+          "type": "object",
+          "properties": {
+            "hint": {
+              "type": "string"
+            },
+            "messageDetail": {
+              "type": "string"
+            },
+            "messageSummary": {
+              "type": "string"
+            }
+          }
+        },
+        "dateTimeRange": {
+          "type": "object",
+          "properties": {
+            "hint": {
+              "type": "object",
+              "properties": {
+                "inRange": {
+                  "type": "string"
+                },
+                "max": {
+                  "type": "string"
+                },
+                "min": {
+                  "type": "string"
+                }
+              }
+            },
+            "messageDetail": {
+              "type": "object",
+              "properties": {
+                "rangeOverflow": {
+                  "type": "string"
+                },
+                "rangeUnderflow": {
+                  "type": "string"
+                }
+              }
+            },
+            "messageSummary": {
+              "type": "object",
+              "properties": {
+                "rangeOverflow": {
+                  "type": "string"
+                },
+                "rangeUnderflow": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "nextText": {
+          "type": "string"
+        },
+        "prevText": {
+          "type": "string"
+        },
+        "regexp": {
+          "type": "object",
+          "properties": {
+            "messageDetail": {
+              "type": "string"
+            },
+            "messageSummary": {
+              "type": "string"
+            }
+          }
+        },
+        "required": {
+          "type": "object",
+          "properties": {
+            "hint": {
+              "type": "string"
+            },
+            "messageDetail": {
+              "type": "string"
+            },
+            "messageSummary": {
+              "type": "string"
+            }
+          }
+        },
+        "tooltipCalendar": {
+          "type": "string"
+        },
+        "tooltipCalendarDisabled": {
+          "type": "string"
+        },
+        "tooltipCalendarTime": {
+          "type": "string"
+        },
+        "tooltipCalendarTimeDisabled": {
+          "type": "string"
+        },
+        "weekHeader": {
+          "type": "string"
+        }
+      }
+    },
+    "valid": {
+      "type": "string",
+      "writeback": true,
+      "enumValues": [
+        "invalidHidden",
+        "invalidShown",
+        "pending",
+        "valid"
+      ],
+      "readOnly": true
+    },
+    "validators": {
+      "type": "Array<Object>",
+      "value": []
+    },
+    "value": {
+      "type": "string",
+      "writeback": true
+    }
+  },
+  "methods": {
+    "hide": {},
+    "refresh": {},
+    "show": {},
+    "validate": {},
+    "reset": {},
+    "showMessages": {},
+    "setProperty": {},
+    "getProperty": {},
+    "setProperties": {},
+    "getNodeBySubId": {},
+    "getSubIdByNode": {}
+  },
+  "events": {
+    "ojAnimateStart": {},
+    "ojAnimateEnd": {}
+  },
+  "extension": {}
+};
+var __oj_input_date_time_metadata = 
+{
+  "properties": {
+    "asyncValidators": {
+      "type": "Array<Object>",
+      "value": []
+    },
+    "autocomplete": {
+      "type": "string",
+      "value": "on",
+      "extension": {
+        "_COPY_TO_INNER_ELEM": true
+      }
+    },
+    "autofocus": {
+      "type": "boolean",
+      "value": false,
+      "extension": {
+        "_COPY_TO_INNER_ELEM": true
+      }
+    },
+    "converter": {
+      "type": "object",
+      "value": "oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({\"day\": \"2-digit\", \"month\": \"2-digit\", \"year\": \"2-digit\", \"hour\": \"2-digit\", \"minute\": \"2-digit\"})",
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "options": {
+          "type": "object"
+        }
+      }
+    },
+    "datePicker": {
+      "type": "object",
+      "properties": {
+        "changeMonth": {
+          "type": "string",
+          "enumValues": [
+            "none",
+            "select"
+          ],
+          "value": "select"
+        },
+        "changeYear": {
+          "type": "string",
+          "enumValues": [
+            "none",
+            "select"
+          ],
+          "value": "select"
+        },
+        "currentMonthPos": {
+          "type": "number",
+          "value": 0
+        },
+        "daysOutsideMonth": {
+          "type": "string",
+          "enumValues": [
+            "hidden",
+            "selectable",
+            "visible"
+          ],
+          "value": "hidden"
+        },
+        "footerLayout": {
+          "type": "string",
+          "enumValues": [
+            "",
+            "today"
+          ],
+          "value": "today"
+        },
+        "numberOfMonths": {
+          "type": "number",
+          "value": 1
+        },
+        "showOn": {
+          "type": "string",
+          "enumValues": [
+            "focus",
+            "image"
+          ],
+          "value": "focus"
+        },
+        "stepBigMonths": {
+          "type": "number",
+          "value": 12
+        },
+        "stepMonths": {
+          "type": "string|number",
+          "value": "numberOfMonths"
+        },
+        "weekDisplay": {
+          "type": "string",
+          "enumValues": [
+            "none",
+            "number"
+          ],
+          "value": "none"
+        },
+        "yearRange": {
+          "type": "string",
+          "value": "c-10:c+10"
+        }
+      }
+    },
+    "dayFormatter": {
+      "type": "function"
+    },
+    "dayMetaData": {
+      "type": "object"
+    },
+    "describedBy": {
+      "type": "string"
+    },
+    "disabled": {
+      "type": "boolean",
+      "value": false
+    },
+    "displayOptions": {
+      "type": "object",
+      "properties": {
+        "converterHint": {
+          "type": "Array<string>|string",
+          "value": [
+            "placeholder",
+            "notewindow"
+          ]
+        },
+        "helpInstruction": {
+          "type": "Array<string>|string",
+          "value": [
+            "notewindow"
+          ]
+        },
+        "messages": {
+          "type": "Array<string>|string",
+          "value": [
+            "inline"
+          ]
+        },
+        "validatorHint": {
+          "type": "Array<string>|string",
+          "value": [
+            "notewindow"
+          ]
+        }
+      }
+    },
+    "help": {
+      "type": "object",
+      "properties": {
+        "instruction": {
+          "type": "string"
+        }
+      }
+    },
+    "helpHints": {
+      "type": "object",
+      "properties": {
+        "definition": {
+          "type": "string",
+          "value": ""
+        },
+        "source": {
+          "type": "string",
+          "value": ""
+        }
+      }
+    },
+    "keyboardEdit": {
+      "type": "string",
+      "enumValues": [
+        "disabled",
+        "enabled"
+      ]
+    },
+    "labelHint": {
+      "type": "string",
+      "value": ""
+    },
+    "max": {
+      "type": "string"
+    },
+    "messagesCustom": {
+      "type": "Array<Object>",
+      "writeback": true,
+      "value": []
+    },
+    "min": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string",
+      "value": "",
+      "extension": {
+        "_COPY_TO_INNER_ELEM": true
+      }
+    },
+    "pickerAttributes": {
+      "type": "object",
+      "properties": {
+        "style": {
+          "type": "string"
+        },
+        "class": {
+          "type": "string"
+        }
+      }
+    },
+    "placeholder": {
+      "type": "string"
+    },
+    "rawValue": {
+      "type": "string",
+      "writeback": true,
+      "readOnly": true
+    },
+    "readonly": {
+      "type": "boolean",
+      "value": false
+    },
+    "renderMode": {
+      "type": "string",
+      "enumValues": [
+        "jet",
+        "native"
+      ]
+    },
+    "required": {
+      "type": "boolean",
+      "value": false
+    },
+    "timePicker": {
+      "type": "object",
+      "properties": {
+        "footerLayout": {
+          "type": "string",
+          "enumValues": [
+            "",
+            "now"
+          ],
+          "value": ""
+        },
+        "showOn": {
+          "type": "string",
+          "enumValues": [
+            "focus",
+            "image"
+          ],
+          "value": "focus"
+        },
+        "timeIncrement": {
+          "type": "string",
+          "value": "00:05:00:00"
+        }
+      }
+    },
+    "translations": {
+      "type": "object",
+      "value": {},
+      "properties": {
+        "cancel": {
+          "type": "string"
+        },
+        "currentText": {
+          "type": "string"
+        },
+        "dateRestriction": {
+          "type": "object",
+          "properties": {
+            "hint": {
+              "type": "string"
+            },
+            "messageDetail": {
+              "type": "string"
+            },
+            "messageSummary": {
+              "type": "string"
+            }
+          }
+        },
+        "dateTimeRange": {
+          "type": "object",
+          "properties": {
+            "hint": {
+              "type": "object",
+              "properties": {
+                "inRange": {
+                  "type": "string"
+                },
+                "max": {
+                  "type": "string"
+                },
+                "min": {
+                  "type": "string"
+                }
+              }
+            },
+            "messageDetail": {
+              "type": "object",
+              "properties": {
+                "rangeOverflow": {
+                  "type": "string"
+                },
+                "rangeUnderflow": {
+                  "type": "string"
+                }
+              }
+            },
+            "messageSummary": {
+              "type": "object",
+              "properties": {
+                "rangeOverflow": {
+                  "type": "string"
+                },
+                "rangeUnderflow": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "done": {
+          "type": "string"
+        },
+        "nextText": {
+          "type": "string"
+        },
+        "prevText": {
+          "type": "string"
+        },
+        "regexp": {
+          "type": "object",
+          "properties": {
+            "messageDetail": {
+              "type": "string"
+            },
+            "messageSummary": {
+              "type": "string"
+            }
+          }
+        },
+        "required": {
+          "type": "object",
+          "properties": {
+            "hint": {
+              "type": "string"
+            },
+            "messageDetail": {
+              "type": "string"
+            },
+            "messageSummary": {
+              "type": "string"
+            }
+          }
+        },
+        "tooltipCalendar": {
+          "type": "string"
+        },
+        "tooltipCalendarDisabled": {
+          "type": "string"
+        },
+        "tooltipCalendarTime": {
+          "type": "string"
+        },
+        "tooltipCalendarTimeDisabled": {
+          "type": "string"
+        },
+        "weekHeader": {
+          "type": "string"
+        }
+      }
+    },
+    "valid": {
+      "type": "string",
+      "writeback": true,
+      "enumValues": [
+        "invalidHidden",
+        "invalidShown",
+        "pending",
+        "valid"
+      ],
+      "readOnly": true
+    },
+    "validators": {
+      "type": "Array<Object>",
+      "value": []
+    },
+    "value": {
+      "type": "string",
+      "writeback": true
+    }
+  },
+  "methods": {
+    "show": {},
+    "showTimePicker": {},
+    "hideTimePicker": {},
+    "hide": {},
+    "refresh": {},
+    "validate": {},
+    "reset": {},
+    "showMessages": {},
+    "setProperty": {},
+    "getProperty": {},
+    "setProperties": {},
+    "getNodeBySubId": {},
+    "getSubIdByNode": {}
+  },
+  "events": {
+    "ojAnimateStart": {},
+    "ojAnimateEnd": {}
+  },
+  "extension": {}
+};
+var __oj_input_time_metadata = 
+{
+  "properties": {
+    "asyncValidators": {
+      "type": "Array<Object>",
+      "value": []
+    },
+    "autocomplete": {
+      "type": "string",
+      "value": "on",
+      "extension": {
+        "_COPY_TO_INNER_ELEM": true
+      }
+    },
+    "autofocus": {
+      "type": "boolean",
+      "value": false,
+      "extension": {
+        "_COPY_TO_INNER_ELEM": true
+      }
+    },
+    "converter": {
+      "type": "object",
+      "value": "oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({\"hour\": \"2-digit\", \"minute\": \"2-digit\"})",
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "options": {
+          "type": "object"
+        }
+      }
+    },
+    "describedBy": {
+      "type": "string"
+    },
+    "disabled": {
+      "type": "boolean",
+      "value": false
+    },
+    "displayOptions": {
+      "type": "object",
+      "properties": {
+        "converterHint": {
+          "type": "Array<string>|string",
+          "value": [
+            "placeholder",
+            "notewindow"
+          ]
+        },
+        "helpInstruction": {
+          "type": "Array<string>|string",
+          "value": [
+            "notewindow"
+          ]
+        },
+        "messages": {
+          "type": "Array<string>|string",
+          "value": [
+            "inline"
+          ]
+        },
+        "validatorHint": {
+          "type": "Array<string>|string",
+          "value": [
+            "notewindow"
+          ]
+        }
+      }
+    },
+    "help": {
+      "type": "object",
+      "properties": {
+        "instruction": {
+          "type": "string"
+        }
+      }
+    },
+    "helpHints": {
+      "type": "object",
+      "properties": {
+        "definition": {
+          "type": "string",
+          "value": ""
+        },
+        "source": {
+          "type": "string",
+          "value": ""
+        }
+      }
+    },
+    "keyboardEdit": {
+      "type": "string",
+      "enumValues": [
+        "disabled",
+        "enabled"
+      ]
+    },
+    "labelHint": {
+      "type": "string",
+      "value": ""
+    },
+    "max": {
+      "type": "string"
+    },
+    "messagesCustom": {
+      "type": "Array<Object>",
+      "writeback": true,
+      "value": []
+    },
+    "min": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string",
+      "value": "",
+      "extension": {
+        "_COPY_TO_INNER_ELEM": true
+      }
+    },
+    "pickerAttributes": {
+      "type": "object",
+      "properties": {
+        "style": {
+          "type": "string"
+        },
+        "class": {
+          "type": "string"
+        }
+      }
+    },
+    "placeholder": {
+      "type": "string"
+    },
+    "rawValue": {
+      "type": "string",
+      "writeback": true,
+      "readOnly": true
+    },
+    "readonly": {
+      "type": "boolean",
+      "value": false
+    },
+    "renderMode": {
+      "type": "string",
+      "enumValues": [
+        "jet",
+        "native"
+      ]
+    },
+    "required": {
+      "type": "boolean",
+      "value": false
+    },
+    "timePicker": {
+      "type": "object",
+      "properties": {
+        "footerLayout": {
+          "type": "string",
+          "enumValues": [
+            "",
+            "now"
+          ],
+          "value": ""
+        },
+        "showOn": {
+          "type": "string",
+          "enumValues": [
+            "focus",
+            "image"
+          ],
+          "value": "focus"
+        },
+        "timeIncrement": {
+          "type": "string",
+          "value": "00:05:00:00"
+        }
+      }
+    },
+    "translations": {
+      "type": "object",
+      "value": {},
+      "properties": {
+        "ampmWheelLabel": {
+          "type": "string"
+        },
+        "cancelText": {
+          "type": "string"
+        },
+        "currentTimeText": {
+          "type": "string"
+        },
+        "dateTimeRange": {
+          "type": "object",
+          "properties": {
+            "hint": {
+              "type": "object",
+              "properties": {
+                "inRange": {
+                  "type": "string"
+                },
+                "max": {
+                  "type": "string"
+                },
+                "min": {
+                  "type": "string"
+                }
+              }
+            },
+            "messageDetail": {
+              "type": "object",
+              "properties": {
+                "rangeOverflow": {
+                  "type": "string"
+                },
+                "rangeUnderflow": {
+                  "type": "string"
+                }
+              }
+            },
+            "messageSummary": {
+              "type": "object",
+              "properties": {
+                "rangeOverflow": {
+                  "type": "string"
+                },
+                "rangeUnderflow": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "hourWheelLabel": {
+          "type": "string"
+        },
+        "minuteWheelLabel": {
+          "type": "string"
+        },
+        "okText": {
+          "type": "string"
+        },
+        "regexp": {
+          "type": "object",
+          "properties": {
+            "messageDetail": {
+              "type": "string"
+            },
+            "messageSummary": {
+              "type": "string"
+            }
+          }
+        },
+        "required": {
+          "type": "object",
+          "properties": {
+            "hint": {
+              "type": "string"
+            },
+            "messageDetail": {
+              "type": "string"
+            },
+            "messageSummary": {
+              "type": "string"
+            }
+          }
+        },
+        "tooltipTime": {
+          "type": "string"
+        },
+        "tooltipTimeDisabled": {
+          "type": "string"
+        }
+      }
+    },
+    "valid": {
+      "type": "string",
+      "writeback": true,
+      "enumValues": [
+        "invalidHidden",
+        "invalidShown",
+        "pending",
+        "valid"
+      ],
+      "readOnly": true
+    },
+    "validators": {
+      "type": "Array<Object>",
+      "value": []
+    },
+    "value": {
+      "type": "string",
+      "writeback": true
+    }
+  },
+  "methods": {
+    "show": {},
+    "hide": {},
+    "refresh": {},
+    "validate": {},
+    "reset": {},
+    "showMessages": {},
+    "setProperty": {},
+    "getProperty": {},
+    "setProperties": {},
+    "getNodeBySubId": {},
+    "getSubIdByNode": {}
+  },
+  "events": {
+    "ojAnimateStart": {},
+    "ojAnimateEnd": {}
+  },
+  "extension": {}
+};
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
@@ -125,14 +2038,22 @@ function getImplicitDateTimeRangeValidator(options, converter, defaultStyleClass
  */
 function disableEnableSpan(children, val)
 {
-  var filteredChildren = children.filter("span");
-  if (val)
-  {
-    filteredChildren.addClass("oj-disabled").removeClass("oj-enabled oj-default");
-  }
-  else
-  {
-    filteredChildren.removeClass("oj-disabled").addClass("oj-enabled oj-default");
+  for (var i = 0; i < children.length; i++) {
+    var child = children[i];
+    if (child.tagName === 'SPAN') {
+      if (val)
+      {
+        child.classList.add('oj-disabled');
+        child.classList.remove('oj-enabled');
+        child.classList.remove('oj-default');
+      }
+      else
+      {
+        child.classList.remove('oj-disabled');
+        child.classList.add('oj-enabled');
+        child.classList.add('oj-default');
+      }
+    }
   }
 }
 
@@ -163,16 +2084,16 @@ function bindHover(dpDiv)
     " .oj-datepicker-next-icon .oj-clickable-icon-nocontext.oj-component-icon, .oj-datepicker-calendar td a";
   return dpDiv.delegate(selector, "mouseout", function ()
   {
-    $(this).removeClass("oj-hover");
+    this.classList.remove("oj-hover");
   }).delegate(selector, "mouseover", function ()
   {
-    $(this).addClass("oj-hover");
+    this.classList.add("oj-hover");
   }).delegate(selector, "focus", function ()
   {
-    $(this).addClass("oj-focus");
+    this.classList.add("oj-focus");
   }).delegate(selector, "blur", function ()
   {
-    $(this).removeClass("oj-focus");
+    this.classList.remove("oj-focus");
   });
 }
 
@@ -187,16 +2108,16 @@ function bindActive(dateTime)
   var triggerRootContainer;
   if(dateTime._isInLine)
   {
-    triggerRootContainer = $(dateTime.element[0]).parent();
+    triggerRootContainer = dateTime.element[0].parentNode;
   }
   else
   {
-    triggerRootContainer = $(dateTime.element[0]).parent().parent();
+    triggerRootContainer = dateTime.element[0].parentNode.parentNode;
   }
 
   // There are few issues in mobile using hover and active marker classes (iOS and Android, more
   // evident on iOS). Some fix is needed in _activeable(), tracking .
-  dateTime._AddActiveable(triggerRootContainer);
+  dateTime._AddActiveable($(triggerRootContainer));
 }
 
 /**
@@ -320,6 +2241,13 @@ var yearDisplay = oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_T
  * </h3>
  *
  * {@ojinclude "name":"keyboardDoc"}
+ *
+ * <h3 id="styling-section">
+ *   Styling
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#styling-section"></a>
+ * </h3>
+ *
+ * {@ojinclude "name":"stylingDoc"}
  *
  * <h3 id="a11y-section">
  *   Accessibility
@@ -508,8 +2436,8 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
        * @memberof! oj.ojInputDate
        * @instance
        * @type {string}
-       * @ojvalue {string} 'select' As a button
-       * @ojvalue {string} 'none' As text
+       * @ojvalue {string} 'select' month is rendered as a button
+       * @ojvalue {string} 'none' month is rendered as a text
        * @default "select"
        */
       changeMonth : "select",
@@ -596,6 +2524,7 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
        *   clicked. When the picker is closed, the field regains focus and is editable.
        * @ojvalue {string} 'image' when the trigger calendar image is clicked
        * @default "focus"
+       * 
        */
       showOn : "focus",
 
@@ -696,7 +2625,8 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
      * @instance
      * @memberof! oj.ojInputDate
      * @type {Object}
-     * @ojsignature  { target: "Type", value: "oj.Converter<string>|oj.Validation.FactoryRegisteredValidatorOrConverter|null"}
+     * @ojsignature  { target: "Type", value: "oj.Converter<string>|oj.Validation.RegisteredConverter",
+     *                 jsdocOverride: true}
      * @default oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({"day":"2-digit","month":"2-digit","year":"2-digit"})
      */
     converter : oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter(
@@ -714,6 +2644,7 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
      * @name keyboardEdit
      * @type {string}
      * @ojvalue {string} "disabled" Changing the date can only be done with the picker.
+     * @ojvalue {string} "enabled" Changing the date through keyboard is enabled.
      * @default "disabled"
      *
      * @example <caption>Initialize the InputDate with the <code class="prettyprint">keyboard-edit</code> attribute specified:</caption>
@@ -767,6 +2698,7 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
      * @memberof! oj.ojDatePicker
      * @name max
      * @type {string|null}
+     * @ojformat date
      * @default null
      *
      * @example <caption>Initialize the InputDate with the <code class="prettyprint">max</code> attribute specified:</caption>
@@ -786,6 +2718,7 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
      * @instance
      * @memberof! oj.ojInputDate
      * @type {string|null}
+     * @ojformat date
      * @default null
      *
      * @example <caption>Initialize the InputDate with the <code class="prettyprint">max</code> attribute specified:</caption>
@@ -808,6 +2741,7 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
      * @memberof! oj.ojDatePicker
      * @name min
      * @type {string|null}
+     * @ojformat date
      * @default null
      *
      * @example <caption>Initialize the InputDate with the <code class="prettyprint">min</code> attribute specified:</caption>
@@ -827,6 +2761,7 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
      * @instance
      * @memberof! oj.ojInputDate
      * @type {string|null}
+     * @ojformat date
      * @default null
      *
      * @example <caption>Initialize the InputDate with the <code class="prettyprint">min</code> attribute specified:</caption>
@@ -870,7 +2805,7 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
 
     /**
      * Allows applications to specify whether to render date picker in JET or
-     * as a native picker control. In inline mode, the only value supported is "jet"</br>
+     * render as a native picker control. In inline mode, the only value supported is "jet"</br>
      *
      * @expose
      * @memberof! oj.ojDatePicker
@@ -878,7 +2813,25 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
      * @name renderMode
      * @type {string}
      * @ojvalue {string} 'jet' Applications get full JET functionality.
+     * @ojvalue {string} 'native' Applications get the functionality of the native picker. Native picker is
+     *  not available when the picker is inline, defaults to jet instead.</br></br>
+     *  Note that the native picker support is limited to Cordova plugin published
+     *  at 'https://github.com/VitaliiBlagodir/cordova-plugin-datepicker'.</br></br>
+     *  With native renderMode, the functionality that is sacrificed compared to jet renderMode are:
+     *    <ul>
+     *      <li>Date picker cannot be themed</li>
+     *      <li>Accessibility is limited to what the native picker supports</li>
+     *      <li>pickerAttributes is not applied</li>
+     *      <li>Sub-IDs are not available</li>
+     *      <li>hide() function is no-op</li>
+     *      <li>translations sub properties pertaining to the picker is not available</li>
+     *      <li>All of the 'datepicker' sub-properties except 'showOn' are not available</li>
+     *    </ul>.
      * @default "jet"
+     * 
+     * Default value depends on the theme. In alta-android, alta-ios and alta-windows themes, the
+     * default is "native" and it's "jet" for alta web theme.
+     *
      *
      * @example <caption>Initialize the InputDate with the <code class="prettyprint">render-mode</code> attribute specified:</caption>
      * &lt;oj-date-picker render-mode='jet'>&lt;/oj-date-picker>
@@ -934,7 +2887,6 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
      * $inputDateTimeRenderModeOptionDefault: native !default;
      */
     renderMode : "jet",
-
     /**
      * Additional info to be used when rendering the day
      *
@@ -1068,9 +3020,10 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
      * @instance
      * @memberof oj.ojInputDate
      * @ojsignature  { target: "Type", 
-     *   value: "Array<oj.Validator<string>|oj.Validation.FactoryRegisteredValidatorOrConverter>|null",
+     *   value: "Array<oj.Validator<string>|oj.Validation.RegisteredValidator>",
      *   jsdocOverride: true}
-     * @type {Array|undefined}
+     * @type {Array.<Object>}
+     * @default []
      */
 
     /**
@@ -1095,6 +3048,7 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
      * @instance
      * @memberof oj.ojDatePicker
      * @type {string}
+     * @ojformat date
      * @ojwriteback
      */
     /**
@@ -1119,6 +3073,7 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
      * @instance
      * @memberof! oj.ojInputDate
      * @type {string}
+     * @ojformat date
      * @ojwriteback
      */
 
@@ -1155,12 +3110,10 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
 
     var nodeName = this.element[0].nodeName.toLowerCase();
     this._isInLine = (nodeName === "div" || nodeName === "span");
-    this._dpDiv = bindHover($('<div class="oj-datepicker-popup" style="display:none"><div id="' + this._GetSubId(this._MAIN_DIV_ID) + '" role="region" aria-describedby="' + 
-      this._GetSubId(this._DATEPICKER_DESCRIPTION_ID) + '" class="oj-datepicker-content"></div></div>'));
-    $("body").append(this._dpDiv); //@HTMLUpdateOK
 
     if(this._isInLine)
     {
+      this._createDpDiv();
       //if inline then there is no input element, so reset _CLASS_NAMES
       // TODO:Jmw trying to understand what to do in the case of inline. If it is dateTime inline, then I don't wrap the date part.
       // But if it is just date inline, I should... but the use case is probably not frequent.
@@ -1176,38 +3129,61 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
       // Ji will need to help me with this probably.
       // One thing I know I'm not doing is wrapping the calendar if only date. hmm...
       this._ELEMENT_TRIGGER_WRAPPER_CLASS_NAMES += this._INPUT_CONTAINER_CLASS;
-     
-      var self = this;
-      //DISABLE FOR NOW, as animation is coming quite clunky (not sure if the css of popup or of animation)
-      //var animation = _isLargeScreen ? {"open": null, "close": null} : {"close": null};
-      var animation = {"open": null, "close": null};
-      this._popUpDpDiv = this._dpDiv.ojPopup({"initialFocus": "none",
-                                              "role": "dialog",
-                                              "modality": _isLargeScreen ? "modeless" : "modal",
-                                              "open": function () {
-                                                self._popUpDpDiv.attr("aria-describedby", self._GetSubId(self._DATEPICKER_DIALOG_DESCRIPTION_ID));
-                                                if (self.options["datePicker"]["showOn"] === "image")
-                                                {
-                                                  self._dpDiv.find(".oj-datepicker-calendar").focus();
-                                                }
-                                              },
-                                              "animateStart": function (event, ui)
-                                              {
-                                                if ('open' === ui["action"])
-                                                {
-                                                  event.preventDefault();
-                                                  oj.AnimationUtils.slideIn(ui.element, {"offsetY": ui.element.offsetHeight + "px"}).then(ui["endCallback"]);
-                                                }
-                                              },
-                                              "animation": animation
-                                            }).attr('data-oj-internal', ''); // mark internal component, used in oj.Components.getComponentElementByNode;
-      this.element.attr('data-oj-popup-' + this._popUpDpDiv.attr('id') + '-parent', ''); // mark parent of pop up
 
-      var pickerAttrs = this.options.pickerAttributes;
-      if (pickerAttrs)
-        oj.EditableValueUtils.setPickerAttributes(this._popUpDpDiv.ojPopup("widget"), pickerAttrs);
-
+      if (this.options['readOnly'] !== true)
+      {
+        this._createDpDiv();
+        this._createPopupDpDiv();
+      }
     }
+  },
+
+  _createDpDiv: function()
+  {
+    var dpDiv = document.createElement('div');
+    dpDiv.className = 'oj-datepicker-popup';
+    dpDiv.style.display = 'none';
+    var childDiv = document.createElement('div');
+    childDiv.id = this._GetSubId(this._MAIN_DIV_ID);
+    childDiv.setAttribute('role', 'region');
+    childDiv.setAttribute('aria-describedby', this._GetSubId(this._DATEPICKER_DESCRIPTION_ID));
+    childDiv.className = 'oj-datepicker-content';
+    dpDiv.appendChild(childDiv);
+    this._dpDiv = bindHover($(dpDiv));
+    document.body.appendChild(dpDiv); // @HTMLUpdateOK
+  },
+
+  _createPopupDpDiv: function()
+  {
+    var self = this;
+    //DISABLE FOR NOW, as animation is coming quite clunky (not sure if the css of popup or of animation)
+    //var animation = _isLargeScreen ? {"open": null, "close": null} : {"close": null};
+    var animation = {"open": null, "close": null};
+    this._popUpDpDiv = this._dpDiv.ojPopup({"initialFocus": "none",
+                                            "role": "dialog",
+                                            "modality": _isLargeScreen ? "modeless" : "modal",
+                                            "open": function () {
+                                              self._popUpDpDiv.attr("aria-describedby", self._GetSubId(self._DATEPICKER_DIALOG_DESCRIPTION_ID));
+                                              if (self.options["datePicker"]["showOn"] === "image")
+                                              {
+                                                self._dpDiv.find(".oj-datepicker-calendar").focus();
+                                              }
+                                            },
+                                            "animateStart": function (event, ui)
+                                            {
+                                              if ('open' === ui["action"])
+                                              {
+                                                event.preventDefault();
+                                                oj.AnimationUtils.slideIn(ui.element, {"offsetY": ui.element.offsetHeight + "px"}).then(ui["endCallback"]);
+                                              }
+                                            },
+                                            "animation": animation
+                                          }).attr('data-oj-internal', ''); // mark internal component, used in oj.Components.getComponentElementByNode;
+    this.element.attr('data-oj-popup-' + this._popUpDpDiv.attr('id') + '-parent', ''); // mark parent of pop up
+
+    var pickerAttrs = this.options.pickerAttributes;
+    if (pickerAttrs)
+      oj.EditableValueUtils.setPickerAttributes(this._popUpDpDiv.ojPopup("widget"), pickerAttrs);
   },
 
   /**
@@ -1260,14 +3236,18 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
       // Set display:block in place of inst._dpDiv.show() which won't work on disconnected elements
       // http://bugs.jqueryui.com/ticket/7552 - A Datepicker created on a detached div has zero height
       this._dpDiv.css("display", "block");
+
+      this._registerSwipeHandler();
     }
     else
     {
       this._processReadOnlyKeyboardEdit();
-      this._attachTrigger();
+      if (this.options['readOnly'] !== true)
+      {
+        this._attachTrigger();
+        this._registerSwipeHandler();
+      }
     }
-
-    this._registerSwipeHandler();
 
     // attach active state change handlers
     bindActive(this);
@@ -1375,6 +3355,17 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
     }
     else if(key === "readOnly")
     {
+      // Set up datepicker div and popup if necessary
+      if (!this._isInLine && !value && this._dpDiv == null)
+      {
+        this._createDpDiv();
+        this._createPopupDpDiv();
+        this._attachTrigger();
+        this._registerSwipeHandler();
+        this._AppendInputHelper();
+        this._setupResizePopupBind();
+      }
+
       this._processReadOnlyKeyboardEdit();
 
       if (value)
@@ -1461,7 +3452,7 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
 
   _datepickerShowing: function()
   {
-    return this._isInLine || (oj.Components.isComponentInitialized(this._popUpDpDiv, "ojPopup") && this._popUpDpDiv.ojPopup("isOpen")) || this._nativePickerShowing;
+    return this._isInLine || (this._popUpDpDiv && oj.Components.isComponentInitialized(this._popUpDpDiv, "ojPopup") && this._popUpDpDiv.ojPopup("isOpen")) || this._nativePickerShowing;
   },
   /**
    * @ignore
@@ -1472,17 +3463,26 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
   {
     if (!this._isInLine)
     {
-      this._resizePopupBind = function ()
+      if (this.options['readOnly'] !== true)
       {
-        if (oj.Components.isComponentInitialized(this._popUpDpDiv, "ojPopup"))
-        {
-          this._popUpDpDiv.ojPopup("option", "modality", (_isLargeScreen ? "modeless" : "modal"));
-        }
-      }.bind(this);
-      window.addEventListener('resize', this._resizePopupBind, false);
+        this._setupResizePopupBind();
+      }
     }
     return this._super();
   },
+
+  _setupResizePopupBind: function()
+  {
+    this._resizePopupBind = function ()
+    {
+      if (oj.Components.isComponentInitialized(this._popUpDpDiv, "ojPopup"))
+      {
+        this._popUpDpDiv.ojPopup("option", "modality", (_isLargeScreen ? "modeless" : "modal"));
+      }
+    }.bind(this);
+    window.addEventListener('resize', this._resizePopupBind, false);
+  },
+
   /**
    * @ignore
    * @protected
@@ -1504,13 +3504,13 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
     var triggerRootContainer;
     if (this._isInLine)
     {
-      triggerRootContainer = $(this.element[0]).parent();
+      triggerRootContainer = this.element[0].parentNode;
     }
     else 
     {
-      triggerRootContainer = $(this.element[0]).parent().parent();
+      triggerRootContainer = this.element[0].parentNode.parentNode;
     }
-    this._RemoveActiveable(triggerRootContainer);
+    this._RemoveActiveable($(triggerRootContainer));
 
     this.element.off("focus touchstart");
     this._wrapper.off("touchstart");
@@ -1537,7 +3537,9 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
     }
     if (this._popUpDpDiv && oj.Components.isComponentInitialized(this._popUpDpDiv, "ojPopup"))
      this._popUpDpDiv.ojPopup("destroy");
-    this._dpDiv.remove();
+    
+    if (this._dpDiv)
+      this._dpDiv.remove();
   },
   /**
    * @ignore
@@ -1635,13 +3637,16 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
   _attachTrigger : function()
   {
     var showOn = this.options["datePicker"]["showOn"];
-    var triggerContainer = $("<span>").addClass(this._TRIGGER_CLASS);
+    var triggerContainer = document.createElement('span');
+    triggerContainer.className = this._TRIGGER_CLASS;
 
     // pop-up date picker when button clicked
-    var triggerCalendar =
-      $("<span title='" + this._GetCalendarTitle() + "'/>").addClass(this._TRIGGER_CALENDAR_CLASS + " oj-clickable-icon-nocontext oj-component-icon");
+    var triggerCalendar = document.createElement('span');
+    triggerCalendar.setAttribute('title', this._GetCalendarTitle());
+    triggerCalendar.className = this._TRIGGER_CALENDAR_CLASS +
+                  ' oj-clickable-icon-nocontext oj-component-icon';
 
-    triggerContainer.append(triggerCalendar); //@HTMLUpdateOK
+    triggerContainer.appendChild(triggerCalendar); //@HTMLUpdateOK
 
     this.element.on("focus", $.proxy(this._onElementFocus, this));
     this.element.on("touchstart", $.proxy(this._OnElementTouchStart, this));
@@ -1656,7 +3661,7 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
     if (showOn === "image")
     {
       // we need to show the icon that we hid by display:none in the mobile themes
-      triggerCalendar.css("display", "block");
+      triggerCalendar.style.display = 'block';
 
       // In iOS theme, we defaulted to use border radius given that showOn=focus is default and
       //  we will not have trigger icon. For showOn=image case, we will show the icon, so
@@ -1674,7 +3679,7 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
       }
     }
 
-    triggerCalendar.on("click", function ()
+    triggerCalendar.addEventListener("click", function (event)
     {
       if (self._datepickerShowing())
       {
@@ -1685,15 +3690,17 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
         self.show();
         self._dpDiv.find(".oj-datepicker-calendar").focus();
       }
-      return false;
+      event.preventDefault();
+      event.stopPropagation();
     });
 
-    this._AddHoverable(triggerCalendar);
-    this._AddActiveable(triggerCalendar);
+    var $triggerCalendar = $(triggerCalendar);
+    this._AddHoverable($triggerCalendar);
+    this._AddActiveable($triggerCalendar);
 
-    this._triggerIcon = triggerCalendar;
-    this._triggerNode = triggerContainer;
-    this.element.after(triggerContainer); //@HTMLUpdateOK
+    this._triggerIcon = $triggerCalendar;
+    this._triggerNode = $(triggerContainer);
+    this.element[0].parentNode.insertBefore(triggerContainer, this.element[0].nextElementSibling); // @HTMLUpdateOK
   },
 
   //This handler is when an user keys down with the calendar having focus
@@ -2046,7 +4053,7 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
    */
   _getDatepickerContent: function ()
   {
-    return $(this._dpDiv.find(".oj-datepicker-content")[0]);
+    return this._dpDiv ? $(this._dpDiv.find(".oj-datepicker-content")[0]) : $();
   },
 
   /**
@@ -3417,7 +5424,7 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
   {
     if (this._triggerNode)
     {
-      disableEnableSpan(this._triggerNode.children(), val);
+      disableEnableSpan(this._triggerNode[0].children, val);
       this._triggerNode.find("." + this._TRIGGER_CALENDAR_CLASS).attr("title", this._GetCalendarTitle());
     }
 
@@ -3444,7 +5451,7 @@ oj.__registerWidget("oj.ojInputDate", $['oj']['inputBase'],
    */
   _AppendInputHelper : function ()
   {
-    if (!this._isInLine)
+    if (!this._isInLine && this.options['readOnly'] !== true)
     {
       this._superApply(arguments);
     }
@@ -4372,11 +6379,34 @@ oj.Components.setDefaultOptions(
  * </table>
  *
  * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
- * @memberof oj.ojDatePicker
+ * @memberof oj.ojInputDate
  */
 
+/**
+ * {@ojinclude "name":"ojStylingDocIntro"}
+ * <p>The form control text align style classes can be applied to the component, or an ancestor element. When
+ * applied to an ancestor element, all form components that support the text align style classes will be affected.
+ *
+ * <table class="generic-table styling-table">
+ *   <thead>
+ *     <tr>
+ *       <th>{@ojinclude "name":"ojStylingDocClassHeader"}</th>
+ *       <th>{@ojinclude "name":"ojStylingDocDescriptionHeader"}</th>
+ *     </tr>
+ *   </thead>
+ *   <tbody>
+ *     <tr>
+ *       <td>oj-form-control-text-align-start</td>
+ *       <td>Aligns the text to the left in ltr and to the right in rtl</td>
+ *     </tr>
+ *   </tbody>
+ * </table>
+ *
+ * @ojfragment stylingDoc - Used in Styling section of classdesc, and standalone Styling doc
+ * @memberof oj.ojInputDate
+ */
 
-//////////////////     SUB-IDS     //////////////////
+// ////////////////     SUB-IDS     //////////////////
 
 /**
  * <p>Sub-ID for the InputDate and InputDateTime input element. Note that if element is inline for
@@ -4605,6 +6635,13 @@ function _getTimePickerConverter(converter, addOpts) {
  * </h3>
  *
  * {@ojinclude "name":"keyboardDoc"}
+ *
+ * <h3 id="styling-section">
+ *   Styling
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#styling-section"></a>
+ * </h3>
+ *
+ * {@ojinclude "name":"stylingDoc"}
  */
 oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
 {
@@ -4654,7 +6691,8 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
      * @memberof! oj.ojInputTime
      * @instance
      * @type {Object}
-     * @ojsignature  { target: "Type", value: "oj.Converter<string>|oj.Validation.FactoryRegisteredValidatorOrConverter|null"}
+     * @ojsignature  { target: "Type", value: "oj.Converter<string>|oj.Validation.RegisteredConverter",
+     *                 jsdocOverride: true}
      * @default oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({"hour": "2-digit", "minute": "2-digit"})
      */
     converter : oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter(
@@ -4704,6 +6742,7 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
      * @instance
      * @memberof! oj.ojInputTime
      * @type {string|null}
+     * @ojformat time
      * @default null
      *
      * @example <caption>Initialize the InputTime with the <code class="prettyprint">max</code> attribute specified:</caption>
@@ -4730,6 +6769,7 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
      * @instance
      * @memberof! oj.ojInputTime
      * @type {string|null}
+     * @ojformat time
      * @default null
      *
      * @example <caption>Initialize the InputTime with the <code class="prettyprint">min</code> attribute specified:</caption>
@@ -5004,9 +7044,10 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
      * @instance
      * @memberof oj.ojInputTime
      * @ojsignature  { target: "Type", 
-     *   value: "Array<oj.Validator<string>|oj.Validation.FactoryRegisteredValidatorOrConverter>|null",
+     *   value: "Array<oj.Validator<string>|oj.Validation.RegisteredValidator>",
      *   jsdocOverride: true}
-     * @type {Array|undefined}
+     * @type {Array.<Object>}
+     * @default []
      */
 
     /**
@@ -5026,6 +7067,7 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
      * @expose
      * @name value
      * @type {string}
+     * @ojformat time
      * @instance
      * @ojwriteback
      * @memberof! oj.ojInputTime
@@ -5076,12 +7118,33 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
     //  to find out otherwise.
     this._nativePickerShowing = false;
 
+    if (this.options['readOnly'] !== true)
+    {
+      this._createWheelPicker();
+    }
+    // I want to wrap the inputTime if it is all by itself, or if it is
+    // part of the inline inputDateTime component which is the inline date stacked on top of an
+    // inputTime. The inline error messages will go under the inputTime part. TODO: how?
+    // right now the destroy fails because I am whacking away something.. the dom.
+    if (this._isIndependentInput())
+      this._ELEMENT_TRIGGER_WRAPPER_CLASS_NAMES += this._INPUT_CONTAINER_CLASS;
+  },
+
+  _createWheelPicker: function()
+  {
     var pickerAttrs = this.options.pickerAttributes;
 
     var self = this;
-    this._wheelPicker = $('<div class="oj-timepicker-popup" style="display:none"><div id="' + this._GetSubId(this._TIME_PICKER_ID) +
-                          '" class="oj-timepicker-content"></div></div>');
-    this._getPrependNode().prepend(this._wheelPicker); //@HTMLUpdateOK
+    var wheelPicker = document.createElement('div');
+    wheelPicker.className = 'oj-timepicker-popup';
+    wheelPicker.style.display = 'none';
+    var div = document.createElement('div');
+    div.id = this._GetSubId(this._TIME_PICKER_ID);
+    div.className = 'oj-timepicker-content';
+    wheelPicker.appendChild(div);
+    this._wheelPicker = $(wheelPicker);
+    var prependNode = this._getPrependNode()[0];
+    prependNode.insertBefore(wheelPicker, prependNode.firstElementChild); // @HTMLUpdateOK
 
     if(this._isIndependentInput()) 
     {
@@ -5114,12 +7177,6 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
       if (pickerAttrs)
         oj.EditableValueUtils.setPickerAttributes(this._popUpWheelPicker.ojPopup("widget"), pickerAttrs);
     }
-    // I want to wrap the inputTime if it is all by itself, or if it is
-    // part of the inline inputDateTime component which is the inline date stacked on top of an
-    // inputTime. The inline error messages will go under the inputTime part. TODO: how?
-    // right now the destroy fails because I am whacking away something.. the dom.
-    if (this._isIndependentInput())
-      this._ELEMENT_TRIGGER_WRAPPER_CLASS_NAMES += this._INPUT_CONTAINER_CLASS;
   },
 
   _timepickerShowing: function ()
@@ -5127,7 +7184,7 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
     if(this._isIndependentInput())
     {
       var picker = this._popUpWheelPicker;
-      return oj.Components.isComponentInitialized(picker, "ojPopup") && picker.ojPopup("isOpen") || this._nativePickerShowing;
+      return picker && oj.Components.isComponentInitialized(picker, "ojPopup") && picker.ojPopup("isOpen") || this._nativePickerShowing;
     }
     else
     {
@@ -5172,8 +7229,11 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
 
     this._processReadOnlyKeyboardEdit();
 
-    if(this._isIndependentInput()) {
-      this._attachTrigger();
+    if (this.options['readOnly'] !== true)
+    {
+      if(this._isIndependentInput()) {
+        this._attachTrigger();
+      }
     }
     
     return ret;
@@ -5190,7 +7250,9 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
     var ret = this._superApply(arguments);
 
     if(this._isIndependentInput()) {
-      disableEnableSpan(this._triggerNode.children(), this.options["disabled"]);
+      if (this.options['readOnly'] !== true) {
+        disableEnableSpan(this._triggerNode[0].children, this.options["disabled"]);
+      }
 
       if (!this._IsCustomElement()) {
         var label = this.$label;
@@ -5261,7 +7323,7 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
         this._hide(this._ON_CLOSE_REASON_CLOSE);
       }
       this._triggerNode.find("." + this._TRIGGER_TIME_CLASS).attr("title", this._getTimeTitle());
-      disableEnableSpan(this._triggerNode.children(), value);
+      disableEnableSpan(this._triggerNode[0].children, value);
     }
     else if ((key === "max" || key === "min") && !this._isContainedInDateTimePicker())
     {
@@ -5278,6 +7340,19 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
       if (value)
       {
         this._hide(this._ON_CLOSE_REASON_CLOSE);
+      }
+      else
+      {
+        if (this._wheelPicker == null)
+        {
+          this._createWheelPicker();
+          if (this._isIndependentInput())
+          {
+            this._attachTrigger();
+            disableEnableSpan(this._triggerNode[0].children, this.options["disabled"]);
+          }
+          this._setupResizePopupBind();
+        }
       }
       this._AfterSetOptionDisabledReadOnly("readOnly", oj.EditableValueUtils.readOnlyOptionOptions);
     }
@@ -5348,6 +7423,15 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
    */
   _SetupResources : function ()
   {
+    if (this.options['readOnly'] !== true)
+    {
+      this._setupResizePopupBind();
+    }
+    return this._super();
+  },
+
+  _setupResizePopupBind: function()
+  {
     this._resizePopupBind = function ()
     {
       $('.oj-timepicker-content', this._wheelPicker)[_isLargeScreen ? 'removeClass' : 'addClass']('oj-timepicker-fixedheight');
@@ -5358,8 +7442,8 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
     }
 .bind(this);
     window.addEventListener('resize', this._resizePopupBind, false);
-    return this._super();
   },
+
   /**
    * @ignore
    * @protected
@@ -5397,7 +7481,7 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
       this._clearWheelModels();
     }
 
-    if (this._isIndependentInput() && oj.Components.isComponentInitialized(this._popUpWheelPicker, "ojPopup"))
+    if (this._isIndependentInput() && this._popUpWheelPicker && oj.Components.isComponentInitialized(this._popUpWheelPicker, "ojPopup"))
     {
       this._popUpWheelPicker.ojPopup("destroy");
     }
@@ -5611,8 +7695,11 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
   _attachTrigger : function ()
   {
     var showOn = this.options["timePicker"]["showOn"];
-    var triggerContainer = $("<span>").addClass(this._TRIGGER_CLASS);
-    var triggerTime = $("<span title='" + this._getTimeTitle() + "'/>").addClass(this._TRIGGER_TIME_CLASS + " oj-clickable-icon-nocontext oj-component-icon");
+    var triggerContainer = document.createElement('span');
+    triggerContainer.className = this._TRIGGER_CLASS;
+    var triggerTime = document.createElement('span');
+    triggerTime.setAttribute('title', this._getTimeTitle());
+    triggerTime.className = this._TRIGGER_TIME_CLASS + ' oj-clickable-icon-nocontext oj-component-icon';
 
     var self = this;
 
@@ -5628,7 +7715,7 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
     if (showOn === "image")
     {
       // we need to show the icon that we hid by display:none in the mobile themes
-      triggerTime.css("display", "block");
+      triggerTime.style.display = 'block';
 
       // In iOS theme, we defaulted to use border radius given that showOn=focus is default and
       //  we will not have trigger icon. For showOn=image case, we will show the icon, so
@@ -5651,9 +7738,9 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
     //  sufficient and less clutter hence
     if (!isPickerNative(this))
     {
-      triggerContainer.append(triggerTime); //@HTMLUpdateOK
+      triggerContainer.appendChild(triggerTime); //@HTMLUpdateOK
 
-      triggerTime.on("click", function ()
+      triggerTime.addEventListener("click", function ()
       {
         if (self._timepickerShowing())
         {
@@ -5665,15 +7752,16 @@ oj.__registerWidget("oj.ojInputTime", $['oj']['inputBase'],
           self._wheelGroup.children().first().focus();        }
       });
 
-      this._AddHoverable(triggerTime);
-      this._AddActiveable(triggerTime);
+      var $triggerTime = $(triggerTime);
+      this._AddHoverable($triggerTime);
+      this._AddActiveable($triggerTime);
 
-      this._triggerIcon = triggerTime;
+      this._triggerIcon = $triggerTime;
     }
 
-    this._triggerNode = triggerContainer;
+    this._triggerNode = $(triggerContainer);
 
-    this.element.after(triggerContainer); //@HTMLUpdateOK
+    this.element[0].parentNode.insertBefore(triggerContainer, this.element[0].nextElementSibling); // @HTMLUpdateOK
   },
 
   _getValue : function ()
@@ -6699,7 +8787,31 @@ oj.Components.setDefaultOptions(
  * @memberof oj.ojInputTime
  */
 
-//////////////////     SUB-IDS     //////////////////
+/**
+ * {@ojinclude "name":"ojStylingDocIntro"}
+ * <p>The form control text align style classes can be applied to the component, or an ancestor element. When
+ * applied to an ancestor element, all form components that support the text align style classes will be affected.
+ *
+ * <table class="generic-table styling-table">
+ *   <thead>
+ *     <tr>
+ *       <th>{@ojinclude "name":"ojStylingDocClassHeader"}</th>
+ *       <th>{@ojinclude "name":"ojStylingDocDescriptionHeader"}</th>
+ *     </tr>
+ *   </thead>
+ *   <tbody>
+ *     <tr>
+ *       <td>oj-form-control-text-align-start</td>
+ *       <td>Aligns the text to the left in ltr and to the right in rtl</td>
+ *     </tr>
+ *   </tbody>
+ * </table>
+ *
+ * @ojfragment stylingDoc - Used in Styling section of classdesc, and standalone Styling doc
+ * @memberof oj.ojInputTime
+ */
+
+// ////////////////     SUB-IDS     //////////////////
 
 /**
  * <p>Sub-ID for the InputTime component's input element.</p>
@@ -8541,7 +10653,7 @@ var timeSwitcherConverter =  $["oj"]["ojInputTime"]["prototype"]["options"]["con
  *    except for the fact that the date picker is rendered inline here.</p>
  *
  * <pre class="prettyprint"><code>&lt;oj-date-time-picker>&lt;/oj-date-time-picker></code></pre>
- * 
+ * {@ojinclude "name":"validationAndMessagingDoc"}
  * <h3 id="touch-section">
  *   Touch End User Information
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#touch-section"></a>
@@ -8617,7 +10729,14 @@ var timeSwitcherConverter =  $["oj"]["ojInputTime"]["prototype"]["options"]["con
  * </h3>
  *
  * {@ojinclude "name":"keyboardDoc"}
- * 
+ *
+ * <h3 id="styling-section">
+ *   Styling
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#styling-section"></a>
+ * </h3>
+ *
+ * {@ojinclude "name":"stylingDoc"}
+ *
  * <h3 id="a11y-section">
  *   Accessibility
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#a11y-section"></a>
@@ -8663,7 +10782,8 @@ oj.__registerWidget("oj.ojInputDateTime", $['oj']['ojInputDate'],
      * @instance
      * @memberof! oj.ojInputDateTime
      * @type {Object}
-     * @ojsignature  { target: "Type", value: "oj.Converter<string>|oj.Validation.FactoryRegisteredValidatorOrConverter|null"}
+     * @ojsignature  { target: "Type", value: "oj.Converter<string>|oj.Validation.RegisteredConverter",
+     *                 jsdocOverride: true}
      * @default oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({"day": "2-digit", "month": "2-digit", "year": "2-digit", "hour": "2-digit", "minute": "2-digit"})
      */
     converter : oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter(
@@ -8839,6 +10959,21 @@ oj.__registerWidget("oj.ojInputDateTime", $['oj']['ojInputDate'],
      */
     timePicker:
     {
+     /**
+      * Will dictate what content is shown within the footer of the wheel timepicker.
+      *
+      * <p>See the <a href="#timePicker">time-picker</a> attribute for usage examples.
+      *
+      * @expose
+      * @name timePicker.footerLayout
+      * @memberof! oj.ojInputDateTime
+      * @instance
+      * @type {string}
+      * @ojvalue {string} '' Do not show anything
+      * @ojvalue {string} 'now' Show the now button
+      * @default ""
+      */
+     footerLayout : "",
       /**
        * Time increment to be used for InputDateTime, the format is hh:mm:ss:SS. <br/><br/>
        * Note that when renderMode is 'native', timeIncrement property is limited to iOS and will only take a precision of minutes.<br/><br/> 
@@ -8887,6 +11022,7 @@ oj.__registerWidget("oj.ojInputDateTime", $['oj']['ojInputDate'],
      * @instance
      * @memberof! oj.ojDateTimePicker
      * @type {string|null}
+     * @ojformat date-time
      * @default null
      */
     /**
@@ -8905,6 +11041,7 @@ oj.__registerWidget("oj.ojInputDateTime", $['oj']['ojInputDate'],
      * @instance
      * @memberof! oj.ojInputDateTime
      * @type {string|null}
+     * @ojformat date-time
      * @default null
      */
     
@@ -8924,6 +11061,7 @@ oj.__registerWidget("oj.ojInputDateTime", $['oj']['ojInputDate'],
      * @instance
      * @memberof! oj.ojDateTimePicker
      * @type {string|null}
+     * @ojformat date-time
      * @default null
      */
     /**
@@ -8942,6 +11080,7 @@ oj.__registerWidget("oj.ojInputDateTime", $['oj']['ojInputDate'],
      * @instance
      * @memberof! oj.ojInputDateTime
      * @type {string|null}
+     * @ojformat date-time
      * @default null
      */
     
@@ -9036,9 +11175,10 @@ oj.__registerWidget("oj.ojInputDateTime", $['oj']['ojInputDate'],
      * @instance
      * @memberof oj.ojInputDateTime
      * @ojsignature  { target: "Type", 
-     *   value: "Array<oj.Validator<string>|oj.Validation.FactoryRegisteredValidatorOrConverter>|null",
+     *   value: "Array<oj.Validator<string>|oj.Validation.RegisteredValidator>",
      *   jsdocOverride: true}
-     * @type {Array|undefined}
+     * @type {Array.<Object>}
+     * @default []
      */
     
     /**
@@ -9085,6 +11225,7 @@ oj.__registerWidget("oj.ojInputDateTime", $['oj']['ojInputDate'],
      * @instance
      * @memberof! oj.ojDateTimePicker
      * @type {string}
+     * @ojformat date-time
      */
     /** 
      * The value of the InputDateTime element which should be an ISOString
@@ -9103,8 +11244,10 @@ oj.__registerWidget("oj.ojInputDateTime", $['oj']['ojInputDate'],
      * @expose 
      * @name value
      * @instance
+     * @ojwriteback
      * @memberof! oj.ojInputDateTime
      * @type {string}
+     * @ojformat date-time
      */
 
     // Events
@@ -9144,96 +11287,112 @@ oj.__registerWidget("oj.ojInputDateTime", $['oj']['ojInputDate'],
     
     if(!this._isInLine) 
     {
-      this._switcherDiv = $(this._generateSwitcher());
-
-      $(".oj-popup-content", this._popUpDpDiv.ojPopup("widget")).append(this._switcherDiv); //@HTMLUpdateOK
-
-      var self = this;
-      var cancelHandler = function() {
-        //only time when value is _Set in switcher is by clicking Done where both of the fields would be set to null
-        if(self._switcherDateValue !== null || self._switcherTimeValue !== null) 
-        {
-          self._currentDay = self._switcherPrevDay;
-          self._drawMonth = self._currentMonth = self._switcherPrevMonth;
-          self._drawYear = self._currentYear = self._switcherPrevYear;
-          self._SetValue(self._switcherPrevValue);
-
-          self._switcherTimeValue = self._switcherDateValue = self._switcherPrevDay = self._switcherPrevMonth = 
-                                    self._switcherPrevYear = self._switcherPrevValue = null;
-        }
-      };
-      this._popUpDpDiv.on("ojclose", function( event, ui ) {
-        cancelHandler();
-      });
-      this._switcherDiv.find("[data-handler]").map(function ()
-        {
-          var handler =
-          {
-            /** @expose */
-            switchMe : function (evt)
-            {
-              var keyCode = evt.keyCode;
-              if((evt.type === "keydown" && ($.ui.keyCode.ENTER === keyCode || $.ui.keyCode.SPACE === keyCode)) || evt.type === "click") 
-              {
-                if(!self._isShowingDatePickerSwitcher())
-                {
-                  self._timePicker.ojInputTime("show");
-                }
-                else
-                {
-                  self.show();
-                  self._placeFocusOnCalendar();
-                }
-
-                return false;
-              }
-            },
-            /** @expose */
-            switchDone : function (evt)
-            {
-              var keyCode = evt.keyCode;
-              if((evt.type === "keydown" && ($.ui.keyCode.ENTER === keyCode || $.ui.keyCode.SPACE === keyCode)) || evt.type === "click") 
-              {
-                var newVal = self._getDateIso();
-                if(self._switcherDateValue) 
-                {
-                  newVal = self._switcherDateValue;
-                }
-
-                if(self._switcherTimeValue) 
-                {
-                  newVal = oj.IntlConverterUtils._copyTimeOver(self._switcherTimeValue, newVal);
-                }
-
-                var formatted = self._GetConverter()["format"](newVal);
-                self._SetDisplayValue( formatted );
-                self._SetValue(formatted, {});
-
-                self._switcherTimeValue = self._switcherDateValue = self._switcherPrevDay = self._switcherPrevMonth = 
-                  self._switcherPrevYear = self._switcherPrevValue = null;
-                self._hide(self._ON_CLOSE_REASON_SELECTION);
-                return false;
-              }
-              
-            },
-            /** @expose */
-            switchCancel : function (evt)
-            {
-              var keyCode = evt.keyCode;
-              if((evt.type === "keydown" && ($.ui.keyCode.ENTER === keyCode || $.ui.keyCode.SPACE === keyCode)) || evt.type === "click") 
-              {
-                self._hide(self._ON_CLOSE_REASON_CANCELLED);
-                return false;
-              }
-            }
-          };
-
-          $(this).bind(this.getAttribute("data-event"), handler[this.getAttribute("data-handler")]);
-        });
+      if (this.options['readOnly'] !== true)
+      {
+        this._createSwitcherDiv();
+      }
     }
     
   },
-  
+
+  _createSwitcherDiv: function()
+  {
+    this._switcherDiv = $(this._generateSwitcher());
+
+    var popupContent = this._popUpDpDiv.ojPopup('widget')[0].querySelector('.oj-popup-content');
+    popupContent.appendChild(this._switcherDiv[0]); // @HTMLUpdateOK
+
+    var self = this;
+    var cancelHandler = function() {
+      //only time when value is _Set in switcher is by clicking Done where both of the fields would be set to null
+      if(self._switcherDateValue !== null || self._switcherTimeValue !== null) 
+      {
+        self._currentDay = self._switcherPrevDay;
+        self._drawMonth = self._currentMonth = self._switcherPrevMonth;
+        self._drawYear = self._currentYear = self._switcherPrevYear;
+        self._SetValue(self._switcherPrevValue);
+
+        self._switcherTimeValue = self._switcherDateValue = self._switcherPrevDay = self._switcherPrevMonth = 
+                                  self._switcherPrevYear = self._switcherPrevValue = null;
+      }
+    };
+    this._popUpDpDiv.on("ojclose", function( event, ui ) {
+      cancelHandler();
+    });
+    this._switcherDiv.find("[data-handler]").map(function ()
+      {
+        var handler =
+        {
+          /** @expose */
+          switchMe : function (evt)
+          {
+            var keyCode = evt.keyCode;
+            if((evt.type === "keydown" && ($.ui.keyCode.ENTER === keyCode || $.ui.keyCode.SPACE === keyCode)) || evt.type === "click") 
+            {
+              if(!self._isShowingDatePickerSwitcher())
+              {
+                self._timePicker.ojInputTime("show");
+              }
+              else
+              {
+                self.show();
+                self._placeFocusOnCalendar();
+              }
+
+              return false;
+            }
+          },
+          /** @expose */
+          switchDone : function (evt)
+          {
+            var keyCode = evt.keyCode;
+            if((evt.type === "keydown" && ($.ui.keyCode.ENTER === keyCode || $.ui.keyCode.SPACE === keyCode)) || evt.type === "click") 
+            {
+              var newVal = self._getDateIso();
+              if(self._switcherDateValue) 
+              {
+                newVal = self._switcherDateValue;
+              }
+
+              if(self._switcherTimeValue) 
+              {
+                newVal = oj.IntlConverterUtils._copyTimeOver(self._switcherTimeValue, newVal);
+              }
+
+              var formatted = self._GetConverter()["format"](newVal);
+              self._SetDisplayValue( formatted );
+              self._SetValue(formatted, {});
+
+              self._switcherTimeValue = self._switcherDateValue = self._switcherPrevDay = self._switcherPrevMonth = 
+                self._switcherPrevYear = self._switcherPrevValue = null;
+              self._hide(self._ON_CLOSE_REASON_SELECTION);
+              return false;
+            }
+            
+          },
+          /** @expose */
+          switchCancel : function (evt)
+          {
+            var keyCode = evt.keyCode;
+            if((evt.type === "keydown" && ($.ui.keyCode.ENTER === keyCode || $.ui.keyCode.SPACE === keyCode)) || evt.type === "click") 
+            {
+              self._hide(self._ON_CLOSE_REASON_CANCELLED);
+              return false;
+            }
+          }
+        };
+
+        $(this).bind(this.getAttribute("data-event"), handler[this.getAttribute("data-handler")]);
+      });
+  },
+
+  _setupSwitcherButtons: function()
+  {
+    var switcherButtons = this._switcherDiv.find("a");
+    this._AddHoverable(switcherButtons);
+    this._AddActiveable(switcherButtons);
+  },
+
   /**
    * @protected
    * @override
@@ -9264,14 +11423,23 @@ oj.__registerWidget("oj.ojInputDateTime", $['oj']['ojInputDate'],
       
       //Now need to reset this._timePickerElement to the newly created input element
       this._timePickerElement = input;
+
+      this._createTimePicker();
     }
     else
     {
-      var switcherButtons = this._switcherDiv.find("a");
-      this._AddHoverable(switcherButtons);
-      this._AddActiveable(switcherButtons);
+      if (this.options['readOnly'] !== true)
+      {
+        this._setupSwitcherButtons();
+        this._createTimePicker();
+      }
     }
-    
+
+    return ret;
+  },
+
+  _createTimePicker: function()
+  {
     var passOptions = ["title", "placeholder", "disabled", "required", "readOnly", 
                         "keyboardEdit", "pickerAttributes"];
     var passObject = {};
@@ -9295,18 +11463,16 @@ oj.__registerWidget("oj.ojInputDateTime", $['oj']['ojInputDate'],
     }
 
     this._timePicker = this._timePickerElement.ojInputTime(
-    $.extend(passObject, {
-      "converter" : timeConverter,
-      "displayOptions" : {"converterHint": "none", "title": "none", "messages": messagesDisplayOption},
-      //need to pass the value down as otherwise if the value is null then it might pickup this.element.val() from 
-      //our frameworks generic if options.value is not defined then pick up from element; however that would be a formatted 
-      //value from ojInputDateTime
-      "value": this.options["value"], 
-      "timePicker" : timePickerOptions, 
-      "datePickerComp" : {"widget": this, "inline": this._isInLine} 
-    }));
-    
-    return ret;
+      $.extend(passObject, {
+        "converter" : this._timeConverter,
+        "displayOptions" : {"converterHint": "none", "title": "none", "messages": messagesDisplayOption},
+        //need to pass the value down as otherwise if the value is null then it might pickup this.element.val() from 
+        //our frameworks generic if options.value is not defined then pick up from element; however that would be a formatted 
+        //value from ojInputDateTime
+        "value": this.options["value"], 
+        "timePicker" : timePickerOptions, 
+        "datePickerComp" : {"widget": this, "inline": this._isInLine} 
+      }));  
   },
 
   /**
@@ -9331,6 +11497,15 @@ oj.__registerWidget("oj.ojInputDateTime", $['oj']['ojInputDate'],
     {
       //if goes through model does it needs to update or should be only used by selection + keydown
       this._previousValue = this.options["value"]; //get from this.options["value"] as would be cleaned up by editablevalue
+    }
+    else if (key === "readOnly")
+    {
+      if (!this._isInLine && !value && this._switcherDiv == null)
+      {
+        this._createSwitcherDiv();
+        this._setupSwitcherButtons();
+        this._createTimePicker();
+      }
     }
     
     if(this._timePicker) 
@@ -9375,7 +11550,9 @@ oj.__registerWidget("oj.ojInputDateTime", $['oj']['ojInputDate'],
    */
   _cleanUpDateTimeResources : function ()
   {
-    this._timePicker.ojInputTime("destroy");
+    if (this._timePicker) {
+      this._timePicker.ojInputTime("destroy");
+    }
     if (this._isInLine)
     {
       //note that this.element below would be of the TimePicker's input element
@@ -9383,12 +11560,12 @@ oj.__registerWidget("oj.ojInputDateTime", $['oj']['ojInputDate'],
     }
     else 
     {
-      var switcherButtons = this._switcherDiv.find("a");
-      this._RemoveActiveable(switcherButtons);
-      this._RemoveHoverable(switcherButtons);
-
       if (this._switcherDiv)
       {
+        var switcherButtons = this._switcherDiv.find("a");
+        this._RemoveActiveable(switcherButtons);
+        this._RemoveHoverable(switcherButtons);
+  
         this._switcherDiv.remove();
       }
     }
@@ -9406,24 +11583,58 @@ oj.__registerWidget("oj.ojInputDateTime", $['oj']['ojInputDate'],
   },
 
   /**
-   * Generate the HTML for the footer of the date picker.
+   * Generate the element for the footer of the date picker.
    *
    * @ignore
    */
   _generateSwitcher : function()
   {
-    var ret = "<div class='oj-datetimepicker-switcher'>" +
-                "<div data-handler='switchMe' data-event='click keydown'>" +
-                  "<div class='oj-inputdatetime-time-icon oj-clickable-icon-nocontext oj-component-icon oj-enabled oj-default'></div>" +
-                  "<a onclick='return false;' href='#' class='oj-enabled oj-datetimepicker-switcher-text' role='button'></a>" +
-                "</div>" +
-                "<div class='oj-datetimepicker-switcher-buttons'>" +
-                  "<a onclick='return false;' href='#' class='oj-enabled' data-handler='switchDone' data-event='click keydown' role='button'>" + this._EscapeXSS(this.getTranslatedString("done")) + "</a>" +
-                  "<a onclick='return false;' href='#' class='oj-enabled' data-handler='switchCancel' data-event='click keydown' role='button'>" + this._EscapeXSS(this.getTranslatedString("cancel")) + "</a>" +
-                "</div>" +
-            "</div>";
-
-    return ret;
+    var switcher = document.createElement('div');
+    switcher.className = 'oj-datetimepicker-switcher';
+   
+    var childDiv = document.createElement('div');
+    childDiv.setAttribute('data-handler', 'switchMe');
+    childDiv.setAttribute('data-event', 'click keydown');
+   
+    var elem = document.createElement('div');
+    elem.className = 'oj-inputdatetime-time-icon oj-clickable-icon-nocontext oj-component-icon oj-enabled oj-default';
+    childDiv.appendChild(elem);
+   
+    elem = document.createElement('a');
+    elem.setAttribute('onclick', 'return false;');
+    elem.setAttribute('href', '#');
+    elem.className = 'oj-enabled oj-datetimepicker-switcher-text';
+    elem.setAttribute('role', 'button');
+    childDiv.appendChild(elem);
+ 
+    switcher.appendChild(childDiv);
+ 
+    childDiv = document.createElement('div');
+    childDiv.className = 'oj-datetimepicker-switcher-buttons';
+ 
+    elem = document.createElement('a');
+    elem.setAttribute('onclick', 'return false;');
+    elem.setAttribute('href', '#');
+    elem.className = 'oj-enabled';
+    elem.setAttribute('data-handler', 'switchDone');
+    elem.setAttribute('data-event', 'click keydown');
+    elem.setAttribute('role', 'button');
+    elem.textContent = this._EscapeXSS(this.getTranslatedString('done'));
+    childDiv.appendChild(elem);
+ 
+    elem = document.createElement('a');
+    elem.setAttribute('onclick', 'return false;');
+    elem.setAttribute('href', '#');
+    elem.className = 'oj-enabled';
+    elem.setAttribute('data-handler', 'switchCancel');
+    elem.setAttribute('data-event', 'click keydown');
+    elem.setAttribute('role', 'button');
+    elem.textContent = this._EscapeXSS(this.getTranslatedString('cancel'));
+    childDiv.appendChild(elem);
+ 
+    switcher.appendChild(childDiv);
+ 
+    return switcher;
   },
 
   /**
@@ -9802,8 +12013,10 @@ oj.__registerWidget("oj.ojInputDateTime", $['oj']['ojInputDate'],
   refresh : function ()
   {
     var retVal = this._superApply(arguments) || this;
-    
-    this._timePicker.ojInputTime("refresh");
+
+    if (this._timePicker) {
+      this._timePicker.ojInputTime("refresh");
+    }
 
     if(this._switcherDiv)
     {
@@ -9832,7 +12045,7 @@ oj.__registerWidget("oj.ojInputDateTime", $['oj']['ojInputDate'],
       }
       else
       {
-        node = this._timePicker.ojInputTime("getNodeBySubId", locator);
+        node = this._timePicker ? this._timePicker.ojInputTime("getNodeBySubId", locator) : null;
       }
     }
     
@@ -9863,7 +12076,7 @@ oj.__registerWidget("oj.ojInputDateTime", $['oj']['ojInputDate'],
       }
     }
     
-    return dateTimeSpecific || this._timePicker.ojInputTime("getSubIdByNode", node) || this._superApply(arguments);
+    return dateTimeSpecific || (this._timePicker ? this._timePicker.ojInputTime("getSubIdByNode", node) : null) || this._superApply(arguments);
   },
   
   /**
@@ -10243,7 +12456,31 @@ oj.__registerWidget("oj.ojInputDateTime", $['oj']['ojInputDate'],
  * @memberof oj.ojDateTimePicker
  */
 
-//////////////////     SUB-IDS     //////////////////
+/**
+ * {@ojinclude "name":"ojStylingDocIntro"}
+ * <p>The form control text align style classes can be applied to the component, or an ancestor element. When
+ * applied to an ancestor element, all form components that support the text align style classes will be affected.
+ *
+ * <table class="generic-table styling-table">
+ *   <thead>
+ *     <tr>
+ *       <th>{@ojinclude "name":"ojStylingDocClassHeader"}</th>
+ *       <th>{@ojinclude "name":"ojStylingDocDescriptionHeader"}</th>
+ *     </tr>
+ *   </thead>
+ *   <tbody>
+ *     <tr>
+ *       <td>oj-form-control-text-align-start</td>
+ *       <td>Aligns the text to the left in ltr and to the right in rtl</td>
+ *     </tr>
+ *   </tbody>
+ * </table>
+ *
+ * @ojfragment stylingDoc - Used in Styling section of classdesc, and standalone Styling doc
+ * @memberof oj.ojInputDateTime
+ */
+
+// ////////////////     SUB-IDS     //////////////////
 
 /**
  * <p>Sub-ID for the InputDateTime element's input element when not inline.</p>
@@ -10344,525 +12581,34 @@ oj.__registerWidget("oj.ojInputDateTime", $['oj']['ojInputDate'],
  * var node = myInputDateTime.getNodeBySubId( {'subId': 'oj-timepicker-now'} );
  */
 
-(function() {
-var ojInputTimeMeta = {
-  "properties": {
-    "converter": {
-      "type": "Object"
-    },
-    "keyboardEdit": {
-      "type": "string"
-    },
-    "pickerAttributes": {
-      "type": "Object"
-    },
-    "renderMode": {
-      "type": "string"
-    },
-    "min": {
-      "type": "string"
-    },
-    "max": {
-      "type": "string"
-    },
-    "timePicker": {
-      "type": "Object",
-      "properties": {
-        "footerLayout": {
-          "type": "string"
-        },
-        "timeIncrement": {
-          "type": "string"
-        },
-        "showOn": {
-          "type": "string"
-        }
-      }
-    },
-    "value": {
-      "type": "string",
-      "writeback": true
-    },
-    "translations": {
-      "type": "Object",
-      "properties": {
-        "ampmWheelLabel": {
-          "type": "string",
-          "value": "AMPM"
-        },
-        "cancelText": {
-          "type": "string",
-          "value": "Prev"
-        },
-        "currentTimeText": {
-          "type": "string",
-          "value": "Now"
-        },
-        "dateTimeRange": {
-          "type": "Object",
-          "properties": {
-            "hint": {
-              "type": "Object",
-              "properties": {
-                "inRange": {
-                  "type": "string"
-                },
-                "max": {
-                  "type": "string"
-                },
-                "min": {
-                  "type": "string"
-                }
-              }
-            },
-            "messageDetail": {
-              "type": "Object",
-              "properties": {
-                "rangeOverflow": {
-                  "type": "string"
-                },
-                "rangeUnderflow": {
-                  "type": "string"
-                }
-              }
-            },
-            "messageSummary": {
-              "type": "Object",
-              "properties": {
-                "rangeOverflow": {
-                  "type": "string"
-                },
-                "rangeUnderflow": {
-                  "type": "string"
-                }
-              }
-            }
-          }
-        },
-        "hourWheelLabel": {
-          "type": "string",
-          "value": "Hour"
-        },
-        "minuteWheelLabel": {
-          "type": "string",
-          "value": "Minute"
-        },
-        "okText": {
-          "type": "string",
-          "value": "OK"
-        },
-        "regexp": {
-          "type": "Object",
-          "properties": {
-            "messageDetail": {
-              "type": "string"
-            },
-            "messageSummary": {
-              "type": "string"
-            }
-          }
-        },
-        "required": {
-          "type": "Object",
-          "properties": {
-            "hint": {
-              "type": "string"
-            },
-            "messageDetail": {
-              "type": "string"
-            },
-            "messageSummary": {
-              "type": "string"
-            }
-          }
-        },
-        "tooltipTime": {
-          "type": "string",
-          "value": "Select Time"
-        },
-        "tooltipTimeDisabled": {
-          "type": "string",
-          "value": "Select Time Disabled"
-        }
-      }
-    }
-  },
-  "methods": {
-    "hide": {},
-    "show": {}
-  },
-  "extension": {
-    _WIDGET_NAME: "ojInputTime"
-  }
-};
+/* global __oj_input_time_metadata:false */
 
-oj.CustomElementBridge.registerMetadata('oj-input-time', 'inputBase', ojInputTimeMeta);
-oj.CustomElementBridge.register('oj-input-time', {'metadata': oj.CustomElementBridge.getMetadata('oj-input-time')});
-})();
+(function () {
+  __oj_input_time_metadata.extension._WIDGET_NAME = 'ojInputTime';
+  oj.CustomElementBridge.registerMetadata('oj-input-time', 'inputBase', __oj_input_time_metadata);
+  oj.CustomElementBridge.register('oj-input-time', { metadata: oj.CustomElementBridge.getMetadata('oj-input-time') });
+}());
 
-(function() {
-var ojInputDateMeta = {
-  "properties": {
-    "converter": {
-      "type": "Object"
-    },
-    "datePicker": {
-      "type": "Object",
-      "properties": {
-        "footerLayout": {
-          "type": "string"
-        },
-        "changeMonth": {
-          "type": "string"
-        },
-        "changeYear": {
-          "type": "string"
-        },
-        "currentMonthPos": {
-          "type": "number"
-        },
-        "daysOutsideMonth": {
-          "type": "string"
-        },
-        "numberOfMonths": {
-          "type": "number"
-        },
-        "showOn": {
-          "type": "string"
-        },
-        "stepMonths": {
-          "type": "string"
-        },
-        "stepBigMonths": {
-          "type": "number"
-        },
-        "weekDisplay": {
-          "type": "string"
-        },
-        "yearRange": {
-          "type": "string"
-        }
-      }
-    },
-    "min": {
-      "type": "string"
-    },
-    "max": {
-      "type": "string"
-    },
-    "dayFormatter": {
-      "type": "function"
-    },
-    "dayMetaData": {
-      "type": "Object"
-    },
-    "keyboardEdit": {
-      "type": "string"
-    },
-    "pickerAttributes": {
-      "type": "Object"
-    },
-    "renderMode": {
-      "type": "string"
-    },
-    "translations": {
-      "type": "Object",
-      "properties": {
-        "currentText": {
-          "type": "string",
-          "value": "Today"
-        },
-        "dateRestriction": {
-          "type": "Object",
-          "properties": {
-            "hint": {
-              "type": "string"
-            },
-            "messageDetail": {
-              "type": "string"
-            },
-            "messageSummary": {
-              "type": "string"
-            }
-          }
-        },
-        "dateTimeRange": {
-          "type": "Object",
-          "properties": {
-            "hint": {
-              "type": "Object",
-              "properties": {
-                "inRange": {
-                  "type": "string"
-                },
-                "max": {
-                  "type": "string"
-                },
-                "min": {
-                  "type": "string"
-                }
-              }
-            },
-            "messageDetail": {
-              "type": "Object",
-              "properties": {
-                "rangeOverflow": {
-                  "type": "string"
-                },
-                "rangeUnderflow": {
-                  "type": "string"
-                }
-              }
-            },
-            "messageSummary": {
-              "type": "Object",
-              "properties": {
-                "rangeOverflow": {
-                  "type": "string"
-                },
-                "rangeUnderflow": {
-                  "type": "string"
-                }
-              }
-            }
-          }
-        },
-        "nextText": {
-          "type": "string",
-          "value": "Next"
-        },
-        "prevText": {
-          "type": "string",
-          "value": "Prev"
-        },
-        "regexp": {
-          "type": "Object",
-          "properties": {
-            "messageDetail": {
-              "type": "string"
-            },
-            "messageSummary": {
-              "type": "string"
-            }
-          }
-        },
-        "required": {
-          "type": "Object",
-          "properties": {
-            "hint": {
-              "type": "string"
-            },
-            "messageDetail": {
-              "type": "string"
-            },
-            "messageSummary": {
-              "type": "string"
-            }
-          }
-        },
-        "tooltipCalendar": {
-          "type": "string",
-          "value": "Select Date"
-        },
-        "tooltipCalendarDisabled": {
-          "type": "string",
-          "value": "Select Date Disabled"
-        },
-        "tooltipCalendarTime": {
-          "type": "string",
-          "value": "Select Date Time"
-        },
-        "tooltipCalendarTimeDisabled": {
-          "type": "string",
-          "value": "Select Date Time Disabled"
-        },
-        "weekHeader": {
-          "type": "string",
-          "value": "Wk"
-        }
-      }
-    },
-    "value": {
-      "type": "string",
-      "writeback": true
-    }
-  },
-  "methods": {
-    "hide": {},
-    "show": {}
-  },
-  "extension": {
+/* global __oj_input_date_metadata:false */
+(function () {
+  __oj_input_date_metadata.extension._WIDGET_NAME = 'ojInputDate';
+  oj.CustomElementBridge.registerMetadata('oj-input-date', 'inputBase', __oj_input_date_metadata);
+  oj.CustomElementBridge.register('oj-input-date', { metadata: oj.CustomElementBridge.getMetadata('oj-input-date') });
 
-    _WIDGET_NAME: "ojInputDate"
-  }
-};
+  var ojDatePickerMeta = oj.CollectionUtils.copyInto({}, oj.CustomElementBridge.getMetadata('oj-input-date'), undefined, true);
+  ojDatePickerMeta.extension._INNER_ELEM = 'div';
+  oj.CustomElementBridge.register('oj-date-picker', { metadata: ojDatePickerMeta });
+}());
 
-oj.CustomElementBridge.registerMetadata('oj-input-date', 'inputBase', ojInputDateMeta);
-oj.CustomElementBridge.register('oj-input-date', {'metadata': oj.CustomElementBridge.getMetadata('oj-input-date')});
+/* global __oj_input_date_time_metadata:false */
+(function () {
+  __oj_input_date_time_metadata.extension._WIDGET_NAME = 'ojInputDateTime';
+  oj.CustomElementBridge.registerMetadata('oj-input-date-time', 'oj-input-date', __oj_input_date_time_metadata);
+  oj.CustomElementBridge.register('oj-input-date-time', { metadata: oj.CustomElementBridge.getMetadata('oj-input-date-time') });
 
-var ojDatePickerMeta = oj.CollectionUtils.copyInto({}, oj.CustomElementBridge.getMetadata('oj-input-date'), undefined, true);
-ojDatePickerMeta['extension']._INNER_ELEM = 'div';
-oj.CustomElementBridge.register('oj-date-picker', {'metadata': ojDatePickerMeta});
-})();
+  var ojDateTimePickerMeta = oj.CollectionUtils.copyInto({}, oj.CustomElementBridge.getMetadata('oj-input-date-time'), undefined, true);
+  ojDateTimePickerMeta.extension._INNER_ELEM = 'div';
+  oj.CustomElementBridge.register('oj-date-time-picker', { metadata: ojDateTimePickerMeta });
+}());
 
-(function() {
-var ojInputDateTimeMeta = {
-  "properties": {
-    "timePicker": {
-      "type": "Object",
-      "properties": {
-        "footerLayout": {
-          "type": "string"
-        },
-        "timeIncrement": {
-          "type": "string"
-        },
-        "showOn": {
-          "type": "string"
-        }
-      }
-    },
-    "translations": {
-      "type": "Object",
-      "properties": {
-        "cancel": {
-          "type": "string",
-          "value": "Cancel"
-        },
-        "currentText": {
-          "type": "string",
-          "value": "Today"
-        },
-        "dateRestriction": {
-          "type": "Object",
-          "properties": {
-            "hint": {
-              "type": "string"
-            },
-            "messageDetail": {
-              "type": "string"
-            },
-            "messageSummary": {
-              "type": "string"
-            }
-          }
-        },
-        "dateTimeRange": {
-          "type": "Object",
-          "properties": {
-            "hint": {
-              "type": "Object",
-              "properties": {
-                "inRange": {
-                  "type": "string"
-                },
-                "max": {
-                  "type": "string"
-                },
-                "min": {
-                  "type": "string"
-                }
-              }
-            },
-            "messageDetail": {
-              "type": "Object",
-              "properties": {
-                "rangeOverflow": {
-                  "type": "string"
-                },
-                "rangeUnderflow": {
-                  "type": "string"
-                }
-              }
-            },
-            "messageSummary": {
-              "type": "Object",
-              "properties": {
-                "rangeOverflow": {
-                  "type": "string"
-                },
-                "rangeUnderflow": {
-                  "type": "string"
-                }
-              }
-            }
-          }
-        },
-        "done": {
-          "type": "string",
-          "value": "Done"
-        },
-        "nextText": {
-          "type": "string",
-          "value": "Next"
-        },
-        "prevText": {
-          "type": "string",
-          "value": "Prev"
-        },
-        "regexp": {
-          "type": "Object",
-          "properties": {
-            "messageDetail": {
-              "type": "string"
-            },
-            "messageSummary": {
-              "type": "string"
-            }
-          }
-        },
-        "required": {
-          "type": "Object",
-          "properties": {
-            "hint": {
-              "type": "string"
-            },
-            "messageDetail": {
-              "type": "string"
-            },
-            "messageSummary": {
-              "type": "string"
-            }
-          }
-        },
-        "tooltipCalendar": {
-          "type": "string",
-          "value": "Select Date"
-        },
-        "tooltipCalendarDisabled": {
-          "type": "string",
-          "value": "Select Date Disabled"
-        },
-        "tooltipCalendarTime": {
-          "type": "string",
-          "value": "Select Date Time"
-        },
-        "tooltipCalendarTimeDisabled": {
-          "type": "string",
-          "value": "Select Date Time Disabled"
-        },
-        "weekHeader": {
-          "type": "string",
-          "value": "Wk"
-        }
-      }
-    }
-  },
-  "methods": {
-    "hideTimePicker": {},
-    "showTimePicker": {}
-  },
-  "extension": {
-
-    _WIDGET_NAME: "ojInputDateTime"
-  }
-};
-
-oj.CustomElementBridge.registerMetadata('oj-input-date-time', 'oj-input-date', ojInputDateTimeMeta);
-oj.CustomElementBridge.register('oj-input-date-time', {'metadata': oj.CustomElementBridge.getMetadata('oj-input-date-time')});
-
-var ojDateTimePickerMeta = oj.CollectionUtils.copyInto({}, oj.CustomElementBridge.getMetadata('oj-input-date-time'), undefined, true);
-ojDateTimePickerMeta['extension']._INNER_ELEM = 'div';
-oj.CustomElementBridge.register('oj-date-time-picker', {'metadata': ojDateTimePickerMeta});
-})();
 });

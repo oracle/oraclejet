@@ -1,12 +1,9 @@
 {
   "name": "oj-tag-cloud",
-  "version": "5.1.0",
-  "jetVersion": "5.1.0",
+  "version": "5.2.0",
+  "jetVersion": "5.2.0",
   "displayName": "Tag Cloud",
-  "preview": true,
-  "roles": [
-    "application"
-  ],
+  "type": "core",
   "description": "An interactive data visualization of textual data, where the importance of each tagged word or phrase is represented by font size or color.",
   "properties": {
     "animationOnDataChange": {
@@ -44,6 +41,18 @@
           "displayName": "None"
         }
       }
+    },
+    "as": {
+      "description": "An alias for the $current context variable when referenced inside itemTemplate when using a DataProvider.",
+      "type": "string",
+      "displayName": "As",
+      "value": ""
+    },
+    "data": {
+      "description": "The oj.DataProvider for the tag cloud. It should provide rows where each row corresponds to a single tag cloud item.",
+      "type": "oj.DataProvider|null",
+      "displayName": "Data",
+      "value": null
     },
     "hiddenCategories": {
       "description": "An array of category strings used for category filtering. Data items with a category in hiddenCategories will be filtered.",
@@ -99,7 +108,49 @@
       "description": "An array of objects with the following properties that defines the data items for the tag cloud items. Also accepts a Promise or callback function for deferred data rendering. The function should return one of the following: Promise: A Promise that will resolve with an array of data items. No data will be rendered if the Promise is rejected. Array: An array of data items. ",
       "type": "Array<Object>|Promise|null",
       "displayName": "Items",
-      "value": null
+      "value": null,
+      "extension": {
+        "vbcs": {
+          "itemProperties": {
+            "categories": {
+              "description": "An array of category strings corresponding to the tag cloud items. This allows highlighting and filtering of items.",
+              "type": "Array<string>"
+            },
+            "color": {
+              "description": "The color of the text. Will be overridden by any color defined in the style option. The default value comes from the CSS and varies based on theme.",
+              "type": "string"
+            },
+            "id": {
+              "description": "The item id should be set by the application if the DataProvider is not being used. The row key will be used as id in the DataProvider case.",
+              "type": "any"
+            },
+            "label": {
+              "description": "The text of the item.",
+              "type": "string"
+            },
+            "shortDesc": {
+              "description": "The description of the item. This is used for customizing the tooltip text.",
+              "type": "string"
+            },
+            "svgStyle": {
+              "description": "The CSS style object defining the style of the item text.",
+              "type": "object"
+            },
+            "svgClassName": {
+              "description": "The CSS style class defining the style of the item text.",
+              "type": "string"
+            },
+            "url": {
+              "description": "The url this item references.",
+              "type": "string"
+            },
+            "value": {
+              "description": "The value of this item which will be used to scale its font-size within the tag cloud.",
+              "type": "number"
+            }
+          }
+        }
+      }
     },
     "layout": {
       "description": "The layout to use for tag display.",
@@ -121,7 +172,7 @@
     },
     "selection": {
       "description": "An array of id strings, used to define the selected data items.",
-      "type": "Array<string>",
+      "type": "Array<any>",
       "displayName": "Selection",
       "value": [],
       "writeback": true
@@ -150,39 +201,64 @@
     },
     "styleDefaults": {
       "description": "Component CSS classes should be used to set component wide styling. This API should be used only for styling a specific instance of the component. Properties specified on this object may be overridden by specifications on the data item. Some property default values come from the CSS and varies based on theme.",
-      "type": "Object",
+      "type": "object",
       "displayName": "Style Defaults",
-      "value": {
-        "hoverBehaviorDelay": 200,
-        "svgStyle": {}
-      },
       "properties": {
         "animationDuration": {
           "description": "The duration of the animations in milliseconds. The default value comes from the CSS and varies based on theme.",
-          "type": "number"
+          "type": "number",
+          "displayName": "Animation Duration"
         },
         "hoverBehaviorDelay": {
           "description": "Specifies initial hover delay in ms for highlighting data items.",
           "type": "number",
+          "displayName": "Hover Behavior Delay",
           "value": 200
         },
         "svgStyle": {
           "description": "The CSS style object defining the style of the items. The default value comes from the CSS and varies based on theme.",
-          "type": "Object"
+          "type": "object",
+          "displayName": "Svg Style",
+          "value": {}
         }
       }
     },
     "tooltip": {
       "description": "An object containing an optional callback function for tooltip customization.",
-      "type": "Object",
+      "type": "object",
       "displayName": "Tooltip",
-      "value": {
-        "renderer": null
-      },
       "properties": {
         "renderer": {
           "description": "A callback function that returns a custom tooltip. The callback function will be called with a context object containing information about the item that was clicked.",
-          "type": "function"
+          "type": "function",
+          "displayName": "Renderer",
+          "value": null,
+          "properties": {
+            "color": {
+              "description": "The color of the hovered item.",
+              "type": "string"
+            },
+            "componentElement": {
+              "description": "The tag cloud element.",
+              "type": "Element"
+            },
+            "id": {
+              "description": "The id of the hovered item.",
+              "type": "any"
+            },
+            "label": {
+              "description": "The data label of the hovered item.",
+              "type": "string"
+            },
+            "parentElement": {
+              "description": "The tooltip element. The function can directly modify or append content to this element.",
+              "type": "Element"
+            },
+            "value": {
+              "description": "The value of the hovered item.",
+              "type": "number"
+            }
+          }
         }
       }
     },
@@ -223,95 +299,96 @@
       }
     },
     "translations": {
-      "description": "A collection of translated resources from the translation bundle, or null if this\ncomponent has no resources. Resources may be accessed and overridden individually or collectively, as seen in the examples. If the component does not contain any translatable resource, the default value of this attribute will be \nnull. If not, an object containing all resources relevant to the component.\n\nIf this component has translations, their documentation immediately follows this doc entry.",
-      "type": "Object|null",
+      "description": "A collection of translated resources from the translation bundle, or null if this component has no resources.",
+      "type": "object|null",
       "displayName": "Translations",
+      "value": {},
       "translatable": true,
       "properties": {
         "componentName": {
           "description": "Used to describe the data visualization type for accessibility.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "Tag Cloud"
+          "displayName": "Component Name"
         },
         "labelAndValue": {
           "description": "Used to display a label and its value.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "{0}: {1}"
+          "displayName": "Label And Value"
         },
         "labelClearSelection": {
           "description": "Text shown for clearing multiple selection on touch devices.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "Clear Selection"
+          "displayName": "Label Clear Selection"
         },
         "labelCountWithTotal": {
           "description": "Used to display a count out of a total.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "{0} of {1}"
+          "displayName": "Label Count With Total"
         },
         "labelDataVisualization": {
           "description": "Label for data visualizations used for accessibility.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "Data Visualization"
+          "displayName": "Label Data Visualization"
         },
         "labelInvalidData": {
           "description": "Text shown when the component receives invalid data.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "Invalid data"
+          "displayName": "Label Invalid Data"
         },
         "labelNoData": {
           "description": "Text shown when the component receives no data.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "No data to display"
+          "displayName": "Label No Data"
         },
         "stateCollapsed": {
           "description": "Used to describe the collapsed state for accessibility.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "Collapsed"
+          "displayName": "State Collapsed"
         },
         "stateDrillable": {
           "description": "Used to describe a drillable object for accessibility.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "Drillable"
+          "displayName": "State Drillable"
         },
         "stateExpanded": {
           "description": "Used to describe the expanded state for accessibility.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "Expanded"
+          "displayName": "State Expanded"
         },
         "stateHidden": {
           "description": "Used to describe the hidden state for accessibility.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "Hidden"
+          "displayName": "State Hidden"
         },
         "stateIsolated": {
           "description": "Used to describe the isolated state for accessibility.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "Isolated"
+          "displayName": "State Isolated"
         },
         "stateMaximized": {
           "description": "Used to describe the maximized state for accessibility.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "Maximized"
+          "displayName": "State Maximized"
         },
         "stateMinimized": {
           "description": "Used to describe the minimized state for accessibility.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "Minimized"
+          "displayName": "State Minimized"
         },
         "stateSelected": {
           "description": "Used to describe the selected state for accessibility.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "Selected"
+          "displayName": "State Selected"
         },
         "stateUnselected": {
           "description": "Used to describe the unselected state for accessibility.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "Unselected"
+          "displayName": "State Unselected"
         },
         "stateVisible": {
           "description": "Used to describe the visible state for accessibility.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "Visible"
+          "displayName": "State Visible"
         }
       }
     }
@@ -326,7 +403,7 @@
           "type": "number"
         }
       ],
-      "return": "Object|null"
+      "return": "object|null"
     },
     "getItemCount": {
       "description": "Returns the number of items in the tag cloud data.",
@@ -341,7 +418,7 @@
           "type": "Element"
         }
       ],
-      "return": "Object|null"
+      "return": "object|null"
     },
     "refresh": {
       "description": "Refreshes the component.",
@@ -380,7 +457,7 @@
         {
           "name": "properties",
           "description": "An object containing the property and value pairs to set.",
-          "type": "Object"
+          "type": "object"
         }
       ],
       "return": "void"
@@ -389,6 +466,27 @@
   "slots": {
     "contextMenu": {
       "description": "The contextMenu slot is set on the oj-menu within this element. \nThis is used to designate the JET Menu that this component should launch as a context menu on right-click, Shift-F10, Press & Hold, or component-specific gesture. \nIf specified, the browser's native context menu will be replaced by the JET Menu specified in this slot.\n\nThe application can register a listener for the Menu's ojBeforeOpen event. The listener can cancel the launch via event.preventDefault(), \nor it can customize the menu contents by editing the menu DOM directly, and then calling refresh() on the Menu.\n\nTo help determine whether it's appropriate to cancel the launch or customize the menu, the ojBeforeOpen listener can use component API's to determine which \ntable cell, chart item, etc., is the target of the context menu. See the JSDoc and demos of the individual components for details. \n\nKeep in mind that any such logic must work whether the context menu was launched via right-click, Shift-F10, Press & Hold, or component-specific touch gesture."
+    },
+    "itemTemplate": {
+      "description": " The itemTemplate slot is used to specify the template for creating each item of the tag cloud. The slot must be a <template> element.\nWhen the template is executed for each item, it will have access to the tag cloud's binding context and the following properties:\n\n$current - an object that contains information for the current item\n\nalias - if as attribute was specified, the value will be used to provide an application-named alias for $current.\n\n\n\nThe content of the template should only be one <oj-tag-cloud-item> element. See the [oj-tag-cloud-item]ojTagCloudItem doc for more details.",
+      "data": {
+        "componentElement": {
+          "description": "The <oj-tag-cloud> custom element.",
+          "type": "Element"
+        },
+        "data": {
+          "description": "The data object for the current item.",
+          "type": "object"
+        },
+        "index": {
+          "description": "The zero-based index of the current item.",
+          "type": "number"
+        },
+        "key": {
+          "description": "The key of the current item.",
+          "type": "any"
+        }
+      }
     }
   }
 }

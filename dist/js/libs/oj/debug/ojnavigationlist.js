@@ -7,7 +7,329 @@
 define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore','ojs/ojbutton','ojs/ojmenu','ojs/ojlistview'], 
        function(oj, $)
 {
-
+//%COMPONENT_METADATA%
+var __oj_navigation_list_metadata = 
+{
+  "properties": {
+    "currentItem": {
+      "type": "any",
+      "writeback": true
+    },
+    "data": {
+      "type": "oj.TableDataSource|oj.TreeDataSource|oj.DataProvider"
+    },
+    "display": {
+      "type": "string",
+      "enumValues": [
+        "all",
+        "icons"
+      ],
+      "value": "all"
+    },
+    "drillMode": {
+      "type": "string",
+      "enumValues": [
+        "collapsible",
+        "none",
+        "sliding"
+      ],
+      "value": "none"
+    },
+    "edge": {
+      "type": "string",
+      "enumValues": [
+        "start",
+        "top"
+      ],
+      "value": "start"
+    },
+    "expanded": {
+      "type": "KeySet",
+      "writeback": true,
+      "value": "new ExpandedKeySet();"
+    },
+    "hierarchyMenuThreshold": {
+      "type": "number",
+      "value": 0
+    },
+    "item": {
+      "type": "object",
+      "properties": {
+        "renderer": {
+          "type": "function",
+          "properties": {
+            "componentElement": {
+              "type": "Element"
+            },
+            "datasource": {
+              "type": "oj.DataProvider<K, D>"
+            },
+            "index": {
+              "type": "number"
+            },
+            "key": {
+              "type": "any"
+            },
+            "data": {
+              "type": "any"
+            },
+            "parentElement": {
+              "type": "Element"
+            }
+          }
+        },
+        "selectable": {
+          "type": "function|boolean",
+          "value": true,
+          "properties": {
+            "componentElement": {
+              "type": "Element"
+            },
+            "datasource": {
+              "type": "oj.DataProvider<K, D>"
+            },
+            "index": {
+              "type": "number"
+            },
+            "key": {
+              "type": "any"
+            },
+            "data": {
+              "type": "any"
+            },
+            "parentElement": {
+              "type": "Element"
+            }
+          }
+        }
+      }
+    },
+    "overflow": {
+      "type": "string",
+      "enumValues": [
+        "hidden",
+        "popup"
+      ],
+      "value": "hidden"
+    },
+    "rootLabel": {
+      "type": "string",
+      "value": "Navigation List"
+    },
+    "selection": {
+      "type": "any",
+      "writeback": true
+    },
+    "translations": {
+      "type": "object",
+      "value": {},
+      "properties": {
+        "defaultRootLabel": {
+          "type": "string"
+        },
+        "hierMenuBtnLabel": {
+          "type": "string"
+        },
+        "previousIcon": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "methods": {
+    "getContextByNode": {},
+    "refresh": {},
+    "setProperty": {},
+    "getProperty": {},
+    "setProperties": {},
+    "getNodeBySubId": {},
+    "getSubIdByNode": {}
+  },
+  "events": {
+    "ojAnimateStart": {},
+    "ojAnimateEnd": {},
+    "ojBeforeSelect": {},
+    "ojBeforeCollapse": {},
+    "ojBeforeCurrentItem": {},
+    "ojCollapse": {},
+    "ojBeforeExpand": {},
+    "ojExpand": {}
+  },
+  "extension": {}
+};
+var __oj_tab_bar_metadata = 
+{
+  "properties": {
+    "currentItem": {
+      "type": "any",
+      "writeback": true
+    },
+    "data": {
+      "type": "oj.TableDataSource|oj.DataProvider"
+    },
+    "display": {
+      "type": "string",
+      "enumValues": [
+        "all",
+        "icons"
+      ],
+      "value": "all"
+    },
+    "edge": {
+      "type": "string",
+      "enumValues": [
+        "bottom",
+        "end",
+        "start",
+        "top"
+      ],
+      "value": "start"
+    },
+    "item": {
+      "type": "object",
+      "properties": {
+        "renderer": {
+          "type": "function",
+          "properties": {
+            "componentElement": {
+              "type": "Element"
+            },
+            "datasource": {
+              "type": "oj.DataProvider<K, D>"
+            },
+            "index": {
+              "type": "number"
+            },
+            "key": {
+              "type": "K"
+            },
+            "data": {
+              "type": "D"
+            },
+            "parentElement": {
+              "type": "Element"
+            }
+          }
+        },
+        "selectable": {
+          "type": "function|boolean",
+          "value": true,
+          "properties": {
+            "componentElement": {
+              "type": "Element"
+            },
+            "datasource": {
+              "type": "oj.DataProvider<K, D>"
+            },
+            "index": {
+              "type": "number"
+            },
+            "key": {
+              "type": "K"
+            },
+            "data": {
+              "type": "D"
+            },
+            "parentElement": {
+              "type": "Element"
+            }
+          }
+        }
+      }
+    },
+    "overflow": {
+      "type": "string",
+      "enumValues": [
+        "hidden",
+        "popup"
+      ],
+      "value": "hidden"
+    },
+    "reorderable": {
+      "type": "string",
+      "enumValues": [
+        "disabled",
+        "enabled"
+      ],
+      "value": "disabled"
+    },
+    "selection": {
+      "type": "any",
+      "writeback": true
+    },
+    "translations": {
+      "type": "object",
+      "value": {},
+      "properties": {
+        "accessibleReorderAfterItem": {
+          "type": "string"
+        },
+        "accessibleReorderBeforeItem": {
+          "type": "string"
+        },
+        "accessibleReorderTouchInstructionText": {
+          "type": "string"
+        },
+        "labelCut": {
+          "type": "string"
+        },
+        "labelPasteAfter": {
+          "type": "string"
+        },
+        "labelPasteBefore": {
+          "type": "string"
+        },
+        "labelRemove": {
+          "type": "string"
+        },
+        "msgFetchingData": {
+          "type": "string"
+        },
+        "msgNoData": {
+          "type": "string"
+        },
+        "overflowItemLabel": {
+          "type": "string"
+        },
+        "removeCueText": {
+          "type": "string"
+        },
+        "selectedLabel": {
+          "type": "string"
+        }
+      }
+    },
+    "truncation": {
+      "type": "string",
+      "enumValues": [
+        "none",
+        "progressive"
+      ],
+      "value": "none"
+    }
+  },
+  "methods": {
+    "getContextByNode": {},
+    "refresh": {},
+    "setProperty": {},
+    "getProperty": {},
+    "setProperties": {},
+    "getNodeBySubId": {},
+    "getSubIdByNode": {}
+  },
+  "events": {
+    "ojAnimateStart": {},
+    "ojAnimateEnd": {},
+    "ojBeforeSelect": {},
+    "ojBeforeCurrentItem": {},
+    "ojBeforeDeselect": {},
+    "ojDeselect": {},
+    "ojBeforeRemove": {},
+    "ojRemove": {},
+    "ojReorder": {}
+  },
+  "extension": {}
+};
 /**
  * Handler for Expanded Navigation List
  * @constructor
@@ -3497,7 +3819,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
    * <h4 id="treeJSON-section"> JSON Tree Node Format</h4>
    * </br>
    * Each node object typically have an
-   * <code class="prettyprint">attr</code> property. This attr value will be provided as <code class="prettyprint">itemContext.data</code> to renderer function. See <a href="#itemContext">itemContext</a> section. Any node can be defined as a parent by supplying
+   * <code class="prettyprint">attr</code> property. This attr value will be provided as <code class="prettyprint">itemContext.data</code> to renderer function. See <a href="#context-section">itemContext</a> section. Any node can be defined as a parent by supplying
    * a <code class="prettyprint">children</code> property, which is an array of one or more node definitions.
    * (Note: lazy-loading is not supported in navigation list so <code class="prettyprint">children</code> property should be a non empty array)
    * <p>Example: Basic JSON Tree definition
@@ -6111,204 +6433,19 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
    * @ojnodecontext oj-tabbar-item
    * @memberof oj.ojTabBar
    */
-(function() {
-var ojNavigationListMeta = {
-  "properties": {
-    "currentItem": {
-      "type": "any",
-      "writeback": true
-    },
-    "data": {},
-    "display": {
-      "type": "string",
-      "enumValues": ["all", "icons"]
-    },
-    "drillMode": {
-      "type": "string",
-      "enumValues": ["sliding", "collapsible", "none"]
-    },
-    "expanded": {
-      "type": "object",
-      "writeback": true
-    },
-    "edge": {
-      "type": "string",
-      "enumValues": ["top", "start"]
-    },
-    "hierarchyMenuThreshold": {
-      "type": "number"
-    },
-    "item": {
-      "type": "object",
-      "properties": {
-        "renderer": {},
-        "selectable": {}
-      }
-    },
-    "overflow": {
-      "type": "string",
-      "enumValues": ["popup", "hidden"]
-    },
-    "rootLabel": {
-      "type": "string"
-    },
-    "selection": {
-      "type": "any",
-      "writeback": true
-    },
-    "translations": {
-      "type": "Object",
-      "properties": {
-        "defaultRootLabel": {
-          "type": "string",
-          "value": "Navigation List"
-        },
-        "hierMenuBtnLabel": {
-          "type": "string",
-          "value": "Hierarchical Menu button"
-        },
-        "previousIcon": {
-          "type": "string",
-          "value": "Previous"
-        }
-      }
-    }
-  },
-  "events": {
-    "animateEnd": {},
-    "animateStart": {},
-    "beforeCollapse": {},
-    "beforeCurrentItem": {},
-    "beforeExpand": {},
-    "beforeSelect": {},
-    "collapse": {},
-    "expand": {}
-  },
-  "methods": {
-    "getContextByNode": {}
-  },
-  "extension": {
-    _ALIASED_PROPS: {"hierarchyMenuThreshold":"hierarchyMenuDisplayThresholdLevel"},
-    _WIDGET_NAME: "ojNavigationList"
-  }
-};
-oj.CustomElementBridge.registerMetadata('oj-navigation-list', 'baseComponent', ojNavigationListMeta);
-oj.CustomElementBridge.register('oj-navigation-list', {'metadata': oj.CustomElementBridge.getMetadata('oj-navigation-list')});
-  
-var ojTabBarMeta = {
-  "properties": {
-    "currentItem": {
-      "type": "any",
-      "writeback": true
-    },
-    "data": {},
-    "display": {
-      "type": "string",
-      "enumValues": ["all", "icons"]
-    },
-    "reorderable":{
-      "type": "string",
-      "enumValues": ["enabled","disabled"]
-    },
-    "truncation":{
-      "type": "string",
-      "enumValues": ["none","progressive"]
-    },
-    "edge": {
-      "type": "string",
-      "enumValues": ["top", "start", "end", "bottom"]
-    },
-    "item": {
-      "type": "object",
-      "properties": {
-        "renderer": {},
-        "selectable": {}
-      }
-    },
-    "overflow": {
-      "type": "string",
-      "enumValues": ["popup", "hidden"]
-    },
-    "selection": {
-      "type": "any",
-      "writeback": true
-    },
-    "translations": {
-      "type": "Object",
-      "properties": {
-        "accessibleReorderAfterItem": {
-          "type": "string",
-          "value": "After {item}"
-        },
-        "accessibleReorderBeforeItem": {
-          "type": "string",
-          "value": "Before {item}"
-        },
-        "accessibleReorderTouchInstructionText": {
-          "type": "string",
-          "value": "Double tap and hold.  Wait for the sound then drag to rearrange."
-        },
-        "labelCut": {
-          "type": "string",
-          "value": "Cut"
-        },
-        "labelPasteAfter": {
-          "type": "string",
-          "value": "Paste After"
-        },
-        "labelPasteBefore": {
-          "type": "string",
-          "value": "Paste Before"
-        },
-        "labelRemove": {
-          "type": "string",
-          "value": "Remove"
-        },
-        "msgFetchingData": {
-          "type": "string",
-          "value": "Fetching Data..."
-        },
-        "msgNoData": {
-          "type": "string",
-          "value": "No items to display."
-        },
-        "overflowItemLabel": {
-          "type": "string",
-          "value": "More"
-        },
-        "removeCueText": {
-          "type": "string",
-          "value": "Removable"
-        },
-        "selectedLabel": {
-          "type": "string",
-          "value": "selected"
-        }
-      }
-    }
-  },
-  "events": {
-    "animateEnd": {},
-    "animateStart": {},
-    "beforeCurrentItem": {},
-    "beforeSelect": {},
-    "beforeRemove": {},
-    "remove": {},
-    "beforeDeselect": {},
-    "deselect": {},
-    "reorder": {}
-  },
-  "methods": {
-    "getContextByNode": {}
-  },
-  "extension": {
-    _WIDGET_NAME: "ojNavigationList"
-  }
-};
+/* global __oj_navigation_list_metadata */
 
-oj.CustomElementBridge.registerMetadata('oj-tab-bar', 'baseComponent', ojTabBarMeta);
-oj.CustomElementBridge.register('oj-tab-bar', {
-    'metadata': oj.CustomElementBridge.getMetadata('oj-tab-bar')});
+(function () {
+  __oj_navigation_list_metadata.extension._WIDGET_NAME = 'ojNavigationList';
+  __oj_navigation_list_metadata.extension._ALIASED_PROPS = { hierarchyMenuThreshold: 'hierarchyMenuDisplayThresholdLevel' };
+  oj.CustomElementBridge.registerMetadata('oj-navigation-list', 'baseComponent', __oj_navigation_list_metadata);
+  oj.CustomElementBridge.register('oj-navigation-list', { metadata: oj.CustomElementBridge.getMetadata('oj-navigation-list') });
 
-})();
+/* global __oj_tab_bar_metadata */
+  __oj_tab_bar_metadata.extension._WIDGET_NAME = 'ojNavigationList';
+  oj.CustomElementBridge.registerMetadata('oj-tab-bar', 'baseComponent', __oj_tab_bar_metadata);
+  oj.CustomElementBridge.register('oj-tab-bar', {
+    metadata: oj.CustomElementBridge.getMetadata('oj-tab-bar') });
+}());
+
 });

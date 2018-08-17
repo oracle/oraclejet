@@ -11,7 +11,163 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
         */
        function(oj, $)
 {
-
+//%COMPONENT_METADATA%
+var __oj_slider_metadata = 
+{
+  "properties": {
+    "describedBy": {
+      "type": "string"
+    },
+    "disabled": {
+      "type": "boolean",
+      "value": false
+    },
+    "displayOptions": {
+      "type": "object",
+      "properties": {
+        "converterHint": {
+          "type": "Array<string>|string",
+          "value": [
+            "placeholder",
+            "notewindow"
+          ]
+        },
+        "helpInstruction": {
+          "type": "Array<string>|string",
+          "value": [
+            "notewindow"
+          ]
+        },
+        "messages": {
+          "type": "Array<string>|string",
+          "value": [
+            "inline"
+          ]
+        },
+        "validatorHint": {
+          "type": "Array<string>|string",
+          "value": [
+            "notewindow"
+          ]
+        }
+      }
+    },
+    "help": {
+      "type": "object",
+      "properties": {
+        "instruction": {
+          "type": "string"
+        }
+      }
+    },
+    "helpHints": {
+      "type": "object",
+      "properties": {
+        "definition": {
+          "type": "string",
+          "value": ""
+        },
+        "source": {
+          "type": "string",
+          "value": ""
+        }
+      }
+    },
+    "labelHint": {
+      "type": "string",
+      "value": ""
+    },
+    "max": {
+      "type": "number"
+    },
+    "messagesCustom": {
+      "type": "Array<Object>",
+      "writeback": true,
+      "value": []
+    },
+    "min": {
+      "type": "number"
+    },
+    "orientation": {
+      "type": "string",
+      "enumValues": [
+        "horizontal",
+        "vertical"
+      ],
+      "value": "horizontal"
+    },
+    "step": {
+      "type": "number",
+      "value": 1
+    },
+    "transientValue": {
+      "type": "number",
+      "writeback": true,
+      "readOnly": true
+    },
+    "translations": {
+      "type": "object",
+      "value": {},
+      "properties": {
+        "invalidStep": {
+          "type": "string"
+        },
+        "maxMin": {
+          "type": "string"
+        },
+        "noValue": {
+          "type": "string"
+        },
+        "optionNum": {
+          "type": "string"
+        },
+        "valueRange": {
+          "type": "string"
+        }
+      }
+    },
+    "type": {
+      "type": "string",
+      "enumValues": [
+        "fromMax",
+        "fromMin",
+        "single"
+      ],
+      "value": "fromMin"
+    },
+    "valid": {
+      "type": "string",
+      "writeback": true,
+      "enumValues": [
+        "invalidHidden",
+        "invalidShown",
+        "pending",
+        "valid"
+      ],
+      "readOnly": true
+    },
+    "value": {
+      "type": "number",
+      "writeback": true,
+      "value": 0
+    }
+  },
+  "methods": {
+    "refresh": {},
+    "reset": {},
+    "showMessages": {},
+    "setProperty": {},
+    "getProperty": {},
+    "setProperties": {},
+    "getNodeBySubId": {},
+    "getSubIdByNode": {}
+  },
+  "events": {
+    "ojAnimateStart": {},
+    "ojAnimateEnd": {}
+  },
+  "extension": {}
+};
 /**
  * Copyright (c) 2015, Oracle and/or its affiliates.
  * All rights reserved.
@@ -407,12 +563,12 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
        * @instance
        * @ojwriteback
        * @memberof oj.ojSlider
-       * @type {?number}
+       * @type {number}
        * @since 5.0
        * @readonly
        * @ojstatus preview
        */
-      rawValue: null
+      rawValue: undefined
 
     },
 
@@ -790,8 +946,10 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
     // 
     _refreshThumbOptions: function () {
       var that = this;
+      var i = 0;
       this._thumbs.each(function () {
-        $(this).data('oj-slider-thumb-index');
+        $(this).data('oj-slider-thumb-index', i);
+        i += 1;
 
         if (that._isVertical()) {
           $(this).attr('aria-orientation', 'vertical');
@@ -1370,7 +1528,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
       this._SetRawValue(this._newValue, event);
       if (!rawOnly) {
         this.options[this._transientValueName] = this._newValue;
-        this._SetValue(this._newValue, event);
+        this._SetValueReturnBoolean(this._newValue, event);
         this._updateUI();
       }
 
@@ -1384,12 +1542,12 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
         this._lastChangedValues = this._getNewValues(index, this._newMultiValue[index]);
           this._SetRawValue(this._lastChangedValues, event);
         if (!rawOnly) {
-          this._SetValue(this._lastChangedValues, event);
+          this._SetValueReturnBoolean(this._lastChangedValues, event);
         }
       } else {
         this._SetRawValue(this._newValue, event);
         if (!rawOnly) {
-          this._SetValue(this._newValue, event);
+          this._SetValueReturnBoolean(this._newValue, event);
         }
       }
 
@@ -2639,69 +2797,12 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue', 'jqueryui-amd/widgets/dra
   });
 }());
 
+/* global __oj_slider_metadata */
 (function () {
-  var ojSliderMeta = {
-    'properties': {
-      'max': {
-        'type': 'number'
-      },
-      'min': {
-        'type': 'number'
-      },
-      'orientation': {
-        'type': 'string',
-        'enumValues': ['horizontal', 'vertical']
-      },
-      'step': {
-        'type': 'number'
-      },
-      'transientValue': {
-        'type': 'number',
-        'readOnly': true,
-        'writeback': true
-      },
-      'type': {
-        'type': 'string',
-        'enumValues': ['single', 'fromMin', 'fromMax']
-      },
-      "translations": {
-        "type": "Object",
-        "properties": {
-          "invalidStep": {
-            "type": "string",
-            "value": "Invalid step; step must be > 0"
-          },
-          "maxMin": {
-            "type": "string",
-            "value": "Max must not be less than min"
-          },
-          "noValue": {
-            "type": "string",
-            "value": "ojSlider has no value"
-          },
-          "optionNum": {
-            "type": "string",
-            "value": "{option} option is not a number"
-          },
-          "valueRange": {
-            "type": "string",
-            "value": "Value must be within min to max range"
-          }
-        }
-      },
-      'value': {
-        'type': 'number',
-        'writeback': true
-      }
-    },
-    'methods': {},
-    'extension': {
-      _INNER_ELEM: 'input',
-      _WIDGET_NAME: 'ojSlider'
-    }
-  };
-  oj.CustomElementBridge.registerMetadata('oj-slider', 'editableValue', ojSliderMeta);
-  oj.CustomElementBridge.register('oj-slider', {'metadata': oj.CustomElementBridge.getMetadata('oj-slider')});
+  __oj_slider_metadata.extension._WIDGET_NAME = 'ojSlider';
+  __oj_slider_metadata.extension._INNER_ELEM = 'input';
+  oj.CustomElementBridge.registerMetadata('oj-slider', 'editableValue', __oj_slider_metadata);
+  oj.CustomElementBridge.register('oj-slider', { metadata: oj.CustomElementBridge.getMetadata('oj-slider') });
 }());
 
 });

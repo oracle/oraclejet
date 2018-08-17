@@ -11,6 +11,166 @@
  */
 define(['ojs/ojcore'], function(oj)
 {
+/* global Set:false, Symbol:false */
+
+/**
+ * Contains all the core functionalities of KeySet.
+ * @param {(Set|Array)=} keys A set of keys to initialize this KeySet with.
+ * @ojstatus preview
+ * @ignore
+ * @ojtsignore
+ * @class KeySetImpl
+ * @constructor
+ * @since 5.1.0
+ */
+var KeySetImpl = function (initialValues) {
+  this.NOT_A_KEY = {};
+
+  /**
+   * Returns whether the specified key is contained in this set.
+   * @param {any} key the key to check whether it is contained in this set.
+   * @return {boolean} true if the specified key is contained in this set, false otherwise.
+   */
+  this.has = function (key) {
+    return (this.get(key) !== this.NOT_A_KEY);
+  };
+
+  /**
+   * Finds the equavalent key of the specified key within this KeySet.
+   * @param {any} keyToFind the key to find
+   * @return {any} the key in the key that is equivalent to keyToFind, or NOT_A_KEY if nothing equivalent can be found.
+   */
+  this.get = function (keyToFind) {
+    var iterator;
+    var key;
+    var found = this.NOT_A_KEY;
+    var self = this;
+
+    if (this._keys.has(keyToFind)) {
+      return keyToFind;
+    }
+
+    // if it's a primitive, then we are done also
+    if (!(keyToFind === Object(keyToFind))) {
+      return this.NOT_A_KEY;
+    }
+
+    // using iterator if it's supported since we could break at any time
+    if (typeof Symbol === 'function' && typeof Set.prototype[Symbol.iterator] === 'function') {
+      iterator = this._keys[Symbol.iterator]();
+      key = iterator.next();
+      while (!key.done) {
+        if (oj.Object.compareValues(key.value, keyToFind) || key.value === keyToFind) {
+          return key.value;
+        }
+        key = iterator.next();
+      }
+    } else {
+      // IE11 supports forEach
+      this._keys.forEach(function (_key) {
+        if ((found === self.NOT_A_KEY && oj.Object.compareValues(_key, keyToFind)) || _key === keyToFind) {
+          found = _key;
+        }
+      });
+    }
+
+    return found;
+  };
+
+  /**
+   * Initialize the internal Set with a set of keys.
+   * @param {Set|Array|null|undefined} keys the initial keys to create the internal Set with.
+   */
+  this.InitializeWithKeys = function (keys) {
+    this._keys = this._populate(keys);
+  };
+
+  /**
+   * IE11 does not support constructor with arguments
+   * TODO: move to CollectionUtils
+   */
+  this._populate = function (keys) {
+    var set = new Set(keys);
+    if (keys != null && set.size === 0) {
+      keys.forEach(function (key) {
+        set.add(key);
+      });
+    }
+    return set;
+  };
+
+  this.InitializeWithKeys(initialValues);
+};
+
+// make it available internally
+oj.KeySetImpl = KeySetImpl;
+
+/* global KeySetImpl:false, Map:false, Symbol:false */
+
+/**
+ * Implementation of the ES6 Map API:
+ * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map
+ * that can deal with how equalities are handled when Object is used as key
+ * @ignore
+ * @ojtsignore
+ * @export
+ * @class ojMap
+ * @constructor
+ * @since 5.2.0
+ */
+var ojMap = function () {
+  this._map = new Map();
+  this._keyset = new KeySetImpl();
+};
+
+var _proto = ojMap.prototype;
+
+Object.defineProperty(_proto, 'size', {
+  get: function () { return this._map.size; }
+});
+
+_proto.clear = function () {
+  this._map.clear();
+  this._keyset._keys.clear();
+};
+
+_proto.delete = function (key) {
+  var theKey = this._keyset.get(key);
+  if (theKey === this._keyset.NOT_A_KEY) {
+    return false;
+  }
+  this._keyset._keys.delete(theKey);
+  return this._map.delete(theKey);
+};
+
+_proto.forEach = function (callback) {
+  this._map.forEach(callback);
+};
+
+_proto.get = function (key) {
+  var theKey = this._keyset.get(key);
+  return this._map.get(theKey);
+};
+
+_proto.has = function (key) {
+  return this._keyset.has(key);
+};
+
+_proto.set = function (key, value) {
+  var theKey = this._keyset.get(key);
+  if (theKey === this._keyset.NOT_A_KEY) {
+    this._keyset._keys.add(key);
+    this._map.set(key, value);
+  } else {
+    // update value
+    this._map.set(theKey, value);
+  }
+  return this;
+};
+
+// make it available internally
+oj.Map = ojMap;
+
 /**
  * An immutable set of keys.
  * @class KeySet
@@ -29,17 +189,6 @@ oj.Object.createSubclass(KeySet, oj.Object, "KeySet");
 
 // make it available internally
 oj.KeySet = KeySet;
-
-/**
- * Initialize the internal Set with a set of keys.
- *
- * @param {Set|Array|null|undefined} keys the initial keys to create the internal Set with.
- * @protected
- */
-KeySet.prototype.InitializeWithKeys = function(keys)
-{
-    this._keys = this._populate(keys);
-};
 
 /**
  * Sets the internal Set object.
@@ -164,7 +313,7 @@ KeySet.prototype._add = function(keys)
     keys.forEach(function(key)
     {
         // checks if it's already contained in the Set, can't use has() since it does a reference comparison
-        if (self.FindEquals(key) == null)
+        if (key !== self.NOT_A_KEY && self.get(key) === self.NOT_A_KEY)
         {
             if (newSet == null)
             {
@@ -196,8 +345,8 @@ KeySet.prototype._remove = function(keys)
     keys.forEach(function(key)
     {
         // see if we can find a equivalent key in this Set since delete does a reference comparison to find the item to delete
-        keyToDelete = self.FindEquals(key);
-        if (keyToDelete != null)
+        keyToDelete = self.get(key);
+        if (keyToDelete !== self.NOT_A_KEY)
         {
             if (newSet == null)
             {
@@ -208,50 +357,6 @@ KeySet.prototype._remove = function(keys)
     });
 
     return newSet;
-};
-
-/**
- * Finds the equavalent key of the specified key within this KeySet.
- * @param {any} keyToFind the key to find
- * @return {any} the key in the key that is equivalent to keyToFind, or null if nothing equivalent can be found.
- * @protected
- */
-KeySet.prototype.FindEquals = function(keyToFind)
-{
-    var iterator, key, found = null;
-
-    if (this._keys.has(keyToFind))
-    {
-        return keyToFind;
-    }
-
-    // using iterator if it's supported since we could break at any time
-    if (typeof Symbol === "function" && typeof Set.prototype[Symbol.iterator] === "function")
-    {
-        iterator = this._keys[Symbol.iterator]();
-        key = iterator.next();
-        while (!key.done)
-        {
-            if (oj.Object.compareValues(key.value, keyToFind) || key.value == keyToFind)
-            {
-                return key.value;
-            }
-            key = iterator.next();
-        }
-    }
-    else
-    {
-        // IE11 supports forEach
-        this._keys.forEach(function(key)
-        {
-            if (found == null && oj.Object.compareValues(key, keyToFind) || key == keyToFind)
-            {
-                found = key;
-            }
-        });
-    }
-
-    return found;
 };
 
 /**
@@ -274,23 +379,8 @@ KeySet.prototype.Clone = function()
     return this._populate(this._keys);
 };
 
-/**
- * IE11 does not support constructor with arguments
- * TODO: move to CollectionUtils
- * @private
- */
-KeySet.prototype._populate = function(keys)
-{
-    var set = new Set(keys);
-    if (keys != null && set.size == 0)
-    {
-        keys.forEach(function(key)
-        {
-            set.add(key);
-        });             
-    }
-    return set;
-};
+KeySetImpl.call(KeySet.prototype);
+
 /**
  * Create a new immutable KeySet containing the keys of the expanded items.
  * Use this KeySet when specifying individual keys to expand.
@@ -414,7 +504,7 @@ ExpandedKeySet.prototype.clear = function()
  */
 ExpandedKeySet.prototype.has = function(key)
 {
-    return (this.FindEquals(key) != null);
+    return (this.get(key) !== this.NOT_A_KEY);
 };
 
 /**
@@ -554,7 +644,7 @@ ExpandAllKeySet.prototype.clear = function()
  */
 ExpandAllKeySet.prototype.has = function(key)
 {
-    return (this.FindEquals(key) == null);
+    return (this.get(key) === this.NOT_A_KEY);
 };
 
 /**
@@ -571,96 +661,6 @@ ExpandAllKeySet.prototype.deletedValues = function()
 {
     return this.Clone();
 };
-/* global Set:false, Symbol:false */
-
-/**
- * Contains all the core functionalities of KeySet.
- * @param {(Set|Array)=} keys A set of keys to initialize this KeySet with.
- * @ojstatus preview
- * @ignore
- * @ojtsignore
- * @class KeySetImpl
- * @constructor
- * @since 5.1.0
- */
-var KeySetImpl = function (initialValues) {
-  /**
-   * Returns whether the specified key is contained in this set.
-   * @param {any} key the key to check whether it is contained in this set.
-   * @return {boolean} true if the specified key is contained in this set, false otherwise.
-   */
-  this.has = function (key) {
-    return (this.get(key) != null);
-  };
-
-  /**
-   * Finds the equavalent key of the specified key within this KeySet.
-   * @param {any} keyToFind the key to find
-   * @return {any} the key in the key that is equivalent to keyToFind, or null if nothing equivalent can be found.
-   */
-  this.get = function (keyToFind) {
-    var iterator;
-    var key;
-    var found = null;
-
-    if (this._keys.has(keyToFind)) {
-      return keyToFind;
-    }
-
-    // if it's a primitive, then we are done also
-    if (!(keyToFind === Object(keyToFind))) {
-      return null;
-    }
-
-    // using iterator if it's supported since we could break at any time
-    if (typeof Symbol === 'function' && typeof Set.prototype[Symbol.iterator] === 'function') {
-      iterator = this._keys[Symbol.iterator]();
-      key = iterator.next();
-      while (!key.done) {
-        if (oj.Object.compareValues(key.value, keyToFind) || key.value === keyToFind) {
-          return key.value;
-        }
-        key = iterator.next();
-      }
-    } else {
-      // IE11 supports forEach
-      this._keys.forEach(function (_key) {
-        if ((found == null && oj.Object.compareValues(_key, keyToFind)) || _key === keyToFind) {
-          found = _key;
-        }
-      });
-    }
-
-    return found;
-  };
-
-  /**
-   * Initialize the internal Set with a set of keys.
-   * @param {Set|Array|null|undefined} keys the initial keys to create the internal Set with.
-   */
-  this.InitializeWithKeys = function (keys) {
-    this._keys = this._populate(keys);
-  };
-
-  /**
-   * IE11 does not support constructor with arguments
-   * TODO: move to CollectionUtils
-   */
-  this._populate = function (keys) {
-    var set = new Set(keys);
-    if (keys != null && set.size === 0) {
-      keys.forEach(function (key) {
-        set.add(key);
-      });
-    }
-    return set;
-  };
-
-  this.InitializeWithKeys(initialValues);
-};
-
-// make it available internally
-oj.KeySetImpl = KeySetImpl;
 ;return {
   'KeySet': KeySet,
   'ExpandedKeySet': ExpandedKeySet,

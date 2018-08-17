@@ -729,6 +729,10 @@
   $colorList: _oj-theming-add-var($colorList, '$dvtDiagramNodeBorderColorHover', $dvtDiagramNodeBorderColorHover);
   $colorList: _oj-theming-add-var($colorList, '$dvtDiagramLinkBorderColorHover', $dvtDiagramLinkBorderColorHover);
   $colorList: _oj-theming-add-var($colorList, '$dvtDiagramLinkColor', $dvtDiagramLinkColor);
+  $colorList: _oj-theming-add-var($colorList, '$dvtDiagramOverviewBgColor', $dvtDiagramOverviewBgColor);
+  $colorList: _oj-theming-add-var($colorList, '$dvtDiagramOverviewWindowBgColor', $dvtDiagramOverviewWindowBgColor);
+  $colorList: _oj-theming-add-var($colorList, '$dvtDiagramOverviewWindowBorderColor', $dvtDiagramOverviewWindowBorderColor);
+  $colorList: _oj-theming-add-var($colorList, '$dvtDiagramOverviewNodeBgColor', $dvtDiagramOverviewNodeBgColor);
   $colorList: _oj-theming-add-var($colorList, '$dvtMapBgColor', $dvtMapBgColor);
   $colorList: _oj-theming-add-var($colorList, '$dvtMapMarkerBgColor', $dvtMapMarkerBgColor);
   $colorList: _oj-theming-add-var($colorList, '$dvtTreemapNodeHeaderBorderColor', $dvtTreemapNodeHeaderBorderColor);

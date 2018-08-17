@@ -13,15 +13,15 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/in
  * All rights reserved.
  */
 
+/* global Promise:true */
+
 /**
  * @ojcomponent oj.dvtTimeComponent
  * @augments oj.dvtBaseComponent
  * @since 2.1.0
- * @ojtsimport ojvalidation-base
- * @ojtsimport ojvalidation-datetime
  * @ojtsimport ojtimeaxis
  * @abstract
- * @ojtsignore
+ * @hideconstructor
  */
 oj.__registerWidget('oj.dvtTimeComponent', $['oj']['dvtBaseComponent'],
 {
@@ -140,19 +140,158 @@ oj.__registerWidget('oj.dvtTimeComponent', $['oj']['dvtBaseComponent'],
 
     // first day of week; locale specific
     resources['firstDayOfWeek'] = oj.LocaleData.getFirstDayOfWeek();
+  },
+
+  //* * @inheritdoc */
+  _ProcessTemplates: function (dataProperty, data, templateEngine) {
+    var self = this;
+    var seriesConfig = this._GetDataProviderSeriesConfig();
+    var parentElement = this.element[0];
+    return this._super(dataProperty, data, templateEngine).then(function (pathValues) {
+      if (seriesConfig && dataProperty === seriesConfig.dataProperty) {
+        var seriesArray = []; // The final series array
+        var seriesObj;
+
+        // derive series contexts for series templates, and populate barebones series array
+        var seriesContexts = {};
+        var seriesContext;
+        var items = pathValues.values[0];
+        var seriesIndex = 0;
+        var i;
+        var j;
+        for (i = 0; i < items.length; i++) {
+          var itemObj = items[i];
+          var itemContext = {
+            data: itemObj._itemData,
+            key: itemObj.id,
+            index: i,
+            componentElement: parentElement
+          };
+          var idAttribute = seriesConfig.idAttribute;
+          var itemsKey = seriesConfig.itemsKey;
+          // For Timeline, series id is required and so is always available
+          // For Gantt, if no row id specified, then it's assumed to be one task per row; use task id as row id
+          var seriesId = itemObj[idAttribute] != null ? itemObj[idAttribute] : itemObj.id;
+          if (!seriesContexts[seriesId]) {
+            seriesContext = {
+              componentElement: parentElement,
+              id: seriesId,
+              index: seriesIndex
+            };
+            seriesContext[itemsKey] = [itemContext];
+
+            seriesContexts[seriesId] = seriesContext;
+            seriesIndex += 1;
+
+            seriesObj = { id: seriesId };
+            seriesObj[itemsKey] = [itemObj];
+            seriesArray.push(seriesObj);
+          } else {
+            seriesContexts[seriesId][itemsKey].push(itemContext);
+            seriesArray[seriesContexts[seriesId].index][itemsKey].push(itemObj);
+          }
+        }
+        var seriesArrayPromise = Promise.resolve(seriesArray);
+
+        var seriesTemplateName = seriesConfig.templateName;
+        var seriesTemplateElementName = seriesConfig.templateElementName;
+        var seriesTemplateSlot = self.getTemplates()[seriesTemplateName];
+
+        // If provided, stamp out series templates, collect series nodes, and augment each series in the array with evaluated attributes
+        if (seriesTemplateSlot) {
+          var alias = self.options.as;
+          var templateMetaData = oj.CustomElementBridge.getMetadata(seriesTemplateElementName);
+          var seriesTemplateTopProperties = Object.keys(templateMetaData.properties);
+          var nodes = [];
+          var node;
+          var nodeContainer = document.createElement('div');
+          nodeContainer.setAttribute('data-oj-context', '');
+          var fragment = document.createDocumentFragment();
+
+          // stamp out series templates and collect series nodes
+          for (i = 0; i < seriesArray.length; i++) {
+            seriesContext = seriesContexts[seriesArray[i].id];
+            try {
+              var templateNodes = templateEngine.execute(parentElement,
+                                                          seriesTemplateSlot[0],
+                                                          seriesContext,
+                                                          alias);
+              for (j = 0; j < templateNodes.length; j++) {
+                if (templateNodes[j].tagName &&
+                    templateNodes[j].tagName.toLowerCase() === seriesTemplateElementName) {
+                  node = templateNodes[j];
+                  break;
+                }
+              }
+            } catch (error) {
+              oj.Logger.error(error);
+            }
+            nodes.push(node);
+            fragment.appendChild(node);
+          }
+          // add to document for properties to be evaluated into attributes
+          nodeContainer.appendChild(fragment);
+          document.body.appendChild(nodeContainer);
+
+          // Augment each series in the array with evaluted attributes from the nodes
+          var busyContext = oj.Context.getContext(nodeContainer).getBusyContext();
+          seriesArrayPromise = busyContext.whenReady().then(function () {
+            for (i = 0; i < seriesArray.length; i++) {
+              seriesObj = seriesArray[i];
+              node = nodes[i];
+              for (j = 0; j < seriesTemplateTopProperties.length; j++) {
+                var propertyValue = node.getProperty(seriesTemplateTopProperties[j]); // safe to read off properties at this point
+                if (propertyValue !== undefined) {
+                  seriesObj[seriesTemplateTopProperties[j]] = propertyValue;
+                }
+              }
+            }
+            templateEngine.clean(nodeContainer);
+            document.body.removeChild(nodeContainer);
+            nodeContainer = null;
+            return seriesArray;
+          });
+        }
+
+        return seriesArrayPromise.then(function (finalSeriesArray) {
+          return { paths: pathValues.paths, values: [finalSeriesArray] };
+        });
+      }
+      return pathValues;
+    });
+  },
+
+  /**
+   * Returns an object containing information to process dataProvider data into data representing items/tasks within series/rows.
+   * The returned object should contain the following properties:
+   * dataProperty (e.g. 'taskData' in Gantt, 'data' in Timeline)
+   * idAttribute (e.g. 'rowId' in Gantt, 'seriesId' in Timeline)
+   * itemsKey (e.g. 'tasks' in Gantt, 'items' in Timeline)
+   * templateName (e.g. 'rowTemplate' in Gantt, 'seriesTemplate' in Timeline)
+   * templateElementName (e.g. 'oj-gantt-row' in Gantt, 'oj-timeline-series' in Timeline)
+   * @return {object} Object of shape {dataProperty: '', idAttribute: '', itemsKey: '', templateName: '', templateElementName: ''}
+   * @protected
+   * @instance
+   * @memberof oj.dvtTimeComponent
+   */
+  _GetDataProviderSeriesConfig: function () {
+    return {};
   }
 });
 
-(function() {
-var dvtTimeComponentMeta = {
-  "properties": {},
-  "methods": {
-    "getContextByNode": {}
-  },
-  "extension": {
-    _WIDGET_NAME: "dvtTimeComponent"
-  }
-};
-oj.CustomElementBridge.registerMetadata('dvtTimeComponent', 'dvtBaseComponent', dvtTimeComponentMeta);
-})();
+
+(function () {
+  var dvtTimeComponentMeta = {
+    properties: {},
+    methods: {
+      getContextByNode: {}
+    },
+    extension: {
+      _WIDGET_NAME: 'dvtTimeComponent'
+    }
+  };
+  oj.CustomElementBridge.registerMetadata('dvtTimeComponent', 'dvtBaseComponent',
+                                          dvtTimeComponentMeta);
+}());
+
 });

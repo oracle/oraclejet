@@ -1040,12 +1040,13 @@ dvt.ThematicMap.prototype.processDefaultFocusEffect = function(id, focused) {
  * @private
  */
 dvt.ThematicMap.prototype._getDataItemById = function(id) {
+  var ctx = this.getCtx();
   for (var i = 0; i < this._layers.length; i++) {
     var dataLayers = this._layers[i].getDataLayers();
     for (var dlId in dataLayers) {
       var dataObjs = dataLayers[dlId].getMarkerObjects();
       for (var j = 0; j < dataObjs.length; j++) {
-        if (dataObjs[j].getId() === id)
+        if (dvt.Obj.compareValues(ctx, dataObjs[j].getId(), id))
           return dataObjs[j];
       }
     }
@@ -2830,6 +2831,7 @@ DvtMapObjPeer.ANIMATION_INSERT_PRIORITY = 2;
  */
 DvtMapObjPeer.prototype.Init = function(data, dataLayer, displayable, label, center, locationName) {
   this._data = data;
+  this._itemData = this._data['_itemData'];
   this._dataLayer = dataLayer;
   this.Displayable = displayable;
   this._isSelected = false;
@@ -3017,6 +3019,7 @@ DvtMapObjPeer.prototype.getDataContext = function() {
     'component': this._view.getOptions()['_widgetConstructor'],
     'data': this._data,
     'id': this.getId(),
+    'itemData': this._itemData,
     'label': this._label ? this._label.getTextString() : null,
     'location': this.getLocation(),
     'locationName': this.getLocationName(),
@@ -3526,7 +3529,7 @@ DvtMapObjPeer.prototype._callCustomRenderer = function(renderer, state, prevStat
     return;
 
   var rootElem = this.Displayable.getRootElement();
-  var context = contextHandler(this.Displayable.getElem(), rootElem, this._data, state, prevState);
+  var context = contextHandler(this.Displayable.getElem(), rootElem, this._data, this._itemData, state, prevState);
   var newRootElem = renderer(context);
   //   - support null case on updates for custom elements
   if (!newRootElem && rootElem && this._view.getCtx().isCustomElement()) {
@@ -5198,18 +5201,18 @@ DvtMapDataLayer.prototype.__getDragFeedback = function() {
 
 /**
  * Given a list of area row keys, looks up and returns a list of their area ids
- * @param {Array} Row keys of areas to retrieve area ids for
+ * @param {Array} selectedObjs keys of areas to retrieve area ids for
  * @return {Array} Area ids
  */
 DvtMapDataLayer.prototype.getSelectedAreas = function(selectedObjs) {
   var selectedAreas = [];
   var areaObjs = this.getAreaObjects();
-  for (var i = 0; i < selectedObjs.length; i++) {
-    for (var j = 0; j < areaObjs.length; j++) {
-      if (areaObjs[j].getId() == selectedObjs[i]) {
-        selectedAreas.push(areaObjs[j].getLocation());
-        break;
-      }
+  var ctx = this._tmap.getCtx();
+  var selectionSet = new ctx.oj.KeySetImpl(selectedObjs);
+  for (var j = 0; j < areaObjs.length; j++) {
+    if (selectionSet.has(areaObjs[j].getId())) {
+      selectedAreas.push(areaObjs[j].getLocation());
+      break;
     }
   }
   return selectedAreas;
@@ -5240,13 +5243,14 @@ DvtMapDataLayer.prototype.destroy = function() {
  */
 DvtMapDataLayer.prototype.getNavigableLinksForNodeId = function(markerId) {
   var links = [];
+  var ctx = this._tmap.getCtx();
   for (var i = 0; i < this._dataLinkCollection.length; i++) {
     var link = this._dataLinkCollection[i];
     var startMarker = link.getStartMarker();
     var endMarker = link.getEndMarker();
-    if (startMarker && startMarker.getId() === markerId)
+    if (startMarker && dvt.Obj.compareValues(ctx, startMarker.getId(), markerId))
       links.push(link);
-    else if (endMarker && endMarker.getId() === markerId)
+    else if (endMarker && dvt.Obj.compareValues(ctx, endMarker.getId(), markerId))
       links.push(link);
   }
   return links;
@@ -5408,11 +5412,13 @@ DvtThematicMapKeyboardHandler.getFirstNavigableLink = function(marker, event, li
   if (!listOfLinks || listOfLinks.length < 1 || !marker)
     return null;
   var markerPt = marker.getCenter();
+
+  var ctx = marker.getDisplayable().getCtx();
   for (var i = 0; i < listOfLinks.length; i++)
   {
     var link = listOfLinks[i];
     var linkPt;
-    if (marker.getId() === link.getStartMarker().getId())
+    if (dvt.Obj.compareValues(ctx, marker.getId(), link.getStartMarker().getId()))
       linkPt = link.getEndPoint();
     else
       linkPt = link.getStartPoint();
@@ -5842,6 +5848,7 @@ DvtThematicMapJsonParser.prototype.ParseDataLayers = function(dataLayers, parent
   if (!dataLayers)
     return;
 
+  var ctx = this._tmap.getCtx();
   for (var i = 0; i < dataLayers.length; i++) {
     var dataLayerOptions = this._tmap.Defaults.calcDataLayerOptions(dataLayers[i]);
 
@@ -5885,7 +5892,7 @@ DvtThematicMapJsonParser.prototype.ParseDataLayers = function(dataLayers, parent
         var areaId = areas[j]['location'];
 
         if (isolatedRowKey) {
-          if (isolatedRowKey != areas[j]['id'])
+          if (!dvt.Obj.compareValues(ctx, isolatedRowKey, areas[j]['id']))
             continue;
           else
             isolatedAreaId = areaId;
@@ -5914,7 +5921,7 @@ DvtThematicMapJsonParser.prototype.ParseDataLayers = function(dataLayers, parent
         var areaId = markers[j]['location'];
 
         if (isolatedRowKey) {
-          if (isolatedRowKey != markers[j]['id'])
+          if (!dvt.Obj.compareValues(ctx, isolatedRowKey, markers[j]['id']))
             continue;
           else
             isolatedAreaId = areaId;
@@ -5923,7 +5930,8 @@ DvtThematicMapJsonParser.prototype.ParseDataLayers = function(dataLayers, parent
         var dataObj;
         if (renderer) {
           var initState = {'hovered': false, 'selected': false, 'focused': false};
-          var context = this._tmap.getOptions()['_contextHandler'](this._tmap.getElem(), null, markers[j], initState, null);
+          var data = markers[j];
+          var context = this._tmap.getOptions()['_contextHandler'](this._tmap.getElem(), null, data, data['_itemData'], initState, null);
           var svgElem = renderer(context);
           dataObj = this._createCustomDataItem(parentLayer, dataLayer, markers[j], svgElem, isAreaDataLayer);
         } else {
@@ -5942,7 +5950,7 @@ DvtThematicMapJsonParser.prototype.ParseDataLayers = function(dataLayers, parent
         var areaId = images[j]['location'];
 
         if (isolatedRowKey) {
-          if (isolatedRowKey != images[j]['id'])
+          if (!dvt.Obj.compareValues(ctx, isolatedRowKey, images[j]['id']))
             continue;
           else
             isolatedAreaId = areaId;
@@ -6276,6 +6284,7 @@ DvtThematicMapJsonParser.prototype._createCustomDataItem = function(layer, dataL
 DvtThematicMapJsonParser.prototype._createLink = function(dataLayer, data) {
   var startLoc = data['startLocation'];
   var endLoc = data['endLocation'];
+  var ctx = this._tmap.getCtx();
 
   var startPt;
   var startMarker;
@@ -6285,7 +6294,7 @@ DvtThematicMapJsonParser.prototype._createLink = function(dataLayer, data) {
     for (var i = 0; i < markers.length; i++) {
       var marker = markers[i];
       // Account for filtered data items
-      if (marker && marker.getId() == startLoc['id']) {
+      if (marker && dvt.Obj.compareValues(ctx, marker.getId(), startLoc['id'])) {
         startMarker = marker;
         startPt = marker.getCenter();
         break;
@@ -6297,7 +6306,7 @@ DvtThematicMapJsonParser.prototype._createLink = function(dataLayer, data) {
       for (var i = 0; i < areas.length; i++) {
         var area = areas[i];
         // Account for filtered data items
-        if (area && area.getId() == startLoc['id']) {
+        if (area && dvt.Obj.compareValues(ctx, area.getId(), startLoc['id'])) {
           startMarker = area;
           startPt = this._getPtFromLocation(dataLayer, {'location': area.getLocation()});
           break;
@@ -6316,7 +6325,7 @@ DvtThematicMapJsonParser.prototype._createLink = function(dataLayer, data) {
     for (var i = 0; i < markers.length; i++) {
       var marker = markers[i];
       // Account for filtered data items
-      if (marker && marker.getId() == endLoc['id']) {
+      if (marker && dvt.Obj.compareValues(ctx, marker.getId(), endLoc['id'])) {
         endMarker = marker;
         endPt = marker.getCenter();
         break;
@@ -6328,7 +6337,7 @@ DvtThematicMapJsonParser.prototype._createLink = function(dataLayer, data) {
       for (var i = 0; i < areas.length; i++) {
         var area = areas[i];
         // Account for filtered data items
-        if (area && area.getId() == endLoc['id']) {
+        if (area && dvt.Obj.compareValues(ctx, area.getId(), endLoc['id'])) {
           endMarker = area;
           endPt = this._getPtFromLocation(dataLayer, {'location': area.getLocation()});
           break;

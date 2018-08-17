@@ -17,7 +17,176 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
         */
        function(oj, $, compCore, Hammer)
 {
-
+//%COMPONENT_METADATA%
+var __oj_paging_control_metadata = 
+{
+  "properties": {
+    "data": {
+      "type": "oj.PagingModel"
+    },
+    "loadMoreOptions": {
+      "type": "object",
+      "properties": {
+        "maxCount": {
+          "type": "number",
+          "value": 500
+        }
+      }
+    },
+    "mode": {
+      "type": "string",
+      "enumValues": [
+        "loadMore",
+        "page"
+      ],
+      "value": "page"
+    },
+    "overflow": {
+      "type": "string",
+      "enumValues": [
+        "fit",
+        "none"
+      ],
+      "value": "fit"
+    },
+    "pageOptions": {
+      "type": "object",
+      "properties": {
+        "layout": {
+          "type": "Array",
+          "enumValues": [
+            "all",
+            "auto",
+            "input",
+            "nav",
+            "pages",
+            "rangeText"
+          ],
+          "value": [
+            "auto"
+          ]
+        },
+        "maxPageLinks": {
+          "type": "number",
+          "value": 6
+        },
+        "orientation": {
+          "type": "string",
+          "enumValues": [
+            "horizontal",
+            "vertical"
+          ],
+          "value": "horizontal"
+        },
+        "type": {
+          "type": "string",
+          "enumValues": [
+            "dots",
+            "numbers"
+          ],
+          "value": "numbers"
+        }
+      }
+    },
+    "pageSize": {
+      "type": "number",
+      "value": 25
+    },
+    "translations": {
+      "type": "object",
+      "value": {},
+      "properties": {
+        "labelAccNavFirstPage": {
+          "type": "string"
+        },
+        "labelAccNavLastPage": {
+          "type": "string"
+        },
+        "labelAccNavNextPage": {
+          "type": "string"
+        },
+        "labelAccNavPage": {
+          "type": "string"
+        },
+        "labelAccNavPreviousPage": {
+          "type": "string"
+        },
+        "labelAccPaging": {
+          "type": "string"
+        },
+        "labelLoadMore": {
+          "type": "string"
+        },
+        "labelLoadMoreMaxRows": {
+          "type": "string"
+        },
+        "labelNavInputPage": {
+          "type": "string"
+        },
+        "labelNavInputPageMax": {
+          "type": "string"
+        },
+        "maxPageLinksInvalid": {
+          "type": "string"
+        },
+        "msgItemRangeCurrent": {
+          "type": "string"
+        },
+        "msgItemRangeCurrentSingle": {
+          "type": "string"
+        },
+        "msgItemRangeItems": {
+          "type": "string"
+        },
+        "msgItemRangeOf": {
+          "type": "string"
+        },
+        "msgItemRangeOfApprox": {
+          "type": "string"
+        },
+        "msgItemRangeOfAtLeast": {
+          "type": "string"
+        },
+        "pageInvalid": {
+          "type": "string"
+        },
+        "tipNavFirstPage": {
+          "type": "string"
+        },
+        "tipNavInputPage": {
+          "type": "string"
+        },
+        "tipNavLastPage": {
+          "type": "string"
+        },
+        "tipNavNextPage": {
+          "type": "string"
+        },
+        "tipNavPageLink": {
+          "type": "string"
+        },
+        "tipNavPreviousPage": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "methods": {
+    "firstPage": {},
+    "previousPage": {},
+    "nextPage": {},
+    "lastPage": {},
+    "page": {},
+    "loadNext": {},
+    "refresh": {},
+    "setProperty": {},
+    "getProperty": {},
+    "setProperties": {},
+    "getNodeBySubId": {},
+    "getSubIdByNode": {}
+  },
+  "extension": {}
+};
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
@@ -144,7 +313,6 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
            * @instance
            * @memberof! oj.ojPagingControl
            * @type {Object}
-           * @default {'layout': ['auto'], 'type': 'numbers', 'orientation': 'horizontal', 'maxPageLinks': 6}
            *
            * @example <caption>Initialize the PagingControl, overriding some page-options values and leaving the others intact:</caption>
            * &lt;!-- Using dot notation -->
@@ -249,7 +417,6 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
            * @instance
            * @memberof! oj.ojPagingControl
            * @type {Object}
-           * @default {"maxCount": 500}
            *
            * @example <caption>Initialize the PagingControl, overriding load-more-options value:</caption>
            * &lt;!-- Using dot notation -->
@@ -3811,163 +3978,11 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'hammerjs', 'ojs/ojpaging
      */
 
 }());
-(function() {
-var ojPagingControlMeta = {
-  "properties": {
-    "data": {},
-    "loadMoreOptions": {
-      "type": "Object",
-      "properties": {
-        "maxCount": {
-          "type": "number"
-        }
-      }
-    },
-    "mode": {
-      "type": "string",
-      "enumValues": ["page", "loadMore"]
-    },
-    "overflow": {
-      "type": "string",
-      "enumValues": ["fit", "none"]
-    },
-    "pageOptions": {
-      "type": "Object",
-      "properties": {
-        "layout" : {
-          "type": "Array<string>"
-        },
-        "maxPageLinks" : {
-          "type": "number"
-        },
-        "orientation": {
-          "type": "string",
-          "enumValues": ["horizontal", "vertical"]
-        },
-        "type": {
-          "type": "string",
-          "enumValues": ["numbers", "dots"]
-        }
-      }
-    },
-    "pageSize": {
-      "type": "number"
-    },
-    "translations": {
-      "type": "Object",
-      "properties": {
-        "labelAccNavFirstPage": {
-          "type": "string",
-          "value": "First Page"
-        },
-        "labelAccNavLastPage": {
-          "type": "string",
-          "value": "Last Page"
-        },
-        "labelAccNavNextPage": {
-          "type": "string",
-          "value": "Next Page"
-        },
-        "labelAccNavPage": {
-          "type": "string",
-          "value": "Page"
-        },
-        "labelAccNavPreviousPage": {
-          "type": "string",
-          "value": "Previous Page"
-        },
-        "labelAccPaging": {
-          "type": "string",
-          "value": "Pagination"
-        },
-        "labelLoadMore": {
-          "type": "string",
-          "value": "Show More..."
-        },
-        "labelLoadMoreMaxRows": {
-          "type": "string",
-          "value": "Reached Maximum Limit of {maxRows} rows"
-        },
-        "labelNavInputPage": {
-          "type": "string",
-          "value": "Page"
-        },
-        "labelNavInputPageMax": {
-          "type": "string",
-          "value": "of {pageMax}"
-        },
-        "maxPageLinksInvalid": {
-          "type": "string",
-          "value": "Value for maxPageLinks is invalid."
-        },
-        "msgItemRangeCurrent": {
-          "type": "string",
-          "value": "{pageFrom}-{pageTo}"
-        },
-        "msgItemRangeCurrentSingle": {
-          "type": "string",
-          "value": "{pageFrom}"
-        },
-        "msgItemRangeItems": {
-          "type": "string",
-          "value": "items"
-        },
-        "msgItemRangeOf": {
-          "type": "string",
-          "value": "of"
-        },
-        "msgItemRangeOfApprox": {
-          "type": "string",
-          "value": "approx."
-        },
-        "msgItemRangeOfAtLeast": {
-          "type": "string",
-          "value": "at least"
-        },
-        "pageInvalid": {
-          "type": "string",
-          "value": "The page value entered is invalid."
-        },
-        "tipNavFirstPage": {
-          "type": "string",
-          "value": "First"
-        },
-        "tipNavInputPage": {
-          "type": "string",
-          "value": "Go To Page"
-        },
-        "tipNavLastPage": {
-          "type": "string",
-          "value": "Last"
-        },
-        "tipNavNextPage": {
-          "type": "string",
-          "value": "Next"
-        },
-        "tipNavPageLink": {
-          "type": "string",
-          "value": "Go To Page {pageNum}"
-        },
-        "tipNavPreviousPage": {
-          "type": "string",
-          "value": "Previous"
-        }
-      }
-    }
-  },
-  "methods": {
-    "firstPage": {},
-    "lastPage": {},
-    "loadNext": {},
-    "nextPage": {},
-    "page": {},
-    "previousPage": {}
-  },
-  "extension": {
-    _WIDGET_NAME: "ojPagingControl"
-  }
-};
-oj.CustomElementBridge.registerMetadata('oj-paging-control', 'baseComponent', ojPagingControlMeta);
-oj.CustomElementBridge.register('oj-paging-control', {'metadata': oj.CustomElementBridge.getMetadata('oj-paging-control')});
-})();
+/* global __oj_paging_control_metadata:false */
+(function () {
+  __oj_paging_control_metadata.extension._WIDGET_NAME = 'ojPagingControl';
+  oj.CustomElementBridge.registerMetadata('oj-paging-control', 'baseComponent', __oj_paging_control_metadata);
+  oj.CustomElementBridge.register('oj-paging-control', { metadata: oj.CustomElementBridge.getMetadata('oj-paging-control') });
+}());
+
 });

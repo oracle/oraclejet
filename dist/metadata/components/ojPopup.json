@@ -1,14 +1,9 @@
 {
   "name": "oj-popup",
-  "version": "5.1.0",
-  "jetVersion": "5.1.0",
+  "version": "5.2.0",
+  "jetVersion": "5.2.0",
   "displayName": "Popup",
-  "preview": true,
-  "roles": [
-    "tooltip",
-    "dialog",
-    "alertdialog"
-  ],
+  "type": "core",
   "styleClasses": [
     {
       "styleGroup": [
@@ -111,27 +106,18 @@
     },
     "position": {
       "description": "Position property is used to establish the location the popup will appear relative to\nanother element. ojPopup.Position defines \"my\" alignment \"at\" the alignment\n\"of\" some other thing which can be \"offset\" by so many pixels.\n\nThe \"my\" and \"at\" properties defines aligment points relative to the popup and other\nelement. The \"my\" property represents the popups alignment where the \"at\" property\nrepresents the other element that can be identified by \"of\" or defauts to the launcher\nwhen the popup opens. The values of these properties describe horizontal and\nvertical alignments.\n\nDeprecated v3.0.0 jQuery UI position syntax; Use of a percent unit with\n\"my\" or \"at\" is not supported.",
-      "type": "Object",
+      "type": "object",
       "displayName": "Position",
-      "value": {
-        "my": {
-          "vertical": "start",
-          "horizontal": "top"
-        },
-        "at": {
-          "vertical": "start",
-          "horizontal": "bottom"
-        },
-        "collision": "flip"
-      },
       "properties": {
         "at": {
           "description": "Defines which position on the target element (\"of\") to align the positioned element\nagainst.",
-          "type": "Object",
+          "type": "object",
+          "displayName": "At",
           "properties": {
             "horizontal": {
               "description": "Defines the horizontal alignment of what the popup is aligned to.",
               "type": "string",
+              "displayName": "Horizontal",
               "value": "start",
               "enumValues": [
                 "center",
@@ -163,6 +149,7 @@
             "vertical": {
               "description": "Defines the vertical alignment of what the popup is aligned to.",
               "type": "string",
+              "displayName": "Vertical",
               "value": "top",
               "enumValues": [
                 "bottom",
@@ -186,10 +173,12 @@
         "collision": {
           "description": "Rule for alternate alignment.",
           "type": "string",
+          "displayName": "Collision",
           "value": "flip",
           "enumValues": [
             "fit",
             "flip",
+            "flipcenter",
             "flipfit",
             "none"
           ],
@@ -201,6 +190,10 @@
             "flip": {
               "description": "the element to the opposite side of the target and the collision detection is run again to see if it will fit. Whichever side allows more of the element to be visible will be used.",
               "displayName": "Flip"
+            },
+            "flipcenter": {
+              "description": "first applies the flip rule and follows with center alignment.",
+              "displayName": "Flipcenter"
             },
             "flipfit": {
               "description": "first applies the flip logic, placing the element on whichever side allows more of the element to be visible. Then the fit logic is applied to ensure as much of the element is visible as possible.",
@@ -214,11 +207,13 @@
         },
         "my": {
           "description": "Defines which edge on the popup to align with the target (\"of\") element.",
-          "type": "Object",
+          "type": "object",
+          "displayName": "My",
           "properties": {
             "horizontal": {
               "description": "Defines the horizontal alignment of the popup.",
               "type": "string",
+              "displayName": "Horizontal",
               "value": "start",
               "enumValues": [
                 "center",
@@ -250,6 +245,7 @@
             "vertical": {
               "description": "Defines the vertical alignment of the popup.",
               "type": "string",
+              "displayName": "Vertical",
               "value": "top",
               "enumValues": [
                 "bottom",
@@ -272,20 +268,24 @@
         },
         "of": {
           "description": "Which element to position the popup against. The default is the\nlauncher argument passed to the\nopen method.\n\nIf the value is a string, it should be a selector or the literal string value\nof window. Otherwise, a point of x,y. When a point\nis used, the values are relative to the whole document. Page horizontal and vertical\nscroll offsets need to be factored into this point - see UIEvent\npageX,\npageY.",
-          "type": "string|Object|undefined"
+          "type": "string|object",
+          "displayName": "Of"
         },
         "offset": {
           "description": "Defines a point offset in pixels from the (\"my\") alignment.",
-          "type": "Object",
+          "type": "object",
+          "displayName": "Offset",
           "properties": {
             "x": {
               "description": "Horizontal aligment offset.",
               "type": "number",
+              "displayName": "X",
               "value": 0
             },
             "y": {
               "description": "Vertical alignment offset.",
               "type": "number",
+              "displayName": "Y",
               "value": 0
             }
           }
@@ -313,9 +313,10 @@
       }
     },
     "translations": {
-      "description": "A collection of translated resources from the translation bundle, or null if this\ncomponent has no resources. Resources may be accessed and overridden individually or collectively, as seen in the examples. If the component does not contain any translatable resource, the default value of this attribute will be \nnull. If not, an object containing all resources relevant to the component.\n\nIf this component has translations, their documentation immediately follows this doc entry.",
-      "type": "Object|null",
+      "description": "A collection of translated resources from the translation bundle, or null if this component has no resources.",
+      "type": "object|null",
       "displayName": "Translations",
+      "value": {},
       "translatable": true
     }
   },
@@ -331,7 +332,8 @@
         {
           "name": "position",
           "description": "{@link oj.ojPopup.Position} an element relative to another",
-          "type": "Object"
+          "type": "object",
+          "optional": true
         }
       ],
       "return": "void"
@@ -381,7 +383,7 @@
         {
           "name": "properties",
           "description": "An object containing the property and value pairs to set.",
-          "type": "Object"
+          "type": "object"
         }
       ],
       "return": "void"

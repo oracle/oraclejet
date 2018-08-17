@@ -1156,7 +1156,10 @@ DvtPictoChartItem.prototype._updateAriaLabel = function() {
  * @override
  */
 DvtPictoChartItem.prototype.getCategories = function(category) {
-  return this._item['categories'] || [this.getId()];
+  if (this._item['_itemData'])
+    return this._item['categories'];
+  else
+    return this._item['categories'] || [this.getId()];
 };
 
 

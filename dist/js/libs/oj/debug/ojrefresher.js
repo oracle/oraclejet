@@ -1,0 +1,369 @@
+/**
+ * @license
+ * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ */
+"use strict";
+define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore',  'ojs/ojpulltorefresh'], 
+       /*
+        * @param {Object} oj 
+        * @param {jQuery} $
+        */
+       function(oj, $)
+{
+
+var __oj_refresher_metadata = 
+{
+  "properties": {
+    "refreshContent": {
+      "type": "function"
+    },
+    "target": {
+      "type": "Element"
+    },
+    "text": {
+      "type": "string",
+      "value": ""
+    },
+    "threshold": {
+      "type": "number",
+      "value": 0
+    },
+    "translations": {
+      "type": "object",
+      "value": {}
+    }
+  },
+  "methods": {
+    "refresh": {},
+    "setProperty": {},
+    "getProperty": {},
+    "setProperties": {},
+    "getNodeBySubId": {},
+    "getSubIdByNode": {}
+  },
+  "extension": {}
+};
+/**
+ * Copyright (c) 2018, Oracle and/or its affiliates.
+ * All rights reserved.
+ */
+/*!
+ * jQuery UI Refresher @VERSION
+ * http://jqueryui.com
+ *
+ * Copyright 2013 jQuery Foundation and other contributors
+ * Released under the MIT license.
+ * http://jquery.org/license
+ *
+ * http://api.jqueryui.com/menu/
+ *
+ * Depends:
+ *  jquery.ui.core.js
+ *  jquery.ui.widget.js
+ *  jquery.ui.position.js
+ */
+(function ()
+{
+/**
+ * @ojcomponent oj.ojRefresher
+ * @augments oj.baseComponent
+ * @since 5.1
+ * @ojstatus preview
+ * @ojshortdesc wrapper for attaching pull to refresh functionality to a DOM element
+ *
+ * @classdesc
+ * <h3 id="refresherOverview-section">
+ *   JET Refresher
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#refresherOverview-section"></a>
+ * </h3>
+ *
+ * <p>Description: A wrapper to provide pull-to-refresh functionality for a target DOM element
+ *
+ * <pre class="prettyprint"><code>&lt;oj-refresher id='myrefresher' threshold='100' text='Checking for updates' refresh-content='[[refreshFunc]]'>
+ *    &lt;oj-list-view id="listview">&lt;/oj-list-view>
+ * &lt;/oj-refresher>
+ * 
+ * </code></pre>
+ * 
+ * <h3 id="styling-section">
+ *   Styling
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#styling-section"></a>
+ * </h3>
+ *
+ * {@ojinclude "name":"stylingDoc"} 
+ *
+ */
+  oj.__registerWidget("oj.ojRefresher", $['oj']['baseComponent'],
+    {
+      widgetEventPrefix : "oj",
+      options:
+        {
+          /**
+           * <p>The function to invoke when the pull to refresh is triggered. Must return a Promise which will be resolved when the refresh function is completed.
+           *
+           * @expose
+           * @memberof oj.ojRefresher
+           * @instance
+           * @type {function():Promise.<*>}
+           * @default null
+           * @ojshortdesc Specifies the refresh function
+           *
+           * @example <caption>Initialize the Refresher with the <code class="prettyprint">refreshContent</code> attribute specified:</caption>
+           * &lt;oj-refresher refresh-content=[[refreshFunc]]>&lt;/oj-refresher>
+           *
+           */
+          refreshContent: null,
+          /**
+           * <p>The minimum distance in number of pixels that the user needs to pull down in order to trigger a refresh. The default is determined by the component.
+           *
+           * @expose
+           * @memberof oj.ojRefresher
+           * @instance
+           * @type {number}
+           * @default 0
+           * @ojshortdesc minimum amount of pixels needed in the pull down to trigger refreshContent 
+           *
+           * @example <caption>Initialize the Refresher with the <code class="prettyprint">threshold</code> attribute specified:</caption>
+           * &lt;oj-refresher threshold='100'>&lt;/oj-refresher>
+           *
+           */
+          threshold: 0,
+          /**
+           * <p>The target to detect pull down. If no target is specified, Refresher will attempt to use either the first
+           * child element of the refresher element or the first child element with class 'oj-scroller'.
+           *
+           * @expose
+           * @memberof oj.ojRefresher
+           * @instance
+           * @type {Element}
+           * @default null
+           * @ojshortdesc target element on which to detect a pull down action
+           *
+           * @example <caption>Initialize the Refresher with the <code class="prettyprint">target</code> attribute specified:</caption>
+           * &lt;oj-refresher target=[[document.getElementById("listview")]]>
+           *    &lt;oj-list-view id='listview'>&lt;/oj-list-view>
+           * &lt;/oj-refresher>
+           *
+           */
+          target: null,
+          /**
+           * <p>The text shown in the pull to refresh panel.
+           *
+           * @expose
+           * @memberof oj.ojRefresher
+           * @instance
+           * @type {string}
+           * @default ''
+           * @ojshortdesc description text shown in the pull down panel after a pull down 
+           *
+           * @example <caption>Initialize the Refresher with the <code class="prettyprint">text</code> attribute specified:</caption>
+           * &lt;oj-refresher text='Checking for updates'>
+           *    &lt;oj-list-view id='listview'>&lt;/oj-list-view>
+           * &lt;/oj-refresher>
+           *
+           */
+          text: '',
+        },
+
+      /**
+       * Sets up resources needed by refresher
+       * @memberof! oj.ojRefresher
+       * @instance
+       * @override
+       * @protected
+       */
+      _SetupResources: function()
+      {
+          this._super();
+          this.element.addClass("oj-component");
+
+          this._setupRefresh();
+      },
+
+      /**
+       * Release resources held by refresher
+       * @memberof! oj.ojRefresher
+       * @instance
+       * @override
+       * @protected
+       */
+      _ReleaseResources: function()
+      {
+          this._super();
+          this._checkObserver();
+          oj.PullToRefreshUtils.tearDownPullToRefresh(this.scrollerElement);
+      },
+
+      /**
+       * @memberof oj.ojRefresher
+       * @expose
+       * @instance
+       * @override
+       */
+      refresh: function()
+      {
+          this._super();
+          this._checkObserver();
+          this._setupRefresh();
+      },
+
+      /**
+       * Helper function for disconnecting the observer if it is initialized.
+       * @private
+       */
+      _checkObserver: function()
+      {
+          // if observer still connected, disconnect it now.
+          if (this.observer)
+          {
+            this.observer.disconnect();
+            this.observer = null;
+          }
+      },
+
+      /**
+       * Helper function for setting up the refresher
+       * @private
+       */
+      _setupRefresh: function()
+      {
+          var self = this;
+
+          this._setupScrollerElement();
+
+          if (this.scrollerElement)
+          {
+              var busyContext = oj.Context.getContext(this.scrollerElement).getBusyContext();;
+              busyContext.whenReady().then(function()
+              {
+                  self._setupObserver(self);
+
+                  self._setupPullToRefresh();
+              });            
+          }
+          else
+          {
+              oj.Logger.error("Issue with the target selected: Target missing or not found");
+          }
+
+      },
+
+      /**
+       * Helper function for setting up the pull to refresh hook
+       * @private
+       */
+      _setupPullToRefresh: function()
+      {
+          oj.PullToRefreshUtils.setupPullToRefresh(this.scrollerElement, this.options['refreshContent'], {'threshold': this.options['threshold'], 'primaryText': this.options['text']});
+      },
+
+      /**
+       * Helper function for setting the scroller Element
+       * @private
+       */
+      _setupScrollerElement: function()
+      {
+          if (this.options['target'] != null)
+          {
+              this.scrollerElement = this.options['target'];
+          }
+          else if (this.element[0])
+          {
+              var ojScroller = this.element[0].getElementsByClassName("oj-scroller");
+              this.scrollerElement = ojScroller.length > 0 ? ojScroller[0] : null;
+              if (!this.scrollerElement && this.element[0].children.length != 0)
+              {                  
+                  this.scrollerElement = this.element[0].children[0];
+              }
+          }
+          else
+          {
+              this.scrollerElement = null;
+          }
+      },
+
+      /**
+       * Helper function for setting the scrollerElement observer
+       * @private
+       */
+      _setupObserver: function(self)
+      {
+          if (self.scrollerElement)
+          {
+              // create an observer instance to remove pulltorefresh applied on the scroller when its destroyed
+              self.observer = new MutationObserver(function(mutations) {
+                  mutations.forEach(function(mutation) {
+                      if (mutation.removedNodes.length > 0 && mutation.removedNodes[0] == self.scrollerElement)
+                      {
+                          self.observer.disconnect();
+                          self.observer = null;
+                          
+                          oj.PullToRefreshUtils.tearDownPullToRefresh(self.scrollerElement);
+                      }
+                  });
+              });
+              
+              // if parentNode exists use that, otherwise use document.
+              self.parentNode = self.scrollerElement.parentNode;
+              if (self.parentNode)
+              {
+                  self.observer.observe(self.parentNode, {childList: true});
+              }
+              else
+              {
+                  self.observer.observe(document, {childList: true});
+              }
+          }
+      }
+
+      // Slots
+      // Override contextMenu slot definition to remove it from the jsdoc as it is not supported for refresher
+      
+      /**
+       * @ojslot contextMenu
+       * @memberof oj.ojRefresher
+       * @ignore
+       */
+
+      // Fragments
+      /**
+       * {@ojinclude "name":"ojStylingDocIntro"}
+       * 
+       * <table class="generic-table styling-table">
+       *   <thead>
+       *     <tr>
+       *       <th>{@ojinclude "name":"ojStylingDocClassHeader"}</th>
+       *       <th>{@ojinclude "name":"ojStylingDocDescriptionHeader"}</th>
+       *     </tr>
+       *   </thead>
+       *   <tbody>
+       *     <tr>
+       *       <td>oj-scroller</td>
+       *       <td>Designates the element to be the scroller element used in place of the target.</td>
+       *       </td>
+       *     </tr>
+       *   </tbody>
+       * </table>
+       *
+       * @ojfragment stylingDoc - Used in Styling section of classdesc, and standalone Styling doc
+       * @memberof oj.ojRefresher
+       */
+
+    });
+
+}());
+
+/* global __oj_refresher_metadata */
+/**
+ * @protected
+ * @ignore
+ */
+(function () {
+  __oj_refresher_metadata.extension._WIDGET_NAME = 'ojRefresher';
+  oj.CustomElementBridge.registerMetadata('oj-refresher', 'baseComponent', __oj_refresher_metadata);
+  oj.CustomElementBridge.register('oj-refresher',
+                                  { metadata: oj.CustomElementBridge.getMetadata('oj-refresher') });
+}());
+
+});

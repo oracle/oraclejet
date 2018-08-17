@@ -1,26 +1,26 @@
 {
   "name": "oj-module",
-  "version": "5.1.0",
-  "jetVersion": "5.1.0",
+  "version": "5.2.0",
+  "jetVersion": "5.2.0",
   "displayName": "ojModule Element",
-  "preview": true,
+  "type": "core",
   "description": "Navigational element that manages content replacement within a particular region of the page.",
   "properties": {
     "animation": {
       "description": "Defines animation object used for view transitions.",
-      "type": "Object",
+      "type": "object",
       "displayName": "Animation",
       "value": null
     },
     "config": {
       "description": "An array of strings of allowed MIME types or file extensions that can be uploaded. If not specified, accept all file types",
-      "type": "Object",
+      "type": "object",
       "displayName": "Config",
-      "value": null,
       "properties": {
         "cleanupMode": {
           "description": "The cleanup mode for the view.",
           "type": "string",
+          "displayName": "Cleanup Mode",
           "value": "onDisconnect",
           "enumValues": [
             "none",
@@ -40,11 +40,13 @@
         "view": {
           "description": "Defines module view.",
           "type": "Array<Node>",
+          "displayName": "View",
           "value": null
         },
         "viewModel": {
           "description": "The ViewModel instance.",
-          "type": "Object",
+          "type": "object",
+          "displayName": "View Model",
           "value": null
         }
       }
@@ -56,7 +58,7 @@
       "detail": {
         "viewModel": {
           "description": "ViewModel for the new View.",
-          "type": "Object"
+          "type": "object"
         }
       }
     },
@@ -65,7 +67,7 @@
       "detail": {
         "viewModel": {
           "description": "ViewModel for the View being attached to the DOM.",
-          "type": "Object"
+          "type": "object"
         }
       }
     },
@@ -74,7 +76,7 @@
       "detail": {
         "viewModel": {
           "description": "ViewModel for the new View.",
-          "type": "Object"
+          "type": "object"
         }
       }
     },
@@ -83,7 +85,7 @@
       "detail": {
         "viewModel": {
           "description": "An array of DOM nodes that represent the disconnected View. The application can use the nodes to store them in cache.",
-          "type": "Object"
+          "type": "object"
         },
         "view": {
           "description": "ViewModel for the new View.",

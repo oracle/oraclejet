@@ -760,6 +760,8 @@ oj.Object.createSubclass(oj.NumberRangeValidator, oj.Validator, "oj.NumberRangeV
 
 /**
  * @typedef {object} oj.NumberRangeValidator.ValidatorOptions
+ * @property {oj.NumberConverter=} converter - an instance implementation of oj.NumberConverter.
+ * It is used to format the value in error message. It is optional for the validator that a converter is passed in.
  * @property {number=} min - the minimum number value of the entered value.
  * @property {number=} max - the maximum number value of the entered value.
  * @property {Object=} hint - an optional object literal of hints to be used.

@@ -8,7 +8,43 @@ define(['ojs/ojcore', 'jquery', 'knockout', 'ojs/ojcomponentcore', 'ojs/ojcompos
        function(oj, $, ko)
 {
 
-
+var __oj_file_picker_metadata = 
+{
+  "properties": {
+    "accept": {
+      "type": "Array<string>"
+    },
+    "selectOn": {
+      "type": "string",
+      "enumValues": [
+        "auto",
+        "click",
+        "clickAndDrop",
+        "drop"
+      ],
+      "value": "auto"
+    },
+    "selectionMode": {
+      "type": "string",
+      "enumValues": [
+        "multiple",
+        "single"
+      ],
+      "value": "multiple"
+    }
+  },
+  "methods": {
+    "setProperty": {},
+    "getProperty": {},
+    "setProperties": {},
+    "getNodeBySubId": {},
+    "getSubIdByNode": {}
+  },
+  "events": {
+    "ojSelect": {}
+  },
+  "extension": {}
+};
 // Copyright (c) 2017, Oracle and/or its affiliates. All rights reserved.
 /**
  * File Upload Transport Interface
@@ -291,28 +327,6 @@ define(['ojs/ojcore', 'jquery', 'knockout', 'ojs/ojcomponentcore', 'ojs/ojcompos
  * @memberof oj.ojFilePicker
  */
 
-var pickerMetadata =
-  {
-    properties: {
-      accept: {
-        type: 'Array'
-      },
-      selectOn: {
-        type: 'string',
-        enumValues: ['auto', 'click', 'drop', 'clickAndDrop'],
-        value: 'auto'
-      },
-      selectionMode: {
-        type: 'string',
-        enumValues: ['multiple', 'single'],
-        value: 'multiple'
-      }
-    },
-    events: {
-      select: {}
-    }
-  };
-
 var pickerView =
   "<input type='file' style='display:none'" +
   "       data-bind=\"attr:{multiple: $properties.selectionMode == 'multiple'," +
@@ -440,6 +454,9 @@ function pickerViewModel(context) {
     var files = event.target.files;
     if (files.length > 0) {
       handleFilesAdded(files, event);
+      //  - unable to upload after clearing file progress list in demo
+      // reset input value so file selection event will fire when selecting the same file
+      inputElem.value = null;
     }
 
     selecting = false;
@@ -606,12 +623,12 @@ function pickerViewModel(context) {
     element.dispatchEvent(event);
   }
 }
-
+/* global __oj_file_picker_metadata */
 oj.Composite.register('oj-file-picker',
   {
     view: pickerView,
     viewModel: pickerViewModel,
-    metadata: pickerMetadata
+    metadata: __oj_file_picker_metadata
   });
 
 /**

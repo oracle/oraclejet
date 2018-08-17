@@ -302,6 +302,13 @@
     {
       text-align: right;
     }
+    .oj-form-control-text-align-start .oj-inputnumber-input
+    {
+      @include oj-bidi-property(
+        $property: 'text-align',
+        $startOrEnd: start,
+        $important: false) ;
+    }
 
     // border-radius on the buttons
     // if there is no space between input and buttons, then use $formControlBorderRadius 

@@ -3,7 +3,7 @@
  * All rights reserved.
  */
 
-define('fetchStrategies',['./persistenceManager', './persistenceUtils', './impl/defaultCacheHandler','./impl/logger'],
+define('persist/fetchStrategies',['./persistenceManager', './persistenceUtils', './impl/defaultCacheHandler','./impl/logger'],
   function (persistenceManager, persistenceUtils, cacheHandler, logger) {
     'use strict';
 
@@ -225,7 +225,7 @@ define('fetchStrategies',['./persistenceManager', './persistenceUtils', './impl/
  * All rights reserved.
  */
 
-define('cacheStrategies',['./persistenceManager', './persistenceUtils', './impl/logger'], function (persistenceManager, persistenceUtils, logger) {
+define('persist/cacheStrategies',['./persistenceManager', './persistenceUtils', './impl/logger'], function (persistenceManager, persistenceUtils, logger) {
   'use strict';
   
   /**
@@ -505,7 +505,7 @@ define('cacheStrategies',['./persistenceManager', './persistenceUtils', './impl/
  * All rights reserved.
  */
 
-define('defaultResponseProxy',['./persistenceManager', './persistenceUtils', './fetchStrategies',
+define('persist/defaultResponseProxy',['./persistenceManager', './persistenceUtils', './fetchStrategies',
   './cacheStrategies', './persistenceStoreManager', './impl/defaultCacheHandler', './impl/logger'],
   function (persistenceManager, persistenceUtils, fetchStrategies,
     cacheStrategies, persistenceStoreManager, cacheHandler, logger) {
@@ -1120,7 +1120,7 @@ define('defaultResponseProxy',['./persistenceManager', './persistenceUtils', './
  * All rights reserved.
  */
 
-define('simpleJsonShredding',['./persistenceUtils', './impl/logger'], function (persistenceUtils, logger) {
+define('persist/simpleJsonShredding',['./persistenceUtils', './impl/logger'], function (persistenceUtils, logger) {
   'use strict';
     
   /**
@@ -1247,7 +1247,7 @@ define('simpleJsonShredding',['./persistenceUtils', './impl/logger'], function (
  * All rights reserved.
  */
 
-define('oracleRestJsonShredding',['./persistenceUtils', './impl/logger'], function (persistenceUtils, logger) {
+define('persist/oracleRestJsonShredding',['./persistenceUtils', './impl/logger'], function (persistenceUtils, logger) {
   'use strict';
   
   /**
@@ -1377,7 +1377,7 @@ define('oracleRestJsonShredding',['./persistenceUtils', './impl/logger'], functi
  * All rights reserved.
  */
 
-define('simpleBinaryDataShredding',['./persistenceUtils'], function (persistenceUtils) {
+define('persist/simpleBinaryDataShredding',['./persistenceUtils'], function (persistenceUtils) {
   'use strict';
     
   /**
@@ -1480,7 +1480,7 @@ define('simpleBinaryDataShredding',['./persistenceUtils'], function (persistence
  * All rights reserved.
  */
 
-define('queryHandlers',['./persistenceManager', './persistenceStoreManager', './persistenceUtils', './impl/logger'],
+define('persist/queryHandlers',['./persistenceManager', './persistenceStoreManager', './persistenceUtils', './impl/logger'],
   function (persistenceManager, persistenceStoreManager, persistenceUtils, logger) {
     'use strict';
   

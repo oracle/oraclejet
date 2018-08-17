@@ -26,16 +26,16 @@ js/libs/jquery/jqueryui-amd-1.12.1/sortable.js                          MIT
 js/libs/jquery/jqueryui-amd-1.12.1/widget.js                            MIT
 js/libs/knockout/knockout-3.4.2.js                                      MIT
 js/libs/knockout/knockout-mapping-latest.js                             MIT
-js/libs/oj/v5.1.0/min/ojknockout.js (knockout-fast-foreach.js)   MIT
-js/libs/oj/v5.1.0/min/ojselectcombobox.js (Select2.js)           Apache 2.0
-js/libs/oj/v5.1.0/min/ojtree.js (jsTree.js)                      MIT
-js/libs/oj/v5.1.0/ojL10n.js (requireJS i18n)                     MIT
+js/libs/oj/v5.2.0/min/ojknockout.js (knockout-fast-foreach.js)   MIT
+js/libs/oj/v5.2.0/min/ojselectcombobox.js (Select2.js)           Apache 2.0
+js/libs/oj/v5.2.0/min/ojtree.js (jsTree.js)                      MIT
+js/libs/oj/v5.2.0/ojL10n.js (requireJS i18n)                     MIT
 js/libs/proj4js/dist/proj4.js                                           Proj4js
 js/libs/require/require.js                                              MIT
 js/libs/require/text.js                                                 MIT
 js/libs/require-css/css.js (require-css)                                MIT
 js/libs/webcomponents/custom-elements.min.js                            custom-elements
-scss/oj/v5.1.0/3rdparty/normalize/normalize.scss                 MIT
+scss/oj/v5.2.0/3rdparty/normalize/normalize.scss                 MIT
 
 
 /*!

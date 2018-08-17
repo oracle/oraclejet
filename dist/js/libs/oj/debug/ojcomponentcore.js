@@ -921,6 +921,7 @@ $.widget('oj.' + _BASE_COMPONENT,
      *
      * @member
      * @name translations
+     * @ojshortdesc A collection of translated resources from the translation bundle, or null if this component has no resources.
      * @memberof oj.baseComponent
      * @instance
      * @ojtranslatable
@@ -2273,13 +2274,13 @@ $.widget('oj.' + _BASE_COMPONENT,
         }
       }
     }
-    else {
-      if (!oj.CustomElementBridge.isKnownEvent(rootElement, type)) {
+    else {      
+      eventName = oj.__AttributeUtils.eventTriggerToEventType(type);
+      if (!oj.CustomElementBridge.isKnownEvent(rootElement, eventName)) {
         return {'proceed':true, 'event':null};
       }
       bubbles = true;
-      cancelable = true;
-      eventName = oj.__AttributeUtils.eventTriggerToEventType(type);
+      cancelable = true;      
       detail = this._resolveJQueryObjects(data);
     }
     if (event) {
@@ -3633,8 +3634,9 @@ $.widget('oj.' + _BASE_COMPONENT,
       Promise.resolve().then(function() {
         if (self.connectedState === state) {
           state === _STATE_CONNECTED ? self._SetupResources() : self._ReleaseResources();
-          self.connectedState = undefined;
         }
+        // the initial remembered state could only be either _STATE_CONNECTED or _STATE_DISCONNECTED, never undefined
+        self.connectedState = undefined;
       });
     }
     this.connectedState = state;
@@ -5922,7 +5924,7 @@ oj.CustomElementBridge.register = function(tagName, descriptor)
  */
 oj.CustomElementBridge.registerMetadata = function(tagName, superclassName, metadata) 
 {
-  metadata = oj.BaseCustomElementBridge.__ProcessEventListeners(metadata, true);
+  metadata = oj.BaseCustomElementBridge.__ProcessEventListeners(metadata);
   if (superclassName) 
   {
     var superMeta = oj.CollectionUtils.copyInto({}, oj.CustomElementBridge.getMetadata(superclassName), undefined, true);
@@ -6232,16 +6234,8 @@ oj.CollectionUtils.copyInto(oj.DefinitionalElementBridge.proto,
     {
       var value = this._BRIDGE._PROPS[property];
       // If the attribute has not been set, return the default value
-      if (value === undefined)
-      {
-        value = propertyMeta['value'];
-        // Make a copy if the default value is an Object or Array to prevent modification
-        // of the metadata copy and store in the propertyTracker so we have a copy
-        // to modify in place for the object case
-        if (Array.isArray(value))
-          value = value.slice();
-        else if (typeof value === 'object')
-          value = oj.CollectionUtils.copyInto({}, value, undefined, true);
+      if (value === undefined) {
+        value = this._BRIDGE.GetDefaultValue(propertyMeta);
         this._BRIDGE._PROPS[property] = value;
       }
       return value;
@@ -8121,22 +8115,12 @@ $['cleanData'] = (function(orig)
       orig(nonCustomElements);
   };
 })($['cleanData']);
-(function() {
-var baseComponentMeta = {
-  "properties": {
-    "translations": {
-      "type": "Object"
+(function () {
+  var baseComponentMeta = {
+    extension: {
+      _WIDGET_NAME: 'baseComponent'
     }
-  },
-  "methods": {
-    "getNodeBySubId": {},
-    "getSubIdByNode": {},
-    "refresh": {}
-  },
-  "extension": {
-    _WIDGET_NAME: "baseComponent"
   }
-};
-oj.CustomElementBridge.registerMetadata('baseComponent', null, baseComponentMeta);
+  oj.CustomElementBridge.registerMetadata('baseComponent', null, baseComponentMeta);
 })();
 });

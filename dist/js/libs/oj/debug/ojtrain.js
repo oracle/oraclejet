@@ -11,7 +11,43 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
         */
        function(oj, $)
 {
+ 
 
+var __oj_train_metadata = 
+{
+  "properties": {
+    "selectedStep": {
+      "type": "string",
+      "writeback": true
+    },
+    "steps": {
+      "type": "Array<Object>"
+    },
+    "translations": {
+      "type": "object",
+      "value": {}
+    }
+  },
+  "methods": {
+    "getStep": {},
+    "getNextSelectableStep": {},
+    "getPreviousSelectableStep": {},
+    "updateStep": {},
+    "refresh": {},
+    "setProperty": {},
+    "getProperty": {},
+    "setProperties": {},
+    "getNodeBySubId": {},
+    "getSubIdByNode": {}
+  },
+  "events": {
+    "ojBeforeDeselect": {},
+    "ojDeselect": {},
+    "ojBeforeSelect": {},
+    "ojSelect": {}
+  },
+  "extension": {}
+};
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
@@ -134,6 +170,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
        * @public
        * @type {string}
        * @instance
+       * @ojwriteback
        * @memberof! oj.ojTrain
        * @example <caption>Initialize the Train with the <code class="prettyprint">selected-step</code> attribute specified</caption>
        * &lt;oj-train selected-step='{{selectedStepValue}}'>&lt;/oj-train>
@@ -1162,34 +1199,11 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'],
   });
 }());
 
-(function() {
-var ojTrainMeta = {
-  "properties": {
-    "selectedStep": {
-      "type": "string",
-      "writeback": true
-    },
-    "steps": {
-      "type": "Array<object>"
-    }
-  },
-  "methods": {
-    "getStep": {},
-    "getNextSelectableStep": {},
-    "getPreviousSelectableStep": {},
-    "updateStep": {}
-  },
-  "extension": {
-    _WIDGET_NAME: "ojTrain"
-  },
-  "events": {
-    "select": {},
-    "deselect": {},
-    "beforeDeselect": {},
-    "beforeSelect": {}
-  },
-};
-oj.CustomElementBridge.registerMetadata('oj-train', 'baseComponent', ojTrainMeta);
-oj.CustomElementBridge.register('oj-train', {'metadata': oj.CustomElementBridge.getMetadata('oj-train')});
-})();
+/* global __oj_train_metadata:false */
+(function () {
+  __oj_train_metadata.extension._WIDGET_NAME = 'ojTrain';
+  oj.CustomElementBridge.registerMetadata('oj-train', 'baseComponent', __oj_train_metadata);
+  oj.CustomElementBridge.register('oj-train', { metadata: oj.CustomElementBridge.getMetadata('oj-train') });
+}());
+
 });

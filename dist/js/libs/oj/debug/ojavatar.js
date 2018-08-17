@@ -8,6 +8,38 @@ define(['ojs/ojcore', 'ojs/ojcomponentcore', 'ojs/ojcomposite'],
        function(oj)
 {
 
+var __oj_avatar_metadata = 
+{
+  "properties": {
+    "initials": {
+      "type": "string"
+    },
+    "size": {
+      "type": "string",
+      "enumValues": [
+        "xxs",
+        "xs",
+        "sm",
+        "md",
+        "lg",
+        "xl",
+        "xxl"
+      ],
+      "value": "md"
+    },
+    "src": {
+      "type": "string"
+    }
+  },
+  "methods": {
+    "setProperty": {},
+    "getProperty": {},
+    "setProperties": {},
+    "getNodeBySubId": {},
+    "getSubIdByNode": {}
+  },
+  "extension": {}
+};
 /**
  * Copyright (c) 2017, Oracle and/or its affiliates.
  * All rights reserved.
@@ -195,45 +227,23 @@ var view =
   "    <!-- ko if: $properties.src -->" +
   "    <div class=\"oj-avatar-background-image\"" +
   "         data-bind=\"style:{'background-image':'url(' + $properties.src + ')'}\">" +
-  "      <div class=\"oj-avatar-initials\" data-bind=\"text: $properties.initials\"></div>" +
-  "    </div>" +
-  "    <!-- /ko -->" +
-  "    <!-- ko if: $properties.initials && !$properties.src -->" +
-  "    <div class=\"oj-avatar-initials\" data-bind=\"text: $properties.initials\"></div>" +
-  "    <!-- /ko -->" +
-  "    <!-- ko if: !$properties.initials && !$properties.src -->" +
-  "    <div class=\"oj-avatar-placeholder\"></div>" +
-  "    <!-- /ko -->" +
-  "  </div>" +
-  "</div>"
-
-
-
-var metadata =
-{
-  "properties": {
-    "initials": {
-      "description": "Initials for avatar, used if no image",
-      "type": "string"
-    },
-    "src": {
-      "description": "Source for background image",
-      "type": "string"
-    },
-    "size": {
-      "description": "Size of the avatar",
-      "type": "string",
-      "enumValues": ["xxs", "xs", "sm", "md", "lg", "xl", "xxl"],
-      "value" : "md"
-    }
-  }
-}
-
+  '      <div class="oj-avatar-initials" data-bind="text: $properties.initials"></div>' +
+  '    </div>' +
+  '    <!-- /ko -->' +
+  '    <!-- ko if: $properties.initials && !$properties.src -->' +
+  '    <div class="oj-avatar-initials" data-bind="text: $properties.initials"></div>' +
+  '    <!-- /ko -->' +
+  '    <!-- ko if: !$properties.initials && !$properties.src -->' +
+  '    <div class="oj-avatar-placeholder"></div>' +
+  '    <!-- /ko -->' +
+  '  </div>' +
+  '</div>';
+/* global __oj_avatar_metadata */
 oj.Composite.register('oj-avatar',
-{
-  "view": view,
-  "metadata": metadata
-});
+  {
+    view: view,
+    metadata: __oj_avatar_metadata
+  });
 
 /**
  * Sets a property or a single subproperty for complex properties and notifies the component

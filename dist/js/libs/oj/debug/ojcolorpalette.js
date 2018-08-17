@@ -7,7 +7,150 @@
 define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojarraytabledatasource', 'ojs/ojcolor', 'ojs/ojlistview', 'ojs/ojeditablevalue'],
        function(oj, $)
 {
+  
 
+var __oj_color_palette_metadata = 
+{
+  "properties": {
+    "describedBy": {
+      "type": "string"
+    },
+    "disabled": {
+      "type": "boolean",
+      "value": false
+    },
+    "displayOptions": {
+      "type": "object",
+      "properties": {
+        "converterHint": {
+          "type": "Array<string>|string",
+          "value": [
+            "placeholder",
+            "notewindow"
+          ]
+        },
+        "helpInstruction": {
+          "type": "Array<string>|string",
+          "value": [
+            "notewindow"
+          ]
+        },
+        "messages": {
+          "type": "Array<string>|string",
+          "value": [
+            "inline"
+          ]
+        },
+        "validatorHint": {
+          "type": "Array<string>|string",
+          "value": [
+            "notewindow"
+          ]
+        }
+      }
+    },
+    "help": {
+      "type": "object",
+      "properties": {
+        "instruction": {
+          "type": "string"
+        }
+      }
+    },
+    "helpHints": {
+      "type": "object",
+      "properties": {
+        "definition": {
+          "type": "string",
+          "value": ""
+        },
+        "source": {
+          "type": "string",
+          "value": ""
+        }
+      }
+    },
+    "labelDisplay": {
+      "type": "string",
+      "enumValues": [
+        "auto",
+        "off"
+      ],
+      "value": "off"
+    },
+    "labelHint": {
+      "type": "string",
+      "value": ""
+    },
+    "labelledBy": {
+      "type": "string"
+    },
+    "layout": {
+      "type": "string",
+      "enumValues": [
+        "grid",
+        "list"
+      ],
+      "value": "grid"
+    },
+    "messagesCustom": {
+      "type": "Array<Object>",
+      "writeback": true,
+      "value": []
+    },
+    "palette": {
+      "type": "Array<Object>"
+    },
+    "swatchSize": {
+      "type": "string",
+      "enumValues": [
+        "lg",
+        "sm",
+        "xs"
+      ],
+      "value": "lg"
+    },
+    "translations": {
+      "type": "object",
+      "value": {},
+      "properties": {
+        "labelNone": {
+          "type": "string"
+        }
+      }
+    },
+    "valid": {
+      "type": "string",
+      "writeback": true,
+      "enumValues": [
+        "invalidHidden",
+        "invalidShown",
+        "pending",
+        "valid"
+      ],
+      "readOnly": true
+    },
+    "value": {
+      "type": "oj.Color",
+      "writeback": true
+    }
+  },
+  "methods": {
+    "setProperty": {},
+    "getProperty": {},
+    "setProperties": {},
+    "refresh": {},
+    "reset": {},
+    "showMessages": {},
+    "getNodeBySubId": {},
+    "getSubIdByNode": {}
+  },
+  "events": {
+    "ojAnimateStart": {},
+    "ojAnimateEnd": {}
+  },
+  "extension": {}
+};
 /**
  *  Copyright (c) 2015, Oracle and/or its affiliates.
  *  All rights reserved.
@@ -237,6 +380,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojarraytabledatasour
            * The current value of the palette element.
            * @member
            * @type {oj.Color}
+           * @ojformat color
            * @default null
            * @ojshortdesc The current value of the palette element.
            * @ojwriteback
@@ -1048,7 +1192,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojarraytabledatasour
            // as is, and not fire a value change event.
            return ;
          }
-         this._SetValue(newColor, event);
+        this._SetValueReturnBoolean(newColor, event);
          this._value = newColor ;
      },
 
@@ -1817,47 +1961,11 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojarraytabledatasour
 
 })();
 
-(function() {
-var ojColorPaletteMeta = {
-  "properties": {
-    "labelDisplay": {
-      "type": "string",
-      "enumValues": ["auto", "off"]
-    },
-    "labelledBy": {
-      "type": "string"
-    },
-    "layout": {
-      "type": "string",
-      "enumValues": ["grid", "list"]
-    },
-    "palette": {
-      "type": "Array"
-    },
-    "swatchSize": {
-      "type": "string",
-      "enumValues": ["lg", "sm", "xs"]
-    },
-    "translations": {
-      "type": "Object",
-      "properties": {
-        "labelNone": {
-          "type": "string",
-          "value": "None"
-        }
-      }
-    },
-    "value": {
-      "writeback": true
-    }
-  },
-  "extension": {
-    _WIDGET_NAME: "ojColorPalette"
-  }
-};
-oj.CustomElementBridge.registerMetadata('oj-color-palette', 'editableValue', ojColorPaletteMeta);
-oj.CustomElementBridge.register('oj-color-palette', {'metadata': oj.CustomElementBridge.getMetadata('oj-color-palette')});
-
-})();
+/* global __oj_color_palette_metadata */
+(function () {
+  __oj_color_palette_metadata.extension._WIDGET_NAME = 'ojColorPalette';
+  oj.CustomElementBridge.registerMetadata('oj-color-palette', 'editableValue', __oj_color_palette_metadata);
+  oj.CustomElementBridge.register('oj-color-palette', { metadata: oj.CustomElementBridge.getMetadata('oj-color-palette') });
+}());
 
 });

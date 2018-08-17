@@ -3132,9 +3132,14 @@ oj.KnockoutTemplateUtils.getRenderer = function(template, bReplaceNode)
     
     var bindingContext = ko.contextFor(context['componentElement']);
 
-    var childContext = bindingContext['createChildContext'](context['data'], null, function(binding) { binding['$context'] = context; });
-    ko['renderTemplate'](template, childContext, {'afterRender': function(renderedElement) { $(renderedElement)['_ojDetectCleanData'](); }}, 
-      parentElement, bReplaceNode ? 'replaceNode' : 'replaceChildren');
+    // Make sure we have a bindingContext before rendering.  It's possible that this is called
+    // after a component has been disconnected and there is no bindingContext.
+    if (bindingContext) {
+      var childContext = bindingContext['createChildContext'](context['data'], null, function(binding) { binding['$context'] = context; });
+      ko['renderTemplate'](template, childContext, {'afterRender': function(renderedElement) { $(renderedElement)['_ojDetectCleanData'](); }}, 
+        parentElement, bReplaceNode ? 'replaceNode' : 'replaceChildren');
+    }
+
     return null;
   };
   
@@ -3677,7 +3682,7 @@ OjForEach.prototype.getIndexesForEvent = function (eventIndexes, eventKeys) {
     for (var i = 0; i < this.firstLastNodesList.length && count < eventKeys.size; i++) {
       var nodeKey = this.firstLastNodesList[i].key;
       var eventKey = eventKeySet.get(nodeKey);
-      if (eventKey != null) {
+      if (eventKey !== eventKeySet.NOT_A_KEY) {
         keyIndexMap.set(eventKey, i);
         count++;
       }
@@ -4119,7 +4124,10 @@ ko['bindingHandlers']['_ojBindForEach_'] = {
         ffe.setData(updatedValues);
         ffe.onArrayChange(changeSet);
       }
-    });
+    },
+    null,
+    { disposeWhenNodeIsRemoved: element }
+    );
 
     ffe = new OjForEach(element, value, context);
 

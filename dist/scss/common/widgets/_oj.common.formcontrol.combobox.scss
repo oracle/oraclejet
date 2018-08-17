@@ -89,6 +89,22 @@
       }
     }
 
+    /* Styling for text-align */
+    .oj-form-control-text-align-start .oj-combobox-input
+    {
+      @include oj-bidi-property(
+        $property: 'text-align',
+        $startOrEnd: start,
+        $important: false) ;
+    }
+    .oj-form-control-text-align-start .oj-combobox-choices li
+    {
+      @include oj-bidi-property(
+        $property: 'float',
+        $startOrEnd: start,
+        $important: false) ;
+    }
+
     /* 
      * Applied to the single-select drop down arrow
      */
@@ -111,7 +127,13 @@
     .oj-combobox-divider {
       box-sizing: border-box;
       @include oj-display-inline-flex-property();
-      border-left: solid $formControlBorderWidth $formControlBorderColor;
+      border-left: solid $formControlBorderWidth $formControlBorderColor;        
+      @include oj-ltr() {
+        margin-left: $formControlPaddingHorizontal;
+      }
+      @include oj-rtl() {
+        margin-right: $formControlPaddingHorizontal;
+      }
       height: 80%;
       vertical-align: middle;
     }
@@ -124,19 +146,14 @@
     .oj-combobox-choices {
       box-sizing: border-box;
       @include oj-form-control-content;
+      min-height: $formControlTriggerHeight;
+      padding: 0 $formControlPaddingHorizontal 5px;   
       height: auto;
       min-height: $formControlTriggerHeight;
       margin: 0;
       position: relative;
       cursor: text;
       overflow: hidden;
-      padding-bottom: 5px;
-      @include oj-ltr() {
-        padding-left: $formControlPaddingHorizontal;
-      }
-      @include oj-rtl() {
-        padding-right: $formControlPaddingHorizontal;
-      }
     }
     
     /* 

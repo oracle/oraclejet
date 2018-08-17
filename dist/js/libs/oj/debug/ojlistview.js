@@ -5,6 +5,375 @@
  */
 "use strict";
 define(['ojs/ojcore', 'jquery', 'require', 'ojs/ojcomponentcore', 'ojs/ojdomscroller', 'ojs/ojanimation', 'promise', 'ojs/ojdataprovideradapter', 'ojs/ojkeyset'], function(oj, $, require){
+  
+
+var __oj_list_view_metadata = 
+{
+  "properties": {
+    "as": {
+      "type": "string",
+      "value": ""
+    },
+    "currentItem": {
+      "type": "any",
+      "writeback": true
+    },
+    "data": {
+      "type": "oj.TableDataSource|oj.TreeDataSource|oj.DataProvider"
+    },
+    "dnd": {
+      "type": "object",
+      "properties": {
+        "drag": {
+          "type": "object",
+          "properties": {
+            "items": {
+              "type": "object",
+              "properties": {
+                "dataTypes": {
+                  "type": "string|Array<string>"
+                },
+                "drag": {
+                  "type": "function"
+                },
+                "dragEnd": {
+                  "type": "function"
+                },
+                "dragStart": {
+                  "type": "function"
+                }
+              }
+            }
+          }
+        },
+        "drop": {
+          "type": "object",
+          "properties": {
+            "items": {
+              "type": "object",
+              "properties": {
+                "dataTypes": {
+                  "type": "string|Array<string>"
+                },
+                "dragEnter": {
+                  "type": "function"
+                },
+                "dragLeave": {
+                  "type": "function"
+                },
+                "dragOver": {
+                  "type": "function"
+                },
+                "drop": {
+                  "type": "function",
+                  "properties": {
+                    "item": {
+                      "type": "Element"
+                    },
+                    "position": {
+                      "type": "'before'|'after'|'inside'"
+                    },
+                    "reorder": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "reorder": {
+          "type": "object",
+          "properties": {
+            "items": {
+              "type": "string",
+              "enumValues": [
+                "disabled",
+                "enabled"
+              ],
+              "value": "disabled"
+            }
+          }
+        }
+      }
+    },
+    "drillMode": {
+      "type": "string",
+      "enumValues": [
+        "collapsible",
+        "none"
+      ],
+      "value": "collapsible"
+    },
+    "expanded": {
+      "type": "KeySet",
+      "writeback": true,
+      "value": "new ExpandedKeySet();"
+    },
+    "firstSelectedItem": {
+      "type": "object",
+      "writeback": true,
+      "readOnly": true,
+      "value": {
+        "key": null,
+        "data": null
+      },
+      "properties": {
+        "key": {
+          "type": "any"
+        },
+        "data": {
+          "type": "any"
+        }
+      }
+    },
+    "groupHeaderPosition": {
+      "type": "string",
+      "enumValues": [
+        "static",
+        "sticky"
+      ],
+      "value": "sticky"
+    },
+    "item": {
+      "type": "object",
+      "properties": {
+        "focusable": {
+          "type": "boolean|function",
+          "value": true,
+          "properties": {
+            "datasource": {
+              "type": "oj.DataProvider<K, D>"
+            },
+            "index": {
+              "type": "number"
+            },
+            "key": {
+              "type": "K"
+            },
+            "data": {
+              "type": "D"
+            },
+            "parentElement": {
+              "type": "Element"
+            },
+            "depth": {
+              "type": "number"
+            },
+            "parentKey": {
+              "type": "K"
+            },
+            "leaf": {
+              "type": "boolean"
+            }
+          }
+        },
+        "renderer": {
+          "type": "function",
+          "properties": {
+            "datasource": {
+              "type": "oj.DataProvider<K, D>"
+            },
+            "index": {
+              "type": "number"
+            },
+            "key": {
+              "type": "K"
+            },
+            "data": {
+              "type": "D"
+            },
+            "parentElement": {
+              "type": "Element"
+            },
+            "depth": {
+              "type": "number"
+            },
+            "parentKey": {
+              "type": "K"
+            },
+            "leaf": {
+              "type": "boolean"
+            }
+          }
+        },
+        "selectable": {
+          "type": "boolean|function",
+          "value": true,
+          "properties": {
+            "datasource": {
+              "type": "oj.DataProvider<K, D>"
+            },
+            "index": {
+              "type": "number"
+            },
+            "key": {
+              "type": "K"
+            },
+            "data": {
+              "type": "D"
+            },
+            "parentElement": {
+              "type": "Element"
+            },
+            "depth": {
+              "type": "number"
+            },
+            "parentKey": {
+              "type": "K"
+            },
+            "leaf": {
+              "type": "boolean"
+            }
+          }
+        }
+      }
+    },
+    "scrollPolicy": {
+      "type": "string",
+      "enumValues": [
+        "auto",
+        "loadMoreOnScroll"
+      ],
+      "value": "auto"
+    },
+    "scrollPolicyOptions": {
+      "type": "Object<string, number>",
+      "properties": {
+        "fetchSize": {
+          "type": "number",
+          "value": 25
+        },
+        "maxCount": {
+          "type": "number",
+          "value": 500
+        },
+        "scroller": {
+          "type": "Element"
+        }
+      }
+    },
+    "scrollPosition": {
+      "type": "object",
+      "value": {
+        "x": 0,
+        "y": 0
+      },
+      "properties": {
+        "x": {
+          "type": "number"
+        },
+        "y": {
+          "type": "number"
+        },
+        "index": {
+          "type": "number"
+        },
+        "parent": {
+          "type": "any"
+        },
+        "key": {
+          "type": "any"
+        },
+        "offsetX": {
+          "type": "number"
+        },
+        "offsetY": {
+          "type": "number"
+        }
+      }
+    },
+    "selection": {
+      "type": "Array<any>",
+      "writeback": true,
+      "value": []
+    },
+    "selectionMode": {
+      "type": "string",
+      "enumValues": [
+        "multiple",
+        "none",
+        "single"
+      ],
+      "value": "none"
+    },
+    "selectionRequired": {
+      "type": "boolean",
+      "value": false
+    },
+    "translations": {
+      "type": "object",
+      "value": {},
+      "properties": {
+        "accessibleNavigateSkipItems": {
+          "type": "string"
+        },
+        "accessibleReorderAfterItem": {
+          "type": "string"
+        },
+        "accessibleReorderBeforeItem": {
+          "type": "string"
+        },
+        "accessibleReorderInsideItem": {
+          "type": "string"
+        },
+        "accessibleReorderTouchInstructionText": {
+          "type": "string"
+        },
+        "indexerCharacters": {
+          "type": "string"
+        },
+        "labelCopy": {
+          "type": "string"
+        },
+        "labelCut": {
+          "type": "string"
+        },
+        "labelPaste": {
+          "type": "string"
+        },
+        "labelPasteAfter": {
+          "type": "string"
+        },
+        "labelPasteBefore": {
+          "type": "string"
+        },
+        "msgFetchingData": {
+          "type": "string"
+        },
+        "msgNoData": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "methods": {
+    "refresh": {},
+    "getContextByNode": {},
+    "getDataForVisibleItem": {},
+    "getIndexerModel": {},
+    "scrollToItem": {},
+    "setProperty": {},
+    "getProperty": {},
+    "setProperties": {},
+    "getNodeBySubId": {},
+    "getSubIdByNode": {}
+  },
+  "events": {
+    "ojAnimateStart": {},
+    "ojAnimateEnd": {},
+    "ojBeforeCurrentItem": {},
+    "ojBeforeExpand": {},
+    "ojBeforeCollapse": {},
+    "ojCollapse": {},
+    "ojCopy": {},
+    "ojCut": {},
+    "ojExpand": {},
+    "ojPaste": {},
+    "ojReorder": {}
+  },
+  "extension": {}
+};
 /**
  * Base class for TableDataSourceContentHandler and TreeDataSourceContentHandler
  * Handler for DataSource generated content
@@ -1739,6 +2108,45 @@ oj._ojListView = _ListViewUtils.clazz(Object,
     },
 
     /**
+     * Adjust the value of scrollPosition based on the value from scrollPositionPolicy
+     */
+    adjustScrollPositionValueOnRefresh: function()
+    {
+        var scrollPosition, selection;
+
+        scrollPosition = this.GetOption("scrollPosition") == null ? {} : this.GetOption("scrollPosition");
+        selection = this.GetOption("selection");
+
+        if (this._isSelectionEnabled() && selection.length > 0)
+        {
+            // use selection anchor if available
+            if (this.m_selectionFrontier != null && this.m_selectionFrontier.length > 0)
+            {
+                scrollPosition.key = this.GetKey(this.m_selectionFrontier[0]);
+            }
+            else
+            {
+                // selection is programmatically set
+                scrollPosition.key = selection[0];
+            }
+        }
+        else
+        {
+            // remain at the top
+            scrollPosition.y = 0;
+            scrollPosition.key = null;
+            scrollPosition.index = 0;
+        }
+        scrollPosition.x = 0;
+        scrollPosition.offsetX = 0;
+        scrollPosition.offsetY = 0;
+
+        // explicitly set changed to false so option change will not be triggered, syncScrollPosition after rendered will
+        // complete the scrollPosition value and fire the option change event
+        this.SetOption("scrollPosition", scrollPosition, {'_context': {internalSet: true}, 'changed': false});
+    },
+
+    /**
      * Force busy state to be resolve and flush the readiness stack
      * @private
      */
@@ -2258,7 +2666,7 @@ oj._ojListView = _ListViewUtils.clazz(Object,
 
         if (options['scrollPosition'] != null)
         {
-            this._setCurrentScrollPosition(options['scrollPosition']);
+            this.syncScrollPosition(options['scrollPosition']);
             // remove it so it doesn't trigger an option change 
             delete options['scrollPosition'];
         }
@@ -3330,12 +3738,58 @@ oj._ojListView = _ListViewUtils.clazz(Object,
     },
 
     /**
+     * Validate the key value in position
+     * @return {boolean} true if key is processed and callback will be invoked, false otherwise
+     * @private
+     */
+    _validatePositionKey: function(position, callback)
+    {
+        var self = this, key, dataProvider, set;
+
+        key = position['key'];
+        if (key && this.FindElementByKey(key) == null)
+        {
+            // need to verify key if we have a DataProvider that supports FetchByKeys
+            if (this.m_contentHandler instanceof oj.IteratingDataProviderContentHandler)
+            {
+                dataProvider = this.m_contentHandler.getDataSource();
+                if (dataProvider.containsKeys)
+                {
+                    // IE 11 does not support specifying value in constructor
+                    set = new Set();
+                    set.add(key);
+                    this.signalTaskStart("Checking for key");
+                    dataProvider.containsKeys({'keys': set}).then(function(value)
+                    {
+                        self.signalTaskEnd();
+                        callback(value['results'].size > 0);
+                    }, function(err)
+                    {
+                        // something bad happened, treat it as invalid key                            
+                        self.signalTaskEnd();
+                        callback(false);
+                    });
+
+                    // return true so syncScrollPosition will skip handling and invoke callback later
+                    return true;
+                }
+            }
+        }
+
+        // else we can't verify, so just return false and let syncScrollPosition tries to fetch
+        // and find the item
+        return false;
+    },
+
+    /**
      * Synchronize the scroll position
      * @protected
      */
-    syncScrollPosition: function(position)
+    syncScrollPosition: function(position, validateKey)
     {
-        var scroller, coord, x, y, scrollTop, scrollPosition, newScrollPosition;
+        var self = this, scroller, processed, coord, x, y, scrollTop, scrollPosition, newScrollPosition;
+
+        validateKey = (validateKey === undefined) ? true : validateKey;
 
         scroller = this._getScroller();
         // check if it's even scrollable
@@ -3353,6 +3807,25 @@ oj._ojListView = _ListViewUtils.clazz(Object,
             else if (position === undefined)
             {
                 position = this.GetOption("scrollPosition");
+            }
+
+            if (validateKey)
+            {
+                processed = this._validatePositionKey(position, function(valid)
+                {
+                    if (!valid)
+                    {
+                        // remove invalid or non-existing key                            
+                        delete position['key'];
+                    }
+                    // try again
+                    self.syncScrollPosition(position, false);
+                });
+
+                if (processed)
+                {
+                    return;
+                }                
             }
 
             // figure out what the final y should be
@@ -7102,53 +7575,6 @@ oj._ojListView = _ListViewUtils.clazz(Object,
     },
 
     /**
-     * Sets the current scrollPosition.  Invoked when programmatically sets
-     * the scrollPosition.
-     * @private
-     */
-    _setCurrentScrollPosition: function(scrollPosition)
-    {
-        var found = true, key, dataProvider, set, self = this;
-
-        key = scrollPosition['key'];
-
-        // if y is not specified.  First search local dom
-        if (key && this.FindElementByKey(key) == null)
-        {
-            // need to verify key if we have a DataProvider that supports FetchByKeys
-            if (this.m_contentHandler instanceof oj.IteratingDataProviderContentHandler)
-            {
-                dataProvider = this.m_contentHandler.getDataSource();
-                if (dataProvider.containsKeys)
-                {
-                    // IE 11 does not support specifying value in constructor
-                    set = new Set();
-                    set.add(key);
-                    dataProvider.containsKeys({'keys': set}).then(function(value)
-                    {
-                        // if not found, try to find by index or y
-                        if (value['results'].size == 0)
-                        {
-                            delete scrollPosition['key'];
-                        }
-                        self.syncScrollPosition(scrollPosition);
-                    })
-
-                    // syncScrollPosition will be done later
-                    found = false;
-                }
-            }
-            // else we can't verify, so just let syncScrollPosition tries to fetch
-            // and find the item
-        }
-
-        if (found)
-        {
-            this.syncScrollPosition(scrollPosition);
-        }
-    },
-
-    /**
      * Find the element closest to the top of the viewport
      * @param {Array.<Element>} items an array of item elements to search for
      * @param {number} index the index relative to the parent to start the search
@@ -7346,6 +7772,12 @@ oj._ojListView = _ListViewUtils.clazz(Object,
         }
         else
         {
+      	    // avoid doing offsetTop
+            if (index === 0)
+            {
+                return 0;
+      	    }
+
             parentElem = this.element.get(0);
             if (this.isCardLayout())
             {
@@ -8144,7 +8576,6 @@ oj.__registerWidget('oj.ojListView', $['oj']['baseComponent'],
                  * @expose
                  * @memberof! oj.ojListView
                  * @type {Object}
-                 * @default {"drag": null, "drop": null, "reorder": {"items": "disabled"}}
                  * @instance
                  */
                 dnd: {
@@ -8159,7 +8590,6 @@ oj.__registerWidget('oj.ojListView', $['oj']['baseComponent'],
                     * @type {Object}
                     * @ojsignature { target: "Type",
                     *                value: "?"}
-                    * @default null
                     */
                    drag: null,
                    /**
@@ -8170,7 +8600,6 @@ oj.__registerWidget('oj.ojListView', $['oj']['baseComponent'],
                     * @instance
                     * @type {Object}
                     * @ojsignature { target: "Type", value: "?"}                   
-                    * @default null
                     */
                    drop: null,
                    /**
@@ -8532,8 +8961,13 @@ oj.__registerWidget('oj.ojListView', $['oj']['baseComponent'],
                  * Also, if <a href="#scrollPolicy">scrollPolicy</a> is set to 'loadMoreOnScroll' and the scrollPosition is set to a value outside 
                  * of the currently rendered region, then ListView will attempt to fetch until the specified scrollPosition is satisfied or the end
                  * is reached (either at max count or there's no more items to fetch), in which case the scroll position will remain at the end.  
-                 * The only exception to this is when the key specified does not exists and a DataProvider is specified for <a href="data">data</a>,
+                 * The only exception to this is when the key specified does not exists and a DataProvider is specified for <a href="#data">data</a>,
                  * then the scroll position will not change (unless other sub-properties like index or x/y are specified as well).
+                 * </p>
+                 * Lastly, when a re-rendered is triggered by a <a href="oj.DataProviderRefreshEvent.html">refresh event</a> from the DataProvider,
+                 * or if the value for <a href="#data">data</a> attribute has changed, then the scrollPosition will be adjusted such that the selection 
+                 * anchor (typically the last item selected by the user) prior to refresh will appear at the top of the viewport after refresh.  If 
+                 * selection is disabled or if there is no selected items, then the scrollPosition will remain at the top.
                  * </p>
                  *
                  * @ojshortdesc Gets and sets the scroll position of list view.
@@ -8982,6 +9416,10 @@ oj.__registerWidget('oj.ojListView', $['oj']['baseComponent'],
 
         if (needRefresh)
         {
+            if (options['data'])
+            {
+                this.listview.adjustScrollPositionValueOnRefresh();
+            }
             this.listview.refresh();
         }
         else if (options['selectionRequired'] || options['selection'] || options['selectionMode'])
@@ -9568,7 +10006,6 @@ oj.__registerWidget('oj.ojListView', $['oj']['baseComponent'],
  * @memberof! oj.ojListView
  * @instance
  * @type {Object}
- * @default null
  */
 /**
  * The MIME types to use for the dragged data in the dataTransfer object. This can be a string if there is only one 
@@ -9641,7 +10078,6 @@ oj.__registerWidget('oj.ojListView', $['oj']['baseComponent'],
  * @memberof! oj.ojListView
  * @instance
  * @type {Object}
- * @default null
  */
 /**
  * A data type or an array of data types this component can accept.<br><br>
@@ -10173,6 +10609,12 @@ oj.IteratingDataProviderContentHandler.prototype._removeDataSourceEventListeners
     {
         dataProvider.removeEventListener("mutate", this.m_handleModelMutateEventListener);
         dataProvider.removeEventListener("refresh", this.m_handleModelRefreshEventListener);
+
+        // If dataProvider is a TableDataSourceAdapter, call destroy on it also to remove its listeners
+        if (dataProvider instanceof oj.TableDataSourceAdapter) 
+        {
+            dataProvider.destroy();
+        }
     }
 };
 
@@ -10805,6 +11247,9 @@ oj.IteratingDataProviderContentHandler.prototype.handleModelRefreshEvent = funct
     // it will be recreated with a new asyncIterator
     this._destroyDomScroller();
 
+    // handle scrollPositionPolicy on refresh
+    this.m_widget.adjustScrollPositionValueOnRefresh();
+
     // fetch data
     this.fetchRows(true);
 
@@ -10986,213 +11431,14 @@ oj.IteratingDataProviderContentHandler.prototype.getMetadata = function(index, k
 
     return context;
 };
-(function() {
-var ojListViewMeta = {
-  "properties": {
-    "as": {
-      "type": "string"
-    },
-    "currentItem": {
-      "type": "any",
-      "writeback": true
-    },
-    "data": {},
-    "dnd": {
-      "type": "object",
-      "properties": {
-        "drag": {
-          "type": "object",
-          "properties":{
-            "items":{
-              "type":"object",
-              "properties": {
-                "dataTypes": {
-                  "type": "Array<string>"
-                },
-                "drag": {},
-                "dragEnd": {},
-                "dragStart": {}
-              }
-            }
-          }
-        },
-        "drop": {
-          "type": "object",
-          "properties":{
-            "items" :{
-              "type":"object",
-              "properties": {
-                "dataTypes": {
-                  "type": "Array<string>"
-                },
-                "dragEnter": {},
-                "dragLeave": {},
-                "dragOver": {},
-                "drop": {}
-              }
-            }
-          }          
-        },
-        "reorder": {
-          "type": "object",
-          "properties":{
-            "items" :{
-              "type":"string",
-              "enumValues": ["disabled", "enabled"]
-            }
-          }
-        }
-      }
-    },
-    "drillMode": {
-      "type": "string",
-      "enumValues": ["collapsible", "none"]
-    },
-    "expanded": {
-      "type": "object",
-      "writeback": true
-    },
-    "firstSelectedItem": {
-      "type": "object",
-      "writeback": true,
-      "readOnly": true
-    },
-    "groupHeaderPosition": {
-      "type": "string",
-      "enumValues": ["sticky", "static"]
-    },
-    "item": {
-      "type": "object",
-      "properties": {
-        "focusable": {},
-        "renderer": {},
-        "selectable": {}
-      }
-    },
-    "scrollPolicy": {
-      "type": "string"
-    },
-    "scrollPolicyOptions": {
-      "type": "object",
-      "properties": {
-        "fetchSize": {
-          "type": "number"
-        },
-        "maxCount": {
-          "type": "number"
-        },
-        "scroller": {}
-      }
-    },
-    "scrollPosition": {
-      "type": "object",
-      "writeback": true,
-      "properties": {
-        "x": {
-          "type": "number"
-        },
-        "y": {
-          "type": "number"
-        },
-        "offsetX": {
-          "type": "number"
-        },
-        "offsetY": {
-          "type": "number"
-        },
-        "key": {
-          "type": "any"
-        },
-        "index": {
-          "type": "number"
-        },
-        "parent": {
-          "type": "any"
-        }
-      }
-    },
-    "selection": {
-      "type": "Array<any>",
-      "writeback": true
-    },
-    "selectionMode": {
-      "type": "string",
-      "enumValues": ["none", "single", "multiple"]
-    },
-    "selectionRequired": {
-      "type": "boolean"
-    },
-    "translations": {
-      "type": "Object",
-      "properties": {
-        "accessibleNavigateSkipItems": {
-          "type": "string"
-        },
-        "accessibleReorderAfterItem": {
-          "type": "string"
-        },
-        "accessibleReorderBeforeItem": {
-          "type": "string"
-        },
-        "accessibleReorderInsideItem": {
-          "type": "string"
-        },
-        "accessibleReorderTouchInstructionText": {
-          "type": "string"
-        },
-        "indexerCharacters": {
-          "type": "string"
-        },
-        "labelCopy": {
-          "type": "string"
-        },
-        "labelCut": {
-          "type": "string"
-        },
-        "labelPaste": {
-          "type": "string"
-        },
-        "labelPasteAfter": {
-          "type": "string"
-        },
-        "labelPasteBefore": {
-          "type": "string"
-        },
-        "msgFetchingData": {
-          "type": "string"
-        },
-        "msgNoData": {
-          "type": "string"
-        }
-      }
-    }
-  },
-  "events": {
-    "animateEnd": {},
-    "animateStart": {},
-    "beforeCollapse": {},
-    "beforeCurrentItem": {},
-    "beforeExpand": {},
-    "collapse": {},
-    "copy": {},
-    "cut": {},
-    "expand": {},
-    "paste": {},
-    "reorder": {}
-  },
-  "methods": {
-    "getContextByNode": {},
-    "getDataForVisibleItem": {},
-    "getIndexerModel": {},
-    "scrollToItem": {}
-  },
-  "extension": {
-    _INNER_ELEM: 'ul',
-    _GLOBAL_TRANSFER_ATTRS: ["aria-label"],
-    _WIDGET_NAME: "ojListView"
-  }
-};
-oj.CustomElementBridge.registerMetadata('oj-list-view', 'baseComponent', ojListViewMeta);
-oj.CustomElementBridge.register('oj-list-view', {'metadata': oj.CustomElementBridge.getMetadata('oj-list-view')});
-})();
+/* global __oj_list_view_metadata:false */
+
+(function () {
+  __oj_list_view_metadata.extension._WIDGET_NAME = 'ojListView';
+  __oj_list_view_metadata.extension._INNER_ELEM = 'ul';
+  __oj_list_view_metadata.extension._GLOBAL_TRANSFER_ATTRS = ['aria-label'];
+  oj.CustomElementBridge.registerMetadata('oj-list-view', 'baseComponent', __oj_list_view_metadata);
+  oj.CustomElementBridge.register('oj-list-view', { metadata: oj.CustomElementBridge.getMetadata('oj-list-view') });
+}());
+
 });

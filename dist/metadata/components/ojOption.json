@@ -1,12 +1,9 @@
 {
   "name": "oj-option",
-  "version": "5.1.0",
-  "jetVersion": "5.1.0",
+  "version": "5.2.0",
+  "jetVersion": "5.2.0",
   "displayName": "Option",
-  "preview": true,
-  "roles": [
-    "option"
-  ],
+  "type": "core",
   "description": "Declare values for JET elements that display a list of values.",
   "properties": {
     "disabled": {
@@ -60,7 +57,7 @@
         {
           "name": "properties",
           "description": "An object containing the property and value pairs to set.",
-          "type": "Object"
+          "type": "object"
         }
       ],
       "return": "void"

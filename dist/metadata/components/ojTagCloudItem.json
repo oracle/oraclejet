@@ -1,0 +1,60 @@
+{
+  "name": "oj-tag-cloud-item",
+  "version": "5.2.0",
+  "jetVersion": "5.2.0",
+  "displayName": "Tag Cloud Item",
+  "type": "core",
+  "description": "ojTagCloudItem",
+  "properties": {
+    "categories": {
+      "description": "An array of category strings corresponding to the tag cloud items. This allows highlighting and filtering of items.",
+      "type": "Array<string>",
+      "displayName": "Categories",
+      "value": []
+    },
+    "color": {
+      "description": "The color of the text. Will be overridden by any color defined in the style option. The default value comes from the CSS and varies based on theme.",
+      "type": "string",
+      "displayName": "Color",
+      "value": "",
+      "format": "color"
+    },
+    "label": {
+      "description": "The text of the item.",
+      "type": "string",
+      "displayName": "Label",
+      "value": "",
+      "translatable": true
+    },
+    "shortDesc": {
+      "description": "The description of the item. This is used for customizing the tooltip text.",
+      "type": "string",
+      "displayName": "Short Desc",
+      "value": ""
+    },
+    "svgClassName": {
+      "description": "The CSS style class defining the style of the item text.",
+      "type": "string",
+      "displayName": "Svg Class Name",
+      "value": ""
+    },
+    "svgStyle": {
+      "description": "The CSS style object defining the style of the item text.",
+      "type": "object",
+      "displayName": "Svg Style",
+      "value": {}
+    },
+    "url": {
+      "description": "The url this item references.",
+      "type": "string",
+      "displayName": "Url",
+      "value": ""
+    },
+    "value": {
+      "description": "The value of this item which will be used to scale its font-size within the tag cloud.",
+      "type": "number|null",
+      "displayName": "Value",
+      "value": null
+    }
+  }
+}

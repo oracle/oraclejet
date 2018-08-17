@@ -7,7 +7,150 @@
 define(['ojs/ojcore', 'jquery', "hammerjs", "ojs/ojjquery-hammer", 'promise', 'ojs/ojcomponentcore', 'ojs/ojpopupcore', 'ojs/ojanimation', 'ojs/ojoption'], 
        function(oj, $, Hammer)
 {
+ 
 
+var __oj_menu_metadata = 
+{
+  "properties": {
+    "disabled": {
+      "type": "boolean",
+      "value": false
+    },
+    "openOptions": {
+      "type": "object",
+      "properties": {
+        "display": {
+          "type": "string",
+          "enumValues": [
+            "auto",
+            "dropDown",
+            "sheet"
+          ],
+          "value": "auto"
+        },
+        "initialFocus": {
+          "type": "string",
+          "enumValues": [
+            "firstItem",
+            "menu",
+            "none"
+          ],
+          "value": "menu"
+        },
+        "launcher": {
+          "type": "string|Element"
+        },
+        "position": {
+          "type": "object",
+          "properties": {
+            "at": {
+              "type": "object",
+              "properties": {
+                "horizontal": {
+                  "type": "string",
+                  "enumValues": [
+                    "center",
+                    "end",
+                    "left",
+                    "right",
+                    "start"
+                  ]
+                },
+                "vertical": {
+                  "type": "string",
+                  "enumValues": [
+                    "bottom",
+                    "center",
+                    "top"
+                  ]
+                }
+              }
+            },
+            "collision": {
+              "type": "string",
+              "enumValues": [
+                "fit",
+                "flip",
+                "flipcenter",
+                "flipfit",
+                "none"
+              ],
+              "value": "flipfit"
+            },
+            "my": {
+              "type": "object",
+              "properties": {
+                "horizontal": {
+                  "type": "string",
+                  "enumValues": [
+                    "center",
+                    "end",
+                    "left",
+                    "right",
+                    "start"
+                  ],
+                  "value": "start"
+                },
+                "vertical": {
+                  "type": "string",
+                  "enumValues": [
+                    "bottom",
+                    "center",
+                    "top"
+                  ],
+                  "value": "top"
+                }
+              }
+            },
+            "of": {
+              "type": "string|object"
+            },
+            "offset": {
+              "type": "object",
+              "properties": {
+                "x": {
+                  "type": "number",
+                  "value": 0
+                },
+                "y": {
+                  "type": "number",
+                  "value": 0
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "translations": {
+      "type": "object",
+      "value": {},
+      "properties": {
+        "labelCancel": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "methods": {
+    "refresh": {},
+    "open": {},
+    "setProperty": {},
+    "getProperty": {},
+    "setProperties": {},
+    "getNodeBySubId": {},
+    "getSubIdByNode": {}
+  },
+  "events": {
+    "ojAnimateStart": {},
+    "ojAnimateEnd": {},
+    "ojBeforeOpen": {},
+    "ojClose": {},
+    "ojOpen": {},
+    "ojAction": {}
+  },
+  "extension": {}
+};
 /**
  * All rights reserved.
  */
@@ -54,7 +197,7 @@ define(['ojs/ojcore', 'jquery', "hammerjs", "ojs/ojjquery-hammer", 'promise', 'o
  * <a href="https://developer.mozilla.org/en-US/docs/Web/API/UIEvent/pageX">pageX</a>,
  * <a href="https://developer.mozilla.org/en-US/docs/Web/API/UIEvent/pageY">pageY</a>.
  *
- * @property {"flip"|"fit"|"flipfit"|"none"} [collision] Rule for alternate alignment. <p>
+ * @property {"flip"|"fit"|"flipfit"|"flipcenter"|"none"} [collision] Rule for alternate alignment. <p>
  * <ul>
  *  <li><b>"flip"</b> the element to the opposite side of the target and the
  *             collision detection is run again to see if it will fit. Whichever side
@@ -63,6 +206,7 @@ define(['ojs/ojcore', 'jquery', "hammerjs", "ojs/ojjquery-hammer", 'promise', 'o
  * <li><b>"flipfit"</b> first applies the flip logic, placing the element
  *  on whichever side allows more of the element to be visible. Then the fit logic
  *  is applied to ensure as much of the element is visible as possible.</li>
+ * <li><b>flipcenter</b> first applies the flip rule and follows with center alignment.</li>
  * <li><b>"none"</b> no collision detection.</li>
  * </ul>
  */
@@ -217,10 +361,10 @@ define(['ojs/ojcore', 'jquery', "hammerjs", "ojs/ojjquery-hammer", 'promise', 'o
  * for submenus, which are labeled automatically.
  *
  * <p>If a menu is shared by different launchers, and should have a different label for each launcher, then a
- * <a href="#event:ojBeforeOpen">ojBeforeOpen</a> listener can be used to set a different label per launch.
+ * <a href="#event:beforeOpen">ojBeforeOpen</a> listener can be used to set a different label per launch.
  *
  * <p>For a menu launched exclusively by one or more [menu buttons]{@link oj.ojButton#menu}, these attributes are optional.  When the
- * menu is opened via the menu button UI, if neither attribute is present after all <a href="#event:ojBeforeOpen">ojBeforeOpen</a>
+ * menu is opened via the menu button UI, if neither attribute is present after all <a href="#event:beforeOpen">ojBeforeOpen</a>
  * listeners have been called, then <code class="prettyprint">aria-labelledby</code> will be set on the menu, referencing the menu
  * button, and will be removed when the menu is closed.  This approach provides a useful default label, while allowing the app to
  * supply a different label if desired, and while allowing the menu to be shared by several menu buttons and/or other launchers.
@@ -250,7 +394,7 @@ define(['ojs/ojcore', 'jquery', "hammerjs", "ojs/ojjquery-hammer", 'promise', 'o
  *  <p>
  *     The context of opening is defined by the resolved <code class="prettyprint">openOptions.launcher</code> value,
  *     which can be set via the <a href="#openOptions.launcher">attribute</a>, via the argument to the <a href="#open">open()</a>
- *     method, or via a <a href="#event:ojBeforeOpen">ojBeforeOpen</a> listener.
+ *     method, or via a <a href="#event:beforeOpen">ojBeforeOpen</a> listener.
  *  <p>
  *     All menus are assigned the same z-index values. The layering between peer popups reflects the opening order.
  *     In addition, the page author has control over z-index weights by way of the menu's layer.
@@ -362,7 +506,7 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
          *
          * <p>The values set here can be overridden on a per-launch basis by passing the corresponding params into the
          * <a href="#open">open</a> method.  Those per-launch values can be further customized by a
-         * <a href="#event:ojBeforeOpen">ojBeforeOpen</a> listener.
+         * <a href="#event:beforeOpen">ojBeforeOpen</a> listener.
          *
          * <p>The built-in [menu button]{@link oj.ojMenuButton} and [context menu]{@link oj.baseComponent#contextMenu} functionality
          * overrides some of the Menu's <code class="prettyprint">openOptions</code>, for WAI-ARIA compliance and other reasons.
@@ -470,7 +614,7 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
              * This node must be focusable, as focus is returned to it upon menu dismissal.
              *
              * <p>The launcher must either be specified in this component option, or on each menu launch -- see <a href="#open">open()</a>
-             * and <a href="#event:ojBeforeOpen">ojBeforeOpen</a>.
+             * and <a href="#event:beforeOpen">ojBeforeOpen</a>.
              *
              * @expose
              * @alias openOptions.launcher
@@ -684,7 +828,7 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
                * @instance
                * @alias openOptions.position.of
                * @name openOptions.position.of
-               * @type {string|{x: number, y: number}| undefined}
+               * @type {string|{x: number, y: number}}
                */
               'of' : undefined,
               /**
@@ -704,6 +848,7 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
                * @ojvalue {string} "flipfit" first applies the flip logic, placing the element
                *  on whichever side allows more of the element to be visible. Then the fit logic
                *  is applied to ensure as much of the element is visible as possible.
+               * @ojvalue {string} "flipcenter" first applies the flip rule and follows with center alignment.
                * @ojvalue {string} "none" no collision detection.
                */
               // : Ensure menu stays onscreen (hence no autoscrolling/jumping the page to move it back onscreen), even when when
@@ -1812,8 +1957,10 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
     refresh: function() { // Override of public base class method (unlike JQUI).  Method name needn't be quoted since is in externs.js.
         this._super();
         this._setup();
+        this._reposition();
+    },
 
-
+    _reposition: function () {
         var element = this.element;
         if (!element.is(":visible"))
           return;
@@ -2377,13 +2524,13 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
      *   <tbody>
      *     <tr>
      *       <td>Menu is open, or transitioning between open and closed, including when this method is called from an <a href="#event:open">open</a>,
-     *           <a href="#event:action">action</a>, or <a href="#event:close">close</a>  listener. (For <a href="#event:ojBeforeOpen">ojBeforeOpen</a>, see next row.)</td>
+     *           <a href="#event:action">action</a>, or <a href="#event:close">close</a>  listener. (For <a href="#event:beforeOpen">ojBeforeOpen</a>, see next row.)</td>
      *       <td>A copy of the object used for the most recent launch is returned.  See the <a href="#openOptions">openOptions</a>
-     *           option, the <a href="#open">open()</a> method, and the <a href="#event:ojBeforeOpen">ojBeforeOpen</a> event for details on how that
+     *           option, the <a href="#open">open()</a> method, and the <a href="#event:beforeOpen">ojBeforeOpen</a> event for details on how that
      *           object is constructed.</td>
      *     </tr>
      *     <tr>
-     *       <td>This method is called from a <a href="#event:ojBeforeOpen">ojBeforeOpen</a> listener.</td>
+     *       <td>This method is called from a <a href="#event:beforeOpen">ojBeforeOpen</a> listener.</td>
      *       <td>A copy of the merged object "so far" is returned. The object ultimately used for the launch may differ if it is changed by
      *           a <code class="prettyprint">ojBeforeOpen</code> listener after this method is called.  Unlike the original copy passed to the
      *           <code class="prettyprint">ojBeforeOpen</code> listener, the copy returned by this method is not "live" and cannot be used to affect the launch.</td>
@@ -2408,7 +2555,7 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
     },
 
     /**
-     * <p>Launches this menu after firing the <a href="#event:ojBeforeOpen">ojBeforeOpen</a> event.  Listeners to that event can cancel the launch
+     * <p>Launches this menu after firing the <a href="#event:beforeOpen">ojBeforeOpen</a> event.  Listeners to that event can cancel the launch
      * via <code class="prettyprint">event.preventDefault()</code>.  If the launch is not canceled, then the the <a href="#event:open">open</a> event
      * is fired after the launch.
      *
@@ -3153,7 +3300,7 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
         var events = this._popupServiceEvents = {};
         events[oj.PopupService.EVENT.POPUP_CLOSE] = this._closeAll.bind(this);
         events[oj.PopupService.EVENT.POPUP_REMOVE] = this._surrogateRemoveHandler.bind(this);
-        events[oj.PopupService.EVENT.POPUP_REFRESH] = this.refresh.bind(this);
+        events[oj.PopupService.EVENT.POPUP_REFRESH] = this._reposition.bind(this);
         events[oj.PopupService.EVENT.POPUP_AUTODISMISS] = this._clickAwayHandler.bind(this);
         events[oj.PopupService.EVENT.POPUP_BEFORE_OPEN] = this._beforeOpenHandler.bind(this);
         events[oj.PopupService.EVENT.POPUP_AFTER_OPEN] = this._afterOpenHandler.bind(this);
@@ -3554,7 +3701,7 @@ oj.__registerWidget("oj.ojMenu", $['oj']['baseComponent'], {
      *   </thead>
      *   <tbody>
      *     <tr>
-     *       <td rowspan = "6">Menu Item</td>
+     *       <td rowspan = "5">Menu Item</td>
      *       <td><kbd>Enter</kbd> or <kbd>Space</kbd></td>
      *       <td>Invoke the focused menu item's action.</td>
      *     </tr>
@@ -3691,104 +3838,11 @@ var _SUBID_CANCEL = 'oj-menu-cancel-command';
 
 }());
 
-(function() {
-var ojMenuMeta = {
-  "properties": {
-    "disabled": {
-      "type": "boolean"
-    },
-    "openOptions": {
-      "type": "object",
-      "properties": {
-        "display": {
-          "type": "string",
-          "enumValues": ["auto", "dropDown", "sheet"]
-        },
-        "initialFocus": {
-          "type": "string",
-          "enumValues": ["firstItem", "menu", "none"]
-        },
-        "launcher": {
-          "type": "string"
-        },
-        "position": {
-          "type": "object",
-          "properties": {
-            "my": {
-              "type": "string|object",
-              "properties": {
-                "horizontal": {
-                  "type": "string",
-                  "enumValues": ["start", "end", "left", "center", "right"]
-                },
-                "vertical": {
-                  "type": "string",
-                  "enumValues": ["top", "center", "bottom"]
-                }
-              }
-            },
-            "at": {
-              "type": "string|object",
-              "properties": {
-                "horizontal": {
-                  "type": "string",
-                  "enumValues": ["start", "end", "left", "center", "right"]
-                },
-                "vertical": {
-                  "type": "string",
-                  "enumValues": ["top", "center", "bottom"]
-                }
-              }
-            },
-            "offset": {
-              "type": "object",
-              "properties": {
-                "x": {
-                  "type": "number"
-                },
-                "y": {
-                  "type": "number"
-                }
-              }
-            },
-            "of": {
-              "type": "string|object"
-            },
-            "collision": {
-              "type": "string",
-              "enumValues": ["flip", "fit", "flipfit", "flipcenter", "none"]
-            }
-          }
-        }
-      }
-    },
-    "translations": {
-      "type": "Object",
-      "properties": {
-        "labelCancel": {
-          "type": "string",
-          "value": "Cancel"
-        }
-      }
-    }
-  },
-  "methods": {
-    "getSubIdByNode": {},
-    "open": {},
-    "refresh": {}
-  },
-  "events": {
-    "animateStart" : {},
-    "animateEnd" : {},
-    "beforeOpen": {},
-    "close": {},
-    "open": {}
-  },
-  "extension": {
-    _WIDGET_NAME: "ojMenu"
-  }
-};
-oj.CustomElementBridge.registerMetadata('oj-menu', 'baseComponent', ojMenuMeta);
-oj.CustomElementBridge.register('oj-menu', {'metadata' : oj.CustomElementBridge.getMetadata('oj-menu')});
-})();
+/* global __oj_menu_metadata:false */
+(function () {
+  __oj_menu_metadata.extension._WIDGET_NAME = 'ojMenu';
+  oj.CustomElementBridge.registerMetadata('oj-menu', 'baseComponent', __oj_menu_metadata);
+  oj.CustomElementBridge.register('oj-menu', { metadata: oj.CustomElementBridge.getMetadata('oj-menu') });
+}());
+
 });

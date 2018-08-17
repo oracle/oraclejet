@@ -1,12 +1,9 @@
 {
   "name": "oj-dialog",
-  "version": "5.1.0",
-  "jetVersion": "5.1.0",
+  "version": "5.2.0",
+  "jetVersion": "5.2.0",
   "displayName": "Dialog",
-  "preview": true,
-  "roles": [
-    "dialog"
-  ],
+  "type": "core",
   "styleClasses": [
     {
       "styleGroup": [
@@ -25,6 +22,12 @@
         "oj-dialog-body"
       ],
       "description": "Class automatically generated on the default (body) slot."
+    },
+    {
+      "styleGroup": [
+        "oj-dialog-content"
+      ],
+      "description": "Class automatically generated that wraps body content. Applications can use this class to apply style properties to body content."
     },
     {
       "styleGroup": [
@@ -54,57 +57,105 @@
   "description": "Displays a popup window that provides information and gathers input from the application user.",
   "properties": {
     "cancelBehavior": {
-      "description": "Specifies the cancel behavior of the dialog. The following are valid values:\n\n\n\n\"icon\" - (the default) (a) a close icon will automatically be created, and (b) the dialog will close when it has focus and user presses the escape (ESC) key.\n\n\n\"none\" - no actions will be associated with the escape key.\n\n\n\"escape\" - the dialog will close when it has focus and user presses the escape (ESC) key. A close icon will not automatically be created.\n\n\n\nNote that the cancelBehavior applies to both automatic and user-defined headers. So by default, a user-defined header will have a system generated close icon.",
+      "description": "Specifies the cancel behavior of the dialog.\nThe default value depends on the theme.\nIn the alta-web theme, the default is \"icon\",\nand in alta-android, alta-ios and alta-windows themes, the\ndefault is \"none\". Note that the cancelBehavior applies to both automatic and user-defined headers.\nSo by default, a user-defined header in the alta-web theme will have a system generated close icon.",
       "type": "string",
       "displayName": "Cancel Behavior",
-      "value": "icon"
+      "value": "icon",
+      "enumValues": [
+        "escape",
+        "icon",
+        "none"
+      ],
+      "propertyEditorValues": {
+        "escape": {
+          "description": "The dialog will close when it has focus and user presses the escape (ESC) key. A close icon will not be created.",
+          "displayName": "Escape"
+        },
+        "icon": {
+          "description": "A close icon will automatically be created. The dialog will close when it has focus and user presses the escape (ESC) key.",
+          "displayName": "Icon"
+        },
+        "none": {
+          "description": "A close icon will not be created. No actions will be associated with the escape key.",
+          "displayName": "None"
+        }
+      }
     },
     "dragAffordance": {
-      "description": "Specifies the drag affordance.\nIf set to \"title-bar\" (the default) the dialog will be draggable by the title bar.\nIf \"none\", the dialog will not be draggable.",
+      "description": "Specifies the drag affordance.\nThe default value depends on the theme.\nIn the alta-web theme, the default is \"title-bar\",\nand in alta-android, alta-ios and alta-windows themes, the\ndefault is \"none\".",
       "type": "string",
       "displayName": "Drag Affordance",
-      "value": "title-bar"
+      "value": "title-bar",
+      "enumValues": [
+        "none",
+        "title-bar"
+      ],
+      "propertyEditorValues": {
+        "none": {
+          "description": "The dialog will not be draggable.",
+          "displayName": "None"
+        },
+        "title-bar": {
+          "description": "The dialog will be draggable by the title bar.",
+          "displayName": "Title-bar"
+        }
+      }
     },
     "initialVisibility": {
-      "description": " Set the initial visibility of the dialog.\nIf set to \"show\", the dialog will automatically open upon initialization.\nIf \"hide\", the dialog will stay hidden until\nthe open() method is called.",
+      "description": "Set the initial visibility of the dialog.",
       "type": "string",
       "displayName": "Initial Visibility",
-      "value": "hide"
+      "value": "hide",
+      "enumValues": [
+        "hide",
+        "show"
+      ],
+      "propertyEditorValues": {
+        "hide": {
+          "description": "The dialog will stay hidden until the open() method is called.",
+          "displayName": "Hide"
+        },
+        "show": {
+          "description": "The dialog will automatically open upon initialization.",
+          "displayName": "Show"
+        }
+      }
     },
     "modality": {
-      "description": "The modality of the dialog. Valid values are:\n\n\n\"modal\" - (the default) The dialog is modal. Interactions with other page elements are disabled. Modal dialogs overlay other page elements.\n\n\n\"modeless\" - defines a modeless dialog.\n\n",
+      "description": "Defines the modality of the dialog.",
       "type": "string",
       "displayName": "Modality",
-      "value": "modal"
+      "value": "modal",
+      "enumValues": [
+        "modal",
+        "modeless"
+      ],
+      "propertyEditorValues": {
+        "modal": {
+          "description": "The dialog is modal. Interactions with other page elements are disabled. Modal dialogs overlay other page elements.",
+          "displayName": "Modal"
+        },
+        "modeless": {
+          "description": "Defines a modeless dialog.",
+          "displayName": "Modeless"
+        }
+      }
     },
     "position": {
       "description": "Position object is used to establish the location the dialog will appear relative to\nanother element. ojDialog.Position defines \"my\" alignment \"at\" the alignment\n\"of\" some other thing which can be \"offset\" by so many pixels.\n\nThe \"my\" and \"at\" properties defines aligment points relative to the dialog and other\nelement. The \"my\" property represents the dialog's alignment where the \"at\" property\nrepresents the other element that can be identified by \"of\". The values of these properties\ndescribe horizontal and vertical alignments.\n\n\nDeprecated v3.0.0 jQuery UI position syntax; Use of a percent unit with\n\"my\" or \"at\" is not supported.",
-      "type": "Object",
+      "type": "object",
       "displayName": "Position",
-      "value": {
-        "my": {
-          "vertical": "center",
-          "horizontal": "center"
-        },
-        "at": {
-          "vertical": "center",
-          "horizontal": "center"
-        },
-        "of": "window",
-        "collision": "fit",
-        "offset": {
-          "x": 0,
-          "y": "0"
-        }
-      },
       "properties": {
         "at": {
           "description": "Defines which position on the target element (\"of\") to align the positioned element\nagainst.",
-          "type": "Object",
+          "type": "object",
+          "displayName": "At",
           "properties": {
             "horizontal": {
               "description": "",
               "type": "string",
+              "displayName": "Horizontal",
+              "value": "center",
               "enumValues": [
                 "center",
                 "end",
@@ -135,6 +186,8 @@
             "vertical": {
               "description": "",
               "type": "string",
+              "displayName": "Vertical",
+              "value": "center",
               "enumValues": [
                 "bottom",
                 "center",
@@ -157,6 +210,8 @@
         "collision": {
           "description": "Rule for alternate alignment.",
           "type": "string",
+          "displayName": "Collision",
+          "value": "fit",
           "enumValues": [
             "fit",
             "flip",
@@ -184,11 +239,14 @@
         },
         "my": {
           "description": "Defines which edge on the dialog to align with the target (\"of\") element.",
-          "type": "Object",
+          "type": "object",
+          "displayName": "My",
           "properties": {
             "horizontal": {
               "description": "",
               "type": "string",
+              "displayName": "Horizontal",
+              "value": "center",
               "enumValues": [
                 "center",
                 "end",
@@ -219,6 +277,8 @@
             "vertical": {
               "description": "",
               "type": "string",
+              "displayName": "Vertical",
+              "value": "center",
               "enumValues": [
                 "bottom",
                 "center",
@@ -240,29 +300,50 @@
         },
         "of": {
           "description": "Which element to position the dialog against.\nIf the value is a string, it should be a selector or the literal string value\nof window. Otherwise, a point of x,y. When a point\nis used, the values are relative to the whole document. Page horizontal and vertical\nscroll offsets need to be factored into this point - see UIEvent\npageX,\npageY.",
-          "type": "string|Object"
+          "type": "string|object",
+          "displayName": "Of",
+          "value": "window"
         },
         "offset": {
           "description": "Defines a point offset in pixels from the (\"my\") alignment.",
-          "type": "Object",
+          "type": "object",
+          "displayName": "Offset",
           "properties": {
             "x": {
               "description": "Horizontal aligment offset.",
-              "type": "number"
+              "type": "number",
+              "displayName": "X",
+              "value": 0
             },
             "y": {
               "description": "Vertical alignment offset.",
-              "type": "number"
+              "type": "number",
+              "displayName": "Y",
+              "value": 0
             }
           }
         }
       }
     },
     "resizeBehavior": {
-      "description": "The resizeBehavior of the dialog. \"resizable\" (default) makes the dialog resizable.\n\"none\" disables dialog resizability.",
+      "description": "Defines the resizeBehavior of the dialog.\nThe default value depends on the theme.\nIn the alta-web theme, the default is \"resizable\",\nand in alta-android, alta-ios and alta-windows themes, the\ndefault is \"none\".",
       "type": "string",
       "displayName": "Resize Behavior",
-      "value": "resizable"
+      "value": "resizable",
+      "enumValues": [
+        "none",
+        "resizable"
+      ],
+      "propertyEditorValues": {
+        "none": {
+          "description": "The dialog will not be interactively resizable.",
+          "displayName": "None"
+        },
+        "resizable": {
+          "description": "Thie dialog will be interactively resizable.",
+          "displayName": "Resizable"
+        }
+      }
     },
     "role": {
       "description": "The WAI-ARIA role of the dialog. By default, role=\"dialog\" is added to the generated HTML markup that surrounds the dialog.\nWhen used as an alert dialog, the user should set role to \"alertdialog\".",
@@ -271,15 +352,16 @@
       "value": "dialog"
     },
     "translations": {
-      "description": "A collection of translated resources from the translation bundle, or null if this\ncomponent has no resources. Resources may be accessed and overridden individually or collectively, as seen in the examples. If the component does not contain any translatable resource, the default value of this attribute will be \nnull. If not, an object containing all resources relevant to the component.\n\nIf this component has translations, their documentation immediately follows this doc entry.",
-      "type": "Object|null",
+      "description": "A collection of translated resources from the translation bundle, or null if this component has no resources.",
+      "type": "object|null",
       "displayName": "Translations",
+      "value": {},
       "translatable": true,
       "properties": {
         "labelCloseIcon": {
           "description": "Label for the dialog close button.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "value": "Close"
+          "displayName": "Label Close Icon"
         }
       }
     }
@@ -334,7 +416,7 @@
         {
           "name": "properties",
           "description": "An object containing the property and value pairs to set.",
-          "type": "Object"
+          "type": "object"
         }
       ],
       "return": "void"

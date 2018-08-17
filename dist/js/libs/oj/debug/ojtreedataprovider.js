@@ -30,7 +30,6 @@ define(['ojs/ojcore', 'ojs/ojeventtarget', 'ojs/ojdataprovider'], function(oj)
 
 /*jslint browser: true,devel:true*/
 /**
- * @ignore
  * @ojstatus preview
  * @since 5.1.0
  * @export

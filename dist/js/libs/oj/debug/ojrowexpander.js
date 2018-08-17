@@ -11,7 +11,56 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdatasource-common'
         */
        function(oj, $, compCore)
 {
-
+//%COMPONENT_METADATA%
+var __oj_row_expander_metadata = 
+{
+  "properties": {
+    "context": {
+      "type": "object"
+    },
+    "expanded": {
+      "type": "boolean",
+      "writeback": true
+    },
+    "translations": {
+      "type": "object",
+      "value": {},
+      "properties": {
+        "accessibleLevelDescription": {
+          "type": "string"
+        },
+        "accessibleRowCollapsed": {
+          "type": "string"
+        },
+        "accessibleRowDescription": {
+          "type": "string"
+        },
+        "accessibleRowExpanded": {
+          "type": "string"
+        },
+        "accessibleStateCollapsed": {
+          "type": "string"
+        },
+        "accessibleStateExpanded": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "methods": {
+    "refresh": {},
+    "setProperty": {},
+    "getProperty": {},
+    "setProperties": {},
+    "getNodeBySubId": {},
+    "getSubIdByNode": {}
+  },
+  "events": {
+    "ojExpand": {},
+    "ojCollapse": {}
+  },
+  "extension": {}
+};
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
@@ -3263,49 +3312,12 @@ oj.__registerWidget('oj.ojRowExpander', $['oj']['baseComponent'],
      */
 });
 
-(function() {
-var ojRowExpanderMeta = {
-  "properties": {
-    "context": {
-      "type": "object"
-    },
-    "expanded": {
-        "type": "boolean",
-        "writeback": true
-    },
-    "translations": {
-      "type": "Object",
-      "properties": {
-        "accessibleLevelDescription": {
-          "type": "string"
-        },
-        "accessibleRowCollapsed": {
-          "type": "string"
-        },
-        "accessibleRowDescription": {
-          "type": "string"
-        },
-        "accessibleRowExpanded": {
-          "type": "string"
-        },
-        "accessibleStateCollapsed": {
-          "type": "string"
-        },
-        "accessibleStateExpanded": {
-          "type": "string"
-        }
-      }
-    }
-  },
-  "events": {
-    "collapse": {},
-    "expand": {}
-  },
-  "extension": {
-    _WIDGET_NAME: "ojRowExpander"
-  }
-};
-oj.CustomElementBridge.registerMetadata('oj-row-expander', 'baseComponent', ojRowExpanderMeta);
-oj.CustomElementBridge.register('oj-row-expander', {'metadata': oj.CustomElementBridge.getMetadata('oj-row-expander')});
-})();
+/* global __oj_row_expander_metadata:false */
+
+(function () {
+  __oj_row_expander_metadata.extension._WIDGET_NAME = 'ojRowExpander';
+  oj.CustomElementBridge.registerMetadata('oj-row-expander', 'baseComponent', __oj_row_expander_metadata);
+  oj.CustomElementBridge.register('oj-row-expander', { metadata: oj.CustomElementBridge.getMetadata('oj-row-expander') });
+}());
+
 });

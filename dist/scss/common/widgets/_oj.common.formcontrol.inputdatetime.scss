@@ -246,6 +246,15 @@
       @include oj-form-control-content-disabled;
     }
 
+    /* Styling for text-align */
+    .oj-form-control-text-align-start .oj-inputdatetime-input
+    {
+      @include oj-bidi-property(
+        $property: 'text-align',
+        $startOrEnd: start,
+        $important: false) ;
+    }
+
     .oj-inputdatetime.oj-disabled .oj-inputdatetime-input-trigger {
       background-color: $formControlBgColorDisabled;
       border-color: $formControlBorderColorDisabled;

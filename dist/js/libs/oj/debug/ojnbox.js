@@ -6,6 +6,469 @@
 "use strict";
 define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/internal-deps/dvt/DvtNBox'], function(oj, $, comp, base, dvt)
 {
+  
+
+var __oj_n_box_metadata = 
+{
+  "properties": {
+    "animationOnDataChange": {
+      "type": "string",
+      "enumValues": [
+        "auto",
+        "none"
+      ],
+      "value": "none"
+    },
+    "animationOnDisplay": {
+      "type": "string",
+      "enumValues": [
+        "auto",
+        "none"
+      ],
+      "value": "none"
+    },
+    "cellContent": {
+      "type": "string",
+      "enumValues": [
+        "auto",
+        "counts"
+      ],
+      "value": "auto"
+    },
+    "cellMaximize": {
+      "type": "string",
+      "enumValues": [
+        "off",
+        "on"
+      ],
+      "value": "on"
+    },
+    "cells": {
+      "type": "Array<Object>|Promise"
+    },
+    "columns": {
+      "type": "Array<Object>|Promise"
+    },
+    "columnsTitle": {
+      "type": "string",
+      "value": ""
+    },
+    "countLabel": {
+      "type": "function"
+    },
+    "groupAttributes": {
+      "type": "Array<string>",
+      "enumValues": [
+        "color",
+        "indicatorColor",
+        "indicatorIconColor",
+        "indicatorIconPattern",
+        "indicatorIconShape"
+      ],
+      "value": [
+        "color",
+        "indicatorColor",
+        "indicatorIconShape",
+        "indicatorIconColor",
+        "indicatorIconPattern"
+      ]
+    },
+    "groupBehavior": {
+      "type": "string",
+      "enumValues": [
+        "acrossCells",
+        "none",
+        "withinCell"
+      ],
+      "value": "withinCell"
+    },
+    "hiddenCategories": {
+      "type": "Array<string>",
+      "writeback": true,
+      "value": []
+    },
+    "highlightMatch": {
+      "type": "string",
+      "enumValues": [
+        "all",
+        "any"
+      ],
+      "value": "all"
+    },
+    "highlightedCategories": {
+      "type": "Array<string>",
+      "writeback": true,
+      "value": []
+    },
+    "hoverBehavior": {
+      "type": "string",
+      "enumValues": [
+        "dim",
+        "none"
+      ],
+      "value": "none"
+    },
+    "labelTruncation": {
+      "type": "string",
+      "enumValues": [
+        "ifRequired",
+        "on"
+      ],
+      "value": "on"
+    },
+    "maximizedColumn": {
+      "type": "string",
+      "writeback": true,
+      "value": ""
+    },
+    "maximizedRow": {
+      "type": "string",
+      "writeback": true,
+      "value": ""
+    },
+    "nodes": {
+      "type": "Array<Object>|Promise"
+    },
+    "otherColor": {
+      "type": "string"
+    },
+    "otherThreshold": {
+      "type": "number",
+      "value": 0
+    },
+    "rows": {
+      "type": "Array<Object>|Promise"
+    },
+    "rowsTitle": {
+      "type": "string",
+      "value": ""
+    },
+    "selection": {
+      "type": "Array<string>",
+      "writeback": true,
+      "value": []
+    },
+    "selectionMode": {
+      "type": "string",
+      "enumValues": [
+        "multiple",
+        "none",
+        "single"
+      ],
+      "value": "multiple"
+    },
+    "styleDefaults": {
+      "type": "object",
+      "properties": {
+        "animationDuration": {
+          "type": "number"
+        },
+        "cellDefaults": {
+          "type": "object",
+          "properties": {
+            "labelHalign": {
+              "type": "string",
+              "enumValues": [
+                "center",
+                "end",
+                "start"
+              ],
+              "value": "start"
+            },
+            "labelStyle": {
+              "type": "object"
+            },
+            "maximizedSvgStyle": {
+              "type": "object"
+            },
+            "minimizedSvgStyle": {
+              "type": "object"
+            },
+            "showCount": {
+              "type": "string",
+              "enumValues": [
+                "auto",
+                "off",
+                "on"
+              ],
+              "value": "auto"
+            },
+            "svgStyle": {
+              "type": "object"
+            }
+          }
+        },
+        "columnLabelStyle": {
+          "type": "object"
+        },
+        "columnsTitleStyle": {
+          "type": "object"
+        },
+        "hoverBehaviorDelay": {
+          "type": "number",
+          "value": 200
+        },
+        "nodeDefaults": {
+          "type": "object",
+          "properties": {
+            "borderColor": {
+              "type": "string"
+            },
+            "borderWidth": {
+              "type": "number"
+            },
+            "color": {
+              "type": "string"
+            },
+            "iconDefaults": {
+              "type": "object",
+              "properties": {
+                "borderColor": {
+                  "type": "string"
+                },
+                "borderRadius": {
+                  "type": "string"
+                },
+                "borderWidth": {
+                  "type": "number"
+                },
+                "color": {
+                  "type": "string",
+                  "value": ""
+                },
+                "height": {
+                  "type": "number",
+                  "value": 0
+                },
+                "opacity": {
+                  "type": "number",
+                  "value": 1
+                },
+                "pattern": {
+                  "type": "string",
+                  "enumValues": [
+                    "largeChecker",
+                    "largeCrosshatch",
+                    "largeDiagonalLeft",
+                    "largeDiagonalRight",
+                    "largeDiamond",
+                    "largeTriangle",
+                    "none",
+                    "smallChecker",
+                    "smallCrosshatch",
+                    "smallDiagonalLeft",
+                    "smallDiagonalRight",
+                    "smallDiamond",
+                    "smallTriangle"
+                  ],
+                  "value": "none"
+                },
+                "shape": {
+                  "type": "string",
+                  "value": "square"
+                },
+                "source": {
+                  "type": "string",
+                  "value": ""
+                },
+                "width": {
+                  "type": "number",
+                  "value": 0
+                }
+              }
+            },
+            "indicatorColor": {
+              "type": "string",
+              "value": ""
+            },
+            "indicatorIconDefaults": {
+              "type": "object",
+              "properties": {
+                "borderColor": {
+                  "type": "string"
+                },
+                "borderRadius": {
+                  "type": "string"
+                },
+                "borderWidth": {
+                  "type": "number"
+                },
+                "color": {
+                  "type": "string",
+                  "value": ""
+                },
+                "height": {
+                  "type": "number"
+                },
+                "opacity": {
+                  "type": "number",
+                  "value": 1
+                },
+                "pattern": {
+                  "type": "string",
+                  "enumValues": [
+                    "largeChecker",
+                    "largeCrosshatch",
+                    "largeDiagonalLeft",
+                    "largeDiagonalRight",
+                    "largeDiamond",
+                    "largeTriangle",
+                    "none",
+                    "smallChecker",
+                    "smallCrosshatch",
+                    "smallDiagonalLeft",
+                    "smallDiagonalRight",
+                    "smallDiamond",
+                    "smallTriangle"
+                  ],
+                  "value": "none"
+                },
+                "shape": {
+                  "type": "string",
+                  "value": "square"
+                },
+                "source": {
+                  "type": "string"
+                },
+                "width": {
+                  "type": "number"
+                }
+              }
+            },
+            "labelStyle": {
+              "type": "object"
+            },
+            "secondaryLabelStyle": {
+              "type": "object"
+            }
+          }
+        },
+        "rowLabelStyle": {
+          "type": "object"
+        },
+        "rowsTitleStyle": {
+          "type": "object"
+        }
+      }
+    },
+    "tooltip": {
+      "type": "object",
+      "properties": {
+        "renderer": {
+          "type": "function"
+        }
+      }
+    },
+    "touchResponse": {
+      "type": "string",
+      "enumValues": [
+        "auto",
+        "touchStart"
+      ],
+      "value": "auto"
+    },
+    "trackResize": {
+      "type": "string",
+      "enumValues": [
+        "off",
+        "on"
+      ],
+      "value": "on"
+    },
+    "translations": {
+      "type": "object",
+      "value": {},
+      "properties": {
+        "componentName": {
+          "type": "string"
+        },
+        "highlightedCount": {
+          "type": "string"
+        },
+        "labelAdditionalData": {
+          "type": "string"
+        },
+        "labelAndValue": {
+          "type": "string"
+        },
+        "labelClearSelection": {
+          "type": "string"
+        },
+        "labelCountWithTotal": {
+          "type": "string"
+        },
+        "labelDataVisualization": {
+          "type": "string"
+        },
+        "labelGroup": {
+          "type": "string"
+        },
+        "labelInvalidData": {
+          "type": "string"
+        },
+        "labelNoData": {
+          "type": "string"
+        },
+        "labelOther": {
+          "type": "string"
+        },
+        "labelSize": {
+          "type": "string"
+        },
+        "stateCollapsed": {
+          "type": "string"
+        },
+        "stateDrillable": {
+          "type": "string"
+        },
+        "stateExpanded": {
+          "type": "string"
+        },
+        "stateHidden": {
+          "type": "string"
+        },
+        "stateIsolated": {
+          "type": "string"
+        },
+        "stateMaximized": {
+          "type": "string"
+        },
+        "stateMinimized": {
+          "type": "string"
+        },
+        "stateSelected": {
+          "type": "string"
+        },
+        "stateUnselected": {
+          "type": "string"
+        },
+        "stateVisible": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "methods": {
+    "getRowsTitle": {},
+    "getRowCount": {},
+    "getRow": {},
+    "getColumnsTitle": {},
+    "getColumnCount": {},
+    "getColumn": {},
+    "getCell": {},
+    "getGroupBehavior": {},
+    "getGroupNode": {},
+    "getDialog": {},
+    "getContextByNode": {},
+    "refresh": {},
+    "setProperty": {},
+    "getProperty": {},
+    "setProperties": {},
+    "getNodeBySubId": {},
+    "getSubIdByNode": {}
+  },
+  "extension": {}
+};
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
@@ -326,6 +789,7 @@ oj.__registerWidget('oj.ojNBox', $['oj']['dvtBaseComponent'],
      * @memberof oj.ojNBox
      * @instance
      * @type {string}
+     * @ojformat color
      */
     otherColor: "#636363",
 
@@ -396,7 +860,6 @@ oj.__registerWidget('oj.ojNBox', $['oj']['dvtBaseComponent'],
      * @memberof oj.ojNBox
      * @instance
      * @type {Object}
-     * @default {"cellDefaults": {"labelHalign": "start", "showCount": "auto"}, "hoverBehaviorDelay": 200, "nodeDefaults":{"iconDefaults":{"color":"", "height":0, "opacity":1, "pattern":"none", "shape":"square", "source":"", "width":0}, "indicatorColor":"", "indicatorIconDefaults":{"color":"", "opacity":1, "pattern":"none", "shape":"square", "source":""}}}
      */
     styleDefaults: {
       /**
@@ -417,7 +880,6 @@ oj.__registerWidget('oj.ojNBox', $['oj']['dvtBaseComponent'],
        * @memberof! oj.ojNBox
        * @instance
        * @type {Object}
-       * @default {"labelHalign": "start", "showCount": "auto"}
        */
       cellDefaults: {
         /**
@@ -530,7 +992,6 @@ oj.__registerWidget('oj.ojNBox', $['oj']['dvtBaseComponent'],
        * @memberof! oj.ojNBox
        * @instance
        * @type {Object}
-       * @default {"iconDefaults":{"color":"", "height":0, "opacity":1, "pattern":"none", "shape":"square", "source":"", "width":0}, "indicatorColor":"", "indicatorIconDefaults":{"color":"", "opacity":1, "pattern":"none", "shape":"square", "source":""}}
        */
       nodeDefaults: {
         /**
@@ -540,6 +1001,7 @@ oj.__registerWidget('oj.ojNBox', $['oj']['dvtBaseComponent'],
          * @memberof! oj.ojNBox
          * @instance
          * @type {string}
+         * @ojformat color
          */
         borderColor: "",
 
@@ -561,6 +1023,7 @@ oj.__registerWidget('oj.ojNBox', $['oj']['dvtBaseComponent'],
          * @memberof! oj.ojNBox
          * @instance
          * @type {string}
+         * @ojformat color
          */
         color: undefined,
 
@@ -571,7 +1034,6 @@ oj.__registerWidget('oj.ojNBox', $['oj']['dvtBaseComponent'],
          * @memberof! oj.ojNBox
          * @instance
          * @type {Object}
-         * @default {"color":"", "height":0, "opacity":1, "pattern":"none", "shape":"square", "source":"", "width":0}
          */
         iconDefaults: {
           /**
@@ -581,6 +1043,7 @@ oj.__registerWidget('oj.ojNBox', $['oj']['dvtBaseComponent'],
            * @memberof! oj.ojNBox
            * @instance
            * @type {string}
+           * @ojformat color
            */
           borderColor: "#000000",
 
@@ -611,6 +1074,7 @@ oj.__registerWidget('oj.ojNBox', $['oj']['dvtBaseComponent'],
            * @memberof! oj.ojNBox
            * @instance
            * @type {string}
+           * @ojformat color
            * @default ""
            */
           color: "",
@@ -669,16 +1133,16 @@ oj.__registerWidget('oj.ojNBox', $['oj']['dvtBaseComponent'],
            * @memberof! oj.ojNBox
            * @instance
            * @type {string}
-           * @ojvalue {string} "circle"
-           * @ojvalue {string} "ellipse"
-           * @ojvalue {string} "square"
-           * @ojvalue {string} "plus"
-           * @ojvalue {string} "diamond"
-           * @ojvalue {string} "triangleUp"
-           * @ojvalue {string} "triangleDown"
-           * @ojvalue {string} "human"
-           * @ojvalue {string} "rectangle"
-           * @ojvalue {string} "star"
+           * @ojvalue {string=} "circle"
+           * @ojvalue {string=} "ellipse"
+           * @ojvalue {string=} "square"
+           * @ojvalue {string=} "plus"
+           * @ojvalue {string=} "diamond"
+           * @ojvalue {string=} "triangleUp"
+           * @ojvalue {string=} "triangleDown"
+           * @ojvalue {string=} "human"
+           * @ojvalue {string=} "rectangle"
+           * @ojvalue {string=} "star"
            * @default "square"
            */
           shape: "square",
@@ -713,6 +1177,7 @@ oj.__registerWidget('oj.ojNBox', $['oj']['dvtBaseComponent'],
          * @memberof! oj.ojNBox
          * @instance
          * @type {string}
+         * @ojformat color
          * @default ""
          */
         indicatorColor: "",
@@ -724,7 +1189,6 @@ oj.__registerWidget('oj.ojNBox', $['oj']['dvtBaseComponent'],
          * @memberof! oj.ojNBox
          * @instance
          * @type {Object}
-         * @default {"color":"", "opacity":1, "pattern":"none", "shape":"square", "source":""}
          */
         indicatorIconDefaults: {
           /**
@@ -734,6 +1198,7 @@ oj.__registerWidget('oj.ojNBox', $['oj']['dvtBaseComponent'],
            * @memberof! oj.ojNBox
            * @instance
            * @type {string}
+           * @ojformat color
            */
           borderColor: "#000000",
 
@@ -764,6 +1229,7 @@ oj.__registerWidget('oj.ojNBox', $['oj']['dvtBaseComponent'],
            * @memberof! oj.ojNBox
            * @instance
            * @type {string}
+           * @ojformat color
            * @default ""
            */
           color: "",
@@ -821,16 +1287,16 @@ oj.__registerWidget('oj.ojNBox', $['oj']['dvtBaseComponent'],
            * @memberof! oj.ojNBox
            * @instance
            * @type {string}
-           * @ojvalue {string} "circle"
-           * @ojvalue {string} "ellipse"
-           * @ojvalue {string} "square"
-           * @ojvalue {string} "plus"
-           * @ojvalue {string} "diamond"
-           * @ojvalue {string} "triangleUp"
-           * @ojvalue {string} "triangleDown"
-           * @ojvalue {string} "human"
-           * @ojvalue {string} "rectangle"
-           * @ojvalue {string} "star"
+           * @ojvalue {string=} "circle"
+           * @ojvalue {string=} "ellipse"
+           * @ojvalue {string=} "square"
+           * @ojvalue {string=} "plus"
+           * @ojvalue {string=} "diamond"
+           * @ojvalue {string=} "triangleUp"
+           * @ojvalue {string=} "triangleDown"
+           * @ojvalue {string=} "human"
+           * @ojvalue {string=} "rectangle"
+           * @ojvalue {string=} "star"
            * @default "square"
            */
           shape: "square",
@@ -909,7 +1375,6 @@ oj.__registerWidget('oj.ojNBox', $['oj']['dvtBaseComponent'],
      * @memberof oj.ojNBox
      * @instance
      * @type {Object}
-     * @default {"renderer": null}
      */
     tooltip: {
       /**
@@ -1786,6 +2251,7 @@ oj.__registerWidget('oj.ojNBox', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojNBox
  * @instance
  * @type {string}
+ * @ojformat color
  * @default null
  */
 /**
@@ -1885,6 +2351,7 @@ oj.__registerWidget('oj.ojNBox', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojNBox
  * @instance
  * @type {string}
+ * @ojformat color
  * @default null
  */
 /**
@@ -1894,6 +2361,7 @@ oj.__registerWidget('oj.ojNBox', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojNBox
  * @instance
  * @type {string}
+ * @ojformat color
  * @default null
  */
 /**
@@ -1903,7 +2371,6 @@ oj.__registerWidget('oj.ojNBox', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojNBox
  * @instance
  * @type {Object}
- * @default null
  */
 /**
  * The border color of this icon.
@@ -1912,6 +2379,7 @@ oj.__registerWidget('oj.ojNBox', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojNBox
  * @instance
  * @type {string}
+ * @ojformat color
  * @default null
  */
 /**
@@ -1939,6 +2407,7 @@ oj.__registerWidget('oj.ojNBox', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojNBox
  * @instance
  * @type {string}
+ * @ojformat color
  * @default null
  */
 /**
@@ -2061,7 +2530,6 @@ oj.__registerWidget('oj.ojNBox', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojNBox
  * @instance
  * @type {Object}
- * @default null
  */
 /**
  * The border color of this indicator icon.
@@ -2070,6 +2538,7 @@ oj.__registerWidget('oj.ojNBox', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojNBox
  * @instance
  * @type {string}
+ * @ojformat color
  * @default null
  */
 /**
@@ -2097,6 +2566,7 @@ oj.__registerWidget('oj.ojNBox', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojNBox
  * @instance
  * @type {string}
+ * @ojformat color
  * @default null
  */
 /**
@@ -2398,374 +2868,23 @@ oj.__registerWidget('oj.ojNBox', $['oj']['dvtBaseComponent'],
  * @memberof oj.ojNBox
  */
 
+/* global __oj_n_box_metadata */
 /**
  * Ignore tag only needed for DVTs that have jsDoc in separate _doc.js files.
  * @ignore
  */
-(function() {
-var ojNBoxMeta = {
-  "properties": {
-    "animationOnDataChange": {
-      "type": "string",
-      "enumValues": ["auto", "none"]
-    },
-    "animationOnDisplay": {
-      "type": "string",
-      "enumValues": ["auto", "none"]
-    },
-    "cellContent": {
-      "type": "string",
-      "enumValues": ["counts", "auto"]
-    },
-    "cellMaximize": {
-      "type": "string",
-      "enumValues": ["off", "on"]
-    },
-    "cells": {
-      "type": "Array<object>|Promise"
-    },
-    "columns": {
-      "type": "Array<object>|Promise"
-    },
-    "columnsTitle": {
-      "type": "string"
-    },
-    "countLabel": {},
-    "groupAttributes": {
-      "type": "Array<string>"
-    },
-    "groupBehavior": {
-      "type": "string",
-      "enumValues": ["acrossCells", "none", "withinCell"]
-    },
-    "hiddenCategories": {
-      "type": "Array<string>",
-      "writeback": true
-    },
-    "highlightedCategories": {
-      "type": "Array<string>",
-      "writeback": true
-    },
-    "highlightMatch": {
-      "type": "string",
-      "enumValues": ["any", "all"]
-    },
-    "hoverBehavior": {
-      "type": "string",
-      "enumValues": ["dim", "none"]
-    },
-    "labelTruncation": {
-      "type": "string",
-      "enumValues": ["ifRequired", "on"]
-    },
-    "maximizedColumn": {
-      "type": "string",
-      "writeback": true
-    },
-    "maximizedRow": {
-      "type": "string",
-      "writeback": true
-    },
-    "nodes": {
-      "type": "Array<object>|Promise"
-    },
-    "otherColor": {
-      "type": "string"
-    },
-    "otherThreshold": {
-      "type": "number"
-    },
-    "rows": {
-      "type": "Array<object>|Promise"
-    },
-    "rowsTitle": {
-      "type": "string"
-    },
-    "selection": {
-      "type": "Array<string>",
-      "writeback": true
-    },
-    "selectionMode": {
-      "type": "string",
-      "enumValues": ["none", "single", "multiple"]
-    },
-    "styleDefaults": {
-      "type": "object",
-      "properties": {
-        "animationDuration": {
-          "type": "number"
-        },
-        "cellDefaults": {
-          "type": "object",
-          "properties": {
-            "labelHalign": {
-              "type": "string",
-              "enumValues": ["center", "end", "start"]
-            },
-            "labelStyle": {
-              "type": "object"
-            },
-            "maximizedSvgStyle": {
-              "type": "object"
-            },
-            "minimizedSvgStyle": {
-              "type": "object"
-            },
-            "showCount": {
-              "type": "string",
-              "enumValues": ["on", "off", "auto"]
-            },
-            "svgStyle": {
-              "type": "object"
-            }
-          }
-        },
-        "columnLabelStyle": {
-          "type": "object"
-        },
-        "columnsTitleStyle": {
-          "type": "object"
-        },
-        "hoverBehaviorDelay": {
-          "type": "number"
-        },
-        "nodeDefaults": {
-          "type": "object",
-          "properties": {
-            "borderColor": {
-              "type": "string"
-            },
-            "borderWidth": {
-              "type": "number"
-            },
-            "color": {
-              "type": "string"
-            },
-            "iconDefaults": {
-              "type": "object",
-              "properties": {
-                "borderColor": {
-                  "type": "string"
-                },
-                "borderRadius": {
-                  "type": "string"
-                },
-                "borderWidth": {
-                  "type": "number"
-                },
-                "color": {
-                  "type": "string"
-                },
-                "height": {
-                  "type": "number"
-                },
-                "opacity": {
-                  "type": "number"
-                },
-                "pattern": {
-                  "type": "string",
-                  "enumValues": ["smallChecker", "smallCrosshatch", "smallDiagonalLeft", "smallDiagonalRight", "smallDiamond", "smallTriangle",
-                                 "largeChecker", "largeCrosshatch", "largeDiagonalLeft", "largeDiagonalRight", "largeDiamond", "largeTriangle", "none"]
-                },
-                "shape": {
-                  "type": "string"
-                },
-                "source": {
-                  "type": "string"
-                },
-                "width": {
-                  "type": "number"
-                }
-              }
-            },
-            "indicatorColor": {
-              "type": "string"
-            },
-            "indicatorIconDefaults": {
-              "type": "object",
-              "properties": {
-                "borderColor": {
-                  "type": "string"
-                },
-                "borderRadius": {
-                  "type": "string"
-                },
-                "borderWidth": {
-                  "type": "number"
-                },
-                "color": {
-                  "type": "string"
-                },
-                "height": {
-                  "type": "number"
-                },
-                "opacity": {
-                  "type": "number"
-                },
-                "pattern": {
-                  "type": "string",
-                  "enumValues": ["smallChecker", "smallCrosshatch", "smallDiagonalLeft", "smallDiagonalRight", "smallDiamond", "smallTriangle",
-                                 "largeChecker", "largeCrosshatch", "largeDiagonalLeft", "largeDiagonalRight", "largeDiamond", "largeTriangle", "none"]
-                },
-                "shape": {
-                  "type": "string"
-                },
-                "source": {
-                  "type": "string"
-                },
-                "width": {
-                  "type": "number"
-                }
-              }
-            },
-            "labelStyle": {
-              "type": "object"
-            },
-            "secondaryLabelStyle": {
-              "type": "object"
-            },
-          }
-        },
-        "rowLabelStyle": {
-          "type": "object"
-        },
-        "rowsTitleStyle": {
-          "type": "object"
-        }
-      }
-    },
-    "tooltip": {
-      "type": "object",
-      "properties": {
-        "renderer": {}
-      }
-    },
-    "touchResponse": {
-      "type": "string",
-      "enumValues": ["touchStart", "auto"]
-    },
-    "translations": {
-      "type": "Object",
-      "properties": {
-        "componentName": {
-          "type": "string",
-          "value": "NBox"
-        },
-        "highlightedCount": {
-          "type": "string",
-          "value": "{0}/{1}"
-        },
-        "labelAdditionalData": {
-          "type": "string",
-          "value": "Additional Data"
-        },
-        "labelAndValue": {
-          "type": "string",
-          "value": "{0}: {1}"
-        },
-        "labelClearSelection": {
-          "type": "string",
-          "value": "Clear Selection"
-        },
-        "labelCountWithTotal": {
-          "type": "string",
-          "value": "{0} of {1}"
-        },
-        "labelDataVisualization": {
-          "type": "string",
-          "value": "Data Visualization"
-        },
-        "labelGroup": {
-          "type": "string",
-          "value": "Group"
-        },
-        "labelInvalidData": {
-          "type": "string",
-          "value": "Invalid data"
-        },
-        "labelNoData": {
-          "type": "string",
-          "value": "No data to display"
-        },
-        "labelOther": {
-          "type": "string",
-          "value": "Other"
-        },
-        "labelSize": {
-          "type": "string",
-          "value": "Size"
-        },
-        "stateCollapsed": {
-          "type": "string",
-          "value": "Collapsed"
-        },
-        "stateDrillable": {
-          "type": "string",
-          "value": "Drillable"
-        },
-        "stateExpanded": {
-          "type": "string",
-          "value": "Expanded"
-        },
-        "stateHidden": {
-          "type": "string",
-          "value": "Hidden"
-        },
-        "stateIsolated": {
-          "type": "string",
-          "value": "Isolated"
-        },
-        "stateMaximized": {
-          "type": "string",
-          "value": "Maximized"
-        },
-        "stateMinimized": {
-          "type": "string",
-          "value": "Minimized"
-        },
-        "stateSelected": {
-          "type": "string",
-          "value": "Selected"
-        },
-        "stateUnselected": {
-          "type": "string",
-          "value": "Unselected"
-        },
-        "stateVisible": {
-          "type": "string",
-          "value": "Visible"
-        }
-      }
-    }
-  },
-  "events": {},
-  "methods": {
-    "getCell": {},
-    "getColumn": {},
-    "getColumnCount": {},
-    "getColumnsTitle": {},
-    "getContextByNode": {},
-    "getDialog": {},
-    "getGroupBehavior": {},
-    "getGroupNode": {},
-    "getRow": {},
-    "getRowCount": {},
-    "getRowsTitle": {}
-  },
-  "extension": {
-    _WIDGET_NAME: "ojNBox"
-  }
-};
-oj.CustomElementBridge.registerMetadata('oj-n-box', 'dvtBaseComponent', ojNBoxMeta);
+(function () {
+  __oj_n_box_metadata.extension._WIDGET_NAME = 'ojNBox';
+  oj.CustomElementBridge.registerMetadata('oj-n-box', 'dvtBaseComponent', __oj_n_box_metadata);
 // Get the combined meta of superclass which contains a shape parse function generator
-var dvtMeta = oj.CustomElementBridge.getMetadata('oj-n-box');
-oj.CustomElementBridge.register('oj-n-box', {
-  'metadata': dvtMeta,
-  'parseFunction': dvtMeta['extension']._DVT_PARSE_FUNC({
-  	'style-defaults.node-defaults.icon-defaults.shape': true,
-  	'style-defaults.node-defaults.indicator-icon-defaults.shape': true
-  })
-});
-})();
+  var dvtMeta = oj.CustomElementBridge.getMetadata('oj-n-box');
+  oj.CustomElementBridge.register('oj-n-box', {
+    metadata: dvtMeta,
+    parseFunction: dvtMeta.extension._DVT_PARSE_FUNC({
+      'style-defaults.node-defaults.icon-defaults.shape': true,
+      'style-defaults.node-defaults.indicator-icon-defaults.shape': true
+    })
+  });
+}());
 
 });

@@ -7,7 +7,97 @@
 define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'promise'],
        function(oj, $)
 {
-
+//%COMPONENT_METADATA%
+var __oj_film_strip_metadata = 
+{
+  "properties": {
+    "arrowPlacement": {
+      "type": "string",
+      "enumValues": [
+        "adjacent",
+        "overlay"
+      ],
+      "value": "adjacent"
+    },
+    "arrowVisibility": {
+      "type": "string",
+      "enumValues": [
+        "auto",
+        "hidden",
+        "hover",
+        "visible"
+      ],
+      "value": "auto"
+    },
+    "currentItem": {
+      "type": "object",
+      "writeback": true,
+      "value": {
+        "index": 0
+      },
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "index": {
+          "type": "number"
+        }
+      }
+    },
+    "looping": {
+      "type": "string",
+      "enumValues": [
+        "off",
+        "page"
+      ],
+      "value": "off"
+    },
+    "maxItemsPerPage": {
+      "type": "number",
+      "value": 0
+    },
+    "orientation": {
+      "type": "string",
+      "enumValues": [
+        "horizontal",
+        "vertical"
+      ],
+      "value": "horizontal"
+    },
+    "translations": {
+      "type": "object",
+      "value": {},
+      "properties": {
+        "labelAccArrowNextPage": {
+          "type": "string"
+        },
+        "labelAccArrowPreviousPage": {
+          "type": "string"
+        },
+        "labelAccFilmStrip": {
+          "type": "string"
+        },
+        "tipArrowNextPage": {
+          "type": "string"
+        },
+        "tipArrowPreviousPage": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "methods": {
+    "refresh": {},
+    "getItemsPerPage": {},
+    "getPagingModel": {},
+    "setProperty": {},
+    "getProperty": {},
+    "setProperties": {},
+    "getNodeBySubId": {},
+    "getSubIdByNode": {}
+  },
+  "extension": {}
+};
 /**
  * Copyright (c) 2015, Oracle and/or its affiliates.
  * All rights reserved.
@@ -3233,75 +3323,11 @@ var _ADJACENT = "adjacent",
 // end static members and functions ////////////////////////////////////////////
 
 }()); // end of FilmStrip wrapper function
-(function() {
-var ojFilmStripMeta = {
-  "properties": {
-    "arrowPlacement": {
-      "type": "string",
-      "enumValues": ["adjacent", "overlay"]
-    },
-    "arrowVisibility": {
-      "type": "string",
-      "enumValues": ["visible", "hidden", "hover", "auto"]
-    },
-    "currentItem": {
-      "type": "object",
-      "writeback": true,
-      "properties": {
-        "id": {
-          "type": "string"
-        },
-        "index": {
-          "type": "number"
-        }
-      }
-    },
-    "maxItemsPerPage": {
-      "type": "number"
-    },
-    "orientation": {
-      "type": "string",
-      "enumValues": ["horizontal", "vertical"]
-    },
-    "looping": {
-      "type": "string",
-      "enumValues": ["off", "page"]
-    },
-    "translations": {
-      "type": "Object",
-      "properties": {
-        "labelAccFilmStrip": {
-          "type": "string",
-          "value": "Displaying page {pageIndex} of {pageCount}"
-        },
-        "labelAccArrowNextPage": {
-          "type": "string",
-          "value": "Select Next to display next page"
-        },
-        "labelAccArrowPreviousPage": {
-          "type": "string",
-          "value": "Select Previous to display previous page"
-        },
-        "tipArrowNextPage": {
-          "type": "string",
-          "value": "Next"
-        },
-        "tipArrowPreviousPage": {
-          "type": "string",
-          "value": "Previous"
-        }
-      }
-    }
-  },
-  "methods": {
-    "getItemsPerPage": {},
-    "getPagingModel": {},
-  },
-  "extension": {
-    _WIDGET_NAME: "ojFilmStrip"
-  }
-};
-oj.CustomElementBridge.registerMetadata('oj-film-strip', 'baseComponent', ojFilmStripMeta);
-oj.CustomElementBridge.register('oj-film-strip', {'metadata': oj.CustomElementBridge.getMetadata('oj-film-strip')});
-})();
+/* global __oj_film_strip_metadata:false */
+(function () {
+  __oj_film_strip_metadata.extension._WIDGET_NAME = 'ojFilmStrip';
+  oj.CustomElementBridge.registerMetadata('oj-film-strip', 'baseComponent', __oj_film_strip_metadata);
+  oj.CustomElementBridge.register('oj-film-strip', { metadata: oj.CustomElementBridge.getMetadata('oj-film-strip') });
+}());
+
 });

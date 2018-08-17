@@ -6,7 +6,308 @@
 "use strict";
 define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/internal-deps/dvt/DvtTreeView'], function(oj, $, comp, base, dvt)
 {
-
+//%COMPONENT_METADATA%
+var __oj_sunburst_metadata = 
+{
+  "properties": {
+    "animationDuration": {
+      "type": "number"
+    },
+    "animationOnDataChange": {
+      "type": "string",
+      "enumValues": [
+        "auto",
+        "none"
+      ],
+      "value": "none"
+    },
+    "animationOnDisplay": {
+      "type": "string",
+      "enumValues": [
+        "auto",
+        "none"
+      ],
+      "value": "none"
+    },
+    "animationUpdateColor": {
+      "type": "string",
+      "value": ""
+    },
+    "colorLabel": {
+      "type": "string",
+      "value": ""
+    },
+    "displayLevels": {
+      "type": "number",
+      "value": 1.7976931348623157e+308
+    },
+    "drilling": {
+      "type": "string",
+      "enumValues": [
+        "off",
+        "on"
+      ],
+      "value": "off"
+    },
+    "expanded": {
+      "type": "KeySet",
+      "writeback": true,
+      "value": "new ExpandAllKeySet()"
+    },
+    "hiddenCategories": {
+      "type": "Array<string>",
+      "writeback": true,
+      "value": []
+    },
+    "highlightMatch": {
+      "type": "string",
+      "enumValues": [
+        "all",
+        "any"
+      ],
+      "value": "all"
+    },
+    "highlightedCategories": {
+      "type": "Array<string>",
+      "writeback": true,
+      "value": []
+    },
+    "hoverBehavior": {
+      "type": "string",
+      "enumValues": [
+        "dim",
+        "none"
+      ],
+      "value": "none"
+    },
+    "hoverBehaviorDelay": {
+      "type": "number",
+      "value": 200
+    },
+    "nodeDefaults": {
+      "type": "object",
+      "properties": {
+        "borderColor": {
+          "type": "string"
+        },
+        "borderWidth": {
+          "type": "number",
+          "value": 1
+        },
+        "hoverColor": {
+          "type": "string"
+        },
+        "labelDisplay": {
+          "type": "string",
+          "enumValues": [
+            "auto",
+            "horizontal",
+            "off",
+            "rotated"
+          ],
+          "value": "auto"
+        },
+        "labelHalign": {
+          "type": "string",
+          "enumValues": [
+            "center",
+            "inner",
+            "outer"
+          ],
+          "value": "center"
+        },
+        "labelMinLength": {
+          "type": "number",
+          "value": 1
+        },
+        "labelStyle": {
+          "type": "object"
+        },
+        "selectedInnerColor": {
+          "type": "string"
+        },
+        "selectedOuterColor": {
+          "type": "string"
+        },
+        "showDisclosure": {
+          "type": "string",
+          "enumValues": [
+            "off",
+            "on"
+          ],
+          "value": "off"
+        }
+      }
+    },
+    "nodes": {
+      "type": "Array<Object>|Promise"
+    },
+    "rootNode": {
+      "type": "string",
+      "value": ""
+    },
+    "rootNodeContent": {
+      "type": "object",
+      "properties": {
+        "renderer": {
+          "type": "function"
+        }
+      }
+    },
+    "rotation": {
+      "type": "string",
+      "enumValues": [
+        "off",
+        "on"
+      ],
+      "value": "on"
+    },
+    "selection": {
+      "type": "Array<string>",
+      "writeback": true,
+      "value": []
+    },
+    "selectionMode": {
+      "type": "string",
+      "enumValues": [
+        "multiple",
+        "none",
+        "single"
+      ],
+      "value": "multiple"
+    },
+    "sizeLabel": {
+      "type": "string",
+      "value": ""
+    },
+    "sorting": {
+      "type": "string",
+      "enumValues": [
+        "off",
+        "on"
+      ],
+      "value": "off"
+    },
+    "startAngle": {
+      "type": "number",
+      "writeback": true,
+      "value": 90
+    },
+    "tooltip": {
+      "type": "object",
+      "properties": {
+        "renderer": {
+          "type": "function"
+        }
+      }
+    },
+    "touchResponse": {
+      "type": "string",
+      "enumValues": [
+        "auto",
+        "touchStart"
+      ],
+      "value": "auto"
+    },
+    "trackResize": {
+      "type": "string",
+      "enumValues": [
+        "off",
+        "on"
+      ],
+      "value": "on"
+    },
+    "translations": {
+      "type": "object",
+      "value": {},
+      "properties": {
+        "componentName": {
+          "type": "string"
+        },
+        "labelAndValue": {
+          "type": "string"
+        },
+        "labelClearSelection": {
+          "type": "string"
+        },
+        "labelColor": {
+          "type": "string"
+        },
+        "labelCountWithTotal": {
+          "type": "string"
+        },
+        "labelDataVisualization": {
+          "type": "string"
+        },
+        "labelInvalidData": {
+          "type": "string"
+        },
+        "labelNoData": {
+          "type": "string"
+        },
+        "labelSize": {
+          "type": "string"
+        },
+        "stateCollapsed": {
+          "type": "string"
+        },
+        "stateDrillable": {
+          "type": "string"
+        },
+        "stateExpanded": {
+          "type": "string"
+        },
+        "stateHidden": {
+          "type": "string"
+        },
+        "stateIsolated": {
+          "type": "string"
+        },
+        "stateMaximized": {
+          "type": "string"
+        },
+        "stateMinimized": {
+          "type": "string"
+        },
+        "stateSelected": {
+          "type": "string"
+        },
+        "stateUnselected": {
+          "type": "string"
+        },
+        "stateVisible": {
+          "type": "string"
+        },
+        "tooltipCollapse": {
+          "type": "string"
+        },
+        "tooltipExpand": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "methods": {
+    "getNode": {},
+    "getContextByNode": {},
+    "refresh": {},
+    "setProperty": {},
+    "getProperty": {},
+    "setProperties": {},
+    "getNodeBySubId": {},
+    "getSubIdByNode": {}
+  },
+  "events": {
+    "ojRotateInput": {},
+    "ojBeforeDrill": {},
+    "ojDrill": {},
+    "ojBeforeExpand": {},
+    "ojExpand": {},
+    "ojBeforeCollapse": {},
+    "ojCollapse": {}
+  },
+  "extension": {}
+};
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
@@ -135,6 +436,7 @@ oj.__registerWidget('oj.ojSunburst', $['oj']['dvtBaseComponent'],
      * @memberof oj.ojSunburst
      * @instance
      * @type {string}
+     * @ojformat color
      * @default ""
      */
     animationUpdateColor: "",
@@ -234,7 +536,6 @@ oj.__registerWidget('oj.ojSunburst', $['oj']['dvtBaseComponent'],
      * @memberof oj.ojSunburst
      * @instance
      * @type {Object}
-     * @default {"renderer": null}
      */
     tooltip: {
       /**
@@ -311,7 +612,6 @@ oj.__registerWidget('oj.ojSunburst', $['oj']['dvtBaseComponent'],
      * @memberof oj.ojSunburst
      * @instance
      * @type {Object}
-     * @default {"renderer": null}
      */
     rootNodeContent: {
       /**
@@ -424,7 +724,6 @@ oj.__registerWidget('oj.ojSunburst', $['oj']['dvtBaseComponent'],
      * @memberof oj.ojSunburst
      * @instance
      * @type {Object}
-     * @default {"borderWidth": 1, "showDisclosure": "off", "labelMinLength": 1, "labelDisplay": "auto", "labelHalign": "center"}
      */
      nodeDefaults: {
        /**
@@ -434,6 +733,7 @@ oj.__registerWidget('oj.ojSunburst', $['oj']['dvtBaseComponent'],
         * @memberof! oj.ojSunburst
         * @instance
         * @type {string}
+        * @ojformat color
         */
        borderColor: "rgba(255,255,255,0.3)",
        
@@ -519,6 +819,7 @@ oj.__registerWidget('oj.ojSunburst', $['oj']['dvtBaseComponent'],
         * @memberof! oj.ojSunburst
         * @instance
         * @type {string}
+        * @ojformat color
         */
        hoverColor: undefined,
        
@@ -529,6 +830,7 @@ oj.__registerWidget('oj.ojSunburst', $['oj']['dvtBaseComponent'],
         * @memberof! oj.ojSunburst
         * @instance
         * @type {string}
+        * @ojformat color
         */
        selectedInnerColor: undefined,
        
@@ -539,6 +841,7 @@ oj.__registerWidget('oj.ojSunburst', $['oj']['dvtBaseComponent'],
         * @memberof! oj.ojSunburst
         * @instance
         * @type {string}
+        * @ojformat color
         */
        selectedOuterColor: undefined  
      },
@@ -1016,6 +1319,7 @@ oj.__registerWidget('oj.ojSunburst', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojSunburst
  * @instance
  * @type {string}
+ * @ojformat color
  * @default null
  */
 /**
@@ -1070,6 +1374,7 @@ oj.__registerWidget('oj.ojSunburst', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojSunburst
  * @instance
  * @type {string}
+ * @ojformat color
  * @default null
  */
 /**
@@ -1248,248 +1553,15 @@ oj.__registerWidget('oj.ojSunburst', $['oj']['dvtBaseComponent'],
  * @ojnodecontext oj-sunburst-node
  * @memberof oj.ojSunburst
  */
+/* global __oj_sunburst_metadata:false */
 /**
  * Ignore tag only needed for DVTs that have jsDoc in separate _doc.js files.
  * @ignore
  */
-(function() {
-var ojSunburstMeta = {
-  "properties": {
-    "animationDuration": {
-      "type": "number"
-    },
-    "animationOnDataChange": {
-      "type": "string",
-      "enumValues": ["auto", "none"]
-    },
-    "animationOnDisplay": {
-      "type": "string",
-      "enumValues": ["auto", "none"]
-    },
-    "animationUpdateColor": {
-      "type": "string"
-    },
-    "colorLabel": {
-      "type": "string"
-    },
-    "displayLevels": {
-      "type": "number"
-    },
-    "drilling": {
-      "type": "string",
-      "enumValues": ["on", "off"]
-    },
-    "expanded" : {
-      "writeback": true
-    },
-    "hiddenCategories": {
-      "type": "Array<string>",
-      "writeback": true
-    },
-    "highlightedCategories": {
-      "type": "Array<string>",
-      "writeback": true
-    },
-    "highlightMatch": {
-      "type": "string",
-      "enumValues": ["any", "all"]
-    },
-    "hoverBehavior": {
-      "type": "string",
-      "enumValues": ["dim", "none"]
-    },
-    "hoverBehaviorDelay": {
-      "type": "number"
-    },    
-    "nodeDefaults": {
-      "type": "object",
-      "properties": {
-        "borderColor": {
-          "type": "string"
-        },
-        "borderWidth": {
-          "type": "number"
-        },
-        "hoverColor": {
-          "type": "string"
-        },
-        "labelDisplay": {
-          "type": "string",
-          "enumValues": ["auto", "horizontal", "rotated", "off"]
-        },
-        "labelHalign": {
-          "type": "string",
-          "enumValues": ["inner", "outer", "center"]
-        },
-        "labelStyle": {
-          "type": "object"
-        },
-        "selectedInnerColor": {
-          "type": "string"
-        },
-        "selectedOuterColor": {
-          "type": "string"
-        },
-        "showDisclosure": {
-          "type": "string",
-          "enumValues": ["on", "off"]
-        }
-      }
-    },
-    "nodes": {
-      "type": "Array<object>|Promise"
-    },
-    "rootNode": {
-      "type": "string"
-    },
-    "rotation": {
-      "type": "string",
-      "enumValues": ["off", "on"]
-    },
-    "rootNodeContent": {
-      "type": "object",
-      "properties": {
-        "renderer": {}
-      }
-    },
-    "selection": {
-      "type": "Array<string>",
-      "writeback": true
-    },
-    "selectionMode": {
-      "type": "string",
-      "enumValues": ["none", "single", "multiple"]
-    },
-    "sizeLabel": {
-      "type": "string"
-    },
-    "sorting": {
-      "type": "string",
-      "enumValues": ["on", "off"]
-    },
-    "startAngle": {
-      "type": "number",
-      "writeback": true
-    },
-    "tooltip": {
-      "type": "object",
-      "properties": {
-        "renderer": {}
-      }
-    },
-    "touchResponse": {
-      "type": "string",
-      "enumValues": ["touchStart", "auto"]
-    },
-    "translations": {
-      "type": "Object",
-      "properties": {
-        "componentName": {
-          "type": "string",
-          "value": "Sunburst"
-        },
-        "labelAndValue": {
-          "type": "string",
-          "value": "{0}: {1}"
-        },
-        "labelClearSelection": {
-          "type": "string",
-          "value": "Clear Selection"
-        },
-        "labelColor": {
-          "type": "string",
-          "value": "Color"
-        },
-        "labelCountWithTotal": {
-          "type": "string",
-          "value": "{0} of {1}"
-        },
-        "labelDataVisualization": {
-          "type": "string",
-          "value": "Data Visualization"
-        },
-        "labelInvalidData": {
-          "type": "string",
-          "value": "Invalid data"
-        },
-        "labelNoData": {
-          "type": "string",
-          "value": "No data to display"
-        },
-        "labelSize": {
-          "type": "string",
-          "value": "Size"
-        },
-        "stateCollapsed": {
-          "type": "string",
-          "value": "Collapsed"
-        },
-        "stateDrillable": {
-          "type": "string",
-          "value": "Drillable"
-        },
-        "stateExpanded": {
-          "type": "string",
-          "value": "Expanded"
-        },
-        "stateHidden": {
-          "type": "string",
-          "value": "Hidden"
-        },
-        "stateIsolated": {
-          "type": "string",
-          "value": "Isolated"
-        },
-        "stateMaximized": {
-          "type": "string",
-          "value": "Maximized"
-        },
-        "stateMinimized": {
-          "type": "string",
-          "value": "Minimized"
-        },
-        "stateSelected": {
-          "type": "string",
-          "value": "Selected"
-        },
-        "stateUnselected": {
-          "type": "string",
-          "value": "Unselected"
-        },
-        "stateVisible": {
-          "type": "string",
-          "value": "Visible"
-        },
-        "tooltipCollapse": {
-          "type": "string",
-          "value": "Collapse"
-        },
-        "tooltipExpand": {
-          "type": "string",
-          "value": "Expand"
-        }
-      }
-    }
-  },
-  "methods": {
-    "getContextByNode": {},
-    "getNode": {}
-  },
-  "events": {
-    "rotateInput": {},
-    "beforeDrill": {},
-    "drill": {},
-    "beforeExpand": {},
-    "expand": {},
-    "beforeCollapse": {},
-    "collapse": {}
-  },
-  "extension": {
-    _WIDGET_NAME: "ojSunburst"
-  }
-};
-oj.CustomElementBridge.registerMetadata('oj-sunburst', 'dvtBaseComponent', ojSunburstMeta);
-oj.CustomElementBridge.register('oj-sunburst', {'metadata': oj.CustomElementBridge.getMetadata('oj-sunburst')});
-})();
+(function () {
+  __oj_sunburst_metadata.extension._WIDGET_NAME = 'ojSunburst';
+  oj.CustomElementBridge.registerMetadata('oj-sunburst', 'dvtBaseComponent', __oj_sunburst_metadata);
+  oj.CustomElementBridge.register('oj-sunburst', { metadata: oj.CustomElementBridge.getMetadata('oj-sunburst') });
+}());
 
 });

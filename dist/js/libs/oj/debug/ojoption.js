@@ -7,7 +7,28 @@
 define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore'], 
        function(oj, $)
 {
-
+//%COMPONENT_METADATA%
+var __oj_option_metadata = 
+{
+  "properties": {
+    "disabled": {
+      "type": "boolean",
+      "value": false
+    },
+    "value": {
+      "type": "any"
+    }
+  },
+  "methods": {
+    "setProperty": {},
+    "getProperty": {},
+    "refresh": {},
+    "setProperties": {},
+    "getNodeBySubId": {},
+    "getSubIdByNode": {}
+  },
+  "extension": {}
+};
 /**
  * Copyright (c) 2017, Oracle and/or its affiliates.
  * All rights reserved.
@@ -253,33 +274,19 @@ function ojOption(context) {
  * @example <caption>Set a batch of properties:</caption>
  * myComponent.setProperties({"prop1": "value1", "prop2.subprop": "value2", "prop3": "value3"});
  */ 
+/* global __oj_option_metadata */
+/* global ojOption:false */
+
 /**
  * @protected
  * @ignore
  */
-(function() {  
-  var ojOptionMeta = {
-    "properties": {
-      "disabled": {
-        "type": "boolean",
-        "value": false
-      }, 
-      "value": {
-        "type": "any",
-        "value": null
-      },
-      // not documented
-      "customOptionRenderer": {}
-    },
-    "events": {
-      "action" : {}
-    },
-    "extension": {
-      _CONSTRUCTOR: ojOption
-    }
-  };
-  oj.CustomElementBridge.registerMetadata('oj-option', null, ojOptionMeta);
-  oj.CustomElementBridge.register('oj-option', {'metadata': oj.CustomElementBridge.getMetadata('oj-option')});
-})();
+(function () {
+  // not documented
+  __oj_option_metadata.properties.customOptionRenderer = {};
+  __oj_option_metadata.extension._CONSTRUCTOR = ojOption;
+  oj.CustomElementBridge.registerMetadata('oj-option', null, __oj_option_metadata);
+  oj.CustomElementBridge.register('oj-option', { metadata: oj.CustomElementBridge.getMetadata('oj-option') });
+}());
 
 });

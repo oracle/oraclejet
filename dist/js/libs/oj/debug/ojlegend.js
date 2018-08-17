@@ -6,6 +6,180 @@
 "use strict";
 define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/internal-deps/dvt/DvtLegend'], function(oj, $, comp, base, dvt)
 {
+  
+
+var __oj_legend_metadata = 
+{
+  "properties": {
+    "drilling": {
+      "type": "string",
+      "enumValues": [
+        "off",
+        "on"
+      ],
+      "value": "off"
+    },
+    "halign": {
+      "type": "string",
+      "enumValues": [
+        "center",
+        "end",
+        "start"
+      ],
+      "value": "start"
+    },
+    "hiddenCategories": {
+      "type": "Array<string>",
+      "writeback": true,
+      "value": []
+    },
+    "hideAndShowBehavior": {
+      "type": "string",
+      "enumValues": [
+        "off",
+        "on"
+      ],
+      "value": "off"
+    },
+    "highlightedCategories": {
+      "type": "Array<string>",
+      "writeback": true,
+      "value": []
+    },
+    "hoverBehavior": {
+      "type": "string",
+      "enumValues": [
+        "dim",
+        "none"
+      ],
+      "value": "none"
+    },
+    "hoverBehaviorDelay": {
+      "type": "number",
+      "value": 200
+    },
+    "orientation": {
+      "type": "string",
+      "enumValues": [
+        "horizontal",
+        "vertical"
+      ],
+      "value": "vertical"
+    },
+    "scrolling": {
+      "type": "string",
+      "enumValues": [
+        "asNeeded",
+        "off"
+      ],
+      "value": "asNeeded"
+    },
+    "sections": {
+      "type": "Array<Object>"
+    },
+    "symbolHeight": {
+      "type": "number",
+      "value": 0
+    },
+    "symbolWidth": {
+      "type": "number",
+      "value": 0
+    },
+    "textStyle": {
+      "type": "object"
+    },
+    "trackResize": {
+      "type": "string",
+      "enumValues": [
+        "off",
+        "on"
+      ],
+      "value": "on"
+    },
+    "translations": {
+      "type": "object",
+      "value": {},
+      "properties": {
+        "componentName": {
+          "type": "string"
+        },
+        "labelAndValue": {
+          "type": "string"
+        },
+        "labelClearSelection": {
+          "type": "string"
+        },
+        "labelCountWithTotal": {
+          "type": "string"
+        },
+        "labelDataVisualization": {
+          "type": "string"
+        },
+        "labelInvalidData": {
+          "type": "string"
+        },
+        "labelNoData": {
+          "type": "string"
+        },
+        "stateCollapsed": {
+          "type": "string"
+        },
+        "stateDrillable": {
+          "type": "string"
+        },
+        "stateExpanded": {
+          "type": "string"
+        },
+        "stateHidden": {
+          "type": "string"
+        },
+        "stateIsolated": {
+          "type": "string"
+        },
+        "stateMaximized": {
+          "type": "string"
+        },
+        "stateMinimized": {
+          "type": "string"
+        },
+        "stateSelected": {
+          "type": "string"
+        },
+        "stateUnselected": {
+          "type": "string"
+        },
+        "stateVisible": {
+          "type": "string"
+        }
+      }
+    },
+    "valign": {
+      "type": "string",
+      "enumValues": [
+        "bottom",
+        "middle",
+        "top"
+      ],
+      "value": "top"
+    }
+  },
+  "methods": {
+    "getSection": {},
+    "getItem": {},
+    "getPreferredSize": {},
+    "getContextByNode": {},
+    "refresh": {},
+    "setProperty": {},
+    "getProperty": {},
+    "setProperties": {},
+    "getNodeBySubId": {},
+    "getSubIdByNode": {}
+  },
+  "events": {
+    "ojDrill": {}
+  },
+  "extension": {}
+};
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
@@ -839,6 +1013,7 @@ oj.__registerWidget('oj.ojLegend', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojLegend
  * @instance
  * @type {string}
+ * @ojformat color
  * @default null
  */
 /**
@@ -848,6 +1023,7 @@ oj.__registerWidget('oj.ojLegend', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojLegend
  * @instance
  * @type {string}
+ * @ojformat color
  * @default null
  */
 /**
@@ -955,6 +1131,7 @@ oj.__registerWidget('oj.ojLegend', $['oj']['dvtBaseComponent'],
  * @memberof! oj.ojLegend
  * @instance
  * @type {string}
+ * @ojformat color
  * @default null
  */
 /**
@@ -1033,150 +1210,15 @@ oj.__registerWidget('oj.ojLegend', $['oj']['dvtBaseComponent'],
  * @memberof oj.ojLegend
  */
 
+/* global __oj_legend_metadata:false */
 /**
  * Ignore tag only needed for DVTs that have jsDoc in separate _doc.js files.
  * @ignore
  */
-(function() {
-var ojLegendMeta = {
-  "properties": {
-    "drilling": {
-      "type": "string",
-      "enumValues": ["on", "off"]
-    },
-    "halign": {
-      "type": "string",
-      "enumValues": ["center", "end", "start"]
-    },
-    "hiddenCategories": {
-      "type": "Array<string>",
-      "writeback": true
-    },
-    "hideAndShowBehavior": {
-      "type": "string",
-      "enumValues": ["on", "off"]
-    },
-    "highlightedCategories": {
-      "type": "Array<string>",
-      "writeback": true
-    },
-    "hoverBehavior": {
-      "type": "string",
-      "enumValues": ["dim", "none"]
-    },
-    "hoverBehaviorDelay": {
-      "type": "number"
-    },    "orientation": {
-      "type": "string",
-      "enumValues": ["horizontal", "vertical"]
-    },
-    "scrolling": {
-      "type": "string",
-      "enumValues": ["asNeeded", "off"]
-    },
-    "sections": {
-      "type": "Array<object>"
-    },
-    "symbolHeight": {
-      "type": "number"
-    },
-    "symbolWidth": {
-      "type": "number"
-    },
-    "textStyle": {
-      "type": "object"
-    },
-    "translations": {
-      "type": "Object",
-      "properties": {
-        "componentName": {
-          "type": "string",
-          "value": "Legend"
-        },
-        "labelAndValue": {
-          "type": "string",
-          "value": "{0}: {1}"
-        },
-        "labelClearSelection": {
-          "type": "string",
-          "value": "Clear Selection"
-        },
-        "labelCountWithTotal": {
-          "type": "string",
-          "value": "{0} of {1}"
-        },
-        "labelDataVisualization": {
-          "type": "string",
-          "value": "Data Visualization"
-        },
-        "labelInvalidData": {
-          "type": "string",
-          "value": "Invalid data"
-        },
-        "labelNoData": {
-          "type": "string",
-          "value": "No data to display"
-        },
-        "stateCollapsed": {
-          "type": "string",
-          "value": "Collapsed"
-        },
-        "stateDrillable": {
-          "type": "string",
-          "value": "Drillable"
-        },
-        "stateExpanded": {
-          "type": "string",
-          "value": "Expanded"
-        },
-        "stateHidden": {
-          "type": "string",
-          "value": "Hidden"
-        },
-        "stateIsolated": {
-          "type": "string",
-          "value": "Isolated"
-        },
-        "stateMaximized": {
-          "type": "string",
-          "value": "Maximized"
-        },
-        "stateMinimized": {
-          "type": "string",
-          "value": "Minimized"
-        },
-        "stateSelected": {
-          "type": "string",
-          "value": "Selected"
-        },
-        "stateUnselected": {
-          "type": "string",
-          "value": "Unselected"
-        },
-        "stateVisible": {
-          "type": "string",
-          "value": "Visible"
-        }
-      }
-    },
-    "valign": {
-      "type": "string"
-    }
-  },
-  "events": {
-    "drill": {}
-  },
-  "methods": {
-    "getContextByNode": {},
-    "getItem": {},
-    "getPreferredSize": {},
-    "getSection": {}
-  },
-  "extension": {
-    _WIDGET_NAME: "ojLegend"
-  }
-};
-oj.CustomElementBridge.registerMetadata('oj-legend', 'dvtBaseComponent', ojLegendMeta);
-oj.CustomElementBridge.register('oj-legend', {'metadata': oj.CustomElementBridge.getMetadata('oj-legend')});
-})();
+(function () {
+  __oj_legend_metadata.extension._WIDGET_NAME = 'ojLegend';
+  oj.CustomElementBridge.registerMetadata('oj-legend', 'dvtBaseComponent', __oj_legend_metadata);
+  oj.CustomElementBridge.register('oj-legend', { metadata: oj.CustomElementBridge.getMetadata('oj-legend') });
+}());
+
 });

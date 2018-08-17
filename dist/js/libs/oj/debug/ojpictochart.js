@@ -6,20 +6,339 @@
 "use strict";
 define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/internal-deps/dvt/DvtPictoChart'], function(oj, $, comp, base, dvt)
 {
+ 
 
-/**This file is generated. Do not edit directly. Actual file located in 3rdparty/dvt/prebuild.**/
+var __oj_picto_chart_metadata = 
+{
+  "properties": {
+    "animationDuration": {
+      "type": "number"
+    },
+    "animationOnDataChange": {
+      "type": "string",
+      "enumValues": [
+        "auto",
+        "none"
+      ],
+      "value": "none"
+    },
+    "animationOnDisplay": {
+      "type": "string",
+      "enumValues": [
+        "alphaFade",
+        "auto",
+        "none",
+        "popIn",
+        "zoom"
+      ],
+      "value": "none"
+    },
+    "as": {
+      "type": "string",
+      "value": ""
+    },
+    "columnCount": {
+      "type": "number"
+    },
+    "columnWidth": {
+      "type": "number"
+    },
+    "data": {
+      "type": "oj.DataProvider"
+    },
+    "drilling": {
+      "type": "string",
+      "enumValues": [
+        "off",
+        "on"
+      ],
+      "value": "off"
+    },
+    "hiddenCategories": {
+      "type": "Array<string>",
+      "writeback": true,
+      "value": []
+    },
+    "highlightMatch": {
+      "type": "string",
+      "enumValues": [
+        "all",
+        "any"
+      ],
+      "value": "all"
+    },
+    "highlightedCategories": {
+      "type": "Array<string>",
+      "writeback": true,
+      "value": []
+    },
+    "hoverBehavior": {
+      "type": "string",
+      "enumValues": [
+        "dim",
+        "none"
+      ],
+      "value": "none"
+    },
+    "hoverBehaviorDelay": {
+      "type": "number",
+      "value": 200
+    },
+    "items": {
+      "type": "Array<Object>|Promise"
+    },
+    "layout": {
+      "type": "string",
+      "enumValues": [
+        "horizontal",
+        "vertical"
+      ],
+      "value": "horizontal"
+    },
+    "layoutOrigin": {
+      "type": "string",
+      "enumValues": [
+        "bottomEnd",
+        "bottomStart",
+        "topEnd",
+        "topStart"
+      ],
+      "value": "topStart"
+    },
+    "rowCount": {
+      "type": "number"
+    },
+    "rowHeight": {
+      "type": "number"
+    },
+    "selection": {
+      "type": "Array<any>",
+      "writeback": true,
+      "value": []
+    },
+    "selectionMode": {
+      "type": "string",
+      "enumValues": [
+        "multiple",
+        "none",
+        "single"
+      ],
+      "value": "none"
+    },
+    "tooltip": {
+      "type": "object",
+      "properties": {
+        "renderer": {
+          "type": "function",
+          "properties": {
+            "parentElement": {
+              "type": "Element"
+            },
+            "id": {
+              "type": "any"
+            },
+            "name": {
+              "type": "string"
+            },
+            "count": {
+              "type": "number"
+            },
+            "color": {
+              "type": "string"
+            },
+            "componentElement": {
+              "type": "Element"
+            }
+          }
+        }
+      }
+    },
+    "trackResize": {
+      "type": "string",
+      "enumValues": [
+        "off",
+        "on"
+      ],
+      "value": "on"
+    },
+    "translations": {
+      "type": "object",
+      "value": {},
+      "properties": {
+        "componentName": {
+          "type": "string"
+        },
+        "labelAndValue": {
+          "type": "string"
+        },
+        "labelClearSelection": {
+          "type": "string"
+        },
+        "labelCountWithTotal": {
+          "type": "string"
+        },
+        "labelDataVisualization": {
+          "type": "string"
+        },
+        "labelInvalidData": {
+          "type": "string"
+        },
+        "labelNoData": {
+          "type": "string"
+        },
+        "stateCollapsed": {
+          "type": "string"
+        },
+        "stateDrillable": {
+          "type": "string"
+        },
+        "stateExpanded": {
+          "type": "string"
+        },
+        "stateHidden": {
+          "type": "string"
+        },
+        "stateIsolated": {
+          "type": "string"
+        },
+        "stateMaximized": {
+          "type": "string"
+        },
+        "stateMinimized": {
+          "type": "string"
+        },
+        "stateSelected": {
+          "type": "string"
+        },
+        "stateUnselected": {
+          "type": "string"
+        },
+        "stateVisible": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "methods": {
+    "getItem": {},
+    "getItemCount": {},
+    "getContextByNode": {},
+    "refresh": {},
+    "setProperty": {},
+    "getProperty": {},
+    "setProperties": {},
+    "getNodeBySubId": {},
+    "getSubIdByNode": {}
+  },
+  "events": {
+    "ojDrill": {}
+  },
+  "extension": {}
+};
+var __oj_picto_chart_item_metadata = 
+{
+  "properties": {
+    "borderColor": {
+      "type": "string",
+      "value": ""
+    },
+    "borderWidth": {
+      "type": "number",
+      "value": 0
+    },
+    "categories": {
+      "type": "Array<string>",
+      "value": []
+    },
+    "color": {
+      "type": "string",
+      "value": ""
+    },
+    "columnSpan": {
+      "type": "number",
+      "value": 1
+    },
+    "count": {
+      "type": "number",
+      "value": 1
+    },
+    "drilling": {
+      "type": "string",
+      "enumValues": [
+        "inherit",
+        "off",
+        "on"
+      ],
+      "value": "inherit"
+    },
+    "name": {
+      "type": "string",
+      "value": ""
+    },
+    "rowSpan": {
+      "type": "number",
+      "value": 1
+    },
+    "shape": {
+      "type": "string",
+      "value": "rectangle"
+    },
+    "shortDesc": {
+      "type": "string",
+      "value": ""
+    },
+    "source": {
+      "type": "string",
+      "value": ""
+    },
+    "sourceHover": {
+      "type": "string",
+      "value": ""
+    },
+    "sourceHoverSelected": {
+      "type": "string",
+      "value": ""
+    },
+    "sourceSelected": {
+      "type": "string",
+      "value": ""
+    },
+    "svgClassName": {
+      "type": "string",
+      "value": ""
+    },
+    "svgStyle": {
+      "type": "object",
+      "value": {}
+    }
+  },
+  "extension": {}
+};
+/** This file is generated. Do not edit directly. Actual file located in 3rdparty/dvt/prebuild.**/
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
  */
-
+ 
+/* global dvt:false */
+ 
 /**
  * @ojcomponent oj.ojPictoChart
  * @augments oj.dvtBaseComponent
  * @since 1.2.0
  * @ojstatus preview
  * @ojshortdesc Displays information using icons to visualize an absolute number or the relative sizes of the different parts of a population.
- * @ojtsignore
+ * @ojtsimport ojdataprovider
+ * @ojsignature [{
+ *                target: "Type",
+ *                value: "class ojPictoChart<K, D> extends dvtBaseComponent<ojPictoChartSettableProperties<K, D>>"
+ *               },
+ *               {
+ *                target: "Type",
+ *                value: "ojPictoChartSettableProperties<K, D> extends dvtBaseComponentSettableProperties",
+ *                for: "SettableProperties"
+ *               }
+ *              ]
  *
  * @classdesc
  * <h3 id="pictoChartOverview-section">
@@ -100,266 +419,287 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/in
  *
  * {@ojinclude "name":"rtl"}
  */
-oj.__registerWidget('oj.ojPictoChart', $['oj']['dvtBaseComponent'],
-{
-  widgetEventPrefix : "oj",
-  options: {
-    /**
-     *  The duration of the animations, in milliseconds. The default value comes from the CSS and varies based on theme.
-     * @expose
-     * @name animationDuration
-     * @memberof oj.ojPictoChart
-     * @instance
-     * @type {number}
-     * @ojsignature {target: "Type", value: "?"}
-     * @ojunits "milliseconds"
-     */
-     animationDuration: undefined,
-
-     /**
-     *  The animation when the data changes. 
-     * @expose
-     * @name animationOnDataChange
-     * @memberof oj.ojPictoChart
-     * @instance
-     * @type {string}
-     * @ojvalue {string} "auto"
-     * @ojvalue {string} "none"
-     * @default "none"
-     */
-     animationOnDataChange: "none",
-
-    /**
-     *  The animation that is shown on initial display. 
-     * @expose
-     * @name animationOnDisplay
-     * @memberof oj.ojPictoChart
-     * @instance
-     * @type {string}
-     * @ojvalue {string} "auto"
-     * @ojvalue {string} "popIn"
-     * @ojvalue {string} "alphaFade"
-     * @ojvalue {string} "zoom"
-     * @ojvalue {string} "none"
-     * @default "none"
-     */
-     animationOnDisplay: "none",
-
-    /**
-     *  The number of columns that the picto chart has. The number of columns will be automatically computed if not specified. 
-     * @expose
-     * @name columnCount
-     * @memberof oj.ojPictoChart
-     * @instance
-     * @type {number|null}
-     * @default null
-     */
-     columnCount: null,
-
-    /**
-     *  The width of a column in pixels. The width of columns will be automatically computed if not specified.  Setting this property in a fixed layout (when the element width and height are defined) may cause items to be truncated. 
-     * @expose
-     * @name columnWidth
-     * @memberof oj.ojPictoChart
-     * @instance
-     * @type {number|null}
-     * @default null
-     * @ojunits "pixels"
-     */
-     columnWidth: null,
-
-    /**
-     * An oj.DataProvider that generates rows of <a href="/jsdocs/oj.ojPictoChart.html#Item">oj.ojPictoChart.Item</a> objects.
-     * @ignore
-     * @name data
-     * @memberof oj.ojPictoChart
-     * @instance
-     * @type {oj.DataProvider|Promise|null}
-     * @ojsignature {target: "Accessor", value: {GetterType: "oj.DataProvider<any, oj.ojPictoChart.Item>", SetterType: "oj.DataProvider<any, oj.ojPictoChart.Item>|null"}}
-     * @default null
-     */  
-     data: null,
-
-    /**
-     *  Whether drilling is enabled. Drillable items will show a pointer cursor on hover and fire an <code class="prettyprint">ojDrill</code> event on click (double click if selection is enabled). To enable or disable drilling on individual items, use the drilling attribute in each item. 
-     * @expose
-     * @name drilling
-     * @memberof oj.ojPictoChart
-     * @instance
-     * @type {string}
-     * @ojvalue {string} "on"
-     * @ojvalue {string} "off"
-     * @default "off"
-     */
-     drilling: "off",
-
-    /**
-     *  An array of category strings used for category filtering. Data items with a category in hiddenCategories will be filtered. 
-     * @expose
-     * @name hiddenCategories
-     * @memberof oj.ojPictoChart
-     * @instance
-     * @type {Array.<string>}
-     * @default []
-     * @ojwriteback
-     */
-     hiddenCategories: [],
-
-    /**
-     *  An array of category strings used for category highlighting. Data items with a category in highlightedCategories will be highlighted. 
-     * @expose
-     * @name highlightedCategories
-     * @memberof oj.ojPictoChart
-     * @instance
-     * @type {Array.<string>}
-     * @default []
-     * @ojwriteback
-     */
-    highlightedCategories: [],
-
-    /**
-     *  The matching condition for the highlightedCategories property. By default, highlightMatch is 'all' and only items whose categories match all of the values specified in the highlightedCategories array will be highlighted. If highlightMatch is 'any', then items that match at least one of the highlightedCategories values will be highlighted. 
-     * @expose
-     * @name highlightMatch
-     * @memberof oj.ojPictoChart
-     * @instance
-     * @type {string}
-     * @ojvalue {string} "any"
-     * @ojvalue {string} "all"
-     * @default "all"
-     */
-     highlightMatch: "all",
-
-    /**
-     *  The behavior applied when hovering over data items. 
-     * @expose
-     * @name hoverBehavior
-     * @memberof oj.ojPictoChart
-     * @instance
-     * @type {string}
-     * @ojvalue {string} "dim"
-     * @ojvalue {string} "none"
-     * @default "none"
-     */
-     hoverBehavior: "none",
-
-    /**
-     *  Specifies initial hover delay in ms for highlighting data items.
-     * @expose
-     * @name hoverBehaviorDelay
-     * @memberof oj.ojPictoChart
-     * @instance
-     * @type {number}
-     * @ojunits "milliseconds"
-     * @default 200
-     */
-     hoverBehaviorDelay: 200,
-
-    /**
-     *  An array of objects with the following properties that defines the pictoChart items. 
-     * @expose
-     * @name items
-     * @memberof oj.ojPictoChart
-     * @instance
-     * @type {Array.<Object>|Promise|null}
-     * @default null
-     */
-     items: null,
-
-    /**
-     *  The direction in which the items are laid out. 
-     * @expose
-     * @name layout
-     * @memberof oj.ojPictoChart
-     * @instance
-     * @type {string}
-     * @ojvalue {string} "vertical"
-     * @ojvalue {string} "horizontal"
-     * @default "horizontal"
-     */
-     layout: "horizontal",
-
-    /**
-     *  Defines where the first item is rendered. The subsequent items follow the first item according to the layout. 
-     * @expose
-     * @name layoutOrigin
-     * @memberof oj.ojPictoChart
-     * @instance
-     * @type {string}
-     * @ojvalue {string} "topEnd"
-     * @ojvalue {string} "bottomStart"
-     * @ojvalue {string} "bottomEnd"
-     * @ojvalue {string} "topStart"
-     * @default "topStart"
-     */
-     layoutOrigin: "topStart",
-
-    /**
-     *  The number of rows that the picto chart has. The number of rows will be automatically computed if not specified. 
-     * @expose
-     * @name rowCount
-     * @memberof oj.ojPictoChart
-     * @instance
-     * @type {number|null}
-     * @default null
-     */
-     rowCount: null,
-
-    /**
-     *  The height of a row in pixels. The height of rows will be automatically computed if not specified. Setting this property in a fixed layout (when the element width and height are defined) may cause items to be truncated. 
-     * @expose
-     * @name rowHeight
-     * @memberof oj.ojPictoChart
-     * @instance
-     * @type {number|null}
-     * @default null
-     * @ojunits "pixels"
-     */
-     rowHeight: null,
-
-    /**
-     *  An array of id strings, used to define the selected objects. 
-     * @expose
-     * @name selection
-     * @memberof oj.ojPictoChart
-     * @instance
-     * @type {Array.<string>}
-     * @default []
-     * @ojwriteback
-     */
-     selection: [],
-
-    /**
-     *  The type of selection behavior that is enabled on the picto chart. 
-     * @expose
-     * @name selectionMode
-     * @memberof oj.ojPictoChart
-     * @instance
-     * @type {string}
-     * @ojvalue {string} "single"
-     * @ojvalue {string} "multiple"
-     * @ojvalue {string} "none"
-     * @default "none"
-     */
-     selectionMode: "none",
-
-    /**
-     *  An object containing an optional callback function for tooltip customization. 
-     * @expose
-     * @name tooltip
-     * @memberof oj.ojPictoChart
-     * @instance
-     * @type {Object}
-     * @default {"renderer": null}
-     * @desc
-     * A function that returns a custom tooltip. The function takes a dataContext argument,
-     * provided by the picto chart. The function should return an Object that contains only one of the two properties:
-     * <ul>
-     *   <li>insert: HTMLElement | string - An HTML element, which will be appended to the tooltip, or a tooltip string.</li> 
-     *   <li>preventDefault: <code>true</code> - Indicates that the tooltip should not be displayed. It is not necessary to return {preventDefault:false} to display tooltip, since this is a default behavior.</li> 
-     * </ul>
-     */
-    tooltip: {
+oj.__registerWidget('oj.ojPictoChart', $.oj.dvtBaseComponent,
+  {
+    widgetEventPrefix: 'oj',
+    options: {
+      /**
+       *  The duration of the animations, in milliseconds. The default value comes from the CSS and varies based on theme.
+       * @expose
+       * @name animationDuration
+       * @memberof oj.ojPictoChart
+       * @instance
+       * @type {number}
+       * @ojsignature {target: "Type", value: "?"}
+       * @ojunits "milliseconds"
+       */
+      animationDuration: undefined,
+ 
+      /**
+       *  The animation when the data changes.
+       * @expose
+       * @name animationOnDataChange
+       * @memberof oj.ojPictoChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "auto"
+       * @ojvalue {string} "none"
+       * @default "none"
+       */
+      animationOnDataChange: 'none',
+ 
+      /**
+       *  The animation that is shown on initial display.
+       * @expose
+       * @name animationOnDisplay
+       * @memberof oj.ojPictoChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "auto"
+       * @ojvalue {string} "popIn"
+       * @ojvalue {string} "alphaFade"
+       * @ojvalue {string} "zoom"
+       * @ojvalue {string} "none"
+       * @default "none"
+       */
+      animationOnDisplay: 'none',
+ 
+      /**
+       * An alias for the $current context variable when referenced inside itemTemplate when using a DataProvider.
+       * @expose
+       * @name as
+       * @memberof oj.ojPictoChart
+       * @instance
+       * @type {string}
+       * @default ""
+      */
+      as: '',
+      /**
+       *  The number of columns that the picto chart has. The number of columns will be automatically computed if not specified.
+       * @expose
+       * @name columnCount
+       * @memberof oj.ojPictoChart
+       * @instance
+       * @type {number|null}
+       * @default null
+       */
+      columnCount: null,
+ 
+      /**
+       *  The width of a column in pixels. The width of columns will be automatically computed if not specified.  Setting this property in a fixed layout (when the element width and height are defined) may cause items to be truncated.
+       * @expose
+       * @name columnWidth
+       * @memberof oj.ojPictoChart
+       * @instance
+       * @type {number|null}
+       * @default null
+       * @ojunits "pixels"
+       */
+      columnWidth: null,
+      /**
+       * The oj.DataProvider for the picto chart. It should provide rows where each row corresponds to a single picto chart item.
+       * @expose
+       * @name data
+       * @memberof oj.ojPictoChart
+       * @instance
+       * @type {oj.DataProvider|null}
+       * @ojsignature {target: "Type", value: "oj.DataProvider<K, D>|null"}
+       * @default null
+       * @example <caption>Initialize the picto chart with the
+       * <code class="prettyprint">data</code> attribute specified:</caption>
+       * &lt;oj-picto-chart data='[[dataProvider]]'>&lt;/oj-picto-chart>
+       *
+       * @example <caption>Get or set the <code class="prettyprint">data</code>
+       * property after initialization:</caption>
+       * // getter
+       * var value = myPictoChart.data;
+       *
+       * // setter
+       * myPictoChart.data = dataProvider;
+       */
+      data: null,
+ 
+      /**
+       *  Whether drilling is enabled. Drillable items will show a pointer cursor on hover and fire an <code class="prettyprint">ojDrill</code> event on click (double click if selection is enabled). To enable or disable drilling on individual items, use the drilling attribute in each item.
+       * @expose
+       * @name drilling
+       * @memberof oj.ojPictoChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "on"
+       * @ojvalue {string} "off"
+       * @default "off"
+       */
+      drilling: 'off',
+ 
+      /**
+       *  An array of category strings used for category filtering. Data items with a category in hiddenCategories will be filtered.
+       * @expose
+       * @name hiddenCategories
+       * @memberof oj.ojPictoChart
+       * @instance
+       * @type {Array.<string>}
+       * @default []
+       * @ojwriteback
+       */
+      hiddenCategories: [],
+ 
+      /**
+       *  An array of category strings used for category highlighting. Data items with a category in highlightedCategories will be highlighted.
+       * @expose
+       * @name highlightedCategories
+       * @memberof oj.ojPictoChart
+       * @instance
+       * @type {Array.<string>}
+       * @default []
+       * @ojwriteback
+       */
+      highlightedCategories: [],
+ 
+      /**
+       *  The matching condition for the highlightedCategories property. By default, highlightMatch is 'all' and only items whose categories match all of the values specified in the highlightedCategories array will be highlighted. If highlightMatch is 'any', then items that match at least one of the highlightedCategories values will be highlighted.
+       * @expose
+       * @name highlightMatch
+       * @memberof oj.ojPictoChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "any"
+       * @ojvalue {string} "all"
+       * @default "all"
+       */
+      highlightMatch: 'all',
+ 
+      /**
+       *  The behavior applied when hovering over data items.
+       * @expose
+       * @name hoverBehavior
+       * @memberof oj.ojPictoChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "dim"
+       * @ojvalue {string} "none"
+       * @default "none"
+       */
+      hoverBehavior: 'none',
+ 
+      /**
+       *  Specifies initial hover delay in ms for highlighting data items.
+       * @expose
+       * @name hoverBehaviorDelay
+       * @memberof oj.ojPictoChart
+       * @instance
+       * @type {number}
+       * @ojunits "milliseconds"
+       * @default 200
+       */
+      hoverBehaviorDelay: 200,
+ 
+      /**
+       *  An array of objects with the following properties that defines the pictoChart items.
+       * @expose
+       * @name items
+       * @ojtsignore
+       * @memberof oj.ojPictoChart
+       * @ojsignature {target: "Accessor", value: {GetterType: "Promise<Array<oj.ojPictoChart.Item>>|null", SetterType: "Array<oj.ojPictoChart.Item>|Promise<Array<oj.ojPictoChart.Item>>|null"}, jsdocOverride: true}
+       * @instance
+       * @type {Array.<Object>|Promise|null}
+       * @default null
+       */
+      items: null,
+ 
+      /**
+       *  The direction in which the items are laid out.
+       * @expose
+       * @name layout
+       * @memberof oj.ojPictoChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "vertical"
+       * @ojvalue {string} "horizontal"
+       * @default "horizontal"
+       */
+      layout: 'horizontal',
+ 
+      /**
+       *  Defines where the first item is rendered. The subsequent items follow the first item according to the layout.
+       * @expose
+       * @name layoutOrigin
+       * @memberof oj.ojPictoChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "topEnd"
+       * @ojvalue {string} "bottomStart"
+       * @ojvalue {string} "bottomEnd"
+       * @ojvalue {string} "topStart"
+       * @default "topStart"
+       */
+      layoutOrigin: 'topStart',
+ 
+      /**
+       *  The number of rows that the picto chart has. The number of rows will be automatically computed if not specified.
+       * @expose
+       * @name rowCount
+       * @memberof oj.ojPictoChart
+       * @instance
+       * @type {number|null}
+       * @default null
+       */
+      rowCount: null,
+ 
+      /**
+       *  The height of a row in pixels. The height of rows will be automatically computed if not specified. Setting this property in a fixed layout (when the element width and height are defined) may cause items to be truncated.
+       * @expose
+       * @name rowHeight
+       * @memberof oj.ojPictoChart
+       * @instance
+       * @type {number|null}
+       * @default null
+       * @ojunits "pixels"
+       */
+      rowHeight: null,
+ 
+      /**
+       *  An array of id strings, used to define the selected objects.
+       * @expose
+       * @name selection
+       * @memberof oj.ojPictoChart
+       * @instance
+       * @type {Array.<any>}
+       * @default []
+       * @ojwriteback
+       */
+      selection: [],
+ 
+      /**
+       *  The type of selection behavior that is enabled on the picto chart.
+       * @expose
+       * @name selectionMode
+       * @memberof oj.ojPictoChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "single"
+       * @ojvalue {string} "multiple"
+       * @ojvalue {string} "none"
+       * @default "none"
+       */
+      selectionMode: 'none',
+ 
+      /**
+       *  An object containing an optional callback function for tooltip customization.
+       * @expose
+       * @name tooltip
+       * @memberof oj.ojPictoChart
+       * @instance
+       * @type {Object}
+       * @desc
+       * A function that returns a custom tooltip. The function takes a dataContext argument,
+       * provided by the picto chart. The function should return an Object that contains only one of the two properties:
+       * <ul>
+       *   <li>insert: HTMLElement | string - An HTML element, which will be appended to the tooltip, or a tooltip string.</li>
+       *   <li>preventDefault: <code>true</code> - Indicates that the tooltip should not be displayed. It is not necessary to return {preventDefault:false} to display tooltip, since this is a default behavior.</li>
+       * </ul>
+       */
+      tooltip: {
         /**
          * @expose
          * @name tooltip.renderer
@@ -369,152 +709,156 @@ oj.__registerWidget('oj.ojPictoChart', $['oj']['dvtBaseComponent'],
          * @ojsignature {target: "Type", value: "((context: oj.ojPictoChart.TooltipContext) => ({insert: Element|string}|{preventDefault: boolean}))|null", jsdocOverride: true}
          * @default null
          */
-         renderer: null
-
+        renderer: null
+ 
+      },
+ 
+      /**
+       * Triggered during a drill gesture (double click if selection is enabled, single click otherwise).
+       *
+       * @property {any} id the id of the drilled object
+       *
+       * @expose
+       * @event
+       * @memberof oj.ojPictoChart
+       * @instance
+       */
+      drill: null
     },
-
+ 
+    //* * @inheritdoc */
+    _CreateDvtComponent: function (context, callback, callbackObj) {
+      return dvt.PictoChart.newInstance(context, callback, callbackObj);
+    },
+ 
+    //* * @inheritdoc */
+    _GetSimpleDataProviderConfigs: function () {
+      return {
+        data: { templateName: 'itemTemplate', templateElementName: 'oj-picto-chart-item', resultPath: 'items' }
+      };
+    },
+ 
+    //* * @inheritdoc */
+    _ConvertLocatorToSubId: function (locator) {
+      var subId = locator.subId;
+ 
+      // Convert the supported locators
+      if (subId === 'oj-pictochart-item') {
+        // item[index]
+        subId = 'item[' + locator.index + ']';
+      } else if (subId === 'oj-pictochart-tooltip') {
+        subId = 'tooltip';
+      }
+ 
+      // Return the converted result or the original subId if a supported locator wasn't recognized. We will remove
+      // support for the old subId syntax in 1.2.0.
+      return subId;
+    },
+ 
+    //* * @inheritdoc */
+    _ConvertSubIdToLocator: function (subId) {
+      var locator = {};
+ 
+      if (subId.indexOf('item') === 0) {
+        // item[index]
+        locator.subId = 'oj-pictochart-item';
+        locator.index = this._GetFirstIndex(subId);
+      } else if (subId === 'tooltip') {
+        locator.subId = 'oj-pictochart-tooltip';
+      }
+ 
+      return locator;
+    },
+ 
+    //* * @inheritdoc */
+    _GetComponentStyleClasses: function () {
+      var styleClasses = this._super();
+      styleClasses.push('oj-pictochart');
+      return styleClasses;
+    },
+ 
+    //* * @inheritdoc */
+    _GetChildStyleClasses: function () {
+      var styleClasses = this._super();
+      styleClasses['oj-pictochart-item'] = { path: '_defaultColor', property: 'background-color' };
+      styleClasses['oj-dvtbase oj-pictochart'] = { path: 'animationDuration', property: 'ANIM_DUR' };
+      return styleClasses;
+    },
+ 
+    //* * @inheritdoc */
+    _GetEventTypes: function () {
+      return ['optionChange'];
+    },
+ 
+    //* * @inheritdoc */
+    _HandleEvent: function (event) {
+      var type = event.type;
+      if (type === 'drill') {
+        this._trigger('drill', null, { id: event.id });
+      } else {
+        this._super(event);
+      }
+    },
+ 
     /**
-     * Triggered during a drill gesture (double click if selection is enabled, single click otherwise).
-     *
-     * @property {string} id the id of the drilled object
-     *
+     * Returns an object with the following properties for automation testing verification of the item at the
+     * specified index.
+ 
+     * @param {number} index The index.
+     * @return {Object|null} An object containing data for the item at the given index, or null if none exists.
+     * @ojsignature {target: "Type", value: "oj.ojPictoChart.ItemContext|null", jsdocOverride: true, for: "returns"}
      * @expose
-     * @event
      * @memberof oj.ojPictoChart
      * @instance
      */
-    drill: null
-  },
-
-  //** @inheritdoc */
-  _CreateDvtComponent : function(context, callback, callbackObj) {
-    return dvt.PictoChart.newInstance(context, callback, callbackObj);
-  },
-
-  //** @inheritdoc */
-  _ConvertLocatorToSubId : function(locator) {
-    var subId = locator['subId'];
-
-    // Convert the supported locators
-    if(subId == 'oj-pictochart-item') {
-      // item[index]
-      subId = 'item[' + locator['index'] + ']';
+    getItem: function (index) {
+      var auto = this._component.getAutomation();
+      return auto.getItem(index);
+    },
+ 
+    /**
+     * Returns the number of items in the pictoChart data.
+     * @return {number} The number of data items
+     * @expose
+     * @memberof oj.ojPictoChart
+     * @instance
+     */
+    getItemCount: function () {
+      return this._component.getAutomation().getItemCount();
+    },
+ 
+    /**
+     * {@ojinclude "name":"nodeContextDoc"}
+     * @param {!Element} node - {@ojinclude "name":"nodeContextParam"}
+     * @returns {Object|null} {@ojinclude "name":"nodeContextReturn"}
+     * @ojsignature {target: "Type", value: "oj.ojPictoChart.NodeContext|null", jsdocOverride: true, for: "returns"}
+     *
+     * @example {@ojinclude "name":"nodeContextExample"}
+     *
+     * @expose
+     * @instance
+     * @memberof oj.ojPictoChart
+     */
+    getContextByNode: function (node) {
+      // context objects are documented with @ojnodecontext
+      var context = this.getSubIdByNode(node);
+      if (context && context.subId !== 'oj-pictochart-tooltip') {
+        return context;
+      }
+ 
+      return null;
+    },
+ 
+    //* * @inheritdoc */
+    _GetComponentDeferredDataPaths: function () {
+      return { root: ['items', 'data'] };
+    },
+ 
+    //* * @inheritdoc */
+    _IsFlowingLayoutSupported: function () {
+      return true;
     }
-    else if(subId == 'oj-pictochart-tooltip') {
-      subId = 'tooltip';
-    }
-
-    // Return the converted result or the original subId if a supported locator wasn't recognized. We will remove
-    // support for the old subId syntax in 1.2.0.
-    return subId;
-  },
-
-  //** @inheritdoc */
-  _ConvertSubIdToLocator : function(subId) {
-    var locator = {};
-
-    if(subId.indexOf('item') == 0) {
-      // item[index]
-      locator['subId'] = 'oj-pictochart-item';
-      locator['index'] = this._GetFirstIndex(subId);
-    }
-    else if(subId == 'tooltip') {
-      locator['subId'] = 'oj-pictochart-tooltip';
-    }
-
-    return locator;
-  },
-
-  //** @inheritdoc */
-  _GetComponentStyleClasses : function() {
-    var styleClasses = this._super();
-    styleClasses.push('oj-pictochart');
-    return styleClasses;
-  },
-
-  //** @inheritdoc */
-  _GetChildStyleClasses : function() {
-    var styleClasses = this._super();
-    styleClasses['oj-pictochart-item'] = {'path': '_defaultColor', 'property': 'background-color'};
-    styleClasses['oj-dvtbase oj-pictochart'] = {'path': 'animationDuration', 'property': 'ANIM_DUR'};
-    return styleClasses;
-  },
-
-  //** @inheritdoc */
-  _GetEventTypes : function() {
-    return ['optionChange'];
-  },
-
-  //** @inheritdoc */
-  _HandleEvent : function(event) {
-    var type = event['type'];
-    if (type === 'drill') {
-      this._trigger('drill', null, {'id': event['id']});
-    }
-    else {
-      this._super(event);
-    }
-  },
-
-  /**
-   * Returns an object with the following properties for automation testing verification of the item at the
-   * specified index.
-
-   * @param {number} index The index.
-   * @return {Object|null} An object containing data for the item at the given index, or null if none exists.
-   * @ojsignature {target: "Type", value: "oj.ojPictoChart.ItemContext|null", jsdocOverride: true, for: "returns"}
-   * @expose
-   * @memberof oj.ojPictoChart
-   * @instance
-   */
-  getItem: function(index) {
-    var auto = this._component.getAutomation();
-    return auto.getItem(index);
-  },
-
-  /**
-   * Returns the number of items in the pictoChart data.
-   * @return {number} The number of data items
-   * @expose
-   * @memberof oj.ojPictoChart
-   * @instance
-   */
-  getItemCount: function() {
-    return this._component.getAutomation().getItemCount();
-  },
-
-  /**
-   * {@ojinclude "name":"nodeContextDoc"}
-   * @param {!Element} node - {@ojinclude "name":"nodeContextParam"}
-   * @returns {Object|null} {@ojinclude "name":"nodeContextReturn"}
-   * @ojsignature {target: "Type", value: "oj.ojPictoChart.NodeContext|null", jsdocOverride: true, for: "returns"}
-   *
-   * @example {@ojinclude "name":"nodeContextExample"}
-   *
-   * @expose
-   * @instance
-   * @memberof oj.ojPictoChart
-   */
-  getContextByNode: function(node) {
-    // context objects are documented with @ojnodecontext
-    var context = this.getSubIdByNode(node);
-    if (context && context['subId'] !== 'oj-pictochart-tooltip')
-      return context;
-
-    return null;
-  },
-
-  //** @inheritdoc */
-  _GetComponentDeferredDataPaths : function() {
-    return {'root': ['items', 'data']};
-  },
-
-  //** @inheritdoc */
-  _IsFlowingLayoutSupported : function() {
-    return true;
-  }
-});
-
+  });
 /**
  * <table class="keyboard-table">
  *   <thead>
@@ -629,190 +973,11 @@ oj.__registerWidget('oj.ojPictoChart', $['oj']['dvtBaseComponent'],
  * @memberof oj.ojPictoChart
  */
 
-// KEEP FOR WIDGET SYNTAX
-
-/**
- *  The id of the item. 
- * @expose
- * @name items[].id
- * @memberof! oj.ojPictoChart
- * @instance
- * @type {string}
- * @default null
- */
-/**
- *  The name of the item. Used for default tooltip and accessibility. 
- * @expose
- * @name items[].name
- * @memberof! oj.ojPictoChart
- * @instance
- * @type {string}
- * @default null
- */
-/**
- *  The shape of the item. Can take the name of a built-in shape or the svg path commands for a custom shape. "None" will make the item transparent and can be used to create gaps. Does not apply if custom image is specified. 
- * @expose
- * @name items[].shape
- * @memberof! oj.ojPictoChart
- * @instance
- * @type {string}
- * @ojvalue {string} "ellipse"
- * @ojvalue {string} "square"
- * @ojvalue {string} "circle"
- * @ojvalue {string} "diamond"
- * @ojvalue {string} "triangleUp"
- * @ojvalue {string} "triangleDown"
- * @ojvalue {string} "star"
- * @ojvalue {string} "plus"
- * @ojvalue {string} "human"
- * @ojvalue {string} "none"
- * @ojvalue {string} "rectangle"
- * @default "rectangle"
- */
-/**
- *  The color of the item. Does not apply if custom image is specified. 
- * @expose
- * @name items[].color
- * @memberof! oj.ojPictoChart
- * @instance
- * @type {string}
- * @default null
- */
-/**
- *  The border color of the item. Does not apply if custom image is specified. 
- * @expose
- * @name items[].borderColor
- * @memberof! oj.ojPictoChart
- * @instance
- * @type {string}
- * @default null
- */
-/**
- *  The border width of the item in pixels. Does not apply if custom image is specified. 
- * @expose
- * @name items[].borderWidth
- * @memberof! oj.ojPictoChart
- * @instance
- * @type {number}
- * @default null
- */
-/**
- *  The URI of the custom image. If specified, it takes precedence over shape. 
- * @expose
- * @name items[].source
- * @memberof! oj.ojPictoChart
- * @instance
- * @type {string}
- * @default null
- */
-/**
- * The CSS style class to apply to the item. The style class and inline style will override any other styling specified with other properties. For tooltip interactivity, it's recommended to also pass a representative color to the item color attribute. Does not apply if custom image is specified.
- * @expose
- * @name items[].svgClassName
- * @memberof! oj.ojPictoChart
- * @instance
- * @type {string}
- * @default null
- */
-/**
- * The inline style to apply to the item. The style class and inline style will override any other styling specified with other properties. For tooltip interactivity, it's recommended to also pass a representative color to the item color attribute. Does not apply if custom image is specified.
- * @expose
- * @name items[].svgStyle
- * @memberof! oj.ojPictoChart
- * @instance
- * @type {Object}
- * @default null
- */
-/**
- *  The optional URI for the hover state. If not specified, the source image will be used. 
- * @expose
- * @name items[].sourceHover
- * @memberof! oj.ojPictoChart
- * @instance
- * @type {string}
- * @default null
- */
-/**
- *  The optional URI for the selected state. If not specified, the source image will be used. 
- * @expose
- * @name items[].sourceSelected
- * @memberof! oj.ojPictoChart
- * @instance
- * @type {string}
- * @default null
- */
-/**
- *  The optional URI for the hover selected state. If not specified, the source image will be used. 
- * @expose
- * @name items[].sourceHoverSelected
- * @memberof! oj.ojPictoChart
- * @instance
- * @type {string}
- * @default null
- */
-/**
- *  Specifies the number of times that the shape (or custom image) is drawn. Fractional counts (such as 4.5) are supported; however, fractions other than the multiples of 0.5 should be avoided because the fractional rendering ignores the gaps between shapes and the irregularity of the shapes. 
- * @expose
- * @name items[].count
- * @memberof! oj.ojPictoChart
- * @instance
- * @type {number}
- * @default 1
- */
-/**
- *  The number of rows each shape (or custom image) spans. Used for creating a pictoChart with mixed item sizes. 
- * @expose
- * @name items[].rowSpan
- * @memberof! oj.ojPictoChart
- * @instance
- * @type {number}
- * @default 1
- */
-/**
- *  The number of columns each shape (or custom image) spans. Used for creating a pictoChart with mixed item sizes. 
- * @expose
- * @name items[].columnSpan
- * @memberof! oj.ojPictoChart
- * @instance
- * @type {number}
- * @default 1
- */
-/**
- *  Short description string for accessibility users. 
- * @expose
- * @name items[].shortDesc
- * @memberof! oj.ojPictoChart
- * @instance
- * @type {string}
- * @default null
- */
-/**
- *  An array of category strings corresponding to this item. If not specified, defaults to the item id or name. This enables highlighting and filtering of individual data items through interactions with other visualization elements. 
- * @expose
- * @name items[].categories
- * @memberof! oj.ojPictoChart
- * @instance
- * @type {Array.<string>}
- * @default null
- */
-/**
- *  Whether drilling is enabled for the item. Drillable items will show a pointer cursor on hover and fire an <code class="prettyprint">ojDrill</code> event on click (double click if selection is enabled). To enable drilling for all items at once, use the drilling attribute in the top level. 
- * @expose
- * @name items[].drilling
- * @memberof! oj.ojPictoChart
- * @instance
- * @type {string}
- * @ojvalue {string} "on"
- * @ojvalue {string} "off"
- * @ojvalue {string} "inherit"
- * @default "inherit"
- */
-
  // PROPERTY TYPEDEFS
 
 /**
  * @typedef {Object} oj.ojPictoChart.Item
- * @property {string=} id The id of the item.
+ * @property {any=} id The item id. The item id should be set by the application if the DataProvider is not being used.
  * @property {string=} name The name of the item. Used for default tooltip and accessibility.
  * @property {"ellipse"|"square"|"circle"|"diamond"|"triangleUp"|"triangleDown"|"star"|"plus"|"human"|"none"|"rectangle"|string} [shape="rectangle"] The shape of the item. Can take the name of a built-in shape or the svg path commands for a custom shape. "None" will make the item transparent and can be used to create gaps. Does not apply if custom image is specified. 
  * @property {string=} color The color of the item. Does not apply if custom image is specified. 
@@ -835,7 +1000,7 @@ oj.__registerWidget('oj.ojPictoChart', $['oj']['dvtBaseComponent'],
 /**
  * @typedef {Object} oj.ojPictoChart.TooltipContext
  * @property {Element} parentElement The tooltip element. The function can directly modify or append content to this element.
- * @property {string} id The id of the hovered item.
+ * @property {any} id The id of the hovered item.
  * @property {string} name The name of the hovered item.
  * @property {number} count The count of the hovered item.
  * @property {string} color The color of the hovered item.
@@ -848,7 +1013,7 @@ oj.__registerWidget('oj.ojPictoChart', $['oj']['dvtBaseComponent'],
  * @typedef {Object} oj.ojPictoChart.ItemContext
  * @property {string} color
  * @property {number} count
- * @property {string} id
+ * @property {any} id
  * @property {string} name
  * @property {boolean} selected
  * @property {string} tooltip
@@ -861,6 +1026,39 @@ oj.__registerWidget('oj.ojPictoChart', $['oj']['dvtBaseComponent'],
  */
 
  // KEEP FOR WIDGET SYNTAX
+
+ // Slots
+ /**
+ *
+ * <p> The <code class="prettyprint">itemTemplate</code> slot is used to specify the template for creating each item of the picto chart when a DataProvider has been specified with the data attribute. The slot must be a &lt;template> element.</p>
+ * <p>When the template is executed for each item, it will have access to the picto chart's binding context and the following properties:</p>
+ * <ul>
+ * <li>$current - an object that contains information for the current item
+ * </li>
+ * <li>alias - if as attribute was specified, the value will be used to provide an application-named alias for $current.
+ * </li>
+ * </ul>
+ *
+ * <p>The content of the template should only be one &lt;oj-picto-chart-item> element. See the [oj-picto-chart-item]{@link oj.ojPictoChartItem} doc for more details.</p>
+ *
+ * @ojstatus preview
+ * @ojslot itemTemplate
+ * @memberof oj.ojPictoChart
+ * @property {Element} componentElement The &lt;oj-picto-chart> custom element.
+ * @property {Object} data The data object for the current item.
+ * @property {number} index The zero-based index of the current item.
+ * @property {any} key The key of the current item.
+ *
+ * @example <caption>Initialize the PictoChart with an inline item template specified:</caption>
+ * &lt;oj-picto-chart data='[[dataProvider]]'>
+ *  &lt;template slot='itemTemplate'>
+ *    &lt;oj-picto-chart-item
+ *      count='[[$current.item.count]]'
+ *      name='[[$current.item.name]]'>
+ *    &lt;/oj-picto-chart-item>
+ *  &lt;/template>
+ * &lt;/oj-picto-chart>
+ */
 
 // SubId Locators **************************************************************
 
@@ -897,171 +1095,361 @@ oj.__registerWidget('oj.ojPictoChart', $['oj']['dvtBaseComponent'],
  * @memberof oj.ojPictoChart
  */
 /**
+ * @ojcomponent oj.ojPictoChartItem
+ * @ojsignature {target: "Type", value:"class ojPictoChartItem extends JetElement<ojPictoChartItemSettableProperties>"}
+ * @ojslotcomponent
+ * @since 5.2.0
+ * @ojstatus preview
+ *
+ * @classdesc
+ * <h3 id="pictoChartItemOverview-section">
+ *   JET PictoChart Item
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#pictoChartItemOverview-section"></a>
+ * </h3>
+ *
+ * <p>The oj-picto-chart-item element is used to declare properties for picto chart items and is only valid as the
+ *  child of a template element for the [itemTemplate]{@link oj.ojPictoChart#itemTemplate}
+ *  slot of oj-picto-chart.</p>
+ *
+ *
+ * <pre class="prettyprint">
+ * <code>
+ * &lt;oj-picto-chart as='item' data='[[dataProvider]]'>
+ *  &lt;template slot='itemTemplate'>
+ *    &lt;oj-picto-chart-item count='[[item.data.count]]' name='[[item.data.name]]'>
+ *    &lt;/oj-picto-chart-item>
+ *  &lt;/template>
+ * &lt;/oj-picto-chart>
+ * </code>
+ * </pre>
+ */
+
+/**
+ * The border color of the item. Does not apply if custom image is specified.
+ * @expose
+ * @name borderColor
+ * @memberof! oj.ojPictoChartItem
+ * @instance
+ * @type {string}
+ * @ojformat color
+ * @default ''
+ *
+ * @example <caption>Initialize the picto chart item with the
+ * <code class="prettyprint">border-color</code> attribute specified:</caption>
+ * &lt;oj-picto-chart data='[[dataProvider]]' as='item'>
+ *  &lt;template slot='itemTemplate'>
+ *    &lt;oj-picto-chart-item border-color='[[item.data.borderColor]]'> &lt;/oj-picto-chart-item>
+ *  &lt;/template>
+ * &lt;/oj-picto-chart>
+ */
+/**
+ * The border width of the item in pixels. Does not apply if custom image is specified.
+ * @expose
+ * @name borderWidth
+ * @memberof! oj.ojPictoChartItem
+ * @instance
+ * @type {number}
+ * @default 0
+ *
+ * @example <caption>Initialize the picto chart item with the
+ * <code class="prettyprint">border-width</code> attribute specified:</caption>
+ * &lt;oj-picto-chart data='[[dataProvider]]' as='item'>
+ *  &lt;template slot='itemTemplate'>
+ *    &lt;oj-picto-chart-item border-width='[[item.data.borderWidth]]'> &lt;/oj-picto-chart-item>
+ *  &lt;/template>
+ * &lt;/oj-picto-chart>
+ */
+/**
+ * An array of category strings corresponding to the picto chart items. This allows highlighting and filtering of items.
+ * @expose
+ * @name categories
+ * @memberof! oj.ojPictoChartItem
+ * @instance
+ * @type {Array.<string>}
+ * @default []
+ *
+ * @example <caption>Initialize the picto chart item with the
+ * <code class="prettyprint">categories</code> attribute specified:</caption>
+ * &lt;oj-picto-chart data='[[dataProvider]]' as='item'>
+ *  &lt;template slot='itemTemplate'>
+ *    &lt;oj-picto-chart-item categories='[[item.data.categories]]'> &lt;/oj-picto-chart-item>
+ *  &lt;/template>
+ * &lt;/oj-picto-chart>
+ */
+/**
+ * The color of the item. Does not apply if custom image is specified.
+ * @expose
+ * @name color
+ * @memberof! oj.ojPictoChartItem
+ * @instance
+ * @type {string}
+ * @ojformat color
+ * @default ''
+ *
+ * @example <caption>Initialize the picto chart item with the
+ * <code class="prettyprint">color</code> attribute specified:</caption>
+ * &lt;oj-picto-chart data='[[dataProvider]]' as='item'>
+ *  &lt;template slot='itemTemplate'>
+ *    &lt;oj-picto-chart-item color='[[item.data.color]]'> &lt;/oj-picto-chart-item>
+ *  &lt;/template>
+ * &lt;/oj-picto-chart>
+ */
+/**
+ * The number of columns each shape (or custom image) spans. Used for creating a picto chart with mixed item sizes.
+ * @expose
+ * @name columnSpan
+ * @memberof! oj.ojPictoChartItem
+ * @instance
+ * @type {number}
+ * @default 1
+ * @ojmin 0
+ *
+ * @example <caption>Initialize the picto chart item with the
+ * <code class="prettyprint">column-span</code> attribute specified:</caption>
+ * &lt;oj-picto-chart data='[[dataProvider]]' as='item'>
+ *  &lt;template slot='itemTemplate'>
+ *    &lt;oj-picto-chart-item column-span='[[item.data.columnSpan]]'> &lt;/oj-picto-chart-item>
+ *  &lt;/template>
+ * &lt;/oj-picto-chart>
+ */
+/**
+ * Specifies the number of times that the shape (or custom image) is drawn. Fractional counts (such as 4.5) are supported; however, fractions other than the multiples of 0.5 should be avoided because the fractional rendering ignores the gaps between shapes and the irregularity of the shapes.
+ * @expose
+ * @name count
+ * @memberof! oj.ojPictoChartItem
+ * @instance
+ * @type {number}
+ * @default 1
+ *
+ * @example <caption>Initialize the picto chart item with the
+ * <code class="prettyprint">count</code> attribute specified:</caption>
+ * &lt;oj-picto-chart data='[[dataProvider]]' as='item'>
+ *  &lt;template slot='itemTemplate'>
+ *    &lt;oj-picto-chart-item count='[[item.data.count]]'> &lt;/oj-picto-chart-item>
+ *  &lt;/template>
+ * &lt;/oj-picto-chart>
+ */
+/**
+ * Whether drilling is enabled for the item. Drillable items will show a pointer cursor on hover and fire an ojDrill event on click (double click if selection is enabled). To enable drilling for all items at once, use the drilling attribute in the top level.
+ * @expose
+ * @name drilling
+ * @memberof! oj.ojPictoChartItem
+ * @instance
+ * @ojvalue {string} "inherit"
+ * @ojvalue {string} "off"
+ * @ojvalue {string} "on"
+ * @type {string}
+ * @default "inherit"
+ *
+ * @example <caption>Initialize the picto chart item with the
+ * <code class="prettyprint">drilling</code> attribute specified:</caption>
+ * &lt;oj-picto-chart data='[[dataProvider]]' as='item'>
+ *  &lt;template slot='itemTemplate'>
+ *    &lt;oj-picto-chart-item drilling='[[item.data.drilling]]'> &lt;/oj-picto-chart-item>
+ *  &lt;/template>
+ * &lt;/oj-picto-chart>
+ */
+/**
+ * The name of the item. Used for default tooltip and accessibility.
+ * @expose
+ * @name name
+ * @memberof! oj.ojPictoChartItem
+ * @instance
+ * @type {string}
+ * @ojtranslatable
+ * @default ''
+ *
+ * @example <caption>Initialize the picto chart item with the
+ * <code class="prettyprint">name</code> attribute specified:</caption>
+ * &lt;oj-picto-chart data='[[dataProvider]]' as='item'>
+ *  &lt;template slot='itemTemplate'>
+ *    &lt;oj-picto-chart-item name='[[item.data.name]]'> &lt;/oj-picto-chart-item>
+ *  &lt;/template>
+ * &lt;/oj-picto-chart>
+ */
+/**
+ * The number of rows each shape (or custom image) spans. Used for creating a picto chart with mixed item sizes.
+ * @expose
+ * @name rowSpan
+ * @memberof! oj.ojPictoChartItem
+ * @instance
+ * @type {number}
+ * @default 1
+ *
+ * @example <caption>Initialize the picto chart item with the
+ * <code class="prettyprint">row-span</code> attribute specified:</caption>
+ * &lt;oj-picto-chart data='[[dataProvider]]' as='item'>
+ *  &lt;template slot='itemTemplate'>
+ *    &lt;oj-picto-chart-item row-span='[[item.data.rowSpan]]'> &lt;/oj-picto-chart-item>
+ *  &lt;/template>
+ * &lt;/oj-picto-chart>
+ */
+ /**
+ * The shape of the item. Can take the name of a built-in shape or the svg path commands for a custom shape. "None" will make the item transparent and can be used to create gaps. Does not apply if custom image is specified.
+ * @expose
+ * @name shape
+ * @memberof! oj.ojPictoChartItem
+ * @instance
+ * @type {string}
+ * @ojtranslatable
+ * @ojvalue {string=} "circle"
+ * @ojvalue {string=} "diamond"
+ * @ojvalue {string=} "human"
+ * @ojvalue {string=} "plus"
+ * @ojvalue {string=} "rectangle"
+ * @ojvalue {string=} "square"
+ * @ojvalue {string=} "star"
+ * @ojvalue {string=} "triangleDown"
+ * @ojvalue {string=} "triangleUp"
+ * @ojvalue {string=} "none"
+ * @default "rectangle"
+ *
+ * @example <caption>Initialize the picto chart item with the
+ * <code class="prettyprint">shape</code> attribute specified:</caption>
+ * &lt;oj-picto-chart data='[[dataProvider]]' as='item'>
+ *  &lt;template slot='itemTemplate'>
+ *    &lt;oj-picto-chart-item shape='[[item.data.shape]]'> &lt;/oj-picto-chart-item>
+ *  &lt;/template>
+ * &lt;/oj-picto-chart>
+ */
+/**
+ * The description of the item. This is used for customizing the tooltip text.
+ * @expose
+ * @name shortDesc
+ * @memberof! oj.ojPictoChartItem
+ * @instance
+ * @type {string}
+ * @default ''
+ *
+ * @example <caption>Initialize the picto chart item with the
+ * <code class="prettyprint">short-desc</code> attribute specified:</caption>
+ * &lt;oj-picto-chart data='[[dataProvider]]' as='item'>
+ *  &lt;template slot='itemTemplate'>
+ *    &lt;oj-picto-chart-item short-desc='[[item.data.shortDesc]]'> &lt;/oj-picto-chart-item>
+ *  &lt;/template>
+ * &lt;/oj-picto-chart>
+ */
+ /**
+ * The URI of the custom image. If specified, it takes precedence over shape.
+ * @expose
+ * @name source
+ * @memberof! oj.ojPictoChartItem
+ * @instance
+ * @type {string}
+ * @default ''
+ *
+ * @example <caption>Initialize the picto chart item with the
+ * <code class="prettyprint">source</code> attribute specified:</caption>
+ * &lt;oj-picto-chart data='[[dataProvider]]' as='item'>
+ *  &lt;template slot='itemTemplate'>
+ *    &lt;oj-picto-chart-item source='[[item.data.source]]'> &lt;/oj-picto-chart-item>
+ *  &lt;/template>
+ * &lt;/oj-picto-chart>
+ */
+ /**
+ * The optional URI for the hover state. If not specified, the source image will be used.
+ * @expose
+ * @name sourceHover
+ * @memberof! oj.ojPictoChartItem
+ * @instance
+ * @type {string}
+ * @default ''
+ *
+ * @example <caption>Initialize the picto chart item with the
+ * <code class="prettyprint">source-hover</code> attribute specified:</caption>
+ * &lt;oj-picto-chart data='[[dataProvider]]' as='item'>
+ *  &lt;template slot='itemTemplate'>
+ *    &lt;oj-picto-chart-item source-hover='[[item.data.sourceHover]]'> &lt;/oj-picto-chart-item>
+ *  &lt;/template>
+ * &lt;/oj-picto-chart>
+ */
+ /**
+ * The optional URI for the hover selected state. If not specified, the source image will be used.
+ * @expose
+ * @name sourceHoverSelected
+ * @memberof! oj.ojPictoChartItem
+ * @instance
+ * @type {string}
+ * @default ''
+ *
+ * @example <caption>Initialize the picto chart item with the
+ * <code class="prettyprint">source-hover-selected</code> attribute specified:</caption>
+ * &lt;oj-picto-chart data='[[dataProvider]]' as='item'>
+ *  &lt;template slot='itemTemplate'>
+ *    &lt;oj-picto-chart-item source-hover-selected='[[item.data.sourceHoverSelected]]'> &lt;/oj-picto-chart-item>
+ *  &lt;/template>
+ * &lt;/oj-picto-chart>
+ */
+ /**
+ * The optional URI for the selected state. If not specified, the source image will be used.
+ * @expose
+ * @name sourceSelected
+ * @memberof! oj.ojPictoChartItem
+ * @instance
+ * @type {string}
+ * @default ''
+ *
+ * @example <caption>Initialize the picto chart item with the
+ * <code class="prettyprint">source-selected</code> attribute specified:</caption>
+ * &lt;oj-picto-chart data='[[dataProvider]]' as='item'>
+ *  &lt;template slot='itemTemplate'>
+ *    &lt;oj-picto-chart-item source-selected='[[item.data.sourceSelected]]'> &lt;/oj-picto-chart-item>
+ *  &lt;/template>
+ * &lt;/oj-picto-chart>
+ */
+/**
+ * The inline style to apply to the item. The style class and inline style will override any other styling specified with other properties. For tooltip interactivity, it's recommended to also pass a representative color to the item color attribute. Does not apply if custom image is specified.
+ * @expose
+ * @name svgStyle
+ * @memberof! oj.ojPictoChartItem
+ * @instance
+ * @type {Object}
+ * @default {}
+ *
+ * @example <caption>Initialize the picto chart item with the
+ * <code class="prettyprint">svg-style</code> attribute specified:</caption>
+ * &lt;oj-picto-chart data='[[dataProvider]]' as='item'>
+ *  &lt;template slot='itemTemplate'>
+ *    &lt;oj-picto-chart-item svg-style='[[item.data.svgStyle]]'> &lt;/oj-picto-chart-item>
+ *  &lt;/template>
+ * &lt;/oj-picto-chart>
+ */
+/**
+ * The CSS style class to apply to the item. The style class and inline style will override any other styling specified with other properties. For tooltip interactivity, it's recommended to also pass a representative color to the item color attribute. Does not apply if custom image is specified.
+ * @expose
+ * @name svgClassName
+ * @memberof! oj.ojPictoChartItem
+ * @instance
+ * @type {string}
+ * @default ''
+ *
+ * @example <caption>Initialize the picto chart item with the
+ * <code class="prettyprint">svg-class-name</code> attribute specified:</caption>
+ * &lt;oj-picto-chart data='[[dataProvider]]' as='item'>
+ *  &lt;template slot='itemTemplate'>
+ *    &lt;oj-picto-chart-item svg-class-name='[[item.data.svgClassName]]'> &lt;/oj-picto-chart-item>
+ *  &lt;/template>
+ * &lt;/oj-picto-chart>
+ */
+
+/* global __oj_picto_chart_metadata:false */
+/**
  * Ignore tag only needed for DVTs that have jsDoc in separate _doc.js files.
  * @ignore
  */
-(function() {
-var ojPictoChartMeta = {
-  "properties": {
-    "animationDuration": {
-      "type": "number"
-    },
-    "animationOnDataChange": {
-      "type": "string",
-      "enumValues": ["auto", "none"]
-    },
-    "animationOnDisplay": {
-      "type": "string",
-      "enumValues": ["auto", "popIn", "alphaFade", "zoom", "none"]
-    },
-    "columnCount": {
-      "type": "number"
-    },
-    "columnWidth": {
-      "type": "number"
-    },
-    "drilling": {
-      "type": "string",
-      "enumValues": ["on", "off"]
-    },
-    "hiddenCategories": {
-      "type": "Array<string>",
-      "writeback": true
-    },
-    "highlightedCategories": {
-      "type": "Array<string>",
-      "writeback": true
-    },
-    "highlightMatch": {
-      "type": "string",
-      "enumValues": ["any", "all"]
-    },
-    "hoverBehavior": {
-      "type": "string",
-      "enumValues": ["dim", "none"]
-    },
-    "hoverBehaviorDelay": {
-      "type": "number"
-    },    
-    "items": {
-      "type": "Array<object>|Promise"
-    },
-    "layout": {
-      "type": "string",
-      "enumValues": ["horizontal", "vertical"]
-    },
-    "layoutOrigin": {
-      "type": "string",
-      "enumValues": ["topEnd", "bottomStart", "bottomEnd", "topStart"]
-    },
-    "rowCount": {
-      "type": "number"
-    },
-    "rowHeight": {
-      "type": "number"
-    },
-    "selection": {
-      "type": "Array<string>",
-      "writeback": true
-    },
-    "selectionMode": {
-      "type": "string",
-      "enumValues": ["single", "multiple", "none"]
-    },
-    "tooltip": {
-      "type": "object",
-      "properties": {
-        "renderer": {}
-      }
-    },
-    "translations": {
-      "type": "Object",
-      "properties": {
-        "componentName": {
-          "type": "string",
-          "value": "Picture Chart"
-        },
-        "labelAndValue": {
-          "type": "string",
-          "value": "{0}: {1}"
-        },
-        "labelClearSelection": {
-          "type": "string",
-          "value": "Clear Selection"
-        },
-        "labelCountWithTotal": {
-          "type": "string",
-          "value": "{0} of {1}"
-        },
-        "labelDataVisualization": {
-          "type": "string",
-          "value": "Data Visualization"
-        },
-        "labelInvalidData": {
-          "type": "string",
-          "value": "Invalid data"
-        },
-        "labelNoData": {
-          "type": "string",
-          "value": "No data to display"
-        },
-        "stateCollapsed": {
-          "type": "string",
-          "value": "Collapsed"
-        },
-        "stateDrillable": {
-          "type": "string",
-          "value": "Drillable"
-        },
-        "stateExpanded": {
-          "type": "string",
-          "value": "Expanded"
-        },
-        "stateHidden": {
-          "type": "string",
-          "value": "Hidden"
-        },
-        "stateIsolated": {
-          "type": "string",
-          "value": "Isolated"
-        },
-        "stateMaximized": {
-          "type": "string",
-          "value": "Maximized"
-        },
-        "stateMinimized": {
-          "type": "string",
-          "value": "Minimized"
-        },
-        "stateSelected": {
-          "type": "string",
-          "value": "Selected"
-        },
-        "stateUnselected": {
-          "type": "string",
-          "value": "Unselected"
-        },
-        "stateVisible": {
-          "type": "string",
-          "value": "Visible"
-        }
-      }
-    }
-  },
-  "events": {
-    "drill": {}
-  },
-  "methods": {
-    "getContextByNode": {},
-    "getItem": {},
-    "getItemCount": {}
-  },
-  "extension": {
-    _WIDGET_NAME: "ojPictoChart"
-  }
-};
-oj.CustomElementBridge.registerMetadata('oj-picto-chart', 'dvtBaseComponent', ojPictoChartMeta);
-oj.CustomElementBridge.register('oj-picto-chart', {'metadata': oj.CustomElementBridge.getMetadata('oj-picto-chart')});
-})();
+(function () {
+  __oj_picto_chart_metadata.extension._WIDGET_NAME = 'ojPictoChart';
+  oj.CustomElementBridge.registerMetadata('oj-picto-chart', 'dvtBaseComponent', __oj_picto_chart_metadata);
+  oj.CustomElementBridge.register('oj-picto-chart', { metadata: oj.CustomElementBridge.getMetadata('oj-picto-chart') });
+}());
+
+/* global __oj_picto_chart_item_metadata:false */
+(function () {
+  __oj_picto_chart_item_metadata.extension._CONSTRUCTOR = function () {};
+  oj.CustomElementBridge.registerMetadata('oj-picto-chart-item', null, __oj_picto_chart_item_metadata);
+  oj.CustomElementBridge.register('oj-picto-chart-item', {
+    metadata: oj.CustomElementBridge.getMetadata('oj-picto-chart-item')
+  });
+}());
 
 });

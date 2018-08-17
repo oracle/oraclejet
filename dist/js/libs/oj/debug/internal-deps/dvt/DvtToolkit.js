@@ -139,6 +139,21 @@ dvt.Obj.createCallback = function(thisPtr, func) {
 dvt.Obj.defineConstant = function(constValue) {
   return constValue;
 };
+/**
+ * Utility to compare two objects which uses JET's oj.Object.compareValues method if provided
+ * or a strict equality check otherwise.
+ * @param {dvt.Context} ctx The context object
+ * @param {*} obj1 The first object to compare
+ * @param {*} obj2 The second object to compare
+ * @return {boolean} True if the two objects are equal and false otherwise
+ */
+dvt.Obj.compareValues = function(ctx, obj1, obj2) {
+  if (ctx.oj) {
+    return ctx.oj.Object.compareValues(obj1, obj2);
+  } else {
+    return obj1 === obj2;
+  }
+};
 
 // Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
 /**
@@ -31622,7 +31637,7 @@ dvt.SelectionHandler.prototype.processInitialSelections = function(selectedIds, 
     var target = targets[i];
     if (target.isSelectable && target.isSelectable()) {
       var keySetId = keySet.get(target.getId());
-      if (keySetId != null) {
+      if (keySetId !== keySet.NOT_A_KEY) {
         // Found a match
         count++;
         matchedMap.set(keySetId, target);

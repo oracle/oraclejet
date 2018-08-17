@@ -11,7 +11,616 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue'],
         */
        function(oj, $)
 {
-
+//%COMPONENT_METADATA%
+var __oj_input_password_metadata = 
+{
+  "properties": {
+    "asyncValidators": {
+      "type": "Array<Object>",
+      "value": []
+    },
+    "autocomplete": {
+      "type": "string",
+      "value": "on",
+      "extension": {
+        "_COPY_TO_INNER_ELEM": true
+      }
+    },
+    "autofocus": {
+      "type": "boolean",
+      "value": false,
+      "extension": {
+        "_COPY_TO_INNER_ELEM": true
+      }
+    },
+    "describedBy": {
+      "type": "string"
+    },
+    "disabled": {
+      "type": "boolean",
+      "value": false
+    },
+    "displayOptions": {
+      "type": "object",
+      "properties": {
+        "converterHint": {
+          "type": "Array<string>|string",
+          "value": [
+            "placeholder",
+            "notewindow"
+          ]
+        },
+        "helpInstruction": {
+          "type": "Array<string>|string",
+          "value": [
+            "notewindow"
+          ]
+        },
+        "messages": {
+          "type": "Array<string>|string",
+          "value": [
+            "inline"
+          ]
+        },
+        "validatorHint": {
+          "type": "Array<string>|string",
+          "value": [
+            "notewindow"
+          ]
+        }
+      }
+    },
+    "help": {
+      "type": "object",
+      "properties": {
+        "instruction": {
+          "type": "string"
+        }
+      }
+    },
+    "helpHints": {
+      "type": "object",
+      "properties": {
+        "definition": {
+          "type": "string",
+          "value": ""
+        },
+        "source": {
+          "type": "string",
+          "value": ""
+        }
+      }
+    },
+    "labelHint": {
+      "type": "string",
+      "value": ""
+    },
+    "messagesCustom": {
+      "type": "Array<Object>",
+      "writeback": true,
+      "value": []
+    },
+    "name": {
+      "type": "string",
+      "value": "",
+      "extension": {
+        "_COPY_TO_INNER_ELEM": true
+      }
+    },
+    "placeholder": {
+      "type": "string"
+    },
+    "rawValue": {
+      "type": "string",
+      "writeback": true,
+      "readOnly": true
+    },
+    "readonly": {
+      "type": "boolean",
+      "value": false
+    },
+    "required": {
+      "type": "boolean",
+      "value": false
+    },
+    "translations": {
+      "type": "object",
+      "value": {},
+      "properties": {
+        "regexp": {
+          "type": "object",
+          "properties": {
+            "messageDetail": {
+              "type": "string"
+            },
+            "messageSummary": {
+              "type": "string"
+            }
+          }
+        },
+        "required": {
+          "type": "object",
+          "properties": {
+            "hint": {
+              "type": "string"
+            },
+            "messageDetail": {
+              "type": "string"
+            },
+            "messageSummary": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "valid": {
+      "type": "string",
+      "writeback": true,
+      "enumValues": [
+        "invalidHidden",
+        "invalidShown",
+        "pending",
+        "valid"
+      ],
+      "readOnly": true
+    },
+    "validators": {
+      "type": "Array<Object>",
+      "value": []
+    },
+    "value": {
+      "type": "string",
+      "writeback": true
+    }
+  },
+  "methods": {
+    "refresh": {},
+    "validate": {},
+    "reset": {},
+    "showMessages": {},
+    "setProperty": {},
+    "getProperty": {},
+    "setProperties": {},
+    "getNodeBySubId": {},
+    "getSubIdByNode": {}
+  },
+  "events": {
+    "ojAnimateStart": {},
+    "ojAnimateEnd": {}
+  },
+  "extension": {}
+};
+var __oj_input_text_metadata = 
+{
+  "properties": {
+    "asyncValidators": {
+      "type": "Array<Object>",
+      "value": []
+    },
+    "autocomplete": {
+      "type": "string",
+      "value": "on",
+      "extension": {
+        "_COPY_TO_INNER_ELEM": true
+      }
+    },
+    "autofocus": {
+      "type": "boolean",
+      "value": false,
+      "extension": {
+        "_COPY_TO_INNER_ELEM": true
+      }
+    },
+    "clearIcon": {
+      "type": "string",
+      "enumValues": [
+        "always",
+        "conditional",
+        "never"
+      ],
+      "value": "never"
+    },
+    "converter": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "options": {
+          "type": "object"
+        }
+      }
+    },
+    "describedBy": {
+      "type": "string"
+    },
+    "disabled": {
+      "type": "boolean",
+      "value": false
+    },
+    "displayOptions": {
+      "type": "object",
+      "properties": {
+        "converterHint": {
+          "type": "Array<string>|string",
+          "value": [
+            "placeholder",
+            "notewindow"
+          ]
+        },
+        "helpInstruction": {
+          "type": "Array<string>|string",
+          "value": [
+            "notewindow"
+          ]
+        },
+        "messages": {
+          "type": "Array<string>|string",
+          "value": [
+            "inline"
+          ]
+        },
+        "validatorHint": {
+          "type": "Array<string>|string",
+          "value": [
+            "notewindow"
+          ]
+        }
+      }
+    },
+    "help": {
+      "type": "object",
+      "properties": {
+        "instruction": {
+          "type": "string"
+        }
+      }
+    },
+    "helpHints": {
+      "type": "object",
+      "properties": {
+        "definition": {
+          "type": "string",
+          "value": ""
+        },
+        "source": {
+          "type": "string",
+          "value": ""
+        }
+      }
+    },
+    "labelHint": {
+      "type": "string",
+      "value": ""
+    },
+    "list": {
+      "type": "string",
+      "extension": {
+        "_COPY_TO_INNER_ELEM": true
+      }
+    },
+    "messagesCustom": {
+      "type": "Array<Object>",
+      "writeback": true,
+      "value": []
+    },
+    "name": {
+      "type": "string",
+      "value": "",
+      "extension": {
+        "_COPY_TO_INNER_ELEM": true
+      }
+    },
+    "placeholder": {
+      "type": "string"
+    },
+    "rawValue": {
+      "type": "string",
+      "writeback": true,
+      "readOnly": true
+    },
+    "readonly": {
+      "type": "boolean",
+      "value": false
+    },
+    "required": {
+      "type": "boolean",
+      "value": false
+    },
+    "spellcheck": {
+      "type": "boolean",
+      "value": false,
+      "extension": {
+        "_ATTRIBUTE_ONLY": true,
+        "_COPY_TO_INNER_ELEM": true
+      }
+    },
+    "translations": {
+      "type": "object",
+      "value": {},
+      "properties": {
+        "regexp": {
+          "type": "object",
+          "properties": {
+            "messageDetail": {
+              "type": "string"
+            },
+            "messageSummary": {
+              "type": "string"
+            }
+          }
+        },
+        "required": {
+          "type": "object",
+          "properties": {
+            "hint": {
+              "type": "string"
+            },
+            "messageDetail": {
+              "type": "string"
+            },
+            "messageSummary": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "valid": {
+      "type": "string",
+      "writeback": true,
+      "enumValues": [
+        "invalidHidden",
+        "invalidShown",
+        "pending",
+        "valid"
+      ],
+      "readOnly": true
+    },
+    "validators": {
+      "type": "Array<Object>",
+      "value": []
+    },
+    "value": {
+      "type": "any",
+      "writeback": true
+    },
+    "virtualKeyboard": {
+      "type": "string",
+      "enumValues": [
+        "auto",
+        "email",
+        "number",
+        "search",
+        "tel",
+        "text",
+        "url"
+      ],
+      "value": "auto"
+    }
+  },
+  "methods": {
+    "refresh": {},
+    "validate": {},
+    "reset": {},
+    "showMessages": {},
+    "setProperty": {},
+    "getProperty": {},
+    "setProperties": {},
+    "getNodeBySubId": {},
+    "getSubIdByNode": {}
+  },
+  "events": {
+    "ojAnimateStart": {},
+    "ojAnimateEnd": {}
+  },
+  "extension": {}
+};
+var __oj_text_area_metadata = 
+{
+  "properties": {
+    "asyncValidators": {
+      "type": "Array<Object>",
+      "value": []
+    },
+    "autocomplete": {
+      "type": "string",
+      "value": "on",
+      "extension": {
+        "_COPY_TO_INNER_ELEM": true
+      }
+    },
+    "autofocus": {
+      "type": "boolean",
+      "value": false,
+      "extension": {
+        "_COPY_TO_INNER_ELEM": true
+      }
+    },
+    "converter": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "options": {
+          "type": "object"
+        }
+      }
+    },
+    "describedBy": {
+      "type": "string"
+    },
+    "disabled": {
+      "type": "boolean",
+      "value": false
+    },
+    "displayOptions": {
+      "type": "object",
+      "properties": {
+        "converterHint": {
+          "type": "Array<string>|string",
+          "value": [
+            "placeholder",
+            "notewindow"
+          ]
+        },
+        "helpInstruction": {
+          "type": "Array<string>|string",
+          "value": [
+            "notewindow"
+          ]
+        },
+        "messages": {
+          "type": "Array<string>|string",
+          "value": [
+            "inline"
+          ]
+        },
+        "validatorHint": {
+          "type": "Array<string>|string",
+          "value": [
+            "notewindow"
+          ]
+        }
+      }
+    },
+    "help": {
+      "type": "object",
+      "properties": {
+        "instruction": {
+          "type": "string"
+        }
+      }
+    },
+    "helpHints": {
+      "type": "object",
+      "properties": {
+        "definition": {
+          "type": "string",
+          "value": ""
+        },
+        "source": {
+          "type": "string",
+          "value": ""
+        }
+      }
+    },
+    "labelHint": {
+      "type": "string",
+      "value": ""
+    },
+    "messagesCustom": {
+      "type": "Array<Object>",
+      "writeback": true,
+      "value": []
+    },
+    "name": {
+      "type": "string",
+      "value": "",
+      "extension": {
+        "_COPY_TO_INNER_ELEM": true
+      }
+    },
+    "placeholder": {
+      "type": "string"
+    },
+    "rawValue": {
+      "type": "string",
+      "writeback": true,
+      "readOnly": true
+    },
+    "readonly": {
+      "type": "boolean",
+      "value": false
+    },
+    "required": {
+      "type": "boolean",
+      "value": false
+    },
+    "rows": {
+      "type": "number",
+      "extension": {
+        "_COPY_TO_INNER_ELEM": true
+      }
+    },
+    "spellcheck": {
+      "type": "boolean",
+      "value": false,
+      "extension": {
+        "_ATTRIBUTE_ONLY": true,
+        "_COPY_TO_INNER_ELEM": true
+      }
+    },
+    "translations": {
+      "type": "object",
+      "value": {},
+      "properties": {
+        "regexp": {
+          "type": "object",
+          "properties": {
+            "messageDetail": {
+              "type": "string"
+            },
+            "messageSummary": {
+              "type": "string"
+            }
+          }
+        },
+        "required": {
+          "type": "object",
+          "properties": {
+            "hint": {
+              "type": "string"
+            },
+            "messageDetail": {
+              "type": "string"
+            },
+            "messageSummary": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "valid": {
+      "type": "string",
+      "writeback": true,
+      "enumValues": [
+        "invalidHidden",
+        "invalidShown",
+        "pending",
+        "valid"
+      ],
+      "readOnly": true
+    },
+    "validators": {
+      "type": "Array<Object>",
+      "value": []
+    },
+    "value": {
+      "type": "any",
+      "writeback": true
+    }
+  },
+  "methods": {
+    "refresh": {},
+    "validate": {},
+    "reset": {},
+    "showMessages": {},
+    "setProperty": {},
+    "getProperty": {},
+    "setProperties": {},
+    "getNodeBySubId": {},
+    "getSubIdByNode": {}
+  },
+  "events": {
+    "ojAnimateStart": {},
+    "ojAnimateEnd": {}
+  },
+  "extension": {}
+};
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
@@ -44,7 +653,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojeditablevalue'],
  *   Abstract inputBase component
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#inputBaseOverview-section"></a>
  * </h3>
- * 
+ * {@ojinclude "name":"validationAndMessagingDoc"}
  * <p>Description: The inputBase component takes care of general needs of other input components [i.e. text + password]
  * 
  * @param {Object=} options a map of option-value pairs to set on the component
@@ -145,7 +754,122 @@ oj.__registerWidget("oj.inputBase", $['oj']['editableValue'],
   options : 
   {
     /**
+       * List of asynchronous validators used by the component when performing validation.
+       * <p>
+       * Use <code class="prettyprint">async-validators</code> when you need to
+       * perform some validation work on the server. Otherwise, use
+       * <code class="prettyprint">validators</code>, which are synchronous.
+       * </p>
      * <p>
+       * Each item in the Array is an instance that duck types {@link oj.AsyncValidator}.
+       * Implicit validators created by a component when certain attributes
+       * are present (e.g. <code class="prettyprint">required</code> attribute) are separate from
+       * validators specified through the <code class="prettyprint">async-validators</code>
+       * attribute and the <code class="prettyprint">validators</code> attribute.
+       * At runtime when the component runs validation, it
+       * combines the implicit validators with the list specified through the
+       * <code class="prettyprint">validators</code>
+       * attribute and also the list specified through the
+       * <code class="prettyprint">async-validators</code> attribute.
+       * Error messages are shown as soon as each async validator returns;
+       * we do not wait until all the async validators finish to show errors.
+       * If the component's valid state changes for the worse, it is also updated
+       * as each validator returns so valid will be invalidShown
+       * as soon as the first validator has an Error.
+       * </p>
+       * <p> It is recommended that you show the
+       * value you are validating in the error message because if the async operation takes a while,
+       * the user could be typing in a new value when the error message comes back
+       * and might be confused what value the error is for. However, if the user enters a new value
+       * (like presses Enter or Tab), a new validation lifecycle will start
+       * and validation errors for the previous value will not be shown to the user.
+       * If you need to format the value for the error message,
+       * you can use
+       * <code class="prettyprint">oj.IntlConverterUtils.getConverterInstance(converterOption)</code>
+       * to get the converter instance,
+       * then call <code class="prettyprint">converter.format(value)</code>.
+       * </p>
+       * <p>
+       * Hints exposed by async-validators and validators are shown in the notewindow by default,
+       * or as determined by the 'validatorHint' property set on the
+       * <code class="prettyprint">display-options</code> attribute.
+       * </p>
+       * <p>Since async validators are run asynchronously, you should wait on the BusyContext before
+       * you check valid property or the value property. Alternatively you can add a callback to
+       * the onValidChanged or ojValueChanged events.
+       * </p>
+       * <p>
+       * The steps performed always, running validation and clearing messages is the same as
+       * for the <code class="prettyprint">{@link oj.inputBase#validators}</code> attribute.
+       * </p>
+       * <br/>
+       * @example <caption>Create an Object that duck-types the oj.AsyncValidator interface.
+       * Bind the Object to the JET form component's async-validators attribute. The
+       * validator's 'validate' method will be called when the user changes the input.</caption>
+       *  self.asyncValidator1 = {
+       *    // required validate method
+       *    'validate': function(value) {
+       *      return new Promise(function(resolve, reject) {
+       *        var successful = someBackendMethod();
+       *        if (successful) {
+       *          resolve(true);
+       *        } else {
+       *          reject(new Error('The amount of purchase is too high. It is ' + value));
+       *        }
+       *      });
+       *    },
+       *    // optional hint attribute. hint shows up when user sets focus to input.
+       *    'hint': new Promise(function (resolve, reject) {
+       *      var formattedMaxPurchase = getSomeBackendFormattedMaxPurchase();
+       *      resolve(maxPurchase + " is the maximum.");
+       *    });
+       *  };
+       *  -- HTML --
+       *  &lt;oj-input-text value="{{value}}"
+       *  async-validators="[[[asyncValidator1]]]">&lt;/oj-input-text>
+       * @example <caption>Initialize the component with multiple AsyncValidator
+       * duck-typed instances:</caption>
+       * -- HTML --
+       * &lt;oj-input-text id="asyncValKo1" data-oj-context
+                  valid="{{koAsyncValid}}" value="{{koAsyncValue}}"
+                  required validators="[[[checkfoo, checkfooey]]]"
+                  async-validators="[[[asyncValidator1, asyncValidator2]]]">&lt;/oj-input-text>
+       *
+       * @example <caption>Get or set the <code class="prettyprint">asyncValidators</code>
+       * property after initialization:</caption>
+       * // getter
+       * var validators = myComp.asyncValidators;
+       *
+       * // setter
+       * var myValidators = [{
+       * 'validate' : function(value) {
+       *   return new Promise(function(resolve, reject) {
+       *   // mock server-side delay
+       *   setTimeout(function () {
+       *     if (value === "pass" || value === "another pass") {
+       *       resolve(true);
+       *     } else {
+       *       reject(new Error("value isn't 'pass' or 'another pass'. It is " + value.));
+       *     }
+       *   },10);
+       *   });
+       * }
+       * }];
+       * myComp.asyncValidators = myValidators;
+       *
+       * @expose
+       * @access public
+       * @instance
+       * @memberof oj.inputBase
+       * @ojsignature  { target: "Type",
+       *       value: "Array<oj.AsyncValidator<V>>",
+       *       jsdocOverride: true}
+       * @type {Array.<Object>}
+       * @default []
+       */
+      asyncValidators: [],
+      /**
+       * <p>
      * When <code class="prettyprint">converter</code> property changes due to programmatic
      * intervention, the element performs various tasks based on the current state it is in. </br>
      *
@@ -381,9 +1105,9 @@ oj.__registerWidget("oj.inputBase", $['oj']['editableValue'],
      * 
      * </p>
      * 
-     * @ojvalue {boolean} false - implies a value is not required to be provided by the user. 
+     * This property set to <code class="prettyprint">false</code> implies that a value is not required to be provided by the user.
      * This is the default.
-     * @ojvalue {boolean} true - implies a value is required to be provided by user and the 
+     * This property set to <code class="prettyprint">true</code> implies that a value is required to be provided by user and the
      * input's label will render a required icon. Additionally a required validator - 
      * {@link oj.RequiredValidator} - is implicitly used if no explicit required validator is set. 
      * An explicit required validator can be set by page authors using the validators attribute. 
@@ -418,8 +1142,8 @@ oj.__registerWidget("oj.inputBase", $['oj']['editableValue'],
     required: false,
 
     /** 
-       * List of validators used by component  along with the implicit component validators 
-       * when performing validation. Each item is either an
+       * List of synchronous validators used by component along with asynchronous validators
+       * and the implicit component validators when performing validation. Each item is either an
      * instance that duck types {@link oj.Validator}, or is an Object literal containing the 
        * properties listed below.
        * <p> 
@@ -428,7 +1152,8 @@ oj.__registerWidget("oj.inputBase", $['oj']['editableValue'],
        * is set, an implicit {@link oj.RequiredValidator} is created.
        * At runtime when the component runs validation, it
        * combines all the implicit validators with all the validators 
-       * specified through this <code class="prettyprint">validators</code> attribute, and 
+       * specified through this <code class="prettyprint">validators</code> attribute
+       * and the <code class="prettyprint">async-validators</code> attribute, and
        * runs all of them.
        * </p>
        * <p>
@@ -454,8 +1179,9 @@ oj.__registerWidget("oj.inputBase", $['oj']['editableValue'],
      * <li>if component is valid when validators changes, component does nothing other than the 
      * steps it always performs.</li>
      * <li>if component is invalid and is showing messages when 
-     * <code class="prettyprint">validators</code> changes then all component messages are cleared 
-     * and full validation run using the display value on the component. 
+       * <code class="prettyprint">validators</code> or
+       * <code class="prettyprint">async-validators</code> changes then all component messages
+       *  are cleared and full validation run using the display value on the component.
      * <ul>
      *   <li>if there are validation errors, then <code class="prettyprint">value</code> 
      *   property is not updated and the error is shown. 
@@ -492,14 +1218,28 @@ oj.__registerWidget("oj.inputBase", $['oj']['editableValue'],
      *                     "messageDetail": "You must enter at least 3 letters or numbers"}}]'>
      * &lt;/oj-some-element>      
      * 
-     * NOTE: oj.Validation.validatorFactory('numberRange') returns the validator factory that is used 
-     * to instantiate a range validator for numbers.
      * 
      * @example <caption>Initialize the component with multiple validator instances:</caption>
-     * var validator1 = new MyCustomValidator({'foo': 'A'}); 
-     * var validator2 = new MyCustomValidator({'foo': 'B'});
-     * var validators = [validator1, validator2]<br/>
-     * ...
+       * self.checkfooey = {
+       *   'validate' : function(value) {
+       *     if (value === "fooey" || value === "pass") {
+       *       return true;
+       *     } else {
+       *       throw new Error("value isn't fooey or pass");
+       *     }
+       *   }
+       * };
+       * self.checkbar = {
+       * 'validate' : function(value) {
+       *   if (value === "bar" || value === "pass") {
+       *     return true;
+       *   } else {
+       *     throw new Error("value isn't bar or pass");
+       *   }
+       *  }
+       * };
+       * var validators = [checkfooey, checkbar]<br/>
+       * ... HTML...
      * &lt;oj-some-element validators='[[validators]]'>
      * &lt;/oj-some-element>      
      * 
@@ -513,13 +1253,14 @@ oj.__registerWidget("oj.inputBase", $['oj']['editableValue'],
      * @expose 
      * @access public
      * @instance
+     * @default []
      * @memberof oj.inputBase
-     * @ojsignature  { target: "Type", 
-     *   value: "Array<oj.Validator<V>|oj.Validation.FactoryRegisteredValidatorOrConverter>|null",
-     *  jsdocOverride: true}
-     * @type {Array.<Object>|null}
-     */    
-    validators: undefined
+     * @ojsignature  { target: "Type",
+     *   value: "Array<oj.Validator<V>|oj.Validation.RegisteredValidator>|null",
+     *   jsdocOverride: true}
+     * @type {Array.<Object>}
+     */
+     validators: []
   },
   
   /**
@@ -723,6 +1464,22 @@ oj.__registerWidget("oj.inputBase", $['oj']['editableValue'],
    */
   _AfterSetOptionValidators : oj.EditableValueUtils._AfterSetOptionValidators,
   /**
+     * When async-validators attribute changes, take the following steps.
+     *
+     * - Clear the cached normalized list of all validator instances. push new hints to messaging.<br/>
+     * - if component is valid -> validators changes -> no change<br/>
+     * - if component is invalid has messagesShown -> validators changes -> clear all component
+     * messages and re-run full validation on displayValue. if there are no errors push value to
+     * model;<br/>
+     * - if component is invalid has messagesHidden -> validators changes -> do nothing; doesn't change
+     * the required-ness of component <br/>
+     * - messagesCustom is not cleared.<br/>
+     * @memberof! oj.inputBase
+     * @instance
+     * @protected
+     */
+    _AfterSetOptionAsyncValidators: oj.EditableValueUtils._AfterSetOptionAsyncValidators,
+    /**
    * Performs post processing after converter option changes by taking the following steps.
    * 
    * - always push new converter hint to messaging <br/>
@@ -768,6 +1525,16 @@ oj.__registerWidget("oj.inputBase", $['oj']['editableValue'],
    * @protected
    */
   _GetNormalizedValidatorsFromOption : oj.EditableValueUtils._GetNormalizedValidatorsFromOption,
+   /**
+    * This returns an array of all async validators
+    * normalized from the async-validators attribute set on the component. <br/>
+    * @return {Array} of validators.
+    * @memberof! oj.inputBase
+    * @instance
+    * @protected
+    */
+    _GetNormalizedAsyncValidatorsFromOption:
+      oj.EditableValueUtils._GetNormalizedAsyncValidatorsFromOption,
   
   _processDisabledReadOnly : function (key, value) 
   {
@@ -838,12 +1605,15 @@ oj.__registerWidget("oj.inputBase", $['oj']['editableValue'],
       case "validators":
         this._AfterSetOptionValidators(option);
         break;
-      case "converter":
-        this._AfterSetOptionConverter(option);
-        break;           
-      default:
-        break;
-    }
+        case 'asyncValidators':
+          this._AfterSetOptionAsyncValidators(option);
+          break;
+        case 'converter':
+          this._AfterSetOptionConverter(option);
+          break;
+        default:
+          break;
+      }
   },
   /**
    * @ignore
@@ -1274,8 +2044,16 @@ oj.__registerWidget("oj.inputBase", $['oj']['editableValue'],
    */
   _ValidateReturnBoolean: oj.EditableValueUtils._ValidateReturnBoolean,
 
-  getNodeBySubId: function(locator)
-  {
+  /**
+     * the validate method that returns a Promise
+     * @memberof! oj.inputBase
+     * @instance
+     * @protected
+     * @ignore
+     */
+    _ValidateReturnPromise: oj.EditableValueUtils._ValidateReturnPromise,
+
+    getNodeBySubId: function (locator) {
     return this._super(locator);
   },
 
@@ -1469,10 +2247,10 @@ oj.__registerWidget("oj.ojInputPassword", $['oj']['inputBase'],
      * @access public
      * @instance
      * @memberof! oj.ojInputPassword
-     * @type {Object|undefined}
+     * @type {Object|null}
      * @ignore
      */    
-    converter: undefined,
+     converter: null,
     /**
      * Regular expression pattern which will be used to validate the component's value. 
      * <p>
@@ -1497,7 +2275,40 @@ oj.__registerWidget("oj.ojInputPassword", $['oj']['inputBase'],
      * @type {string|undefined}
      * @ignore
      */
-    pattern: ""
+    pattern: "",
+    /**
+     * The value of the component. Value must be a string or null.
+     *
+     * <p>
+     * When <code class="prettyprint">value</code> property changes due to programmatic
+     * intervention, the component always clears all messages
+     * including <code class="prettyprint">messagesCustom</code>, runs deferred validation, and
+     * always refreshes UI display value.</br>
+     *
+     * <h4>Running Validation</h4>
+     * <ul>
+     * <li>component always runs deferred validation; if there is a validation error the
+     * <code class="prettyprint">valid</code> property is updated.</li>
+     * </ul>
+     * </p>
+     *
+     * @example <caption>Initialize the component with the <code class="prettyprint">value</code> attribute specified:</caption>
+     * &lt;oj-input-password value='12345'>&lt;/oj-input-password>
+     * @example <caption>Get or set <code class="prettyprint">value</code> attribute, after initialization:</caption>
+     * // Getter: returns 10
+     * var val = myComp.value;
+     * // Setter: sets 20
+     * myComp.value = 20;
+     *
+     * @expose
+     * @access public
+     * @instance
+     * @default null
+     * @ojwriteback
+     * @memberof oj.ojInputPassword
+     * @type {?string}
+     */
+    value: undefined
 
     // Events
 
@@ -1788,12 +2599,14 @@ oj.__registerWidget("oj.ojInputText", $['oj']['inputBase'],
      * @access public
      * @instance
      * @memberof! oj.ojInputText
+     * @default null
      * @ojsignature {
      *    target: "Type",
-     *    value: "oj.Converter<any>|oj.Validation.FactoryRegisteredValidatorOrConverter|null"}
-     * @type {Object|undefined}
+     *    value: "oj.Converter<any>|oj.Validation.RegisteredConverter|null",
+     *    jsdocOverride: true}
+     * @type {Object|null}
      */    
-    converter: undefined,
+     converter: null,
     /** 
      * Indicates a list of pre-defined options to suggest to the user. 
      * The value must be the id of a &lt;datalist> element in the same page.
@@ -2251,31 +3064,38 @@ oj.__registerWidget("oj.ojInputText", $['oj']['inputBase'],
    * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
    * @memberof oj.ojInputText
    */
-  /**
-   * {@ojinclude "name":"ojStylingDocIntro"}
-   * 
-   * <table class="generic-table styling-table">
-   *   <thead>
-   *     <tr>
-   *       <th>{@ojinclude "name":"ojStylingDocClassHeader"}</th>
-   *       <th>{@ojinclude "name":"ojStylingDocDescriptionHeader"}</th>
-   *     </tr>
-   *   </thead>
-   *   <tbody>
-   *     <tr>
-   *       <td>oj-form-control-text-align-right</td>
-   *       <td>Aligns the text to the right regardless of the reading direction,
-               this is normally used for right aligning numbers 
-   *     </td>
-   *     </tr>
-   *   </tbody>
-   * </table>
-   *
-   * @ojfragment stylingDoc - Used in Styling section of classdesc, and standalone Styling doc
-   * @memberof oj.ojInputText
-   */
 
-//////////////////     SUB-IDS     //////////////////
+/**
+ * {@ojinclude "name":"ojStylingDocIntro"}
+ * <p>The form control text align style classes can be applied to the component, or an ancestor element. When
+ * applied to an ancestor element, all form components that support the text align style classes will be affected.
+ *
+ * <table class="generic-table styling-table">
+ *   <thead>
+ *     <tr>
+ *       <th>{@ojinclude "name":"ojStylingDocClassHeader"}</th>
+ *       <th>{@ojinclude "name":"ojStylingDocDescriptionHeader"}</th>
+ *     </tr>
+ *   </thead>
+ *   <tbody>
+ *     <tr>
+ *       <td>oj-form-control-text-align-right</td>
+ *       <td>Aligns the text to the right regardless of the reading direction.
+ *           This is normally used for right aligning numbers
+ *       </td>
+ *     </tr>
+ *     <tr>
+ *       <td>oj-form-control-text-align-start</td>
+ *       <td>Aligns the text to the left in ltr and to the right in rtl</td>
+ *     </tr>
+ *   </tbody>
+ * </table>
+ *
+ * @ojfragment stylingDoc - Used in Styling section of classdesc, and standalone Styling doc
+ * @memberof oj.ojInputText
+ */
+
+// ////////////////     SUB-IDS     //////////////////
 /**
  * <p>Sub-ID for the ojInputText component's input element.</p>
  * 
@@ -2427,13 +3247,15 @@ oj.__registerWidget("oj.ojTextArea", $['oj']['inputBase'],
      * @expose 
      * @access public
      * @instance
+     * @default null
      * @memberof! oj.ojTextArea
      * @ojsignature {
      *    target: "Type",
-     *    value: "oj.Converter<any>|oj.Validation.FactoryRegisteredValidatorOrConverter|null"}
-     * @type {Object|undefined}
+     *    value: "oj.Converter<any>|oj.Validation.RegisteredConverter|null",
+     *    jsdocOverride: true}
+     * @type {Object|null}
      */    
-    converter: undefined,
+     converter: null,
     /**
      * Regular expression pattern which will be used to validate the component's value.
      * <p>
@@ -2635,177 +3457,39 @@ oj.__registerWidget("oj.ojTextArea", $['oj']['inputBase'],
  * var node = myComp.getNodeBySubId("oj-textarea-input");
  */
 
-(function() {
-var inputBaseMeta = {
-  "properties": {
-    "autocomplete": {
-      "type": "string",
-      "extension": {
-        _COPY_TO_INNER_ELEM: true
-      }
-    },
-    "autofocus": {
-      "type": "boolean",
-      "extension": {
-        _COPY_TO_INNER_ELEM: true
-      }
-    },
-    "name": {
-      "type": "string",
-      "extension": {
-        _COPY_TO_INNER_ELEM: true
-      }
-    },
-    "placeholder": {
-      "type": "string"
-    },
-    "rawValue": {
-      "type": "string",
-      "readOnly": true,
-      "writeback": true
-    },
-    "readonly": {
-      "type": "boolean"
-    },
-    "required": {
-      "type": "boolean"
-    },
-    "translations": {
-      "type": "Object",
-      "properties": {
-        "regexp": {
-          "type": "Object",
-          "properties": {
-            "messageDetail": {
-              "type": "string"
-            },
-            "messageSummary": {
-              "type": "string"
-            }
-          }
-        },
-        "required": {
-          "type": "Object",
-          "properties": {
-            "hint": {
-              "type": "string"
-            },
-            "messageDetail": {
-              "type": "string"
-            },
-            "messageSummary": {
-              "type": "string"
-            }
-          }
-        }
-      }
-    },
-    "validators": {
-      "type": "Array"
+
+(function () {
+  var inputBaseMeta = {
+    extension: {
+      _INNER_ELEM: 'input',
+      _WIDGET_NAME: 'inputBase',
+      _GLOBAL_TRANSFER_ATTRS: ['accesskey', 'aria-label', 'tabindex'],
+      _ALIASED_PROPS: { readonly: 'readOnly' }
     }
-  },
-  "methods": {
-    "validate": {}
-  },
-  "extension": {
-    _INNER_ELEM: 'input',
-    _WIDGET_NAME: "inputBase",
-    _GLOBAL_TRANSFER_ATTRS: ["accesskey", "aria-label", "tabindex"],
-    _ALIASED_PROPS: {"readonly": "readOnly"}
-  }
-};
-oj.CustomElementBridge.registerMetadata('inputBase', 'editableValue', inputBaseMeta);
+  };
+  oj.CustomElementBridge.registerMetadata('inputBase', 'editableValue', inputBaseMeta);
 })();
 
-(function() {
-var ojInputPasswordMeta = {
-  "properties": {
-    "value": {
-      "type": "string",
-      "writeback": true
-    }
-  },
-  "methods": {},
-  "extension": {
-    _WIDGET_NAME: "ojInputPassword"
-  }
-};
-oj.CustomElementBridge.registerMetadata('oj-input-password', 'inputBase', ojInputPasswordMeta);
-oj.CustomElementBridge.register('oj-input-password', {'metadata': oj.CustomElementBridge.getMetadata('oj-input-password')});
-})();
+/* global __oj_input_password_metadata:false */
+(function () {
+  __oj_input_password_metadata.extension._WIDGET_NAME = 'ojInputPassword';
+  oj.CustomElementBridge.registerMetadata('oj-input-password', 'inputBase', __oj_input_password_metadata);
+  oj.CustomElementBridge.register('oj-input-password', { metadata: oj.CustomElementBridge.getMetadata('oj-input-password') });
+}());
 
-(function() {
-var ojInputTextMeta = {
-  "properties": {
-    "clearIcon": {
-      "type": "string",
-      "enumValues": ["always", "conditional", "never"]
-    },
-    "converter": {
-      "type": "Object"
-    },
-    "list": {
-      "type": "string",
-      "extension": {
-        _COPY_TO_INNER_ELEM: true
-      }
-    },
-    "spellcheck": {
-      "type": "boolean",
-      "extension": {
-        _ATTRIBUTE_ONLY: true,
-        _COPY_TO_INNER_ELEM: true
-      }
-    },
-    "value": {
-      "type": "any",
-      "writeback": true
-    },
-    "virtualKeyboard": {
-      "type": "string",
-      "enumValues": ["auto", "email", "number", "search", "tel", "text", "url"]
-    }
-  },
-  "methods": {},
-  "extension": {
-    _WIDGET_NAME: "ojInputText"
-  }
-};
-oj.CustomElementBridge.registerMetadata('oj-input-text', 'inputBase', ojInputTextMeta);
-oj.CustomElementBridge.register('oj-input-text', {'metadata': oj.CustomElementBridge.getMetadata('oj-input-text')});
-})();
+/* global __oj_input_text_metadata:false */
+(function () {
+  __oj_input_text_metadata.extension._WIDGET_NAME = 'ojInputText';
+  oj.CustomElementBridge.registerMetadata('oj-input-text', 'inputBase', __oj_input_text_metadata);
+  oj.CustomElementBridge.register('oj-input-text', { metadata: oj.CustomElementBridge.getMetadata('oj-input-text') });
+}());
 
-(function() {
-var ojTextAreaMeta = {
-  "properties": {
-    "converter": {
-      "type": "Object"
-    },
-    "rows": {
-      "type": "number",
-      "extension": {
-        _COPY_TO_INNER_ELEM: true
-      }
-    },
-    "spellcheck": {
-      "type": "boolean",
-      "extension": {
-        _ATTRIBUTE_ONLY: true,
-        _COPY_TO_INNER_ELEM: true
-      }
-    },
-    "value": {
-      "type": "any",
-      "writeback": true
-    }
-  },
-  "methods": {},
-  "extension": {
-    _INNER_ELEM: 'textarea',
-    _WIDGET_NAME: "ojTextArea"
-  }
-};
-oj.CustomElementBridge.registerMetadata('oj-text-area', 'inputBase', ojTextAreaMeta);
-oj.CustomElementBridge.register('oj-text-area', {'metadata': oj.CustomElementBridge.getMetadata('oj-text-area')});
-})();
+/* global __oj_text_area_metadata:false */
+(function () {
+  __oj_text_area_metadata.extension._WIDGET_NAME = 'ojTextArea';
+  __oj_text_area_metadata.extension._INNER_ELEM = 'textarea';
+  oj.CustomElementBridge.registerMetadata('oj-text-area', 'inputBase', __oj_text_area_metadata);
+  oj.CustomElementBridge.register('oj-text-area', { metadata: oj.CustomElementBridge.getMetadata('oj-text-area') });
+}());
+
 });

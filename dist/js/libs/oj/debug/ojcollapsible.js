@@ -12,6 +12,47 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore', 'ojs/ojanimati
        function(oj, $)
 {
 
+var __oj_collapsible_metadata = 
+{
+  "properties": {
+    "disabled": {
+      "type": "boolean",
+      "value": false
+    },
+    "expandArea": {
+      "type": "string",
+      "enumValues": [
+        "disclosureIcon",
+        "header"
+      ],
+      "value": "header"
+    },
+    "expanded": {
+      "type": "boolean",
+      "writeback": true,
+      "value": false
+    },
+    "translations": {
+      "type": "object",
+      "value": {}
+    }
+  },
+  "methods": {
+    "refresh": {},
+    "setProperty": {},
+    "getProperty": {},
+    "setProperties": {},
+    "getNodeBySubId": {},
+    "getSubIdByNode": {}
+  },
+  "events": {
+    "ojBeforeExpand": {},
+    "ojExpand": {},
+    "ojBeforeCollapse": {},
+    "ojCollapse": {}
+  },
+  "extension": {}
+};
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
@@ -1231,33 +1272,11 @@ The child element of the oj-collapsible in the named <a href="#header">header</a
     });
 }());
 
+/* global __oj_collapsible_metadata */
 (function () {
-  var ojCollapsibleMeta = {
-    properties: {
-      disabled: {
-        type: 'boolean'
-      },
-      expandArea: {
-        type: 'string',
-        enumValues: ['header', 'disclosureIcon']
-      },
-      expanded: {
-        type: 'boolean',
-        writeback: true
-      }
-    },
-    events: {
-      beforeCollapse: {},
-      beforeExpand: {},
-      collapse: {},
-      expand: {}
-    },
-    extension: {
-      _WIDGET_NAME: 'ojCollapsible',
-      _CONTROLS_SUBTREE_HIDDEN: true
-    }
-  };
-  oj.CustomElementBridge.registerMetadata('oj-collapsible', 'baseComponent', ojCollapsibleMeta);
+  __oj_collapsible_metadata.extension._WIDGET_NAME = 'ojCollapsible';
+  __oj_collapsible_metadata.extension._CONTROLS_SUBTREE_HIDDEN = true;
+  oj.CustomElementBridge.registerMetadata('oj-collapsible', 'baseComponent', __oj_collapsible_metadata);
   oj.CustomElementBridge.register('oj-collapsible', { metadata: oj.CustomElementBridge.getMetadata('oj-collapsible') });
 }());
 
