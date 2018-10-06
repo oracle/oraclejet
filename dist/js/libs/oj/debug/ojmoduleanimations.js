@@ -26,7 +26,7 @@ define(['ojs/ojcore', 'knockout', 'jquery', 'promise', 'ojs/ojanimation'], funct
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#module-layout-section"></a>
  * </h3>
  *
- * Guidelines on laying out ojModule views to acheive smoother animation:
+ * Guidelines on laying out ojModule views to achieve smoother animation:
  * <ul>
  * <li>The ojModule binding should be placed on a container div that has a dimension
  * independent of its children.  During view switch, new view is inserted and old view
