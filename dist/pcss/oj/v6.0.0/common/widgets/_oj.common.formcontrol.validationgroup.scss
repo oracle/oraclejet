@@ -1,0 +1,20 @@
+// Copyright (c) 2014, 2018, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// !!!
+// WARNING: do not directly import this file, instead import the 
+//          version in your theme's directory, 
+//          for example alta/widgets/_oj.common.validationgroup.scss
+// !!!
+
+@import "../../utilities/oj.utilities";
+
+@if $includeValidationGroupClasses != false  {
+  @include module-include-once("common.validationgroup") {
+ 
+    // This is to prevent the flash of unstyled content before the html becomes JET components.
+    @if $initialVisibility == hidden {
+      oj-validation-group:not(.oj-complete) {
+        visibility: hidden;
+      }      
+    }
+  }
+}

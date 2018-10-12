@@ -1,16 +1,18 @@
 {
   "name": "oj-form-layout",
-  "version": "5.2.0",
-  "jetVersion": "5.2.0",
+  "version": "6.0.0",
+  "jetVersion": "6.0.0",
   "displayName": "Form Layout",
   "type": "core",
   "description": "Used to group child elements in an organized layout that can be optimized for multiple display sizes.",
+  "help": "https://docs.oracle.com/en/middleware/jet/6/reference-api/oj.ojFormLayout.html",
   "properties": {
     "direction": {
       "description": "Specifies the layout direction of the form layout children.",
       "type": "string",
       "displayName": "Direction",
       "value": "column",
+      "help": "direction",
       "enumValues": [
         "column",
         "row"
@@ -31,6 +33,7 @@
       "type": "string",
       "displayName": "Label Edge",
       "value": "top",
+      "help": "labelEdge",
       "enumValues": [
         "start",
         "top"
@@ -50,13 +53,15 @@
       "description": "Specifies the label width. This specifies the width of the oj-label elements. This can be any legal CSS width.",
       "type": "string",
       "displayName": "Label Width",
-      "value": "33%"
+      "value": "33%",
+      "help": "labelWidth"
     },
     "labelWrapping": {
       "description": "Specifies if the label text should wrap or truncate.",
       "type": "string",
       "displayName": "Label Wrapping",
       "value": "wrap",
+      "help": "labelWrapping",
       "enumValues": [
         "truncate",
         "wrap"
@@ -73,16 +78,18 @@
       }
     },
     "maxColumns": {
-      "description": "Specifies the maximum number of columns.",
+      "description": "Specifies the maximum number of columns. The actual number of columns may be less, depending on the [direction]ojFormLayout#direction attribute. If direction is \"column\", the layout is responsive and browsers automatically reduce the number of columns to fit the width of the viewport. If direction is \"row\", the number of columns is fixed to the max-columns value. Applications can choose to make it responsive by using ResponsiveKnockoutUtils to adjust the value. See the oj-form-layout - Across demo for an example. ",
       "type": "number",
       "displayName": "Max Columns",
       "value": 1,
-      "minimum": 1
+      "minimum": 1,
+      "help": "maxColumns"
     }
   },
   "methods": {
     "setProperty": {
       "description": "Sets a property or a single subproperty for complex properties and notifies the component of the change, triggering a [property]Changed event.",
+      "help": "setProperty",
       "params": [
         {
           "name": "property",
@@ -99,6 +106,7 @@
     },
     "getProperty": {
       "description": "Retrieves a value for a property or a single subproperty for complex properties.",
+      "help": "getProperty",
       "params": [
         {
           "name": "property",
@@ -110,6 +118,7 @@
     },
     "setProperties": {
       "description": "Performs a batch set of properties.",
+      "help": "setProperties",
       "params": [
         {
           "name": "properties",
@@ -121,6 +130,7 @@
     },
     "refresh": {
       "description": "Refreshes the visual state of the component.",
+      "help": "refresh",
       "return": "void"
     }
   }

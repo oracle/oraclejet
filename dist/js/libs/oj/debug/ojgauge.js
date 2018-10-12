@@ -4,7 +4,7 @@
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
-define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/internal-deps/dvt/DvtGauge'], function(oj, $, comp, base, dvt)
+define(['ojs/ojcore', 'jquery', 'ojs/ojconfig', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/internal-deps/dvt/DvtGauge','ojs/ojlogger'], function(oj, $, Config, comp, DvtAttributeUtils, dvt, Logger)
 {
   
 
@@ -846,117 +846,127 @@ var __oj_status_meter_gauge_metadata =
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
  */
+/* global Logger:false */
 
 /**
  * @ojcomponent oj.dvtBaseGauge
  * @augments oj.dvtBaseComponent
+ * @ojtsimport {module: "ojvalidation-base", type: "AMD", imported:["Converter"]}
  * @since 0.7
  * @abstract
  */
-oj.__registerWidget('oj.dvtBaseGauge', $['oj']['dvtBaseComponent'],
-{
-  //** @inheritdoc */
-  _ProcessStyles: function() {
-    // The superclass evaluates the style classes, including those in _GetChildStyleClasses
-    this._super();
+oj.__registerWidget('oj.dvtBaseGauge', $.oj.dvtBaseComponent,
+  {
+    //* * @inheritdoc */
+    _ProcessStyles: function () {
+      // The superclass evaluates the style classes, including those in _GetChildStyleClasses
+      this._super();
 
-    // Transfer the threshold colors to the correct location
-    this.options['_thresholdColors'] = [this.options['_threshold1'], this.options['_threshold2'], this.options['_threshold3']];
-    this.options['_threshold1'] = null;
-    this.options['_threshold2'] = null;
-    this.options['_threshold3'] = null;
-  },
-  //** @override */
-  _AfterCreate: function() {
-    this._super();
-    var flags = {};
-    flags['_context'] = {writeback: true, internalSet: true, readOnly: true};
-    this.option("rawValue",this.options['value'], flags);
-  },
+      // Transfer the threshold colors to the correct location
+      this.options._thresholdColors = [
+        this.options._threshold1,
+        this.options._threshold2,
+        this.options._threshold3
+      ];
+      this.options._threshold1 = null;
+      this.options._threshold2 = null;
+      this.options._threshold3 = null;
+    },
+    //* * @override */
+    _AfterCreate: function () {
+      this._super();
+      var flags = {};
+      flags._context = { writeback: true, internalSet: true, readOnly: true };
+      this.option('rawValue', this.options.value, flags);
+    },
 
-  //** @inheritdoc */
-  _GetChildStyleClasses : function() {
-    var styleClasses = this._super();
-    styleClasses['oj-gauge-metric-label'] = {'path' : 'metricLabel/style', 'property' : 'TEXT'};
-    styleClasses['oj-gauge-tick-label'] = {'path' : 'tickLabel/style', 'property' : 'TEXT'};
-    styleClasses['oj-gauge-threshold1'] = {'path' : '_threshold1', 'property' : 'color'};
-    styleClasses['oj-gauge-threshold2'] = {'path' : '_threshold2', 'property' : 'color'};
-    styleClasses['oj-gauge-threshold3'] = {'path' : '_threshold3', 'property' : 'color'};
-    return styleClasses;
-  },
+    //* * @inheritdoc */
+    _GetChildStyleClasses: function () {
+      var styleClasses = this._super();
+      styleClasses['oj-gauge-metric-label'] = { path: 'metricLabel/style', property: 'TEXT' };
+      styleClasses['oj-gauge-tick-label'] = { path: 'tickLabel/style', property: 'TEXT' };
+      styleClasses['oj-gauge-threshold1'] = { path: '_threshold1', property: 'color' };
+      styleClasses['oj-gauge-threshold2'] = { path: '_threshold2', property: 'color' };
+      styleClasses['oj-gauge-threshold3'] = { path: '_threshold3', property: 'color' };
+      return styleClasses;
+    },
 
-  //** @inheritdoc */
-  _GetEventTypes : function() {
-    return ['input', 'optionChange'];
-  },
+    //* * @inheritdoc */
+    _GetEventTypes: function () {
+      return ['input', 'optionChange'];
+    },
 
-  //** @inheritdoc */
-  _GetTranslationMap: function() {
-    // The translations are stored on the options object.
-    var translations = this.options['translations'];
+    //* * @inheritdoc */
+    _GetTranslationMap: function () {
+      // The translations are stored on the options object.
+      var translations = this.options.translations;
 
     // Safe to modify super's map because function guarentees a new map is returned
-    var ret = this._super();
-    ret['DvtGaugeBundle.EMPTY_TEXT'] = translations['labelNoData'];
-    ret['DvtUtilBundle.GAUGE'] = translations['componentName'];
-    return ret;
-  },
+      var ret = this._super();
+      ret['DvtGaugeBundle.EMPTY_TEXT'] = translations.labelNoData;
+      ret['DvtUtilBundle.GAUGE'] = translations.componentName;
+      return ret;
+    },
 
-  //** @inheritdoc */
-  _HandleEvent : function(event) {
-    var type = event['type'];
-    if(type === 'valueChange') {
-      var newValue = event['newValue'];
-      if(event['complete'])
-        this._UserOptionChange('value', newValue);
-      else {
-        // Fired during the value change interaction for each change
-        this._trigger('input', null, {'value': newValue});
-        this._UserOptionChange('rawValue', newValue);
+    //* * @inheritdoc */
+    _HandleEvent: function (event) {
+      var type = event.type;
+      if (type === 'valueChange') {
+        var newValue = event.newValue;
+        if (event.complete) {
+          this._UserOptionChange('value', newValue);
+        } else {
+          // Fired during the value change interaction for each change
+          this._trigger('input', null, { value: newValue });
+          this._UserOptionChange('rawValue', newValue);
+        }
+      } else {
+        this._super(event);
       }
+    },
+
+    /**
+     * @override
+     * @private
+     */
+    _setOption: function (key, value, flags) {
+      if (key === 'rawValue') {
+        // rawValue is a read-only option
+        Logger.error("'rawValue' is a read-only option and cannot be set");
+        return;
+      }
+
+      if (key === 'value') {
+        var rawValueFlags = {};
+        rawValueFlags._context = { writeback: true, internalSet: true, readOnly: true };
+        this.option('rawValue', value, rawValueFlags);
+      }
+
+      this._super(key, value, flags);
+    },
+
+    //* * @inheritdoc */
+    _ConvertLocatorToSubId: function (locator) {
+      var subId = locator.subId;
+
+      // Convert the supported locators
+      if (subId === 'oj-dialgauge-tooltip'
+          || subId === 'oj-ledgauge-tooltip'
+          || subId === 'oj-ratinggauge-tooltip'
+          || subId === 'oj-statusmetergauge-tooltip') {
+        subId = 'tooltip';
+      }
+      if (subId === 'oj-ratinggauge-item' && locator.index != null) {
+        subId = 'item[' + locator.index + ']';
+      }
+
+      // Return the converted result or the original subId if a supported locator wasn't recognized. We will remove
+      // support for the old subId syntax in 1.2.0.
+      return subId;
     }
-    else {
-      this._super(event);
-    }
-  },
+  }, true);
 
-  /**
-   * @override
-   * @private
-   */
-  _setOption : function (key, value, flags)
-  {
-    if (key === "rawValue") {
-      // rawValue is a read-only option
-      oj.Logger.error("'rawValue' is a read-only option and cannot be set");
-      return;
-    }
-
-    if(key === "value") {
-      var rawValueFlags = {};
-      rawValueFlags['_context'] = {writeback: true, internalSet: true, readOnly: true};
-      this.option("rawValue", value, rawValueFlags);
-    }
-
-    this._super(key, value, flags);
-  },
-
-  //** @inheritdoc */
-  _ConvertLocatorToSubId : function(locator) {
-    var subId = locator['subId'];
-
-    // Convert the supported locators
-    if(subId == 'oj-dialgauge-tooltip' || subId == 'oj-ledgauge-tooltip' || subId == 'oj-ratinggauge-tooltip' || subId == 'oj-statusmetergauge-tooltip') {
-      subId = 'tooltip';
-    }
-	if (subId == 'oj-ratinggauge-item' && locator['index'] != null)
-	  subId = 'item[' + locator['index'] + ']';
-
-    // Return the converted result or the original subId if a supported locator wasn't recognized. We will remove
-    // support for the old subId syntax in 1.2.0.
-    return subId;
-  }
-}, true);
+/* global dvt:false, Config:false */
 
 /**
  * @ojcomponent oj.ojDialGauge
@@ -1025,10 +1035,10 @@ oj.__registerWidget('oj.dvtBaseGauge', $['oj']['dvtBaseComponent'],
  * @example <caption>Initialize the Dial Gauge via the JET <code class="prettyprint">ojComponent</code> binding:</caption>
  * &lt;div data-bind="ojComponent: {component: 'ojDialGauge'}">
  */
-oj.__registerWidget('oj.ojDialGauge', $['oj']['dvtBaseGauge'],
-{
-  widgetEventPrefix : "oj",
-  options: {
+oj.__registerWidget('oj.ojDialGauge', $.oj.dvtBaseGauge,
+  {
+    widgetEventPrefix: 'oj',
+    options: {
     /**
      * <p>The <code class="prettyprint">rawValue</code> is the read-only option for retrieving
      * the transient value from the dial gauge.</p>
@@ -1041,154 +1051,217 @@ oj.__registerWidget('oj.ojDialGauge', $['oj']['dvtBaseGauge'],
      * @since 1.2
      * @readonly
      */
-     rawValue: undefined
-  },
+      rawValue: undefined
+    },
 
-  //** @inheritdoc */
-  _CreateDvtComponent : function(context, callback, callbackObj) {
-    this._focusable({'element': this.element, 'applyHighlight': true});
-    return dvt.DialGauge.newInstance(context, callback, callbackObj);
-  },
+    //* * @inheritdoc */
+    _CreateDvtComponent: function (context, callback, callbackObj) {
+      this._focusable({ element: this.element, applyHighlight: true });
+      return dvt.DialGauge.newInstance(context, callback, callbackObj);
+    },
 
-  //** @inheritdoc */
-  _ConvertSubIdToLocator : function(subId) {
-    var locator = {};
+    //* * @inheritdoc */
+    _ConvertSubIdToLocator: function (subId) {
+      var locator = {};
 
-    if(subId == 'tooltip') {
-      locator['subId'] = 'oj-dialgauge-tooltip';
-    }
-    return locator;
-  },
+      if (subId === 'tooltip') {
+        locator.subId = 'oj-dialgauge-tooltip';
+      }
+      return locator;
+    },
 
-  //** @inheritdoc */
-  _GetComponentStyleClasses : function() {
-    var styleClasses = this._super();
-    styleClasses.push('oj-dialgauge');
-    return styleClasses;
-  },
+    //* * @inheritdoc */
+    _GetComponentStyleClasses: function () {
+      var styleClasses = this._super();
+      styleClasses.push('oj-dialgauge');
+      return styleClasses;
+    },
 
-  //** @inheritdoc */
-  _Render : function() {
-    // Display the title of the surrounding div as the tooltip. Remove title from div to avoid browser default tooltip.
-    if(this.element.attr('title'))
-    {
-      this.options['shortDesc'] =  this.element.attr('title');
-      this.element.data( this.element,'title', this.element.attr('title'));
-      this.element.removeAttr('title');
-    }
-    else if (this.element.data('title'))
-      this.options['shortDesc'] =  this.element.data('title');
+    //* * @inheritdoc */
+    _Render: function () {
+      // Display the title of the surrounding div as the tooltip. Remove title from div to avoid browser default tooltip.
+      if (this.element.attr('title')) {
+        this.options.shortDesc = this.element.attr('title');
+        this.element.data(this.element, 'title', this.element.attr('title'));
+        this.element.removeAttr('title');
+      } else if (this.element.data('title')) {
+        this.options.shortDesc = this.element.data('title');
+      }
 
-    // Set images for dial gauge
-    this._setImages();
+      // Set images for dial gauge
+      this._setImages();
 
-    // Call the super to render
-    this._super();
-  },
+      // Call the super to render
+      this._super();
+    },
 
-  /**
-   * Applies image URLs to the options object passed into the dial gauge.
-   * @private
-   */
-  _setImages: function() {
-    // Pass the correct background image information set the default circleAlta and needleAlta.
-    var backgroundImages = this.options['background'];
-    if(backgroundImages == null) {
-      backgroundImages = "circleAlta";
-      this.options['background'] = "circleAlta";
-    }
-    var indicatorImages = this.options['indicator'];
-    if(indicatorImages == null) {
-      indicatorImages = "needleAlta"
-      this.options['indicator'] = "needleAlta";
-    }
-    if(typeof backgroundImages === 'string') {
-      var backgroundInfo = [{src: oj.Config.getResourceUrl('resources/internal-deps/dvt/gauge/alta-circle-200x200.png'), width: 200, height: 200},
-      {src: oj.Config.getResourceUrl('resources/internal-deps/dvt/gauge/alta-circle-400x400.png'), width: 400, height: 400}];
-      if(backgroundImages === "rectangleAlta") {
-        backgroundInfo = [{src: oj.Config.getResourceUrl('resources/internal-deps/dvt/gauge/alta-rectangle-200x200.png'), width: 200, height: 154},
-      {src: oj.Config.getResourceUrl('resources/internal-deps/dvt/gauge/alta-rectangle-400x400.png'), width: 400, height: 309}];
+    /**
+     * Applies image URLs to the options object passed into the dial gauge.
+     * @private
+     */
+    _setImages: function () {
+      // Pass the correct background image information set the default circleAlta and needleAlta.
+      var backgroundImages = this.options.background;
+      if (backgroundImages == null) {
+        backgroundImages = 'circleAlta';
+        this.options.background = 'circleAlta';
+      }
+      var indicatorImages = this.options.indicator;
+      if (indicatorImages == null) {
+        indicatorImages = 'needleAlta';
+        this.options.indicator = 'needleAlta';
+      }
+      if (typeof backgroundImages === 'string') {
+        var backgroundInfo = [
+          { src: Config.getResourceUrl('resources/internal-deps/dvt/gauge/alta-circle-200x200.png'),
+            width: 200,
+            height: 200 },
+          { src: Config.getResourceUrl('resources/internal-deps/dvt/gauge/alta-circle-400x400.png'),
+            width: 400,
+            height: 400 }
+        ];
+        if (backgroundImages === 'rectangleAlta') {
+          backgroundInfo = [
+            { src: Config.getResourceUrl('resources/internal-deps/dvt/gauge/alta-rectangle-200x200.png'),
+              width: 200,
+              height: 154 },
+            { src: Config.getResourceUrl('resources/internal-deps/dvt/gauge/alta-rectangle-400x400.png'),
+              width: 400,
+              height: 309 }];
+        } else if (backgroundImages === 'domeAlta') {
+          backgroundInfo = [
+            { src: Config.getResourceUrl('resources/internal-deps/dvt/gauge/alta-dome-200x200.png'),
+              width: 200,
+              height: 154 },
+            { src: Config.getResourceUrl('resources/internal-deps/dvt/gauge/alta-dome-400x400.png'),
+              width: 400,
+              height: 309 }
+          ];
+        } else if (backgroundImages === 'circleAntique') {
+          backgroundInfo = [
+            { src: Config.getResourceUrl('resources/internal-deps/dvt/gauge/antique-circle-200x200.png'),
+              width: 200,
+              height: 200 },
+            { src: Config.getResourceUrl('resources/internal-deps/dvt/gauge/antique-circle-400x400.png'),
+              width: 400,
+              height: 400 }
+          ];
+        } else if (backgroundImages === 'rectangleAntique') {
+          backgroundInfo = [
+            { src: Config.getResourceUrl('resources/internal-deps/dvt/gauge/antique-rectangle-200x200.png'),
+              width: 200,
+              height: 168 },
+            { src: Config.getResourceUrl('resources/internal-deps/dvt/gauge/antique-rectangle-400x400.png'),
+              width: 400,
+              height: 335 }
+          ];
+        } else if (backgroundImages === 'domeAntique') {
+          backgroundInfo = [
+            { src: Config.getResourceUrl('resources/internal-deps/dvt/gauge/antique-dome-200x200.png'),
+              width: 200,
+              height: 176 },
+            { src: Config.getResourceUrl('resources/internal-deps/dvt/gauge/antique-dome-400x400.png'),
+              width: 400,
+              height: 352 }
+          ];
+        } else if (backgroundImages === 'circleLight') {
+          backgroundInfo = [
+            { src: Config.getResourceUrl('resources/internal-deps/dvt/gauge/light-circle-200x200.png'),
+              width: 200,
+              height: 200 },
+            { src: Config.getResourceUrl('resources/internal-deps/dvt/gauge/light-circle-400x400.png'),
+              width: 400,
+              height: 400 }
+          ];
+        } else if (backgroundImages === 'rectangleLight') {
+          backgroundInfo = [
+            { src: Config.getResourceUrl('resources/internal-deps/dvt/gauge/light-rectangle-200x200.png'),
+              width: 200,
+              height: 154 },
+            { src: Config.getResourceUrl('resources/internal-deps/dvt/gauge/light-rectangle-400x400.png'),
+              width: 400,
+              height: 307 }
+          ];
+        } else if (backgroundImages === 'domeLight') {
+          backgroundInfo = [
+            { src: Config.getResourceUrl('resources/internal-deps/dvt/gauge/light-dome-200x200.png'),
+              width: 200,
+              height: 138 },
+            { src: Config.getResourceUrl('resources/internal-deps/dvt/gauge/light-dome-400x400.png'),
+              width: 400,
+              height: 276 }
+          ];
+        } else if (backgroundImages === 'circleDark') {
+          backgroundInfo = [
+            { src: Config.getResourceUrl('resources/internal-deps/dvt/gauge/dark-circle-200x200.png'),
+              width: 200,
+              height: 200 },
+            { src: Config.getResourceUrl('resources/internal-deps/dvt/gauge/dark-circle-400x400.png'),
+              width: 400,
+              height: 400 }
+          ];
+        } else if (backgroundImages === 'rectangleDark') {
+          backgroundInfo = [
+            { src: Config.getResourceUrl('resources/internal-deps/dvt/gauge/dark-rectangle-200x200.png'),
+              width: 200,
+              height: 154 },
+            { src: Config.getResourceUrl('resources/internal-deps/dvt/gauge/dark-rectangle-400x400.png'),
+              width: 400,
+              height: 307 }
+          ];
+        } else if (backgroundImages === 'domeDark') {
+          backgroundInfo = [
+            { src: Config.getResourceUrl('resources/internal-deps/dvt/gauge/dark-dome-200x200.png'),
+              width: 200,
+              height: 138 },
+            { src: Config.getResourceUrl('resources/internal-deps/dvt/gauge/dark-dome-400x400.png'),
+              width: 400,
+              height: 276 }
+          ];
         }
-
-      else if(backgroundImages === "domeAlta") {
-        backgroundInfo = [{src: oj.Config.getResourceUrl('resources/internal-deps/dvt/gauge/alta-dome-200x200.png') , width: 200, height: 154},
-      {src: oj.Config.getResourceUrl('resources/internal-deps/dvt/gauge/alta-dome-400x400.png') , width: 400, height: 309}];
+        this.options._backgroundImages = backgroundInfo;
       }
-
-      else if(backgroundImages === "circleAntique") {
-        backgroundInfo = [{src: oj.Config.getResourceUrl('resources/internal-deps/dvt/gauge/antique-circle-200x200.png'), width: 200, height: 200},
-      {src: oj.Config.getResourceUrl('resources/internal-deps/dvt/gauge/antique-circle-400x400.png'), width: 400, height: 400}];
-      }
-
-      else if(backgroundImages === "rectangleAntique") {
-        backgroundInfo = [{src: oj.Config.getResourceUrl('resources/internal-deps/dvt/gauge/antique-rectangle-200x200.png'), width: 200, height: 168},
-      {src: oj.Config.getResourceUrl('resources/internal-deps/dvt/gauge/antique-rectangle-400x400.png'), width: 400, height: 335}];
-      }
-
-      else if(backgroundImages === "domeAntique") {
-        backgroundInfo = [{src: oj.Config.getResourceUrl('resources/internal-deps/dvt/gauge/antique-dome-200x200.png'), width: 200, height: 176},
-      {src: oj.Config.getResourceUrl('resources/internal-deps/dvt/gauge/antique-dome-400x400.png'), width: 400, height: 352}];
-      }
-
-      else if(backgroundImages === "circleLight") {
-        backgroundInfo = [{src: oj.Config.getResourceUrl('resources/internal-deps/dvt/gauge/light-circle-200x200.png'), width: 200, height: 200},
-      {src: oj.Config.getResourceUrl('resources/internal-deps/dvt/gauge/light-circle-400x400.png'), width: 400, height: 400}];
-      }
-
-      else if(backgroundImages === "rectangleLight") {
-        backgroundInfo = [{src: oj.Config.getResourceUrl('resources/internal-deps/dvt/gauge/light-rectangle-200x200.png'), width: 200, height: 154},
-      {src: oj.Config.getResourceUrl('resources/internal-deps/dvt/gauge/light-rectangle-400x400.png'), width: 400, height: 307}];
-      }
-
-      else if(backgroundImages === "domeLight") {
-        backgroundInfo = [{src: oj.Config.getResourceUrl('resources/internal-deps/dvt/gauge/light-dome-200x200.png'), width: 200, height: 138},
-      {src: oj.Config.getResourceUrl('resources/internal-deps/dvt/gauge/light-dome-400x400.png'), width: 400, height: 276}];
-      }
-
-      else if(backgroundImages === "circleDark") {
-        backgroundInfo = [{src: oj.Config.getResourceUrl('resources/internal-deps/dvt/gauge/dark-circle-200x200.png'), width: 200, height: 200},
-      {src: oj.Config.getResourceUrl('resources/internal-deps/dvt/gauge/dark-circle-400x400.png'), width: 400, height: 400}];
-      }
-
-      else if(backgroundImages === "rectangleDark") {
-        backgroundInfo = [{src: oj.Config.getResourceUrl('resources/internal-deps/dvt/gauge/dark-rectangle-200x200.png'), width: 200, height: 154},
-      {src: oj.Config.getResourceUrl('resources/internal-deps/dvt/gauge/dark-rectangle-400x400.png'), width: 400, height: 307}];
-      }
-      else if(backgroundImages === "domeDark") {
-        backgroundInfo = [{src: oj.Config.getResourceUrl('resources/internal-deps/dvt/gauge/dark-dome-200x200.png'), width: 200, height: 138},
-      {src: oj.Config.getResourceUrl('resources/internal-deps/dvt/gauge/dark-dome-400x400.png'), width: 400, height: 276}];
-      }
-      this.options['_backgroundImages'] = backgroundInfo;
-    }
-    if(typeof indicatorImages === 'string') {
-      var indicatorInfo = [{src: oj.Config.getResourceUrl('resources/internal-deps/dvt/gauge/alta-needle-1600x1600.png'),  width: 374, height: 575}];
-      if(indicatorImages === "needleAntique") {
-        indicatorInfo = [{src: oj.Config.getResourceUrl('resources/internal-deps/dvt/gauge/antique-needle-1600x1600.png'), width: 81, height: 734}];
+      if (typeof indicatorImages === 'string') {
+        var indicatorInfo = [
+          { src: Config.getResourceUrl('resources/internal-deps/dvt/gauge/alta-needle-1600x1600.png'),
+            width: 374,
+            height: 575 }
+        ];
+        if (indicatorImages === 'needleAntique') {
+          indicatorInfo = [
+            { src: Config.getResourceUrl('resources/internal-deps/dvt/gauge/antique-needle-1600x1600.png'),
+              width: 81,
+              height: 734 }
+          ];
+        } else if (indicatorImages === 'needleDark') {
+          indicatorInfo = [
+            { src: Config.getResourceUrl('resources/internal-deps/dvt/gauge/dark-needle-1600x1600.png'),
+              width: 454,
+              height: 652 }
+          ];
+        } else if (indicatorImages === 'needleLight') {
+          indicatorInfo = [
+            { src: Config.getResourceUrl('resources/internal-deps/dvt/gauge/light-needle-1600x1600.png'),
+              width: 454,
+              height: 652 }
+          ];
         }
-
-      else if(indicatorImages === "needleDark") {
-        indicatorInfo = [{src: oj.Config.getResourceUrl('resources/internal-deps/dvt/gauge/dark-needle-1600x1600.png'),  width: 454, height: 652}];
+        this.options._indicatorImages = indicatorInfo;
       }
+    },
 
-      else if(indicatorImages === "needleLight") {
-        indicatorInfo = [{src: oj.Config.getResourceUrl('resources/internal-deps/dvt/gauge/light-needle-1600x1600.png'),  width: 454, height: 652}];
-      }
-      this.options['_indicatorImages'] = indicatorInfo;
+    /**
+     * Returns the gauge's metric label.
+     * @return {Object} The metric label object
+     * @expose
+     * @instance
+     * @memberof oj.ojDialGauge
+     */
+    getMetricLabel: function () {
+      var auto = this._component.getAutomation();
+      return auto.getMetricLabel();
     }
-  },
-
-  /**
-   * Returns the gauge's metric label.
-   * @return {Object} The metric label object
-   * @expose
-   * @instance
-   * @memberof oj.ojDialGauge
-   */
-  getMetricLabel: function() {
-    var auto = this._component.getAutomation();
-    return auto.getMetricLabel();
-  }
-});
+  });
 
 
 /**
@@ -1285,7 +1358,7 @@ oj.__registerWidget('oj.ojDialGauge', $['oj']['dvtBaseGauge'],
  * @default <code class="prettyprint">100</code>
  */
 /**
- *  An object containing an optional callback function for tooltip customization. 
+ *  An object containing an optional callback function for tooltip customization.
  * @expose
  * @name tooltip
  * @memberof oj.ojDialGauge
@@ -1294,7 +1367,7 @@ oj.__registerWidget('oj.ojDialGauge', $['oj']['dvtBaseGauge'],
  * @default null
  */
 /**
- *  A function that returns a custom tooltip. The function takes a dataContext argument, provided by the gauge, with the following properties: <ul> <li>parentElement: The tooltip element. The function can directly modify or append content to this element.</li> <li>label: The computed metric label.</li> <li>component: The widget constructor for the gauge. The 'component' is bound to the associated jQuery element so can be called directly as a function.</li> </ul> The function may return an HTML element, which will be appended to the tooltip, or a tooltip string. 
+ *  A function that returns a custom tooltip. The function takes a dataContext argument, provided by the gauge, with the following properties: <ul> <li>parentElement: The tooltip element. The function can directly modify or append content to this element.</li> <li>label: The computed metric label.</li> <li>component: The widget constructor for the gauge. The 'component' is bound to the associated jQuery element so can be called directly as a function.</li> </ul> The function may return an HTML element, which will be appended to the tooltip, or a tooltip string.
  * @expose
  * @name tooltip.renderer
  * @memberof! oj.ojDialGauge
@@ -1707,21 +1780,21 @@ oj.__registerWidget('oj.ojDialGauge', $['oj']['dvtBaseGauge'],
  * @type {boolean}
  * @default <code class="prettyprint">true</code>
  */
- 
+
 // SubId Locators **************************************************************
 
 /**
  * <p>Sub-ID for the the dial guage tooltip.</p>
- * 
- * <p>See the <a href="#getNodeBySubId">getNodeBySubId</a> and 
+ *
+ * <p>See the <a href="#getNodeBySubId">getNodeBySubId</a> and
  * <a href="#getSubIdByNode">getSubIdByNode</a> methods for details.</p>
- * 
+ *
  * @ojsubid
  * @member
  * @name oj-dialgauge-tooltip
  * @memberof oj.ojDialGauge
  * @instance
- * 
+ *
  * @example <caption>Get the tooltip object of the gauge, if displayed:</caption>
  * var nodes = $( ".selector" ).ojDialGauge( "getNodeBySubId", {'subId': 'oj-dialgauge-tooltip'} );
  */
@@ -1731,10 +1804,10 @@ oj.__registerWidget('oj.ojDialGauge', $['oj']['dvtBaseGauge'],
  *
  * This attribute is only exposed via the <code class="prettyprint">ojComponent</code> binding, and is not a
  * component option. The following variables are also passed into the template:
- *  <ul> 
- *    <li>parentElement: The tooltip element. This can be used to change the tooltip border or background color.</li> 
- *    <li>label: The computed metric label.</li> 
- *    <li>component: The widget constructor for the gauge. The 'component' is bound to the associated jQuery element so can be called directly as a function.</li> 
+ *  <ul>
+ *    <li>parentElement: The tooltip element. This can be used to change the tooltip border or background color.</li>
+ *    <li>label: The computed metric label.</li>
+ *    <li>component: The widget constructor for the gauge. The 'component' is bound to the associated jQuery element so can be called directly as a function.</li>
  *  </ul>
  *
  * @ojbindingonly
@@ -1744,6 +1817,9 @@ oj.__registerWidget('oj.ojDialGauge', $['oj']['dvtBaseGauge'],
  * @type {string|null}
  * @default null
  */
+
+/* global dvt:false */
+
 /**
  * @ojcomponent oj.ojLedGauge
  * @augments oj.dvtBaseGauge
@@ -1766,8 +1842,8 @@ oj.__registerWidget('oj.ojDialGauge', $['oj']['dvtBaseGauge'],
  * <pre class="prettyprint">
  * <code>
  * &lt;oj-led-gauge
- *   value='63' 
- *   min='0' 
+ *   value='63'
+ *   min='0'
  *   max='100'
  *   thresholds='[{"max": 33}, {"max": 67}, {}]'>
  * &lt;/oj-led-gauge>
@@ -1799,368 +1875,367 @@ oj.__registerWidget('oj.ojDialGauge', $['oj']['dvtBaseGauge'],
  *
  * {@ojinclude "name":"rtl"}
  */
-oj.__registerWidget('oj.ojLedGauge', $['oj']['dvtBaseGauge'],
-{
-  widgetEventPrefix : "oj",
-  options: {
-    /**
-     * The border color of the gauge. Only applies when thresholds are not defined. The default value varies based on theme.
-     * @expose
-     * @name borderColor
-     * @memberof oj.ojLedGauge
-     * @instance
-     * @type {string}
-     * @ojformat color
-     */
-    borderColor: '',
-
-    /**
-     * The color of the gauge. Only applies when thresholds are not defined. The default value varies based on theme.
-     * @expose
-     * @name color
-     * @memberof oj.ojLedGauge
-     * @instance
-     * @type {string}
-     * @ojformat color
-     */
-    color: '#393737',
-
-    /**
-     * An object defining the label.
-     * @expose
-     * @name label
-     * @memberof oj.ojLedGauge
-     * @instance
-     * @type {Object}
-     */
-    label: {
+oj.__registerWidget('oj.ojLedGauge', $.oj.dvtBaseGauge,
+  {
+    widgetEventPrefix: 'oj',
+    options: {
       /**
-       * The CSS style object defining the style of the label.
+       * The border color of the gauge. Only applies when thresholds are not defined. The default value varies based on theme.
        * @expose
-       * @name label.style
-       * @memberof! oj.ojLedGauge
+       * @name borderColor
+       * @memberof oj.ojLedGauge
+       * @instance
+       * @type {string}
+       * @ojformat color
+       */
+      borderColor: '',
+
+      /**
+       * The color of the gauge. Only applies when thresholds are not defined. The default value varies based on theme.
+       * @expose
+       * @name color
+       * @memberof oj.ojLedGauge
+       * @instance
+       * @type {string}
+       * @ojformat color
+       */
+      color: '#393737',
+
+      /**
+       * An object defining the label.
+       * @expose
+       * @name label
+       * @memberof oj.ojLedGauge
        * @instance
        * @type {Object}
-       * @ojsignature {target: "Type", value: "?"}
+       */
+      label: {
+        /**
+         * The CSS style object defining the style of the label.
+         * @expose
+         * @name label.style
+         * @memberof! oj.ojLedGauge
+         * @instance
+         * @type {Object}
+         * @ojsignature {target: "Type", value: "?"}
+         * @default {}
+         */
+        style: {},
+
+        /**
+         * The text for the label.
+         * @expose
+         * @name label.text
+         * @memberof! oj.ojLedGauge
+         * @instance
+         * @type {string}
+         * @ojsignature {target: "Type", value: "?"}
+         * @default ""
+         * @ojtranslatable
+         */
+        text: ''
+      },
+
+      /**
+       * An object defining the value label.
+       * @expose
+       * @name metricLabel
+       * @memberof oj.ojLedGauge
+       * @instance
+       * @type {Object}
+       */
+      metricLabel: {
+        /**
+         * The converter used to format the labels. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
+         * @expose
+         * @name metricLabel.converter
+         * @memberof! oj.ojLedGauge
+         * @instance
+         * @type {Object}
+         * @ojsignature {target: "Type", value: "?oj.Converter<string>"}
+         * @default null
+         */
+        converter: null,
+
+        /**
+         * Defines if the label is rendered.
+         * @expose
+         * @name metricLabel.rendered
+         * @memberof! oj.ojLedGauge
+         * @instance
+         * @type {string}
+         * @ojsignature {target: "Type", value: "?"}
+         * @ojvalue {string} "on"
+         * @ojvalue {string} "off"
+         * @default "off"
+         */
+        rendered: 'off',
+
+        /**
+         * The scaling behavior of the labels. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
+         * @expose
+         * @name metricLabel.scaling
+         * @memberof! oj.ojLedGauge
+         * @instance
+         * @type {string}
+         * @ojsignature {target: "Type", value: "?"}
+         * @ojvalue {string} "none"
+         * @ojvalue {string} "thousand"
+         * @ojvalue {string} "million"
+         * @ojvalue {string} "billion"
+         * @ojvalue {string} "trillion"
+         * @ojvalue {string} "quadrillion"
+         * @ojvalue {string} "auto"
+         * @default "auto"
+         */
+        scaling: 'auto',
+
+        /**
+         * The CSS style object defining the style of the label.
+         * @expose
+         * @name metricLabel.style
+         * @memberof! oj.ojLedGauge
+         * @instance
+         * @type {Object}
+         * @ojsignature {target: "Type", value: "?"}
+         * @default {}
+         */
+        style: {},
+
+        /**
+         * The text for the label. If specified, text will overwrite the numeric value that is displayed by default. The converter, scaling, and textType attributes are ignored when text is specified.
+         * @expose
+         * @name metricLabel.text
+         * @memberof! oj.ojLedGauge
+         * @instance
+         * @type {string}
+         * @ojsignature {target: "Type", value: "?"}
+         * @default ""
+         * @ojtranslatable
+         */
+        text: '',
+
+        /**
+         * Defines whether the label is a number or a percentage of the total value.
+         * @expose
+         * @name metricLabel.textType
+         * @memberof! oj.ojLedGauge
+         * @instance
+         * @type {string}
+         * @ojsignature {target: "Type", value: "?"}
+         * @ojvalue {string} "percent"
+         * @ojvalue {string} "number"
+         * @default "number"
+         */
+        textType: 'number'
+      },
+
+      /**
+       * The maximum value of the gauge.
+       * @expose
+       * @name max
+       * @memberof oj.ojLedGauge
+       * @instance
+       * @type {number}
+       * @default 100
+       */
+      max: 100,
+
+      /**
+       * The minimum value of the gauge.
+       * @expose
+       * @name min
+       * @memberof oj.ojLedGauge
+       * @instance
+       * @type {number}
+       * @default 0
+       */
+      min: 0,
+
+      /**
+       * The rotation angle for the gauge. Useful for changing the direction of triangle or arrow gauges.
+       * @expose
+       * @name rotation
+       * @memberof oj.ojLedGauge
+       * @instance
+       * @type {number}
+       * @ojvalue {number} 90
+       * @ojvalue {number} 180
+       * @ojvalue {number} 270
+       * @ojvalue {number} 0
+       * @ojunits degrees
+       * @default 0
+       */
+      rotation: 0,
+
+      /**
+       * Fraction of area to use. Values range from 0 to 1.
+       * @expose
+       * @name size
+       * @memberof oj.ojLedGauge
+       * @instance
+       * @type {number}
+       * @default 1
+       * @ojmin 0
+       * @ojmax 1
+       */
+      size: 1,
+
+      /**
+       * The CSS style class to apply to the gauge. The style class and inline style will override any other styling specified through the properties. For tooltip interactivity, it's recommended to also pass a representative color to the color attribute.
+       * @expose
+       * @name svgClassName
+       * @memberof oj.ojLedGauge
+       * @instance
+       * @type {string}
+       * @default ""
+       */
+      svgClassName: '',
+
+      /**
+       * The inline style to apply to the gauge. The style class and inline style will override any other styling specified through the properties. For tooltip interactivity, it's recommended to also pass a representative color to the color attribute.
+       * @expose
+       * @name svgStyle
+       * @memberof oj.ojLedGauge
+       * @instance
+       * @type {Object}
        * @default {}
        */
-      style: {},
+      svgStyle: {},
 
       /**
-       * The text for the label.
+       * An array of objects with the following properties defining the thresholds for the gauge.
        * @expose
-       * @name label.text
-       * @memberof! oj.ojLedGauge
+       * @name thresholds
+       * @memberof oj.ojLedGauge
        * @instance
-       * @type {string}
-       * @ojsignature {target: "Type", value: "?"}
-       * @default ""
-       * @ojtranslatable
+       * @type {Array.<Object>}
+       * @ojsignature {target: "Type", value: "Array<oj.ojLedGauge.Threshold>", jsdocOverride: true}
+       * @default []
        */
-      text: ''
-    },
+      thresholds: [],
 
-    /**
-     * An object defining the value label.
-     * @expose
-     * @name metricLabel
-     * @memberof oj.ojLedGauge
-     * @instance
-     * @type {Object}
-     */
-    metricLabel: {
       /**
-       * The converter used to format the labels. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
+       *  An object containing an optional callback function for tooltip customization.
        * @expose
-       * @name metricLabel.converter
-       * @memberof! oj.ojLedGauge
+       * @name tooltip
+       * @memberof oj.ojLedGauge
        * @instance
        * @type {Object}
-       * @ojsignature {target: "Type", value: "?Converter<string>"}
-       * @default null
        */
-      converter: null,
+      tooltip: {
+        /**
+         * A function that returns a custom tooltip. The function takes a tooltip context argument,
+         * provided by the gauge, and should return an object that contains only one of the two properties:
+         *  <ul>
+         *    <li>insert: HTMLElement | string - An HTML element, which will be appended to the tooltip, or a tooltip string.</li>
+         *    <li>preventDefault: <code>true</code> - Indicates that the tooltip should not be displayed. It is not necessary to return {preventDefault:false} to display tooltip, since this is a default behavior.</li>
+         *  </ul>
+         * @expose
+         * @name tooltip.renderer
+         * @memberof! oj.ojLedGauge
+         * @instance
+         * @type {function(Object):Object|null}
+         * @ojsignature {target: "Type", value: "((context: oj.ojLedGauge.TooltipContext) => ({insert: Element|string}|{preventDefault: boolean}))", jsdocOverride: true}
+         * @default null
+         */
+        renderer: null
+      },
 
       /**
-       * Defines if the label is rendered.
+       * The shape of the LED gauge. Can take the name of a built-in shape or the svg path commands for a custom shape.
        * @expose
-       * @name metricLabel.rendered
-       * @memberof! oj.ojLedGauge
+       * @name type
+       * @memberof oj.ojLedGauge
        * @instance
        * @type {string}
-       * @ojsignature {target: "Type", value: "?"}
-       * @ojvalue {string} "on"
-       * @ojvalue {string} "off"
-       * @default "off"
+       * @ojvalue {string=} "arrow"
+       * @ojvalue {string=} "diamond"
+       * @ojvalue {string=} "square"
+       * @ojvalue {string=} "rectangle"
+       * @ojvalue {string=} "triangle"
+       * @ojvalue {string=} "star"
+       * @ojvalue {string=} "human"
+       * @ojvalue {string=} "circle"
+       * @default "circle"
        */
-      rendered: 'off',
+      type: 'circle',
 
       /**
-       * The scaling behavior of the labels. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
+       * The metric value.
        * @expose
-       * @name metricLabel.scaling
-       * @memberof! oj.ojLedGauge
+       * @name value
+       * @memberof oj.ojLedGauge
+       * @instance
+       * @type {number|null}
+       * @ojwriteback
+       */
+      value: null,
+
+      /**
+       * Defines whether visual effects such as overlays are applied to the gauge.
+       * @expose
+       * @name visualEffects
+       * @memberof oj.ojLedGauge
        * @instance
        * @type {string}
-       * @ojsignature {target: "Type", value: "?"}
        * @ojvalue {string} "none"
-       * @ojvalue {string} "thousand"
-       * @ojvalue {string} "million"
-       * @ojvalue {string} "billion"
-       * @ojvalue {string} "trillion"
-       * @ojvalue {string} "quadrillion"
        * @ojvalue {string} "auto"
        * @default "auto"
        */
-      scaling: 'auto',
-
-      /**
-       * The CSS style object defining the style of the label.
-       * @expose
-       * @name metricLabel.style
-       * @memberof! oj.ojLedGauge
-       * @instance
-       * @type {Object}
-       * @ojsignature {target: "Type", value: "?"}
-       * @default {}
-       */
-      style: {},
-
-      /**
-       * The text for the label. If specified, text will overwrite the numeric value that is displayed by default. The converter, scaling, and textType attributes are ignored when text is specified.
-       * @expose
-       * @name metricLabel.text
-       * @memberof! oj.ojLedGauge
-       * @instance
-       * @type {string}
-       * @ojsignature {target: "Type", value: "?"}
-       * @default ""
-       * @ojtranslatable
-       */
-      text: '',
-
-      /**
-       * Defines whether the label is a number or a percentage of the total value.
-       * @expose
-       * @name metricLabel.textType
-       * @memberof! oj.ojLedGauge
-       * @instance
-       * @type {string}
-       * @ojsignature {target: "Type", value: "?"}
-       * @ojvalue {string} "percent"
-       * @ojvalue {string} "number"
-       * @default "number"
-       */
-      textType: 'number'
+      visualEffects: 'auto'
     },
 
-    /**
-     * The maximum value of the gauge.
-     * @expose
-     * @name max
-     * @memberof oj.ojLedGauge
-     * @instance
-     * @type {number}
-     * @default 100
-     */
-    max: 100,
-
-    /**
-     * The minimum value of the gauge.
-     * @expose
-     * @name min
-     * @memberof oj.ojLedGauge
-     * @instance
-     * @type {number}
-     * @default 0
-     */
-    min: 0,
-
-    /**
-     * The rotation angle for the gauge. Useful for changing the direction of triangle or arrow gauges.
-     * @expose
-     * @name rotation
-     * @memberof oj.ojLedGauge
-     * @instance
-     * @type {number}
-     * @ojvalue {number} 90
-     * @ojvalue {number} 180
-     * @ojvalue {number} 270
-     * @ojvalue {number} 0
-     * @ojunits degrees
-     * @default 0
-     */
-    rotation: 0,
-
-    /**
-     * Fraction of area to use. Values range from 0 to 1.
-     * @expose
-     * @name size
-     * @memberof oj.ojLedGauge
-     * @instance
-     * @type {number}
-     * @default 1
-     * @ojmin 0
-     * @ojmax 1
-     */
-    size: 1,
-
-    /**
-     * The CSS style class to apply to the gauge. The style class and inline style will override any other styling specified through the properties. For tooltip interactivity, it's recommended to also pass a representative color to the color attribute.
-     * @expose
-     * @name svgClassName
-     * @memberof oj.ojLedGauge
-     * @instance
-     * @type {string}
-     * @default ""
-     */
-    svgClassName: '',
-
-    /**
-     * The inline style to apply to the gauge. The style class and inline style will override any other styling specified through the properties. For tooltip interactivity, it's recommended to also pass a representative color to the color attribute.
-     * @expose
-     * @name svgStyle
-     * @memberof oj.ojLedGauge
-     * @instance
-     * @type {Object}
-     * @default {}
-     */
-    svgStyle: {},
-
-    /**
-     * An array of objects with the following properties defining the thresholds for the gauge.
-     * @expose
-     * @name thresholds
-     * @memberof oj.ojLedGauge
-     * @instance
-     * @type {Array.<Object>}
-     * @ojsignature {target: "Type", value: "Array<oj.ojLedGauge.Threshold>", jsdocOverride: true}
-     * @default []
-     */
-    thresholds: [],
-
-    /**
-     *  An object containing an optional callback function for tooltip customization. 
-     * @expose
-     * @name tooltip
-     * @memberof oj.ojLedGauge
-     * @instance
-     * @type {Object}
-     */
-    tooltip: {
-      /**
-       * A function that returns a custom tooltip. The function takes a tooltip context argument,
-       * provided by the gauge, and should return an object that contains only one of the two properties:
-       *  <ul>
-       *    <li>insert: HTMLElement | string - An HTML element, which will be appended to the tooltip, or a tooltip string.</li> 
-       *    <li>preventDefault: <code>true</code> - Indicates that the tooltip should not be displayed. It is not necessary to return {preventDefault:false} to display tooltip, since this is a default behavior.</li> 
-       *  </ul>
-       * @expose
-       * @name tooltip.renderer
-       * @memberof! oj.ojLedGauge
-       * @instance
-       * @type {function(Object):Object|null}
-       * @ojsignature {target: "Type", value: "((context: oj.ojLedGauge.TooltipContext) => ({insert: Element|string}|{preventDefault: boolean}))", jsdocOverride: true}
-       * @default null
-       */
-      renderer: null
+    //* * @inheritdoc */
+    _CreateDvtComponent: function (context, callback, callbackObj) {
+      this._focusable({ element: this.element, applyHighlight: true });
+      return dvt.LedGauge.newInstance(context, callback, callbackObj);
     },
 
-    /**
-     * The shape of the LED gauge. Can take the name of a built-in shape or the svg path commands for a custom shape. 
-     * @expose
-     * @name type
-     * @memberof oj.ojLedGauge
-     * @instance
-     * @type {string}
-     * @ojvalue {string=} "arrow"
-     * @ojvalue {string=} "diamond"
-     * @ojvalue {string=} "square"
-     * @ojvalue {string=} "rectangle"
-     * @ojvalue {string=} "triangle"
-     * @ojvalue {string=} "star"
-     * @ojvalue {string=} "human"
-     * @ojvalue {string=} "circle"
-     * @default "circle"
-     */
-    type: 'circle',
+    //* * @inheritdoc */
+    _ConvertSubIdToLocator: function (subId) {
+      var locator = {};
 
-    /**
-     * The metric value.
-     * @expose
-     * @name value
-     * @memberof oj.ojLedGauge
-     * @instance
-     * @type {number|null}
-     * @ojwriteback
-     */
-    value: null,
+      if (subId === 'tooltip') {
+        locator.subId = 'oj-ledgauge-tooltip';
+      }
+      return locator;
+    },
 
-    /**
-     * Defines whether visual effects such as overlays are applied to the gauge.
-     * @expose
-     * @name visualEffects
-     * @memberof oj.ojLedGauge
-     * @instance
-     * @type {string}
-     * @ojvalue {string} "none"
-     * @ojvalue {string} "auto"
-     * @default "auto"
-     */
-    visualEffects: 'auto'
-  },
+    //* * @inheritdoc */
+    _GetComponentStyleClasses: function () {
+      var styleClasses = this._super();
+      styleClasses.push('oj-ledgauge');
+      return styleClasses;
+    },
 
-  //** @inheritdoc */
-  _CreateDvtComponent : function(context, callback, callbackObj) {
-    this._focusable({'element': this.element, 'applyHighlight': true});
-    return dvt.LedGauge.newInstance(context, callback, callbackObj);
-  },
-
-  //** @inheritdoc */
-  _ConvertSubIdToLocator : function(subId) {
-    var locator = {};
-
-    if(subId == 'tooltip') {
-      locator['subId'] = 'oj-ledgauge-tooltip';
-    }
-    return locator;
-  },
-
-  //** @inheritdoc */
-  _GetComponentStyleClasses : function() {
-    var styleClasses = this._super();
-    styleClasses.push('oj-ledgauge');
-    return styleClasses;
-  },
-
-  //** @inheritdoc */
-  _Render : function() {
+    //* * @inheritdoc */
+    _Render: function () {
     // Display the title of the surrounding div as the tooltip. Remove title from div to avoid browser default tooltip.
-    if(this.element.attr('title'))
-    {
-      this.options['shortDesc'] =  this.element.attr('title');
-      this.element.data( this.element,'title', this.element.attr('title'));
-      this.element.removeAttr('title');
-    }
-    else if (this.element.data('title'))
-      this.options['shortDesc'] =  this.element.data('title');
+      if (this.element.attr('title')) {
+        this.options.shortDesc = this.element.attr('title');
+        this.element.data(this.element, 'title', this.element.attr('title'));
+        this.element.removeAttr('title');
+      } else if (this.element.data('title')) {
+        this.options.shortDesc = this.element.data('title');
+      }
 
     // Call the super to render
-    this._super();
-  },
+      this._super();
+    },
 
-  /**
-   * Returns the gauge's formatted metric label.
-   * @return {string} The formatted metric label.
-   * @expose
-   * @instance
-   * @memberof oj.ojLedGauge
-   */
-  getMetricLabel: function() {
-    var auto = this._component.getAutomation();
-    return auto.getMetricLabel();
-  }
-});
+    /**
+     * Returns the gauge's formatted metric label.
+     * @return {string} The formatted metric label.
+     * @expose
+     * @instance
+     * @memberof oj.ojLedGauge
+     */
+    getMetricLabel: function () {
+      var auto = this._component.getAutomation();
+      return auto.getMetricLabel();
+    }
+  });
 
 /**
  * <p>This element has no touch interaction.  </p>
@@ -2200,19 +2275,22 @@ oj.__registerWidget('oj.ojLedGauge', $['oj']['dvtBaseGauge'],
 
 /**
  * <p>Sub-ID for the the LED gauge tooltip.</p>
- * 
- * <p>See the <a href="#getNodeBySubId">getNodeBySubId</a> and 
+ *
+ * <p>See the <a href="#getNodeBySubId">getNodeBySubId</a> and
  * <a href="#getSubIdByNode">getSubIdByNode</a> methods for details.</p>
- * 
+ *
  * @ojsubid
  * @member
  * @name oj-ledgauge-tooltip
  * @memberof oj.ojLedGauge
  * @instance
- * 
+ *
  * @example <caption>Get the tooltip object of the gauge, if displayed:</caption>
  * var nodes = myLedGauge.getNodeBySubId({'subId': 'oj-ledgauge-tooltip'});
  */
+
+/* global dvt:false */
+
 /**
  * @ojcomponent oj.ojRatingGauge
  * @augments oj.dvtBaseGauge
@@ -2265,563 +2343,563 @@ oj.__registerWidget('oj.ojLedGauge', $['oj']['dvtBaseGauge'],
  *
  * {@ojinclude "name":"rtl"}
  */
-oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
-{
-  widgetEventPrefix : "oj",
-  options: {
-    /**
-     * Whether there has been a value entered by the user.
-     * @expose
-     * @name changed
-     * @memberof oj.ojRatingGauge
-     * @instance
-     * @type {boolean}
-     * @default false
-     * @ojwriteback
-     */
-    changed: false,
-
-    /**
-     * The changed shape for the gauge. Displayed after the user has set a value, or when the changed attribute of the data object is set to true.
-     * @expose
-     * @name changedState
-     * @memberof oj.ojRatingGauge
-     * @instance
-     * @type {Object}
-     */
-    changedState: {
+oj.__registerWidget('oj.ojRatingGauge', $.oj.dvtBaseGauge,
+  {
+    widgetEventPrefix: 'oj',
+    options: {
       /**
-       * The border color for changed state. Does not apply if a custom image is specified.
+       * Whether there has been a value entered by the user.
        * @expose
-       * @name changedState.borderColor
-       * @memberof! oj.ojRatingGauge
+       * @name changed
+       * @memberof oj.ojRatingGauge
        * @instance
-       * @type {string}
-       * @ojformat color
-       * @ojsignature {target: "Type", value: "?"}
-       * @default ""
+       * @type {boolean}
+       * @default false
+       * @ojwriteback
        */
-      borderColor: '',
+      changed: false,
 
       /**
-       * The color for changed state. Does not apply if a custom image is specified.
+       * The changed shape for the gauge. Displayed after the user has set a value, or when the changed attribute of the data object is set to true.
        * @expose
-       * @name changedState.color
-       * @memberof! oj.ojRatingGauge
-       * @instance
-       * @type {string}
-       * @ojformat color
-       * @ojsignature {target: "Type", value: "?"}
-       */
-      color: '#ED2C02',
-
-      /**
-       * The shape to be used. Can take the name of a built-in shape or the svg path commands for a custom shape. Does not apply if a custom image is specified.
-       * @expose
-       * @name changedState.shape
-       * @memberof! oj.ojRatingGauge
-       * @instance
-       * @type {string}
-       * @ojsignature {target: "Type", value: "?'circle'|'diamond'|'human'|'square'|'star'|'triangle'|string", jsdocOverride: true}
-       * @default "star"
-       */
-      shape: 'star',
-
-      /**
-       * The URI of the custom image. If specified, it takes precedence over shape. For SVG images, the width and height must be defined on the SVG element as pixels. 
-       * @expose
-       * @name changedState.source
-       * @memberof! oj.ojRatingGauge
-       * @instance
-       * @type {string}
-       * @ojsignature {target: "Type", value: "?"}
-       * @default ""
-       */
-      source: '',
-
-      /**
-       * The CSS style class to apply to the changed state. The style class and inline style will override any other styling specified through the properties. Does not apply if custom image is specified.
-       * @expose
-       * @name changedState.svgClassName
-       * @memberof! oj.ojRatingGauge
-       * @instance
-       * @type {string}
-       * @ojsignature {target: "Type", value: "?"}
-       * @default ""
-       */
-      svgClassName: '',
-
-      /**
-       * The inline style to apply to the changed state. The style class and inline style will override any other styling specified through the properties. Does not apply if custom image is specified.
-       * @expose
-       * @name changedState.svgStyle
-       * @memberof! oj.ojRatingGauge
+       * @name changedState
+       * @memberof oj.ojRatingGauge
        * @instance
        * @type {Object}
-       * @ojsignature {target: "Type", value: "?"}
-       * @default {}
        */
-      svgStyle: {}
-    },
+      changedState: {
+        /**
+         * The border color for changed state. Does not apply if a custom image is specified.
+         * @expose
+         * @name changedState.borderColor
+         * @memberof! oj.ojRatingGauge
+         * @instance
+         * @type {string}
+         * @ojformat color
+         * @ojsignature {target: "Type", value: "?"}
+         * @default ""
+         */
+        borderColor: '',
 
-    /**
-     * The shape that displays on hover.
-     * @expose
-     * @name hoverState
-     * @memberof oj.ojRatingGauge
-     * @instance
-     * @type {Object}
-     */
-    hoverState: {
-      /**
-       * The border color for hover state. Does not apply if a custom image is specified.
-       * @expose
-       * @name hoverState.borderColor
-       * @memberof! oj.ojRatingGauge
-       * @instance
-       * @type {string}
-       * @ojformat color
-       * @ojsignature {target: "Type", value: "?"}
-       * @default ""
-       */
-      borderColor: '',
+        /**
+         * The color for changed state. Does not apply if a custom image is specified. The default value comes from the CSS and varies based on theme.
+         * @expose
+         * @name changedState.color
+         * @memberof! oj.ojRatingGauge
+         * @instance
+         * @type {string}
+         * @ojformat color
+         * @ojsignature {target: "Type", value: "?"}
+         */
+        color: '#ED2C02',
 
-      /**
-       * The color for hover state. Does not apply if a custom image is specified.
-       * @expose
-       * @name hoverState.color
-       * @memberof! oj.ojRatingGauge
-       * @instance
-       * @type {string}
-       * @ojformat color
-       * @ojsignature {target: "Type", value: "?"}
-       */
-      color: '#007CC8',
+        /**
+         * The shape to be used. Can take the name of a built-in shape or the svg path commands for a custom shape. Does not apply if a custom image is specified.
+         * @expose
+         * @name changedState.shape
+         * @memberof! oj.ojRatingGauge
+         * @instance
+         * @type {string}
+         * @ojsignature {target: "Type", value: "?'circle'|'diamond'|'human'|'square'|'star'|'triangle'|string", jsdocOverride: true}
+         * @default "star"
+         */
+        shape: 'star',
 
-      /**
-       * The shape to be used. Can take the name of a built-in shape or the svg path commands for a custom shape. Does not apply if a custom image is specified.
-       * @expose
-       * @name hoverState.shape
-       * @memberof! oj.ojRatingGauge
-       * @instance
-       * @type {string}
-       * @ojsignature {target: "Type", value: "?'circle'|'diamond'|'human'|'square'|'star'|'triangle'|string", jsdocOverride: true}
-       * @default "star"
-       */
-      shape: 'star',
+        /**
+         * The URI of the custom image. If specified, it takes precedence over shape. For SVG images, the width and height must be defined on the SVG element as pixels.
+         * @expose
+         * @name changedState.source
+         * @memberof! oj.ojRatingGauge
+         * @instance
+         * @type {string}
+         * @ojsignature {target: "Type", value: "?"}
+         * @default ""
+         */
+        source: '',
 
-      /**
-       * The URI of the custom image. If specified, it takes precedence over shape. For SVG images, the width and height must be defined on the SVG element as pixels. 
-       * @expose
-       * @name hoverState.source
-       * @memberof! oj.ojRatingGauge
-       * @instance
-       * @type {string}
-       * @ojsignature {target: "Type", value: "?"}
-       * @default ""
-       */
-      source: '',
+        /**
+         * The CSS style class to apply to the changed state. The style class and inline style will override any other styling specified through the properties. Does not apply if custom image is specified.
+         * @expose
+         * @name changedState.svgClassName
+         * @memberof! oj.ojRatingGauge
+         * @instance
+         * @type {string}
+         * @ojsignature {target: "Type", value: "?"}
+         * @default ""
+         */
+        svgClassName: '',
 
-      /**
-       * The CSS style class to apply to the hover state. The style class and inline style will override any other styling specified through the properties. Does not apply if custom image is specified.
-       * @expose
-       * @name hoverState.svgClassName
-       * @memberof! oj.ojRatingGauge
-       * @instance
-       * @type {string}
-       * @ojsignature {target: "Type", value: "?"}
-       * @default ""
-       */
-      svgClassName: '',
-
-      /**
-       * The inline style to apply to the hover state. The style class and inline style will override any other styling specified through the properties. Does not apply if custom image is specified.
-       * @expose
-       * @name hoverState.svgStyle
-       * @memberof! oj.ojRatingGauge
-       * @instance
-       * @type {Object}
-       * @ojsignature {target: "Type", value: "?"}
-       * @default {}
-       */
-      svgStyle: {}
-    },
-
-    /**
-     * Integer value specifying the maximum value of the gauge, which determines the number of shapes or images that are displayed.
-     * @expose
-     * @name max
-     * @memberof oj.ojRatingGauge
-     * @instance
-     * @type {number}
-     * @default 5
-     * @ojmin 0
-     */
-    max: 5,
-
-    /**
-     * The minimum value that can be set on the gauge by the end user. Does not affect the value set on the gauge by API.
-     * @expose
-     * @name min
-     * @memberof oj.ojRatingGauge
-     * @instance
-     * @type {number}
-     * @default 0
-     * @ojmin 0
-     */
-    min: 0,
-    
-    /**
-     * Defines the type of rating gauge to be rendered.
-     * @expose
-     * @name orientation
-     * @memberof oj.ojRatingGauge
-     * @instance
-     * @type {string}
-     * @ojvalue {string} "vertical"
-     * @ojvalue {string} "horizontal"
-     * @default "horizontal"
-     */
-    orientation: 'horizontal',
-
-    /**
-     * Specifies whether the images provided should show up at their defined aspect ratio. With 'none', the space is allocated evenly, and shapes could be stretched. With 'meet', The aspect ratio of the shape or image is taken into account when space is allocated. When aspect ratios conflict, the aspect ratio of the selectedState will be used.
-     * @expose
-     * @name preserveAspectRatio
-     * @memberof oj.ojRatingGauge
-     * @instance
-     * @type {string}
-     * @ojvalue {string} "none"
-     * @ojvalue {string} "meet"
-     * @default "meet"
-     */
-    preserveAspectRatio: 'meet',
-
-    /**
-     * <p>The <code class="prettyprint">transientValue</code> is the read-only property for retrieving
-     * the transient value from the rating gauge. It is triggered when hovering over the rating gauge.</p>
-     *
-     * <p>This is a read-only property so page authors cannot set or change it directly.</p>
-     * @expose
-     * @alias transientValue
-     * @instance
-     * @type {number|null}
-     * @memberof oj.ojRatingGauge
-     * @since 4.2.0
-     * @ojstatus preview
-     * @readonly
-     * @ojwriteback
-     */
-    rawValue: null,
-
-    /**
-     * Defines whether the value of the gauge can be changed by the end user.
-     * @expose
-     * @name readonly
-     * @memberof oj.ojRatingGauge
-     * @instance
-     * @type {boolean}
-     * @default false
-     */
-    readonly: false,
-
-    /**
-     * The selected shape for the gauge.
-     * @expose
-     * @name selectedState
-     * @memberof oj.ojRatingGauge
-     * @instance
-     * @type {Object}
-     */
-    selectedState: {
-      /**
-       * The border color for selected state. Does not apply if a custom image is specified.
-       * @expose
-       * @name selectedState.borderColor
-       * @memberof! oj.ojRatingGauge
-       * @instance
-       * @type {string}
-       * @ojformat color
-       * @ojsignature {target: "Type", value: "?"}
-       * @default ""
-       */
-      borderColor: '',
+        /**
+         * The inline style to apply to the changed state. The style class and inline style will override any other styling specified through the properties. Does not apply if custom image is specified.
+         * @expose
+         * @name changedState.svgStyle
+         * @memberof! oj.ojRatingGauge
+         * @instance
+         * @type {Object}
+         * @ojsignature {target: "Type", value: "?"}
+         * @default {}
+         */
+        svgStyle: {}
+      },
 
       /**
-       * The color for selected state. Does not apply if a custom image is specified.
+       * The shape that displays on hover.
        * @expose
-       * @name selectedState.color
-       * @memberof! oj.ojRatingGauge
-       * @instance
-       * @type {string}
-       * @ojformat color
-       * @ojsignature {target: "Type", value: "?"}
-       */
-      color: '#F8C15A',
-
-      /**
-       * The shape to be used. Can take the name of a built-in shape or the svg path commands for a custom shape. Does not apply if a custom image is specified.
-       * @expose
-       * @name selectedState.shape
-       * @memberof! oj.ojRatingGauge
-       * @instance
-       * @type {string}
-       * @ojsignature {target: "Type", value: "?'circle'|'diamond'|'human'|'square'|'star'|'triangle'|string", jsdocOverride: true}
-       * @default "star"
-       */
-      shape: 'star',
-
-      /**
-       * The URI of the custom image. If specified, it takes precedence over shape. For SVG images, the width and height must be defined on the SVG element as pixels. 
-       * @expose
-       * @name selectedState.source
-       * @memberof! oj.ojRatingGauge
-       * @instance
-       * @type {string}
-       * @ojsignature {target: "Type", value: "?"}
-       * @default ""
-       */
-      source: '',
-
-      /**
-       * The CSS style class to apply to the selected state. The style class and inline style will override any other styling specified through the properties. Does not apply if custom image is specified.
-       * @expose
-       * @name selectedState.svgClassName
-       * @memberof! oj.ojRatingGauge
-       * @instance
-       * @type {string}
-       * @ojsignature {target: "Type", value: "?"}
-       * @default ""
-       */
-      svgClassName: '',
-
-      /**
-       * The inline style to apply to the selected state. The style class and inline style will override any other styling specified through the properties. Does not apply if custom image is specified.
-       * @expose
-       * @name selectedState.svgStyle
-       * @memberof! oj.ojRatingGauge
+       * @name hoverState
+       * @memberof oj.ojRatingGauge
        * @instance
        * @type {Object}
-       * @ojsignature {target: "Type", value: "?"}
-       * @default {}
        */
-      svgStyle: {}
-    },
+      hoverState: {
+        /**
+         * The border color for hover state. Does not apply if a custom image is specified.
+         * @expose
+         * @name hoverState.borderColor
+         * @memberof! oj.ojRatingGauge
+         * @instance
+         * @type {string}
+         * @ojformat color
+         * @ojsignature {target: "Type", value: "?"}
+         * @default ""
+         */
+        borderColor: '',
 
-    /**
-     * Specifies the increment by which values can be specified by the end user.
-     * @expose
-     * @name step
-     * @memberof oj.ojRatingGauge
-     * @instance
-     * @type {number}
-     * @ojvalue {number=} 0.5
-     * @ojvalue {number=} 1
-     * @default 1
-     */
-    step: 1,
+        /**
+         * The color for hover state. Does not apply if a custom image is specified. The default value comes from the CSS and varies based on theme.
+         * @expose
+         * @name hoverState.color
+         * @memberof! oj.ojRatingGauge
+         * @instance
+         * @type {string}
+         * @ojformat color
+         * @ojsignature {target: "Type", value: "?"}
+         */
+        color: '#007CC8',
 
-    /**
-     * An array of objects with the following properties defining the thresholds for the gauge.
-     * @expose
-     * @name thresholds
-     * @memberof oj.ojRatingGauge
-     * @instance
-     * @type {Array.<Object>}
-     * @ojsignature {target: "Type", value: "Array<oj.ojRatingGauge.Threshold>", jsdocOverride: true}
-     * @default []
-     */
-    thresholds: [],
+        /**
+         * The shape to be used. Can take the name of a built-in shape or the svg path commands for a custom shape. Does not apply if a custom image is specified.
+         * @expose
+         * @name hoverState.shape
+         * @memberof! oj.ojRatingGauge
+         * @instance
+         * @type {string}
+         * @ojsignature {target: "Type", value: "?'circle'|'diamond'|'human'|'square'|'star'|'triangle'|string", jsdocOverride: true}
+         * @default "star"
+         */
+        shape: 'star',
 
-    /**
-     * An object containing an optional callback function for tooltip customization. 
-     * @expose
-     * @name tooltip
-     * @memberof oj.ojRatingGauge
-     * @instance
-     * @type {Object}
-     */
-    tooltip: {
+        /**
+         * The URI of the custom image. If specified, it takes precedence over shape. For SVG images, the width and height must be defined on the SVG element as pixels.
+         * @expose
+         * @name hoverState.source
+         * @memberof! oj.ojRatingGauge
+         * @instance
+         * @type {string}
+         * @ojsignature {target: "Type", value: "?"}
+         * @default ""
+         */
+        source: '',
+
+        /**
+         * The CSS style class to apply to the hover state. The style class and inline style will override any other styling specified through the properties. Does not apply if custom image is specified.
+         * @expose
+         * @name hoverState.svgClassName
+         * @memberof! oj.ojRatingGauge
+         * @instance
+         * @type {string}
+         * @ojsignature {target: "Type", value: "?"}
+         * @default ""
+         */
+        svgClassName: '',
+
+        /**
+         * The inline style to apply to the hover state. The style class and inline style will override any other styling specified through the properties. Does not apply if custom image is specified.
+         * @expose
+         * @name hoverState.svgStyle
+         * @memberof! oj.ojRatingGauge
+         * @instance
+         * @type {Object}
+         * @ojsignature {target: "Type", value: "?"}
+         * @default {}
+         */
+        svgStyle: {}
+      },
+
       /**
-       * A function that returns a custom tooltip. The function takes a tooltip context argument,
-       * provided by the gauge, and should return an object that contains only one of the two properties:
-       *  <ul>
-       *    <li>insert: HTMLElement | string - An HTML element, which will be appended to the tooltip, or a tooltip string.</li> 
-       *    <li>preventDefault: <code>true</code> - Indicates that the tooltip should not be displayed. It is not necessary to return {preventDefault:false} to display tooltip, since this is a default behavior.</li> 
-       *  </ul>
+       * Integer value specifying the maximum value of the gauge, which determines the number of shapes or images that are displayed.
        * @expose
-       * @name tooltip.renderer
-       * @memberof! oj.ojRatingGauge
+       * @name max
+       * @memberof oj.ojRatingGauge
        * @instance
-       * @type {function(Object):Object|null}
-       * @ojsignature {target: "Type", value: "((context: oj.ojRatingGauge.TooltipContext) => ({insert: Element|string}|{preventDefault: boolean}))", jsdocOverride: true}
-       * @default null
+       * @type {number}
+       * @default 5
+       * @ojmin 0
        */
-      renderer: null
-    },
+      max: 5,
 
-    /**
-     * The unselected shape for the gauge.
-     * @expose
-     * @name unselectedState
-     * @memberof oj.ojRatingGauge
-     * @instance
-     * @type {Object}
-     */
-    unselectedState: {
       /**
-       * The border color for unselected state. Does not apply if a custom image is specified.
+       * The minimum value that can be set on the gauge by the end user. Does not affect the value set on the gauge by API.
        * @expose
-       * @name unselectedState.borderColor
-       * @memberof! oj.ojRatingGauge
+       * @name min
+       * @memberof oj.ojRatingGauge
        * @instance
-       * @type {string}
-       * @ojformat color
-       * @ojsignature {target: "Type", value: "?"}
-       * @default ""
+       * @type {number}
+       * @default 0
+       * @ojmin 0
        */
-      borderColor: '',
+      min: 0,
 
       /**
-       * The color for unselected state. Does not apply if a custom image is specified.
+       * Defines the type of rating gauge to be rendered.
        * @expose
-       * @name unselectedState.color
-       * @memberof! oj.ojRatingGauge
-       * @instance
-       * @type {string}
-       * @ojformat color
-       * @ojsignature {target: "Type", value: "?"}
-       */
-      color: '#C4CED7',
-
-      /**
-       * The shape to be used. Can take the name of a built-in shape or the svg path commands for a custom shape. Does not apply if a custom image is specified.
-       * @expose
-       * @name unselectedState.shape
-       * @memberof! oj.ojRatingGauge
-       * @instance
-       * @type {string}
-       * @ojsignature {target: "Type", value: "?'circle'|'diamond'|'human'|'square'|'star'|'triangle'|string", jsdocOverride: true}
-       * @default "star"
-       */
-      shape: 'star',
-
-      /**
-       * The URI of the custom image. If specified, it takes precedence over shape. For SVG images, the width and height must be defined on the SVG element as pixels. 
-       * @expose
-       * @name unselectedState.source
-       * @memberof! oj.ojRatingGauge
+       * @name orientation
+       * @memberof oj.ojRatingGauge
        * @instance
        * @type {string}
-       * @ojsignature {target: "Type", value: "?"}
-       * @default ""
+       * @ojvalue {string} "vertical"
+       * @ojvalue {string} "horizontal"
+       * @default "horizontal"
        */
-      source: '',
+      orientation: 'horizontal',
 
       /**
-       * The CSS style class to apply to the unselected state. The style class and inline style will override any other styling specified through the properties. Does not apply if custom image is specified.
+       * Specifies whether the images provided should show up at their defined aspect ratio. With 'none', the space is allocated evenly, and shapes could be stretched. With 'meet', The aspect ratio of the shape or image is taken into account when space is allocated. When aspect ratios conflict, the aspect ratio of the selectedState will be used.
        * @expose
-       * @name unselectedState.svgClassName
-       * @memberof! oj.ojRatingGauge
+       * @name preserveAspectRatio
+       * @memberof oj.ojRatingGauge
        * @instance
        * @type {string}
-       * @ojsignature {target: "Type", value: "?"}
-       * @default ""
+       * @ojvalue {string} "none"
+       * @ojvalue {string} "meet"
+       * @default "meet"
        */
-      svgClassName: '',
+      preserveAspectRatio: 'meet',
 
       /**
-       * The inline style to apply to the unselected state. The style class and inline style will override any other styling specified through the properties. Does not apply if custom image is specified.
+       * <p>The <code class="prettyprint">transientValue</code> is the read-only property for retrieving
+       * the transient value from the rating gauge. It is triggered when hovering over the rating gauge.</p>
+       *
+       * <p>This is a read-only property so page authors cannot set or change it directly.</p>
        * @expose
-       * @name unselectedState.svgStyle
-       * @memberof! oj.ojRatingGauge
+       * @alias transientValue
+       * @instance
+       * @type {number|null}
+       * @memberof oj.ojRatingGauge
+       * @since 4.2.0
+       * @ojstatus preview
+       * @readonly
+       * @ojwriteback
+       */
+      rawValue: null,
+
+      /**
+       * Defines whether the value of the gauge can be changed by the end user.
+       * @expose
+       * @name readonly
+       * @memberof oj.ojRatingGauge
+       * @instance
+       * @type {boolean}
+       * @default false
+       */
+      readonly: false,
+
+      /**
+       * The selected shape for the gauge.
+       * @expose
+       * @name selectedState
+       * @memberof oj.ojRatingGauge
        * @instance
        * @type {Object}
-       * @ojsignature {target: "Type", value: "?"}
-       * @default {}
        */
-      svgStyle: {}
+      selectedState: {
+        /**
+         * The border color for selected state. Does not apply if a custom image is specified.
+         * @expose
+         * @name selectedState.borderColor
+         * @memberof! oj.ojRatingGauge
+         * @instance
+         * @type {string}
+         * @ojformat color
+         * @ojsignature {target: "Type", value: "?"}
+         * @default ""
+         */
+        borderColor: '',
+
+        /**
+         * The color for selected state. Does not apply if a custom image is specified. The default value comes from the CSS and varies based on theme.
+         * @expose
+         * @name selectedState.color
+         * @memberof! oj.ojRatingGauge
+         * @instance
+         * @type {string}
+         * @ojformat color
+         * @ojsignature {target: "Type", value: "?"}
+         */
+        color: '#F8C15A',
+
+        /**
+         * The shape to be used. Can take the name of a built-in shape or the svg path commands for a custom shape. Does not apply if a custom image is specified.
+         * @expose
+         * @name selectedState.shape
+         * @memberof! oj.ojRatingGauge
+         * @instance
+         * @type {string}
+         * @ojsignature {target: "Type", value: "?'circle'|'diamond'|'human'|'square'|'star'|'triangle'|string", jsdocOverride: true}
+         * @default "star"
+         */
+        shape: 'star',
+
+        /**
+         * The URI of the custom image. If specified, it takes precedence over shape. For SVG images, the width and height must be defined on the SVG element as pixels.
+         * @expose
+         * @name selectedState.source
+         * @memberof! oj.ojRatingGauge
+         * @instance
+         * @type {string}
+         * @ojsignature {target: "Type", value: "?"}
+         * @default ""
+         */
+        source: '',
+
+        /**
+         * The CSS style class to apply to the selected state. The style class and inline style will override any other styling specified through the properties. Does not apply if custom image is specified.
+         * @expose
+         * @name selectedState.svgClassName
+         * @memberof! oj.ojRatingGauge
+         * @instance
+         * @type {string}
+         * @ojsignature {target: "Type", value: "?"}
+         * @default ""
+         */
+        svgClassName: '',
+
+        /**
+         * The inline style to apply to the selected state. The style class and inline style will override any other styling specified through the properties. Does not apply if custom image is specified.
+         * @expose
+         * @name selectedState.svgStyle
+         * @memberof! oj.ojRatingGauge
+         * @instance
+         * @type {Object}
+         * @ojsignature {target: "Type", value: "?"}
+         * @default {}
+         */
+        svgStyle: {}
+      },
+
+      /**
+       * Specifies the increment by which values can be specified by the end user.
+       * @expose
+       * @name step
+       * @memberof oj.ojRatingGauge
+       * @instance
+       * @type {number}
+       * @ojvalue {number=} 0.5
+       * @ojvalue {number=} 1
+       * @default 1
+       */
+      step: 1,
+
+      /**
+       * An array of objects with the following properties defining the thresholds for the gauge.
+       * @expose
+       * @name thresholds
+       * @memberof oj.ojRatingGauge
+       * @instance
+       * @type {Array.<Object>}
+       * @ojsignature {target: "Type", value: "Array<oj.ojRatingGauge.Threshold>", jsdocOverride: true}
+       * @default []
+       */
+      thresholds: [],
+
+      /**
+       * An object containing an optional callback function for tooltip customization.
+       * @expose
+       * @name tooltip
+       * @memberof oj.ojRatingGauge
+       * @instance
+       * @type {Object}
+       */
+      tooltip: {
+        /**
+         * A function that returns a custom tooltip. The function takes a tooltip context argument,
+         * provided by the gauge, and should return an object that contains only one of the two properties:
+         *  <ul>
+         *    <li>insert: HTMLElement | string - An HTML element, which will be appended to the tooltip, or a tooltip string.</li>
+         *    <li>preventDefault: <code>true</code> - Indicates that the tooltip should not be displayed. It is not necessary to return {preventDefault:false} to display tooltip, since this is a default behavior.</li>
+         *  </ul>
+         * @expose
+         * @name tooltip.renderer
+         * @memberof! oj.ojRatingGauge
+         * @instance
+         * @type {function(Object):Object|null}
+         * @ojsignature {target: "Type", value: "((context: oj.ojRatingGauge.TooltipContext) => ({insert: Element|string}|{preventDefault: boolean}))", jsdocOverride: true}
+         * @default null
+         */
+        renderer: null
+      },
+
+      /**
+       * The unselected shape for the gauge.
+       * @expose
+       * @name unselectedState
+       * @memberof oj.ojRatingGauge
+       * @instance
+       * @type {Object}
+       */
+      unselectedState: {
+        /**
+         * The border color for unselected state. Does not apply if a custom image is specified.
+         * @expose
+         * @name unselectedState.borderColor
+         * @memberof! oj.ojRatingGauge
+         * @instance
+         * @type {string}
+         * @ojformat color
+         * @ojsignature {target: "Type", value: "?"}
+         * @default ""
+         */
+        borderColor: '',
+
+        /**
+         * The color for unselected state. Does not apply if a custom image is specified. The default value comes from the CSS and varies based on theme.
+         * @expose
+         * @name unselectedState.color
+         * @memberof! oj.ojRatingGauge
+         * @instance
+         * @type {string}
+         * @ojformat color
+         * @ojsignature {target: "Type", value: "?"}
+         */
+        color: '#C4CED7',
+
+        /**
+         * The shape to be used. Can take the name of a built-in shape or the svg path commands for a custom shape. Does not apply if a custom image is specified.
+         * @expose
+         * @name unselectedState.shape
+         * @memberof! oj.ojRatingGauge
+         * @instance
+         * @type {string}
+         * @ojsignature {target: "Type", value: "?'circle'|'diamond'|'human'|'square'|'star'|'triangle'|string", jsdocOverride: true}
+         * @default "star"
+         */
+        shape: 'star',
+
+        /**
+         * The URI of the custom image. If specified, it takes precedence over shape. For SVG images, the width and height must be defined on the SVG element as pixels.
+         * @expose
+         * @name unselectedState.source
+         * @memberof! oj.ojRatingGauge
+         * @instance
+         * @type {string}
+         * @ojsignature {target: "Type", value: "?"}
+         * @default ""
+         */
+        source: '',
+
+        /**
+         * The CSS style class to apply to the unselected state. The style class and inline style will override any other styling specified through the properties. Does not apply if custom image is specified.
+         * @expose
+         * @name unselectedState.svgClassName
+         * @memberof! oj.ojRatingGauge
+         * @instance
+         * @type {string}
+         * @ojsignature {target: "Type", value: "?"}
+         * @default ""
+         */
+        svgClassName: '',
+
+        /**
+         * The inline style to apply to the unselected state. The style class and inline style will override any other styling specified through the properties. Does not apply if custom image is specified.
+         * @expose
+         * @name unselectedState.svgStyle
+         * @memberof! oj.ojRatingGauge
+         * @instance
+         * @type {Object}
+         * @ojsignature {target: "Type", value: "?"}
+         * @default {}
+         */
+        svgStyle: {}
+      },
+
+      /**
+       * The value set on the gauge.
+       * @expose
+       * @name value
+       * @memberof oj.ojRatingGauge
+       * @instance
+       * @type {number|null}
+       * @ojwriteback
+       * @ojmin 0
+       */
+      value: null,
+
+      /**
+       * Defines whether visual effects such as overlays are applied to the gauge.
+       * @expose
+       * @name visualEffects
+       * @memberof oj.ojRatingGauge
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "none"
+       * @ojvalue {string} "auto"
+       * @default "auto"
+       */
+      visualEffects: 'auto'
     },
 
-    /**
-     * The value set on the gauge.
-     * @expose
-     * @name value
-     * @memberof oj.ojRatingGauge
-     * @instance
-     * @type {number|null}
-     * @ojwriteback
-     * @ojmin 0
-     */
-    value: null,
+    //* * @inheritdoc */
+    _CreateDvtComponent: function (context, callback, callbackObj) {
+      this._focusable({ element: this.element, applyHighlight: true });
+      return dvt.RatingGauge.newInstance(context, callback, callbackObj);
+    },
 
-    /**
-     * Defines whether visual effects such as overlays are applied to the gauge.
-     * @expose
-     * @name visualEffects
-     * @memberof oj.ojRatingGauge
-     * @instance
-     * @type {string}
-     * @ojvalue {string} "none"
-     * @ojvalue {string} "auto"
-     * @default "auto"
-     */
-    visualEffects: 'auto'
-  },
+    //* * @inheritdoc */
+    _ConvertSubIdToLocator: function (subId) {
+      var locator = {};
 
-  //** @inheritdoc */
-  _CreateDvtComponent : function(context, callback, callbackObj) {
-    this._focusable({'element': this.element, 'applyHighlight': true});
-    return dvt.RatingGauge.newInstance(context, callback, callbackObj);
-  },
+      if (subId === 'tooltip') {
+        locator.subId = 'oj-ratinggauge-tooltip';
+      } else if (subId.indexOf('item') === 0) {
+        locator.subId = 'oj-ratinggauge-item';
+        locator.index = this._GetFirstIndex(subId);
+      }
+      return locator;
+    },
 
-  //** @inheritdoc */
-  _ConvertSubIdToLocator : function(subId) {
-    var locator = {};
+    //* * @inheritdoc */
+    _GetComponentStyleClasses: function () {
+      var styleClasses = this._super();
+      styleClasses.push('oj-ratinggauge');
+      // TODO  Add style classes for rating gauge selected/hover/unselected/changed
+      return styleClasses;
+    },
 
-    if(subId == 'tooltip') {
-      locator['subId'] = 'oj-ratinggauge-tooltip';
+  //* * @inheritdoc */
+    _Render: function () {
+      // Display the title of the surrounding div as the tooltip. Remove title from div to avoid browser default tooltip.
+      if (this.element.attr('title')) {
+        this.options.shortDesc = this.element.attr('title');
+        this.element.data(this.element, 'title', this.element.attr('title'));
+        this.element.removeAttr('title');
+      } else if (this.element.data('title')) {
+        this.options.shortDesc = this.element.data('title');
+      }
+
+      // Call the super to render
+      this._super();
+    },
+
+    //* * @inheritdoc */
+    // eslint-disable-next-line no-unused-vars
+    _UserOptionChange: function (key, value) {
+      this._superApply(arguments);
+
+      // If this was a value change, also update the changed value
+      if (key === 'value') {
+        this._UserOptionChange('changed', true);
+      }
     }
-	else if (subId.indexOf('item') == 0){
-      locator['subId'] = 'oj-ratinggauge-item';
-      locator['index'] = this._GetFirstIndex(subId);
-    }
-    return locator;
-  },
-
-  //** @inheritdoc */
-  _GetComponentStyleClasses : function() {
-    var styleClasses = this._super();
-    styleClasses.push('oj-ratinggauge');
-    //TODO  Add style classes for rating gauge selected/hover/unselected/changed
-    return styleClasses;
-  },
-
-  //** @inheritdoc */
-  _Render : function() {
-    // Display the title of the surrounding div as the tooltip. Remove title from div to avoid browser default tooltip.
-    if(this.element.attr('title'))
-    {
-      this.options['shortDesc'] =  this.element.attr('title');
-      this.element.data( this.element,'title', this.element.attr('title'));
-      this.element.removeAttr('title');
-    }
-    else if (this.element.data('title'))
-      this.options['shortDesc'] =  this.element.data('title');
-
-    // Call the super to render
-    this._super();
-  },
-
-  //** @inheritdoc */
-  _UserOptionChange : function(key, value) {
-    this._superApply(arguments);
-
-    // If this was a value change, also update the changed value
-    if(key == 'value')
-      this._UserOptionChange('changed', true);
-  }
-});
+  });
 
 /**
  * <table class="keyboard-table">
@@ -2926,20 +3004,20 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
 
 /**
  * <p>Sub-ID for the the rating guage tooltip.</p>
- * 
- * <p>See the <a href="#getNodeBySubId">getNodeBySubId</a> and 
+ *
+ * <p>See the <a href="#getNodeBySubId">getNodeBySubId</a> and
  * <a href="#getSubIdByNode">getSubIdByNode</a> methods for details.</p>
- * 
+ *
  * @ojsubid
  * @member
  * @name oj-ratinggauge-tooltip
  * @memberof oj.ojRatingGauge
  * @instance
- * 
+ *
  * @example <caption>Get the tooltip object of the gauge, if displayed:</caption>
  * var nodes = myRatingGauge.getNodeBySubId('subId': 'oj-ratinggauge-tooltip'});
  */
- 
+
 /**
  * <p>Sub-ID for a rating gauge item indexed by its position.</p>
  *
@@ -2951,9 +3029,13 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
  * @example <caption>Get the first item from the rating gauge:</caption>
  * var nodes = myRatingGauge.getNodeBySubId('subId': 'oj-ratinggauge-item', index: 0});
  */
+
+/* global dvt:false */
+
 /**
  * @ojcomponent oj.ojStatusMeterGauge
  * @augments oj.dvtBaseGauge
+ * @ojtsimport {module: "ojvalidation-base", type: "AMD", imported:["Converter"]}
  * @since 0.7
  * @ojstatus preview
  * @ojshortdesc Displays information graphically, highlighting a specific metric value's progress in relation to its thresholds.  Horizontal, vertical, and circular formats are supported.
@@ -2972,8 +3054,8 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
  * <pre class="prettyprint">
  * <code>
  * &lt;oj-status-meter-gauge
- *   value='63' 
- *   min='0' 
+ *   value='63'
+ *   min='0'
  *   max='100'
  *   thresholds='[{"max": 33}, {"max": 67}, {}]'>
  * &lt;/oj-status-meter-gauge>
@@ -3005,670 +3087,670 @@ oj.__registerWidget('oj.ojRatingGauge', $['oj']['dvtBaseGauge'],
  *
  * {@ojinclude "name":"rtl"}
  */
-oj.__registerWidget('oj.ojStatusMeterGauge', $['oj']['dvtBaseGauge'],
-{
-  widgetEventPrefix : "oj",
-  options: {
-    /**
-     * Specifies the angle extent of a gauge with circular orientation. Value should be provided in degrees.
-     * @expose
-     * @name angleExtent
-     * @memberof oj.ojStatusMeterGauge
-     * @instance
-     * @type {number}
-     * @default 360
-     * @ojunits degrees
-     * @ojmin 0
-     * @ojmax 360
-     */
-    angleExtent: 360,
-
-    /**
-     * Defines the animation that is applied on data changes.
-     * @expose
-     * @name animationOnDataChange
-     * @memberof oj.ojStatusMeterGauge
-     * @instance
-     * @type {string}
-     * @ojvalue {string} "auto"
-     * @ojvalue {string} "none"
-     * @default "none"
-     */
-    animationOnDataChange: 'none',
-
-    /**
-     * Defines the animation that is shown on initial display.
-     * @expose
-     * @name animationOnDisplay
-     * @memberof oj.ojStatusMeterGauge
-     * @instance
-     * @type {string}
-     * @ojvalue {string} "auto"
-     * @ojvalue {string} "none"
-     * @default "none"
-     */
-    animationOnDisplay: 'none',
-
-    /**
-     * The duration of the animations, in milliseconds. The default value comes from the CSS and varies based on theme.
-     * @expose
-     * @name animationDuration
-     * @memberof oj.ojStatusMeterGauge
-     * @instance
-     * @type {number}
-     * @ojsignature {target: "Type", value: "?"}
-     * @ojunits milliseconds
-     * @ojmin 0
-     */
-    animationDuration: undefined,
-
-    /**
-     * The border color of the gauge. Only applies when thresholds are not defined. The default value varies based on theme.
-     * @expose
-     * @name borderColor
-     * @memberof oj.ojStatusMeterGauge
-     * @instance
-     * @type {string}
-     * @ojformat color
-     */
-    borderColor: '',
-
-    /**
-     * Defines the border radius of the indicator and plot area. When set to "auto", the border radius is set to a built-in default. Acceptable input follows CSS border-radius attribute specifications. The plot area border radius can be overwritten with the plotArea borderRadius atribute.
-     * @expose
-     * @name borderRadius
-     * @memberof oj.ojStatusMeterGauge
-     * @instance
-     * @type {string}
-     * @default "auto"
-     */
-    borderRadius: 'auto',
-
-    /**
-     * An object defining the center content of a status meter with circular orientation. 
-     * @expose
-     * @name center
-     * @memberof oj.ojStatusMeterGauge
-     * @instance
-     * @type {Object}
-     */
-    center: {
+oj.__registerWidget('oj.ojStatusMeterGauge', $.oj.dvtBaseGauge,
+  {
+    widgetEventPrefix: 'oj',
+    options: {
       /**
-       * A function that returns custom center content. The function takes a center context argument,
-       * provided by the gauge, and should return an object with the following property: 
-       * <ul>
-       *   <li>insert: HTMLElement - HTML element, which will be overlaid on top of the gauge. 
-       *   This HTML element will block interactivity of the gauge by default, but the CSS pointer-events property 
-       *   can be set to 'none' on this element if the gauge's interactivity is desired. 
-       *   </li>
-       * </ul>
+       * Specifies the angle extent of a gauge with circular orientation. Value should be provided in degrees.
        * @expose
-       * @name center.renderer
-       * @memberof! oj.ojStatusMeterGauge
+       * @name angleExtent
+       * @memberof oj.ojStatusMeterGauge
        * @instance
-       * @type {function(Object):Object|null}
-       * @ojsignature {target: "Type", value: "((context: oj.ojStatusMeterGauge.CenterContext) => ({insert: Element|string}|{preventDefault: boolean}))", jsdocOverride: true}
-       * @default null
+       * @type {number}
+       * @default 360
+       * @ojunits degrees
+       * @ojmin 0
+       * @ojmax 360
        */
-      renderer: null
-    },
+      angleExtent: 360,
 
-    /**
-     * The color of the gauge. Only applies when thresholds are not defined. The default value varies based on theme.
-     * @expose
-     * @name color
-     * @memberof oj.ojStatusMeterGauge
-     * @instance
-     * @type {string}
-     * @ojformat color
-     */
-    color: '#393737',
-
-    /**
-     * Defines the ratio of relative thickness of the indicator to the plot area.
-     * @expose
-     * @name indicatorSize
-     * @memberof oj.ojStatusMeterGauge
-     * @instance
-     * @type {number}
-     * @default 1
-     * @ojmin 0
-     */
-    indicatorSize: 1,
-
-    /**
-     * Specifies the inner radius of a gauge with circular orientation, defined by the distance from the center of the gauge to the innermost edge of the indicator and plot area. Valid values are a percent or ratio from 0 to 1.
-     * @expose
-     * @name innerRadius
-     * @memberof oj.ojStatusMeterGauge
-     * @instance
-     * @type {number}
-     * @default .7
-     * @ojmin 0
-     * @ojmax 1
-     */
-    innerRadius: .7,
-
-    /**
-     * An object defining the label.
-     * @expose
-     * @name label
-     * @memberof oj.ojStatusMeterGauge
-     * @instance
-     * @type {Object}
-     */
-    label: {
       /**
-       * Defines the position of the label for horizontal and vertical gauges. The default position for horizontal gauges is 'start' and for vertical gauges is 'center'.
+       * Defines the animation that is applied on data changes.
        * @expose
-       * @name label.position
-       * @memberof! oj.ojStatusMeterGauge
+       * @name animationOnDataChange
+       * @memberof oj.ojStatusMeterGauge
        * @instance
        * @type {string}
-       * @ojsignature {target: "Type", value: "?"}
-       * @ojvalue {string} "center"
-       * @ojvalue {string} "start"
        * @ojvalue {string} "auto"
-       * @default "auto"
-       */
-      position: 'auto',
-
-      /**
-       * The CSS style object defining the style of the label.
-       * @expose
-       * @name label.style
-       * @ojsignature {target: "Type", value: "?"}
-       * @memberof! oj.ojStatusMeterGauge
-       * @instance
-       * @type {Object}
-       * @default {}
-       */
-      style: {},
-
-      /**
-       * The text for the label.
-       * @expose
-       * @name label.text
-       * @memberof! oj.ojStatusMeterGauge
-       * @instance
-       * @type {string}
-       * @ojsignature {target: "Type", value: "?"}
-       * @default ""
-       * @ojtranslatable
-       */
-      text: ''
-    },
-
-    /**
-     * The maximum value of the gauge.
-     * @expose
-     * @name max
-     * @memberof oj.ojStatusMeterGauge
-     * @instance
-     * @type {number}
-     * @default 100
-     */
-    max: 100,
-
-    /**
-     * An object defining the value label.
-     * @expose
-     * @name metricLabel
-     * @memberof oj.ojStatusMeterGauge
-     * @instance
-     * @type {Object}
-     */
-    metricLabel: {
-      /**
-       * The converter used to format the labels. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
-       * @expose
-       * @name metricLabel.converter
-       * @memberof! oj.ojStatusMeterGauge
-       * @instance
-       * @type {Object}
-       * @ojsignature {target: "Type", value: "?Converter<string>"}
-       * @default null
-       */
-      converter: null,
-
-      /**
-       * Defines the position of the metric label for horizontal and vertical gauges. The default position of the metric label is outside of the plot area. If the label is not rendered, then 'withLabel' will render the metric label outside the plot area. When the label is rendered, all positions are treated as 'withLabel' except 'auto' and 'outsidePlotArea' which render the metric label outside the plot area. When the metric label is rendered 'withLabel', the metric label is displayed with the same style as the label. The position in the 'withLabel' case is specified by the label position attribute.
-       * @expose
-       * @name metricLabel.position
-       * @memberof! oj.ojStatusMeterGauge
-       * @instance
-       * @type {string}
-       * @ojsignature {target: "Type", value: "?"}
-       * @ojvalue {string} "center"
-       * @ojvalue {string} "insideIndicatorEdge"
-       * @ojvalue {string} "outsideIndicatorEdge"
-       * @ojvalue {string} "outsidePlotArea"
-       * @ojvalue {string} "withLabel"
-       * @ojvalue {string} "auto"
-       * @default "auto"
-       */
-      position: 'auto',
-
-      /**
-       * Defines if the label is rendered. If set to auto, the label is rendered if the orientation is circular.
-       * @expose
-       * @name metricLabel.rendered
-       * @memberof! oj.ojStatusMeterGauge
-       * @instance
-       * @type {string}
-       * @ojsignature {target: "Type", value: "?"}
-       * @ojvalue {string} "on"
-       * @ojvalue {string} "off"
-       * @ojvalue {string} "auto"
-       * @default "auto"
-       */
-      rendered: 'auto',
-
-      /**
-       * The scaling behavior of the labels. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
-       * @expose
-       * @name metricLabel.scaling
-       * @memberof! oj.ojStatusMeterGauge
-       * @instance
-       * @type {string}
-       * @ojsignature {target: "Type", value: "?"}
        * @ojvalue {string} "none"
-       * @ojvalue {string} "thousand"
-       * @ojvalue {string} "million"
-       * @ojvalue {string} "billion"
-       * @ojvalue {string} "trillion"
-       * @ojvalue {string} "quadrillion"
+       * @default "none"
+       */
+      animationOnDataChange: 'none',
+
+      /**
+       * Defines the animation that is shown on initial display.
+       * @expose
+       * @name animationOnDisplay
+       * @memberof oj.ojStatusMeterGauge
+       * @instance
+       * @type {string}
        * @ojvalue {string} "auto"
-       * @default "auto"
+       * @ojvalue {string} "none"
+       * @default "none"
        */
-      scaling: 'auto',
+      animationOnDisplay: 'none',
 
       /**
-       * The CSS style object defining the style of the label.
+       * The duration of the animations, in milliseconds. The default value comes from the CSS and varies based on theme.
        * @expose
-       * @name metricLabel.style
-       * @memberof! oj.ojStatusMeterGauge
+       * @name animationDuration
+       * @memberof oj.ojStatusMeterGauge
        * @instance
-       * @type {Object}
+       * @type {number}
        * @ojsignature {target: "Type", value: "?"}
-       * @default {}
+       * @ojunits milliseconds
+       * @ojmin 0
        */
-      style: {},
+      animationDuration: undefined,
 
       /**
-       * The text for the label. If specified, text will overwrite the numeric value that is displayed by default. The converter, scaling, and textType attributes are ignored when text is specified.
+       * The border color of the gauge. Only applies when thresholds are not defined. The default value varies based on theme.
        * @expose
-       * @name metricLabel.text
-       * @memberof! oj.ojStatusMeterGauge
-       * @instance
-       * @type {string}
-       * @ojsignature {target: "Type", value: "?"}
-       * @default ""
-       * @ojtranslatable
-       */
-      text: '',
-
-      /**
-       * Defines whether the label is a number or a percentage of the total value.
-       * @expose
-       * @name metricLabel.textType
-       * @memberof! oj.ojStatusMeterGauge
-       * @instance
-       * @type {string}
-       * @ojsignature {target: "Type", value: "?"}
-       * @ojvalue {string} "percent"
-       * @ojvalue {string} "number"
-       * @default "number"
-       */
-      textType: 'number'
-    },
-
-    /**
-     * The minimum value of the gauge.
-     * @expose
-     * @name min
-     * @memberof oj.ojStatusMeterGauge
-     * @instance
-     * @type {number}
-     * @default 0
-     */
-    min: 0,
-
-    /**
-     * Defines the type of status meter to be rendered.
-     * @expose
-     * @name orientation
-     * @memberof oj.ojStatusMeterGauge
-     * @instance
-     * @type {string}
-     * @ojvalue {string} "circular"
-     * @ojvalue {string} "vertical"
-     * @ojvalue {string} "horizontal"
-     * @default "horizontal"
-     */
-    orientation: 'horizontal',
-
-    /**
-     * Plot Area for Status Meter Guage
-     * @expose
-     * @name plotArea
-     * @memberof oj.ojStatusMeterGauge
-     * @instance
-     * @type {Object}
-     */
-    plotArea: {
-      /**
-       * The border color of the plot area.
-       * @expose
-       * @name plotArea.borderColor
-       * @memberof! oj.ojStatusMeterGauge
+       * @name borderColor
+       * @memberof oj.ojStatusMeterGauge
        * @instance
        * @type {string}
        * @ojformat color
-       * @ojsignature {target: "Type", value: "?"}
        */
-      borderColor: undefined,
+      borderColor: '',
 
       /**
-       * Defines the border radius of the plot area shape. When set to "auto", the border radius is the same as the top level border radius. Acceptable input follows CSS border-radius attribute specifications.
+       * Defines the border radius of the indicator and plot area. When set to "auto", the border radius is set to a built-in default. Acceptable input follows CSS border-radius attribute specifications. The plot area border radius can be overwritten with the plotArea borderRadius atribute.
        * @expose
-       * @name plotArea.borderRadius
-       * @memberof! oj.ojStatusMeterGauge
+       * @name borderRadius
+       * @memberof oj.ojStatusMeterGauge
        * @instance
        * @type {string}
-       * @ojsignature {target: "Type", value: "?"}
        * @default "auto"
        */
       borderRadius: 'auto',
 
       /**
-       * The color of the plot area. Only applies when useThresholdFillColor is off.
+       * An object defining the center content of a status meter with circular orientation.
        * @expose
-       * @name plotArea.color
-       * @memberof! oj.ojStatusMeterGauge
+       * @name center
+       * @memberof oj.ojStatusMeterGauge
+       * @instance
+       * @type {Object}
+       */
+      center: {
+        /**
+         * A function that returns custom center content. The function takes a center context argument,
+         * provided by the gauge, and should return an object with the following property:
+         * <ul>
+         *   <li>insert: HTMLElement - HTML element, which will be overlaid on top of the gauge.
+         *   This HTML element will block interactivity of the gauge by default, but the CSS pointer-events property
+         *   can be set to 'none' on this element if the gauge's interactivity is desired.
+         *   </li>
+         * </ul>
+         * @expose
+         * @name center.renderer
+         * @memberof! oj.ojStatusMeterGauge
+         * @instance
+         * @type {function(Object):Object|null}
+         * @ojsignature {target: "Type", value: "((context: oj.ojStatusMeterGauge.CenterContext) => ({insert: Element|string}|{preventDefault: boolean}))", jsdocOverride: true}
+         * @default null
+         */
+        renderer: null
+      },
+
+      /**
+       * The color of the gauge. Only applies when thresholds are not defined. The default value varies based on theme.
+       * @expose
+       * @name color
+       * @memberof oj.ojStatusMeterGauge
        * @instance
        * @type {string}
        * @ojformat color
-       * @ojsignature {target: "Type", value: "?"}
        */
-      color: undefined,
+      color: '#393737',
 
       /**
-       * Defines if the plot area is to be rendered. If set to auto, the plot area is rendered if the orientation is circular or if the thresholdDisplay is not onIndicator.
+       * Defines the ratio of relative thickness of the indicator to the plot area.
        * @expose
-       * @name plotArea.rendered
-       * @memberof! oj.ojStatusMeterGauge
+       * @name indicatorSize
+       * @memberof oj.ojStatusMeterGauge
        * @instance
-       * @type {string}
-       * @ojsignature {target: "Type", value: "?"}
-       * @ojvalue {string} "on"
-       * @ojvalue {string} "off"
-       * @ojvalue {string} "auto"
-       * @default "auto"
+       * @type {number}
+       * @default 1
+       * @ojmin 0
        */
-      rendered: 'auto',
+      indicatorSize: 1,
 
       /**
-       * The CSS style class to apply to the plot area. The style class and inline style will override any other styling specified through the properties.
+       * Specifies the inner radius of a gauge with circular orientation, defined by the distance from the center of the gauge to the innermost edge of the indicator and plot area. Valid values are a percent or ratio from 0 to 1.
        * @expose
-       * @name plotArea.svgClassName
-       * @memberof! oj.ojStatusMeterGauge
+       * @name innerRadius
+       * @memberof oj.ojStatusMeterGauge
+       * @instance
+       * @type {number}
+       * @default .7
+       * @ojmin 0
+       * @ojmax 1
+       */
+      innerRadius: 0.7,
+
+      /**
+       * An object defining the label.
+       * @expose
+       * @name label
+       * @memberof oj.ojStatusMeterGauge
+       * @instance
+       * @type {Object}
+       */
+      label: {
+        /**
+         * Defines the position of the label for horizontal and vertical gauges. The default position for horizontal gauges is 'start' and for vertical gauges is 'center'.
+         * @expose
+         * @name label.position
+         * @memberof! oj.ojStatusMeterGauge
+         * @instance
+         * @type {string}
+         * @ojsignature {target: "Type", value: "?"}
+         * @ojvalue {string} "center"
+         * @ojvalue {string} "start"
+         * @ojvalue {string} "auto"
+         * @default "auto"
+         */
+        position: 'auto',
+
+        /**
+         * The CSS style object defining the style of the label.
+         * @expose
+         * @name label.style
+         * @ojsignature {target: "Type", value: "?"}
+         * @memberof! oj.ojStatusMeterGauge
+         * @instance
+         * @type {Object}
+         * @default {}
+         */
+        style: {},
+
+        /**
+         * The text for the label.
+         * @expose
+         * @name label.text
+         * @memberof! oj.ojStatusMeterGauge
+         * @instance
+         * @type {string}
+         * @ojsignature {target: "Type", value: "?"}
+         * @default ""
+         * @ojtranslatable
+         */
+        text: ''
+      },
+
+      /**
+       * The maximum value of the gauge.
+       * @expose
+       * @name max
+       * @memberof oj.ojStatusMeterGauge
+       * @instance
+       * @type {number}
+       * @default 100
+       */
+      max: 100,
+
+      /**
+       * An object defining the value label.
+       * @expose
+       * @name metricLabel
+       * @memberof oj.ojStatusMeterGauge
+       * @instance
+       * @type {Object}
+       */
+      metricLabel: {
+        /**
+         * The converter used to format the labels. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
+         * @expose
+         * @name metricLabel.converter
+         * @memberof! oj.ojStatusMeterGauge
+         * @instance
+         * @type {Object}
+         * @ojsignature {target: "Type", value: "?oj.Converter<string>"}
+         * @default null
+         */
+        converter: null,
+
+        /**
+         * Defines the position of the metric label for horizontal and vertical gauges. The default position of the metric label is outside of the plot area. If the label is not rendered, then 'withLabel' will render the metric label outside the plot area. When the label is rendered, all positions are treated as 'withLabel' except 'auto' and 'outsidePlotArea' which render the metric label outside the plot area. When the metric label is rendered 'withLabel', the metric label is displayed with the same style as the label. The position in the 'withLabel' case is specified by the label position attribute.
+         * @expose
+         * @name metricLabel.position
+         * @memberof! oj.ojStatusMeterGauge
+         * @instance
+         * @type {string}
+         * @ojsignature {target: "Type", value: "?"}
+         * @ojvalue {string} "center"
+         * @ojvalue {string} "insideIndicatorEdge"
+         * @ojvalue {string} "outsideIndicatorEdge"
+         * @ojvalue {string} "outsidePlotArea"
+         * @ojvalue {string} "withLabel"
+         * @ojvalue {string} "auto"
+         * @default "auto"
+         */
+        position: 'auto',
+
+        /**
+         * Defines if the label is rendered. If set to auto, the label is rendered if the orientation is circular.
+         * @expose
+         * @name metricLabel.rendered
+         * @memberof! oj.ojStatusMeterGauge
+         * @instance
+         * @type {string}
+         * @ojsignature {target: "Type", value: "?"}
+         * @ojvalue {string} "on"
+         * @ojvalue {string} "off"
+         * @ojvalue {string} "auto"
+         * @default "auto"
+         */
+        rendered: 'auto',
+
+        /**
+         * The scaling behavior of the labels. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
+         * @expose
+         * @name metricLabel.scaling
+         * @memberof! oj.ojStatusMeterGauge
+         * @instance
+         * @type {string}
+         * @ojsignature {target: "Type", value: "?"}
+         * @ojvalue {string} "none"
+         * @ojvalue {string} "thousand"
+         * @ojvalue {string} "million"
+         * @ojvalue {string} "billion"
+         * @ojvalue {string} "trillion"
+         * @ojvalue {string} "quadrillion"
+         * @ojvalue {string} "auto"
+         * @default "auto"
+         */
+        scaling: 'auto',
+
+        /**
+         * The CSS style object defining the style of the label.
+         * @expose
+         * @name metricLabel.style
+         * @memberof! oj.ojStatusMeterGauge
+         * @instance
+         * @type {Object}
+         * @ojsignature {target: "Type", value: "?"}
+         * @default {}
+         */
+        style: {},
+
+        /**
+         * The text for the label. If specified, text will overwrite the numeric value that is displayed by default. The converter, scaling, and textType attributes are ignored when text is specified.
+         * @expose
+         * @name metricLabel.text
+         * @memberof! oj.ojStatusMeterGauge
+         * @instance
+         * @type {string}
+         * @ojsignature {target: "Type", value: "?"}
+         * @default ""
+         * @ojtranslatable
+         */
+        text: '',
+
+        /**
+         * Defines whether the label is a number or a percentage of the total value.
+         * @expose
+         * @name metricLabel.textType
+         * @memberof! oj.ojStatusMeterGauge
+         * @instance
+         * @type {string}
+         * @ojsignature {target: "Type", value: "?"}
+         * @ojvalue {string} "percent"
+         * @ojvalue {string} "number"
+         * @default "number"
+         */
+        textType: 'number'
+      },
+
+      /**
+       * The minimum value of the gauge.
+       * @expose
+       * @name min
+       * @memberof oj.ojStatusMeterGauge
+       * @instance
+       * @type {number}
+       * @default 0
+       */
+      min: 0,
+
+      /**
+       * Defines the type of status meter to be rendered.
+       * @expose
+       * @name orientation
+       * @memberof oj.ojStatusMeterGauge
        * @instance
        * @type {string}
-       * @ojsignature {target: "Type", value: "?"}
+       * @ojvalue {string} "circular"
+       * @ojvalue {string} "vertical"
+       * @ojvalue {string} "horizontal"
+       * @default "horizontal"
+       */
+      orientation: 'horizontal',
+
+      /**
+       * Plot Area for Status Meter Guage
+       * @expose
+       * @name plotArea
+       * @memberof oj.ojStatusMeterGauge
+       * @instance
+       * @type {Object}
+       */
+      plotArea: {
+        /**
+         * The border color of the plot area.
+         * @expose
+         * @name plotArea.borderColor
+         * @memberof! oj.ojStatusMeterGauge
+         * @instance
+         * @type {string}
+         * @ojformat color
+         * @ojsignature {target: "Type", value: "?"}
+         */
+        borderColor: undefined,
+
+        /**
+         * Defines the border radius of the plot area shape. When set to "auto", the border radius is the same as the top level border radius. Acceptable input follows CSS border-radius attribute specifications.
+         * @expose
+         * @name plotArea.borderRadius
+         * @memberof! oj.ojStatusMeterGauge
+         * @instance
+         * @type {string}
+         * @ojsignature {target: "Type", value: "?"}
+         * @default "auto"
+         */
+        borderRadius: 'auto',
+
+        /**
+         * The color of the plot area. Only applies when useThresholdFillColor is off.
+         * @expose
+         * @name plotArea.color
+         * @memberof! oj.ojStatusMeterGauge
+         * @instance
+         * @type {string}
+         * @ojformat color
+         * @ojsignature {target: "Type", value: "?"}
+         */
+        color: undefined,
+
+        /**
+         * Defines if the plot area is to be rendered. If set to auto, the plot area is rendered if the orientation is circular or if the thresholdDisplay is not onIndicator.
+         * @expose
+         * @name plotArea.rendered
+         * @memberof! oj.ojStatusMeterGauge
+         * @instance
+         * @type {string}
+         * @ojsignature {target: "Type", value: "?"}
+         * @ojvalue {string} "on"
+         * @ojvalue {string} "off"
+         * @ojvalue {string} "auto"
+         * @default "auto"
+         */
+        rendered: 'auto',
+
+        /**
+         * The CSS style class to apply to the plot area. The style class and inline style will override any other styling specified through the properties.
+         * @expose
+         * @name plotArea.svgClassName
+         * @memberof! oj.ojStatusMeterGauge
+         * @instance
+         * @type {string}
+         * @ojsignature {target: "Type", value: "?"}
+         * @default ""
+         */
+        svgClassName: '',
+
+        /**
+         * The inline style to apply to the plot area. The style class and inline style will override any other styling specified through the properties.
+         * @expose
+         * @name plotArea.svgStyle
+         * @memberof! oj.ojStatusMeterGauge
+         * @instance
+         * @type {Object}
+         * @ojsignature {target: "Type", value: "?"}
+         * @default {}
+         */
+        svgStyle: {}
+      },
+
+      /**
+       * <p>The <code class="prettyprint">transientValue</code> is the read-only property for retrieving
+       * the transient value from the status meter gauge. It is triggered when dragging over the status meter gauge.</p>
+       *
+       * <p>This is a read-only property so page authors cannot set or change it directly.</p>
+       * @expose
+       * @alias transientValue
+       * @instance
+       * @type {number|null}
+       * @memberof oj.ojStatusMeterGauge
+       * @since 4.2.0
+       * @ojstatus preview
+       * @readonly
+       * @ojwriteback
+       */
+      rawValue: null,
+
+      /**
+       * Defines whether the value of the gauge can be changed by the end user.
+       * @expose
+       * @name readonly
+       * @memberof oj.ojStatusMeterGauge
+       * @instance
+       * @type {boolean}
+       * @default false
+       */
+      readonly: false,
+
+      /**
+       * An array of objects with the following properties defining the reference lines for the gauge.
+       * @expose
+       * @name referenceLines
+       * @memberof oj.ojStatusMeterGauge
+       * @instance
+       * @type {Array.<Object>}
+       * @ojsignature {target: "Type", value: "Array<oj.ojStatusMeterGauge.ReferenceLine>", jsdocOverride: true}
+       * @default []
+       */
+      referenceLines: [],
+
+      /**
+       * Specifies the start angle of a gauge with circular orientation. Value should be provided in degrees.
+       * @expose
+       * @name startAngle
+       * @memberof oj.ojStatusMeterGauge
+       * @instance
+       * @type {number}
+       * @default 90
+       * @ojunits degrees
+       * @ojmin 0
+       * @ojmax 360
+       */
+      startAngle: 90,
+
+      /**
+       * Specifies the increment by which values can be changed by the end user when readonly is false. The step must be a positive value that is smaller than the difference between the min and max. If not specified, the default step is 1/100 if the difference between the min and max.
+       * @expose
+       * @name step
+       * @memberof oj.ojStatusMeterGauge
+       * @instance
+       * @type {number|null}
+       * @ojexclusivemin 0
+       */
+      step: null,
+
+      /**
+       * The CSS style class to apply to the gauge indicator. The style class and inline style will override any other styling specified through the properties. For tooltip interactivity, it's recommended to also pass a representative color to the color attribute.
+       * @expose
+       * @name svgClassName
+       * @memberof oj.ojStatusMeterGauge
+       * @instance
+       * @type {string}
        * @default ""
        */
       svgClassName: '',
 
       /**
-       * The inline style to apply to the plot area. The style class and inline style will override any other styling specified through the properties.
+       * The inline style to apply to the gauge indicator. The style class and inline style will override any other styling specified through the properties. For tooltip interactivity, it's recommended to also pass a representative color to the color attribute.
        * @expose
-       * @name plotArea.svgStyle
-       * @memberof! oj.ojStatusMeterGauge
+       * @name svgStyle
+       * @memberof oj.ojStatusMeterGauge
        * @instance
        * @type {Object}
-       * @ojsignature {target: "Type", value: "?"}
        * @default {}
        */
-      svgStyle: {}
-    },
+      svgStyle: {},
 
-    /**
-     * <p>The <code class="prettyprint">transientValue</code> is the read-only property for retrieving
-     * the transient value from the status meter gauge. It is triggered when dragging over the status meter gauge.</p>
-     *
-     * <p>This is a read-only property so page authors cannot set or change it directly.</p>
-     * @expose
-     * @alias transientValue
-     * @instance
-     * @type {number|null}
-     * @memberof oj.ojStatusMeterGauge
-     * @since 4.2.0
-     * @ojstatus preview
-     * @readonly
-     * @ojwriteback
-     */
-    rawValue: null,
-
-    /**
-     * Defines whether the value of the gauge can be changed by the end user.
-     * @expose
-     * @name readonly
-     * @memberof oj.ojStatusMeterGauge
-     * @instance
-     * @type {boolean}
-     * @default false
-     */
-    readonly: false,
-
-    /**
-     * An array of objects with the following properties defining the reference lines for the gauge.
-     * @expose
-     * @name referenceLines
-     * @memberof oj.ojStatusMeterGauge
-     * @instance
-     * @type {Array.<Object>}
-     * @ojsignature {target: "Type", value: "Array<oj.ojStatusMeterGauge.ReferenceLine>", jsdocOverride: true}
-     * @default []
-     */
-    referenceLines: [],
-
-    /**
-     * Specifies the start angle of a gauge with circular orientation. Value should be provided in degrees.
-     * @expose
-     * @name startAngle
-     * @memberof oj.ojStatusMeterGauge
-     * @instance
-     * @type {number}
-     * @default 90
-     * @ojunits degrees
-     * @ojmin 0
-     * @ojmax 360
-     */
-    startAngle: 90,
-
-    /**
-     * Specifies the increment by which values can be changed by the end user when readonly is false. The step must be a positive value that is smaller than the difference between the min and max. If not specified, the default step is 1/100 if the difference between the min and max.
-     * @expose
-     * @name step
-     * @memberof oj.ojStatusMeterGauge
-     * @instance
-     * @type {number|null}
-     * @ojexclusivemin 0
-     */
-    step: null,
-
-    /**
-     * The CSS style class to apply to the gauge indicator. The style class and inline style will override any other styling specified through the properties. For tooltip interactivity, it's recommended to also pass a representative color to the color attribute.
-     * @expose
-     * @name svgClassName
-     * @memberof oj.ojStatusMeterGauge
-     * @instance
-     * @type {string}
-     * @default ""
-     */
-    svgClassName: '',
-
-    /**
-     * The inline style to apply to the gauge indicator. The style class and inline style will override any other styling specified through the properties. For tooltip interactivity, it's recommended to also pass a representative color to the color attribute.
-     * @expose
-     * @name svgStyle
-     * @memberof oj.ojStatusMeterGauge
-     * @instance
-     * @type {Object}
-     * @default {}
-     */
-    svgStyle: {},
-
-    /**
-     * An object containing an optional callback function for tooltip customization. 
-     * @expose
-     * @name tooltip
-     * @memberof oj.ojStatusMeterGauge
-     * @instance
-     * @type {Object}
-     */
-    tooltip: {
       /**
-       * A function that returns a custom tooltip. The function takes a tooltip context argument,
-       * provided by the gauge, and should return an object that contains only one of the two properties:
-       *  <ul>
-       *    <li>insert: HTMLElement | string - An HTML element, which will be appended to the tooltip, or a tooltip string.</li> 
-       *    <li>preventDefault: <code>true</code> - Indicates that the tooltip should not be displayed. It is not necessary to return {preventDefault:false} to display tooltip, since this is a default behavior.</li> 
-       *  </ul>
+       * An object containing an optional callback function for tooltip customization.
        * @expose
-       * @name tooltip.renderer
-       * @memberof! oj.ojStatusMeterGauge
+       * @name tooltip
+       * @memberof oj.ojStatusMeterGauge
        * @instance
-       * @type {function(Object):Object|null}
-       * @ojsignature {target: "Type", value: "((context: oj.ojStatusMeterGauge.TooltipContext) => ({insert: Element|string}|{preventDefault: boolean}))", jsdocOverride: true}
-       * @default null
+       * @type {Object}
        */
-      renderer: null
+      tooltip: {
+        /**
+         * A function that returns a custom tooltip. The function takes a tooltip context argument,
+         * provided by the gauge, and should return an object that contains only one of the two properties:
+         *  <ul>
+         *    <li>insert: HTMLElement | string - An HTML element, which will be appended to the tooltip, or a tooltip string.</li>
+         *    <li>preventDefault: <code>true</code> - Indicates that the tooltip should not be displayed. It is not necessary to return {preventDefault:false} to display tooltip, since this is a default behavior.</li>
+         *  </ul>
+         * @expose
+         * @name tooltip.renderer
+         * @memberof! oj.ojStatusMeterGauge
+         * @instance
+         * @type {function(Object):Object|null}
+         * @ojsignature {target: "Type", value: "((context: oj.ojStatusMeterGauge.TooltipContext) => ({insert: Element|string}|{preventDefault: boolean}))", jsdocOverride: true}
+         * @default null
+         */
+        renderer: null
+      },
+
+      /**
+       * Controls whether the current threshold is displayed on the indicator, in the plotArea, or if all the thresholds are diplayed in the plot area
+       * @expose
+       * @name thresholdDisplay
+       * @memberof oj.ojStatusMeterGauge
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "currentOnly"
+       * @ojvalue {string} "all"
+       * @ojvalue {string} "onIndicator"
+       * @default "onIndicator"
+       */
+      thresholdDisplay: 'onIndicator',
+
+      /**
+       * An array of objects with the following properties defining the thresholds for the gauge.
+       * @expose
+       * @name thresholds
+       * @memberof oj.ojStatusMeterGauge
+       * @instance
+       * @type {Array.<Object>}
+       * @ojsignature {target: "Type", value: "Array<oj.ojStatusMeterGauge.Threshold>", jsdocOverride: true}
+       * @default []
+       */
+      thresholds: [],
+
+      /**
+       * The metric value.
+       * @expose
+       * @name value
+       * @memberof oj.ojStatusMeterGauge
+       * @instance
+       * @type {number|null}
+       * @ojwriteback
+       */
+      value: null,
+
+      /**
+       * Defines whether visual effects such as overlays are applied to the gauge.
+       * @expose
+       * @name visualEffects
+       * @memberof oj.ojStatusMeterGauge
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "none"
+       * @ojvalue {string} "auto"
+       * @default "auto"
+       */
+      visualEffects: 'auto'
+    },
+
+    //* * @inheritdoc */
+    _CreateDvtComponent: function (context, callback, callbackObj) {
+      this._focusable({ element: this.element, applyHighlight: true });
+      return dvt.StatusMeterGauge.newInstance(context, callback, callbackObj);
+    },
+
+    //* * @inheritdoc */
+    _ConvertSubIdToLocator: function (subId) {
+      var locator = {};
+
+      if (subId === 'tooltip') {
+        locator.subId = 'oj-statusmetergauge-tooltip';
+      }
+      return locator;
+    },
+
+    //* * @inheritdoc */
+    _GetComponentStyleClasses: function () {
+      var styleClasses = this._super();
+      styleClasses.push('oj-statusmetergauge');
+      return styleClasses;
+    },
+
+    //* * @inheritdoc */
+    _GetComponentRendererOptions: function () {
+      return ['tooltip/renderer', 'center/renderer'];
+    },
+
+    //* * @inheritdoc */
+    _ProcessOptions: function () {
+      this._super();
+      var center = this.options.center;
+      if (center && center._renderer) {
+        center.renderer = this._GetTemplateRenderer(center._renderer, 'center');
+      }
+    },
+
+    // @inheritdoc
+    _GetChildStyleClasses: function () {
+      var styleClasses = this._super();
+      styleClasses['oj-dvtbase oj-statusmetergauge'] = { path: 'animationDuration', property: 'ANIM_DUR' };
+      return styleClasses;
+    },
+
+    //* * @inheritdoc */
+    _Render: function () {
+      // Display the title of the surrounding div as the tooltip. Remove title from div to avoid browser default tooltip.
+      if (this.element.attr('title')) {
+        this.options.shortDesc = this.element.attr('title');
+        this.element.data(this.element, 'title', this.element.attr('title'));
+        this.element.removeAttr('title');
+      } else if (this.element.data('title')) {
+        this.options.shortDesc = this.element.data('title');
+      }
+
+      // Call the super to render
+      this._super();
     },
 
     /**
-     * Controls whether the current threshold is displayed on the indicator, in the plotArea, or if all the thresholds are diplayed in the plot area
+     * Returns the gauge's formatted metric label.
+     * @return {string} The formatted metric label.
      * @expose
-     * @name thresholdDisplay
-     * @memberof oj.ojStatusMeterGauge
      * @instance
-     * @type {string}
-     * @ojvalue {string} "currentOnly"
-     * @ojvalue {string} "all"
-     * @ojvalue {string} "onIndicator"
-     * @default "onIndicator"
-     */
-    thresholdDisplay: 'onIndicator',
-
-    /**
-     * An array of objects with the following properties defining the thresholds for the gauge.
-     * @expose
-     * @name thresholds
      * @memberof oj.ojStatusMeterGauge
-     * @instance
-     * @type {Array.<Object>}
-     * @ojsignature {target: "Type", value: "Array<oj.ojStatusMeterGauge.Threshold>", jsdocOverride: true}
-     * @default []
      */
-    thresholds: [],
-
-    /**
-     * The metric value.
-     * @expose
-     * @name value
-     * @memberof oj.ojStatusMeterGauge
-     * @instance
-     * @type {number|null}
-     * @ojwriteback
-     */
-    value: null,
-
-    /**
-     * Defines whether visual effects such as overlays are applied to the gauge.
-     * @expose
-     * @name visualEffects
-     * @memberof oj.ojStatusMeterGauge
-     * @instance
-     * @type {string}
-     * @ojvalue {string} "none"
-     * @ojvalue {string} "auto"
-     * @default "auto"
-     */
-    visualEffects: 'auto'
-  },
-
-  //** @inheritdoc */
-  _CreateDvtComponent : function(context, callback, callbackObj) {
-    this._focusable({'element': this.element, 'applyHighlight': true});
-    return dvt.StatusMeterGauge.newInstance(context, callback, callbackObj);
-  },
-
-  //** @inheritdoc */
-  _ConvertSubIdToLocator : function(subId) {
-    var locator = {};
-
-    if(subId == 'tooltip') {
-      locator['subId'] = 'oj-statusmetergauge-tooltip';
+    getMetricLabel: function () {
+      var auto = this._component.getAutomation();
+      return auto.getMetricLabel();
     }
-    return locator;
-  },
-
-  //** @inheritdoc */
-  _GetComponentStyleClasses : function() {
-    var styleClasses = this._super();
-    styleClasses.push('oj-statusmetergauge');
-    return styleClasses;
-  },
-  
-   //** @inheritdoc */
-  _GetComponentRendererOptions: function() {
-    return ['tooltip/renderer', 'center/renderer'];
-  },
-
-  //** @inheritdoc */
-  _ProcessOptions: function() {
-    this._super();
-    var center = this.options['center'];
-    if (center && center['_renderer'])
-      center['renderer'] = this._GetTemplateRenderer(center['_renderer'], 'center');
-  },
-
-  // @inheritdoc
-  _GetChildStyleClasses : function() {
-    var styleClasses = this._super();
-    styleClasses['oj-dvtbase oj-statusmetergauge'] = {'path': 'animationDuration', 'property': 'ANIM_DUR'};
-    return styleClasses;
-  },
-
-  //** @inheritdoc */
-  _Render: function() {
-    // Display the title of the surrounding div as the tooltip. Remove title from div to avoid browser default tooltip.
-    if(this.element.attr('title'))
-    {
-      this.options['shortDesc'] =  this.element.attr('title');
-      this.element.data( this.element,'title', this.element.attr('title'));
-      this.element.removeAttr('title');
-    }
-    else if (this.element.data('title'))
-      this.options['shortDesc'] =  this.element.data('title');
-
-    // Call the super to render
-    this._super();
-  },
-
-  /**
-   * Returns the gauge's formatted metric label.
-   * @return {string} The formatted metric label.
-   * @expose
-   * @instance
-   * @memberof oj.ojStatusMeterGauge
-   */
-  getMetricLabel: function() {
-    var auto = this._component.getAutomation();
-    return auto.getMetricLabel();
-  }
-});
+  });
 
 /**
  * <table class="keyboard-table">
@@ -3792,112 +3874,104 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $['oj']['dvtBaseGauge'],
 
 /**
  * <p>Sub-ID for the the status meter guage tooltip.</p>
- * 
- * <p>See the <a href="#getNodeBySubId">getNodeBySubId</a> and 
+ *
+ * <p>See the <a href="#getNodeBySubId">getNodeBySubId</a> and
  * <a href="#getSubIdByNode">getSubIdByNode</a> methods for details.</p>
- * 
+ *
  * @ojsubid
  * @member
  * @name oj-statusmetergauge-tooltip
  * @memberof oj.ojSatusMeterGauge
  * @instance
- * 
+ *
  * @example <caption>Get the tooltip object of the gauge, if displayed:</caption>
  * var nodes = myStatusMeterGauge.getNodeBySubId({'subId': 'oj-statusmetergauge-tooltip'});
  */
+
 /**
  * Ignore tag only needed for DVTs that have jsDoc in separate _doc.js files.
  * @ignore
  */
-(function () {
-  var dvtBaseGaugeMeta = {
-    extension: {
-      _WIDGET_NAME: 'dvtBaseGauge'
-    }
-  }
-  oj.CustomElementBridge.registerMetadata('dvtBaseGauge', 'dvtBaseComponent', dvtBaseGaugeMeta);
-})();
 
 /* global __oj_led_gauge_metadata:false */
+/* global DvtAttributeUtils */
 (function () {
   __oj_led_gauge_metadata.extension._WIDGET_NAME = 'ojLedGauge';
-  oj.CustomElementBridge.registerMetadata('oj-led-gauge', 'dvtBaseGauge', __oj_led_gauge_metadata);
 // Supported marker shapes for gauges
-var _LED_GAUGE_SHAPE_ENUMS = {
-  "arrow": true,
-  "square": true,
-  "rectangle": true,
-  "circle": true,
-  "diamond": true,
-  "triangle": true,
-  "human": true,
-  "star": true
-};
-// Get the combined meta of superclass which contains a shape parse function generator
-var dvtMeta = oj.CustomElementBridge.getMetadata('oj-led-gauge');
-oj.CustomElementBridge.register('oj-led-gauge', {
-  'metadata': dvtMeta,
-  'parseFunction': dvtMeta['extension']._DVT_PARSE_FUNC({'type': true}, _LED_GAUGE_SHAPE_ENUMS)
-});
-})();
+  var _LED_GAUGE_SHAPE_ENUMS = {
+    arrow: true,
+    square: true,
+    rectangle: true,
+    circle: true,
+    diamond: true,
+    triangle: true,
+    human: true,
+    star: true
+  };
+  oj.CustomElementBridge.register('oj-led-gauge', {
+    metadata: __oj_led_gauge_metadata,
+    parseFunction: DvtAttributeUtils.shapeParseFunction({ type: true }, _LED_GAUGE_SHAPE_ENUMS)
+  });
+}());
 
 /* global __oj_rating_gauge_metadata:false */
 (function () {
   __oj_rating_gauge_metadata.extension._WIDGET_NAME = 'ojRatingGauge';
   __oj_rating_gauge_metadata.extension._ALIASED_PROPS = { transientValue: 'rawValue' };
-  oj.CustomElementBridge.registerMetadata('oj-rating-gauge', 'dvtBaseGauge', __oj_rating_gauge_metadata);
 
 // Consider a string with at least one digit a valid SVG path
-var _SHAPE_REGEXP = /\d/;
-var _RATING_GAUGE_SHAPE_ENUMS = {
-  "circle": true,
-  "square": true,
-  "diamond": true,
-  "triangle": true,
-  "human": true,
-  "star": true
-};
-var _UNSELECTED_RATING_GAUGE_SHAPE_ENUMS = {
-  "circle": true,
-  "square": true,
-  "diamond": true,
-  "triangle": true,
-  "human": true,
-  "star": true,
-  "dot": true,
-  "none": true
-};
-var _RATING_GAUGE_SHAPE_PROPS = {
-  'changed-state.shape': true, 
-  'hover-state.shape': true,
-  'selected-state.shape': true,
-  'unselected-state.shape': true
-};
-function shapePropertyParser(value, name, meta, defaultParseFunction) {
-  if (_RATING_GAUGE_SHAPE_PROPS[name] || name === 'unselected-state.shape') {
-    if (_SHAPE_REGEXP.test(value))
-      return value;
-    else if (_RATING_GAUGE_SHAPE_PROPS[name] && !_RATING_GAUGE_SHAPE_ENUMS[name])
-      throw "Found: " + value + ". Expected: " + _RATING_GAUGE_SHAPE_ENUMS.toString();
-    else if (name === 'unselected-state.shape' && !_UNSELECTED_RATING_GAUGE_SHAPE_ENUMS[name])
-      throw "Found: " + value + ". Expected: " + _UNSELECTED_RATING_GAUGE_SHAPE_ENUMS.toString();
-    else
-      return value;
+  var _SHAPE_REGEXP = /\d/;
+  var _RATING_GAUGE_SHAPE_ENUMS = {
+    circle: true,
+    square: true,
+    diamond: true,
+    triangle: true,
+    human: true,
+    star: true
+  };
+  var _UNSELECTED_RATING_GAUGE_SHAPE_ENUMS = {
+    circle: true,
+    square: true,
+    diamond: true,
+    triangle: true,
+    human: true,
+    star: true,
+    dot: true,
+    none: true
+  };
+  var _RATING_GAUGE_SHAPE_PROPS = {
+    'changed-state.shape': true,
+    'hover-state.shape': true,
+    'selected-state.shape': true,
+    'unselected-state.shape': true
+  };
+  function shapePropertyParser(value, name, meta, defaultParseFunction) {
+    if (_RATING_GAUGE_SHAPE_PROPS[name] || name === 'unselected-state.shape') {
+      if (_SHAPE_REGEXP.test(value)) {
+        return value;
+      } else if (_RATING_GAUGE_SHAPE_PROPS[name] && !_RATING_GAUGE_SHAPE_ENUMS[name]) {
+        throw new Error('Found: ' + value + '. Expected: '
+                        + _RATING_GAUGE_SHAPE_ENUMS.toString());
+      } else if (name === 'unselected-state.shape' && !_UNSELECTED_RATING_GAUGE_SHAPE_ENUMS[name]) {
+        throw new Error('Found: ' + value + '. Expected: '
+                        + _UNSELECTED_RATING_GAUGE_SHAPE_ENUMS.toString());
+      } else {
+        return value;
+      }
+    }
+    return defaultParseFunction(value);
   }
-  return defaultParseFunction(value);
-};
-oj.CustomElementBridge.register('oj-rating-gauge', {
-  'metadata': oj.CustomElementBridge.getMetadata('oj-rating-gauge'),
-  'parseFunction': shapePropertyParser
-});
-})();
+  oj.CustomElementBridge.register('oj-rating-gauge', {
+    metadata: __oj_rating_gauge_metadata,
+    parseFunction: shapePropertyParser
+  });
+}());
 
 /* global __oj_status_meter_gauge_metadata:false */
 (function () {
   __oj_status_meter_gauge_metadata.extension._WIDGET_NAME = 'ojStatusMeterGauge';
   __oj_status_meter_gauge_metadata.extension._ALIASED_PROPS = { transientValue: 'rawValue' };
-  oj.CustomElementBridge.registerMetadata('oj-status-meter-gauge', 'dvtBaseGauge', __oj_status_meter_gauge_metadata);
-  oj.CustomElementBridge.register('oj-status-meter-gauge', { metadata: oj.CustomElementBridge.getMetadata('oj-status-meter-gauge') });
+  oj.CustomElementBridge.register('oj-status-meter-gauge', { metadata: __oj_status_meter_gauge_metadata });
 }());
 
 });

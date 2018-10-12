@@ -1,0 +1,67 @@
+{
+  "name": "oj-legend-section",
+  "version": "6.0.0",
+  "jetVersion": "6.0.0",
+  "displayName": "Legend Section",
+  "type": "core",
+  "description": "ojLegendSection",
+  "help": "https://docs.oracle.com/en/middleware/jet/6/reference-api/oj.ojLegendSection.html",
+  "properties": {
+    "collapsible": {
+      "description": "Whether the section is collapsible. Only applies if the legend orientation is vertical.",
+      "type": "string",
+      "displayName": "Collapsible",
+      "value": "off",
+      "help": "collapsible",
+      "enumValues": [
+        "off",
+        "on"
+      ],
+      "propertyEditorValues": {
+        "off": {
+          "displayName": "Off"
+        },
+        "on": {
+          "displayName": "On"
+        }
+      }
+    },
+    "text": {
+      "description": "The title of the legend section.",
+      "type": "string",
+      "displayName": "Text",
+      "value": "",
+      "help": "text"
+    },
+    "textHalign": {
+      "description": "The horizontal alignment of the section title. If the section is collapsible or nested, only start alignment is supported.",
+      "type": "string",
+      "displayName": "Text Halign",
+      "value": "start",
+      "help": "textHalign",
+      "enumValues": [
+        "center",
+        "end",
+        "start"
+      ],
+      "propertyEditorValues": {
+        "center": {
+          "displayName": "Center"
+        },
+        "end": {
+          "displayName": "End"
+        },
+        "start": {
+          "displayName": "Start"
+        }
+      }
+    },
+    "textStyle": {
+      "description": "The CSS style object defining the style of the section title.",
+      "type": "object",
+      "displayName": "Text Style",
+      "value": {},
+      "help": "textStyle"
+    }
+  }
+}

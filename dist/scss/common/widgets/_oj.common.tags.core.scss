@@ -14,15 +14,21 @@
     /* --------------------------------------------------------------- */
     // we want to allow for using rems, which requires the base 
     // font size is set on the html element.
-   
+  
     @include oj-tag-selectors(
       $tagSelectors:   "html", 
       $classSelectors: ".oj-html") {
         @include oj-normalize-html;
-        font-family: $fontFamily;
-        font-size: $rootFontSize; 
+        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+          font-family: var(--oj-font-family);
+          font-size: var(--oj-root-font-size); 
+        }
+        @else {
+          font-family: $fontFamily;
+          font-size: $rootFontSize; 
+        }
     }
-
+    
     /* body */
     /* --------------------------------------------------------------- */
    
@@ -30,12 +36,21 @@
       $tagSelectors:   "body", 
       $classSelectors: ".oj-body") {
         @include oj-normalize-body;
-        @include oj-background-image($bodyBgImage);
         background-repeat: repeat;
-        background-position: top left;    
-        color: $bodyTextColor;  
-        background-color: $bodyBgColor;
-        touch-action: $bodyTouchAction;
+        background-position: top left; 
+        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+          background-image: var(--oj-body-bg-image);
+          color: var(--oj-body-text-color);  
+          background-color: var(--oj-body-bg-color);
+          touch-action: var(--oj-body-touch-action);
+        }
+        @else {
+          @include oj-background-image($bodyBgImage);
+          color: $bodyTextColor;  
+          background-color: $bodyBgColor;
+          touch-action: $bodyTouchAction;
+        }   
     }
+
   }
 }

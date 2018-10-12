@@ -22,7 +22,9 @@ define(['ojs/ojcore', 'jquery', 'knockout', 'ojs/ojdatasource-common'], function
  * http://jquery.org/license
  */
 
-/*jslint browser: true,devel:true*/
+/* global Promise:false, ko:false */
+
+/* jslint browser: true,devel:true*/
 /**
  * Implementation of PagingModel backed by an array of data.  ArrayPagingDataSource
  * provides a window into the array in both standard JavaScript array and Knockout observable array formats.
@@ -38,18 +40,17 @@ define(['ojs/ojcore', 'jquery', 'knockout', 'ojs/ojdatasource-common'], function
  * @ojtsignore
  * @ojtsimport knockout
  */
-oj.ArrayPagingDataSource = function(data)
-{
+oj.ArrayPagingDataSource = function (data) {
   this.data = data;
   // Start at the beginning
   this.current = 0;
-  this.Init(); 
+  this.Init();
   // Default the page size to 10
   this._setPageSize(10);
 };
 
-// Subclass from oj.DataSource 
-oj.Object.createSubclass(oj.ArrayPagingDataSource, oj.DataSource, "oj.ArrayPagingDataSource");
+// Subclass from oj.DataSource
+oj.Object.createSubclass(oj.ArrayPagingDataSource, oj.DataSource, 'oj.ArrayPagingDataSource');
 
 /**
  * Initializes the instance.
@@ -57,83 +58,81 @@ oj.Object.createSubclass(oj.ArrayPagingDataSource, oj.DataSource, "oj.ArrayPagin
  * @memberof oj.ArrayPagingDataSource
  * @ojtsignore
  */
-oj.ArrayPagingDataSource.prototype.Init = function()
-{
+oj.ArrayPagingDataSource.prototype.Init = function () {
   oj.ArrayPagingDataSource.superclass.Init.call(this);
 };
 
 
-oj.ArrayPagingDataSource.prototype._getSize = function() {
-    if (!this._hasMore()) {
-        // Return a size representing only what's left if we'd go over the bounds
-        return this.totalSize() - this.current;
-    }
-    // Otherwise window size should match the page size
-    return this.currentPageSize;
+oj.ArrayPagingDataSource.prototype._getSize = function () {
+  if (!this._hasMore()) {
+    // Return a size representing only what's left if we'd go over the bounds
+    return this.totalSize() - this.current;
+  }
+  // Otherwise window size should match the page size
+  return this.currentPageSize;
 };
 
-oj.ArrayPagingDataSource.prototype._refreshDataWindow = function(options) {
-    options = options || {};
-    // Reinit the array
-    this.dataWindow = new Array(this._getSize());
-    // Copy from the source data
+oj.ArrayPagingDataSource.prototype._refreshDataWindow = function (options) {
+  // eslint-disable-next-line no-param-reassign
+  options = options || {};
+  // Reinit the array
+  this.dataWindow = new Array(this._getSize());
+  // Copy from the source data
+  for (var i = 0; i < this.dataWindow.length; i++) {
+    this.dataWindow[i] = this.data[this.current + i];
+  }
+
+  // Update the observable array
+  this._refreshObservableDataWindow();
+  this._endIndex = (this._startIndex + this.dataWindow.length) - 1;
+
+  if (!options.silent) {
+    this.handleEvent('sync', { data: this.dataWindow, startIndex: this.current });
+  }
+};
+
+oj.ArrayPagingDataSource.prototype._refreshObservableDataWindow = function () {
+  if (this.observableDataWindow !== undefined) {
+    // Manage the observable window array
+    this.observableDataWindow.removeAll();
     for (var i = 0; i < this.dataWindow.length; i++) {
-        this.dataWindow[i] = this.data[this.current + i];
+      this.observableDataWindow.push(this.dataWindow[i]);
     }
-    
-    // Update the observable array
-    this._refreshObservableDataWindow();
-    this._endIndex = this._startIndex + this.dataWindow.length - 1;
-    
-    if (!options['silent'])
-    {
-      this.handleEvent("sync", {'data': this.dataWindow, 'startIndex': this.current});    
-    }
+  }
 };
 
-oj.ArrayPagingDataSource.prototype._refreshObservableDataWindow = function() {
-    if (this.observableDataWindow !== undefined) {
-        // Manage the observable window array
-        this.observableDataWindow.removeAll();
-        for (var i = 0; i < this.dataWindow.length; i++) {
-            this.observableDataWindow.push(this.dataWindow[i]);
-        }
-    }
-};
 
-    
-oj.ArrayPagingDataSource.prototype.handleEvent = function(eventType, event)
-{
-    return oj.ArrayPagingDataSource.superclass.handleEvent.call(this, eventType, event);
+oj.ArrayPagingDataSource.prototype.handleEvent = function (eventType, event) {
+  return oj.ArrayPagingDataSource.superclass.handleEvent.call(this, eventType, event);
 };
 
 /**
  * @export
  * Return the current set of data in the paging window
- * 
+ *
  * @returns {Array.<Object>} the current set of data in the paging window
  * @memberof oj.ArrayPagingDataSource
  */
-oj.ArrayPagingDataSource.prototype.getWindow = function() {
-    return this.dataWindow;
+oj.ArrayPagingDataSource.prototype.getWindow = function () {
+  return this.dataWindow;
 };
 
 /**
  * @export
  * Get the observable array representing the current set of data in the paging window
- * 
+ *
  * @returns {Object} an observable array representing the current data in the paging window
  * @ojsignature {target: "Type",
  *               value: "KnockoutObservableArray<object>",
  *               for: "returns"}
  * @memberof oj.ArrayPagingDataSource
  */
-oj.ArrayPagingDataSource.prototype.getWindowObservable = function() {
-    if (this.observableDataWindow === undefined) {
-        this.observableDataWindow = ko.observableArray();
-        this._refreshObservableDataWindow();
-    }
-    return this.observableDataWindow;
+oj.ArrayPagingDataSource.prototype.getWindowObservable = function () {
+  if (this.observableDataWindow === undefined) {
+    this.observableDataWindow = ko.observableArray();
+    this._refreshObservableDataWindow();
+  }
+  return this.observableDataWindow;
 };
 
 /**
@@ -144,8 +143,7 @@ oj.ArrayPagingDataSource.prototype.getWindowObservable = function() {
  * @memberof oj.ArrayPagingDataSource
  * @instance
  */
-oj.ArrayPagingDataSource.prototype.getPage = function()
-{
+oj.ArrayPagingDataSource.prototype.getPage = function () {
   return this._page;
 };
 
@@ -160,37 +158,36 @@ oj.ArrayPagingDataSource.prototype.getPage = function()
  * @memberof oj.ArrayPagingDataSource
  * @instance
  */
-oj.ArrayPagingDataSource.prototype.setPage = function(value, options)
-{
+oj.ArrayPagingDataSource.prototype.setPage = function (value, options) {
+  // eslint-disable-next-line no-param-reassign
   options = options || {};
+  // eslint-disable-next-line no-param-reassign
   value = parseInt(value, 10);
-  try 
-  {
-    oj.ArrayPagingDataSource.superclass.handleEvent.call(this, oj.PagingModel.EventType['BEFOREPAGE'], {'page' : value, 'previousPage' : this._page});
-  }
-  catch (err)
-  {
+  var handleEvent = oj.ArrayPagingDataSource.superclass.handleEvent;
+  try {
+    handleEvent.call(this, oj.PagingModel.EventType.BEFOREPAGE,
+                     { page: value, previousPage: this._page });
+  } catch (err) {
     return Promise.reject(null);
   }
-  this.pageSize = options['pageSize'] != null ? options['pageSize'] : this.pageSize;
-  options['startIndex'] = value * this.pageSize;
+  this.pageSize = options.pageSize != null ? options.pageSize : this.pageSize;
+  // eslint-disable-next-line no-param-reassign
+  options.startIndex = value * this.pageSize;
   var previousPage = this._page;
   this._page = value;
-  this._startIndex = options['startIndex'];
+  this._startIndex = options.startIndex;
   var self = this;
-  
-  return new Promise(function(resolve, reject)
-  {
-    self._fetchInternal(options).then(function(result)
-    {
-      oj.ArrayPagingDataSource.superclass.handleEvent.call(self, oj.PagingModel.EventType['PAGE'], {'page' : self._page, 'previousPage' : previousPage});
+
+  return new Promise(function (resolve, reject) {
+    self._fetchInternal(options).then(function () {
+      handleEvent.call(self, oj.PagingModel.EventType.PAGE,
+                       { page: self._page, previousPage: previousPage });
       resolve(null);
-    }, function (error)
-    {
+    }, function () {
       // restore old page
       self._page = previousPage;
       self._startIndex = self._page * self.pageSize;
-      reject(null);  
+      reject(null);
     });
   });
 };
@@ -203,8 +200,7 @@ oj.ArrayPagingDataSource.prototype.setPage = function(value, options)
  * @memberof oj.ArrayPagingDataSource
  * @instance
  */
-oj.ArrayPagingDataSource.prototype.getStartItemIndex = function()
-{
+oj.ArrayPagingDataSource.prototype.getStartItemIndex = function () {
   return this._startIndex;
 };
 
@@ -216,8 +212,7 @@ oj.ArrayPagingDataSource.prototype.getStartItemIndex = function()
  * @memberof oj.ArrayPagingDataSource
  * @instance
  */
-oj.ArrayPagingDataSource.prototype.getEndItemIndex = function()
-{
+oj.ArrayPagingDataSource.prototype.getEndItemIndex = function () {
   return this._endIndex;
 };
 
@@ -229,10 +224,9 @@ oj.ArrayPagingDataSource.prototype.getEndItemIndex = function()
  * @memberof oj.ArrayPagingDataSource
  * @instance
  */
-oj.ArrayPagingDataSource.prototype.getPageCount = function()
-{
+oj.ArrayPagingDataSource.prototype.getPageCount = function () {
   var totalSize = this.totalSize();
-  return totalSize == -1 ? -1 : Math.ceil(totalSize / this.pageSize);
+  return totalSize === -1 ? -1 : Math.ceil(totalSize / this.pageSize);
 };
 
 /**
@@ -246,20 +240,18 @@ oj.ArrayPagingDataSource.prototype.getPageCount = function()
  * @memberof oj.ArrayPagingDataSource
  * @instance
  */
-oj.ArrayPagingDataSource.prototype.fetch = function(options)
-{
-    var opts = options || {};
-    
-    if (opts['pageSize'] !== undefined && opts['startIndex'] !== undefined) {
-        if (!this._hasMore()) 
-        {
-            // At the limit
-            return Promise.resolve();
-        }
-        this.currentPageSize = opts['startIndex'] + opts['pageSize'];
+oj.ArrayPagingDataSource.prototype.fetch = function (options) {
+  var opts = options || {};
+
+  if (opts.pageSize !== undefined && opts.startIndex !== undefined) {
+    if (!this._hasMore()) {
+      // At the limit
+      return Promise.resolve();
     }
-    this._refreshDataWindow(null);
-    return Promise.resolve();
+    this.currentPageSize = opts.startIndex + opts.pageSize;
+  }
+  this._refreshDataWindow(null);
+  return Promise.resolve();
 };
 
 /**
@@ -267,20 +259,19 @@ oj.ArrayPagingDataSource.prototype.fetch = function(options)
  * @private
  * @memberof oj.ArrayPagingDataSource
  */
-oj.ArrayPagingDataSource.prototype._fetchInternal = function(options)
-{
-    // No fetching, but set up window according to options
-    var opts = options || {};
-    if (opts['startIndex'] !== undefined) {
-        this.current = opts['startIndex'];
-    }
-    if (opts['pageSize'] !== undefined) {
-        this.pageSize = opts['pageSize'];
-        this.currentPageSize = opts['pageSize'];
-    }
-    this._refreshDataWindow(options);
-    
-    return Promise.resolve({'data': this.dataWindow, 'startIndex': this.current});
+oj.ArrayPagingDataSource.prototype._fetchInternal = function (options) {
+  // No fetching, but set up window according to options
+  var opts = options || {};
+  if (opts.startIndex !== undefined) {
+    this.current = opts.startIndex;
+  }
+  if (opts.pageSize !== undefined) {
+    this.pageSize = opts.pageSize;
+    this.currentPageSize = opts.pageSize;
+  }
+  this._refreshDataWindow(options);
+
+  return Promise.resolve({ data: this.dataWindow, startIndex: this.current });
 };
 
 /**
@@ -288,19 +279,17 @@ oj.ArrayPagingDataSource.prototype._fetchInternal = function(options)
  * @private
  * @memberof oj.ArrayPagingDataSource
  */
-oj.ArrayPagingDataSource.prototype._hasMore = function()
-{
+oj.ArrayPagingDataSource.prototype._hasMore = function () {
   return this.current + this.currentPageSize < this.totalSize();
 };
 
 /**
  * Set or change the number of models in a page
- * 
+ *
  * @private
  * @memberof oj.ArrayPagingDataSource
  */
-oj.ArrayPagingDataSource.prototype._setPageSize = function(n)
-{
+oj.ArrayPagingDataSource.prototype._setPageSize = function (n) {
   this.pageSize = n;
   this.currentPageSize = n;
   this._refreshDataWindow(null);
@@ -313,16 +302,15 @@ oj.ArrayPagingDataSource.prototype._setPageSize = function(n)
  * @memberof oj.ArrayPagingDataSource
  * @instance
  */
-oj.ArrayPagingDataSource.prototype.totalSize = function()
-{
-    return this.data.length;
+oj.ArrayPagingDataSource.prototype.totalSize = function () {
+  return this.data.length;
 };
 
 /**
- * Returns the confidence for the totalSize value. 
- * @return {string} "actual" if the totalSize is the time of the fetch is an exact number 
- *                  "estimate" if the totalSize is an estimate 
- *                  "atLeast" if the totalSize is at least a certain number 
+ * Returns the confidence for the totalSize value.
+ * @return {string} "actual" if the totalSize is the time of the fetch is an exact number
+ *                  "estimate" if the totalSize is an estimate
+ *                  "atLeast" if the totalSize is at least a certain number
  *                  "unknown" if the totalSize is unknown
  * @ojsignature {target:"Type",
  *               value: "'actual'|'estimate'|'atLeast'|'unknown'",
@@ -330,11 +318,10 @@ oj.ArrayPagingDataSource.prototype.totalSize = function()
  * @export
  * @expose
  * @memberof oj.ArrayPagingDataSource
- * @instance 
+ * @instance
  */
-oj.ArrayPagingDataSource.prototype.totalSizeConfidence = function()
-{ 
-  return "actual";
+oj.ArrayPagingDataSource.prototype.totalSizeConfidence = function () {
+  return 'actual';
 };
 
 /**
@@ -345,8 +332,9 @@ oj.ArrayPagingDataSource.prototype.totalSizeConfidence = function()
  * @export
  * @memberof oj.ArrayPagingDataSource
  */
-oj.ArrayPagingDataSource.prototype.getCapability = function(feature)
-{
-    return null;
+// eslint-disable-next-line no-unused-vars
+oj.ArrayPagingDataSource.prototype.getCapability = function (feature) {
+  return null;
 };
+
 });

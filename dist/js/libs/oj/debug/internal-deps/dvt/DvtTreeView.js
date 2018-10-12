@@ -71,7 +71,7 @@ DvtTreeView.prototype.SetOptions = function(options) {
 
     if (this.Options['rootNode']) {
       this.Options['_ancestors'] = null;
-      var rootAndAncestors = DvtTreeUtils.findRootAndAncestors(this.Options['nodes'], this.Options['rootNode'], []);
+      var rootAndAncestors = DvtTreeUtils.findRootAndAncestors(this.getCtx(), this.Options['nodes'], this.Options['rootNode'], []);
       if (rootAndAncestors && rootAndAncestors['root'])
         this.Options['nodes'] = [rootAndAncestors['root']];
       if (rootAndAncestors && rootAndAncestors['ancestors'])
@@ -822,10 +822,10 @@ DvtTreeView.prototype.__drill = function(id, bDrillUp) {
     this.__setNavigableIdToFocus(id);
 
     // Drill up only supported on the root node
-    this.dispatchEvent(dvt.EventFactory.newTreeDrillEvent(this._ancestors[0].id, DvtTreeUtils.findRootAndAncestors(this.getOptions()['_nodes'], this._ancestors[0].id, [])['root'], component));
+    this.dispatchEvent(dvt.EventFactory.newTreeDrillEvent(this._ancestors[0].id, DvtTreeUtils.findRootAndAncestors(this.getCtx(), this.getOptions()['_nodes'], this._ancestors[0].id, [])['root'], component));
   }
   else if (!bDrillUp) // Fire the event
-    this.dispatchEvent(dvt.EventFactory.newTreeDrillEvent(id, DvtTreeUtils.findRootAndAncestors(this.getOptions()['_nodes'], id, [])['root'], component));
+    this.dispatchEvent(dvt.EventFactory.newTreeDrillEvent(id, DvtTreeUtils.findRootAndAncestors(this.getCtx(), this.getOptions()['_nodes'], id, [])['root'], component));
 
   // Hide any tooltips being shown
   this.getCtx().getTooltipManager().hideTooltip();
@@ -1191,7 +1191,7 @@ DvtTreeAnimationHandler.prototype.isDrillAnimation = function() {
  */
 DvtTreeAnimationHandler.prototype.isAncestorInsert = function(node) {
   if (this._bDrill)
-    return this._oldRoot.getId() == node.getId() ||
+    return dvt.Obj.compareValues(this.getCtx(), this._oldRoot.getId(), node.getId()) ||
            DvtTreeAnimationHandler._isAncestor(this._oldAncestors, node);
   else
     return false;
@@ -1358,7 +1358,7 @@ DvtTreeEventManager.prototype.OnMouseOut = function(event) {
   if (obj.handleMouseOut) {
     var relatedObj = this.GetLogicalObject(event.relatedTarget);
     var relatedId = relatedObj && relatedObj.getId ? relatedObj.getId() : null;
-    if ((obj.getId() == null) || (relatedId != obj.getId()))
+    if ((obj.getId() == null) || !dvt.Obj.compareValues(this.getCtx(), relatedId, obj.getId()))
       obj.handleMouseOut();
   }
 };
@@ -1695,7 +1695,7 @@ DvtTreeNode.prototype.GetNodesAtDepth = function(root, depth)
  */
 DvtTreeNode.getNodeById = function(root, id)
 {
-  if (root.getId() == id)
+  if (dvt.Obj.compareValues(root.getView().getCtx(), root.getId(), id))
   {
     return root;
   }
@@ -1757,7 +1757,8 @@ DvtTreeNode.prototype.getCategories = function() {
 
   // Implements function in DvtCategoricalObject
   var categories = this.getOptions()['categories'];
-  if (!categories) {
+  var hasDataProvider = this.getView().getOptions()['data'] != null;
+  if (!categories && !hasDataProvider) {
     // Default categories include the id of this node, appended to the categories of its ancestors
     var parent = this.GetParent();
     var parentCategories = parent ? parent.getCategories() : null;
@@ -1832,12 +1833,20 @@ DvtTreeNode.prototype.getShortDesc = function() {
  * @return {object}
  */
 DvtTreeNode.prototype.getDataContext = function() {
+  var options = this.getOptions();
+  var itemData;
+  if (options._itemData) {
+    itemData = options._itemData;
+    options = dvt.JsonUtils.clone(options);
+    delete options._itemData;
+  }
   return {
     'id': this.getId(),
     'label': this.getLabel(),
     'value': this.getSize(),
     'color': this.getColor(),
-    'data': this.getOptions(),
+    'data': options,
+    'itemData': itemData,
     'component': this.getView().getOptions()['_widgetConstructor']
   };
 };
@@ -2271,6 +2280,14 @@ DvtTreeNode.prototype.hasChildren = function() {
   return (this._children != null && this._children.length > 0);
 };
 
+/**
+ * Returns true the node has a pattern set.
+ * @return {boolean} true the node has a pattern set.
+ */
+DvtTreeNode.prototype.hasPattern = function() {
+  return (this._pattern && this._pattern != "none");
+};
+
 
 /**
  * Returns the parent node for this node.
@@ -2303,7 +2320,7 @@ DvtTreeNode.prototype.GetDepth = function() {
  * @return {dvt.Fill}
  */
 DvtTreeNode.prototype.GetFill = function() {
-  if (this._pattern)
+  if (this.hasPattern())
     return new dvt.PatternFill(this._pattern, this._color);
   else
     return new dvt.SolidFill(this._color);
@@ -2317,7 +2334,7 @@ DvtTreeNode.prototype.GetFill = function() {
  * @protected
  */
 DvtTreeNode.GetNodeTextColor = function(node) {
-  if (node._pattern) {
+  if (node.hasPattern()) {
     // Use black for all patterned nodes against white backgrounds
     return '#000000';
   }
@@ -2423,7 +2440,7 @@ DvtTreeNode.prototype.UpdateAriaLabel = function() {
  * @protected
  */
 DvtTreeNode.prototype.isRootNode = function() {
-  return this.getId() == this.getView().getRootNode().getId() || this.isArtificialRoot();
+  return dvt.Obj.compareValues(this.getView().getCtx(), this.getId(), this.getView().getRootNode().getId()) || this.isArtificialRoot();
 };
 
 /**
@@ -3113,19 +3130,20 @@ DvtTreeUtils._addNodesToArray = function(node, ret, bLeafOnly, bRendered) {
 
 /**
  * Recursively look for the root and set the ancestors object.
+ * @param {dvt.Context} context The component's context.
  * @param {object} nodes Array of nodes.
  * @param {string} rootId The id of the root.
  * @param {object} ancestors Array of ancestors.
  * @return {object} Object containg root and ancestors
  */
-DvtTreeUtils.findRootAndAncestors = function(nodes, rootId, ancestors) {
+DvtTreeUtils.findRootAndAncestors = function(context, nodes, rootId, ancestors) {
   for (var i = 0; i < nodes.length; i++) {
-    if (nodes[i]['id'] == rootId) {
+    if (dvt.Obj.compareValues(context, nodes[i]['id'], rootId)) {
       return {'root': nodes[i], 'ancestors': ancestors};
     }
     else if (nodes[i]['nodes']) {
       ancestors.unshift(nodes[i]);
-      var result = DvtTreeUtils.findRootAndAncestors(nodes[i]['nodes'], rootId, ancestors);
+      var result = DvtTreeUtils.findRootAndAncestors(context, nodes[i]['nodes'], rootId, ancestors);
       if (result != null)
         return result;
       ancestors.shift();
@@ -3409,26 +3427,32 @@ DvtTreeAutomation.prototype._getNodeFromPath = function(node, path) {
  * <li>tooltip</li>
  * </ul>
  * @param {String} subIdPath The array of indices in the subId for the desired node
- * @return {Object} An object containing data for the node
+ * @return {Object|null} An object containing data for the node
  */
 DvtTreeAutomation.prototype.getNode = function(subIdPath) {
   var rootNode = this._treeView.getRootNode();
+  if (!rootNode) {
+    return null;
+  }
+
   // If the root is real, remove first element of subIdPath since we already start searching at the root
   if (!rootNode.isArtificialRoot() && subIdPath[0] == 0)
     subIdPath.shift();
 
   // If root index was the only element of subIdPath, set the node to get data for as the root, else search for the correct node
   var node = (subIdPath.length == 0) ? rootNode : this._getNodeFromPath(rootNode, subIdPath);
+  
+  if (node) {
+    return {
+      'color': node.getColor(),
+      'label': node.getLabel(),
+      'selected': node.isSelected() == undefined ? false : node.isSelected(),
+      'size': node.getSize(),
+      'tooltip': node.getShortDesc()
+    };
+  }
 
-  var nodeData = {
-    'color': node.getColor(),
-    'label': node.getLabel(),
-    'selected': node.isSelected() == undefined ? false : node.isSelected(),
-    'size': node.getSize(),
-    'tooltip': node.getShortDesc()
-  };
-
-  return nodeData;
+  return null;
 };
 
 /**
@@ -3890,7 +3914,7 @@ dvt.Treemap.prototype._processInitialIsolate = function(isolateRowKey) {
 
     // Look through all the nodes for the isolated node
     for (var i = 0; i < allNodes.length; i++) {
-      if (allNodes[i].getId() == isolateRowKey) {
+      if (dvt.Obj.compareValues(this.getCtx(), allNodes[i].getId(), isolateRowKey)) {
         this._isolatedNodes.push(allNodes[i]);
         return;
       }
@@ -4059,7 +4083,7 @@ var DvtTreemapNode = function(treemap, props) {
     this._isolate = dvt.Agent.isTouchDevice() ? 'off' : 'on';
 
   // TODO  Switch to determining dynamically, which involves changing how isolate/restore is handled
-  this._bIsolated = (options['isolatedNode'] != null && options['isolatedNode'] == this.getId());
+  this._bIsolated = (options['isolatedNode'] != null && dvt.Obj.compareValues(this.getView().getCtx(), options['isolatedNode'], this.getId()));
 };
 
 // Make DvtTreemapNode a subclass of DvtTreeNode
@@ -4166,7 +4190,7 @@ DvtTreemapNode.prototype.render = function(container) {
     if (this._text != null) {
       var backgroundColor = this.getLabelBackgroundColor();
       // For pattern nodes, add a background to make the text readable
-      if (this._textStyle != DvtTreemapNode.TEXT_STYLE_HEADER && (this._pattern || backgroundColor)) {
+      if (this._textStyle != DvtTreemapNode.TEXT_STYLE_HEADER && (this.hasPattern() || backgroundColor)) {
         var dims = this._text.getDimensions();
         this._textBackground = new dvt.Rect(this.getView().getCtx(), dims.x, dims.y, dims.w, dims.h);
         if (backgroundColor)
@@ -4852,7 +4876,7 @@ DvtTreemapNode.prototype._createShapeNode = function() {
         // Figure out the stroke colors
         var topLeft = new dvt.SolidStroke(DvtTreemapNode.DEFAULT_NODE_TOP_BORDER_COLOR);
         var bottomRight = new dvt.SolidStroke(DvtTreemapNode.DEFAULT_NODE_BOTTOM_BORDER_COLOR, DvtTreemapNode.DEFAULT_NODE_BORDER_OPACITY);
-        if (this._pattern) {
+        if (this.hasPattern()) {
           topLeft = new dvt.SolidStroke(this._color, DvtTreemapNode.DEFAULT_NODE_PATTERN_BORDER_OPACITY);
           bottomRight = topLeft;
         }
@@ -5492,11 +5516,19 @@ DvtTreemapNode.prototype._createCustomNodeContent = function() {
   var isolatedNodes = treemap.getIsolatedNodes();
   if (isolatedNodes.length <= 0 || this.isDescendantOf(isolatedNodes[treemap._isolatedNodes.length - 1])) {
     var context = treemap.getCtx();
+    var options = this.getOptions();
+    var itemData;
+    if (options._itemData) {
+      itemData = options._itemData;
+      options = dvt.JsonUtils.clone(options);
+      delete options._itemData;
+    }
 
     var dataContext = {
       'bounds': {'x': this._x, 'y': this._y, 'width': this._width - DvtTreemapNode.DEFAULT_NODE_BORDER_WIDTH, 'height': this._height - DvtTreemapNode.DEFAULT_NODE_BORDER_WIDTH},
       'id': id,
-      'data': this.getOptions(),
+      'data': options,
+      'itemData': itemData,
       'component': options['_widgetConstructor']
     };
     dataContext = context.fixRendererContext(dataContext);
@@ -6492,7 +6524,7 @@ dvt.Sunburst.prototype.expandCollapseNode = function(id) {
   else if (expanded['has']) // key set
     expanded = bDisclosed ? expanded['add']([id]) : expanded['delete']([id]);
 
-  this.dispatchEvent(new dvt.EventFactory.newSunburstExpandCollapseEvent(bDisclosed ? 'expand' : 'collapse', id, DvtTreeUtils.findRootAndAncestors(this.getOptions()['_nodes'], id, [])['root'], this.getOptions()['_widgetConstructor'], expanded));
+  this.dispatchEvent(new dvt.EventFactory.newExpandCollapseEvent(bDisclosed ? 'expand' : 'collapse', id, DvtTreeUtils.findRootAndAncestors(this.getCtx(), this.getOptions()['_nodes'], id, [])['root'], this.getOptions()['_widgetConstructor'], expanded));
   this.__setNavigableIdToFocus(id);
 };
 
@@ -6731,7 +6763,7 @@ DvtSunburstNode.prototype.render = function(container) {
 
       // For pattern nodes, add a background to make the text readable
       var backgroundColor = this.getLabelBackgroundColor();
-      if (this._pattern || backgroundColor) {
+      if (this.hasPattern() || backgroundColor) {
         var dims = this._text.getDimensions();
         this._textBackground = new dvt.Rect(this.getView().getCtx(), dims.x, dims.y, dims.w, dims.h);
         if (backgroundColor)
@@ -7705,7 +7737,7 @@ DvtSunburstNode.prototype.updateShapes = function(bRecurse) {
 
     // Recalculate text background size and position
     var backgroundColor = this.getLabelBackgroundColor();
-    if (this._text && (this._pattern || backgroundColor)) {
+    if (this._text && (this.hasPattern() || backgroundColor)) {
       var dims = this._text.getDimensions();
       if (this._textBackground)
         this._textBackground.setRect(dims.x, dims.y, dims.w, dims.h);
@@ -7930,12 +7962,20 @@ DvtSunburstNode.prototype._createRootNodeContent = function() {
   var outerRadius = this._outerRadius;
 
   var innerSquareDimension = outerRadius * Math.sqrt(2);
+  var nodeOptions = this.getOptions();
+  var itemData;
+  if (nodeOptions._itemData) {
+    itemData = nodeOptions._itemData;
+    nodeOptions = dvt.JsonUtils.clone(nodeOptions);
+    delete nodeOptions._itemData;
+  }
 
   var dataContext = {
     'outerBounds': {'x': centerCoord.x - outerRadius, 'y': centerCoord.y - outerRadius, 'width': 2 * outerRadius, 'height': 2 * outerRadius },
     'innerBounds': {'x': (centerCoord.x - innerSquareDimension / 2), 'y': (centerCoord.y - innerSquareDimension / 2), 'width': innerSquareDimension, 'height': innerSquareDimension},
     'id': this._id,
-    'data': this.getOptions(),
+    'data': nodeOptions,
+    'itemData': itemData,
     'component': options['_widgetConstructor']
   };
   dataContext = context.fixRendererContext(dataContext);

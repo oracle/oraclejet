@@ -15,11 +15,12 @@ define(['jquery','./DvtToolkit', './DvtPanZoomCanvas','./DvtOverview'], function
  * @protected
  * Defines the context for a layout call.
  * @class DvtDiagramLayoutContext
+ * @param {dvt.Context} context The rendering context.
  * @constructor
  * initializing this context
  */
-var DvtDiagramLayoutContext = function() {
-  this.Init();
+var DvtDiagramLayoutContext = function(context) {
+  this.Init(context);
 };
 
 dvt.Obj.createSubclass(DvtDiagramLayoutContext, dvt.Obj, 'DvtDiagramLayoutContext');
@@ -29,15 +30,16 @@ dvt.Obj.createSubclass(DvtDiagramLayoutContext, dvt.Obj, 'DvtDiagramLayoutContex
  * @protected
  * Initialize the layout context.
  */
-DvtDiagramLayoutContext.prototype.Init = function() {
+DvtDiagramLayoutContext.prototype.Init = function(context) {
   this._nodeCount = 0;
   this._linkCount = 0;
   this._bLocaleR2L = false;
-  this._nodes = {};
-  this._links = {};
+  this._nodes = new context.ojMap();
+  this._links = new context.ojMap();
   this._arNodes = [];
   this._arLinks = [];
-  this._dirtyContext = {};
+  this._dirtyContext = new context.ojMap();
+  this.Context = context;
 };
 
 
@@ -90,7 +92,7 @@ DvtDiagramLayoutContext.prototype.addNode = function(node) {
     this._arNodes.push(node);
   }
 
-  this._nodes[node.getId()] = node;
+  this._nodes.set(node.getId(), node);
 };
 
 
@@ -101,7 +103,7 @@ DvtDiagramLayoutContext.prototype.addNode = function(node) {
  * @param {DvtDiagramLayoutContextNode} node node context to provide extra information for this layout
  */
 DvtDiagramLayoutContext.prototype.addNodeToMap = function(node) {
-  this._nodes[node.getId()] = node;
+  this._nodes.set(node.getId(), node);
 };
 
 /**
@@ -120,7 +122,8 @@ DvtDiagramLayoutContext.prototype.removeNode = function(parent, node) {
     dvt.ArrayUtils.removeItem(this._arNodes, node);
     this._nodeCount--;
   }
-  delete this._nodes[node.getId()];
+  
+  this._nodes.delete(node.getId());
 };
 
 
@@ -128,11 +131,11 @@ DvtDiagramLayoutContext.prototype.removeNode = function(parent, node) {
  * Get a node context by id.  Nodes being laid out and read-only nodes provided
  * as additional information to this layout can be retrieved through this
  * function.
- * @param {string} id id of node context to get
+ * @param {any} id id of node context to get
  * @return {DvtDiagramLayoutContextNode}
  */
 DvtDiagramLayoutContext.prototype.getNodeById = function(id) {
-  return this._nodes[id];
+  return this._nodes.get(id);
 };
 
 
@@ -167,7 +170,7 @@ DvtDiagramLayoutContext.prototype.addLink = function(link) {
     this._arLinks.push(link);
   }
 
-  this._links[link.getId()] = link;
+  this._links.set(link.getId(), link);
 };
 
 /**
@@ -182,16 +185,16 @@ DvtDiagramLayoutContext.prototype.removeLink = function(link) {
     dvt.ArrayUtils.removeItem(this._arLinks, link);
     this._linkCount--;
   }
-  delete this._links[link.getId()];
+  this._links.delete(link.getId());
 };
 
 /**
  * Get a link context by id.
- * @param {string} id id of link context to get
+ * @param {any} id id of link context to get
  * @return {DvtDiagramLayoutContextLink} link
  */
 DvtDiagramLayoutContext.prototype.getLinkById = function(id) {
-  return this._links[id];
+  return this._links.get(id);
 };
 
 
@@ -329,7 +332,7 @@ DvtDiagramLayoutContext.prototype.getViewport = function() {
 /**
  * @protected
  * Set the id of the container whose nodes are being laid out.
- * @param {string} containerId id of the container whose nodes are being laid
+ * @param {any} containerId id of the container whose nodes are being laid
  * out
  */
 DvtDiagramLayoutContext.prototype.setContainerId = function(containerId) {
@@ -340,7 +343,7 @@ DvtDiagramLayoutContext.prototype.setContainerId = function(containerId) {
 /**
  * Get the id of the container whose nodes are being laid out, or null if this
  * is the top level Diagram layout.
- * @return {string}
+ * @return {any}
  */
 DvtDiagramLayoutContext.prototype.getContainerId = function() {
   return this._containerId;
@@ -418,9 +421,9 @@ DvtDiagramLayoutContext.prototype.getCurrentViewport = function() {
 
 /**
  * The function retrieves nearest common ancestor container for two nodes.
- * @param {string} nodeId1 first node id
- * @param {string} nodeId2 second node id
- * @return {string}  id for the first common ancestor container or null for top level diagram
+ * @param {any} nodeId1 first node id
+ * @param {any} nodeId2 second node id
+ * @return {any}  id for the first common ancestor container or null for top level diagram
  */
 DvtDiagramLayoutContext.prototype.getCommonContainer = function(nodeId1, nodeId2) {
   var getAllAncestorIds = function(id, context) {
@@ -439,7 +442,7 @@ DvtDiagramLayoutContext.prototype.getCommonContainer = function(nodeId1, nodeId2
   var commonId = null;
 
   for (var i = 0; i < startPath.length && i < endPath.length; i++) {
-    if (startPath[i] != endPath[i])
+    if (!dvt.BaseDiagram.compareValues(this.Context, startPath[i], endPath[i]))
       break;
     commonId = startPath[i];
   }
@@ -514,7 +517,7 @@ DvtDiagramLayoutContextLink.prototype.Init = function() {
 /**
  * @protected
  * Set the id of the link.
- * @param {string} id id of the link
+ * @param {any} id id of the link
  */
 DvtDiagramLayoutContextLink.prototype.setId = function(id) {
   this._id = id;
@@ -523,7 +526,7 @@ DvtDiagramLayoutContextLink.prototype.setId = function(id) {
 
 /**
  * Get the id of the link.
- * @return {string}
+ * @return {any}
  */
 DvtDiagramLayoutContextLink.prototype.getId = function() {
   return this._id;
@@ -533,7 +536,7 @@ DvtDiagramLayoutContextLink.prototype.getId = function() {
 /**
  * @protected
  * Set the id of the start node of this link.
- * @param {string} id id of the start node
+ * @param {any} id id of the start node
  */
 DvtDiagramLayoutContextLink.prototype.setStartId = function(id) {
   this._startId = id;
@@ -542,7 +545,7 @@ DvtDiagramLayoutContextLink.prototype.setStartId = function(id) {
 
 /**
  * Get the id of the start node of this link.
- * @return {string}
+ * @return {any}
  */
 DvtDiagramLayoutContextLink.prototype.getStartId = function() {
   return this._startId;
@@ -552,7 +555,7 @@ DvtDiagramLayoutContextLink.prototype.getStartId = function() {
 /**
  * @protected
  * Set the id of the end node of this link.
- * @param {string} id id of the end node
+ * @param {any} id id of the end node
  */
 DvtDiagramLayoutContextLink.prototype.setEndId = function(id) {
   this._endId = id;
@@ -561,7 +564,7 @@ DvtDiagramLayoutContextLink.prototype.setEndId = function(id) {
 
 /**
  * Get the id of the end node of this link.
- * @return {string}
+ * @return {any}
  */
 DvtDiagramLayoutContextLink.prototype.getEndId = function() {
   return this._endId;
@@ -843,7 +846,7 @@ DvtDiagramLayoutContextLink.prototype.getLabelHalign = function() {
  * Set coordinate space for the link.
  * If the coordinate container id is specified, the link points will be applied relative to that container.
  * If the coordinate container id is not specified, the link points are in the global coordinate space.
- * @param {string} id coordinate container id for the link
+ * @param {any} id coordinate container id for the link
  */
 DvtDiagramLayoutContextLink.prototype.setCoordinateSpace = function(id) {
   this._coordinateContainerId = id;
@@ -854,7 +857,7 @@ DvtDiagramLayoutContextLink.prototype.setCoordinateSpace = function(id) {
  * Get coordinate space for the link.
  * If the coordinate container id is specified, the link points will be applied relative to that container.
  * If the coordinate container id is not specified, the link points are in the global coordinate space.
- * @return {string} coordinate container id for the link
+ * @return {any} coordinate container id for the link
  */
 DvtDiagramLayoutContextLink.prototype.getCoordinateSpace = function() {
   return this._coordinateContainerId;
@@ -887,7 +890,7 @@ DvtDiagramLayoutContextLink.prototype.getData = function() {
  */
 DvtDiagramLayoutContextLink.prototype.setDirty = function() {
   if (this.LayoutContext) {
-    this.LayoutContext.getDirtyContext()[this.getId()] = true;
+    this.LayoutContext.getDirtyContext().set(this.getId(), true);
   }
 };
 
@@ -942,7 +945,7 @@ DvtDiagramLayoutContextNode.prototype.Init = function() {
 /**
  * @protected
  * Set the id of the node.
- * @param {string} id id of the node
+ * @param {any} id id of the node
  */
 DvtDiagramLayoutContextNode.prototype.setId = function(id) {
   this._id = id;
@@ -951,7 +954,7 @@ DvtDiagramLayoutContextNode.prototype.setId = function(id) {
 
 /**
  * Get the id of the node.
- * @return {string}
+ * @return {any}
  */
 DvtDiagramLayoutContextNode.prototype.getId = function() {
   return this._id;
@@ -1033,7 +1036,7 @@ DvtDiagramLayoutContextNode.prototype.getPosition = function() {
  * The method returns a relative position of the node to the specified ancestor container.
  * If the container id is null, the method returns global position of the node.
  * If the container id is not an ancestor id for the node, the method returns null.
- * @param {string} containerId ancestor id
+ * @param {any} containerId ancestor id
  * @return {DvtDiagramPoint}
  */
 DvtDiagramLayoutContextNode.prototype.getRelativePosition = function(containerId) {
@@ -1054,7 +1057,7 @@ DvtDiagramLayoutContextNode.prototype.getRelativePosition = function(containerId
       //calculate relative position
       position['x'] += node.ContentOffset['x'] + node.getPosition()['x'];
       position['y'] += node.ContentOffset['y'] + node.getPosition()['y'];
-      if (parentId != containerId) {
+      if (!dvt.BaseDiagram.compareValues(layoutContext.Context, parentId, containerId)) {
         node = layoutContext.getNodeById(parentId);
         if (node && node.isDisclosed()) {
           var containerPadding = node.getContainerPadding();
@@ -1167,7 +1170,7 @@ DvtDiagramLayoutContextNode.prototype.isReadOnly = function() {
 /**
  * @protected
  * Set the id of this node's container.
- * @param {string} id id of this node's container
+ * @param {any} id id of this node's container
  */
 DvtDiagramLayoutContextNode.prototype.setContainerId = function(id) {
   this._containerId = id;
@@ -1177,7 +1180,7 @@ DvtDiagramLayoutContextNode.prototype.setContainerId = function(id) {
 /**
  * Get the id of this node's container, or null if this is the top-level
  * Diagram layout.
- * @return {string}
+ * @return {any}
  */
 DvtDiagramLayoutContextNode.prototype.getContainerId = function() {
   return this._containerId;
@@ -1488,7 +1491,7 @@ DvtDiagramLayoutContextNode.prototype.getData = function() {
  */
 DvtDiagramLayoutContextNode.prototype.setDirty = function() {
   if (this.LayoutContext) {
-    this.LayoutContext.getDirtyContext()[this.getId()] = true;
+    this.LayoutContext.getDirtyContext().set(this.getId(), true);
   }
 };
 
@@ -1932,12 +1935,28 @@ dvt.BaseDiagram.prototype.setTopPane = function(topPane) {
 };
 
 /**
+ * Gets bottom pane used for highlighting edge case:
+ * the majority of the diagram objects should be highlighted,
+ * so instead of moving highlighted objects to the top pane,
+ * move faded objects to the bottom pane
+ * @return {dvt.Container} bottom pane
+ */
+dvt.BaseDiagram.prototype.getBottomPane = function() {
+  if (!this._bottomPane) {
+    this._bottomPane = new dvt.Container(this.getCtx());
+    var pzc = this.getPanZoomCanvas();
+    pzc.getContentPane().addChildAt(this._bottomPane, 0);
+  }
+  return this._bottomPane;
+};
+
+/**
  * Creates empty layout context for the component
  * @return {DvtDiagramLayoutContext}  layout context
  * @protected
  */
 dvt.BaseDiagram.prototype.CreateEmptyLayoutContext = function() {
-  var layoutContext = new DvtDiagramLayoutContext();
+  var layoutContext = new DvtDiagramLayoutContext(this.getCtx());
   //BUG FIX #13458034: inform layout of reading direction
   layoutContext.setLocaleR2L(dvt.Agent.isRightToLeft(this.getCtx()));
   layoutContext.setComponentSize(new dvt.DiagramRectangle(0, 0, this.getWidth(), this.getHeight()));
@@ -1959,7 +1978,7 @@ dvt.BaseDiagram.prototype.CreateLayoutContextNode = function(node, layout, bRend
   //the node on the layout context
   nc.setBounds(dvt.DiagramLayoutUtils.convertRectToDiagramRect(node.getLayoutBounds()));
   nc.setContentBounds(dvt.DiagramLayoutUtils.convertRectToDiagramRect(node.getContentBounds()));
-  var nodeData = node.getLayoutAttributes ? node.getLayoutAttributes(layout) : node.getData()['_origData'];
+  var nodeData = node.getLayoutAttributes ? node.getLayoutAttributes(layout) : node.getData()['_itemData'];
   nc.setLayoutAttributes(nodeData);
   nc.setData(nodeData);
   nc.setLabelBounds(dvt.DiagramLayoutUtils.convertRectToDiagramRect(node.getLabelBounds()));
@@ -1992,7 +2011,7 @@ dvt.BaseDiagram.prototype.CreateLayoutContextLink = function(link, startId, endI
   lc.setStartId(startId ? startId : link.getData().getStartId());
   lc.setEndId(endId ? endId : link.getData().getEndId());
   var linkData = link.getLayoutAttributes ? link.getLayoutAttributes(layout) :
-      link.isPromoted() ? link.getData()['_links'] : link.getData()['_origData'];
+      link.isPromoted() ? link.getData()['_links'] : link.getData()['_itemData'];
   lc.setLayoutAttributes(linkData);
   lc.setData(linkData);
   lc.setLabelBounds(dvt.DiagramLayoutUtils.convertRectToDiagramRect(link.getLabelBounds()));
@@ -2071,7 +2090,7 @@ dvt.BaseDiagram.prototype.ApplyLayoutContext = function(layoutContext, bSaveOffs
     if (nc.getContainerId()) {
       nc.ContentOffset = new dvt.DiagramPoint(lopt.x, lopt.y); // adjust content offset that is used by global layout
     }
-    if (!dirtyLayoutContext[nc.getId()])
+    if (!dirtyLayoutContext.has(nc.getId()))
       continue;
     var node = this.getNodeById(nc.getId());
     var pos = nc.getPosition();
@@ -2091,7 +2110,7 @@ dvt.BaseDiagram.prototype.ApplyLayoutContext = function(layoutContext, bSaveOffs
 
   for (var li = 0; li < layoutContext.getLinkCount(); li++) {
     var lc = layoutContext.getLinkByIndex(li);
-    if (!dirtyLayoutContext[lc.getId()])
+    if (!dirtyLayoutContext.has(lc.getId()))
       continue;
     var link = this.getLinkById(lc.getId());
     var linkOffset = this.GetLinkTranslationOffset(link, lc, lopt);
@@ -2140,11 +2159,12 @@ dvt.BaseDiagram.prototype.ApplyLayoutContext = function(layoutContext, bSaveOffs
  */
 dvt.BaseDiagram.prototype.GetLinkTranslationOffset = function(link, lc, lopt) {
   var offset = new dvt.Point(0, 0);
+  var context = this.getCtx();
   if (!link.getGroupId()) {
     //top level container - use top level layout offset
     offset = lopt;
   }
-  else if (link.getGroupId() != lc.getCoordinateSpace()) {
+  else if ( !dvt.BaseDiagram.compareValues(context, link.getGroupId(), lc.getCoordinateSpace())) {
     //link position is given either global or relative to some ancestor container
     var ancestorId = lc.getCoordinateSpace();
     var node = this.getNodeById(link.getGroupId());
@@ -2153,7 +2173,7 @@ dvt.BaseDiagram.prototype.GetLinkTranslationOffset = function(link, lc, lopt) {
       offset['x'] -= padding['left'] - node.GetPosition()['x'];
       offset['y'] -= padding['top'] - node.GetPosition()['y'];
       var containerId = node.getGroupId();
-      node = containerId != ancestorId ? this.getNodeById(containerId) : null;
+      node = !dvt.BaseDiagram.compareValues(context, containerId, ancestorId) ? this.getNodeById(containerId) : null;
     }
     if (!ancestorId) { //should adjust for top level offset that is already added to the top level nodes
       offset['x'] += lopt.x;
@@ -2398,33 +2418,6 @@ dvt.BaseDiagram.prototype.ConstrainPanning = function(x, y, w, h, zoom) {
 };
 
 /**
- * Moves the specified displayable to the top pane, which is rendered in front of the links and nodes panes
- * @param {dvt.Displayable} obj the displayable to move to front
- */
-dvt.BaseDiagram.prototype.moveToDiagramFront = function(obj)
-{
-  this._topPane.addChild(obj);
-};
-
-/**
- * Moves the specified link to the links pane (typically from the top pane)
- * @param {dvt.BaseDiagramLink} obj the link to move
- */
-dvt.BaseDiagram.prototype.moveToLinks = function(obj)
-{
-  this._linksPane.addChild(obj);
-};
-
-/**
- * Moves the specified node to the nodes pane (typically from the top pane)
- * @param {dvt.BaseDiagramNode} obj the node to move
- */
-dvt.BaseDiagram.prototype.moveToNodes = function(obj)
-{
-  this._nodesPane.addChild(obj);
-};
-
-/**
  * Convert key notation into dot notation
  * @param {object} layoutContainerPadding the object with the layout container padding values
  * @return {object} object with the container padding values
@@ -2503,6 +2496,20 @@ dvt.BaseDiagram.prototype.getCustomObjKeyboardBoundingBox = function(obj) {
       objCoords.left - contentPaneCoords.left + cpMatrix.getTx(),
       objCoords.top - contentPaneCoords.top + cpMatrix.getTy(),
       objCoords.width, objCoords.height);
+};
+
+/**
+ * Diagram specific wrapper around compareValues call, that treats null and undefined objects as equal
+ * @param {dvt.Context} context The rendering context.
+ * @param {any} obj1 object to compare
+ * @param {any} obj2 object to compare
+ * @return {boolean} True if the two objects are equal and false otherwise
+ */
+dvt.BaseDiagram.compareValues = function(ctx, obj1, obj2) {
+  if (!obj1 && !obj2) {
+    return true;
+  }
+  return dvt.Obj.compareValues(ctx, obj1, obj2);
 };
 
 // Copyright (c) 2011, 2016, Oracle and/or its affiliates. All rights reserved.
@@ -5047,15 +5054,19 @@ DvtDiagramStyleUtils.getNodeDefaultStyles = function(comp) {
  * @return {object} node data object with applied styles
  */
 DvtDiagramStyleUtils.getNodeStyles = function(comp, nodeData, nodeDefaults) {
+  if (comp.isDataProviderMode()) {
+    return dvt.JsonUtils.merge(nodeData, nodeDefaults, {'_itemData': true, 'id': true, 'nodes': true});
+  }
+  
   var convertedNodeData = DvtDiagramNode.ConvertNodeData(nodeData);
   if (comp.getOptions()['nodeProperties']) {
     var styleProps = dvt.JsonUtils.clone(comp.getOptions()['nodeProperties'](nodeData));
     //If background/container style is specified in nodeData, make sure it is an object before merging
     DvtDiagramStyleUtils.prepareNodeStyle(styleProps, 'backgroundStyle');
     DvtDiagramStyleUtils.prepareNodeStyle(styleProps, 'containerStyle');
-    convertedNodeData = dvt.JsonUtils.merge(convertedNodeData, styleProps, {'_origData': true});
+    convertedNodeData = dvt.JsonUtils.merge(convertedNodeData, styleProps, {'_itemData': true});
   }
-  return dvt.JsonUtils.merge(convertedNodeData, nodeDefaults, {'_origData': true});
+  return dvt.JsonUtils.merge(convertedNodeData, nodeDefaults, {'_itemData': true});
 };
 
 /**
@@ -5086,14 +5097,18 @@ DvtDiagramStyleUtils.getLinkDefaultStyles = function(comp, option) {
  * @return {object} link data object with applied styles
  */
 DvtDiagramStyleUtils.getLinkStyles = function(comp, linkData, linkDefaults) {
+  if (comp.isDataProviderMode()) {
+    return dvt.JsonUtils.merge(linkData, linkDefaults, {'_itemData': true, 'id': true});
+  }
+
   var convertedLinkData = DvtDiagramLink.ConvertLinkData(linkData);
   if (comp.getOptions()['linkProperties']) {
     var styleProps = dvt.JsonUtils.clone(comp.getOptions()['linkProperties'](linkData));
     //If linkData has style attribute, make sure it is an object
     DvtDiagramStyleUtils.prepareLinkStyle(styleProps, 'style');
-    convertedLinkData = dvt.JsonUtils.merge(convertedLinkData, styleProps, {'_origData': true});
+    convertedLinkData = dvt.JsonUtils.merge(convertedLinkData, styleProps, {'_itemData': true});
   }
-  return dvt.JsonUtils.merge(convertedLinkData, linkDefaults, {'_origData': true});
+  return dvt.JsonUtils.merge(convertedLinkData, linkDefaults, {'_itemData': true});
 };
 
 /**
@@ -5126,6 +5141,68 @@ DvtDiagramStyleUtils.getAnimationOnDataChange = function(diagram) {
   return diagram.getOptions()['animationOnDataChange'];
 };
 
+/**
+ * Style related utility functions for dvt.Diagram.
+ * @class
+ */
+var DvtDiagramDataUtils = new Object();
+
+dvt.Obj.createSubclass(DvtDiagramDataUtils, dvt.Obj);
+
+/**
+ * @protected
+ * Retrieves a list of collapsed containers that should be searched for promoted link
+ * Used in DataProvider mode.
+ * @param {object} rootDataProvider Root data provider object
+ * @param {array} nodesArray array of nodes to search
+ * @return {array} array of containers to search
+ */
+DvtDiagramDataUtils.GetCollapsedContainers = function(rootDataProvider, nodesArray) {
+  var collapsedContainers = [];
+  while (nodesArray.length > 0) {
+    var node = nodesArray.shift();
+    if (node['nodes']) {
+      node['nodes'].forEach(function(childNode){nodesArray.push(childNode)});
+    }
+    else {
+      var childDataProvider = rootDataProvider.getChildDataProvider(node['id']);
+      var isEmpty = childDataProvider ? childDataProvider.isEmpty() === 'yes' : true;
+      if (!isEmpty && node['descendantsConnectivity'] !== 'disjoint') {
+        collapsedContainers.push(node);
+      }
+    }
+  }
+  return collapsedContainers;
+};
+
+/**
+ * @protected
+ * Retrieve node option using child node instance.
+ * @param {dvt.Diagram} diagram the parent diagram component
+ * @param {DvtDiagramNode} node node instance
+ * @return {object} node option
+ */
+DvtDiagramDataUtils.GetNodeOption = function(comp, node) {
+  // build path from child node to root node
+  var path = [node.getId()];
+  while(node && node.getGroupId()) {
+    var groupId = node.getGroupId();
+    path.push(groupId);
+    node = comp.getNodeById(groupId);
+  }
+  
+  // find node option using generated path
+  var testId = path.pop();
+  var options = [comp.getOptions()];
+  var context = comp.getCtx();
+  while(testId && options[0].nodes) {
+   options = options[0].nodes.filter(function(item){
+      return dvt.BaseDiagram.compareValues(context, item.id, testId);
+   });
+   testId = path.pop();
+  }
+  return options[0];
+};
 /**
  * Utility functions for dvt.Diagram overview window
  * @class
@@ -5160,16 +5237,28 @@ DvtDiagramOverviewUtils.CalcViewportFromMatrix = function(diagram) {
  * @return {dvt.Overview} the overview window
  */
 DvtDiagramOverviewUtils.CreateOverviewWindow = function(diagram) {
+  var ovContainer = new dvt.Container(diagram.getCtx());
   var overview = new DvtDiagramOverview(diagram);
-  diagram.addChild(overview);
+  ovContainer.addChild(overview);
+  diagram.addChild(ovContainer);
   overview.render();
   DvtDiagramOverviewUtils._positionOverviewWindow(diagram, overview);
-  var dims = overview.getDimensionsWithStroke();
+  var ovWidth = overview.getOverviewWidth();
+  var ovHeight = overview.getOverviewHeight();
   var clipPath = new dvt.ClipPath(diagram.getId() + 'dgr_ovClip');
-  //give clip path an extra space
-  clipPath.addRect(overview.getTranslateX() -1, overview.getTranslateY() -1, dims.w+1, dims.h+1);
+  // give clip path an extra space
+  clipPath.addRect(overview.getTranslateX() -1, overview.getTranslateY() -1, ovWidth + 2, ovHeight + 2);
   overview.setClipPath(clipPath);
   overview.UpdateViewport();
+
+  // place a rectangle on top of the overview window to show overview boundaries,
+  // when viewport is larger than overview
+  var styleMap = diagram.Options.styleDefaults._overviewStyles;
+  var topRect = new dvt.Rect(diagram.getCtx(), 0, 0, ovWidth, ovHeight);
+  topRect.setInvisibleFill();
+  topRect.setStroke(new dvt.SolidStroke(styleMap.overview.backgroundColor, 1, 1));
+  ovContainer.addChild(topRect);
+
   return overview;
 };
 
@@ -5185,7 +5274,7 @@ DvtDiagramOverviewUtils.CreateOverviewWindow = function(diagram) {
 DvtDiagramOverviewUtils.CreateOverviewContent = function(diagram, overview, width, height) {
   var ovContent = new dvt.Container(diagram.getCtx());
   ovContent.setMouseEnabled(false);
-  overview.Nodes = {};
+  overview.Nodes = new (diagram.getCtx()).ojMap();
   
   var rootNodes = diagram.GetRootNodeObjects();
   if (rootNodes.length > 0) {
@@ -5210,7 +5299,7 @@ DvtDiagramOverviewUtils.CreateOverviewNode = function(diagram, overview, node, c
     return;
   var ovNode = DvtDiagramOverviewUtils._createOverviewNodeShape(diagram, node);
   DvtDiagramOverviewUtils._positionOverviewNode(node, ovNode);
-  overview.Nodes[node.getId()] = ovNode;
+  overview.Nodes.set(node.getId(), ovNode);
   container.addChild(ovNode);
   
   if (node.isDisclosed()) {
@@ -5235,16 +5324,25 @@ DvtDiagramOverviewUtils.CreateOverviewNode = function(diagram, overview, node, c
 DvtDiagramOverviewUtils.UpdateOverviewWindow = function(diagram, overview) {
   DvtDiagramOverviewUtils._positionOverviewWindow(diagram, overview);
   DvtDiagramOverviewUtils._updateOverviewNodes(diagram, overview);
-  if (Object.keys(overview.Nodes).length !== 0)
+  if (overview.Nodes.size > 0)
     DvtDiagramOverviewUtils.ZoomToFitOverviewContent(diagram, overview, overview.Content, overview.Width, overview.Height);
   overview.UpdateViewport();
+
+  var ovWidth = overview.getOverviewWidth();
+  var ovHeight = overview.getOverviewHeight();
   //update clip path
-  var dims = overview.getDimensionsWithStroke();
   overview.setClipPath(null);
   var clipPath = new dvt.ClipPath(diagram.getId() + 'dgr_ovClip');
   //give clip path an extra space
-  clipPath.addRect(overview.getTranslateX() -1, overview.getTranslateY() -1, dims.w+1, dims.h+1);
+  clipPath.addRect(overview.getTranslateX() -1, overview.getTranslateY() -1, ovWidth + 2, ovHeight + 2);
   overview.setClipPath(clipPath);
+  // update top rectangle
+  var ovContainer = overview.getParent();
+  var topRect = ovContainer.getChildIndex(1);
+  if (topRect instanceof dvt.Rect) {
+    topRect.setWidth(ovWidth);
+    topRect.setHeight(ovHeight);
+  }
 };
 
 /**
@@ -5281,16 +5379,16 @@ DvtDiagramOverviewUtils.UpdateOverviewContent = function(diagram, overview, type
   else if (type == 'change') {
     // find all roots to update
     // rerender starting with roots
-    var roots = {};
+    var roots = new (diagram.getCtx()).ojMap();
     eventNodes.forEach(function(nodeData){
       var rootNode = DvtDiagramOverviewUtils._findRootNode(diagram, diagram.getNodeById(nodeData.id));
       if (rootNode)
-        roots[rootNode.getId()] = rootNode;
+        roots.set(rootNode.getId(), rootNode);
     });
-    for (var nodeId in roots) {
+    roots.forEach(function (root, nodeId, map) {
       DvtDiagramOverviewUtils._removeNode(diagram, overview, nodeId);
-      nodesToUpdate.push(roots[nodeId]);
-    }
+      nodesToUpdate.push(root);
+    });
   }
   else if (type == 'remove') {
     //When removing child nodes from container,
@@ -5463,11 +5561,10 @@ DvtDiagramOverviewUtils._positionOverviewNode = function(node, ovNode) {
  * @param {DvtDiagramOverview} overview the overview component
  */
 DvtDiagramOverviewUtils._positionOverviewWindow = function(diagram, overview) {
-  var overviewDims = overview.getDimensionsWithStroke();
   var halign = diagram.Options['overview']['halign'];
   var valign = diagram.Options['overview']['valign'];
-  var overviewWidth = overviewDims.w;
-  var overviewHeight = overviewDims.h;
+  var overviewWidth = overview.getOverviewWidth();
+  var overviewHeight = overview.getOverviewHeight();
   var availableWidth = diagram.Width;
   var availableHeight = diagram.Height;
   
@@ -5487,7 +5584,8 @@ DvtDiagramOverviewUtils._positionOverviewWindow = function(diagram, overview) {
   var positionY = valign == 'middle' ? (availableHeight - overviewHeight)/2 :
                   valign == 'bottom' ? availableHeight - overviewHeight :
                   0;
-  overview.setTranslate(positionX, positionY);
+  var ovContainer = overview.getParent();
+  ovContainer.setTranslate(positionX, positionY);
 };
 
 /**
@@ -5498,7 +5596,7 @@ DvtDiagramOverviewUtils._positionOverviewWindow = function(diagram, overview) {
  * @param {string} nodeId the node id
  */
 DvtDiagramOverviewUtils._removeNode = function(diagram, overview, nodeId) {
-  var ovNode = overview.Nodes[nodeId];
+  var ovNode = overview.Nodes.get(nodeId);
   if (ovNode)
     ovNode.getParent().removeChild(ovNode);
 };
@@ -5510,18 +5608,18 @@ DvtDiagramOverviewUtils._removeNode = function(diagram, overview, nodeId) {
  * @param {DvtDiagramOverview} overview the overview component
  */
 DvtDiagramOverviewUtils._updateOverviewNodes = function(diagram, overview) {
-  for (var nodeId in overview.Nodes) {
+  overview.Nodes.forEach(function(ovNode, nodeId, map){
     var node = diagram.getNodeById(nodeId);
-    var ovNode = overview.Nodes[nodeId];
-    if (node && ovNode)
+    if (node && ovNode) {
       DvtDiagramOverviewUtils._positionOverviewNode(node, ovNode);
-    else if (ovNode && !node) { 
+    }
+    else if (ovNode && !node) {
       // node could be removed by partial update
       // it should be already removed from DOM
       // now just remove the reference to it
-      delete overview.Nodes[nodeId];
+      overview.Nodes.delete(nodeId);
     }
-  }
+  });
 };
 /**
  * Overview window for diagram.
@@ -5830,12 +5928,13 @@ DvtDiagramOverview.prototype.SetAnimationParams = function(params) {
  * @protected
  */ 
 DvtDiagramOverview.prototype.CreateAnimationClone = function() {
-  var overviewClone = new dvt.Container(this.getCtx(), this.getId());
+  var context = this.getCtx();
+  var overviewClone = new dvt.Container(context, this.getId());
   overviewClone.setMouseEnabled(false);
-  var ovContentClone = new dvt.Container(this.getCtx(), 'ovContentClone');
+  var ovContentClone = new dvt.Container(context, 'ovContentClone');
   overviewClone.addChild(ovContentClone);
   overviewClone.Content = ovContentClone;
-  overviewClone.Nodes = {};
+  overviewClone.Nodes = new context.ojMap();
   overviewClone.Diagram = this.Diagram;
   
   var rootNodes = this.Diagram.GetRootNodeObjects();
@@ -5886,14 +5985,14 @@ dvt.Diagram.prototype.Init = function(context, callback, callbackObj) {
   if (!dvt.Agent.isTouchDevice())
     this.EventManager.setKeyboardHandler(new DvtDiagramKeyboardHandler(this, this.EventManager));
 
-  this._nodes = {};
+  this._nodes = new context.ojMap();
   this._arNodeIds = [];
   this._arRootIds = [];
-  this._links = {};
+  this._links = new context.ojMap();
   this._arLinkIds = [];
   this._renderCount = 0;
   this._deferredObjCount = 0;
-  this._allNodeIdsMap = {};
+  this._allNodeIdsMap = new context.ojMap();
   this._unresolvedNodeIds = []; // used to discover end-point nodes for promoted links
   this._nodesToResolve = []; // used for resolving container nodes during breadth-first search
 };
@@ -5940,22 +6039,25 @@ dvt.Diagram.prototype.PreRender = function() {
  * @protected
  */
 dvt.Diagram.prototype.ResetNodesAndLinks = function() {
-  this.setLinksPane(new dvt.Container(this.getCtx()));
-  this.setNodesPane(new dvt.Container(this.getCtx()));
-  this.setTopPane(new dvt.Container(this.getCtx()));
-  this._nodes = {};
+  var context = this.getCtx();
+  this.setLinksPane(new dvt.Container(context));
+  this.setNodesPane(new dvt.Container(context));
+  this.setTopPane(new dvt.Container(context));
+  this._nodes = new context.ojMap();
   this._arNodeIds = [];
   this._arRootIds = [];
-  this._links = {};
+  this._links = new context.ojMap();
   this._arLinkIds = [];
   // Make sure we're not holding references to any obsolete nodes/links
   this._highlightedObjects = null;
   this._promotedLinksMap = null; //Map of promoted links. Key: promoted link id -> promoted link object
   this._linkToPromotedMap = null; //Map of original links converted to promoted. Key: link id -> promoted link id
   this._collapsedNodes = null;
-  this.getOptions()['nodes'] = [];
-  this.getOptions()['links'] = [];
-  this._allNodeIdsMap = {};
+  if (!this.isDataProviderMode()) {
+    this.getOptions()['nodes'] = [];
+    this.getOptions()['links'] = [];
+  }
+  this._allNodeIdsMap = new context.ojMap();
   this._unresolvedNodeIds = [];
   if (this.Overview) {
     this.removeChild(this.Overview);
@@ -6072,23 +6174,32 @@ dvt.Diagram.prototype._renderDeferredData = function(renderCount, dataSource, no
  * Helper function that processes nodes and links data in order to build an array of unresolved nodes
  * that are needed for rendering promoted links
  * @param {Object} data an object that contains nodes and links arrays
+ * @param {boolean} deepWalk flag to walk nodes recursively to build a map (used in Data provider case)
  * @private
  */
-dvt.Diagram.prototype._findUnresolvedLinks = function(data) {
-  //do nothing if the component does not display promoted links
-  if (this.getOptions()['promotedLinkBehavior'] === 'none') {
+dvt.Diagram.prototype._findUnresolvedLinks = function(data, deepWalk) {
+  // do nothing if the component does not display promoted links
+  // or if data came from data provider and promoted link behavior is 'lazy'
+  if (this.getOptions()['promotedLinkBehavior'] === 'none' || 
+      (this.isDataProviderMode() && this.getOptions()['promotedLinkBehavior'] === 'lazy')) {
     return;
   }
-
-  //add all node ids to a map
-  if (Array.isArray(data['nodes'])) {
-    for (var i = 0; i < data['nodes'].length; i++) {
-      this._allNodeIdsMap[data['nodes'][i]['id']] = true;
+  
+  var mapAllNodes = function(data, allNodeIdsMap) {
+    if (Array.isArray(data['nodes'])) {
+      data['nodes'].forEach(function(node) {
+        allNodeIdsMap.set(node['id'], true);
+        if (deepWalk) {
+          mapAllNodes(node, allNodeIdsMap);
+        }
+      });
     }
-  }
+  };
+  mapAllNodes(data, this._allNodeIdsMap);
+  
   //update existing unresolved array - delete entries if nodes are found
   for (var i = this._unresolvedNodeIds.length - 1; i >= 0; i--) {
-    if (this._allNodeIdsMap[this._unresolvedNodeIds[i]]) {
+    if (this._allNodeIdsMap.has(this._unresolvedNodeIds[i])) {
       this._unresolvedNodeIds.splice(i, 1);
     }
   }
@@ -6096,10 +6207,10 @@ dvt.Diagram.prototype._findUnresolvedLinks = function(data) {
   if (Array.isArray(data['links'])) {
     for (var i = 0; i < data['links'].length; i++) {
       var link = data['links'][i];
-      if (!this._allNodeIdsMap[link['startNode']]) {
+      if (!this._allNodeIdsMap.has(link['startNode'])) {
         this._unresolvedNodeIds.push(link['startNode']);
       }
-      if (!this._allNodeIdsMap[link['endNode']]) {
+      if (!this._allNodeIdsMap.has(link['endNode'])) {
         this._unresolvedNodeIds.push(link['endNode']);
       }
     }
@@ -6168,6 +6279,79 @@ dvt.Diagram.prototype.removeDataSourceEventListeners = function() {
 };
 
 /**
+ * Fetches additional data - nodes and links - from data provider when necessary.
+ * The additional data are needed when 'promotedLinkBehavior' option is set to 'full' and 
+ * the component had to search for nodes in order to display promoted links.
+ * When all nodes are discovered, the method calls RenderComponentInternal().
+ * @param {Object} rootDataProvider root data provider for the diagram
+ * @param {array} nodesArray an array of nodes used for searching
+ * @private 
+ */
+dvt.Diagram.prototype._fetchDataProviderData = function(rootDataProvider, nodesArray) {
+  
+  var collapsedContainers = this.isTreeDataProvider() ? DvtDiagramDataUtils.GetCollapsedContainers(rootDataProvider, nodesArray, []) : [];
+  
+  if (collapsedContainers.length > 0) {
+    var thisRef = this;
+    
+    var containerChildDataPromises = collapsedContainers.map(function (containerNode) {
+      return thisRef.Options._fetchDataHandler(rootDataProvider, thisRef._context.KeySetImpl([containerNode.id]), containerNode, containerNode.id);
+    });
+    
+    var renderCount = this._renderCount;
+    Promise.all(containerChildDataPromises).then(function(values){
+      if (renderCount === thisRef._renderCount && thisRef.getCtx().isReadyToRender()) {
+        // prepare for another round of collapsed containers search
+        nodesArray = [];
+        
+        values.forEach(function(value){
+          var childData = value.nodes;
+          
+          if (Array.isArray(childData)) {
+            childData.forEach(function(childNode){
+              thisRef._allNodeIdsMap.set(childNode.id, true);
+              nodesArray.push(childNode); 
+            });
+          }
+        });
+        
+        for (var i = thisRef._unresolvedNodeIds.length - 1; i >= 0; i--) {
+          if (thisRef._allNodeIdsMap.has(thisRef._unresolvedNodeIds[i])) {
+            thisRef._unresolvedNodeIds.splice(i, 1);
+          }
+        }
+        if (thisRef._unresolvedNodeIds.length > 0) {
+          thisRef._fetchDataProviderData(rootDataProvider, nodesArray);
+        }
+        else {
+          thisRef.RenderComponentInternal();
+        }
+      }
+    });
+  }
+  else {
+    this.RenderComponentInternal();
+  }
+};
+
+/**
+ * Check if nodes and links data came from data provider
+ * @return {boolean} return true for data provider mode
+ */
+dvt.Diagram.prototype.isDataProviderMode = function() {
+  return !!this.getOptions()['nodeData'];
+};
+
+/** 
+ * Check if tree data provider is used for the nodes 
+ * @return {boolean} return true for tree data provider
+ */
+dvt.Diagram.prototype.isTreeDataProvider = function() {
+  var nodeDP = this.getOptions()['nodeData'];
+  return nodeDP && nodeDP['getChildDataProvider'] ? true : false;
+};
+
+/**
  * @override
  */
 dvt.Diagram.prototype.Render = function() {
@@ -6177,8 +6361,14 @@ dvt.Diagram.prototype.Render = function() {
   this._nodesToResolve = [];
   if (!this._bRendered && !this.IsResize()) {
     this._renderCount++;
-    var dataSource = this.getOptions()['data'];
-    if (dataSource) {
+    if (this.isDataProviderMode()) {
+      // find out if the component should discover additional nodes to render promoted links
+      this._findUnresolvedLinks({ nodes: this.Options['nodes'], links: this.Options['links'] }, true);
+      var nodesToSearch = this._unresolvedNodeIds.length > 0 ? this.Options['nodes'].slice() : [];
+      this._fetchDataProviderData(this.Options['nodeData'], nodesToSearch);
+    }
+    else if (this.getOptions()['data']) {
+      var dataSource = this.getOptions()['data'];
       this._setDataSourceListeners(dataSource, false);
       this._resolveDeferredData(dataSource, null);
     }
@@ -6204,7 +6394,7 @@ dvt.Diagram.prototype.RenderComponentInternal = function() {
     this.getCtx().setKeyboardFocusArray([this]);
   }
   //check whether the diagram is empty
-  emptyDiagram = Object.keys(this._nodes).length === 0;
+  emptyDiagram = this._nodes.size === 0;
   if (!emptyDiagram) {
     // the child is going to be removed by  _processContent() function or layout failure function
     if (!this.contains(this._oldPanZoomCanvas))
@@ -6260,6 +6450,8 @@ dvt.Diagram.prototype._processContent = function(bEmptyDiagram) {
     pzc.setPanDirection(this.getPanDirection());
     pzc.setZoomingEnabled(this.IsZoomingEnabled());
     pzc.setZoomToFitEnabled(this.IsZoomingEnabled());
+    if (this.Options['_resources'])
+      pzc.setPanCursor(this.Options['_resources']['panCursorUp'], this.Options['_resources']['panCursorDown']);
   }
   
   // add overview window
@@ -6358,8 +6550,10 @@ dvt.Diagram.prototype._fitContent = function() {
 dvt.Diagram.prototype.SetOptions = function(options) {
   dvt.Diagram.superclass.SetOptions.call(this, options);
   //initial setup
-  this.Options['nodes'] = [];
-  this.Options['links'] = [];
+  if (!this.isDataProviderMode()) {
+    this.Options['nodes'] = [];
+    this.Options['links'] = [];
+  }
   this.parseComponentJson(this.Options); //set component background
   this.SetPanningEnabled(this.Options['panning'] != 'none');
   this.SetZoomingEnabled(this.Options['zooming'] != 'none');
@@ -6488,32 +6682,30 @@ dvt.Diagram.prototype.renderLinks = function(linksData) {
     endNode.addInLinkId(linkId);
 
     link.render();
-    this._links[linkId] = link;
+    this._links.set(linkId, link);
   }
   // render promoted links
   if (this._promotedLinksMap) {
     var promotedLinkDefaults = DvtDiagramStyleUtils.getLinkDefaultStyles(this, 'promotedLink');
-    for (var promotedLinkId in this._promotedLinksMap) {
-      if (this._links[promotedLinkId]) {
-        //in case of a data source event a link might be already rendered, no need to rerender
-        continue;
+    var thisRef = this;
+    this._promotedLinksMap.forEach(function(promotedLink, promotedLinkId, map) {
+      if (!thisRef._links.has(promotedLinkId)) {
+        // render the link if it is not rendered yet
+        var linkData = dvt.JsonUtils.merge(promotedLink, promotedLinkDefaults);
+        var link = DvtDiagramLink.newInstance(thisRef, linkData, true);
+        var linkId = link.getId();
+        
+        var startNode = thisRef.getNodeById(link.getStartId());
+        var endNode = thisRef.getNodeById(link.getEndId());
+        startNode.addOutLinkId(linkId);
+        endNode.addInLinkId(linkId);
+
+        link.render();
+        thisRef._arLinkIds.push(linkId);
+        thisRef._links.set(linkId, link);
       }
-      var linkData = this._promotedLinksMap[promotedLinkId];
-      linkData = dvt.JsonUtils.merge(linkData, promotedLinkDefaults);
-      var link = DvtDiagramLink.newInstance(this, linkData, true);
-      var linkId = link.getId();
-
-      var startNode = this.getNodeById(link.getStartId());
-      var endNode = this.getNodeById(link.getEndId());
-      startNode.addOutLinkId(linkId);
-      endNode.addInLinkId(linkId);
-
-      link.render();
-      this._arLinkIds.push(linkId);
-      this._links[linkId] = link;
-    }
+    });
   }
-
 };
 
 /**
@@ -6523,7 +6715,7 @@ dvt.Diagram.prototype.renderLinks = function(linksData) {
 dvt.Diagram.prototype.layout = function() {
   var layoutFunc = this.getOptions()['layout'];
   var layoutContext = this._getLayoutContext();
-  layoutContext.setDirtyContext({});
+  layoutContext.setDirtyContext(new (this.getCtx()).ojMap());
 
   // pass the current viewport to the layout
   if (this._currentViewport) {
@@ -6592,14 +6784,14 @@ dvt.Diagram.prototype.setAlphas = function(alpha) {
  * @override
  */
 dvt.Diagram.prototype.getNodeById = function(id) {
-  return this._nodes[id];
+  return this._nodes.get(id);
 };
 
 /**
  * @override
  */
 dvt.Diagram.prototype.getLinkById = function(id) {
-  return this._links[id];
+  return this._links.get(id);
 };
 
 /**
@@ -6615,11 +6807,11 @@ dvt.Diagram.prototype.GetAllLinks = function() {
  * @protected
  */
 dvt.Diagram.prototype.GetAllLinksMap = function() {
-  var linksMap = {};
+  var linksMap = new (this.getCtx()).ojMap();
   if (this._links) {
-    for (var linkId in this._links) {
-      linksMap[linkId] = this._links[linkId];
-    }
+    this._links.forEach(function(link, linkId, map){
+      linksMap.set(linkId, link);
+    });
   }
   return linksMap;
 };
@@ -6632,9 +6824,9 @@ dvt.Diagram.prototype.GetAllLinksMap = function() {
 dvt.Diagram.prototype.GetAllLinkObjects = function() {
   var allLinks = [];
   if (this._links) {
-    for (var linkId in this._links) {
-      allLinks.push(this._links[linkId]);
-    }
+    this._links.forEach(function(link, linkId, map){
+      allLinks.push(link);
+    });
   }
   return allLinks;
 };
@@ -6652,11 +6844,11 @@ dvt.Diagram.prototype.GetAllNodes = function() {
  * @protected
  */
 dvt.Diagram.prototype.GetAllNodesMap = function() {
-  var nodesMap = {};
+  var nodesMap = new (this.getCtx()).ojMap();
   if (this._nodes) {
-    for (var nodeId in this._nodes) {
-      nodesMap[nodeId] = this._nodes[nodeId];
-    }
+    this._nodes.forEach(function(value, key, map){
+      nodesMap.set(key, value);
+    });
   }
   return nodesMap;
 };
@@ -6669,9 +6861,9 @@ dvt.Diagram.prototype.GetAllNodesMap = function() {
 dvt.Diagram.prototype.GetAllNodeObjects = function() {
   var allNodes = [];
   if (this._nodes) {
-    for (var nodeId in this._nodes) {
-      allNodes.push(this._nodes[nodeId]);
-    }
+    this._nodes.forEach(function(value, key, map){
+      allNodes.push(value);
+    });
   }
   return allNodes;
 };
@@ -6691,7 +6883,7 @@ dvt.Diagram.prototype.GetAllRoots = function() {
 dvt.Diagram.prototype.GetRootNodeObjects = function() {
   var roots = [];
   for (var i = 0; this._arRootIds && i < this._arRootIds.length; i++) {
-    var root = this._nodes[this._arRootIds[i]];
+    var root = this._nodes.get(this._arRootIds[i]);
     if (root) {
       roots.push(root);
     }
@@ -6727,42 +6919,24 @@ dvt.Diagram.prototype.HandleZoomEvent = function(event) {
         this.ConstrainPanning(contentDim.x, contentDim.y, contentDim.w, contentDim.h, zoom);
       }
       break;
-    case dvt.ZoomEvent.SUBTYPE_ZOOM_TO_FIT_CALC_BOUNDS:
-      //do not override a viewport returned from the layout engine
-      if (!this.IsLayoutViewport()) {
-        // Calculate the new content dimensions based on the new zoom
-        var contentDim = this._cachedViewBounds ? this._cachedViewBounds : this.GetViewBounds();
-        event.setZoomToFitBounds(contentDim);
-      }
-      break;
     case dvt.ZoomEvent.SUBTYPE_ZOOMED:
       // don't update nodes on zoomed events on touch device, since touchend might be lost when the node is rerendered
       if (!dvt.Agent.isTouchDevice() && this.getOptions()['zoomRenderer'] && event.getOldZoom() !== event.getNewZoom()) {
-        for (var nodeId in this._nodes) {
-          var node = this.getNodeById(nodeId);
+        this._nodes.forEach(function(node, nodeId, map){
           node.rerenderOnZoom(event);
-        }
+        });
       }
       break;
     case dvt.ZoomEvent.SUBTYPE_ZOOM_TO_FIT_END:
     case dvt.ZoomEvent.SUBTYPE_ZOOM_END:
       // when on touch, call zoom renderer on zoom_end and zoom-to-fit-end
       if (dvt.Agent.isTouchDevice() && this.getOptions()['zoomRenderer'] && event.getOldZoom() !== event.getNewZoom()) {
-        for (var nodeId in this._nodes) {
-          var node = this.getNodeById(nodeId);
+        this._nodes.forEach(function(node, nodeId, map){
           node.rerenderOnZoom(event);
-        }
+        });
       }
       break;
   }
-};
-
-/**
- * The method is called by the peer after a PPR. The method prepares/reinitializes the component for the new data
- * and it stores the old data that will be used to animate a transition from the old state to the new state.
- * The animation will happen later when component is rendered.
- */
-dvt.Diagram.prototype.prepareForDataChange = function() {
 };
 
 /**
@@ -6772,14 +6946,13 @@ dvt.Diagram.prototype.prepareForDataChange = function() {
  */
 dvt.Diagram.prototype.getNavigableLinksForNodeId = function(nodeId) {
   var links = [];
-  for (var linkId in this._links) {
-    var link = this.getLinkById(linkId);
+  this._links.forEach(function(link, linkId, map){
     var startId = link.getStartId();
     var endId = link.getEndId();
 
     if ((startId == nodeId || endId == nodeId) && link.getVisible())
       links.push(link);
-  }
+  });
   return links;
 };
 
@@ -6800,12 +6973,12 @@ dvt.Diagram.prototype._processInitialSelections = function() {
     return;
   if (this.isSelectionSupported()) {
     var targets = [];
-    for (var nodeId in this._nodes) {
-      targets.push(this.getNodeById(nodeId));
-    }
-    for (var linkId in this._links) {
-      targets.push(this.getLinkById(linkId));
-    }
+    this._nodes.forEach(function(node, nodeId, map){
+      targets.push(node);
+    });
+    this._links.forEach(function(link, linkId, map){
+      targets.push(link);
+    });
     this.getSelectionHandler().processInitialSelections(this.Options['selection'], targets);
   }
 };
@@ -6839,31 +7012,31 @@ dvt.Diagram.prototype._processHighlighting = function(handleEventListeners) {
   }
 
   var bAnyMatched = this.Options['highlightMatch'] == 'any';
-  this._highlightedObjects = {};
+  this._highlightedObjects = new (this.getCtx()).ojMap();
   var highlightedNodes = [];
+  var thisRef = this;
   //find highlighted nodes
-  for (var nodeId in this._nodes) {
-    var node = this.getNodeById(nodeId);
+  this._nodes.forEach(function(node, nodeId, map){
     var match = bAnyMatched ? dvt.ArrayUtils.hasAnyItem(node.getCategories(), categories) :
                 dvt.ArrayUtils.hasAllItems(node.getCategories(), categories);
     if (match) {
-      this._highlightedObjects[node.getId()] = node;
+      thisRef._highlightedObjects.set(nodeId,node);
       highlightedNodes.push(node);
     }
-  }
+  });
   this._processNodeConnections(highlightedNodes);
 
   //find highlighted links
   var highlightedLinks = [];
-  for (var linkId in this._links) {
-    var link = this.getLinkById(linkId);
+  this._links.forEach(function(link, linkId, map){
     var match = bAnyMatched ? dvt.ArrayUtils.hasAnyItem(link.getCategories(), categories) :
                 dvt.ArrayUtils.hasAllItems(link.getCategories(), categories);
     if (match) {
-      this._highlightedObjects[link.getId()] = link;
+      thisRef._highlightedObjects.set(linkId,link);
       highlightedLinks.push(link);
     }
-  }
+  });
+
   if (this.Options['linkHighlightMode'] == 'linkAndNodes') {
     this._processLinkConnections(highlightedLinks);
   }
@@ -6898,7 +7071,7 @@ dvt.Diagram.prototype._processNodeConnections = function(highlightedNodes) {
       links = outgoing && node.getOutLinkIds() ? links.concat(node.getOutLinkIds()) : links;
       for (var idx = 0; idx < links.length; idx++) {
         var linkId = links[idx];
-        this._highlightedObjects[linkId] = this.getLinkById(linkId);
+        this._highlightedObjects.set(linkId, this.getLinkById(linkId));
         highlightedLinks.push(this.getLinkById(linkId));
       }
     }
@@ -6916,8 +7089,8 @@ dvt.Diagram.prototype._processLinkConnections = function(highlightedLinks) {
     var link = highlightedLinks[linkIdx];
     var linkStartId = link.getStartId();
     var linkEndId = link.getEndId();
-    this._highlightedObjects[linkStartId] = this.getNodeById(linkStartId);
-    this._highlightedObjects[linkEndId] = this.getNodeById(linkEndId);
+    this._highlightedObjects.set(linkStartId, this.getNodeById(linkStartId));
+    this._highlightedObjects.set(linkEndId, this.getNodeById(linkEndId));
   }
 };
 
@@ -6930,54 +7103,90 @@ dvt.Diagram.prototype._processLinkConnections = function(highlightedLinks) {
  * @private
  */
 dvt.Diagram.prototype._updateAlphas = function(bHighlight, highlightedObjects) {
-  var highlightAlpha;
+  var objectsTotal = this._nodes.size + this._links.size;
+  if (highlightedObjects.size === objectsTotal) {
+    return;
+  }
   //is diagram flat or does it have containers - don't reparent objects for container case
   if (this._arNodeIds.length == this._arRootIds.length) { //flat
-    highlightAlpha = bHighlight ? this.Options['styleDefaults']['_highlightAlpha'] : 1.0;
-    //update alphas on link and node panes
-    this.getLinksPane().setAlpha(highlightAlpha);
-    this.getNodesPane().setAlpha(highlightAlpha);
-    // Then just reparent the interesting links and nodes
-    for (var id in highlightedObjects) {
-      if (bHighlight) {
-        this.moveToDiagramFront(highlightedObjects[id]);
+    var highlightAlpha = bHighlight ? this.Options['styleDefaults']['_highlightAlpha'] : 1.0;
+    var linksPane = this.getLinksPane();
+    var nodesPane = this.getNodesPane();
+
+    if (highlightedObjects.size > objectsTotal * .5 ) {
+      // keep highlighted objects in place - move other objects to the faded bottom pane
+      var bottomPane = this.getBottomPane();
+      bottomPane.setAlpha(highlightAlpha);
+      
+      this._links.forEach(function(link, id, map){
+        var highlighted = highlightedObjects.get(id);
+        if (!highlighted && bHighlight) 
+          bottomPane.addChild(link);
+        else if (!highlighted)
+          linksPane.addChild(link);
+      });
+      
+      this._nodes.forEach(function(node, id, map){
+        var highlighted = highlightedObjects.get(id);
+        if (!highlighted && bHighlight)
+          bottomPane.addChild(node);
+        else if (!highlighted)
+          nodesPane.addChild(node);
+      });
+    } 
+    else {
+      var topPane = this.getTopPane();
+      //update alphas on link and node panes
+      linksPane.setAlpha(highlightAlpha);
+      nodesPane.setAlpha(highlightAlpha);
+      
+      // Then just reparent the interesting links and nodes
+      var highlightedLinksArray = [];
+      var highlightedNodesArray = [];
+      highlightedObjects.forEach(function(item, id, map){
+        if (item instanceof DvtDiagramLink)
+          highlightedLinksArray.push(item);
+        else if (item instanceof DvtDiagramNode)
+          highlightedNodesArray.push(item);
+      });
+
+      for (var elt = 0; elt < highlightedLinksArray.length; elt++) {
+        if (bHighlight) 
+          topPane.addChild(highlightedLinksArray[elt]);
+        else
+          linksPane.addChild(highlightedLinksArray[elt]);
       }
-      else {
-        if (highlightedObjects[id] instanceof DvtDiagramLink) {
-          this.moveToLinks(highlightedObjects[id]);
-        }
-        else if (highlightedObjects[id] instanceof DvtDiagramNode) {
-          this.moveToNodes(highlightedObjects[id]);
-        }
+      for (var elt = 0; elt < highlightedNodesArray.length; elt++) {
+        if (bHighlight)
+          topPane.addChild(highlightedNodesArray[elt]);
+        else
+          nodesPane.addChild(highlightedNodesArray[elt]);
       }
     }
   }
   else {  //has containers
     if (bHighlight) { //highlight objects
-      highlightAlpha = this.Options['styleDefaults']['_highlightAlpha'];
-      var highlightedIds = {};
-      for (var id in highlightedObjects) {
-        highlightedObjects[id].setAlpha(1.0);
-        highlightedIds[id] = true;
-      }
-      for (var nodeId in this._nodes) {
-        if (!highlightedIds[nodeId]) {
-          this.getNodeById(nodeId).setAlpha(highlightAlpha);
+      highlightedObjects.forEach(function(item, id, map){
+        item.highlight(true);
+      });
+      this._nodes.forEach(function(node, nodeId, map){
+        if (!highlightedObjects.has(nodeId)) {
+          node.highlight(false);
         }
-      }
-      for (var linkId in this._links) {
-        if (!highlightedIds[linkId]) {
-          this.getLinkById(linkId).setAlpha(highlightAlpha);
+      });
+      this._links.forEach(function(link, linkId, map){
+        if (!highlightedObjects.has(linkId)) {
+          link.highlight(false);
         }
-      }
+      });
     }
     else { //remove highlight
-      for (var nodeId in this._nodes) {
-        this.getNodeById(nodeId).setAlpha(1.0);
-      }
-      for (var linkId in this._links) {
-        this.getLinkById(linkId).setAlpha(1.0);
-      }
+      this._nodes.forEach(function(node, nodeId, map){
+        node.highlight(true);
+      });
+      this._links.forEach(function(link, linkId, map){
+        link.highlight(true);
+      });
     }
   }
 };
@@ -7184,7 +7393,7 @@ dvt.Diagram.prototype._prepareNodes = function(parent, nodesData) {
         parent.GetChildNodePane().addChild(node);
       else
         this.getNodesPane().addChild(node);
-      this._nodes[nodeId] = node;
+      this._nodes.set(nodeId, node);
     }
   }
 };
@@ -7222,8 +7431,25 @@ dvt.Diagram.prototype.expand = function(nodeId) {
   }
 
   if (triggerEvent) {
-    this.render(this.getOptions(), this.Width, this.Height);
-    this.dispatchEvent(new dvt.EventFactory.newEvent('expand', nodeId));
+    var node = this.getNodeById(nodeId);
+    if (this.isDataProviderMode() && !node.getData()['nodes']) {
+      var nodeOption = DvtDiagramDataUtils.GetNodeOption(this, node);
+      
+      // fetch data from data provider
+      var thisRef = this;
+      var renderCount = this._renderCount;
+      var fetchDataPromise = this.getOptions()._fetchDataHandler(this.getOptions().nodeData, expanded, nodeOption, nodeId);
+      fetchDataPromise.then(function(value){
+        if (renderCount === thisRef._renderCount) {
+          thisRef.render(thisRef.getOptions(), thisRef.Width, thisRef.Height);
+          thisRef.dispatchEvent(new dvt.EventFactory.newEvent('expand', nodeId));
+        }
+      });
+    }
+    else {
+      this.render(this.getOptions(), this.Width, this.Height);
+      this.dispatchEvent(new dvt.EventFactory.newEvent('expand', nodeId));
+    }
   }
 };
 
@@ -7378,22 +7604,24 @@ dvt.Diagram.prototype._isLinkPromoted = function(linkData) {
   // Use two maps to maintain promoted links.
   // One for promoted link data objects - used for rendering and layout.
   // One for keeping track of original links converted to promoted - used in data source events.
-  var linkId = DvtDiagramLink.GetPromotedLinkId(startPromotedId, endPromotedId);
+  var linkId = DvtDiagramLink.GetPromotedLinkId(this, startPromotedId, endPromotedId);
   if (!this._promotedLinksMap)
-    this._promotedLinksMap = {};
-  if (!this._promotedLinksMap[linkId]) {
-    this._promotedLinksMap[linkId] = {
-      'id': linkId,
-      'startNode' : startPromotedId,
-      'endNode' : endPromotedId,
-      '_links': [linkData]};
+    this._promotedLinksMap = new (this.getCtx()).ojMap();
+  if (!this._promotedLinksMap.has(linkId)) {
+    this._promotedLinksMap.set(linkId, 
+      { 'id': linkId,
+        'startNode' : startPromotedId,
+        'endNode' : endPromotedId,
+        '_links': [linkData] });
   }
   else {
-    this._promotedLinksMap[linkId]['_links'].push(linkData);
+    this._promotedLinksMap
+        .get(linkId)['_links']
+        .push(linkData);
   }
   if (!this._linkToPromotedMap)
-    this._linkToPromotedMap = {};
-  this._linkToPromotedMap[linkData['id']] = linkId;
+    this._linkToPromotedMap = new (this.getCtx()).ojMap();
+  this._linkToPromotedMap.set(linkData['id'], linkId);
   return true;
 };
 
@@ -7416,11 +7644,13 @@ dvt.Diagram.prototype._addToCollapsedArray = function(node) {
  */
 dvt.Diagram.prototype._findFirstVisibleAncestor = function(childId) {
   //recursive search in nodes data for a child id
+  var context = this.getCtx();
   var isDescendant = function(data, chId) {
     if (data) {
       for (var i = 0; i < data.length; i++) {
-        if (data[i]['id'] === chId || isDescendant(data[i]['nodes'], chId))
+        if ( dvt.BaseDiagram.compareValues(context, data[i]['id'], chId) || isDescendant(data[i]['nodes'], chId)) {
           return true;
+        }
       }
     }
     return false;
@@ -7549,7 +7779,7 @@ dvt.Diagram.prototype.handleDataSourceChangeEvent = function(type, event) {
     if (this.getOptions()['expanded'] === "all") {
       if (nodes) {
         var disclosedNodes = this.DisclosedNodes;
-        var updateDisclosed = function(nodeArr) {
+        var updateDisclosed = function(nodeArr){
           for (var i=0; i < nodeArr.length; i++) {
             disclosedNodes.push(nodeArr[i].id);
             if (nodeArr[i].nodes)
@@ -7693,7 +7923,7 @@ dvt.Diagram.prototype._updateLayoutContext = function(type, event) {
     if (links) {
       for (i = 0; i < links.length; i++) {
         linkId = links[i]['id'];
-        var link = this.getLinkById(linkId) || this.getLinkById(this._linkToPromotedMap[linkId]);
+        var link = this.getLinkById(linkId) || this.getLinkById(this._linkToPromotedMap.get(linkId));
         if (link) {
           if (layoutContext.getLinkById(link.getId())) { // links exists - case of promoted link
             continue;
@@ -7726,13 +7956,13 @@ dvt.Diagram.prototype._updateLayoutContext = function(type, event) {
       // list of updated link data, find corresponding link context and recreate it.
       for (i = layoutContext.getLinkCount() - 1; i >= 0; i--) {
         var lc = layoutContext.getLinkByIndex(i);
-        if (!this._links[lc.getId()]) {
+        if (!this._links.get(lc.getId())) {
           layoutContext.removeLink(lc);
         }
       }
       for (i = 0; i < links.length; i++) {
         linkId = links[i]['id'];
-        var link = this.getLinkById(linkId) || this.getLinkById(this._linkToPromotedMap[linkId]);
+        var link = this.getLinkById(linkId) || this.getLinkById(this._linkToPromotedMap.get(linkId));
         if (link) {
           layoutContext.removeLink(layoutContext.getLinkById(link.getId()));
           var startId = link.getData()['startNode'];
@@ -7766,7 +7996,7 @@ dvt.Diagram.prototype._updateLayoutContext = function(type, event) {
     // removed when corresponding start or end node is removed.
     for (i = layoutContext.getLinkCount() - 1; i >= 0; i--) {
       var lc = layoutContext.getLinkByIndex(i);
-      if (!this._links[lc.getId()]) {
+      if (!this._links.get(lc.getId())) {
         layoutContext.removeLink(lc);
       }
     }
@@ -7794,18 +8024,17 @@ dvt.Diagram.prototype._getLayoutContext = function() {
       layoutContext.addNode(lcRootNode);
     }
     // add all links
-    for (var linkId in this._links) {
-      var link = this.getLinkById(linkId);
-      if (!link)
-        continue;
+    var thisRef = this;
+    this._links.forEach(function(link, linkId, map){
       var startId = link.getData()['startNode'];
       var endId = link.getData()['endNode'];
       if (layoutContext.getNodeById(startId) && layoutContext.getNodeById(endId)) {
-        var lcLink = this.CreateLayoutContextLink(link, startId, endId, null, layoutContext);
-        lcLink.copyFrom(this._oldLayoutContext ? this._oldLayoutContext.getLinkById(linkId) : null);
+        var lcLink = thisRef.CreateLayoutContextLink(link, startId, endId, null, layoutContext);
+        lcLink.copyFrom(thisRef._oldLayoutContext ? thisRef._oldLayoutContext.getLinkById(linkId) : null);
         layoutContext.addLink(lcLink);
       }
-    }
+    });
+
     this._layoutContext = layoutContext;
     this._oldLayoutContext = null;
   }
@@ -7830,14 +8059,11 @@ dvt.Diagram.prototype._removeNodes = function(parent, nodesData) {
     //remove child nodes
     this._removeNodes(node, node.getData()['nodes']);
     //remove all links connected to the node
-    for (var linkId in this._links) {
-      var link = this.getLinkById(linkId);
-      if (!link)
-        continue;
+    this._links.forEach(function(link, linkId, map){
       if (link.getStartId() == nodeId || link.getEndId() == nodeId) {
         linksToRemove.push(link.getData());
       }
-    }
+    });
 
     //remove itself
     if (parent) {
@@ -7848,7 +8074,7 @@ dvt.Diagram.prototype._removeNodes = function(parent, nodesData) {
       this.getNodesPane().removeChild(node);
     }
     dvt.ArrayUtils.removeItem(this._arNodeIds, nodeId);
-    delete this._nodes[nodeId];
+    this._nodes.delete(nodeId);
   }
   this._removeLinks(linksToRemove);
 };
@@ -7873,11 +8099,11 @@ dvt.Diagram.prototype._removeLinks = function(linksData) {
       startNode && startNode.removeOutLinkId(linkId);
       endNode && endNode.removeInLinkId(linkId);
       dvt.ArrayUtils.removeItem(this._arLinkIds, linkId);
-      delete this._links[linkId];
+      this._links.delete(linkId);
     }
-    else if (this._linkToPromotedMap && this._linkToPromotedMap[linkId]) {
-      var promotedLinkId = this._linkToPromotedMap[linkId];
-      var promotedLink = this._links[promotedLinkId];
+    else if (this._linkToPromotedMap && this._linkToPromotedMap.has(linkId)) {
+      var promotedLinkId = this._linkToPromotedMap.get(linkId);
+      var promotedLink = this._links.get(promotedLinkId);
       var data = promotedLink ? promotedLink.getData()['_links'] : null;
       if (data && data.length == 1 && data[0]['id'] == linkId) {
         //just remove the promoted link
@@ -7888,23 +8114,24 @@ dvt.Diagram.prototype._removeLinks = function(linksData) {
         startNode && startNode.removeOutLinkId(promotedLinkId);
         endNode && endNode.removeInLinkId(promotedLinkId);
         dvt.ArrayUtils.removeItem(this._arLinkIds, promotedLink.getId());
-        delete this._links[promotedLink.getId()];
-        delete this._promotedLinksMap[promotedLink.getId()];
-        delete this._linkToPromotedMap[linkId];
+        this._links.delete(promotedLink.getId());
+        this._promotedLinksMap.delete(promotedLink.getId());
+        this._linkToPromotedMap.delete(linkId);
       }
       else if (data) {
         // don't remove the promoted link, but update its links data
         // don't need to update layout context for the link, since it has a reference to the data
         for (var i = 0; i < data.length; i++) {
-          if (data[i]['id'] == linkId) {
+          if (dvt.BaseDiagram.compareValues(this.getCtx(), data[i]['id'], linkId)) {
             data.splice(i, 1);
           }
         }
-        delete this._linkToPromotedMap[linkId];
+        this._linkToPromotedMap.delete(linkId);
       }
     }
   }
 };
+
 
 
 //
@@ -8079,7 +8306,7 @@ DvtDiagramDefaults.VERSION_1 = {
  * @override
  */
 DvtDiagramDefaults.prototype.getNoCloneObject = function() {
-  return {'data': true };
+  return {'data': true, 'nodeData': true, 'linkData': true, 'nodes': true, 'links': true};
 };
 
 /**
@@ -8133,11 +8360,12 @@ dvt.Obj.createSubclass(DvtDiagramDataAnimationState, dvt.Obj, 'DvtDiagramDataAni
  */
 DvtDiagramDataAnimationState.prototype.Init = function(diagram, type, event) {
   this._diagram = diagram;
+  this._context = diagram.getCtx();
   this._nodes = [];
   this._newNodes = [];
   this._links = [];
   this._newLinks = [];
-  this._processedObjMap = {};
+  this._processedObjMap = new this._context.ojMap();
   this.PanZoomMatrix = this._diagram.getPanZoomCanvas().getContentPane().getMatrix();
   this.IsPartialUpdate = type && event ? true : false;
   if (diagram.Overview) {
@@ -8219,7 +8447,7 @@ DvtDiagramDataAnimationState.prototype.updateStateFromEvent = function(type, eve
         // or already disclosed container
         if (this._wasParentDisclosed === true)
           this._newNodes.push(node);
-        this._processedObjMap[node.getId()] = true;
+        this._processedObjMap.set(node.getId(), true);
       }
     }
     for (i = 0; links && i < links.length; i++) {
@@ -8228,7 +8456,7 @@ DvtDiagramDataAnimationState.prototype.updateStateFromEvent = function(type, eve
           (this._diagram._linkToPromotedMap && this._diagram.getLinkById(this._diagram._linkToPromotedMap[linkId]));
       if (link) {
         this._newLinks.push(link);
-        this._processedObjMap[link.getId()] = true;
+        this._processedObjMap.set(link.getId(), true);
       }
     }
   }
@@ -8239,7 +8467,7 @@ DvtDiagramDataAnimationState.prototype.updateStateFromEvent = function(type, eve
               (this._diagram._linkToPromotedMap && this._diagram.getLinkById(this._diagram._linkToPromotedMap[linkId]));
       if (link) {
         this._newLinks.push(link);
-        this._processedObjMap[link.getId()] = true;
+        this._processedObjMap.set(link.getId(), true);
       }
     }
   }
@@ -8252,23 +8480,23 @@ DvtDiagramDataAnimationState.prototype.updateStateFromEvent = function(type, eve
  */
 DvtDiagramDataAnimationState.prototype.updateStateFromLayoutContext = function(layoutContext) {
   if (this.IsPartialUpdate) {
+    var thisRef = this;
     var dirtyLayoutContext = layoutContext.getDirtyContext();
-    for (var objId in dirtyLayoutContext) {
-      if (this._processedObjMap[objId] || this._processedObjMap[objId]) {
-        continue;
+    dirtyLayoutContext.forEach(function(obj, objId, map){
+      if (!thisRef._processedObjMap.has(objId)) {
+        var obj = thisRef._diagram.getNodeById(objId) || thisRef._diagram.getLinkById(objId);
+        if (obj instanceof DvtDiagramNode) {
+          thisRef._nodes.push(obj.getAnimationState());
+          thisRef._newNodes.push(obj);
+          thisRef._processedObjMap.set(objId, true);
+        }
+        else if (obj instanceof DvtDiagramLink) {
+          thisRef._links.push(obj.getAnimationState());
+          thisRef._newLinks.push(obj);
+          thisRef._processedObjMap.set(objId, true);
+        }
       }
-      var obj = this._diagram.getNodeById(objId) || this._diagram.getLinkById(objId);
-      if (obj instanceof DvtDiagramNode) {
-        this._nodes.push(obj.getAnimationState());
-        this._newNodes.push(obj);
-        this._processedObjMap[objId] = true;
-      }
-      else if (obj instanceof DvtDiagramLink) {
-        this._links.push(obj.getAnimationState());
-        this._newLinks.push(obj);
-        this._processedObjMap[objId] = true;
-      }
-    }
+    });
   }
 };
 
@@ -8292,7 +8520,7 @@ DvtDiagramDataAnimationState.prototype._setNodes = function(type, event) {
           this._addAncestorStates(node.getGroupId());
           this._nodes.push(node.getAnimationState());
           this._newNodes.push(node);
-          this._processedObjMap[node.getId()] = true;
+          this._processedObjMap.set(node.getId(), true);
         }
       }
     }
@@ -8303,7 +8531,7 @@ DvtDiagramDataAnimationState.prototype._setNodes = function(type, event) {
           var node = this._diagram.getNodeById(nodes[i]['id']);
           if (node) {
             this._nodes.push(node);
-            this._processedObjMap[node.getId()] = true;
+            this._processedObjMap.set(node.getId(), true);
           }
         }
       }
@@ -8333,7 +8561,7 @@ DvtDiagramDataAnimationState.prototype._setLinks = function(type, event) {
                 (this._diagram._linkToPromotedMap && this._diagram.getLinkById(this._diagram._linkToPromotedMap[linkId]));
         if (link) {
           this._links.push(link.getAnimationState());
-          this._processedObjMap[link.getId()] = true;
+          this._processedObjMap.set(link.getId(), true);
         }
       }
     }
@@ -8344,7 +8572,7 @@ DvtDiagramDataAnimationState.prototype._setLinks = function(type, event) {
                 (this._diagram._linkToPromotedMap && this._diagram.getLinkById(this._diagram._linkToPromotedMap[linkId]));
         if (link) {
           this._links.push(link);
-          this._processedObjMap[link.getId()] = true;
+          this._processedObjMap.set(link.getId(), true);
         }
       }
     }
@@ -8365,12 +8593,12 @@ DvtDiagramDataAnimationState.prototype._addAncestorStates = function(parentId) {
   // added to to the top level or an already disclosed container
   this._wasParentDisclosed = parentNode ? parentNode.isDisclosed() : true;
   while (parentNode) {
-    var keepOriginal = (parentNode.getId() === parentId) || 
+    var keepOriginal = dvt.BaseDiagram.compareValues(this._context, parentNode.getId(), parentId) || 
     (parentNode.isDisclosed() && this._diagram.getOptions()['renderer']);
     var oldState = parentNode.getAnimationState(keepOriginal);
     this._nodes.push(oldState);
     this._newNodes.push(parentNode);
-    this._processedObjMap[parentNode.getId()] = true;
+    this._processedObjMap.set(parentNode.getId(), true);
     parentNode = parentNode.getGroupId() ? this._diagram.getNodeById(parentNode.getGroupId()) : null;
   }
 };
@@ -8453,52 +8681,55 @@ DvtDiagramDataAnimationHandler.prototype.constructAnimation = function(oldList, 
   }
 
   if (bLinks && !this.getCtx().isOffscreen()) {
+    var context = this.getCtx();
     // process diagram links - check expanding a promoted link or collapsing multiple into a promoted link
-    var oldLinksMap = DvtDiagramDataAnimationHandler._expandLinksArrayToMap(oldList),
-        newLinksMap = DvtDiagramDataAnimationHandler._expandLinksArrayToMap(newList);
+    var oldLinksMap = DvtDiagramDataAnimationHandler._expandLinksArrayToMap(context, oldList),
+        newLinksMap = DvtDiagramDataAnimationHandler._expandLinksArrayToMap(context, newList);
     var oldLink, newLink;
-    var skip = {};
-    for (var id in oldLinksMap) {
-      oldLink = oldLinksMap[id];
-      newLink = newLinksMap[id];
+    var skip = new context.ojMap();
+    var thisRef = this;
+    
+    oldLinksMap.forEach(function(link, linkId, map){
+      oldLink = link;
+      newLink = newLinksMap.get(linkId);
 
-      //no match found - link either deleted or invisible
       //do nothing if the link is invisible
       if (!newLink) {
-        if (dvt.ArrayUtils.getIndex(this.getNewDiagram().GetAllLinks(), oldLink.getId()) == -1) {
-          oldLink.animateDelete(this);
+        if (dvt.ArrayUtils.getIndex(thisRef.getNewDiagram().GetAllLinks(), oldLink.getId()) == -1) {
+          oldLink.animateDelete(thisRef);
         }
       }
       //identical links promoted or not - update
       else if ((!oldLink.isPromoted() && !newLink.isPromoted()) ||
-          (oldLink.isPromoted() && newLink.isPromoted() && oldLink.getId() == newLink.getId())) {
-        newLink.animateUpdate(this, oldLink);
+          (oldLink.isPromoted() && newLink.isPromoted() && dvt.BaseDiagram.compareValues(context, oldLink.getId(), newLink.getId()))) {
+        newLink.animateUpdate(thisRef, oldLink);
       }
       //match found but one of the links is inside of promoted link - collapsed or expanded case
       else {
         var oldLinksCount = oldLink.isPromoted() ? oldLink.getData()['_links'].length : 1;
         var newLinksCount = newLink.isPromoted() ? newLink.getData()['_links'].length : 1;
-        if (oldLinksCount > newLinksCount && !skip[oldLink.getId()]) { //expand
-          this._constructExpandCollapseAnimation(oldLink, newLinksMap, skip, true);
+        if (oldLinksCount > newLinksCount && !skip.has(oldLink.getId())) { //expand
+          thisRef._constructExpandCollapseAnimation(oldLink, newLinksMap, skip, true);
         }
-        else if (oldLinksCount < newLinksCount && !skip[newLink.getId()]) { //collapse
-          this._constructExpandCollapseAnimation(newLink, oldLinksMap, skip, false);
+        else if (oldLinksCount < newLinksCount && !skip.has(newLink.getId())) { //collapse
+          thisRef._constructExpandCollapseAnimation(newLink, oldLinksMap, skip, false);
         }
         else if (oldLinksCount == newLinksCount) {
           //a single link inside of promoted - plain update
-          newLink.animateUpdate(this, oldLink);
+          newLink.animateUpdate(thisRef, oldLink);
         }
       }
-    }
+    });
+    
     //check for inserts
-    for (var id in newLinksMap) {
-      oldLink = oldLinksMap[id];
-      newLink = newLinksMap[id];
+    newLinksMap.forEach(function(link, linkId, map){
+      oldLink = oldLinksMap.get(linkId);
+      newLink = link;
       // if no match found, check if the link is invisible, do nothing for invisible link
-      if (!oldLink && !this.getOldDiagram().LinksMap[newLink.getId()]) {
-        newLink.animateInsert(this);
+      if (!oldLink && !thisRef.getOldDiagram().LinksMap.has(newLink.getId())) {
+        newLink.animateInsert(thisRef);
       }
-    }
+    });
   }
   else {
     DvtDiagramDataAnimationHandler.superclass.constructAnimation.call(this, oldList, newList);
@@ -8517,7 +8748,7 @@ DvtDiagramDataAnimationHandler.prototype._constructExpandCollapseAnimation = fun
   var linksToAnimate = [];
   var consolidatedLinks = linkToAnimate.getData()['_links'];
   for (var li = 0; li < consolidatedLinks.length; li++) {
-    var testLink = testLinksMap[consolidatedLinks[li]['id']];
+    var testLink = testLinksMap.get(consolidatedLinks[li]['id']);
     if (testLink && dvt.ArrayUtils.getIndex(linksToAnimate, testLink) === -1) {
       linksToAnimate.push(testLink);
     }
@@ -8527,7 +8758,7 @@ DvtDiagramDataAnimationHandler.prototype._constructExpandCollapseAnimation = fun
       linkToAnimate.animateExpand(this, linksToAnimate);
     else
       linkToAnimate.animateCollapse(this, linksToAnimate);
-    skipMap[linkToAnimate.getId()] = true;
+    skipMap.set(linkToAnimate.getId(),true);
   }
 };
 
@@ -8538,8 +8769,8 @@ DvtDiagramDataAnimationHandler.prototype._constructExpandCollapseAnimation = fun
  * @return {Object} map of links stored by id
  * @private
  */
-DvtDiagramDataAnimationHandler._expandLinksArrayToMap = function(linkArray) {
-  var list = {};
+DvtDiagramDataAnimationHandler._expandLinksArrayToMap = function(context, linkArray) {
+  var list = new context.ojMap();
   for (var i = 0; i < linkArray.length; i++) {
     var link = linkArray[i];
     if (!link) {
@@ -8548,11 +8779,11 @@ DvtDiagramDataAnimationHandler._expandLinksArrayToMap = function(linkArray) {
     if (link.isPromoted()) {
       var consolidatedLinks = link.getData()['_links'];
       for (var li = 0; li < consolidatedLinks.length; li++) {
-        list[consolidatedLinks[li]['id']] = link;
+        list.set(consolidatedLinks[li]['id'],link);
       }
     }
     else {
-      list[link.getId()] = link;
+      list.set(link.getId(),link);
     }
   }
   return list;
@@ -8575,6 +8806,7 @@ var DvtDiagramEventManager = function(context, callback, callbackObj) {
   this._diagram = callbackObj;
   this._linkDragSelector = null;
   this._linkDropSelector = null;
+  this._prevRolloverEvent = null;
 };
 
 dvt.Obj.createSubclass(DvtDiagramEventManager, dvt.EventManager, 'DvtDiagramEventManager');
@@ -8603,6 +8835,11 @@ DvtDiagramEventManager.prototype.ProcessRolloverEvent = function(event, obj, bOv
   var options = this._diagram.getOptions();
   if (options['hoverBehavior'] != 'dim')
     return;
+  // prevent a problem processing highlight over and over for the same object
+  // which happens on FF after reparenting a highlighted node for flat diagram
+  if (this._prevRolloverEvent && this._prevRolloverEvent.obj === obj && 
+      this._prevRolloverEvent.bOver === bOver)
+    return;
 
   // Compute the new highlighted categories and update the options
   var categories = obj.getCategories ? obj.getCategories() : [];
@@ -8611,6 +8848,7 @@ DvtDiagramEventManager.prototype.ProcessRolloverEvent = function(event, obj, bOv
   var rolloverEvent = dvt.EventFactory.newCategoryHighlightEvent(options['highlightedCategories'], bOver);
   var hoverBehaviorDelay = dvt.StyleUtils.getTimeMilliseconds(options['styleDefaults']['hoverBehaviorDelay']);
   this.RolloverHandler.processEvent(rolloverEvent, this._diagram.GetAllNodeObjects(), hoverBehaviorDelay, options['highlightMatch'] == 'any');
+  this._prevRolloverEvent = { obj: obj, bOver: bOver };
 };
 
 /**
@@ -8661,6 +8899,21 @@ DvtDiagramEventManager.prototype.ProcessKeyboardEvent = function(event)
   else if (keyCode == dvt.KeyboardEvent.SPACE && event.ctrlKey && event.shiftKey) {
     if (focusObj && focusObj.HandleKeyboardEvent) {
       focusObj.HandleKeyboardEvent(event);
+    }
+  }
+  else if ((keyCode == dvt.KeyboardEvent.ZERO || keyCode == dvt.KeyboardEvent.NUMPAD_ZERO) && 
+          event.ctrlKey && event.altKey) {
+    if (focusObj) {
+      var pzc = this._diagram.getPanZoomCanvas();
+      var stageDims = focusObj.getKeyboardBoundingBox(this.getCtx().getStage());
+      var localPos1 = pzc.getContentPane().stageToLocal({x: stageDims.x, y: stageDims.y});
+      var localPos2 = pzc.getContentPane().stageToLocal({x: stageDims.x + stageDims.w, y: stageDims.y + stageDims.h});
+      var finBounds = {x: localPos1.x, y: localPos1.y, w: localPos2.x - localPos1.x, h: localPos2.y - localPos1.y};
+      
+      var animator = DvtDiagramStyleUtils.getAnimationOnDataChange(this._diagram) != 'none' ?
+              new dvt.Animator(this.getCtx(), this._diagram.getAnimationDuration()) : null;
+      pzc.zoomToFit(animator, finBounds);
+      animator && animator.play();
     }
   }
   else {
@@ -9174,6 +9427,7 @@ DvtDiagramLink.newInstance = function(diagram, data, promoted) {
 DvtDiagramLink.prototype.Init = function(context, diagram, data, promoted) {
   DvtDiagramLink.superclass.Init.call(this, context, data['id'], diagram);
   this._data = data;
+  this._isHighlighted = true;
   this.setPromoted(promoted);
   if (this.isSelectable()) {
     this.setCursor(dvt.SelectionEffectUtils.getSelectingCursor());
@@ -9313,8 +9567,9 @@ DvtDiagramLink.prototype.render = function() {
   var startGroupId = diagram.getNodeById(this.getStartId()).getGroupId();
   var endGroupId = diagram.getNodeById(this.getEndId()).getGroupId();
   if (groupId) {
+    var context = this.getCtx();
     var linkParent = diagram.getNodeById(groupId).GetChildNodePane();
-    if (groupId == startGroupId && groupId == endGroupId)
+    if( dvt.BaseDiagram.compareValues(context, groupId, startGroupId) && dvt.BaseDiagram.compareValues(context, groupId, endGroupId) )
       linkParent.addChildAt(this, 0);
     else
       linkParent.addChild(this); //cross container link inside container
@@ -9601,6 +9856,18 @@ DvtDiagramLink.prototype.hideHoverEffect = function() {
 };
 
 /**
+ * Highlight current link
+ * @param {boolean} bHighlight true if the link should be highlighted
+ */
+DvtDiagramLink.prototype.highlight = function(bHighlight) {
+  if (this._isHighlighted !== bHighlight) {
+    var highlightAlpha = bHighlight ? 1.0 : this._diagram.getOptions()['styleDefaults']['_highlightAlpha'];
+    this.setAlpha(highlightAlpha);
+    this._isHighlighted = bHighlight;
+  }
+};
+
+/**
  * @override
  */
 DvtDiagramLink.prototype.getDatatip = function(target, x, y) {
@@ -9630,11 +9897,20 @@ DvtDiagramLink.prototype.getShortDesc = function() {
  * @return {object}
  */
 DvtDiagramLink.prototype.getDataContext = function() {
+  var itemData, data;
+  if (this.GetDiagram().isDataProviderMode()) {
+    // return both type of data - template processed and originals
+    data = this.isPromoted() ? this.getData()['_links'] : this.getData();
+    itemData = this.isPromoted() ? this.getData()['_links'].map(function(item){return item['_itemData']}) : this.getData()['_itemData'];
+  } else {
+    data = this.isPromoted() ? this.getData()['_links'] : this.getData()['_itemData'];
+  }
   return {
     'id': this.getId(),
     'type': this.isPromoted() ? 'promotedLink' : 'link',
     'label': this.getData()['label'],
-    'data' : this.isPromoted() ? this.getData()['_links'] : this.getData()['_origData'],
+    'data' : data,
+    'itemData' : itemData,
     'component': this.GetDiagram().getOptions()['_widgetConstructor']
   };
 };
@@ -9903,7 +10179,7 @@ DvtDiagramLink.prototype.setLabelAlignments = function(halign, valign) {
 
 /**
  * Sets group id for the link
- * @param {string} id group id for the link
+ * @param {any} id group id for the link
  */
 DvtDiagramLink.prototype.setGroupId = function(id)
 {
@@ -9922,7 +10198,7 @@ DvtDiagramLink.prototype.getGroupId = function()
  * Helper function that finds closest common ascestor container for the link start and end nodes
  * @param {DvtDiagramLink} link
  * @param {dvt.Diagram} diagram
- * @return {string} id of the closest common ansestor or null for the top level
+ * @return {any} id of the closest common ansestor or null for the top level
  * @private
  */
 DvtDiagramLink._getCommonAncestorId = function(link, diagram) {
@@ -9949,12 +10225,16 @@ DvtDiagramLink._getCommonAncestorId = function(link, diagram) {
 
 /**
  * Helper function that returns id for a promoted link for specified nodes
- * @param {string} startId id for start node
- * @param {string} endId id for end node
- * @return {string} id for promoted link
+ * @param {dvt.Diagram} diagram the diagram component
+ * @param {any} startId id for start node
+ * @param {any} endId id for end node
+ * @return {any} id for promoted link
  * @protected
  */
-DvtDiagramLink.GetPromotedLinkId = function(startId, endId) {
+DvtDiagramLink.GetPromotedLinkId = function(diagram, startId, endId) {
+  if (diagram.isDataProviderMode()) {
+    return { name: '_promoted', startId: startId, endId: endId };
+  }
   return '_plL' + startId + '_L' + endId;
 };
 
@@ -10013,7 +10293,7 @@ DvtDiagramLink.ConvertLinkData = function(linkData) {
     'selectable': linkData['selectable'],
     'shortDesc': linkData['shortDesc'],
     'categories': linkData['categories'],
-    '_origData': linkData
+    '_itemData': linkData
   };
 };
 
@@ -10082,6 +10362,7 @@ DvtDiagramNode.newInstance = function(diagram, data) {
 DvtDiagramNode.prototype.Init = function(context, diagram, data) {
   DvtDiagramNode.superclass.Init.call(this, context, data['id'], diagram);
   this._data = data;
+  this._isHighlighted = true;
   if (this.isSelectable()) {
     this.setCursor(dvt.SelectionEffectUtils.getSelectingCursor());
   }
@@ -10243,7 +10524,7 @@ DvtDiagramNode.prototype._applyCustomNodeContent = function(renderer, state, pre
     this._diagram.Log('dvt.Diagram: could not add custom node content - context handler is undefined', 1);
     return;
   }
-  var nodeData = this.getData()['_origData'];
+  var nodeData = this.getData()['_itemData'];
   var childContent = null;
   if (this.isDisclosed()) {
     var childNodePane = this.GetChildNodePane();
@@ -10669,7 +10950,8 @@ DvtDiagramNode.prototype.getDataContext = function() {
     'id': this.getId(),
     'type': 'node',
     'label': this.getData()['label'],
-    'data': this.getData()['_origData'],
+    'data': this.GetDiagram().isDataProviderMode() ? this.getData() : this.getData()['_itemData'],
+    'itemData': this.GetDiagram().isDataProviderMode() ? this.getData()['_itemData'] : null,
     'component': this.GetDiagram().getOptions()['_widgetConstructor']
   };
 };
@@ -10764,11 +11046,20 @@ DvtDiagramNode.prototype.HandleKeyboardEvent = function(event) {
 
 /**
  * Check if the node is a container node
- * @return {boolean} return true for contaienr node
+ * @return {boolean} return true for container node
  */
 DvtDiagramNode.prototype.isContainer = function() {
-  var dataSource = this.GetDiagram().getOptions()['data'];
-  return dataSource['getChildCount'](this.getData()) == 0 ? false : true;
+  if (this._diagram.isTreeDataProvider()) {
+    var childDataProvider = this._diagram.getOptions().nodeData.getChildDataProvider(this.getId());
+    return childDataProvider ? childDataProvider.isEmpty() !== 'yes' : false;
+  }
+  else if (this._diagram.isDataProviderMode()) {
+    return false;
+  }
+  else {
+    var dataSource = this.GetDiagram().getOptions()['data'];
+    return dataSource['getChildCount'](this.getData()) == 0 ? false : true;
+  }
 };
 
 /**
@@ -10949,7 +11240,7 @@ DvtDiagramNode.prototype.animateUpdate = function(animationHandler, oldNode) {
         var oldChildIds = oldNode.getChildNodeIds();
         var oldNodes = animationHandler.getOldDiagram().NodesMap;
         for (var i = 0; i < oldChildIds.length; i++) {
-          oldChildNodes.push(oldNodes[oldChildIds[i]]);
+          oldChildNodes.push(oldNodes.get(oldChildIds[i]));
         }
         animationHandler.constructAnimation(oldChildNodes, newChildNodes);
       }
@@ -11132,6 +11423,30 @@ DvtDiagramNode.prototype.rerenderOnZoom = function(event) {
     this._applyCustomNodeContent(this._diagram.getOptions()['zoomRenderer'], state, prevState);
   }
 };
+
+/**
+ * Highlight current node
+ * @param {boolean} bHighlight true if the node should be highlighted
+ */
+DvtDiagramNode.prototype.highlight = function(bHighlight) {
+  if (this._isHighlighted !== bHighlight) {
+    this._isHighlighted = bHighlight;
+    var highlightAlpha = bHighlight ? 1.0 : this._diagram.getOptions()['styleDefaults']['_highlightAlpha'];
+   
+    if (!this._customNodeContent && this.isDisclosed()) {
+      // update parts of a standard container
+      this._containerShape && this._containerShape.setAlpha(highlightAlpha);
+      this._containerButton && this._containerButton.setAlpha(highlightAlpha);
+      this._labelObj && this._labelObj.setAlpha(highlightAlpha);
+      this._selectionShape && this._selectionShape.setAlpha(highlightAlpha);
+    }
+    else {
+      // default way - just toggle the value
+      this.setAlpha(highlightAlpha);
+    }
+  }
+};
+
 /**
  * @override
  */
@@ -11403,7 +11718,7 @@ DvtDiagramNode.prototype.isDragAvailable = function(clientIds) {
  * @override
  */
 DvtDiagramNode.prototype.getDragTransferable = function(mouseX, mouseY) {
-  if (this.getData()['draggable'] === 'off')
+  if (!this._isDraggable())
     return null;
   return [this.getId()];
 };
@@ -11497,7 +11812,7 @@ DvtDiagramNode.prototype._createDropEffect = function(styleClass) {
  * @private
  */
 DvtDiagramNode.prototype._setDraggableStyleClass = function() {
-  if (this._diagram.getEventManager().IsDragSupported() && this.getData()['draggable'] != 'off') {
+  if (this._diagram.getEventManager().IsDragSupported() && this._isDraggable()) {
     var draggableTopShape = this._customNodeContent ? this :
         this.isDisclosed() ? this._containerShape :
         this._background ? this._background : this._shape;
@@ -11505,6 +11820,15 @@ DvtDiagramNode.prototype._setDraggableStyleClass = function() {
     dvt.ToolkitUtils.addClassName(el, 'oj-diagram-node');
     dvt.ToolkitUtils.addClassName(el, 'oj-draggable');
   }
+};
+
+/**
+ * Checks if the node is draggable
+ * @private
+ * @return {boolean} true if the node is draggable
+ */
+DvtDiagramNode.prototype._isDraggable = function() {
+  return (this.getData()['draggable'] !== 'off' && this.getData()['draggable'] !== false);
 };
 
 /**
@@ -11521,7 +11845,7 @@ DvtDiagramNode.ConvertNodeData = function(nodeData) {
     'shortDesc': nodeData['shortDesc'],
     'categories': nodeData['categories'],
     'nodes': nodeData['nodes'],
-    '_origData': nodeData
+    '_itemData': nodeData
   };
 };
 
@@ -11825,7 +12149,7 @@ DvtDiagramAutomation.prototype.getPromotedLink = function(startIndex, endIndex) 
   var endNode = this._getNode(endIndex);
   if (!startNode || !endNode)
     return null;
-  var linkId = DvtDiagramLink.GetPromotedLinkId(startNode.getId(), endNode.getId());
+  var linkId = DvtDiagramLink.GetPromotedLinkId(this._diagram, startNode.getId(), endNode.getId());
   var link = this._diagram.getLinkById(linkId);
   if (link) {
     var data = {};

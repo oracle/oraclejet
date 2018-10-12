@@ -4243,7 +4243,7 @@ dvt.PanZoomCanvas.prototype.zoomBy = function(dz, xx, yy, animator)
   // shift the update matrix back into bounds
   var xDiff = this.ConstrainPanX(mat.getTx()) - mat.getTx();
   var yDiff = this.ConstrainPanY(mat.getTy()) - mat.getTy();
-  this.FireZoomEvent(dvt.ZoomEvent.SUBTYPE_ADJUST_PAN_CONSTRAINTS, newZoom, oldZoom, animator, null, xx, yy, xDiff, yDiff);
+  this.FireZoomEvent(dvt.ZoomEvent.SUBTYPE_ADJUST_PAN_CONSTRAINTS, newZoom, oldZoom, animator, xx, yy, xDiff, yDiff);
 
   // shift the update matrix back into bounds again in case the zooming listener changes the pan constraints
   xDiff = this.ConstrainPanX(mat.getTx()) - mat.getTx();
@@ -4252,7 +4252,7 @@ dvt.PanZoomCanvas.prototype.zoomBy = function(dz, xx, yy, animator)
 
   var thisRef = this;
   var fireStartEventFunc = function() {
-    thisRef.FireZoomEvent(dvt.ZoomEvent.SUBTYPE_ZOOMING, newZoom, oldZoom, animator, null, xx, yy, xDiff, yDiff);
+    thisRef.FireZoomEvent(dvt.ZoomEvent.SUBTYPE_ZOOMING, newZoom, oldZoom, animator, xx, yy, xDiff, yDiff);
   };
   var fireEndEventFunc = function() {
     //use current zoom level at time of firing event as new zoom level
@@ -4260,7 +4260,7 @@ dvt.PanZoomCanvas.prototype.zoomBy = function(dz, xx, yy, animator)
     //zoom animation gets interrupted by the next one, so each event
     //doesn't actually zoom all the way to the desired scale until the
     //last event
-    thisRef.FireZoomEvent(dvt.ZoomEvent.SUBTYPE_ZOOMED, thisRef.getZoom(), oldZoom, animator, null, xx, yy, xDiff, yDiff);
+    thisRef.FireZoomEvent(dvt.ZoomEvent.SUBTYPE_ZOOMED, thisRef.getZoom(), oldZoom, animator, xx, yy, xDiff, yDiff);
   };
 
   if (animator)
@@ -4344,9 +4344,6 @@ dvt.PanZoomCanvas.prototype.zoomToFit = function(animator, fitBounds)
   this.setZoomingEnabled(true);
   try {
     var bounds = fitBounds ? fitBounds : this._contentPane.getDimensions();
-
-    var event = this.FireZoomEvent(dvt.ZoomEvent.SUBTYPE_ZOOM_TO_FIT_CALC_BOUNDS, null, null, animator, bounds);
-    bounds = event.getZoomToFitBounds();
     if (!bounds)
       return;
 
@@ -4363,10 +4360,10 @@ dvt.PanZoomCanvas.prototype.zoomToFit = function(animator, fitBounds)
     var oldZoom = this.getZoom(animator);
     var thisRef = this;
     var fireStartEventFunc = function() {
-      thisRef.FireZoomEvent(dvt.ZoomEvent.SUBTYPE_ZOOM_TO_FIT_BEGIN, null, null, animator, bounds);
+      thisRef.FireZoomEvent(dvt.ZoomEvent.SUBTYPE_ZOOM_TO_FIT_BEGIN, null, null, animator);
     };
     var fireEndEventFunc = function() {
-      thisRef.FireZoomEvent(dvt.ZoomEvent.SUBTYPE_ZOOM_TO_FIT_END, thisRef.getZoom(), oldZoom, animator, bounds);
+      thisRef.FireZoomEvent(dvt.ZoomEvent.SUBTYPE_ZOOM_TO_FIT_END, thisRef.getZoom(), oldZoom, animator);
     };
 
     if (!animator)
@@ -4402,10 +4399,6 @@ dvt.PanZoomCanvas.prototype.calcZoomToFitScale = function(bounds)
     bounds = this._contentPane.getDimensions();
   }
 
-  var event = this.FireZoomEvent(dvt.ZoomEvent.SUBTYPE_ZOOM_TO_FIT_CALC_BOUNDS, null, null, null, bounds);
-
-  bounds = event.getZoomToFitBounds();
-
   var dzx = (this._ww - 2 * this._zoomToFitPadding) / (bounds.w);
   var dzy = (this._hh - 2 * this._zoomToFitPadding) / (bounds.h);
   var dz = Math.min(dzx, dzy);
@@ -4421,11 +4414,6 @@ dvt.PanZoomCanvas.prototype.calcZoomToFitScale = function(bounds)
 dvt.PanZoomCanvas.prototype.calcZoomToFitBounds = function()
 {
   var bounds = this._contentPane.getDimensions();
-
-  var event = this.FireZoomEvent(dvt.ZoomEvent.SUBTYPE_ZOOM_TO_FIT_CALC_BOUNDS, null, null, null, bounds);
-
-  bounds = event.getZoomToFitBounds();
-
   bounds.x -= this._zoomToFitPadding;
   bounds.y -= this._zoomToFitPadding;
   bounds.w += 2 * this._zoomToFitPadding;
@@ -4724,16 +4712,15 @@ dvt.PanZoomCanvas.prototype.FirePanEvent = function(subType, newX, newY, oldX, o
  * @param {number}  newZoom  new zoom factor
  * @param {number}  oldZoom  old zoom factor
  * @param {dvt.Animator}  animator  optional animator used to animate the zoom
- * @param {dvt.Rectangle}  zoomToFitBounds  bounds to use for zoom-to-fit
  * @param {number}  xx  horizontal center of zoom
  * @param {number}  yy  vertical center of zoom
  * @param {number}  tx  the horizontal translation applied after the zoom
  * @param {number}  ty  the vertical translation applied after the zoom
  * @protected
  */
-dvt.PanZoomCanvas.prototype.FireZoomEvent = function(subType, newZoom, oldZoom, animator, zoomToFitBounds, xx, yy, tx, ty)
+dvt.PanZoomCanvas.prototype.FireZoomEvent = function(subType, newZoom, oldZoom, animator, xx, yy, tx, ty)
 {
-  var zoomEvent = new dvt.ZoomEvent(subType, newZoom, oldZoom, animator, zoomToFitBounds, new dvt.Point(xx, yy), tx, ty);
+  var zoomEvent = new dvt.ZoomEvent(subType, newZoom, oldZoom, animator, new dvt.Point(xx, yy), tx, ty);
   this.FireListener(zoomEvent);
   return zoomEvent;
 };
@@ -5130,6 +5117,37 @@ dvt.PanZoomCanvas.prototype.destroy = function() {
   dvt.PanZoomCanvas.superclass.destroy.call(this);
 };
 
+/**
+ * Sets the pan cursor.
+ * @param {string} panUpCursor The URI of the cursor image for the non-dragged state.
+ * @param {string} panDownCursor The URI of the cursor image for the dragged state.
+ */
+dvt.PanZoomCanvas.prototype.setPanCursor = function(panUpCursor, panDownCursor) {
+  // IE doesn't support cursor image with custom positioning
+  if (dvt.Agent.isPlatformIE())
+    return;
+
+  if (panUpCursor)
+    this._panUpCursor = 'url(' + panUpCursor + ') 8 8, auto';
+  if (panDownCursor)
+    this._panDownCursor = 'url(' + panDownCursor + ') 8 8, auto';
+};
+
+/**
+ * Returns the appropriate cursor type.
+ * @param {boolean} panOn true during active panning
+ * @return {string} The cursor type.
+ */
+dvt.PanZoomCanvas.prototype.getCursor = function(panOn) {
+  if (this._bPanningEnabled) {
+    if (panOn)
+      return this._panDownCursor ? this._panDownCursor : 'move';
+    else
+      return this._panUpCursor ? this._panUpCursor : 'move';
+  }
+  else
+    return 'inherit';
+};
 // Copyright (c) 2011, 2017, Oracle and/or its affiliates. All rights reserved.
 /**
  * @constructor
@@ -5245,8 +5263,10 @@ dvt.PanZoomCanvasEventManager.prototype.OnMouseMove = function(event) {
   var pos = this._callbackObj.GetRelativeMousePosition(event);
   if (Math.abs(pos.x - this._px) <= 3 && Math.abs(pos.y - this._py) <= 3)
     return;
-
+  
+  this._callbackObj.setCursor("grab");
   if (this._bDown) {
+    this._callbackObj.setCursor("grabbing");
     this._bDragging = true;
     var pos = this._callbackObj.GetRelativeMousePosition(event);
     var xx = pos.x;
@@ -5285,6 +5305,7 @@ dvt.PanZoomCanvasEventManager.prototype.OnMouseMove = function(event) {
     this._mx = xx;
     this._my = yy;
   }
+  this._callbackObj.setCursor(this._callbackObj.getCursor(this._bDown));
 };
 
 /**
@@ -5790,6 +5811,7 @@ dvt.PanZoomCanvasEventManager.prototype.PanZoomEnd = function() {
   if (this._bZooming) {
     this._handleZoomEnd();
   }
+  this._callbackObj.setCursor(this._callbackObj.getCursor(this._bDown));
 };
 
 /**

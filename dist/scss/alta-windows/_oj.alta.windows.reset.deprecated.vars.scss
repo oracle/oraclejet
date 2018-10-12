@@ -151,12 +151,6 @@ $dropTarget1Color:  #D9F4FA !default;
 $dropTarget2Color:  adjust-color($dropTarget1Color, $lightness: -6%, $saturation: -10%) !default;
 
 
-// shadow
-//----------------------------------
-$boxShadowColor: #000000 !default;
-$smallBoxShadow:  0 0 5px 0 transparentize($boxShadowColor, .80) !default;
-$mediumBoxShadow: 1px 1px 5px 0 transparentize($boxShadowColor, .60) !default;
-$largeBoxShadow:  1px 1px 10px 0 transparentize($boxShadowColor, .55) !default;
 
 
 // overlay
@@ -248,16 +242,14 @@ $windowBgColor:     $background1Color !default;
 
 // NOTE WINDOW
 //-----------------------------------------------------------------------------
-$noteWindowBorderColor:      $windowBorderColor !default;
-$noteWindowBgColor:          $windowBgColor !default;
-$noteWindowBoxShadow: $smallBoxShadow !default;
+$popupTailBorderColor:      $windowBorderColor !default;
+$popupTailBgcolor:          $windowBgColor !default;
 
 // POPUP
 //-----------------------------------------------------------------------------
 // popups are sometimes called a "dropdown" or "inline selector"
 $popupBorderColor:  $windowBorderColor !default;
 $popupBgColor:      $background1Color !default;
-$popupBoxShadow:    $smallBoxShadow !default;
 
 // APPLICATION LAYOUT - WEB
 //-------------------------------------------------------------
@@ -266,7 +258,6 @@ $popupBoxShadow:    $smallBoxShadow !default;
 $appLayoutWebHeaderBgColor: $headerBgColor !default;
 $appLayoutWebHeaderBorderColor: $border2Color !default;
 $appLayoutWebHeaderTextColor: $secondaryTextColor !default;
-$appLayoutWebHeaderBoxShadow: 0 3px 3px transparentize($boxShadowColor, .9) !default;
 
 // Footer
 $appLayoutWebFooterBgColor: $appLayoutWebHeaderBgColor !default;
@@ -282,14 +273,11 @@ $appLayoutWebOffcanvasBgColor: $contrastBackground1Color !default;
 $appLayoutHybridHeaderTextColor: $textColor !default;
 $appLayoutHybridHeaderBorderColor: null !default;
 $appLayoutHybridHeaderBgColor: $background2Color !default;
-$appLayoutHybridHeaderBoxShadow: none !default;
 
 // Footer
 $appLayoutHybridFooterBorderColor: null !default;
 $appLayoutHybridFooterBgColor: $appLayoutHybridHeaderBgColor !default;
 
-// Nav Bar
-$appLayoutHybridNavBarBoxShadow: none !default;
 
 // Nav Drawer
 $appLayoutHybridOffcanvasBgColor: $appLayoutWebOffcanvasBgColor !default;
@@ -305,11 +293,6 @@ $appLayoutHybridOffcanvasBgColor: $appLayoutWebOffcanvasBgColor !default;
 $menuBorderColor:                    $windowBorderColor !default;
 $menuBgColor:                          $popupBgColor !default;
 
-// top-level menus (.oj-menu.oj-component)
-$menuBoxShadow:                      none !default;
-
-// submenus (.oj-menu.oj-menu-submenu)
-$menuSubmenuBoxShadow:               $menuBoxShadow !default;
 
 // menu items (.oj-menu-item) and their anchors
 $menuItemBorderColor:                  null !default;
@@ -369,16 +352,12 @@ $buttonTextColor:                 $contrastTextColor !default;
 $buttonIconColor:                 $buttonTextColor !default;
 $buttonBorderColor:               $buttonBgColor!default;
 $buttonInternalBorderColor:       #c4ced7 !default;
-$buttonTextShadow:                null !default;
-$buttonBoxShadow:                 null !default;
 
 // hover
 $buttonBgColorHover:              darken($interaction4Color, 14%) !default;
 $buttonTextColorHover:            $buttonTextColor !default;
 $buttonIconColorHover:            $buttonTextColorHover !default;
 $buttonBorderColorHover:          $buttonBgColorHover !default;
-$buttonTextShadowHover:           null !default;
-$buttonBoxShadowHover:            $buttonBoxShadow !default;
 
 // active
 $buttonBgColorActive:             darken($interaction1Color, 12%) !default;
@@ -386,8 +365,6 @@ $buttonTextColorActive:           $buttonTextColor !default;
 $buttonIconColorActive:           $buttonTextColorActive !default;
 $buttonBorderColorActive:         $buttonBgColorActive !default;
 $buttonInternalBorderColorActive: $buttonInternalBorderColor !default;
-$buttonTextShadowActive:          null !default;
-$buttonBoxShadowActive:           $buttonBoxShadow !default;
 
 // selected - default to use active values
 $buttonBgColorSelected:           darken($buttonBgColor, 15%) !default;
@@ -395,9 +372,6 @@ $buttonTextColorSelected:         $buttonTextColorActive !default;
 $buttonIconColorSelected:         $buttonIconColorActive !default;
 $buttonBorderColorSelected:       $buttonBorderColorActive !default;
 $buttonInternalBorderColorSelected: $buttonInternalBorderColorActive !default;
-$buttonTextShadowSelected:        $buttonTextShadowActive !default;
-$buttonBoxShadowSelected:         $buttonBoxShadowActive !default;
-
 // selected and hovered
 $buttonTextColorSelectedHover:    $contrastTextColor !default;
 $buttonIconColorSelectedHover:    $buttonTextColorSelectedHover !default;
@@ -409,7 +383,6 @@ $buttonBgColorDisabled:           darken($interaction3Color, 3%) !default;
 $buttonTextColorDisabled:         lighten($textColorDisabled, 2%) !default;
 $buttonIconColorDisabled:         darken($textColorDisabled, 12%) !default;
 $buttonBorderColorDisabled:       $buttonBgColorDisabled !default;
-$buttonBoxShadowDisabled:         none !default;
 
 // disabled and selected
 $buttonTextColorSelectedDisabled:            darken($buttonTextColor, 6%) !default;
@@ -520,7 +493,6 @@ $buttonConfirmColor:      #03805a !default;
 // DIALOG
 //-----------------------------------------------------------------------------
 
-$dialogBoxShadow:           $smallBoxShadow !default;
 $dialogBorderColor:         $interaction1Color !default;
 $dialogBgColor:             $windowBgColor !default;
 
@@ -615,7 +587,6 @@ $inputSearchBgColorDisabled: $formControlBgColorDisabled !default;
 // SLIDER
 //-----------------------------------------------------------------------------
 
-$sliderThumbBoxShadow:            null !default;
 
 // colors for enabled state
 $sliderThumbBgColor:             $interaction1Color !default;
@@ -639,7 +610,6 @@ $sliderBarValueBgColorDisabled:  $sliderThumbBgColorDisabled !default;
 
 // Color picker variables
 $sliderColorPickerThumbBorderColor:     white !default;
-$sliderColorPickerThumbBoxShadow:       $mediumBoxShadow !default;
 
 
 // COLOR SPECTRUM
@@ -651,7 +621,6 @@ $colorSpectrumBorderColor:       $border1Color !default;
 // Spectrum Thumb
 $colorSpectrumThumbBorderColor:         $sliderColorPickerThumbBorderColor !default;
 $colorspectrumThumbBorderColorDisabled: $sliderThumbBorderColorDisabled;
-$colorSpectrumThumbBoxShadow:           $sliderColorPickerThumbBoxShadow !default;
 
 
 // COLOR PALETTE
@@ -666,16 +635,12 @@ $colorPaletteSwatchOuterBorderColorSelected: $linkTextColor !default;
 //-----------------------------------------------------------------------------
 
 
-// ENABLED OFF
-$switchThumbShadow: none !default;
 // ----- COLORS -----
 $switchTrackBgColor:                     $background1Color !default; // #ffffff
 $switchTrackBorderColor:                 $interaction1Color !default;
 $switchThumbBgColor:                     $switchTrackBorderColor !default; // #0572ce
 $switchThumbBorderColor:                 $switchTrackBorderColor !default; // #0572ce
 
-// ENABLED ON
-$switchThumbShadowSelected: $switchThumbShadow !default;
 // ----- COLORS -----
 $switchTrackBgColorSelected:             $switchTrackBorderColor !default; // #0572ce
 $switchTrackBorderColorSelected:         $switchTrackBgColorSelected !default; // #0572ce
@@ -1089,8 +1054,8 @@ $tabBarItemIconOnlyBgColorSelected:                 null !default;
 $tabBarIconOnlyIconColorSelected:                   $interaction1Color !default;
 
 //active
-$tabBarItemBgColorActive:                           null !default;
-$tabBarItemBorderColorActive:                       null !default;
+$tabBarItemBgColorActive:                           $tabBarItemBgColorHover !default;
+$tabBarItemBorderColorActive:                       $tabBarItemBorderColorHover !default;
 
 //Focus
 $tabBarItemOutlineColorFocus:                       $border8Color !default;

@@ -24,13 +24,23 @@
   @include module-include-once("alta.windows.menu") {
 
     .oj-menu-item > a {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        html:not([dir="rtl"]) & {
+          padding-right: calc(16px + (2 * var(--oj-menu-submenu-icon-padding)));
+        }
+        html[dir="rtl"] & {
+          padding-left: calc(16px + (2 * var(--oj-menu-submenu-icon-padding)));
+        }
+      } @else {
         // leave space for submenu icon (16px) plus spacing before/after it
         @include oj-ltr() {
-            padding-right: calc(16px + #{2*$menuSubmenuIconPadding});
+            padding-right: calc(16px + (2 * #{$menuSubmenuIconPadding}));
         }
         @include oj-rtl() {
-            padding-left: calc(16px + #{2*$menuSubmenuIconPadding});
+            padding-left: calc(16px + (2 * #{$menuSubmenuIconPadding}));
         }
+      }
     }
 
     .oj-menu-submenu-icon { 

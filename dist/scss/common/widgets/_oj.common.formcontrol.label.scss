@@ -33,7 +33,7 @@
     @if $initialVisibility == hidden {
       oj-label:not(.oj-complete) {
         visibility: hidden;
-      }      
+      }
     }
 
     .oj-label,
@@ -43,10 +43,19 @@
         // in case you use something like text-overflow: ellipsis,
         // otherwise the ellipsis won't be the same font 
         // color/size/weight as the label text.
-        color: $formControlLabelColor;
-        font-size: $formControlLabelFontSize;    
-        font-weight: $formControlLabelFontWeight;
-        margin-bottom: $formControlLabelMarginBottom;
+        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+        {
+          color: var(--oj-form-control-label-color);
+          font-size: var(--oj-form-control-label-font-size);
+          font-weight: var(--oj-form-control-label-font-weight);
+          margin-bottom: var(--oj-form-control-label-margin-bottom);
+        }
+        @else {
+          color: $formControlLabelColor;
+          font-size: $formControlLabelFontSize;
+          font-weight: $formControlLabelFontWeight;
+          margin-bottom: $formControlLabelMarginBottom;
+        }
     }
 
     /* 
@@ -143,12 +152,26 @@
         text-overflow: ellipsis;      
         @include oj-ltr()
         {
-          padding-right: $formControlLabelInlineGutter;
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+          {
+            padding-right: var(--oj-form-control-inline-gutter);
+          }
+          @else
+          {
+            padding-right: $formControlLabelInlineGutter;
+          }
         }
 
         @include oj-rtl()
         {
-          padding-left: $formControlLabelInlineGutter;
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+          {
+            padding-left: var(--oj-form-control-inline-gutter);
+          }
+          @else
+          {
+            padding-left: $formControlLabelInlineGutter;
+          }
         }
     }
     
@@ -166,18 +189,36 @@
     .oj-label-inline {
         display: inline-block;
         vertical-align: top;
-        margin-top: $formControlLabelInlineMarginTop;
+        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+        {
+          margin-top: var(--oj-form-control-inline-margin-top);
+        }
+        @else {
+          margin-top: $formControlLabelInlineMarginTop;
+        }
         // box sizing required for firefox
         box-sizing: border-box;
 
         @include oj-ltr()
         {
-          padding-right: $formControlLabelInlineGutter;
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+          {
+            padding-right: var(--oj-form-control-inline-gutter);            
+          }
+          @else {
+            padding-right: $formControlLabelInlineGutter;
+          }
         }
 
         @include oj-rtl()
         {
-          padding-left: $formControlLabelInlineGutter;
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+          {
+            padding-left: var(--oj-form-control-inline-gutter);            
+          }
+          @else {
+            padding-left: $formControlLabelInlineGutter;
+          }
         }
     }
     // This is for inline text - labels and text are on the same line. We put oj-label-inline
@@ -185,7 +226,13 @@
     .oj-form-non-control-inline {
         display: inline-block;
         vertical-align: top;
-        margin-top: $formControlLabelInlineMarginTop;
+        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+        {
+          margin-top: var(--oj-form-control-inline-margin-top);
+        }
+        @else {
+          margin-top: $formControlLabelInlineMarginTop;
+        }
         // box sizing required for firefox
         box-sizing: border-box;
     }
@@ -222,11 +269,6 @@
       margin-top: 0;
     }
     
-    .oj-flex-bar > .oj-flex-bar-middle > .oj-form-control,
-    .oj-flex-bar > .oj-flex-bar-middle > .oj-form-non-control {
-      margin-bottom: $formLayoutMarginBottom;
-    }
-
     .oj-label-accesskey {
       text-decoration: underline;
     }
@@ -237,30 +279,56 @@
     // render the label's required icon as an icon font character, else render as plain css.
     // this allows the alta theme to render an '*' icon using content css property, 
     // and alta mobile themes to render a circle w/o using content css property.
-    @if ($formControlLabelRequiredChar and $formControlLabelRequiredChar != '')
+    @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
     {
-      
+      .oj-label-required-icon:before {
+        content: var(--oj-form-control-label-required-char);
+      }
+      .oj-label-required-icon {
+        color: var(--oj-form-control-label-required-icon-color);
+        font-size: var(--oj-form-control-label-required-char-font-size);
+        font-weight: normal;
+        line-height: var(--oj-font-size);
+        font-family: inherit;
+        background-color: var(--oj-form-control-label-required-icon-background-color);
+        border-radius: var(--oj-form-control-label-required-icon-border-radius);
+        height: var(--oj-form-control-label-required-icon-height);
+        width: var(--oj-form-control-label-required-icon-width);
+      }
+    }
+    @else {
       .oj-label-required-icon:before {
         content: $formControlLabelRequiredChar;
       }
-
-      .oj-label-required-icon {
-        color: $colorRequired;
-        font-size: $largeFontSize;
-        font-weight: normal;
-        line-height: $fontSize;
-        font-family: inherit;
+      @if ($formControlLabelRequiredChar and $formControlLabelRequiredChar != '')
+      {
+        .oj-label-required-icon {
+          color: $colorRequired;
+          font-size: $largeFontSize;
+          font-weight: normal;
+          line-height: $fontSize;
+          font-family: inherit;
+          background-color: transparent;
+          border-radius: 0;
+          height: auto;
+          width: auto;
+        }
       }
+      @else
+      {
+        .oj-label-required-icon {
+          color: $colorRequired;
+          font-size: $largeFontSize;
+          font-weight: normal;
+          line-height: $fontSize;
+          font-family: inherit;
+          background-color: $colorRequired;
+          border-radius: 50%;
+          height: 4px;
+          width: 4px; // px is ok since it is so small it won't make a difference if font size changes
+        }
+      } 
     }
-    @else
-    {
-      .oj-label-required-icon {
-        background-color: $colorRequired;
-        border-radius: 50%;
-        height: 4px;
-        width: 4px; // px is ok since it is so small it won't make a difference if font size changes
-      }
-    } 
 
   }
 }

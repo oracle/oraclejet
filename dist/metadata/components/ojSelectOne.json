@@ -1,34 +1,50 @@
 {
   "name": "oj-select-one",
-  "version": "5.2.0",
-  "jetVersion": "5.2.0",
+  "version": "6.0.0",
+  "jetVersion": "6.0.0",
   "displayName": "Single Select",
   "type": "core",
   "styleClasses": [
     {
       "styleGroup": [
+        "oj-form-control-text-align-right"
+      ],
+      "description": "Aligns the text to the right regardless of the reading direction or default text alignment. This is normally used for right aligning numbers"
+    },
+    {
+      "styleGroup": [
         "oj-form-control-text-align-start"
       ],
       "description": "Aligns the text to the left in ltr and to the right in rtl"
+    },
+    {
+      "styleGroup": [
+        "oj-form-control-text-align-end"
+      ],
+      "description": "Aligns the text to the right in ltr and to the left in rtl"
     }
   ],
   "description": "A dropdown list that supports single selection and search filtering.",
+  "help": "https://docs.oracle.com/en/middleware/jet/6/reference-api/oj.ojSelectOne.html",
   "properties": {
     "describedBy": {
       "description": "described the relationship between this component and another element.",
       "type": "string",
-      "displayName": "Described By"
+      "displayName": "Described By",
+      "help": "describedBy"
     },
     "disabled": {
       "description": "Whether the component is disabled. The default is false.",
       "type": "boolean",
       "displayName": "Disabled",
-      "value": false
+      "value": false,
+      "help": "disabled"
     },
     "displayOptions": {
       "description": "Customize how to display to the user the form field's messages, converter and validator hints and help instruction text.",
       "type": "object",
       "displayName": "Display Options",
+      "help": "displayOptions",
       "properties": {
         "converterHint": {
           "description": "Display options for auxilliary converter hint text that determines where it should be displayed in relation to the component.",
@@ -37,7 +53,8 @@
           "value": [
             "placeholder",
             "notewindow"
-          ]
+          ],
+          "help": "displayOptions.converterHint"
         },
         "helpInstruction": {
           "description": "Display options for auxilliary help instruction text that determines where it should be displayed\nin relation to the component.",
@@ -45,7 +62,8 @@
           "displayName": "Help Instruction",
           "value": [
             "notewindow"
-          ]
+          ],
+          "help": "displayOptions.helpInstruction"
         },
         "messages": {
           "description": "Display options for auxilliary message text that determines where it should be displayed\nin relation to the component.",
@@ -53,7 +71,8 @@
           "displayName": "Messages",
           "value": [
             "inline"
-          ]
+          ],
+          "help": "displayOptions.messages"
         },
         "validatorHint": {
           "description": "Display options for auxilliary validator hint text that determines where it should be displayed\nin relation to the component.",
@@ -61,7 +80,8 @@
           "displayName": "Validator Hint",
           "value": [
             "notewindow"
-          ]
+          ],
+          "help": "displayOptions.validatorHint"
         }
       }
     },
@@ -69,30 +89,34 @@
       "description": "Form component help information.\n\nThe properties supported on the help option are:",
       "type": "object",
       "displayName": "Help",
+      "help": "help",
       "properties": {
         "instruction": {
-          "description": "this represents advisory information for the component\nThe default value is null.",
+          "description": "this represents advisory information for the component\nThe default value is \"\".",
           "type": "string"
         }
       }
     },
     "helpHints": {
-      "description": "Represents hints for oj-form-layout element to \nrender help information on the label of the editable component.",
+      "description": "Represents hints for an oj-form-layout element to render help information on the label of the editable component.",
       "type": "object",
       "displayName": "Help Hints",
       "translatable": true,
+      "help": "helpHints",
       "properties": {
         "definition": {
-          "description": "Hint for help definition text associated with the label. \nIt is what shows up when the user hovers over the help icon, or tabs into the help icon, or press and holds the help icon on a mobile device. No formatted text is available for help definition attribute.\n\nSee the help-hints attribute for usage examples.",
+          "description": "Hint for help definition text associated with the label.",
           "type": "string",
           "displayName": "Definition",
-          "value": ""
+          "value": "",
+          "help": "helpHints.definition"
         },
         "source": {
-          "description": "Hint for help source URL associated with the label. \nIf present, a help icon will render next to the label. For security reasons we only support urls with protocol http: or https:. If the url doesn't comply we ignore it and throw an error. \nPass in an encoded URL since we do not encode the URL.\n\nSee the help-hints attribute for usage examples.",
+          "description": "Hint for help source URL associated with the label.",
           "type": "string",
           "displayName": "Source",
-          "value": ""
+          "value": "",
+          "help": "helpHints.source"
         }
       }
     },
@@ -101,44 +125,100 @@
       "type": "string",
       "displayName": "Label Hint",
       "value": "",
-      "translatable": true
+      "translatable": true,
+      "help": "labelHint"
     },
     "messagesCustom": {
       "description": "List of messages an app would add to the component",
       "type": "Array<Object>",
       "displayName": "Messages Custom",
       "value": [],
-      "writeback": true
+      "writeback": true,
+      "help": "messagesCustom"
     },
     "minimumResultsForSearch": {
       "description": "The threshold for showing the search box in the dropdown.",
       "type": "number",
       "displayName": "Minimum Results For Search",
       "value": 15,
-      "minimum": 0
+      "minimum": 0,
+      "help": "minimumResultsForSearch"
     },
     "optionRenderer": {
       "description": "The renderer function that renders the content of each option.",
-      "type": "function|null",
+      "type": "null|function",
       "displayName": "Option Renderer",
-      "value": null
+      "value": null,
+      "help": "optionRenderer",
+      "properties": {
+        "component": {
+          "description": "A reference to the Select element.",
+          "type": "Element"
+        },
+        "parent": {
+          "description": "The parent of the data item. The parent is null for root node.",
+          "type": "Element"
+        },
+        "index": {
+          "description": "The index of the option, where 0 is the index of the first option. In the hierarchical case the index is relative to its parent.",
+          "type": "number"
+        },
+        "depth": {
+          "description": "The depth of the option. The depth of the first level children under the invisible root is 0.",
+          "type": "number"
+        },
+        "leaf": {
+          "description": "Whether the option is a leaf or a group.",
+          "type": "boolean"
+        },
+        "data": {
+          "description": "The data object for the option.",
+          "type": "object"
+        },
+        "parentElement": {
+          "description": "The option label element. The renderer can use this to directly append content.",
+          "type": "Element"
+        }
+      }
     },
     "options": {
       "description": "The option items for the Select.",
-      "type": "null|Array<(oj.Option|oj.Optgroup)>|oj.DataProvider<oj.Option>",
+      "type": "Array<(oj.ojSelect.Option|oj.ojSelect.Optgroup)>|oj.DataProvider|null",
       "displayName": "Options",
-      "value": null
+      "value": null,
+      "help": "options",
+      "extension": {
+        "vbcs": {
+          "itemProperties": {
+            "disabled": {
+              "description": "Option group is disabled.",
+              "type": "boolean"
+            },
+            "label": {
+              "description": "The display label for the option group.",
+              "type": "string"
+            },
+            "children": {
+              "description": "The Option or Optgroup children.",
+              "type": "Array<(oj.ojSelect.Option|oj.ojSelect.Optgroup)>"
+            }
+          }
+        }
+      }
     },
     "optionsKeys": {
-      "description": "Specify the key names to use in the options array. Depending on options-keys means that the signature of the data does not match what is supported by the options attribute. When using Typescript, this would result in a compilation error. Best practice is to use a oj.ListDataProviderView with data mapping as a replacement. However, for the app that must fetch data from a REST endpoint where the data fields do not match those that are supported by the options attribute, you may use the options-keys with any dataProvider that implements oj.DataProvider interface.",
-      "type": "object",
+      "description": "Specify the key names to use in the options array. Depending on options-keys means that the signature of the data does not match what is supported by the options attribute.",
+      "type": "oj.ojSelect.OptionsKeys",
       "displayName": "Options Keys",
+      "value": null,
+      "help": "optionsKeys",
       "properties": {
         "childKeys": {
           "description": "The object for the child keys.",
-          "type": "object",
+          "type": "oj.ojSelect.OptionsKeys",
           "displayName": "Child Keys",
           "value": null,
+          "help": "optionsKeys.childKeys",
           "properties": {
             "label": {
               "description": "The key name for the label.",
@@ -154,7 +234,25 @@
             },
             "childKeys": {
               "description": "The object for the child keys.",
-              "type": "object"
+              "type": "oj.ojSelect.OptionsKeys",
+              "properties": {
+                "label": {
+                  "description": "The key name for the label.",
+                  "type": "string"
+                },
+                "value": {
+                  "description": "The key name for the value.",
+                  "type": "string"
+                },
+                "children": {
+                  "description": "The key name for the children.",
+                  "type": "string"
+                },
+                "childKeys": {
+                  "description": "The object for the child keys.",
+                  "type": "oj.ojSelect.OptionsKeys"
+                }
+              }
             }
           }
         },
@@ -162,19 +260,22 @@
           "description": "The key name for the children.",
           "type": "string",
           "displayName": "Children",
-          "value": null
+          "value": null,
+          "help": "optionsKeys.children"
         },
         "label": {
           "description": "The key name for the label.",
           "type": "string",
           "displayName": "Label",
-          "value": null
+          "value": null,
+          "help": "optionsKeys.label"
         },
         "value": {
           "description": "The key name for the value.",
           "type": "string",
           "displayName": "Value",
-          "value": null
+          "value": null,
+          "help": "optionsKeys.value"
         }
       }
     },
@@ -182,24 +283,52 @@
       "description": "The style attributes for the drop down.",
       "type": "object",
       "displayName": "Picker Attributes",
-      "value": null
+      "value": null,
+      "help": "pickerAttributes",
+      "properties": {
+        "style": {
+          "description": "The css style to append to the picker.",
+          "type": "string"
+        },
+        "class": {
+          "description": "The css class to append to the picker.",
+          "type": "string"
+        }
+      }
     },
     "placeholder": {
       "description": "A short hint that can be displayed before user selects a value.",
       "type": "string|null",
       "displayName": "Placeholder",
-      "value": null
+      "value": null,
+      "help": "placeholder"
     },
     "renderMode": {
       "description": "Specifies whether to render select in JET or as a HTML Select tag.",
       "type": "string",
-      "displayName": "Render Mode"
+      "displayName": "Render Mode",
+      "help": "renderMode",
+      "enumValues": [
+        "jet",
+        "native"
+      ],
+      "propertyEditorValues": {
+        "jet": {
+          "description": "Render the select in jet mode.",
+          "displayName": "Jet"
+        },
+        "native": {
+          "description": "Render the select in native mode.",
+          "displayName": "Native"
+        }
+      }
     },
     "required": {
       "description": "Specifies whether a value is required.",
       "type": "boolean",
       "displayName": "Required",
-      "value": false
+      "value": false,
+      "help": "required"
     },
     "translations": {
       "description": "A collection of translated resources from the translation bundle, or null if this component has no resources.",
@@ -207,53 +336,63 @@
       "displayName": "Translations",
       "value": {},
       "translatable": true,
+      "help": "translations",
       "properties": {
         "filterFurther": {
           "description": "Text at the top of drop down when not all results are fetched and users need to filter further.",
           "type": "string",
-          "displayName": "Filter Further"
+          "displayName": "Filter Further",
+          "help": "translations.filterFurther"
         },
         "moreMatchesFound": {
           "description": "Text for the drop down when more than one options are found.",
           "type": "string",
-          "displayName": "More Matches Found"
+          "displayName": "More Matches Found",
+          "help": "translations.moreMatchesFound"
         },
         "noMatchesFound": {
           "description": "Text for the drop down when no options are found.",
           "type": "string",
-          "displayName": "No Matches Found"
+          "displayName": "No Matches Found",
+          "help": "translations.noMatchesFound"
         },
         "oneMatchesFound": {
           "description": "Text for the drop down when one option is found.",
           "type": "string",
-          "displayName": "One Matches Found"
+          "displayName": "One Matches Found",
+          "help": "translations.oneMatchesFound"
         },
         "required": {
           "description": "Provides properties to customize the summary, detail and hint text used by the\nimplicit required validator associated to any editable component that supports the\nrequired option.\n\nSee the translations attribute and\nrequired option for usage examples.",
           "type": "object",
           "displayName": "Required",
+          "help": "translations.required",
           "properties": {
             "hint": {
               "description": "Hint text used by required validation error.\n\nSee the translations attribute for usage examples.",
               "type": "string",
-              "displayName": "Hint"
+              "displayName": "Hint",
+              "help": "translations.required.hint"
             },
             "messageDetail": {
               "description": "Message text that describes the details of the required validation error.\n\nSee the translations attribute for usage examples.",
               "type": "string",
-              "displayName": "Message Detail"
+              "displayName": "Message Detail",
+              "help": "translations.required.messageDetail"
             },
             "messageSummary": {
               "description": "Message text for summarizing a required validation error.\n\nSee the translations attribute for usage examples.",
               "type": "string",
-              "displayName": "Message Summary"
+              "displayName": "Message Summary",
+              "help": "translations.required.messageSummary"
             }
           }
         },
         "searchField": {
           "description": "Tooltip text for the search box",
           "type": "string",
-          "displayName": "Search Field"
+          "displayName": "Search Field",
+          "help": "translations.searchField"
         }
       }
     },
@@ -263,6 +402,7 @@
       "displayName": "Valid",
       "writeback": true,
       "readOnly": true,
+      "help": "valid",
       "enumValues": [
         "invalidHidden",
         "invalidShown",
@@ -292,8 +432,8 @@
       "description": "The value of the element.",
       "type": "any",
       "displayName": "Value",
-      "value": "When the value attribute is not set, the first option is used as its initial value if it exists.",
-      "writeback": true
+      "writeback": true,
+      "help": "value"
     },
     "valueOption": {
       "description": "The current value of the element and its associated display label.",
@@ -301,6 +441,7 @@
       "displayName": "Value Option",
       "value": null,
       "writeback": true,
+      "help": "valueOption",
       "properties": {
         "value": {
           "description": "current value of JET Select",
@@ -315,22 +456,28 @@
   },
   "methods": {
     "refresh": {
-      "description": "Refreshes the visual state of the select. JET elements require a refresh() after the DOM is programmatically changed. This method does not accept any arguments."
+      "description": "Refreshes the visual state of the select. JET elements require a refresh() after the DOM is programmatically changed. This method does not accept any arguments.",
+      "help": "refresh",
+      "return": "void"
     },
     "validate": {
       "description": " All messages are cleared, including custom messages added by the app. The implicit required validator is run first if the component is marked required. At the end of validation if there are errors, the messages are shown. If there were no errors, then the value option is updated. ",
+      "help": "validate",
       "return": "Promise"
     },
     "reset": {
-      "description": "Resets the component by clearing all messages and messages attributes - \nmessagesCustom -\nand updates the component's display value using the attribute value. User entered values will be \nerased when this method is called.",
+      "description": "Resets the component by clearing all messages and messages attributes -\nmessagesCustom -\nand updates the component's display value using the attribute value. User entered values will be\nerased when this method is called.",
+      "help": "reset",
       "return": "void"
     },
     "showMessages": {
-      "description": "Takes all deferred messages and shows them. \nIt then updates the valid property; e.g.,\nif the valid state was \"invalidHidden\"\nbefore showMessages(), the valid state will become \"invalidShown\" after showMessages(). \n\nIf there were no deferred messages this method simply returns. \n",
+      "description": "Takes all deferred messages and shows them.\nIt then updates the valid property; e.g.,\nif the valid state was \"invalidHidden\"\nbefore showMessages(), the valid state will become \"invalidShown\" after showMessages().\n\nIf there were no deferred messages this method simply returns.\n",
+      "help": "showMessages",
       "return": "void"
     },
     "setProperty": {
-      "description": "Sets a property or a single subproperty for complex properties and notifies the component\nof the change, triggering a [property]Changed event.",
+      "description": "Sets a property or a single subproperty for complex properties and notifies the component of the change, triggering a [property]Changed event.",
+      "help": "setProperty",
       "params": [
         {
           "name": "property",
@@ -347,6 +494,7 @@
     },
     "getProperty": {
       "description": "Retrieves a value for a property or a single subproperty for complex properties.",
+      "help": "getProperty",
       "params": [
         {
           "name": "property",
@@ -358,6 +506,7 @@
     },
     "setProperties": {
       "description": "Performs a batch set of properties.",
+      "help": "setProperties",
       "params": [
         {
           "name": "properties",
@@ -373,6 +522,7 @@
       "description": "Triggered when a default animation is about to start, such as when the component is\nbeing opened/closed or a child item is being added/removed. The default animation can\nbe cancelled by calling event.preventDefault.",
       "bubbles": true,
       "cancelable": true,
+      "help": "animateStart",
       "detail": {
         "action": {
           "description": "The action that triggers the animation. Supported values are: \"inline-open\" - when an inline message container opens or increases in size \"inline-close\" - when an inline message container closes or decreases in size \"notewindow-open\" - when a note window opens \"notewindow-close\" - when a note window closes ",
@@ -392,6 +542,7 @@
       "description": "Triggered when a default animation has ended.",
       "bubbles": true,
       "cancelable": true,
+      "help": "animateEnd",
       "detail": {
         "action": {
           "description": "The action that triggers the animation. Supported values are: \"inline-open\" - when an inline message container opens or increases in size \"inline-close\" - when an inline message container closes or decreases in size \"notewindow-open\" - when a note window opens \"notewindow-close\" - when a note window closes ",
@@ -406,11 +557,14 @@
   },
   "slots": {
     "": {
-      "description": "The <oj-select-one> element accepts oj-options as children. See the [oj-option]ojOption doc for details about accepted children and slots.",
-      "displayName": "default"
+      "description": "The oj-select-one element accepts oj-option elements as children.",
+      "displayName": "default",
+      "help": "Default"
     },
     "contextMenu": {
-      "description": "The contextMenu slot is set on the oj-menu within this element. \nThis is used to designate the JET Menu that this component should launch as a context menu on right-click, Shift-F10, Press & Hold, or component-specific gesture. \nIf specified, the browser's native context menu will be replaced by the JET Menu specified in this slot.\n\nThe application can register a listener for the Menu's ojBeforeOpen event. The listener can cancel the launch via event.preventDefault(), \nor it can customize the menu contents by editing the menu DOM directly, and then calling refresh() on the Menu.\n\nTo help determine whether it's appropriate to cancel the launch or customize the menu, the ojBeforeOpen listener can use component API's to determine which \ntable cell, chart item, etc., is the target of the context menu. See the JSDoc and demos of the individual components for details. \n\nKeep in mind that any such logic must work whether the context menu was launched via right-click, Shift-F10, Press & Hold, or component-specific touch gesture."
+      "description": "The contextMenu slot is set on the <oj-menu> instance within this element. It designates the JET Menu that this component should launch as a context menu.",
+      "maxItems": 1,
+      "help": "contextMenu"
     }
   }
 }

@@ -9,167 +9,9 @@
  * Copyright (c) 2017, Oracle and/or its affiliates.
  * All rights reserved.
  */
-define(['ojs/ojcore'], function(oj)
+define(['ojs/ojcore', 'ojs/ojkeysetimpl'], function(oj, KeySetImpl)
 {
-/* global Set:false, Symbol:false */
-
-/**
- * Contains all the core functionalities of KeySet.
- * @param {(Set|Array)=} keys A set of keys to initialize this KeySet with.
- * @ojstatus preview
- * @ignore
- * @ojtsignore
- * @class KeySetImpl
- * @constructor
- * @since 5.1.0
- */
-var KeySetImpl = function (initialValues) {
-  this.NOT_A_KEY = {};
-
-  /**
-   * Returns whether the specified key is contained in this set.
-   * @param {any} key the key to check whether it is contained in this set.
-   * @return {boolean} true if the specified key is contained in this set, false otherwise.
-   */
-  this.has = function (key) {
-    return (this.get(key) !== this.NOT_A_KEY);
-  };
-
-  /**
-   * Finds the equavalent key of the specified key within this KeySet.
-   * @param {any} keyToFind the key to find
-   * @return {any} the key in the key that is equivalent to keyToFind, or NOT_A_KEY if nothing equivalent can be found.
-   */
-  this.get = function (keyToFind) {
-    var iterator;
-    var key;
-    var found = this.NOT_A_KEY;
-    var self = this;
-
-    if (this._keys.has(keyToFind)) {
-      return keyToFind;
-    }
-
-    // if it's a primitive, then we are done also
-    if (!(keyToFind === Object(keyToFind))) {
-      return this.NOT_A_KEY;
-    }
-
-    // using iterator if it's supported since we could break at any time
-    if (typeof Symbol === 'function' && typeof Set.prototype[Symbol.iterator] === 'function') {
-      iterator = this._keys[Symbol.iterator]();
-      key = iterator.next();
-      while (!key.done) {
-        if (oj.Object.compareValues(key.value, keyToFind) || key.value === keyToFind) {
-          return key.value;
-        }
-        key = iterator.next();
-      }
-    } else {
-      // IE11 supports forEach
-      this._keys.forEach(function (_key) {
-        if ((found === self.NOT_A_KEY && oj.Object.compareValues(_key, keyToFind)) || _key === keyToFind) {
-          found = _key;
-        }
-      });
-    }
-
-    return found;
-  };
-
-  /**
-   * Initialize the internal Set with a set of keys.
-   * @param {Set|Array|null|undefined} keys the initial keys to create the internal Set with.
-   */
-  this.InitializeWithKeys = function (keys) {
-    this._keys = this._populate(keys);
-  };
-
-  /**
-   * IE11 does not support constructor with arguments
-   * TODO: move to CollectionUtils
-   */
-  this._populate = function (keys) {
-    var set = new Set(keys);
-    if (keys != null && set.size === 0) {
-      keys.forEach(function (key) {
-        set.add(key);
-      });
-    }
-    return set;
-  };
-
-  this.InitializeWithKeys(initialValues);
-};
-
-// make it available internally
-oj.KeySetImpl = KeySetImpl;
-
-/* global KeySetImpl:false, Map:false, Symbol:false */
-
-/**
- * Implementation of the ES6 Map API:
- * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map
- * that can deal with how equalities are handled when Object is used as key
- * @ignore
- * @ojtsignore
- * @export
- * @class ojMap
- * @constructor
- * @since 5.2.0
- */
-var ojMap = function () {
-  this._map = new Map();
-  this._keyset = new KeySetImpl();
-};
-
-var _proto = ojMap.prototype;
-
-Object.defineProperty(_proto, 'size', {
-  get: function () { return this._map.size; }
-});
-
-_proto.clear = function () {
-  this._map.clear();
-  this._keyset._keys.clear();
-};
-
-_proto.delete = function (key) {
-  var theKey = this._keyset.get(key);
-  if (theKey === this._keyset.NOT_A_KEY) {
-    return false;
-  }
-  this._keyset._keys.delete(theKey);
-  return this._map.delete(theKey);
-};
-
-_proto.forEach = function (callback) {
-  this._map.forEach(callback);
-};
-
-_proto.get = function (key) {
-  var theKey = this._keyset.get(key);
-  return this._map.get(theKey);
-};
-
-_proto.has = function (key) {
-  return this._keyset.has(key);
-};
-
-_proto.set = function (key, value) {
-  var theKey = this._keyset.get(key);
-  if (theKey === this._keyset.NOT_A_KEY) {
-    this._keyset._keys.add(key);
-    this._map.set(key, value);
-  } else {
-    // update value
-    this._map.set(theKey, value);
-  }
-  return this;
-};
-
-// make it available internally
-oj.Map = ojMap;
+/* global Set:false, Symbol:false, KeySetImpl:false */
 
 /**
  * An immutable set of keys.
@@ -182,10 +24,10 @@ oj.Map = ojMap;
  * @since 4.1.0
  * @ojsignature {target: "Type", value: "abstract class KeySet<K>"}
  */
-var KeySet = function() {};
+var KeySet = function () {};
 
-// Subclass from oj.Object 
-oj.Object.createSubclass(KeySet, oj.Object, "KeySet");
+// Subclass from oj.Object
+oj.Object.createSubclass(KeySet, oj.Object, 'KeySet');
 
 // make it available internally
 oj.KeySet = KeySet;
@@ -196,9 +38,8 @@ oj.KeySet = KeySet;
  * @param {Set} set the internal Set object to replace with.
  * @protected
  */
-KeySet.prototype.SetInternal = function(set)
-{
-    this._keys = set;
+KeySet.prototype.SetInternal = function (set) {
+  this._keys = set;
 };
 
 /**
@@ -211,11 +52,11 @@ KeySet.prototype.SetInternal = function(set)
  * @memberof KeySet
  * @instance
  * @abstract
- * @ojsignature {target: "Type", value: "<KS extends KeySet<K>>(keys: Set<K>|Array<K>): KS"}
+ * @ojsignature {target: "Type", value: "(keys: Set<K>|Array<K>): KeySet<K>"}
  */
 
 /**
- * Returns a new KeySet that signals all keys are added to this set. 
+ * Returns a new KeySet that signals all keys are added to this set.
  *
  * @return {KeySet} a new KeySet that signals all keys are added to this set.
  * @method
@@ -223,11 +64,11 @@ KeySet.prototype.SetInternal = function(set)
  * @memberof KeySet
  * @instance
  * @abstract
- * @ojsignature {target: "Type", value: "<KS extends KeySet<K>>(): KS"}
+ * @ojsignature {target: "Type", value: "(): KeySet<K>"}
  */
 
 /**
- * Returns a new KeySet based on this set with the specified keys excluded. 
+ * Returns a new KeySet based on this set with the specified keys excluded.
  *
  * @param {Set|Array} keys a set of keys to remove from this KeySet.
  * @return {KeySet} a new KeySet with the specified keys excluded.
@@ -236,7 +77,7 @@ KeySet.prototype.SetInternal = function(set)
  * @memberof KeySet
  * @instance
  * @abstract
- * @ojsignature {target: "Type", value: "<KS extends KeySet<K>>(keys: Set<K>|Array<K>): KS"}
+ * @ojsignature {target: "Type", value: "(keys: Set<K>|Array<K>): KeySet<K>"}
  */
 
 /**
@@ -272,7 +113,7 @@ KeySet.prototype.SetInternal = function(set)
  * @memberof KeySet
  * @instance
  * @abstract
- * @ojsignature {target: "Type", value: "<KS extends KeySet<K>>(): KS"}
+ * @ojsignature {target: "Type", value: "(): KeySet<K>"}
  */
 
 /**
@@ -283,21 +124,18 @@ KeySet.prototype.SetInternal = function(set)
  *                     specified keys included (add) or excluded (delete).
  * @protected
  */
-KeySet.prototype.AddOrDeleteInternal = function(isAdd, keys)
-{
-    var newSet, keySet;
+KeySet.prototype.AddOrDeleteInternal = function (isAdd, keys) {
+  var newSet;
+  var keySet;
 
-    newSet = isAdd ? this._add(keys) : this._remove(keys);
-    if (newSet == null)
-    {
-        return this;
-    }
-    else
-    {
-        keySet = /** @type {KeySet} */ (Object.create(Object.getPrototypeOf(this)));
-        keySet.SetInternal(newSet);
-        return keySet;
-    }
+  newSet = isAdd ? this._add(keys) : this._remove(keys);
+  if (newSet == null) {
+    return this;
+  }
+
+  keySet = /** @type {KeySet} */ (Object.create(Object.getPrototypeOf(this)));
+  keySet.SetInternal(newSet);
+  return keySet;
 };
 
 /**
@@ -306,24 +144,21 @@ KeySet.prototype.AddOrDeleteInternal = function(isAdd, keys)
  * @return {Set} a new Set based on this internal Set with the specified keys appended to the end, or null if nothing was added.
  * @private
  */
-KeySet.prototype._add = function(keys)
-{
-    var self = this, newSet = null, key;
+KeySet.prototype._add = function (keys) {
+  var self = this;
+  var newSet = null;
 
-    keys.forEach(function(key)
-    {
+  keys.forEach(function (key) {
         // checks if it's already contained in the Set, can't use has() since it does a reference comparison
-        if (key !== self.NOT_A_KEY && self.get(key) === self.NOT_A_KEY)
-        {
-            if (newSet == null)
-            {
-                newSet = self.Clone();
-            }
-            newSet.add(key);
-        }
-    });
+    if (key !== self.NOT_A_KEY && self.get(key) === self.NOT_A_KEY) {
+      if (newSet == null) {
+        newSet = self.Clone();
+      }
+      newSet.add(key);
+    }
+  });
 
-    return newSet;
+  return newSet;
 };
 
 /**
@@ -332,31 +167,28 @@ KeySet.prototype._add = function(keys)
  * @return {Set|null} a new Set based on this internal Set with the keys removed, or null if nothing is removed.
  * @private
  */
-KeySet.prototype._remove = function(keys)
-{
-    var self = this, newSet = null, key, keyToDelete;
+KeySet.prototype._remove = function (keys) {
+  var self = this;
+  var newSet = null;
+  var keyToDelete;
 
-    // first check if there's anything to remove
-    if (this._keys.size == 0)
-    {
-        return null;
+  // first check if there's anything to remove
+  if (this._keys.size === 0) {
+    return null;
+  }
+
+  keys.forEach(function (key) {
+    // see if we can find a equivalent key in this Set since delete does a reference comparison to find the item to delete
+    keyToDelete = self.get(key);
+    if (keyToDelete !== self.NOT_A_KEY) {
+      if (newSet == null) {
+        newSet = self.Clone();
+      }
+      newSet.delete(keyToDelete);
     }
+  });
 
-    keys.forEach(function(key)
-    {
-        // see if we can find a equivalent key in this Set since delete does a reference comparison to find the item to delete
-        keyToDelete = self.get(key);
-        if (keyToDelete !== self.NOT_A_KEY)
-        {
-            if (newSet == null)
-            {
-                newSet = self.Clone();
-            }
-            newSet.delete(keyToDelete);
-        }
-    });
-
-    return newSet;
+  return newSet;
 };
 
 /**
@@ -364,9 +196,8 @@ KeySet.prototype._remove = function(keys)
  * @return {number} the size of this Set.
  * @protected
  */
-KeySet.prototype.GetInternalSize = function()
-{
-    return this._keys.size;
+KeySet.prototype.GetInternalSize = function () {
+  return this._keys.size;
 };
 
 /**
@@ -374,12 +205,13 @@ KeySet.prototype.GetInternalSize = function()
  * @return {Set} the clone of the internal Set
  * @protected
  */
-KeySet.prototype.Clone = function()
-{
-    return this._populate(this._keys);
+KeySet.prototype.Clone = function () {
+  return this._populate(this._keys);
 };
 
 KeySetImpl.call(KeySet.prototype);
+
+/* global KeySet:false, ExpandAllKeySet:false */
 
 /**
  * Create a new immutable KeySet containing the keys of the expanded items.
@@ -395,19 +227,18 @@ KeySetImpl.call(KeySet.prototype);
  * @ojsignature [{target: "Type", value: "class ExpandedKeySet<K> extends KeySet<K>"},
  *               {target: "Type", value: "Set<K>|Array<K>", for:"keys"}]
  * @example <caption>Creates a new ExpandedKeySet with an initial set of keys to expand:</caption>
- * require(['ojs/ojkeyset'], 
+ * require(['ojs/ojkeyset'],
  *   function(keySet) {
  *     var expandedKeySet = new keySet.ExpandedKeySet(['group1', 'group3']);
  *   }
- * ); 
+ * );
  */
-var ExpandedKeySet = function(keys)
-{
-    this.InitializeWithKeys(keys);
+var ExpandedKeySet = function (keys) {
+  this.InitializeWithKeys(keys);
 };
 
 // Subclass from KeySet
-oj.Object.createSubclass(ExpandedKeySet, KeySet, "ExpandedKeySet");
+oj.Object.createSubclass(ExpandedKeySet, KeySet, 'ExpandedKeySet');
 
 // make it available internally
 oj.ExpandedKeySet = ExpandedKeySet;
@@ -421,27 +252,25 @@ oj.ExpandedKeySet = ExpandedKeySet;
  * @expose
  * @instance
  * @alias add
- * @memberof ExpandedKeySet 
- * @ojsignature {target: "Type", value: "<ExpandedKeySet>(keys: Set<K>|Array<K>): ExpandedKeySet"}
+ * @memberof ExpandedKeySet
+ * @ojsignature {target: "Type", value: "(keys: Set<K>|Array<K>): ExpandedKeySet<K>"}
  */
-ExpandedKeySet.prototype.add = function(keys)
-{
-    return /** @type {!ExpandedKeySet} */ (this.AddOrDeleteInternal(true, keys));
+ExpandedKeySet.prototype.add = function (keys) {
+  return /** @type {!ExpandedKeySet} */ (this.AddOrDeleteInternal(true, keys));
 };
 
 /**
- * Returns a new KeySet that signals all keys are added to this set. 
+ * Returns a new KeySet that signals all keys are added to this set.
  *
  * @return {ExpandAllKeySet} a new KeySet that signals all keys are added to this set.
  * @expose
  * @instance
  * @alias addAll
- * @memberof ExpandedKeySet 
- * @ojsignature {target: "Type", value: "<ExpandAllKeySet>(): ExpandAllKeySet"}
+ * @memberof ExpandedKeySet
+ * @ojsignature {target: "Type", value: "(): ExpandAllKeySet<K>"}
  */
-ExpandedKeySet.prototype.addAll = function()
-{
-    return new ExpandAllKeySet();
+ExpandedKeySet.prototype.addAll = function () {
+  return new ExpandAllKeySet();
 };
 
 /**
@@ -451,15 +280,14 @@ ExpandedKeySet.prototype.addAll = function()
  * @expose
  * @instance
  * @alias isAddAll
- * @memberof ExpandedKeySet 
+ * @memberof ExpandedKeySet
  */
-ExpandedKeySet.prototype.isAddAll = function()
-{
-    return false;
+ExpandedKeySet.prototype.isAddAll = function () {
+  return false;
 };
 
 /**
- * Returns a new KeySet based on this set with the specified keys excluded.  
+ * Returns a new KeySet based on this set with the specified keys excluded.
  * If none of the keys specified are deleted then this KeySet is returned.
  *
  * @param {Set|Array} keys a set of keys to remove from this KeySet.
@@ -467,28 +295,26 @@ ExpandedKeySet.prototype.isAddAll = function()
  * @expose
  * @instance
  * @alias delete
- * @memberof ExpandedKeySet 
- * @ojsignature {target: "Type", value: "<ExpandedKeySet>(keys: Set<K>|Array<K>): ExpandedKeySet"}
+ * @memberof ExpandedKeySet
+ * @ojsignature {target: "Type", value: "(keys: Set<K>|Array<K>): ExpandedKeySet<K>"}
  */
-ExpandedKeySet.prototype.delete = function(keys)
-{
-    return /** @type {!ExpandedKeySet} */ (this.AddOrDeleteInternal(false, keys));
+ExpandedKeySet.prototype.delete = function (keys) {
+  return /** @type {!ExpandedKeySet} */ (this.AddOrDeleteInternal(false, keys));
 };
 
 /**
- * Returns a new KeySet containing no keys.  If this KeySet already contains no keys then 
+ * Returns a new KeySet containing no keys.  If this KeySet already contains no keys then
  * the current KeySet is returned.
  *
  * @return {ExpandedKeySet} a new KeySet with no keys.
  * @expose
  * @instance
  * @alias clear
- * @memberof ExpandedKeySet 
- * @ojsignature {target: "Type", value: "<ExpandedKeySet>(): ExpandedKeySet"}
+ * @memberof ExpandedKeySet
+ * @ojsignature {target: "Type", value: "(): ExpandedKeySet<K>"}
  */
-ExpandedKeySet.prototype.clear = function()
-{
-    return this.GetInternalSize() == 0 ? this : new ExpandedKeySet();
+ExpandedKeySet.prototype.clear = function () {
+  return this.GetInternalSize() === 0 ? this : new ExpandedKeySet();
 };
 
 /**
@@ -499,12 +325,11 @@ ExpandedKeySet.prototype.clear = function()
  * @expose
  * @instance
  * @alias has
- * @memberof ExpandedKeySet 
+ * @memberof ExpandedKeySet
  * @ojsignature {target: "Type", value: "K", for:"key"}
  */
-ExpandedKeySet.prototype.has = function(key)
-{
-    return (this.get(key) !== this.NOT_A_KEY);
+ExpandedKeySet.prototype.has = function (key) {
+  return (this.get(key) !== this.NOT_A_KEY);
 };
 
 /**
@@ -514,17 +339,19 @@ ExpandedKeySet.prototype.has = function(key)
  * @expose
  * @instance
  * @alias values
- * @memberof ExpandedKeySet 
+ * @memberof ExpandedKeySet
  * @ojsignature {target: "Type", value: "Set<K>", for:"returns"}
  */
-ExpandedKeySet.prototype.values = function()
-{
-    return this.Clone();
+ExpandedKeySet.prototype.values = function () {
+  return this.Clone();
 };
+
+/* global KeySet:false, ExpandedKeySet:false */
+
 /**
  * Create a new immutable KeySet containing the keys of the collapsed items.
  * Use this KeySet when expanding all keys.
- * 
+ *
  * @ojstatus preview
  * @class ExpandAllKeySet
  * @classdesc The ExpandAllKeySet class represents a set with all keys expanded.
@@ -533,19 +360,18 @@ ExpandedKeySet.prototype.values = function()
  * @since 4.1.0
  * @ojsignature {target: "Type", value: "class ExpandAllKeySet<K> extends KeySet<K>"}
  * @example <caption>Creates a new ExpandAllKeySet to expand all keys</caption>
- * require(['ojs/ojkeyset'], 
+ * require(['ojs/ojkeyset'],
  *   function(keySet) {
  *     var expandAllKeySet = new keySet.ExpandAllKeySet();
  *   }
- * ); 
+ * );
  */
-var ExpandAllKeySet = function()
-{
-    this.InitializeWithKeys(null);
+var ExpandAllKeySet = function () {
+  this.InitializeWithKeys(null);
 };
 
 // Subclass from KeySet
-oj.Object.createSubclass(ExpandAllKeySet, KeySet, "ExpandAllKeySet");
+oj.Object.createSubclass(ExpandAllKeySet, KeySet, 'ExpandAllKeySet');
 
 // make it available internally
 oj.ExpandAllKeySet = ExpandAllKeySet;
@@ -559,13 +385,12 @@ oj.ExpandAllKeySet = ExpandAllKeySet;
  * @expose
  * @instance
  * @alias add
- * @memberof! ExpandAllKeySet 
- * @ojsignature {target: "Type", value: "<ExpandAllKeySet>(keys: Set<K>|Array<K>): ExpandAllKeySet"}
+ * @memberof! ExpandAllKeySet
+ * @ojsignature {target: "Type", value: "(keys: Set<K>|Array<K>): ExpandAllKeySet<K>"}
  */
-ExpandAllKeySet.prototype.add = function(keys)
-{
-    // add keys on expand all = remove collapsed keys
-    return /** @type {!ExpandAllKeySet} */ (this.AddOrDeleteInternal(false, keys));
+ExpandAllKeySet.prototype.add = function (keys) {
+  // add keys on expand all = remove collapsed keys
+  return /** @type {!ExpandAllKeySet} */ (this.AddOrDeleteInternal(false, keys));
 };
 
 /**
@@ -576,12 +401,11 @@ ExpandAllKeySet.prototype.add = function(keys)
  * @expose
  * @instance
  * @alias addAll
- * @memberof! ExpandAllKeySet 
- * @ojsignature {target: "Type", value: "<ExpandAllKeySet>(): ExpandAllKeySet"}
+ * @memberof! ExpandAllKeySet
+ * @ojsignature {target: "Type", value: "(): ExpandAllKeySet<K>"}
  */
-ExpandAllKeySet.prototype.addAll = function()
-{
-    return this.GetInternalSize() == 0 ? this : new ExpandAllKeySet();
+ExpandAllKeySet.prototype.addAll = function () {
+  return this.GetInternalSize() === 0 ? this : new ExpandAllKeySet();
 };
 
 /**
@@ -591,11 +415,10 @@ ExpandAllKeySet.prototype.addAll = function()
  * @expose
  * @instance
  * @alias isAddAll
- * @memberof! ExpandAllKeySet 
+ * @memberof! ExpandAllKeySet
  */
-ExpandAllKeySet.prototype.isAddAll = function()
-{
-    return true;
+ExpandAllKeySet.prototype.isAddAll = function () {
+  return true;
 };
 
 /**
@@ -607,13 +430,12 @@ ExpandAllKeySet.prototype.isAddAll = function()
  * @expose
  * @instance
  * @alias delete
- * @memberof! ExpandAllKeySet 
- * @ojsignature {target: "Type", value: "<ExpandAllKeySet>(keys: Set<K>|Array<K>): ExpandAllKeySet"}
+ * @memberof! ExpandAllKeySet
+ * @ojsignature {target: "Type", value: "(keys: Set<K>|Array<K>): ExpandAllKeySet<K>"}
  */
-ExpandAllKeySet.prototype.delete = function(keys)
-{
-    // remove keys on expand all = add collapsed keys
-    return /** @type {!ExpandAllKeySet} */ (this.AddOrDeleteInternal(true, keys));
+ExpandAllKeySet.prototype.delete = function (keys) {
+  // remove keys on expand all = add collapsed keys
+  return /** @type {!ExpandAllKeySet} */ (this.AddOrDeleteInternal(true, keys));
 };
 
 /**
@@ -623,12 +445,11 @@ ExpandAllKeySet.prototype.delete = function(keys)
  * @expose
  * @instance
  * @alias clear
- * @memberof! ExpandAllKeySet 
- * @ojsignature {target: "Type", value: "<ExpandedKeySet>(): ExpandedKeySet"}
+ * @memberof! ExpandAllKeySet
+ * @ojsignature {target: "Type", value: "(): ExpandedKeySet<K>"}
  */
-ExpandAllKeySet.prototype.clear = function()
-{
-    return new ExpandedKeySet();
+ExpandAllKeySet.prototype.clear = function () {
+  return new ExpandedKeySet();
 };
 
 /**
@@ -639,28 +460,27 @@ ExpandAllKeySet.prototype.clear = function()
  * @expose
  * @instance
  * @alias has
- * @memberof! ExpandAllKeySet 
- * @ojsignature {target: "Type", value: "<ExpandAllKeySet>(): ExpandAllKeySet"}
+ * @memberof! ExpandAllKeySet
+ * @ojsignature {target: "Type", value: "K", for: "key"}
  */
-ExpandAllKeySet.prototype.has = function(key)
-{
-    return (this.get(key) === this.NOT_A_KEY);
+ExpandAllKeySet.prototype.has = function (key) {
+  return (this.get(key) === this.NOT_A_KEY);
 };
 
 /**
  * Returns a set of keys of the collapsed items.
- * 
+ *
  * @return {Set} the keys of the collapsed items.
  * @expose
  * @instance
  * @alias deletedValues
- * @memberof! ExpandAllKeySet 
+ * @memberof! ExpandAllKeySet
  * @ojsignature {target: "Type", value: "Set<K>", for: "returns"}
  */
-ExpandAllKeySet.prototype.deletedValues = function()
-{
-    return this.Clone();
+ExpandAllKeySet.prototype.deletedValues = function () {
+  return this.Clone();
 };
+
 ;return {
   'KeySet': KeySet,
   'ExpandedKeySet': ExpandedKeySet,

@@ -1,0 +1,14 @@
+// Copyright (c) 2014, 2018, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+@import "../../common/helpers/oj.common.helpers"; 
+
+// implementation currently in common
+@import "../../common/widgets/oj.common.formcontrol.formlayout";
+
+@if $includeFormLayoutElementClasses != false  {
+  @include module-include-once("alta.formlayout.element") {
+
+  }
+}
+

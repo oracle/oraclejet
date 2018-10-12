@@ -6,7 +6,7 @@
 //=================================================================
 // file picker
 $filePickerBgColorActive: $brandColorLight4 !default;
-$listViewHeaderBgColor: $neutralColor7 !default;
+$listViewHeaderBgColor: $neutralColor7 !default; //settings: ignore
 // nav list
 
 //=================================================================
@@ -43,9 +43,9 @@ $rootFontSize:    .9375em !default;  // 15px
 
 $fontSize:         1rem   !default;
 $smallestFontSize: oj-px-to-rem(12px, $baseFontSize: 15px) !default;
-$smallFontSize:    oj-px-to-rem(14px, $baseFontSize: 15px) !default;
-$mediumFontSize:   oj-px-to-rem(20px, $baseFontSize: 15px) !default;
-$largeFontSize:    oj-px-to-rem(24px, $baseFontSize: 15px) !default;
+$smallFontSize:    0.93333rem !default;
+$mediumFontSize:   1.33333rem !default;
+$largeFontSize:    1.6rem !default;
 $largestFontSize:  oj-px-to-rem(34px, $baseFontSize: 15px) !default;
 
 // text colors
@@ -70,6 +70,7 @@ $iconColorHover:            $brandColorLight1 !default;
 $iconColorDisabled:         $neutralColor9 !default;
 $iconColorActive:           $brandColor !default;
 $iconColorSelected:         $iconColorActive !default;
+$colorRequired:             $accentColorDanger4 !default;
 
 // border radius
 //----------------------------------
@@ -80,10 +81,10 @@ $largeBorderRadius:    2px !default;
 
 // shadow
 //----------------------------------
-$boxShadowColor:  $neutralColor17 !default;
-$smallBoxShadow:  0 0 5px 0 transparentize($boxShadowColor, .80) !default;
-$mediumBoxShadow: 1px 1px 5px 0 transparentize($boxShadowColor, .60) !default;
-$largeBoxShadow:  1px 1px 10px 0 transparentize($boxShadowColor, .55) !default;
+$boxShadowHsl:      0,0%,0% !default;
+$smallBoxShadow:    0 0 5px 0 unquote('hsla(#{$boxShadowHsl},0.2)') !default;
+$mediumBoxShadow:   1px 1px 5px 0 unquote('hsla(#{$boxShadowHsl},0.4)') !default;
+$largeBoxShadow:    1px 1px 10px 0 unquote('hsla(#{$boxShadowHsl},0.45)') !default;
 
 
 // disabled
@@ -130,7 +131,7 @@ $popupModalityOptionDefault: modal !default;
 
 // NOTEWINDOW
 //----------------------------------------------------------------
-$noteWindowBoxShadow: $smallBoxShadow !default;
+$popupTailBoxShadow: $smallBoxShadow !default;
 
 // MESSAGES / MESSAGE
 //----------------------------------
@@ -192,8 +193,11 @@ $menuSubmenuBoxShadow:               $menuBoxShadow !default;
 
 // menu items (.oj-menu-item) and their anchors
 $menuItemTextColor:                  $headerTextColor !default;
-$menuItemLineHeight:                 44/15 !default; // 44px @15px font.
-
+$menuItemLineHeight:                 44/15+unquote('rem') !default; // 44px @15px font.
+$menuItemTopBorderWidth:             0px !default;
+$menuSheetItemTopBorderWidth:        $menuItemTopBorderWidth !default;
+$menuItemBottomBorderWidth:          0 !default;
+$menuIconColorDisabled:              $brandColor !default;
 // disabled menu items and their anchors
 $menuItemTextColorDisabled:          $textColorDisabled !default;
 
@@ -221,7 +225,7 @@ $menuSheetMarginHorizontal:          oj-px-to-rem(20px, $baseFontSize: 15px) !de
 
 // sheet menu items (.oj-menu-item) and their anchors
 $menuSheetItemTextColor:             $textColor !default;
-$menuSheetItemLineHeight:            48/15 !default; // 48px @15px font.
+$menuSheetItemLineHeight:            48/15+unquote('rem') !default; // 48px @15px font.
 
 // disabled sheet menu items and their anchors
 $menuSheetItemTextColorDisabled: $textColorDisabled !default;
@@ -234,15 +238,15 @@ $buttonBorderRadius: $smallBorderRadius !default; // 0px
 
 // we set button and form control heights to the same value so they will line up nicely
 $buttonHeight:       oj-px-to-rem(36px, $baseFontSize: 15px) !default;
-$buttonSmallHeight:  $buttonHeight * 28/36 !default;  // 28px when root is 15px
-$buttonLargeHeight:  $buttonHeight * 46/36 !default;  // 46px when root is 15px
-$buttonXlargeHeight: $buttonHeight * 52/36 !default;  // 52px when root is 15px
+$buttonSmallHeight:  1.86667rem !default;  // 28px when root is 15px
+$buttonLargeHeight:  3.06667rem !default;  // 46px when root is 15px
+$buttonXlargeHeight: 3.46667rem !default;  // 52px when root is 15px
 $buttonFontWeight:   normal !default;
 
 $buttonFontSize:       oj-px-to-rem(15px, $baseFontSize: 15px) !default;
 $buttonSmallFontSize:  $smallFontSize !default; // 14px when root 15px
 $buttonLargeFontSize:  $mediumFontSize !default; // 20px when root 15px
-$buttonXlargeFontSize: oj-px-to-rem(22px, $baseFontSize: 15px) !default; // not spec'd.  In AltaWeb is 2px bigger than large, so go with 22px since Windows large is 20px.
+$buttonXlargeFontSize: 1.46667rem !default; // Old value: not spec'd.  In AltaWeb is 2px bigger than large, so go with 22px since Windows large is 20px.
 
 
 // button padding
@@ -352,6 +356,12 @@ $buttonOutlinedChromeTextColor:                 $brandColorDark1 !default;
 $buttonOutlinedChromeBgColorSelectedHover:      $buttonBgColorHover !default;
 $buttonOutlinedChromeBorderColorSelectedHover:  $buttonOutlinedChromeBgColorSelectedHover !default;
 
+// outlined
+$buttonOutlinedChromeInternalBorderColor:          $brandColorDark1 !default;
+
+// outlined active
+$buttonOutlinedChromeInternalBorderColorActive:    $brandColorDark2 !default;
+
 
 // alternate button colors
 //----------------------------------
@@ -381,7 +391,7 @@ $dialogHeaderTextColor:     $primaryTextColor !default;
 $dialogHeaderBgColor:       transparent !default;
 
 // Used to make the close button symmetrical.
-$dialogCloseIconButtonMargin:  0 .625rem 0 .625rem !default;
+$dialogCloseIconButtonMargin:  0 0.625rem !default;
 
 
 // TOOLBAR
@@ -398,7 +408,7 @@ $formControlMediumMaxWidth: 100% !default;
 //----------------------------------
 $formControlTriggerHeight:   oj-px-to-rem(32px, $baseFontSize: 15px) !default;
 $formControlBorderRadius:    0 !default;
-$formControlBorderWidth:     2px !default;
+$formControlBorderWidth:     2px 2px 2px 2px !default;
 
 // controls the horizontal padding inside an input
 $formControlPaddingHorizontal: 5px !default;
@@ -425,7 +435,7 @@ $formControlPlaceholderColor:     $tertiaryTextColor !default;
 //----------------------------------
 // label text color defined above, look for "text colors"
 $formControlLabelFontSize: $smallFontSize !default;
-$formControlLabelRequiredChar: '' !default;
+$formControlLabelRequiredChar: "" !default;
 
 // inline labels
 //----------------------------------
@@ -486,7 +496,7 @@ $selectArrowPadding: 0 7px 0 3px !default;
 
 // trigger
 //$selectTriggerBgColorActive: rgba(5, 114, 206, .5) !default;
-$selectTriggerBgColorActive: $formControlBgColor !default;
+$selectTriggerBgColorActive: $formControlBgColor !default; //settings: ignore
 
 // picker
 $selectPickerBgColor: $formControlBgColor !default;
@@ -684,8 +694,8 @@ $tabBarItemBgColorSelected:                           transparent !default;
 //Sizing
 $tabBarItemStartEndPadding:                           oj-px-to-rem(10px, $baseFontSize: 16px) !default;
 
-$tabBarVerticalItemBorderWidth:                       0 !default;
-$tabBarVerticalIconOnlyItemBorderWidth:               0 !default;
+$tabBarVerticalItemBorderWidth:                       0px !default;
+$tabBarVerticalIconOnlyItemBorderWidth:               0px !default;
 $tabBarVerticalItemMinHeight:                         oj-px-to-rem(50px, $baseFontSize: 15px) !default;
 $tabBarVerticalItemFontSize:                          oj-px-to-rem(16px, $baseFontSize: 15px) !default;
 $tabBarVerticalItemLabelTextAlign:                    center !default;
@@ -700,8 +710,8 @@ $tabBarItemContrastLabelColorDisabled:                $neutralColor13 !default;
 $tabBarHorizontalItemContrastBgColorSelected:         $tabBarItemContrastBgColorSelected !default;
 $tabBarHorizontalItemContrastLabelColorSelected:      $tabBarItemContrastLabelColorSelected !default;
 
-$tabBarHorizontalItemBorderWidth:                     0 !default;
-$tabBarHorizontalIconOnlyItemBorderWidth:             0 !default;
+$tabBarHorizontalItemBorderWidth:                     0 0 0 0 !default;
+$tabBarHorizontalIconOnlyItemBorderWidth:             0 0 0 0 !default;
 
 $tabBarHorizontalItemMinHeight:                       oj-px-to-rem(48px, $baseFontSize: 15px) !default;
 $tabBarHorizontalItemPadding:                         4px $tabBarItemStartEndPadding 2px !default;
@@ -719,6 +729,7 @@ $progressBarIndeterminateOverlayImage:   $imageDir + "animated-overlay.svg" !def
 
 // TRAIN
 //-----------------------------------------------------------------------------
+$trainStepWidth:                          105px !default;
 
 // DATAGRID
 //----------------------------------------------------------------

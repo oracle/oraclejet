@@ -4,8 +4,8 @@
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
-define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojcollapsible'], 
-       function(oj, $)
+define(['ojs/ojcore', 'jquery', 'ojs/ojlogger', 'ojs/ojcomponentcore', 'ojs/ojcollapsible'], 
+       function(oj, $, Logger)
 {
 
 var __oj_accordion_metadata = 
@@ -44,6 +44,7 @@ var __oj_accordion_metadata =
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
  */
+/* global Logger:false */
 
 /**
  * @preserve Copyright 2013 jQuery Foundation and other contributors
@@ -54,7 +55,6 @@ var __oj_accordion_metadata =
 /**
  * @ojcomponent oj.ojAccordion
  * @augments oj.baseComponent
- * @ojtsimport ojcollapsible
  * @since 0.6
  * @ojstatus preview
  * @ojshortdesc Displays a set of Collapsible child elements.
@@ -73,14 +73,14 @@ var __oj_accordion_metadata =
  * <code>
  * &lt;oj-accordion>
  *   &lt;oj-collapsible>
- *     &lt;h3>
+ *     &lt;h3 slot="header">
  *       &lt;img src="images/default.png"/>
  *       &lt;span>Header 1&lt;/span>
  *     &lt;/h3>
  *     &lt;p>Content 1.&lt;/p>
  *   &lt;/oj-collapsible>
  *   &lt;oj-collapsible expanded="true">
- *     &lt;h3>Header 3&lt;/h3>
+ *     &lt;h3 slot="header">Header 3&lt;/h3>
  *     &lt;p>Content 3&lt;/p>
  *   &lt;/oj-collapsible>
  * &lt;/oj-accordion>
@@ -166,6 +166,29 @@ var __oj_accordion_metadata =
        *
        * // setter
        * myAccordion.expanded=['collapsible1'];
+       *
+       * @ojtsexample <caption>set Or get
+       * <code class="prettyprint">expanded</code> property:</caption>
+       * let elem = document.getElementById('accordion') as ojAccordion;
+       * //set expanded to an array of objects
+       * elem.expanded = [{id: "c2"},{id: "c3"}];
+       * //or
+       * elem.set('expanded', [{id: "c2"},{id: "c3"}]);
+       *
+       * //set expanded to an array of string
+       * //elem.expanded = ["c1", "c2"]. Please note this wont compile. Use the format below
+       * elem.set('expanded', ["c1", "c2"]);
+       *
+       * //set expanded to an array of number
+       * //elem.expanded = [2,3]. Please note this wont compile. Use the format below
+       * elem.set('expanded', [2, 3]);
+       *
+       * //get expanded property value
+       * let expanded = elem.expanded; //This is guaranteed to be of the type Array<{id?: string, index?: number}>|null
+       *
+       * //reset the value of expanded to its default,
+       * elem.unset('expanded');
+       *
        */
         expanded: null,
 
@@ -353,7 +376,7 @@ var __oj_accordion_metadata =
      * @private
      */
       _makeCollapsible: function () {
-        this.collapsibles = this.element.children();
+        this.collapsibles = this.element.children().not('oj-menu');
 
       // Since oj-collapsible elements may not be upgraded until after oj-accordion elements,
       // just set the expand-area property for custom elements
@@ -421,50 +444,45 @@ var __oj_accordion_metadata =
      * @private
      */
       _keydown: function (event) {
-        if (event.altKey || event.ctrlKey) {
-          return;
-        }
+        // ignore event if target is not a header
+        if (!event.altKey && !event.ctrlKey &&
+            (($(event.target).hasClass('oj-collapsible-header')) ||
+             ($(event.target).hasClass('oj-collapsible-header-icon')))) {
+          var keyCode = $.ui.keyCode;
+          var enabledCollapsibles = this.collapsibles.not('.oj-disabled');
+          var length = enabledCollapsibles.length;
+          var target = $(event.target).closest('.oj-collapsible');
+          var currentIndex = enabledCollapsibles.index(target);
+          var toFocus = false;
 
-      // ignore event if target is not a header
-        if (!($(event.target).hasClass('oj-collapsible-header')) &&
-            !($(event.target).hasClass('oj-collapsible-header-icon'))) {
-          return;
-        }
-
-        var keyCode = $.ui.keyCode;
-        var enabledCollapsibles = this.collapsibles.not('.oj-disabled');
-        var length = enabledCollapsibles.length;
-        var target = $(event.target).closest('.oj-collapsible');
-        var currentIndex = enabledCollapsibles.index(target);
-        var toFocus = false;
-
-        if (currentIndex >= 0) {
-          switch (event.keyCode) {
-            case keyCode.RIGHT:
-            case keyCode.DOWN:
-              toFocus = enabledCollapsibles[(currentIndex + 1) % length];
-              break;
-            case keyCode.LEFT:
-            case keyCode.UP:
-              toFocus = enabledCollapsibles[((currentIndex - 1) + length) % length];
-              break;
-            case keyCode.HOME:
-              toFocus = enabledCollapsibles[0];
-              break;
-            case keyCode.END:
-              toFocus = enabledCollapsibles[length - 1];
-              break;
-            default:
+          if (currentIndex >= 0) {
+            switch (event.keyCode) {
+              case keyCode.RIGHT:
+              case keyCode.DOWN:
+                toFocus = enabledCollapsibles[(currentIndex + 1) % length];
+                break;
+              case keyCode.LEFT:
+              case keyCode.UP:
+                toFocus = enabledCollapsibles[((currentIndex - 1) + length) % length];
+                break;
+              case keyCode.HOME:
+                toFocus = enabledCollapsibles[0];
+                break;
+              case keyCode.END:
+                toFocus = enabledCollapsibles[length - 1];
+                break;
+              default:
+            }
           }
-        }
 
-        if (toFocus) {
-          if (target) {
-            $(target).trigger('ojfocusout');
+          if (toFocus) {
+            if (target) {
+              $(target).trigger('ojfocusout');
+            }
+            $(toFocus).trigger('ojfocus');
+
+            event.preventDefault();
           }
-          $(toFocus).trigger('ojfocus');
-
-          event.preventDefault();
         }
       },
 
@@ -804,7 +822,7 @@ var __oj_accordion_metadata =
             child.ojCollapsible('option', 'expanded');
 
             if (childExp !== parentExp) {
-              oj.Logger.warn('JET Accordion: override collapsible ' + index + ' expanded setting');
+              Logger.warn('JET Accordion: override collapsible ' + index + ' expanded setting');
 
             // don't fire accordion "exanded" optionChange event here
               self._duringSetExpandedOption = true;
@@ -918,11 +936,11 @@ var __oj_accordion_metadata =
      * @example <caption>Initialize the Accordion with two Collapsible children specified:</caption>
      * &lt;oj-accordion>
      *   &lt;oj-collapsible>
-     *     &lt;h3>Header 1&lt;/h3>
+     *     &lt;h3 slot="header">Header 1&lt;/h3>
      *     &lt;p>Content 1&lt;/p>
      *   &lt;/oj-collapsible>
      *   &lt;oj-collapsible expanded="true">
-     *     &lt;h3>Header 2&lt;/h3>
+     *     &lt;h3 slot="header">Header 2&lt;/h3>
      *     &lt;p>Content 2&lt;/p>
      *   &lt;/oj-collapsible>
      * &lt;/oj-accordion>
@@ -1022,8 +1040,7 @@ var __oj_accordion_metadata =
 /* global __oj_accordion_metadata:false */
 (function () {
   __oj_accordion_metadata.extension._WIDGET_NAME = 'ojAccordion';
-  oj.CustomElementBridge.registerMetadata('oj-accordion', 'baseComponent', __oj_accordion_metadata);
-  oj.CustomElementBridge.register('oj-accordion', { metadata: oj.CustomElementBridge.getMetadata('oj-accordion') });
+  oj.CustomElementBridge.register('oj-accordion', { metadata: __oj_accordion_metadata });
 }());
 
 });

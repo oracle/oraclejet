@@ -1,7 +1,7 @@
 {
   "name": "oj-popup",
-  "version": "5.2.0",
-  "jetVersion": "5.2.0",
+  "version": "6.0.0",
+  "jetVersion": "6.0.0",
   "displayName": "Popup",
   "type": "core",
   "styleClasses": [
@@ -13,12 +13,14 @@
     }
   ],
   "description": "Displays a popup window that can display arbitrary content.",
+  "help": "https://docs.oracle.com/en/middleware/jet/6/reference-api/oj.ojPopup.html",
   "properties": {
     "autoDismiss": {
       "description": "Defines conditions that will cause an open popup to auto close dismiss. A value of\nfocusLoss defines the dismissal condition where focus\nhas left the content of the popup or from the associated launcher or if what the popup\nis aligned to is not fully visible within an overflow area.",
       "type": "string",
       "displayName": "Auto Dismiss",
       "value": "focusLoss",
+      "help": "autoDismiss",
       "enumValues": [
         "focusLoss",
         "none"
@@ -39,6 +41,7 @@
       "type": "string",
       "displayName": "Chrome",
       "value": "default",
+      "help": "chrome",
       "enumValues": [
         "default",
         "none"
@@ -59,6 +62,7 @@
       "type": "string",
       "displayName": "Initial Focus",
       "value": "auto",
+      "help": "initialFocus",
       "enumValues": [
         "auto",
         "firstFocusable",
@@ -89,6 +93,7 @@
       "type": "string",
       "displayName": "Modality",
       "value": "modeless",
+      "help": "modality",
       "enumValues": [
         "modal",
         "modeless"
@@ -108,17 +113,20 @@
       "description": "Position property is used to establish the location the popup will appear relative to\nanother element. ojPopup.Position defines \"my\" alignment \"at\" the alignment\n\"of\" some other thing which can be \"offset\" by so many pixels.\n\nThe \"my\" and \"at\" properties defines aligment points relative to the popup and other\nelement. The \"my\" property represents the popups alignment where the \"at\" property\nrepresents the other element that can be identified by \"of\" or defauts to the launcher\nwhen the popup opens. The values of these properties describe horizontal and\nvertical alignments.\n\nDeprecated v3.0.0 jQuery UI position syntax; Use of a percent unit with\n\"my\" or \"at\" is not supported.",
       "type": "object",
       "displayName": "Position",
+      "help": "position",
       "properties": {
         "at": {
           "description": "Defines which position on the target element (\"of\") to align the positioned element\nagainst.",
           "type": "object",
           "displayName": "At",
+          "help": "position.at",
           "properties": {
             "horizontal": {
               "description": "Defines the horizontal alignment of what the popup is aligned to.",
               "type": "string",
               "displayName": "Horizontal",
               "value": "start",
+              "help": "position.at.horizontal",
               "enumValues": [
                 "center",
                 "end",
@@ -150,7 +158,8 @@
               "description": "Defines the vertical alignment of what the popup is aligned to.",
               "type": "string",
               "displayName": "Vertical",
-              "value": "top",
+              "value": "bottom",
+              "help": "position.at.vertical",
               "enumValues": [
                 "bottom",
                 "center",
@@ -175,6 +184,7 @@
           "type": "string",
           "displayName": "Collision",
           "value": "flip",
+          "help": "position.collision",
           "enumValues": [
             "fit",
             "flip",
@@ -192,7 +202,7 @@
               "displayName": "Flip"
             },
             "flipcenter": {
-              "description": "first applies the flip rule and follows with center alignment.",
+              "description": "first applies the flip rule and follow with center alignment.",
               "displayName": "Flipcenter"
             },
             "flipfit": {
@@ -209,12 +219,14 @@
           "description": "Defines which edge on the popup to align with the target (\"of\") element.",
           "type": "object",
           "displayName": "My",
+          "help": "position.my",
           "properties": {
             "horizontal": {
               "description": "Defines the horizontal alignment of the popup.",
               "type": "string",
               "displayName": "Horizontal",
               "value": "start",
+              "help": "position.my.horizontal",
               "enumValues": [
                 "center",
                 "end",
@@ -247,6 +259,7 @@
               "type": "string",
               "displayName": "Vertical",
               "value": "top",
+              "help": "position.my.vertical",
               "enumValues": [
                 "bottom",
                 "center",
@@ -269,24 +282,28 @@
         "of": {
           "description": "Which element to position the popup against. The default is the\nlauncher argument passed to the\nopen method.\n\nIf the value is a string, it should be a selector or the literal string value\nof window. Otherwise, a point of x,y. When a point\nis used, the values are relative to the whole document. Page horizontal and vertical\nscroll offsets need to be factored into this point - see UIEvent\npageX,\npageY.",
           "type": "string|object",
-          "displayName": "Of"
+          "displayName": "Of",
+          "help": "position.of"
         },
         "offset": {
           "description": "Defines a point offset in pixels from the (\"my\") alignment.",
           "type": "object",
           "displayName": "Offset",
+          "help": "position.offset",
           "properties": {
             "x": {
               "description": "Horizontal aligment offset.",
               "type": "number",
               "displayName": "X",
-              "value": 0
+              "value": 0,
+              "help": "position.offset.x"
             },
             "y": {
               "description": "Vertical alignment offset.",
               "type": "number",
               "displayName": "Y",
-              "value": 0
+              "value": 0,
+              "help": "position.offset.y"
             }
           }
         }
@@ -297,6 +314,7 @@
       "type": "string",
       "displayName": "Tail",
       "value": "none",
+      "help": "tail",
       "enumValues": [
         "none",
         "simple"
@@ -317,12 +335,52 @@
       "type": "object|null",
       "displayName": "Translations",
       "value": {},
-      "translatable": true
+      "translatable": true,
+      "help": "translations",
+      "properties": {
+        "ariaCloseSkipLink": {
+          "description": "Label assigned to a hidden anchor tag used for accessibility navigation on platforms supporting VoiceOver. The link is injected as\na sibling to the context area of an open popup and used for ojPopup#close activation.",
+          "type": "string",
+          "displayName": "Aria Close Skip Link",
+          "help": "translations.ariaCloseSkipLink"
+        },
+        "ariaFocusSkipLink": {
+          "description": "Label assigned to a hidden anchor tag used for accessibility navigation on platforms supporting VoiceOver. The link is injected as\na sibling to the launcher of an open popup. The launcher is passed as the first argument to ojPopup#open. Activation\nof the link will move focus to the content of the associated popup.",
+          "type": "string",
+          "displayName": "Aria Focus Skip Link",
+          "help": "translations.ariaFocusSkipLink"
+        },
+        "ariaLiveRegionInitialFocusFirstFocusable": {
+          "description": "Message announced to a wai-aria live region on desktop platforms when a popup opens and steals initial focus.",
+          "type": "string",
+          "displayName": "Aria Live Region Initial Focus First Focusable",
+          "help": "translations.ariaLiveRegionInitialFocusFirstFocusable"
+        },
+        "ariaLiveRegionInitialFocusFirstFocusableTouch": {
+          "description": "Message announced to a wai-aria live region on platforms supporting VoiceOver when a popup opens and steals initial focus.",
+          "type": "string",
+          "displayName": "Aria Live Region Initial Focus First Focusable Touch",
+          "help": "translations.ariaLiveRegionInitialFocusFirstFocusableTouch"
+        },
+        "ariaLiveRegionInitialFocusNone": {
+          "description": "Message announced to a wai-aria live region on desktop platforms when a popup opens but doesn't change focus.",
+          "type": "string",
+          "displayName": "Aria Live Region Initial Focus None",
+          "help": "translations.ariaLiveRegionInitialFocusNone"
+        },
+        "ariaLiveRegionInitialFocusNoneTouch": {
+          "description": "Message announced to a wai-aria live region on platforms supporting VocieOver when a popup opens but doesn't change focus.",
+          "type": "string",
+          "displayName": "Aria Live Region Initial Focus None Touch",
+          "help": "translations.ariaLiveRegionInitialFocusNoneTouch"
+        }
+      }
     }
   },
   "methods": {
     "open": {
       "description": "Opens the popup. This method accepts two arguments. The first argument \"launcher\" is\nrequired but the second \"position\" is optional.",
+      "help": "open",
       "params": [
         {
           "name": "launcher",
@@ -340,18 +398,22 @@
     },
     "close": {
       "description": "Closes the popup. This method does not accept any arguments.",
+      "help": "close",
       "return": "void"
     },
     "isOpen": {
       "description": "Returns the state of whether the popup is currently open. This method does not accept\nany arguments.\n\nThe \"open\" state reflects the period of time the popup is visible, including open and\nclose animations.",
+      "help": "isOpen",
       "return": "boolean"
     },
     "refresh": {
       "description": "Causes the popup to reevaluate its position. Call this function after\nthe content of the popup has dynamically changed while the popup is open.\n\nThis method does not accept any arguments.",
+      "help": "refresh",
       "return": "void"
     },
     "setProperty": {
-      "description": "Sets a property or a single subproperty for complex properties and notifies the component\nof the change, triggering a [property]Changed event.",
+      "description": "Sets a property or a single subproperty for complex properties and notifies the component of the change, triggering a [property]Changed event.",
+      "help": "setProperty",
       "params": [
         {
           "name": "property",
@@ -368,6 +430,7 @@
     },
     "getProperty": {
       "description": "Retrieves a value for a property or a single subproperty for complex properties.",
+      "help": "getProperty",
       "params": [
         {
           "name": "property",
@@ -379,6 +442,7 @@
     },
     "setProperties": {
       "description": "Performs a batch set of properties.",
+      "help": "setProperties",
       "params": [
         {
           "name": "properties",
@@ -393,29 +457,35 @@
     "ojBeforeOpen": {
       "description": "Triggered before the popup is launched via the open()\nmethod. The open can be cancelled by calling\nevent.preventDefault().",
       "bubbles": true,
-      "cancelable": true
+      "cancelable": true,
+      "help": "beforeOpen"
     },
     "ojOpen": {
       "description": "Triggered after the popup is launched via the open()\nmethod.",
-      "bubbles": true
+      "bubbles": true,
+      "help": "open"
     },
     "ojBeforeClose": {
       "description": "Triggered before the popup is dismissed via the\nclose() method. The close can be cancelled by calling\nevent.preventDefault().",
       "bubbles": true,
-      "cancelable": true
+      "cancelable": true,
+      "help": "beforeClose"
     },
     "ojClose": {
       "description": "Triggered after the popup is dismissed via the\nclose() method.",
-      "bubbles": true
+      "bubbles": true,
+      "help": "close"
     },
     "ojFocus": {
       "description": "Triggered after focus has been transfered to the popup. This will occur after the\nopen() method is called, depending on the value\nof the initialFocus property. It's also triggered\nwhen using the F6 key to toggle focus from the associated launcher element\nto the content of the popup.",
-      "bubbles": true
+      "bubbles": true,
+      "help": "focus"
     },
     "ojAnimateStart": {
       "description": "Triggered when a default animation is about to start, such as when the component is\nbeing opened/closed or a child item is being added/removed. The default animation can\nbe cancelled by calling event.preventDefault.",
       "bubbles": true,
       "cancelable": true,
+      "help": "animateStart",
       "detail": {
         "action": {
           "description": "The action that is starting the animation. The number of actions can vary from component to component. Suggested values are: \"open\" - when a popup component is opened \"close\" - when a popup component is closed ",
@@ -435,6 +505,7 @@
       "description": "Triggered when a default animation has ended, such as when the component is being\nopened/closed or a child item is being added/removed. This event is not triggered if\nthe application has called preventDefault on the animateStart\nevent.",
       "bubbles": true,
       "cancelable": true,
+      "help": "animateEnd",
       "detail": {
         "element": {
           "description": "target of animation",
@@ -449,7 +520,9 @@
   },
   "slots": {
     "contextMenu": {
-      "description": "The contextMenu slot is set on the oj-menu within this element. \nThis is used to designate the JET Menu that this component should launch as a context menu on right-click, Shift-F10, Press & Hold, or component-specific gesture. \nIf specified, the browser's native context menu will be replaced by the JET Menu specified in this slot.\n\nThe application can register a listener for the Menu's ojBeforeOpen event. The listener can cancel the launch via event.preventDefault(), \nor it can customize the menu contents by editing the menu DOM directly, and then calling refresh() on the Menu.\n\nTo help determine whether it's appropriate to cancel the launch or customize the menu, the ojBeforeOpen listener can use component API's to determine which \ntable cell, chart item, etc., is the target of the context menu. See the JSDoc and demos of the individual components for details. \n\nKeep in mind that any such logic must work whether the context menu was launched via right-click, Shift-F10, Press & Hold, or component-specific touch gesture."
+      "description": "The contextMenu slot is set on the <oj-menu> instance within this element. It designates the JET Menu that this component should launch as a context menu.",
+      "maxItems": 1,
+      "help": "contextMenu"
     }
   }
 }

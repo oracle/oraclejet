@@ -22,12 +22,6 @@
 @if $includeMessagingClasses != false {
   @include module-include-once("alta.ios.messaging") {
     
-    // ios needs space and a top border on the message box since the border-radius is such that the box is round.
-    .oj-messaging-inline-container .oj-message {
-      margin-top: 5px;
-      border-radius: $formControlBorderRadius;
-      border-width: 1px 1px 1px 1px;
-    }
 
   }
 }

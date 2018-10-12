@@ -4,12 +4,12 @@
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
-define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore', 
-        'ojs/ojpopupcore', 'ojs/ojanimation', 'ojs/ojbutton', 'jqueryui-amd/widgets/draggable', 
+define(['ojs/ojcore', 'jquery', 'ojs/ojthemeutils', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'promise', 
+        'ojs/ojpopupcore', 'ojs/ojbutton', 'jqueryui-amd/widgets/draggable', 
         'jqueryui-amd/widgets/mouse'],
-       function(oj, $)
+       function(oj, $, ThemeUtils, Components, AnimationUtils)
 {
-//%COMPONENT_METADATA%
+
 
 var __oj_dialog_metadata = 
 {
@@ -176,11 +176,12 @@ var __oj_dialog_metadata =
   },
   "extension": {}
 };
+
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
  */
-
+/* global Components:false, ThemeUtils */
 /**
  * @preserve Copyright 2013 jQuery Foundation and other contributors
  * Released under the MIT license.
@@ -215,6 +216,10 @@ var __oj_dialog_metadata =
   var /** @const */ OJD_HEADER_CLOSE = 'oj-dialog-header-close';
   var /** @const */ OJD_HEADER_CLOSE_WRAPPER = 'oj-dialog-header-close-wrapper';
   var /** @const */ OJD_OPTION_DEFAULTS = 'oj-dialog-option-defaults';
+
+  var /** @const */ OJD_TITLE_CLASS = '.oj-dialog-title';
+  var /** @const */ OJD_FOOTER_CLASS = '.oj-dialog-footer';
+  var /** @const */ OJD_BODY_CLASS = '.oj-dialog-body';
 
   var /** @const */ OJ_RESIZABLE_N = 'oj-resizable-n';
   var /** @const */ OJ_RESIZABLE_E = 'oj-resizable-e';
@@ -490,6 +495,7 @@ var __oj_dialog_metadata =
          *
          * <p> Note that the cancelBehavior applies to both automatic and user-defined headers.
          * So by default, a user-defined header in the alta-web theme will have a system generated close icon.
+         *
          * @expose
          * @memberof oj.ojDialog
          * @instance
@@ -1142,6 +1148,7 @@ var __oj_dialog_metadata =
        */
     _ComponentCreate: function () {
       this._super();
+      var self = this;
 
       this.originalCss = {
         display: this.element[0].style.display,
@@ -1153,10 +1160,12 @@ var __oj_dialog_metadata =
         index: this.element.parent().children().index(this.element)
       };
 
-      // pull the title attribute from the root element moving to an option
-      this.originalTitle = this.element.attr('title');
-      this.options.title = this.options.title || this.originalTitle;
-      this.element.removeAttr('title');
+      // For the widget syntax, pull the title attribute from the root element moving to an option
+      if (!this._IsCustomElement()) {
+        this.originalTitle = this.element.attr('title');
+        this.options.title = this.options.title || this.originalTitle;
+        this.element.removeAttr('title');
+      }
 
       this.element.hide();
       this.element.uniqueId();
@@ -1184,7 +1193,7 @@ var __oj_dialog_metadata =
             this.userDefinedDialogHeader = true;
             this._userDefinedHeader = child;
             this._userDefinedHeaderDiv = children[i];
-          } else if (child.is('.oj-dialog-body')) {
+          } else if (child.is(OJD_BODY_CLASS)) {
             this._createContentDiv();
             this._uiDialogContent = $(this._contentDiv);
             //
@@ -1193,18 +1202,18 @@ var __oj_dialog_metadata =
             // <div class='oj-dialog-content'>
             //
             this.element[0].insertBefore(this._contentDiv, children[i]); // @HTMLUpdateOK
-            oj.Components.subtreeAttached(this._contentDiv);
+            Components.subtreeAttached(this._contentDiv);
             //
             // Then make content the parent of body, e.g.
             // <div class='oj-dialog-content'>
             //   <div class='oj-dialog-body'>
             //
             this._contentDiv.appendChild(children[i]); // @HTMLUpdateOK
-            oj.Components.subtreeAttached(children[i]);
+            Components.subtreeAttached(children[i]);
 
             this._uiDialogBody = child;
             this._uiDialogBodyDiv = children[i];
-          } else if (child.is('.oj-dialog-footer')) {
+          } else if (child.is(OJD_FOOTER_CLASS)) {
             this._uiDialogFooter = child;
             this._uiDialogFooterDiv = children[i];
           }
@@ -1217,7 +1226,7 @@ var __oj_dialog_metadata =
 
      // fixup dialog header
       if (this.userDefinedDialogHeader) {
-        this._userDefinedTitleDiv = this._userDefinedHeaderDiv.querySelector('.oj-dialog-title');
+        this._userDefinedTitleDiv = this._userDefinedHeaderDiv.querySelector(OJD_TITLE_CLASS);
         this._userDefinedTitle = $(this._userDefinedTitleDiv);
 
         if (this._userDefinedTitleDiv !== null && this._userDefinedTitleDiv !== undefined) {
@@ -1241,7 +1250,7 @@ var __oj_dialog_metadata =
         } else {
           this.element[0].insertBefore(this._contentDiv, this._uiDialogTitlebarDiv); // @HTMLUpdateOK
         }
-        oj.Components.subtreeAttached(this._contentDiv);
+        Components.subtreeAttached(this._contentDiv);
       }
 
       this._setupFocus(this.element);
@@ -1249,8 +1258,24 @@ var __oj_dialog_metadata =
       // fixup the position option set via the widget constructor
       var options = this.options;
       options.position = oj.PositionUtils.coerceToJet(options.position);
-    },
 
+      // For custom element dialogs, detect changes to the 'title' attribute using a mutation observer.
+      // Update the dialog title DOM on 'title' attribute change.
+      if (this._IsCustomElement()) {
+        this._titleMutationObserver = new MutationObserver(function (mutations) {
+          mutations.forEach(function (mutation) {
+            if (mutation.type === 'attributes') {
+              if (mutation.attributeName === 'title') {
+                self._uiDialogTitleDiv.textContent =
+                  mutation.target.getAttribute(mutation.attributeName);
+              }
+            }
+          });
+        });
+        // Start observing the dialog element for changes to the title attribute.
+        this._titleMutationObserver.observe(this.element[0], { attributes: true, attributeFilter: ['title'] });
+      }
+    },
 
     // Create the header slot element
     _createHeaderSlot: function () {
@@ -1258,7 +1283,7 @@ var __oj_dialog_metadata =
       this._headerSlot.classList.add(OJD_HEADER);
 
       this.element[0].appendChild(this._headerSlot); // @HTMLUpdateOK
-      oj.Components.subtreeAttached(this._headerSlot);
+      Components.subtreeAttached(this._headerSlot);
 
       this.userDefinedDialogHeader = true;
       this._userDefinedHeaderDiv = this._headerSlot;
@@ -1270,7 +1295,7 @@ var __oj_dialog_metadata =
       this._footerSlot = document.createElement('div');
 
       this.element[0].appendChild(this._footerSlot); // @HTMLUpdateOK
-      oj.Components.subtreeAttached(this._footerSlot);
+      Components.subtreeAttached(this._footerSlot);
       this._uiDialogFooterDiv = this._footerSlot;
       this._uiDialogFooter = $(this._footerSlot);
     },
@@ -1285,7 +1310,7 @@ var __oj_dialog_metadata =
       this._createContentDiv();
 
       this.element[0].appendChild(this._contentDiv);  // @HTMLUpdateOK
-      oj.Components.subtreeAttached(this._contentDiv);
+      Components.subtreeAttached(this._contentDiv);
 
       this._bodySlot = document.createElement('div');
 
@@ -1457,8 +1482,10 @@ var __oj_dialog_metadata =
 
       this.element.stop(true, true);
 
-      if (this.originalTitle) {
-        this.element.attr('title', this.originalTitle);
+      if (!this._IsCustomElement()) {
+        if (this.originalTitle) {
+          this.element.attr('title', this.originalTitle);
+        }
       }
 
       if (this._uiDialogTitlebar) {
@@ -1493,14 +1520,22 @@ var __oj_dialog_metadata =
         return;
       }
 
-      if (oj.ZOrderUtils.getStatus(this.element) !== oj.ZOrderUtils.STATUS.OPEN) {
+      // can only close an open dialog.
+      var status = oj.ZOrderUtils.getStatus(this.element);
+      if (status !== oj.ZOrderUtils.STATUS.OPEN) {
         return;
       }
 
+      // Status toggle is needed to prevent a recursive closed callled from a
+      // beforeClose handler. The _isOperationPending gatekeeper isn't activated
+      // until after the _setWhenReady('close'|'open') call.
+      oj.ZOrderUtils.setStatus(this.element, oj.ZOrderUtils.STATUS.BEFORE_CLOSE);
       if (this._trigger('beforeClose', event) === false && !this._ignoreBeforeCloseResultant) {
+        oj.ZOrderUtils.setStatus(this.element, status);
         return;
       }
 
+      // activates the _isOperationPending gatekeeper
       this._setWhenReady('close');
       this._focusedElement = null;
 
@@ -1547,12 +1582,13 @@ var __oj_dialog_metadata =
     _beforeCloseHandler: function (psOptions) {
       var rootElement = psOptions[oj.PopupService.OPTION.POPUP];
 
-      var animationOptions = (oj.ThemeUtils.parseJSONFromFontFamily(OJD_OPTION_DEFAULTS)
+      var animationOptions = (ThemeUtils.parseJSONFromFontFamily(OJD_OPTION_DEFAULTS)
         || {}).animation;
       if (!this._ignoreBeforeCloseResultant && animationOptions && animationOptions.close) {
         var style = rootElement.attr('style');
         /** @type {?} */
-        var promise = oj.AnimationUtils.startAnimation(rootElement[0], 'close',
+        // eslint-disable-next-line no-undef
+        var promise = AnimationUtils.startAnimation(rootElement[0], 'close',
           animationOptions.close, this).then(function () {
             rootElement.attr('style', style);
             rootElement.hide();
@@ -1600,8 +1636,10 @@ var __oj_dialog_metadata =
      */
     isOpen: function () {
       var status = oj.ZOrderUtils.getStatus(this.element);
+      // the window is visible and reparented to the zorder container for these statuses
       return (status === oj.ZOrderUtils.STATUS.OPENING ||
               status === oj.ZOrderUtils.STATUS.OPEN ||
+              status === oj.ZOrderUtils.STATUS.BEFORE_CLOSE ||
               status === oj.ZOrderUtils.STATUS.CLOSING);
     },
     /**
@@ -1626,15 +1664,33 @@ var __oj_dialog_metadata =
         return;
       }
 
-      if (this._trigger('beforeOpen', event) === false) {
+      // calling open on a dialog in an open state will result in calling the
+      // beforeOpen followed by resetting inital focus. This is different behavior
+      // than the popup which forces a sync close follwed by a reopen - dialog
+      // doesn't have accessiblity launcher requirements.
+      var status = oj.ZOrderUtils.getStatus(this.element);
+      if (!(status === oj.ZOrderUtils.STATUS.OPEN ||
+            status === oj.ZOrderUtils.STATUS.UNKNOWN ||
+            status === oj.ZOrderUtils.STATUS.CLOSE)) {
         return;
       }
 
-      if (oj.ZOrderUtils.getStatus(this.element) === oj.ZOrderUtils.STATUS.OPEN) {
+      // status change is needed to prevent calling open from an on before open
+      // handler.  The _isOperationPending doens't gurard until this._setWhenReady('open');
+      oj.ZOrderUtils.setStatus(this.element, oj.ZOrderUtils.STATUS.BEFORE_OPEN);
+      if (this._trigger('beforeOpen', event) === false) {
+        oj.ZOrderUtils.setStatus(this.element, status);
+        return;
+      }
+
+      // open was called on a open dialog, just establish intial focus
+      if (status === oj.ZOrderUtils.STATUS.OPEN) {
+        oj.ZOrderUtils.setStatus(this.element, status);
         this._focusTabbable();
         return;
       }
 
+      // activates the isOperationPending gate keeper
       this._setWhenReady('open');
 
       if (this.userDefinedDialogHeader) {
@@ -1713,10 +1769,11 @@ var __oj_dialog_metadata =
       // This supports maintaing the visibility of a nested dialog during animation open.
       rootElement.parent().addClass('oj-animate-open');
 
-      var animationOptions = (oj.ThemeUtils.parseJSONFromFontFamily(OJD_OPTION_DEFAULTS) ||
+      var animationOptions = (ThemeUtils.parseJSONFromFontFamily(OJD_OPTION_DEFAULTS) ||
         {}).animation;
       if (animationOptions && animationOptions.open) {
-        return oj.AnimationUtils.startAnimation(rootElement[0], 'open',
+        // eslint-disable-next-line no-undef
+        return AnimationUtils.startAnimation(rootElement[0], 'open',
           animationOptions.open, this);
       }
 
@@ -1751,13 +1808,33 @@ var __oj_dialog_metadata =
     refresh: function () {
       this._super();
     },
+
+    /**
+     * @memberof oj.ojDialog
+     * @instance
+     * @private
+     */
     _focusTabbable: function () {
-      var hasFocus = this._focusedElement;
-      if (hasFocus && hasFocus.length > 0) {
-        // if dialog already has focus then return
-        if (oj.DomUtils.isAncestorOrSelf(this.element[0], hasFocus[0])) {
-          return;
-        }
+      var hasFocus = this.GetFocusElement();
+      hasFocus.focus();
+      this._trigger('focus');
+    },
+
+    /**
+     * Returns the current focusable element for this component which can be the root custom element
+     * or an HTML element like an input or select.
+     * @return {Element}
+     * @memberof oj.ojDialog
+     * @instance
+     * @protected
+     * @override
+     */
+    GetFocusElement: function () {
+      var hasFocus = null;
+
+      // Set focus to the outer dialog if the title-bar is clicked (or dragged).
+      if (this._titleBarMousedown === true) {
+        return this.element[0];
       }
 
       // Set focus to the first match:
@@ -1770,27 +1847,25 @@ var __oj_dialog_metadata =
       if (!hasFocus) {
         hasFocus = this.element.find('[autofocus]');
       }
-      if (!hasFocus.length) {
-        hasFocus = this._uiDialogContent.find(':tabbable');
+      if (hasFocus == null || !hasFocus.length) {
+        hasFocus = oj.FocusUtils.getFirstTabStop(this._contentDiv);
+        if (hasFocus != null) return hasFocus;
       }
-      if (!hasFocus.length) {
+      if (hasFocus == null || !hasFocus.length) {
         if (this._uiDialogFooter && this._uiDialogFooter.length) {
-          hasFocus = this._uiDialogFooter.find(':tabbable');
+          hasFocus = oj.FocusUtils.getFirstTabStop(this._uiDialogFooterDiv);
+          if (hasFocus != null) return hasFocus;
         }
       }
-      if (!hasFocus.length) {
+      if (hasFocus == null || !hasFocus.length) {
         if (this.closeButton) {
-          hasFocus = this.closeButton.filter(':focusable');
+          hasFocus = this.closeButton;
         }
       }
-      if (!hasFocus.length) {
+      if (hasFocus == null || !hasFocus.length) {
         hasFocus = this.element;
       }
-
-      if (hasFocus.length > 0) {
-        hasFocus.eq(0).focus();
-        this._trigger('focus');
-      }
+      return hasFocus[0];
     },
 
     _keydownHandler: function (event) {
@@ -1807,59 +1882,29 @@ var __oj_dialog_metadata =
       }
 
       // prevent tabbing out of dialogs
-      // var tabbables = this._uiDialogContent.find(":tabbable"),
-      var tabbables = this.element.find(':tabbable');
-      var first = tabbables.filter(':first');
-      var last = tabbables.filter(':last');
+      var focusItem;
 
-      var index;
-
+      // Note that we check document.activeElement instead of event.target since
+      // descendant elements such as ojTable may change focus when handling Tab key.
+      // This aligns with browser behavior because it determines next tabstop
+      // based on activeElement.
       if (!event.shiftKey) {
-        // Check document.activeElement instead of event.target since descendant
-        // elements such as ojTable may change focus when handling Tab key.
-        // This aligns with browser behavior because it determines next tabstop
-        // based on activeElement.
-        if (document.activeElement === last[0] || document.activeElement === this.element[0]) {
-          first.focus();
-          event.preventDefault();
-        } else {
-          //
-          // Make sure the first dialog tabbable (the header icon)
-          // does not tab out of the dialog.
-          //
-          index = tabbables.index(document.activeElement);
-
-          if (index === 0) {
-            if (tabbables[1]) {
-              tabbables[1].focus();
-              event.preventDefault();
-            }
+        // For TAB, we cycle when we are on the last element.
+        if (oj.FocusUtils.isLastActiveElement(this.element) ||
+            document.activeElement === this.element[0]) {
+          focusItem = oj.FocusUtils.getFirstTabStop(this.element);
+          if (focusItem != null) {
+            focusItem.focus();
+            event.preventDefault();
           }
         }
-      } else if (event.shiftKey) {
-        //
-        // For SHIFT-TAB, we reverse the tab order.
-        //
-
-        // Check document.activeElement instead of event.target since descendant
-        // elements such as ojTable may change focus when handling Tab key.
-        // This aligns with browser behavior because it determines next tabstop
-        // based on activeElement.
-        if (document.activeElement === first[0] || document.activeElement === this.element[0]) {
-          last.focus();
+      } else if (oj.FocusUtils.isFirstActiveElement(this.element) ||
+                 document.activeElement === this.element[0]) {
+        // For SHIFT-TAB, we cycle when we are on the first element.
+        focusItem = oj.FocusUtils.getLastTabStop(this.element);
+        if (focusItem != null) {
+          focusItem.focus();
           event.preventDefault();
-        } else {
-          //
-          // Make sure the second dialog tabbable tabs back to the header
-          //
-          index = tabbables.index(document.activeElement);
-
-          if (index === 1) {
-            if (tabbables[0]) {
-              tabbables[0].focus();
-              event.preventDefault();
-            }
-          }
         }
       }
     },
@@ -1889,7 +1934,7 @@ var __oj_dialog_metadata =
     _destroyCloseButton: function () {
       if (this.closeButtonDiv !== null && this.closeButtonDiv !== undefined) {
         if (this.closeButtonDiv.parentElement) {
-          oj.Components.subtreeDetached(this.closeButtonDiv);
+          Components.subtreeDetached(this.closeButtonDiv);
           this.closeButtonDiv.parentElement.removeChild(this.closeButtonDiv); // @HTMLUpdateOK
         }
 
@@ -1928,7 +1973,7 @@ var __oj_dialog_metadata =
         this.closeButtonDiv.appendChild(closeButtonLabel);
 
         divParentElement.appendChild(this.closeButtonDiv); // @HTMLUpdateOK
-        oj.Components.subtreeAttached(this.closeButtonDiv);
+        Components.subtreeAttached(this.closeButtonDiv);
 
         this.closeButton = $(this.closeButtonDiv);
       }
@@ -1990,10 +2035,14 @@ var __oj_dialog_metadata =
           // a shallower button stack for button click events).
           //
           var isCloseButton = oj.DomUtils.isAncestorOrSelf(this.closeButtonDiv, event.target);
+          this._titleBarMousedown = true;
           if (!isCloseButton) {
             // Set focus to the dialog if we are dragging by the header
             this.element.focus();
           }
+        },
+        mouseup: function () {
+          this._titleBarMousedown = null;
         }
       });
     },
@@ -2002,29 +2051,38 @@ var __oj_dialog_metadata =
       this._uiDialogTitlebarDiv = document.createElement('div');
       this._uiDialogTitlebarDiv.classList.add(OJD_HEADER);
       this.element[0].insertBefore(this._uiDialogTitlebarDiv, this.element[0].firstChild);  // @HTMLUpdateOK
-      oj.Components.subtreeAttached(this._uiDialogTitlebarDiv);
+      Components.subtreeAttached(this._uiDialogTitlebarDiv);
 
       this._uiDialogTitlebar = $(this._uiDialogTitlebarDiv);
 
-      var uiDialogTitleDiv = document.createElement('div');
-      uiDialogTitleDiv.classList.add('oj-dialog-title');
-      $(uiDialogTitleDiv).uniqueId();
-      this._uiDialogTitlebarDiv.appendChild(uiDialogTitleDiv); // @HTMLUpdateOK
-      oj.Components.subtreeAttached(uiDialogTitleDiv);
+      this._uiDialogTitleDiv = document.createElement('h1');
+      this._uiDialogTitleDiv.classList.add('oj-dialog-title');
+      $(this._uiDialogTitleDiv).uniqueId();
+      this._uiDialogTitlebarDiv.appendChild(this._uiDialogTitleDiv); // @HTMLUpdateOK
+      Components.subtreeAttached(this._uiDialogTitleDiv);
 
-      this._title(uiDialogTitleDiv);
+      this._title(this._uiDialogTitleDiv);
 
       this.element.attr({
-        'aria-labelledby': uiDialogTitleDiv.id
+        'aria-labelledby': this._uiDialogTitleDiv.id
       });
     },
 
     _title: function (_title) {
       var title = _title;
-      if (!this.options.title) {
-        title.innerHTML = '&#160;';  // @HTMLUpdateOK
+
+      // Set the content of the title.
+      if (!this._IsCustomElement()) {
+        if (!this.options.title) {
+          title.innerHTML = '&#160;';  // @HTMLUpdateOK
+        }
+        title.textContent = this.options.title;
+      } else if (this._IsCustomElement()) {
+        if (!this.element.attr('title')) {
+          title.innerHTML = '&#160;';  // @HTMLUpdateOK
+        }
+        title.textContent = this.element.attr('title');
       }
-      title.textContent = this.options.title;
     },
 
     _makeDraggable: function () {
@@ -2191,9 +2249,9 @@ var __oj_dialog_metadata =
         case 'title':
 
           if (this.userDefinedDialogHeader) {
-            this._title(this._userDefinedHeaderDiv.querySelector('.oj-dialog-title'));
+            this._title(this._userDefinedHeaderDiv.querySelector(OJD_TITLE_CLASS));
           } else {
-            this._title(this._uiDialogTitlebarDiv.querySelector('.oj-dialog-title'));
+            this._title(this._uiDialogTitlebarDiv.querySelector(OJD_TITLE_CLASS));
           }
           break;
 
@@ -2223,13 +2281,13 @@ var __oj_dialog_metadata =
             //
             // Insert oj-dialog-title between oj-dialog-header and oj-dialog-header-close-wrapper
             //
-              this._userDefinedTitleDiv = this._userDefinedHeaderDiv.querySelector('.oj-dialog-title');
+              this._userDefinedTitleDiv = this._userDefinedHeaderDiv.querySelector(OJD_TITLE_CLASS);
               this._userDefinedTitle = $(this._userDefinedTitleDiv);
             } else {
               this._destroyCloseButton();
               this._createCloseButton(this._uiDialogTitlebarDiv);
 
-              this.standardTitleDiv = this._uiDialogTitlebarDiv.querySelector('.oj-dialog-title');
+              this.standardTitleDiv = this._uiDialogTitlebarDiv.querySelector(OJD_TITLE_CLASS);
               this.standardTitle = $(this.standardTitleDiv);
             }
           }
@@ -2266,9 +2324,9 @@ var __oj_dialog_metadata =
       //
       if (this._IsCustomElement() && (subId === OJD_FOOTER || subId === OJD_BODY)) {
         if (subId === OJD_BODY) {
-          return this._uiDialogBodyDiv.querySelector('.oj-dialog-body');
+          return this._uiDialogBodyDiv.querySelector(OJD_BODY_CLASS);
         } else if (subId === OJD_FOOTER) {
-          return this._uiDialogFooterDiv.querySelector('.oj-dialog-footer');
+          return this._uiDialogFooterDiv.querySelector(OJD_FOOTER_CLASS);
         }
       } else {
         // General case
@@ -2375,8 +2433,21 @@ var __oj_dialog_metadata =
      * @return {void}
      */
     _surrogateRemoveHandler: function () {
+      // In all cases except when the dialog is already open, removal of the
+      // surrogate during opening or closing will result in implicit removal.
+      // 1) CLOSING: Handled in oj.ZOrderUtils.removeFromAncestorLayer.  If the
+      //    surrogate doesn't exist the layer containing the popup dom is detached.
+      // 2) OPENING: in the PopupServiceImpl#open _finalize, if the surrogate doesn't
+      //    exist after in the open state, this remove callback is invoked.
+      //
+      // Custom element will call _NotifyDetached after element.remove but
+      // but jquery UI instances will invoke the _destory method.
+
       var element = this.element;
-      element.remove();
+      var status = oj.ZOrderUtils.getStatus(element);
+      if (status === oj.ZOrderUtils.STATUS.OPEN) {
+        element.remove();
+      }
     },
     /**
      * @memberof oj.ojDialog
@@ -2619,7 +2690,7 @@ var __oj_dialog_metadata =
      *     </tr>
      *     <tr>
      *       <td>oj-dialog-footer-separator</td>
-     *       <td><p>A separator between the dialog body and the dialog footer can be added by using a second style class ( <code class="prettyprint"> oj-dialog-footer-separator </code>) in the footer. So use:
+     *       <td><p>A separator between the dialog body and the dialog footer can be added by using a second style class (<code class="prettyprint">oj-dialog-footer-separator</code>) in the footer. So use:
      *           <ul>
      *             <li>oj-dialog-footer oj-dialog-footer-separator</li>
      *           </ul>
@@ -2804,23 +2875,23 @@ var __oj_dialog_metadata =
      */
   });
 
-  oj.Components.setDefaultOptions(
+  Components.setDefaultOptions(
     {
       ojDialog:
       {
-        resizeBehavior: oj.Components.createDynamicPropertyGetter(
+        resizeBehavior: Components.createDynamicPropertyGetter(
             function () {
-              return (oj.ThemeUtils.parseJSONFromFontFamily(OJD_OPTION_DEFAULTS) || {})
+              return (ThemeUtils.parseJSONFromFontFamily(OJD_OPTION_DEFAULTS) || {})
                 .resizeBehavior;
             }),
-        cancelBehavior: oj.Components.createDynamicPropertyGetter(
+        cancelBehavior: Components.createDynamicPropertyGetter(
             function () {
-              return (oj.ThemeUtils.parseJSONFromFontFamily(OJD_OPTION_DEFAULTS) || {})
+              return (ThemeUtils.parseJSONFromFontFamily(OJD_OPTION_DEFAULTS) || {})
                 .cancelBehavior;
             }),
-        dragAffordance: oj.Components.createDynamicPropertyGetter(
+        dragAffordance: Components.createDynamicPropertyGetter(
             function () {
-              return (oj.ThemeUtils.parseJSONFromFontFamily(OJD_OPTION_DEFAULTS) || {})
+              return (ThemeUtils.parseJSONFromFontFamily(OJD_OPTION_DEFAULTS) || {})
                 .dragAffordance;
             })
       }
@@ -2852,16 +2923,16 @@ var __oj_dialog_metadata =
  *
  */
 
-(function() {
-$.widget("oj.ojResizable", {
-    version: "1.0.0",
-    widgetEventPrefix: "oj",
+(function () {
+  $.widget('oj.ojResizable', {
+    version: '1.0.0',
+    widgetEventPrefix: 'oj',
     options: {
-      /////////////////////////////////////////////////////////////////////////////////////
+      // ///////////////////////////////////////////////////////////////////////////////////
       //
       // Mouse Options (copied)
       //
-      /////////////////////////////////////////////////////////////////////////////////////
+      // ///////////////////////////////////////////////////////////////////////////////////
 
       /**
        *
@@ -2871,7 +2942,7 @@ $.widget("oj.ojResizable", {
        * @instance
        *
        */
-      cancel: "input,textarea,button,select,option",
+      cancel: 'input,textarea,button,select,option',
       /**
        *
        * @private
@@ -2890,11 +2961,11 @@ $.widget("oj.ojResizable", {
        *
        */
       delay: 0,
-      /////////////////////////////////////////////////////////////////////////////////////
+      // ///////////////////////////////////////////////////////////////////////////////////
       //
       // Resize Options
       //
-      /////////////////////////////////////////////////////////////////////////////////////
+      // ///////////////////////////////////////////////////////////////////////////////////
 
 
       /**
@@ -2959,7 +3030,7 @@ $.widget("oj.ojResizable", {
        * @instance
        *
        */
-      animateDuration: "slow",
+      animateDuration: 'slow',
       /**
        *
        * @private
@@ -2968,7 +3039,7 @@ $.widget("oj.ojResizable", {
        * @instance
        *
        */
-      animateEasing: "swing",
+      animateEasing: 'swing',
       /**
        *
        * @private
@@ -3004,7 +3075,7 @@ $.widget("oj.ojResizable", {
        * @instance
        *
        */
-      handles: "e,s,se",
+      handles: 'e,s,se',
       /**
        *
        * @private
@@ -3017,9 +3088,9 @@ $.widget("oj.ojResizable", {
       // See #7960
       // zIndex: 90,
 
-      /////////////////
+      // ///////////////
       // callbacks
-      /////////////////
+      // ///////////////
 
 
       /**
@@ -3088,37 +3159,37 @@ $.widget("oj.ojResizable", {
       // note - jqui doc has .on("resizestop"
       stop: null
     },
-    /////////////////////////////////////////////////////////////////////////////////////
+    // ///////////////////////////////////////////////////////////////////////////////////
     //
     // Original Resize Functions
     //
-    /////////////////////////////////////////////////////////////////////////////////////
+    // ///////////////////////////////////////////////////////////////////////////////////
 
-    _num: function(value) {
+    _num: function (value) {
       return parseInt(value, 10) || 0;
     },
-    _isNumber: function(value) {
+    _isNumber: function (value) {
       return !isNaN(parseInt(value, 10));
     },
-    _hasScroll: function(el, a) {
-
-      if ($(el).css("overflow") === "hidden") {
+    _hasScroll: function (_el, a) {
+      var el = _el;
+      if ($(el).css('overflow') === 'hidden') {
         return false;
       }
 
-      var scroll = (a && a === "left") ? "scrollLeft" : "scrollTop",
-        has = false;
+      var scroll = (a && a === 'left') ? 'scrollLeft' : 'scrollTop';
+      var has = false;
 
-      if (el[ scroll ] > 0) {
+      if (el[scroll] > 0) {
         return true;
       }
 
       // TODO: determine which cases actually cause this to happen
       // if the element doesn't have the scroll set, see if it's possible to
       // set the scroll
-      el[ scroll ] = 1;
-      has = (el[ scroll ] > 0);
-      el[ scroll ] = 0;
+      el[scroll] = 1;
+      has = (el[scroll] > 0);
+      el[scroll] = 0;
       return has;
     },
     /**
@@ -3142,18 +3213,22 @@ $.widget("oj.ojResizable", {
      * $( ".selector" ).on( "ojcreate", function( event, ui ) {} );
      */
     // note - jqui has on("resizecreate", ... need to verify if we need some form of "ojcreate".
-    _create: function()
-    {
+    _create: function () {
       this._super();
 
-      var n, i, handle, axis, hname,
-        that = this, o = this.options;
+      var n;
+      var i;
+      var handle;
+      var axis;
+      var hname;
+      var that = this;
+      var o = this.options;
 
       //
       // Create an instance of the 3rd party jqueryui mouse widget.
       //
 
-      var mouseConstructor = this.element['mouse'].bind(this.element);
+      var mouseConstructor = this.element.mouse.bind(this.element);
       mouseConstructor();
       this.mouse = mouseConstructor('instance');
 
@@ -3162,26 +3237,26 @@ $.widget("oj.ojResizable", {
       // we override the protected methods of this mouse instance.
       //
 
-      this.mouse['_mouseCapture'] = function(event) {
+      this.mouse._mouseCapture = function (event) {
         return that._mouseCapture(event);
       };
 
-      this.mouse['_mouseStart'] = function(event) {
+      this.mouse._mouseStart = function (event) {
         return that._mouseStart(event);
       };
 
-      this.mouse['_mouseDrag'] = function(event) {
+      this.mouse._mouseDrag = function (event) {
         return that._mouseDrag(event);
       };
 
-      this.mouse['_mouseStop'] = function(event) {
+      this.mouse._mouseStop = function (event) {
         if (this.element) {
           this.element.focus();
         }
         return that._mouseStop(event);
       };
 
-      this.element.addClass("oj-resizable");
+      this.element.addClass('oj-resizable');
 
       $.extend(this, {
         originalElement: this.element,
@@ -3192,20 +3267,30 @@ $.widget("oj.ojResizable", {
 
       this._initialResize = true;
 
-      this.handles = o.handles || (!$(".oj-resizable-handle", this.element).length ? "e,s,se" : {n: ".oj-resizable-n", e: ".oj-resizable-e", s: ".oj-resizable-s", w: ".oj-resizable-w", se: ".oj-resizable-se", sw: ".oj-resizable-sw", ne: ".oj-resizable-ne", nw: ".oj-resizable-nw"});
-      if (this.handles.constructor === String) {
+      this.handles = o.handles || (!$('.oj-resizable-handle',
+                                      this.element).length ? 'e,s,se' :
+      {
+        n: '.oj-resizable-n',
+        e: '.oj-resizable-e',
+        s: '.oj-resizable-s',
+        w: '.oj-resizable-w',
+        se: '.oj-resizable-se',
+        sw: '.oj-resizable-sw',
+        ne: '.oj-resizable-ne',
+        nw: '.oj-resizable-nw'
+      });
 
-        if (this.handles === "all") {
-          this.handles = "n,e,s,w,se,sw,ne,nw";
+      if (this.handles.constructor === String) {
+        if (this.handles === 'all') {
+          this.handles = 'n,e,s,w,se,sw,ne,nw';
         }
 
-        n = this.handles.split(",");
+        n = this.handles.split(',');
         this.handles = {};
 
         for (i = 0; i < n.length; i++) {
-
           handle = $.trim(n[i]);
-          hname = "oj-resizable-" + handle;
+          hname = 'oj-resizable-' + handle;
           axis = $("<div class='oj-resizable-handle " + hname + "'></div>");
 
           // axis.css({ zIndex: o.zIndex });
@@ -3214,43 +3299,33 @@ $.widget("oj.ojResizable", {
           //
           // if ("se" === handle) {
           // axis.addClass("ui-icon ui-icon-gripsmall-diagonal-se");
-          //}
+          // }
 
-          this.handles[handle] = ".oj-resizable-" + handle;
+          this.handles[handle] = '.oj-resizable-' + handle;
           this.element.append(axis);   // @HTMLUpdateOK
         }
       }
 
-      this._renderAxis = function(target) {
-
-        var i, axis, padPos, padWrapper;
-
-        target = target || this.element;
-
-        for (i in this.handles) {
-
-          if (this.handles[i].constructor === String) {
-            this.handles[i] = this.element.children(this.handles[ i ]).first().show();
-          }
-
+      var keys = Object.keys(this.handles);
+      for (i = 0; i < keys.length; i++) {
+        var k = keys[i];
+        if (this.handles[k].constructor === String) {
+          this.handles[k] = this.element.children(this.handles[k]).first().show();
         }
-      };
+      }
 
-      // TODO: make renderAxis a prototype function
-      this._renderAxis(this.element);
+      this._handles = $('.oj-resizable-handle', this.element);
 
-      this._handles = $(".oj-resizable-handle", this.element);
-
-      this._handles.mouseover(function() {
+      this._handles.mouseover(function () {
         if (!that.resizing) {
           if (this.className) {
             axis = this.className.match(/oj-resizable-(se|sw|ne|nw|n|e|s|w)/i);
           }
-          that.axis = axis && axis[1] ? axis[1] : "se";
+          that.axis = axis && axis[1] ? axis[1] : 'se';
         }
       });
 
-      this.mouse['_mouseInit']();
+      this.mouse._mouseInit();
     },
     /**
      * Remove the ojResizable functionality completely.
@@ -3269,34 +3344,37 @@ $.widget("oj.ojResizable", {
      * var destroy = $( ".selector" ).ojResizable( "destroy" );
      */
 
-    _destroy: function() {
-
+    _destroy: function () {
       if (this.mouse) {
-        this.mouse['_mouseDestroy']();
+        this.mouse._mouseDestroy();
       }
 
       try {
-        this.mouse['destroy']();
+        this.mouse.destroy();
         this.mouse = null;
       } catch (e) {
+        // ignore
       }
 
-      var wrapper,
-        _destroy = function(exp) {
-          $(exp).removeClass("oj-resizable oj-resizable-disabled oj-resizable-resizing")
-            .removeData("resizable").removeData("oj-resizable").unbind(".resizable").find(".oj-resizable-handle").remove();
-        };
+      var _destroy = function (exp) {
+        $(exp).removeClass('oj-resizable oj-resizable-disabled oj-resizable-resizing')
+          .removeData('resizable')
+          .removeData('oj-resizable')
+          .unbind('.resizable')
+          .find('.oj-resizable-handle')
+          .remove();
+      };
 
       _destroy(this.originalElement);
 
       return this;
     },
-    _mouseCapture: function(event) {
-      var i, handle,
-        capture = false;
+    _mouseCapture: function (event) {
+      var capture = false;
+      var keys = Object.keys(this.handles);
 
-      for (i in this.handles) {
-        handle = $(this.handles[i])[0];
+      for (var i = 0; i < keys.length; i++) {
+        var handle = $(this.handles[keys[i]])[0];
         if (handle === event.target || $.contains(handle, event.target)) {
           capture = true;
         }
@@ -3304,26 +3382,27 @@ $.widget("oj.ojResizable", {
 
       return !this.options.disabled && capture;
     },
-    _mouseStart: function(event) {
-
-      var curleft, curtop, cursor,
-        o = this.options,
-        iniPos = this.element.position(),
-        el = this.element;
+    _mouseStart: function (event) {
+      var curleft;
+      var curtop;
+      var cursor;
+      var o = this.options;
+      var iniPos = this.element.position();
+      var el = this.element;
 
       this.resizing = true;
 
       // Bugfix for http://bugs.jqueryui.com/ticket/1749
-      if ((/absolute/).test(el.css("position"))) {
-        el.css({position: "absolute", top: el.css("top"), left: el.css("left")});
-      } else if (el.is(".oj-draggable")) {
-        el.css({position: "absolute", top: iniPos.top, left: iniPos.left});
+      if ((/absolute/).test(el.css('position'))) {
+        el.css({ position: 'absolute', top: el.css('top'), left: el.css('left') });
+      } else if (el.is('.oj-draggable')) {
+        el.css({ position: 'absolute', top: iniPos.top, left: iniPos.left });
       }
 
       this._renderProxy();
 
-      curleft = this._num(this.helper.css("left"));
-      curtop = this._num(this.helper.css("top"));
+      curleft = this._num(this.helper.css('left'));
+      curtop = this._num(this.helper.css('top'));
 
       if (o.containment) {
         curleft += $(o.containment).scrollLeft() || 0;
@@ -3331,37 +3410,40 @@ $.widget("oj.ojResizable", {
       }
 
       this.offset = this.helper.offset();
-      this.position = {left: curleft, top: curtop};
-      this.size = {width: el.width(), height: el.height()};
-      this.originalSize = {width: el.width(), height: el.height()};
-      this.originalPosition = {left: curleft, top: curtop};
-      this.sizeDiff = {width: el.outerWidth() - el.width(), height: el.outerHeight() - el.height()};
-      this.originalMousePosition = {left: event.pageX, top: event.pageY};
+      this.position = { left: curleft, top: curtop };
+      this.size = { width: el.width(), height: el.height() };
+      this.originalSize = { width: el.width(), height: el.height() };
+      this.originalPosition = { left: curleft, top: curtop };
+      this.sizeDiff = {
+        width: el.outerWidth() - el.width(),
+        height: el.outerHeight() - el.height()
+      };
+      this.originalMousePosition = { left: event.pageX, top: event.pageY };
 
       this.aspectRatio = (this.originalSize.width / this.originalSize.height) || 1;
 
       // cursor = $(".oj-resizable-" + this.axis).css("cursor");
-      cursor = /** @type string */ ($(".oj-resizable-" + this.axis).css("cursor"));
-      $("body").css("cursor", cursor === "auto" ? this.axis + "-resize" : cursor);
+      cursor = /** @type string */ ($('.oj-resizable-' + this.axis).css('cursor'));
+      $('body').css('cursor', cursor === 'auto' ? this.axis + '-resize' : cursor);
 
-      el.addClass("oj-resizable-resizing");
+      el.addClass('oj-resizable-resizing');
 
-      this._propagate("start", event);
+      this._propagate('start', event);
 
       this._alsoresize_start(event);
       this._containment_start(event);
 
       return true;
     },
-    _mouseDrag: function(event) {
-
-      var data,
-        el = this.helper, props = {},
-        smp = this.originalMousePosition,
-        a = this.axis,
-        dx = (event.pageX - smp.left) || 0,
-        dy = (event.pageY - smp.top) || 0,
-        trigger = this._change[a];
+    _mouseDrag: function (event) {
+      var data;
+      var el = this.helper;
+      var props = {};
+      var smp = this.originalMousePosition;
+      var a = this.axis;
+      var dx = (event.pageX - smp.left) || 0;
+      var dy = (event.pageY - smp.top) || 0;
+      var trigger = this._change[a];
 
       this.prevPosition = {
         top: this.position.top,
@@ -3387,22 +3469,22 @@ $.widget("oj.ojResizable", {
 
       this._updateCache(data);
 
-      this._propagate("resize", event);
+      this._propagate('resize', event);
 
       this._alsoresize_resize(event, this.ui());
       this._containment_resize(event, this.ui());
 
       if (this.position.top !== this.prevPosition.top) {
-        props.top = this.position.top + "px";
+        props.top = this.position.top + 'px';
       }
       if (this.position.left !== this.prevPosition.left) {
-        props.left = this.position.left + "px";
+        props.left = this.position.left + 'px';
       }
       if (this.size.width !== this.prevSize.width) {
-        props.width = this.size.width + "px";
+        props.width = this.size.width + 'px';
       }
       if (this.size.height !== this.prevSize.height) {
-        props.height = this.size.height + "px";
+        props.height = this.size.height + 'px';
       }
       el.css(props);
 
@@ -3411,29 +3493,31 @@ $.widget("oj.ojResizable", {
       }
 
       if (!$.isEmptyObject(props)) {
-        this._trigger("resize", event, this.ui());
+        this._trigger('resize', event, this.ui());
       }
 
       return false;
     },
-    _mouseStop: function(event) {
-
+    _mouseStop: function (event) {
       this.resizing = false;
-      $("body").css("cursor", "auto");
+      $('body').css('cursor', 'auto');
 
-      this.element.removeClass("oj-resizable-resizing");
+      this.element.removeClass('oj-resizable-resizing');
 
-      this._propagate("stop", event);
+      this._propagate('stop', event);
 
       this._alsoresize_stop(event);
       this._containment_stop(event);
 
       return false;
-
     },
-    _updateVirtualBoundaries: function(forceAspectRatio) {
-      var pMinWidth, pMaxWidth, pMinHeight, pMaxHeight, b,
-        o = this.options;
+    _updateVirtualBoundaries: function (forceAspectRatio) {
+      var pMinWidth;
+      var pMaxWidth;
+      var pMinHeight;
+      var pMaxHeight;
+      var b;
+      var o = this.options;
 
       b = {
         minWidth: this._isNumber(o.minWidth) ? o.minWidth : 0,
@@ -3471,7 +3555,7 @@ $.widget("oj.ojResizable", {
       }
       this._vBoundaries = b;
     },
-    _updateCache: function(data) {
+    _updateCache: function (data) {
       this.offset = this.helper.offset();
       if (this._isNumber(data.left)) {
         this.position.left = data.left;
@@ -3486,11 +3570,11 @@ $.widget("oj.ojResizable", {
         this.size.width = data.width;
       }
     },
-    _updateRatio: function(data) {
-
-      var cpos = this.position,
-        csize = this.size,
-        a = this.axis;
+    _updateRatio: function (_data) {
+      var data = _data;
+      var cpos = this.position;
+      var csize = this.size;
+      var a = this.axis;
 
       if (this._isNumber(data.height)) {
         data.width = (data.height * this.aspectRatio);
@@ -3498,26 +3582,30 @@ $.widget("oj.ojResizable", {
         data.height = (data.width / this.aspectRatio);
       }
 
-      if (a === "sw") {
+      if (a === 'sw') {
         data.left = cpos.left + (csize.width - data.width);
         data.top = null;
       }
-      if (a === "nw") {
+      if (a === 'nw') {
         data.top = cpos.top + (csize.height - data.height);
         data.left = cpos.left + (csize.width - data.width);
       }
 
       return data;
     },
-    _respectSize: function(data) {
+    _respectSize: function (_data) {
+      var data = _data;
+      var o = this._vBoundaries;
+      var a = this.axis;
+      var ismaxw = this._isNumber(data.width) && o.maxWidth && (o.maxWidth < data.width);
+      var ismaxh = this._isNumber(data.height) && o.maxHeight && (o.maxHeight < data.height);
+      var isminw = this._isNumber(data.width) && o.minWidth && (o.minWidth > data.width);
+      var isminh = this._isNumber(data.height) && o.minHeight && (o.minHeight > data.height);
+      var dw = this.originalPosition.left + this.originalSize.width;
+      var dh = this.position.top + this.size.height;
+      var cw = /sw|nw|w/.test(a);
+      var ch = /nw|ne|n/.test(a);
 
-      var o = this._vBoundaries,
-        a = this.axis,
-        ismaxw = this._isNumber(data.width) && o.maxWidth && (o.maxWidth < data.width), ismaxh = this._isNumber(data.height) && o.maxHeight && (o.maxHeight < data.height),
-        isminw = this._isNumber(data.width) && o.minWidth && (o.minWidth > data.width), isminh = this._isNumber(data.height) && o.minHeight && (o.minHeight > data.height),
-        dw = this.originalPosition.left + this.originalSize.width,
-        dh = this.position.top + this.size.height,
-        cw = /sw|nw|w/.test(a), ch = /nw|ne|n/.test(a);
       if (isminw) {
         data.width = o.minWidth;
       }
@@ -3553,26 +3641,28 @@ $.widget("oj.ojResizable", {
 
       return data;
     },
-    _proportionallyResize: function() {
-
+    _proportionallyResize: function () {
       if (!this._proportionallyResizeElements.length) {
         return;
       }
 
-      var i, j, borders, paddings, prel,
-        element = this.helper || this.element;
+      var i;
+      var j;
+      var borders;
+      var paddings;
+      var prel;
+      var element = this.helper || this.element;
 
       for (i = 0; i < this._proportionallyResizeElements.length; i++) {
-
         prel = this._proportionallyResizeElements[i];
 
         if (!this.borderDif) {
           this.borderDif = [];
-          borders = [prel.css("borderTopWidth"), prel.css("borderRightWidth"), prel.css("borderBottomWidth"), prel.css("borderLeftWidth")];
-          paddings = [prel.css("paddingTop"), prel.css("paddingRight"), prel.css("paddingBottom"), prel.css("paddingLeft")];
+          borders = [prel.css('borderTopWidth'), prel.css('borderRightWidth'), prel.css('borderBottomWidth'), prel.css('borderLeftWidth')];
+          paddings = [prel.css('paddingTop'), prel.css('paddingRight'), prel.css('paddingBottom'), prel.css('paddingLeft')];
 
           for (j = 0; j < borders.length; j++) {
-            this.borderDif[ j ] = (parseInt(borders[ j ], 10) || 0) + (parseInt(paddings[ j ], 10) || 0);
+            this.borderDif[j] = (parseInt(borders[j], 10) || 0) + (parseInt(paddings[j], 10) || 0);
           }
         }
 
@@ -3580,57 +3670,60 @@ $.widget("oj.ojResizable", {
           height: (element.height() - this.borderDif[0] - this.borderDif[2]) || 0,
           width: (element.width() - this.borderDif[1] - this.borderDif[3]) || 0
         });
-
       }
-
     },
-    _renderProxy: function() {
-
-      var el = this.element, o = this.options;
+    _renderProxy: function () {
+      var el = this.element;
       this.elementOffset = el.offset();
 
       this.helper = this.element;
-
     },
     _change: {
-      "e": function(event, dx) {
-        return {width: this.originalSize.width + dx};
+      e: function (event, dx) {
+        return { width: this.originalSize.width + dx };
       },
-      "w": function(event, dx) {
-        var cs = this.originalSize, sp = this.originalPosition;
-        return {left: sp.left + dx, width: cs.width - dx};
+      w: function (event, dx) {
+        var cs = this.originalSize;
+        var sp = this.originalPosition;
+        return { left: sp.left + dx, width: cs.width - dx };
       },
-      "n": function(event, dx, dy) {
-        var cs = this.originalSize, sp = this.originalPosition;
-        return {top: sp.top + dy, height: cs.height - dy};
+      n: function (event, dx, dy) {
+        var cs = this.originalSize;
+        var sp = this.originalPosition;
+        return { top: sp.top + dy, height: cs.height - dy };
       },
-      "s": function(event, dx, dy) {
-        return {height: this.originalSize.height + dy};
+      s: function (event, dx, dy) {
+        return { height: this.originalSize.height + dy };
       },
-      "se": function(event, dx, dy) {
-        return $.extend(this._change["s"].apply(this, arguments), this._change["e"].apply(this, [event, dx, dy]));
+      se: function (event, dx, dy) {
+        return $.extend(this._change.s.apply(this, arguments),
+                        this._change.e.apply(this, [event, dx, dy]));
       },
-      "sw": function(event, dx, dy) {
-        return $.extend(this._change["s"].apply(this, arguments), this._change["w"].apply(this, [event, dx, dy]));
+      sw: function (event, dx, dy) {
+        return $.extend(this._change.s.apply(this, arguments),
+                        this._change.w.apply(this, [event, dx, dy]));
       },
-      "ne": function(event, dx, dy) {
-        return $.extend(this._change["n"].apply(this, arguments), this._change["e"].apply(this, [event, dx, dy]));
+      ne: function (event, dx, dy) {
+        return $.extend(this._change.n.apply(this, arguments),
+                        this._change.e.apply(this, [event, dx, dy]));
       },
-      "nw": function(event, dx, dy) {
-        return $.extend(this._change["n"].apply(this, arguments), this._change["w"].apply(this, [event, dx, dy]));
+      nw: function (event, dx, dy) {
+        return $.extend(this._change.n.apply(this, arguments),
+                        this._change.w.apply(this, [event, dx, dy]));
       }
     },
-    _propagate: function(n, event) {
-
+    _propagate: function (n, event) {
       //
       // Propage resizeStart and resizeStop events.
       // (resize is propagated internally by drag)
       //
 
       // $.ui.plugin.call(this, n, [event, this.ui()]);
-      (n !== "resize" && this._trigger(n, event, this.ui()));
+      if (n !== 'resize') {
+        this._trigger(n, event, this.ui());
+      }
     },
-    //////////////////////////////////////////////////////////////////////////////////
+    // ////////////////////////////////////////////////////////////////////////////////
     //
     // Code block that implements functionality formerly in defined as a plugin.
     // (note: plugin code is deprecated)
@@ -3641,34 +3734,34 @@ $.widget("oj.ojResizable", {
     //
     // $.ui.plugin.add("resizable", "alsoResize", {
     //
-    /////////////////////////////////////////////////////////////////////////////////
+    // ///////////////////////////////////////////////////////////////////////////////
 
-    _alsoresize_start: function() {
-
-      //var that = $(this).resizable( "instance" ),
+    _alsoresize_start: function () {
+      // var that = $(this).resizable( "instance" ),
       // var that = $(this).data("oj-resizable"), // w
       var that = this;
       var o = that.options;
       // var initialR = that._initialResize;
 
-      var _store = function(exp) {
-        $(exp).each(function() {
+      var _store = function (exp) {
+        $(exp).each(function () {
           var el = $(this);
 
-          el.data("oj-resizable-alsoresize", {
-            width: parseInt(el.width(), 10), height: parseInt(el.height(), 10),
-            left: parseInt(el.css("left"), 10), top: parseInt(el.css("top"), 10)
+          el.data('oj-resizable-alsoresize', {
+            width: parseInt(el.width(), 10),
+            height: parseInt(el.height(), 10),
+            left: parseInt(el.css('left'), 10),
+            top: parseInt(el.css('top'), 10)
           });
         });
       };
 
-      if (typeof (o.alsoResize) === "object" && !o.alsoResize.parentNode) {
+      if (typeof (o.alsoResize) === 'object' && !o.alsoResize.parentNode) {
         if (o.alsoResize.length) {
           o.alsoResize = o.alsoResize[0];
           _store(o.alsoResize);
-        }
-        else {
-          $.each(o.alsoResize, function(exp) {
+        } else {
+          $.each(o.alsoResize, function (exp) {
             _store(exp);
           });
         }
@@ -3676,8 +3769,7 @@ $.widget("oj.ojResizable", {
         _store(o.alsoResize);
       }
     },
-    _alsoresize_resize: function(event, ui) {
-
+    _alsoresize_resize: function (event, ui) {
       // var that = $(this).resizable( "instance" ),
       // var that = $(this).data("oj-resizable"), // v
       var that = this;
@@ -3687,15 +3779,26 @@ $.widget("oj.ojResizable", {
       var op = that.originalPosition;
 
       var delta = {
-        height: (that.size.height - os.height) || 0, width: (that.size.width - os.width) || 0,
-        top: (that.position.top - op.top) || 0, left: (that.position.left - op.left) || 0
-      },
-      _alsoResize = function(exp, c) {
-        $(exp).each(function() {
-          var el = $(this), start = $(this).data("oj-resizable-alsoresize"), style = {},
-            css = c && c.length ? c : el.parents(ui.originalElement[0]).length ? ["width", "height"] : ["width", "height", "top", "left"];
+        height: (that.size.height - os.height) || 0,
+        width: (that.size.width - os.width) || 0,
+        top: (that.position.top - op.top) || 0,
+        left: (that.position.left - op.left) || 0
+      };
+      var _alsoResize = function (exp, c) {
+        $(exp).each(function () {
+          var el = $(this);
+          var start = $(this).data('oj-resizable-alsoresize');
+          var style = {};
+          var css;
+          if (c && c.length) {
+            css = c;
+          } else if (el.parents(ui.originalElement[0]).length) {
+            css = ['width', 'height'];
+          } else {
+            css = ['width', 'height', 'top', 'left'];
+          }
 
-          $.each(css, function(i, prop) {
+          $.each(css, function (i, prop) {
             var sum = (start[prop] || 0) + (delta[prop] || 0);
             if (sum && sum >= 0) {
               style[prop] = sum || null;
@@ -3706,37 +3809,49 @@ $.widget("oj.ojResizable", {
         });
       };
 
-      if (typeof (o.alsoResize) === "object" && !o.alsoResize.nodeType) {
-        $.each(o.alsoResize, function(exp, c) {
+      if (typeof (o.alsoResize) === 'object' && !o.alsoResize.nodeType) {
+        $.each(o.alsoResize, function (exp, c) {
           _alsoResize(exp, c);
         });
       } else {
         _alsoResize(o.alsoResize, null);
       }
     },
-    _alsoresize_stop: function() {
+    _alsoresize_stop: function () {
       // $(this).removeData("resizable-alsoresize");
-      $(this).removeData("oj-resizable-alsoresize");
+      $(this).removeData('oj-resizable-alsoresize');
     },
-    /////////////////////////////////////////////////////////////////////////////////
+    // ///////////////////////////////////////////////////////////////////////////////
     //
     // Code block for containment functionality (formerly defined as a plugin)
     //
     // $.ui.plugin.add( "resizable", "containment", {
     //
-    /////////////////////////////////////////////////////////////////////////////////
+    // ///////////////////////////////////////////////////////////////////////////////
 
-    _containment_start: function() {
-
-      var element, p, co, ch, cw, width, height;
+    _containment_start: function () {
+      var element;
+      var p;
+      var co;
+      var ch;
+      var cw;
+      var width;
+      var height;
 
       // var that = $(this).data("oj-resizable");
       var that = this;
 
-      var o = that.options,
-        el = that.element,
-        oc = o.containment,
-        ce = (oc instanceof $) ? oc.get(0) : (/parent/.test(oc)) ? el.parent().get(0) : oc;
+      var o = that.options;
+      var el = that.element;
+      var oc = o.containment;
+      var ce;
+      if (oc instanceof $) {
+        ce = oc.get(0);
+      } else if (/parent/.test(oc)) {
+        ce = el.parent().get(0);
+      } else {
+        ce = oc;
+      }
 
       if (!ce) {
         return;
@@ -3764,21 +3879,21 @@ $.widget("oj.ojResizable", {
       } else {
         element = $(ce);
         p = [];
-        $(["Top", "Right", "Left", "Bottom"]).each(function(i, name) {
-          p[ i ] = that._num(element.css("padding" + name));
+        $(['Top', 'Right', 'Left', 'Bottom']).each(function (i, name) {
+          p[i] = that._num(element.css('padding' + name));
         });
 
         that.containerOffset = element.offset();
         that.containerPosition = element.position();
         that.containerSize = {
-          height: (element.innerHeight() - p[ 3 ]),
-          width: (element.innerWidth() - p[ 1 ])
+          height: (element.innerHeight() - p[3]),
+          width: (element.innerWidth() - p[1])
         };
 
         co = that.containerOffset;
         ch = that.containerSize.height;
         cw = that.containerSize.width;
-        width = (that._hasScroll(ce, "left") ? ce.scrollWidth : cw);
+        width = (that._hasScroll(ce, 'left') ? ce.scrollWidth : cw);
         height = (that._hasScroll(ce) ? ce.scrollHeight : ch);
 
         that.parentData = {
@@ -3790,29 +3905,33 @@ $.widget("oj.ojResizable", {
         };
       }
     },
-    _containment_resize: function(event, ui) {
-      var woset, hoset, isParent, isOffsetRelative;
+    _containment_resize: function (event, ui) {
+      var woset;
+      var hoset;
+      var isParent;
+      var isOffsetRelative;
 
       // var that = $(this).data("oj-resizable");
       var that = this;
 
-      var o = that.options,
-        co = that.containerOffset,
-        cp = that.position,
-        pRatio = event.shiftKey,
-        cop = {
-          top: 0,
-          left: 0
-        },
-      ce = that.containerElement,
-        continueResize = true;
+      var o = that.options;
+      var co = that.containerOffset;
+      var cp = that.position;
+      var pRatio = event.shiftKey;
+      var cop = {
+        top: 0,
+        left: 0
+      };
+      var ce = that.containerElement;
+      var continueResize = true;
 
-      if (ce[ 0 ] !== document && (/static/).test(ce.css("position"))) {
+      if (ce[0] !== document && (/static/).test(ce.css('position'))) {
         cop = co;
       }
 
       if (cp.left < (that._helper ? co.left : 0)) {
-        that.size.width = that.size.width + (that._helper ? (that.position.left - co.left) : (that.position.left - cop.left));
+        that.size.width +=
+          that._helper ? (that.position.left - co.left) : (that.position.left - cop.left);
         if (pRatio) {
           that.size.height = that.size.width / that.aspectRatio;
           continueResize = false;
@@ -3821,7 +3940,7 @@ $.widget("oj.ojResizable", {
       }
 
       if (cp.top < (that._helper ? co.top : 0)) {
-        that.size.height = that.size.height + (that._helper ? (that.position.top - co.top) : that.position.top);
+        that.size.height += that._helper ? (that.position.top - co.top) : that.position.top;
         if (pRatio) {
           that.size.width = that.size.height * that.aspectRatio;
           continueResize = false;
@@ -3832,11 +3951,13 @@ $.widget("oj.ojResizable", {
       that.offset.left = that.parentData.left + that.position.left;
       that.offset.top = that.parentData.top + that.position.top;
 
-      woset = Math.abs((that._helper ? that.offset.left - cop.left : (that.offset.left - co.left)) + that.sizeDiff.width);
-      hoset = Math.abs((that._helper ? that.offset.top - cop.top : (that.offset.top - co.top)) + that.sizeDiff.height);
+      woset = Math.abs((that._helper ? that.offset.left - cop.left :
+                        (that.offset.left - co.left)) + that.sizeDiff.width);
+      hoset = Math.abs((that._helper ? that.offset.top - cop.top :
+                        (that.offset.top - co.top)) + that.sizeDiff.height);
 
       isParent = that.containerElement.get(0) === that.element.parent().get(0);
-      isOffsetRelative = /relative|absolute/.test(that.containerElement.css("position"));
+      isOffsetRelative = /relative|absolute/.test(that.containerElement.css('position'));
 
       if (isParent && isOffsetRelative) {
         woset -= Math.abs(that.parentData.left);
@@ -3865,20 +3986,19 @@ $.widget("oj.ojResizable", {
         that.size.height = ui.prevSize.height;
       }
     },
-    _containment_stop: function() {
-
+    _containment_stop: function () {
       // var that = $(this).data("oj-resizable"),
-      var that = this,
-        o = that.options,
-        co = that.containerOffset,
-        cop = that.containerPosition,
-        ce = that.containerElement,
-        helper = $(that.helper),
-        ho = helper.offset(),
-        w = helper.outerWidth() - that.sizeDiff.width,
-        h = helper.outerHeight() - that.sizeDiff.height;
+      var that = this;
+      var o = that.options;
+      var co = that.containerOffset;
+      var cop = that.containerPosition;
+      var ce = that.containerElement;
+      var helper = $(that.helper);
+      var ho = helper.offset();
+      var w = helper.outerWidth() - that.sizeDiff.width;
+      var h = helper.outerHeight() - that.sizeDiff.height;
 
-      if (that._helper && !o.animate && (/relative/).test(ce.css("position"))) {
+      if (that._helper && !o.animate && (/relative/).test(ce.css('position'))) {
         $(this).css({
           left: ho.left - cop.left - co.left,
           width: w,
@@ -3886,7 +4006,7 @@ $.widget("oj.ojResizable", {
         });
       }
 
-      if (that._helper && !o.animate && (/static/).test(ce.css("position"))) {
+      if (that._helper && !o.animate && (/static/).test(ce.css('position'))) {
         $(this).css({
           left: ho.left - cop.left - co.left,
           width: w,
@@ -3894,7 +4014,7 @@ $.widget("oj.ojResizable", {
         });
       }
     },
-    ui: function() {
+    ui: function () {
       return {
         originalElement: this.originalElement,
         element: this.element,
@@ -3909,14 +4029,12 @@ $.widget("oj.ojResizable", {
     }
 
   });
-
 }());
 
 /* global __oj_dialog_metadata:false */
 (function () {
   __oj_dialog_metadata.extension._WIDGET_NAME = 'ojDialog';
-  oj.CustomElementBridge.registerMetadata('oj-dialog', 'baseComponent', __oj_dialog_metadata);
-  oj.CustomElementBridge.register('oj-dialog', { metadata: oj.CustomElementBridge.getMetadata('oj-dialog') });
+  oj.CustomElementBridge.register('oj-dialog', { metadata: __oj_dialog_metadata });
 }());
 
 });

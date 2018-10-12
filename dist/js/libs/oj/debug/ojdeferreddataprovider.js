@@ -44,7 +44,7 @@ var DeferredDataProvider = /** @class */ (function () {
     DeferredDataProvider.prototype.fetchFirst = function (params) {
         var asyncIteratorPromise = this._getDataProvider().then(function (dataProvider) {
             return dataProvider.fetchFirst(params)[Symbol.asyncIterator]();
-        }.bind(params));
+        });
         return new this.AsyncIterable(new this.AsyncIterator(asyncIteratorPromise));
     };
     ;
@@ -123,7 +123,7 @@ var DeferredDataProvider = /** @class */ (function () {
     DeferredDataProvider.prototype._getDataProvider = function () {
         var self = this;
         return this._dataProvider.then(function (dataProvider) {
-            if (oj.DataProviderFeatureChecker.isIteratingDataProvider(dataProvider)) {
+            if (oj.DataProviderFeatureChecker.isDataProvider(dataProvider)) {
                 if (!self[self._DATAPROVIDER])
                     self[self._DATAPROVIDER] = dataProvider;
                 return dataProvider;
@@ -147,22 +147,29 @@ oj['DeferredDataProvider'] = DeferredDataProvider;
  * http://jquery.org/license
  */
 
-/*jslint browser: true,devel:true*/
+/* jslint browser: true,devel:true*/
 /**
  * @ojstatus preview
  * @since 4.2.0
  * @export
  * @class oj.DeferredDataProvider
  * @implements oj.DataProvider
- * @classdesc This class implements {@link oj.DataProvider}.  
+ * @ojtsmodule
+ * @classdesc This class implements {@link oj.DataProvider}.
  *            This object represents a data provider that is created with deferred data and can be used by any component that requires a data provider that will be created with data from a Promise.
  * @param {Promise.<oj.DataProvider>} dataProvider A promise that resolves to an oj.DataProvider
  * @param {Function} capabilityFunc An function that implements {@link oj.DataProvider#getCapability}.
  * @ojsignature [{target: "Type",
  *               value: "class DeferredDataProvider<K, D> implements DataProvider<K, D>"},
  *               {target: "Type",
- *               value: "Promise<oj.DataProvider<K, D>>[]", 
- *               for: "dataProvider"}]
+ *               value: "Promise<oj.DataProvider<K, D>>",
+ *               for: "dataProvider"},
+ *               {target: "Type",
+ *               value: "(capabilityName: string)=> any",
+ *               for: "capabilityFunc"}]
+ * @ojtsimport {module: "ojdataprovider", type: "AMD", imported: ["DataProvider", "SortCriterion", "FetchByKeysParameters",
+ *   "ContainsKeysResults","FetchByKeysResults","FetchByOffsetParameters","FetchByOffsetResults",
+ *   "FetchListResult","FetchListParameters"]}
  * @example
  * // DeferredDataProvider is used in cases where the data for the data provider will be
  * // provided asynchronously. In the example below, let getDeferredData() be any function
@@ -194,7 +201,7 @@ oj['DeferredDataProvider'] = DeferredDataProvider;
  * @ojsignature {target: "Type",
  *               value: "(params: FetchByKeysParameters<K>): Promise<ContainsKeysResults<K>>"}
  */
-  
+
 /**
  * Fetch rows by keys
  *
@@ -225,11 +232,11 @@ oj['DeferredDataProvider'] = DeferredDataProvider;
  * @name fetchByOffset
  * @ojsignature {target: "Type",
  *               value: "(params: FetchByOffsetParameters<D>): Promise<FetchByOffsetResults<K, D>>"}
- */  
-  
+ */
+
 /**
  * Fetch the first block of data.
- * 
+ *
  * @ojstatus preview
  * @param {oj.FetchListParameters=} params Fetch parameters
  * @return {AsyncIterable.<oj.FetchListResult>} AsyncIterable with {@link oj.FetchListResult}
@@ -241,12 +248,12 @@ oj['DeferredDataProvider'] = DeferredDataProvider;
  * @method
  * @name fetchFirst
  * @ojsignature {target: "Type",
- *               value: "<F extends FetchListResult<K, D>>(params?: FetchListParameters<D>): AsyncIterable<F>"}
+ *               value: "(params?: FetchListParameters<D>): AsyncIterable<FetchListResult<K, D>>"}
  */
-  
+
 /**
  * Return the total number of rows in this dataprovider
- * 
+ *
  * @ojstatus preview
  * @return {Promise.<number>} Returns a Promise which resolves to the total number of rows. -1 is unknown row count.
  * @export
@@ -256,10 +263,10 @@ oj['DeferredDataProvider'] = DeferredDataProvider;
  * @method
  * @name getTotalSize
  */
-  
+
 /**
  * Determines whether this DataProvider supports certain feature.
- * 
+ *
  * @ojstatus preview
  * @param {string} capabilityName capability name. Supported capability names are:
  *                  "fetchByKeys", "fetchByOffset", and "sort"
@@ -273,7 +280,7 @@ oj['DeferredDataProvider'] = DeferredDataProvider;
  */
 
 /**
- * Return a string that indicates if this data provider is empty 
+ * Return a string that indicates if this data provider is empty
  * @ojstatus preview
  * @return {"yes"|"no"|"unknown"} a string that indicates if this data provider is empty. Valid values are:
  *                  "yes": this data provider is empty.
@@ -286,7 +293,7 @@ oj['DeferredDataProvider'] = DeferredDataProvider;
  * @method
  * @name isEmpty
  */
-  
+
 /**
  * @ojstatus preview
  * @param {string} eventType The event type to add listener to.
@@ -322,8 +329,10 @@ oj['DeferredDataProvider'] = DeferredDataProvider;
  * @method
  * @name dispatchEvent
  */
- 
+
 /**
  * End of jsdoc
  */
+
+  return DeferredDataProvider;
 });

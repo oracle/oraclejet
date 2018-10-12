@@ -10,7 +10,7 @@
 }
 
 // import dependencies
-@import "../../common/helpers/oj.common.helpers"; 
+@import "../../common/helpers/oj.common.helpers";
 @import "oj.alta.icons";
 
 // ----- end dependencies ---------
@@ -21,75 +21,16 @@
 
 @if $includeTrainClasses != false {
   @include module-include-once("alta.train") {
-      
-    .oj-train-button.oj-active,
-    .oj-train-button.oj-hover.oj-active
-    {
-       @extend .oj-train-button.oj-hover;
-    }
-    
-    @if $trainConnectorType == continuous {
-      
-      /* The message icon to be displayed on the step */
-      .oj-train-icon {
-        @if $trainButtonContinuousConnectorDiameter != $trainButtonDiameter {
-          bottom: ($trainButtonContinuousConnectorDiameter - $trainButtonDiameter)/2;
-          @include oj-ltr() {
-            right: ($trainButtonContinuousConnectorDiameter - $trainButtonDiameter)/2;
-          }
-          @include oj-rtl() {
-            left: ($trainButtonContinuousConnectorDiameter - $trainButtonDiameter)/2;
-          }
-        }
-        border-style: none;
-      }
-      .oj-train-icon:before {
-        content: none;
-      }
-      
-      .oj-train-icon.oj-confirmation {
-        @extend .oj-fwk-icon-status-confirmation2;
-      }
-  
-      .oj-train-icon.oj-info{
-        @extend .oj-fwk-icon-status-info2;
-      }
-  
-      .oj-train-icon.oj-warning {
-        @extend .oj-fwk-icon-status-warning2;
-      }
-  
-      .oj-train-icon.oj-error {
-        @extend .oj-fwk-icon-status-error2;
-      }
-  
-     .oj-train-icon,
-     .oj-train-icon.oj-confirmation,
-     .oj-train-icon.oj-error,
-     .oj-train-icon.oj-info,
-     .oj-train-icon.oj-warning,
-     .oj-train-button.oj-disabled .oj-train-icon,
-     .oj-train-button.oj-hover .oj-train-icon,
-     .oj-train-button.oj-active .oj-train-icon.oj-confirmation,
-     .oj-train-button.oj-active .oj-train-icon.oj-error,
-     .oj-train-button.oj-active .oj-train-icon.oj-info,
-     .oj-train-button.oj-active .oj-train-icon.oj-warning
-     .oj-train-button.oj-selected .oj-train-icon.oj-confirmation,
-     .oj-train-button.oj-selected .oj-train-icon.oj-error,
-     .oj-train-button.oj-selected .oj-train-icon.oj-info,
-     .oj-train-button.oj-selected .oj-train-icon.oj-warning,
-     .oj-train-button.oj-visited .oj-train-icon.oj-confirmation,
-     .oj-train-button.oj-visited .oj-train-icon.oj-error,
-     .oj-train-button.oj-visited .oj-train-icon.oj-info,
-     .oj-train-button.oj-visited .oj-train-icon.oj-warning {
-       background-color: transparent;
-       border-color: transparent;
-     }    
-    }
-    
-    @if $trainConnectorType == individual {
+
+
       .oj-train-button.oj-visited::before {
         content: "";
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        display: var(--oj-train-icon-display-visited);
+      } @else {
+        display: $trainVisitedIconDisplay;
+      }
         @extend .oj-fwk-icon-checkmark-blue;
       }
 
@@ -97,13 +38,7 @@
         content: "";
         @extend .oj-fwk-icon-checkmark-white;
       }
-      
-      .oj-train-button.oj-visited .oj-train-button-text{
-        display: none;
-      }
 
-
-    }
 
   }
 }

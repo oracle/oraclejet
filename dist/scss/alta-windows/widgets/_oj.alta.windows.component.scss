@@ -12,8 +12,11 @@ $includeComponentClasses:  $includeAllClasses !default;
   @include module-include-once("alta.windows.component") {
 
     .oj-component-overlay {
-      opacity: .5;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+				  opacity:var(--oj-overlay-opacity);
+			} @else {
+				  opacity: $overlayOpacity;
+			}
     }
-
   }
 }

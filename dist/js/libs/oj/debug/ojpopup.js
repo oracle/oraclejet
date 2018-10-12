@@ -4,9 +4,9 @@
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
-define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore', 
-        'ojs/ojpopupcore', 'ojs/ojanimation'], 
-       function(oj, $)
+define(['ojs/ojcore', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeutils', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'promise', 
+        'ojs/ojpopupcore'], 
+       function(oj, $, Context, ThemeUtils, Components, AnimationUtils)
 {
  
 
@@ -71,7 +71,7 @@ var __oj_popup_metadata =
                 "center",
                 "top"
               ],
-              "value": "top"
+              "value": "bottom"
             }
           }
         },
@@ -139,7 +139,27 @@ var __oj_popup_metadata =
     },
     "translations": {
       "type": "object",
-      "value": {}
+      "value": {},
+      "properties": {
+        "ariaCloseSkipLink": {
+          "type": "string"
+        },
+        "ariaFocusSkipLink": {
+          "type": "string"
+        },
+        "ariaLiveRegionInitialFocusFirstFocusable": {
+          "type": "string"
+        },
+        "ariaLiveRegionInitialFocusFirstFocusableTouch": {
+          "type": "string"
+        },
+        "ariaLiveRegionInitialFocusNone": {
+          "type": "string"
+        },
+        "ariaLiveRegionInitialFocusNoneTouch": {
+          "type": "string"
+        }
+      }
     }
   },
   "methods": {
@@ -183,15 +203,14 @@ var __oj_popup_metadata =
  *  jquery.ui.widget.js
  *  jquery.ui.position.js
  */
-(function ()
-{
-
+/* global Components:false, Context:false, ThemeUtils:false */
+(function () {
   /**
    * List of all pseudo marker selectors that defines rules for where a tail is aligned.
    * @private
    * @const
    */
-  var _TAIL_STYLES = ["oj-left", "oj-center", "oj-right", "oj-top", "oj-middle", "oj-bottom"];
+  var _TAIL_STYLES = ['oj-left', 'oj-center', 'oj-right', 'oj-top', 'oj-middle', 'oj-bottom'];
 
   /**
    * Mapping of horizontal-vertical (x,y) positon using alignment to jet tail pseudo marker
@@ -205,15 +224,15 @@ var __oj_popup_metadata =
    */
   var _TAIL_ALIGN_RULES =
     {
-      'right-top' : 'oj-right oj-top',
-      'right-middle' : 'oj-right oj-middle',
-      'right-bottom' : 'oj-right oj-bottom',
-      'left-top' : 'oj-left oj-top',
-      'left-middle' : 'oj-left oj-middle',
-      'left-bottom' : 'oj-left oj-bottom',
-      'center-top' : 'oj-center oj-top',
-      'center-middle' : 'oj-left oj-middle',
-      'center-bottom' : 'oj-center oj-bottom'
+      'right-top': 'oj-right oj-top',
+      'right-middle': 'oj-right oj-middle',
+      'right-bottom': 'oj-right oj-bottom',
+      'left-top': 'oj-left oj-top',
+      'left-middle': 'oj-left oj-middle',
+      'left-bottom': 'oj-left oj-bottom',
+      'center-top': 'oj-center oj-top',
+      'center-middle': 'oj-left oj-middle',
+      'center-bottom': 'oj-center oj-bottom'
     };
 
   /**
@@ -349,13 +368,14 @@ var __oj_popup_metadata =
    * into the document for navigation. Skip links are not visible but read in VO mode.
    * Two skip links are injected into the document when a popup is disclosed:
    *  <ul>
-   *    <li>A close link is injected as a sibling to the popup's content. Activation of this link
-   *        will close the popup.</li>
+   *    <li>A close link, {@link oj.ojPopup#translations.ariaCloseSkipLink}, is injected as a
+   *        sibling to the popup's content. Activation of this link will close the popup.</li>
    *    <li>For cases where the popup doesn't steal focus when it's open, a content navigation
-   *        skip link is injected as a sibling to the launcher (first required argument of the open
-   *        method). If the launcher selector targets a sub-element of the launcher,
-   *        the skip link could be injected under the launcher, which can be problematic for
-   *        oj-button as skip link activation will also activate the associated launcher.</li>
+   *        skip link, {@link oj.ojPopup#translations.ariaFocusSkipLink}, is injected as a
+   *        sibling to the launcher (first required argument of the open method). If the launcher
+   *        selector targets a sub-element of the launcher, the skip link could be injected under
+   *        the launcher, which can be problematic for oj-button as skip link activation will
+   *        also activate the associated launcher.</li>
    *  </ul>
    *
    * <p>One point often overlooked is making the gestures that launch a popup accessible.
@@ -428,556 +448,526 @@ var __oj_popup_metadata =
    *  <li>ojOpen(event) - Triggered after the popup has been made visible.</li>
    * </ul>
    */
-  oj.__registerWidget("oj.ojPopup", $['oj']['baseComponent'],
+  oj.__registerWidget('oj.ojPopup', $.oj.baseComponent,
     {
-      widgetEventPrefix : "oj",
-      options :
+      widgetEventPrefix: 'oj',
+      options:
+      {
+        /**
+         *
+         * @private
+         * @memberof oj.ojPopup
+         * @instance
+         */
+        animation: null,
+        /**
+         * Defines conditions that will cause an open popup to auto close dismiss.  A value of
+         * <code class="prettyprint">focusLoss</code> defines the dismissal condition where focus
+         * has left the content of the popup or from the associated launcher or if what the popup
+         * is aligned to is not fully visible within an overflow area.
+         *
+         * @expose
+         * @memberof oj.ojPopup
+         * @instance
+         * @type {string}
+         * @default 'focusLoss'
+         * @ojvalue {string} "none" disables auto dismissal behaviors.
+         * @ojvalue {string} "focusLoss" defines auto dismissal behavior when focus leaves the
+         *   content of the popup or associated launcher.  In addition, if what the popup is
+         *   positioned to is not visible within an overflow area, the popup will auto close
+         *   dismiss.
+         *
+         * @example <caption>Initialize the popup with
+         *          <code class="prettyprint">auto-dismiss</code> attribute specified:</caption>
+         * &lt;oj-popup auto-dismiss="focusLoss" &gt;&lt;/oj-popup&gt;
+         *
+         * @example <caption>Get or set the <code class="prettyprint">autoDismiss</code> property,
+         *          after initialization:</caption>
+         * // getter
+         * var autoDismiss = myPopup.autoDismiss;
+         * // setter
+         * myPopup.autoDismiss = "none";
+         */
+        autoDismiss: 'focusLoss',
+        /**
+         * Defines the presents of border, shadow and background color of the root popup dom.
+         * Value of <code class="prettyprint">none</code> applies the
+         * <code class="prettyprint">oj-popup-no-chrome</code> selector defined by the active
+         * theme to the root dom of the popup to remove the default chrome.
+         *
+         * @expose
+         * @memberof oj.ojPopup
+         * @instance
+         * @type {string}
+         * @default 'default'
+         * @ojvalue {string} "default" describes the popups border, shadow, and background color
+         *           defined by the active theme.
+         * @ojvalue {string} "none" turns off the outer chrome defined by the active theme.
+         *
+         * @example <caption>Initialize the popup with <code class="prettyprint">chrome</code>
+         *          attribute specified:</caption>
+         * &lt;oj-popup chrome="none" &gt;&lt;/oj-popup&gt;
+         *
+         * @example <caption>Get or set the <code class="prettyprint">chrome</code> property, after
+         *          initialization:</caption>
+         * // getter
+         * var chrome = myPopup.chrome;
+         *
+         * // setter
+         * myPopup.chrome = "none";
+         */
+        chrome: 'default',
+        /**
+         * Determines if the popup should steal focus to its content when initially open. A value
+         * of <code class="prettyprint">none</code> prevents the popup from grabbing focus when
+         * open.
+         *
+         * @expose
+         * @memberof oj.ojPopup
+         * @instance
+         * @type {string}
+         * @default 'auto'
+         * @ojvalue {string} "auto" is derived from the values of the modality and
+         *          autoDismiss properties
+         * @ojvalue {string} "none" prevents the popup from stealing focus when open.
+         * @ojvalue {string} "firstFocusable" defines that a popup should grab focus to the first
+         *          focusable element within the popup's content.
+         * @ojvalue {string} "popup" focus to the root popup container (good choice for touch
+         *          platforms).
+         *
+         * @example <caption>Initialize the popup with
+         *           <code class="prettyprint">initial-focus</code> attribute specified:</caption>
+         * &lt;oj-popup initial-focus="none" &gt;&lt;/oj-popup&gt;
+         *
+         * @example <caption>Get or set the <code class="prettyprint">initialFocus</code> property,
+         *          after initialization:</caption>
+         * // getter
+         * var initialFocus = myPopup.initialFocus;
+         *
+         * // setter
+         * myPopup.initialFocus = "none";
+         */
+        initialFocus: 'auto',
+
+
+        /**
+         * <p>Position property is used to establish the location the popup will appear relative to
+         * another element. {@link oj.ojPopup.Position} defines "my" alignment "at" the alignment
+         * "of" some other thing which can be "offset" by so many pixels.</p>
+         *
+         * <p>The "my" and "at" properties defines aligment points relative to the popup and other
+         * element.  The "my" property represents the popups alignment where the "at" property
+         * represents the other element that can be identified by "of" or defauts to the launcher
+         * when the popup opens.  The values of these properties describe horizontal and
+         * vertical alignments.</p>
+         *
+         * <b>Deprecated v3.0.0 jQuery UI position syntax; Use of a percent unit with
+         * "my" or "at" is not supported.</b>
+         *
+         * @expose
+         * @memberof oj.ojPopup
+         * @instance
+         * @type {Object}
+         * @ojsignature { target: "Type",
+         *                value: "oj.ojPopup.Position",
+         *                jsdocOverride: true}
+         * @name position
+         * @example <caption>Initialize the popup with <code class="prettyprint">position</code>
+         *           attribute specified:</caption>
+         * &lt;oj-popup position.my.horizontal="left"
+         *           position.my.vertical="top"
+         *           position.at.horizontal="right"
+         *           position.at.vertical="top" &gt;&lt;/oj-popup&gt;
+         *
+         * @example <caption>Get or set the <code class="prettyprint">position</code> property,
+         *          after initialization:</caption>
+         * // getter
+         * var position = myPopup.position;
+         *
+         * // setter
+         * myPopup.position =
+         *    {"my": {"horizontal": "start", "vertical": "bottom"},
+         *     "at": {"horizontal": "end", "vertical": "top" },
+         *     "offset": {"x": 0, "y":5}};
+         */
+        position:
         {
           /**
-           *
-           * @private
-           * @memberof oj.ojPopup
-           * @instance
-           */
-          'animation' : null,
-          /**
-           * Defines conditions that will cause an open popup to auto close dismiss.  A value of
-           * <code class="prettyprint">focusLoss</code> defines the dismissal condition where focus
-           * has left the content of the popup or from the associated launcher or if what the popup
-           * is aligned to is not fully visible within an overflow area.
+           * Defines which edge on the popup to align with the target ("of") element.
            *
            * @expose
-           * @memberof oj.ojPopup
+           * @memberof! oj.ojPopup
            * @instance
+           * @alias position.my
+           * @name position.my
+           * @type {{horizontal:string, vertical:string}}
+           */
+          my: {
+            /**
+             * Defines the horizontal alignment of the popup.
+             * @expose
+             * @memberof! oj.ojPopup
+             * @instance
+             * @alias position.my.horizontal
+             * @name position.my.horizontal
+             * @type {string}
+             * @default 'start'
+             * @ojvalue {string} "start" evaluates to "left" in LTR mode and "right" in RTL mode.
+             * @ojvalue {string} "end" evaluates to "right" in LTR mode and "left" in RTL mode.
+             * @ojvalue {string} "left"
+             * @ojvalue {string} "center"
+             * @ojvalue {string} "right"
+             */
+            horizontal: 'start',
+            /**
+             * Defines the vertical alignment of the popup.
+             * @expose
+             * @memberof! oj.ojPopup
+             * @instance
+             * @alias position.my.vertical
+             * @name position.my.vertical
+             * @type {string}
+             * @default 'top'
+             * @ojvalue {string} "top"
+             * @ojvalue {string} "center"
+             * @ojvalue {string} "bottom"
+             */
+            vertical: 'top'
+          },
+          /**
+           * Defines a point offset in pixels from the ("my") alignment.
+           * @expose
+           * @memberof! oj.ojPopup
+           * @instance
+           * @alias position.offset
+           * @name position.offset
+           * @type {{x:number, y:number}}
+           */
+          offset: {
+            /**
+             * Horizontal aligment offset.
+             * @expose
+             * @memberof! oj.ojPopup
+             * @instance
+             * @alias position.offset.x
+             * @name position.offset.x
+             * @type {number}
+             * @default 0
+             */
+            x: 0,
+            /**
+             * Vertical alignment offset.
+             * @expose
+             * @memberof! oj.ojPopup
+             * @instance
+             * @alias position.offset.y
+             * @name position.offset.y
+             * @type {number}
+             * @default 0
+             */
+            y: 0
+          },
+          /**
+           * Defines which position on the target element ("of") to align the positioned element
+           * against.
+           *
+           * @expose
+           * @memberof! oj.ojPopup
+           * @instance
+           * @alias position.at
+           * @name position.at
+           * @type {{horizontal:string, vertical:string}}
+           */
+          at: {
+            /**
+             * Defines the horizontal alignment of what the popup is aligned to.
+             * @expose
+             * @memberof! oj.ojPopup
+             * @instance
+             * @alias position.at.horizontal
+             * @name position.at.horizontal
+             * @type {string}
+             * @default 'start'
+             * @ojvalue {string} "start" evaluates to "left" in LTR mode and "right" in RTL mode.
+             * @ojvalue {string} "end" evaluates to "right" in LTR mode and "left" in RTL mode.
+             * @ojvalue {string} "left"
+             * @ojvalue {string} "center"
+             * @ojvalue {string} "right"
+             */
+            horizontal: 'start',
+            /**
+             * Defines the vertical alignment of what the popup is aligned to.
+             * @expose
+             * @memberof! oj.ojPopup
+             * @instance
+             * @alias position.at.vertical
+             * @name position.at.vertical
+             * @type {string}
+             * @default 'bottom'
+             * @ojvalue {string} "top"
+             * @ojvalue {string} "center"
+             * @ojvalue {string} "bottom"
+             */
+            vertical: 'bottom'
+          },
+          /**
+           * Which element to position the popup against.  The default is the
+           * <code class="prettyprint">launcher</code> argument passed to the
+           * <code class="prettyprint">open</code> method.
+           *
+           * If the value is a string, it should be a selector or the literal string value
+           * of <code class="prettyprint">window</code>.  Otherwise, a point of x,y.  When a point
+           * is used, the values are relative to the whole document.  Page horizontal and vertical
+           * scroll offsets need to be factored into this point - see UIEvent
+           * <a href="https://developer.mozilla.org/en-US/docs/Web/API/UIEvent/pageX">pageX</a>,
+           * <a href="https://developer.mozilla.org/en-US/docs/Web/API/UIEvent/pageY">pageY</a>.
+           *
+           * @example <caption>Finding the point for an svg element:</caption>
+           * var rect = svgDom.getBoundingClientRect();
+           * var position = {of:{x:rect.left + window.pageXOffset, y:rect.top + window.pageYOffset}};
+           *
+           * @expose
+           * @memberof! oj.ojPopup
+           * @instance
+           * @alias position.of
+           * @name position.of
+           * @type {string|{x: number, y: number}}
+           */
+          of: undefined,
+          /**
+           * Rule for alternate alignment.
+           *
+           * @expose
+           * @memberof! oj.ojPopup
+           * @instance
+           * @alias position.collision
+           * @name position.collision
            * @type {string}
-           * @default 'focusLoss'
-           * @ojvalue {string} "none" disables auto dismissal behaviors.
-           * @ojvalue {string} "focusLoss" defines auto dismissal behavior when focus leaves the
-           *   content of the popup or associated launcher.  In addition, if what the popup is
-           *   positioned to is not visible within an overflow area, the popup will auto close
-           *   dismiss.
-           *
-           * @example <caption>Initialize the popup with
-           *          <code class="prettyprint">auto-dismiss</code> attribute specified:</caption>
-           * &lt;oj-popup auto-dismiss="focusLoss" &gt;&lt;/oj-popup&gt;
-           *
-           * @example <caption>Get or set the <code class="prettyprint">autoDismiss</code> property,
-           *          after initialization:</caption>
-           * // getter
-           * var autoDismiss = myPopup.autoDismiss;
-           * // setter
-           * myPopup.autoDismiss = "none";
+           * @default 'flip'
+           * @ojvalue {string} "flip" the element to the opposite side of the target and the
+           *  collision detection is run again to see if it will fit. Whichever side
+           *  allows more of the element to be visible will be used.
+           * @ojvalue {string} "fit" shift the element away from the edge of the window.
+           * @ojvalue {string} "flipfit" first applies the flip logic, placing the element
+           *  on whichever side allows more of the element to be visible. Then the fit logic
+           *  is applied to ensure as much of the element is visible as possible.
+           * @ojvalue {string} "flipcenter" first applies the flip rule and follow with center
+           *  alignment.
+           * @ojvalue {string} "none" no collision detection.
            */
-          autoDismiss : 'focusLoss',
-          /**
-           * Defines the presents of border, shadow and background color of the root popup dom.
-           * Value of <code class="prettyprint">none</code> applies the
-           * <code class="prettyprint">oj-popup-no-chrome</code> selector defined by the active
-           * theme to the root dom of the popup to remove the default chrome.
-           *
-           * @expose
-           * @memberof oj.ojPopup
-           * @instance
-           * @type {string}
-           * @default 'default'
-           * @ojvalue {string} "default" describes the popups border, shadow, and background color
-           *           defined by the active theme.
-           * @ojvalue {string} "none" turns off the outer chrome defined by the active theme.
-           *
-           * @example <caption>Initialize the popup with <code class="prettyprint">chrome</code>
-           *          attribute specified:</caption>
-           * &lt;oj-popup chrome="none" &gt;&lt;/oj-popup&gt;
-           *
-           * @example <caption>Get or set the <code class="prettyprint">chrome</code> property, after
-           *          initialization:</caption>
-           * // getter
-           * var chrome = myPopup.chrome;
-           *
-           * // setter
-           * myPopup.chrome = "none";
-           */
-          chrome : 'default',
-          /**
-           * Determines if the popup should steal focus to its content when initially open. A value
-           * of <code class="prettyprint">none</code> prevents the popup from grabbing focus when
-           * open.
-           *
-           * @expose
-           * @memberof oj.ojPopup
-           * @instance
-           * @type {string}
-           * @default 'auto'
-           * @ojvalue {string} "auto" is derived from the values of the modality and
-           *          autoDismiss properties
-           * @ojvalue {string} "none" prevents the popup from stealing focus when open.
-           * @ojvalue {string} "firstFocusable" defines that a popup should grab focus to the first
-           *          focusable element within the popup's content.
-           * @ojvalue {string} "popup" focus to the root popup container (good choice for touch
-           *          platforms).
-           *
-           * @example <caption>Initialize the popup with
-           *           <code class="prettyprint">initial-focus</code> attribute specified:</caption>
-           * &lt;oj-popup initial-focus="none" &gt;&lt;/oj-popup&gt;
-           *
-           * @example <caption>Get or set the <code class="prettyprint">initialFocus</code> property,
-           *          after initialization:</caption>
-           * // getter
-           * var initialFocus = myPopup.initialFocus;
-           *
-           * // setter
-           * myPopup.initialFocus = "none";
-           */
-          initialFocus : 'auto',
-
-
-          /**
-           * <p>Position property is used to establish the location the popup will appear relative to
-           * another element. {@link oj.ojPopup.Position} defines "my" alignment "at" the alignment
-           * "of" some other thing which can be "offset" by so many pixels.</p>
-           *
-           * <p>The "my" and "at" properties defines aligment points relative to the popup and other
-           * element.  The "my" property represents the popups alignment where the "at" property
-           * represents the other element that can be identified by "of" or defauts to the launcher
-           * when the popup opens.  The values of these properties describe horizontal and
-           * vertical alignments.</p>
-           *
-           * <b>Deprecated v3.0.0 jQuery UI position syntax; Use of a percent unit with
-           * "my" or "at" is not supported.</b>
-           *
-           * @expose
-           * @memberof oj.ojPopup
-           * @instance
-           * @type {Object}
-           * @ojsignature { target: "Type",
-           *                value: "oj.ojPopup.Position",
-           *                jsdocOverride: true}
-           * @name position
-           * @example <caption>Initialize the popup with <code class="prettyprint">position</code>
-           *           attribute specified:</caption>
-           * &lt;oj-popup position.my.horizontal="left"
-           *           position.my.vertical="top"
-           *           position.at.horizontal="right"
-           *           position.at.vertical="top" &gt;&lt;/oj-popup&gt;
-           *
-           * @example <caption>Get or set the <code class="prettyprint">position</code> property,
-           *          after initialization:</caption>
-           * // getter
-           * var position = myPopup.position;
-           *
-           * // setter
-           * myPopup.position =
-           *    {"my": {"horizontal": "start", "vertical": "bottom"},
-           *     "at": {"horizontal": "end", "vertical": "top" },
-           *     "offset": {"x": 0, "y":5}};
-           */
-          position :
-            {
-              /**
-               * Defines which edge on the popup to align with the target ("of") element.
-               *
-               * @expose
-               * @memberof! oj.ojPopup
-               * @instance
-               * @alias position.my
-               * @name position.my
-               * @type {{horizontal:string, vertical:string}}
-               */
-              'my' : {
-                /**
-                 * Defines the horizontal alignment of the popup.
-                 * @expose
-                 * @memberof! oj.ojPopup
-                 * @instance
-                 * @alias position.my.horizontal
-                 * @name position.my.horizontal
-                 * @type {string}
-                 * @default 'start'
-                 * @ojvalue {string} "start" evaluates to "left" in LTR mode and "right" in RTL mode.
-                 * @ojvalue {string} "end" evaluates to "right" in LTR mode and "left" in RTL mode.
-                 * @ojvalue {string} "left"
-                 * @ojvalue {string} "center"
-                 * @ojvalue {string} "right"
-                 */
-                'horizontal': 'start',
-                /**
-                 * Defines the vertical alignment of the popup.
-                 * @expose
-                 * @memberof! oj.ojPopup
-                 * @instance
-                 * @alias position.my.vertical
-                 * @name position.my.vertical
-                 * @type {string}
-                 * @default 'top'
-                 * @ojvalue {string} "top"
-                 * @ojvalue {string} "center"
-                 * @ojvalue {string} "bottom"
-                 */
-                'vertical': 'top'
-              },
-              /**
-               * Defines a point offset in pixels from the ("my") alignment.
-               * @expose
-               * @memberof! oj.ojPopup
-               * @instance
-               * @alias position.offset
-               * @name position.offset
-               * @type {{x:number, y:number}}
-               */
-              'offset': {
-                /**
-                 * Horizontal aligment offset.
-                 * @expose
-                 * @memberof! oj.ojPopup
-                 * @instance
-                 * @alias position.offset.x
-                 * @name position.offset.x
-                 * @type {number}
-                 * @default 0
-                 */
-                'x': 0,
-                /**
-                 * Vertical alignment offset.
-                 * @expose
-                 * @memberof! oj.ojPopup
-                 * @instance
-                 * @alias position.offset.y
-                 * @name position.offset.y
-                 * @type {number}
-                 * @default 0
-                 */
-                'y': 0
-              },
-              /**
-               * Defines which position on the target element ("of") to align the positioned element
-               * against.
-               *
-               * @expose
-               * @memberof! oj.ojPopup
-               * @instance
-               * @alias position.at
-               * @name position.at
-               * @type {{horizontal:string, vertical:string}}
-               */
-              'at' : {
-                /**
-                 * Defines the horizontal alignment of what the popup is aligned to.
-                 * @expose
-                 * @memberof! oj.ojPopup
-                 * @instance
-                 * @alias position.at.horizontal
-                 * @name position.at.horizontal
-                 * @type {string}
-                 * @default 'start'
-                 * @ojvalue {string} "start" evaluates to "left" in LTR mode and "right" in RTL mode.
-                 * @ojvalue {string} "end" evaluates to "right" in LTR mode and "left" in RTL mode.
-                 * @ojvalue {string} "left"
-                 * @ojvalue {string} "center"
-                 * @ojvalue {string} "right"
-                 */
-                'horizontal': 'start',
-                /**
-                 * Defines the vertical alignment of what the popup is aligned to.
-                 * @expose
-                 * @memberof! oj.ojPopup
-                 * @instance
-                 * @alias position.at.vertical
-                 * @name position.at.vertical
-                 * @type {string}
-                 * @default 'top'
-                 * @ojvalue {string} "top"
-                 * @ojvalue {string} "center"
-                 * @ojvalue {string} "bottom"
-                 */
-                'vertical': 'bottom'
-              },
-              /**
-               * Which element to position the popup against.  The default is the
-               * <code class="prettyprint">launcher</code> argument passed to the
-               * <code class="prettyprint">open</code> method.
-               *
-               * If the value is a string, it should be a selector or the literal string value
-               * of <code class="prettyprint">window</code>.  Otherwise, a point of x,y.  When a point
-               * is used, the values are relative to the whole document.  Page horizontal and vertical
-               * scroll offsets need to be factored into this point - see UIEvent
-               * <a href="https://developer.mozilla.org/en-US/docs/Web/API/UIEvent/pageX">pageX</a>,
-               * <a href="https://developer.mozilla.org/en-US/docs/Web/API/UIEvent/pageY">pageY</a>.
-               *
-               * @example <caption>Finding the point for an svg element:</caption>
-               * var rect = svgDom.getBoundingClientRect();
-               * var position = {of:{x:rect.left + window.pageXOffset, y:rect.top + window.pageYOffset}};
-               *
-               * @expose
-               * @memberof! oj.ojPopup
-               * @instance
-               * @alias position.of
-               * @name position.of
-               * @type {string|{x: number, y: number}}
-               */
-              'of' : undefined,
-              /**
-               * Rule for alternate alignment.
-               *
-               * @expose
-               * @memberof! oj.ojPopup
-               * @instance
-               * @alias position.collision
-               * @name position.collision
-               * @type {string}
-               * @default 'flip'
-               * @ojvalue {string} "flip" the element to the opposite side of the target and the
-               *  collision detection is run again to see if it will fit. Whichever side
-               *  allows more of the element to be visible will be used.
-               * @ojvalue {string} "fit" shift the element away from the edge of the window.
-               * @ojvalue {string} "flipfit" first applies the flip logic, placing the element
-               *  on whichever side allows more of the element to be visible. Then the fit logic
-               *  is applied to ensure as much of the element is visible as possible.
-               * @ojvalue {string} "flipcenter" first applies the flip rule and follows with center alignment.
-               * @ojvalue {string} "none" no collision detection.
-               */
-              'collision' : 'flip'
-            },
-          /**
-           * Determines if a decoration will be displayed from the popup that points to the element
-           * the popup is aligned to. The <code class="prettyprint">simple</code> value enables the
-           * tail defined by the current theme.  In addtion, the
-           * <code class="prettyprint">oj-popup-tail-simple</code> selector will be applied to the
-           * root dom element.  This is to allow the box-shadow, z-index and other chrome styling to
-           * vary per tail decoration.
-           *
-           * @expose
-           * @memberof oj.ojPopup
-           * @instance
-           * @type {string}
-           * @default 'none'
-           * @ojvalue {string} "none" no decoration will be displayed from the popup pointing to the
-           *          launcher.
-           * @ojvalue {string} "simple" enables showing the tail defined by the current theme.
-           *
-           * @example <caption>Initialize the popup with <code class="prettyprint">tail</code>
-           *          attribute specified:</caption>
-           * &lt;oj-popup tail="simple" &gt;&lt;/oj-popup&gt;
-           *
-           * @example <caption>Get or set the <code class="prettyprint">tail</code> property, after
-           *          initialization:</caption>
-           * // getter
-           * var tail = myPopup.tail;
-           *
-           * // setter
-           * myPopup.tail = "simple";
-           */
-          tail : 'none',
-          /**
-           * Determines if the popup should block user input of the page behind with a blocking
-           * overlay pane.
-           *
-           * <p>The default modality varies by theme.  Each theme can set its default by setting
-           * <code class="prettyprint">$popupModalityOptionDefault</code>.
-           *
-           * @expose
-           * @memberof oj.ojPopup
-           * @instance
-           * The modality of the popup. Valid values are:
-           * @ojvalue {string} "modeless" defines a modeless popup.
-           * @ojvalue {string} "modal" The popup is modal. Interactions with other page elements are
-           *          disabled. Modal popups overlay other page elements.
-           * @type {string}
-           * @default 'modeless'
-           * @example <caption>Initialize the popup to have modality
-           *          <code class="prettyprint">modality</code></caption>
-           * &lt;oj-popup modality="modal" &gt;&lt;/oj-popup&gt;
-           *
-           * @example <caption>Get or set the <code class="prettyprint">modality</code> property,
-           *          after initialization:</caption>
-           * // getter
-           * var modality = myPopup.modality;
-           *
-           * // setter
-           * myPopup.modality = "modal";
-           *
-           * @example <caption>Set the default in the theme (SCSS) :</caption>
-           * $popupModalityOptionDefault: modal !default;
-           */
-          modality : "modeless",
-          /**
-           * @private
-           * @memberof oj.ojPopup
-           * @instance
-           * @type {string}
-           */
-          'role' : "tooltip",
-          // Events
-          /**
-           * Triggered before the popup is launched via the <code class="prettyprint">open()</code>
-           * method. The open can be cancelled by calling
-           * <code class="prettyprint">event.preventDefault()</code>.
-           *
-           * @expose
-           * @event
-           * @memberof oj.ojPopup
-           * @instance
-           * @ojcancelable
-           * @ojbubbles
-           */
-          beforeOpen : null,
-          /**
-           * Triggered after the popup is launched via the <code class="prettyprint">open()</code>
-           * method.
-           *
-           * @expose
-           * @event
-           * @memberof oj.ojPopup
-           * @instance
-           * @ojbubbles
-           */
-          open : null,
-          /**
-           * Triggered before the popup is dismissed via the
-           * <code class="prettyprint">close()</code> method. The close can be cancelled by calling
-           * <code class="prettyprint">event.preventDefault()</code>.
-           *
-           * @expose
-           * @event
-           * @memberof oj.ojPopup
-           * @instance
-           * @ojcancelable
-           * @ojbubbles
-           */
-          beforeClose : null,
-          /**
-           * Triggered after the popup is dismissed via the
-           * <code class="prettyprint">close()</code> method.
-           *
-           * @expose
-           * @event
-           * @memberof oj.ojPopup
-           * @instance
-           * @ojbubbles
-           */
-          close : null,
-          /**
-           * Triggered after focus has been transfered to the popup. This will occur after the
-           * <code class="prettyprint">open()</code> method is called, depending on the value
-           * of the <code class="prettyprint">initialFocus</code> property.  It's also triggered
-           * when using the <kbd>F6</kbd> key to toggle focus from the associated launcher element
-           * to the content of the popup.
-           *
-           * @expose
-           * @event
-           * @memberof oj.ojPopup
-           * @instance
-           * @ojbubbles
-           */
-          focus : null,
-          /**
-           * Triggered when a default animation is about to start, such as when the component is
-           * being opened/closed or a child item is being added/removed. The default animation can
-           * be cancelled by calling <code class="prettyprint">event.preventDefault</code>.
-           *
-           * @expose
-           * @event
-           * @memberof oj.ojPopup
-           * @instance
-           * @ojcancelable
-           * @ojbubbles
-           * @property {"open"|"close"} action The action that is starting the animation.
-           *            The number of actions can vary from component to component.
-           *            Suggested values are:
-           *                    <ul>
-           *                      <li>"open" - when a popup component is opened</li>
-           *                      <li>"close" - when a popup component is closed</li>
-           *                    </ul>
-           * @property {!Element} element target of animation
-           * @property {!function():void} endCallback If the event listener calls
-           *            event.preventDefault to cancel the default animation, It must call the
-           *            endCallback function when it finishes its own animation handling and any
-           *            custom animation has ended.
-           *
-           * @example <caption>Bind an event listener to the
-           *          <code class="prettyprint">onOjAnimateStart</code> property to override the default
-           *          "close" animation:</caption>
-           * myPopup.onOjAnimateStart = function( event )
-           *   {
-           *     // verify that the component firing the event is a component of interest and action
-           *      is close
-           *     if (event.detail.action == "close") {
-           *       event.preventDefault();
-           *       oj.AnimationUtils.slideOut(event.detail.element).then(event.detail.endCallback);
-           *   };
-           *
-           * @example <caption>The default open and close animations are controlled via the theme
-           *          (SCSS) :</caption>
-           * $popupOpenAnimation: ((effect: "zoomIn"), "fadeIn")  !default;
-           * $popupCloseAnimation: ((effect: "zoomOut", persist: "all"), "fadeOut")  !default;
-           */
-          animateStart : null,
-          /**
-           * Triggered when a default animation has ended, such as when the component is being
-           * opened/closed or a child item is being added/removed. This event is not triggered if
-           * the application has called preventDefault on the animateStart
-           * event.
-           *
-           * @expose
-           * @event
-           * @memberof oj.ojPopup
-           * @instance
-           * @ojcancelable
-           * @ojbubbles
-           * @property {!Element} element target of animation
-           * @property {"open"|"close"} action The action that is ending the animation.
-           *                   The number of actions can vary from component to component.
-           *                   Suggested values are:
-           *                    <ul>
-           *                      <li>"open" - when a popup component is opened</li>
-           *                      <li>"close" - when a popup component is closed</li>
-           *                    </ul>
-           *
-           * @example <caption>Bind an event listener to the
-           *          <code class="prettyprint">onOjAnimateEnd</code> property to listen for the "close"
-           *          ending animation:</caption>
-           * myPopup.onOjAnimateEnd = function( event )
-           *   {
-           *     // verify that the component firing the event is a component of interest and action
-           *      is close
-           *     if (event.detail.action == "close") {}
-           *   };
-           *
-           * @example <caption>The default open and close animations are controlled via the theme
-           *          (SCSS) :</caption>
-           * $popupOpenAnimation: (effect: "zoomIn", fade: true)  !default;
-           * $popupCloseAnimation: (effect: "zoomOut", fade: true)  !default;
-           */
-          animateEnd : null
+          collision: 'flip'
         },
-      /**
-       * @memberof oj.ojPopup
-       * @instance
-       * @protected
-       * @override
-       */
-      _ComponentCreate : function ()
-      {
-        this._super();
-
-        var rootStyle = this._getRootStyle();
-        var element = this.element;
-        element.hide().addClass(rootStyle).attr("aria-hidden", "true");
-        element.addClass("oj-component");
-
-        // Creates a content element and moves the children of the root to the content element
-        // and then appends the content element to the root element.
-        var content = $("<div>");
-        content.addClass([rootStyle, "content"].join("-"));
-        content.attr("role", "presentation");
-        content.append(element[0].childNodes);    //@HTMLUpdateOK; move app defined children to content wrapper
-        content.appendTo(element);   //@HTMLUpdateOK; attach programmaticly generated node
-        this._content = content;
-
-        this._setChrome();
-        this._setupFocus(element);
-
-        // fixup the position option set via the widget constructor
-        var options = this.options;
-        options["position"] = oj.PositionUtils.coerceToJet(options["position"]);
+        /**
+         * Determines if a decoration will be displayed from the popup that points to the element
+         * the popup is aligned to. The <code class="prettyprint">simple</code> value enables the
+         * tail defined by the current theme.  In addtion, the
+         * <code class="prettyprint">oj-popup-tail-simple</code> selector will be applied to the
+         * root dom element.  This is to allow the box-shadow, z-index and other chrome styling to
+         * vary per tail decoration.
+         *
+         * @expose
+         * @memberof oj.ojPopup
+         * @instance
+         * @type {string}
+         * @default 'none'
+         * @ojvalue {string} "none" no decoration will be displayed from the popup pointing to the
+         *          launcher.
+         * @ojvalue {string} "simple" enables showing the tail defined by the current theme.
+         *
+         * @example <caption>Initialize the popup with <code class="prettyprint">tail</code>
+         *          attribute specified:</caption>
+         * &lt;oj-popup tail="simple" &gt;&lt;/oj-popup&gt;
+         *
+         * @example <caption>Get or set the <code class="prettyprint">tail</code> property, after
+         *          initialization:</caption>
+         * // getter
+         * var tail = myPopup.tail;
+         *
+         * // setter
+         * myPopup.tail = "simple";
+         */
+        tail: 'none',
+        /**
+         * Determines if the popup should block user input of the page behind with a blocking
+         * overlay pane.
+         *
+         * <p>The default modality varies by theme.  Each theme can set its default by setting
+         * <code class="prettyprint">$popupModalityOptionDefault</code>.
+         *
+         * @expose
+         * @memberof oj.ojPopup
+         * @instance
+         * The modality of the popup. Valid values are:
+         * @ojvalue {string} "modeless" defines a modeless popup.
+         * @ojvalue {string} "modal" The popup is modal. Interactions with other page elements are
+         *          disabled. Modal popups overlay other page elements.
+         * @type {string}
+         * @default 'modeless'
+         * @example <caption>Initialize the popup to have modality
+         *          <code class="prettyprint">modality</code></caption>
+         * &lt;oj-popup modality="modal" &gt;&lt;/oj-popup&gt;
+         *
+         * @example <caption>Get or set the <code class="prettyprint">modality</code> property,
+         *          after initialization:</caption>
+         * // getter
+         * var modality = myPopup.modality;
+         *
+         * // setter
+         * myPopup.modality = "modal";
+         *
+         * @example <caption>Set the default in the theme (SCSS) :</caption>
+         * $popupModalityOptionDefault: modal !default;
+         */
+        modality: 'modeless',
+        /**
+         * @private
+         * @memberof oj.ojPopup
+         * @instance
+         * @type {string}
+         */
+        role: 'tooltip',
+        // Events
+        /**
+         * Triggered before the popup is launched via the <code class="prettyprint">open()</code>
+         * method. The open can be cancelled by calling
+         * <code class="prettyprint">event.preventDefault()</code>.
+         *
+         * @expose
+         * @event
+         * @memberof oj.ojPopup
+         * @instance
+         * @ojcancelable
+         * @ojbubbles
+         */
+        beforeOpen: null,
+        /**
+         * Triggered after the popup is launched via the <code class="prettyprint">open()</code>
+         * method.
+         *
+         * @expose
+         * @event
+         * @memberof oj.ojPopup
+         * @instance
+         * @ojbubbles
+         */
+        open: null,
+        /**
+         * Triggered before the popup is dismissed via the
+         * <code class="prettyprint">close()</code> method. The close can be cancelled by calling
+         * <code class="prettyprint">event.preventDefault()</code>.
+         *
+         * @expose
+         * @event
+         * @memberof oj.ojPopup
+         * @instance
+         * @ojcancelable
+         * @ojbubbles
+         */
+        beforeClose: null,
+        /**
+         * Triggered after the popup is dismissed via the
+         * <code class="prettyprint">close()</code> method.
+         *
+         * @expose
+         * @event
+         * @memberof oj.ojPopup
+         * @instance
+         * @ojbubbles
+         */
+        close: null,
+        /**
+         * Triggered after focus has been transfered to the popup. This will occur after the
+         * <code class="prettyprint">open()</code> method is called, depending on the value
+         * of the <code class="prettyprint">initialFocus</code> property.  It's also triggered
+         * when using the <kbd>F6</kbd> key to toggle focus from the associated launcher element
+         * to the content of the popup.
+         *
+         * @expose
+         * @event
+         * @memberof oj.ojPopup
+         * @instance
+         * @ojbubbles
+         */
+        focus: null,
+        /**
+         * Triggered when a default animation is about to start, such as when the component is
+         * being opened/closed or a child item is being added/removed. The default animation can
+         * be cancelled by calling <code class="prettyprint">event.preventDefault</code>.
+         *
+         * @expose
+         * @event
+         * @memberof oj.ojPopup
+         * @instance
+         * @ojcancelable
+         * @ojbubbles
+         * @property {"open"|"close"} action The action that is starting the animation.
+         *            The number of actions can vary from component to component.
+         *            Suggested values are:
+         *                    <ul>
+         *                      <li>"open" - when a popup component is opened</li>
+         *                      <li>"close" - when a popup component is closed</li>
+         *                    </ul>
+         * @property {!Element} element target of animation
+         * @property {!function():void} endCallback If the event listener calls
+         *            event.preventDefault to cancel the default animation, It must call the
+         *            endCallback function when it finishes its own animation handling and any
+         *            custom animation has ended.
+         *
+         * @example <caption>Bind an event listener to the
+         *          <code class="prettyprint">onOjAnimateStart</code> property to override the default
+         *          "close" animation:</caption>
+         * myPopup.onOjAnimateStart = function( event )
+         *   {
+         *     // verify that the component firing the event is a component of interest and action
+         *      is close
+         *     if (event.detail.action == "close") {
+         *       event.preventDefault();
+         *       oj.AnimationUtils.slideOut(event.detail.element).then(event.detail.endCallback);
+         *   };
+         *
+         * @example <caption>The default open and close animations are controlled via the theme
+         *          (SCSS) :</caption>
+         * $popupOpenAnimation: ((effect: "zoomIn"), "fadeIn")  !default;
+         * $popupCloseAnimation: ((effect: "zoomOut", persist: "all"), "fadeOut")  !default;
+         */
+        animateStart: null,
+        /**
+         * Triggered when a default animation has ended, such as when the component is being
+         * opened/closed or a child item is being added/removed. This event is not triggered if
+         * the application has called preventDefault on the animateStart
+         * event.
+         *
+         * @expose
+         * @event
+         * @memberof oj.ojPopup
+         * @instance
+         * @ojcancelable
+         * @ojbubbles
+         * @property {!Element} element target of animation
+         * @property {"open"|"close"} action The action that is ending the animation.
+         *                   The number of actions can vary from component to component.
+         *                   Suggested values are:
+         *                    <ul>
+         *                      <li>"open" - when a popup component is opened</li>
+         *                      <li>"close" - when a popup component is closed</li>
+         *                    </ul>
+         *
+         * @example <caption>Bind an event listener to the
+         *          <code class="prettyprint">onOjAnimateEnd</code> property to listen for the "close"
+         *          ending animation:</caption>
+         * myPopup.onOjAnimateEnd = function( event )
+         *   {
+         *     // verify that the component firing the event is a component of interest and action
+         *      is close
+         *     if (event.detail.action == "close") {}
+         *   };
+         *
+         * @example <caption>The default open and close animations are controlled via the theme
+         *          (SCSS) :</caption>
+         * $popupOpenAnimation: (effect: "zoomIn", fade: true)  !default;
+         * $popupCloseAnimation: (effect: "zoomOut", fade: true)  !default;
+         */
+        animateEnd: null
       },
       /**
        * @memberof oj.ojPopup
@@ -985,8 +975,37 @@ var __oj_popup_metadata =
        * @protected
        * @override
        */
-      _AfterCreate: function ()
-      {
+      _ComponentCreate: function () {
+        this._super();
+
+        var rootStyle = this._getRootStyle();
+        var element = this.element;
+        element.hide().addClass(rootStyle).attr('aria-hidden', 'true');
+        element.addClass('oj-component');
+
+        // Creates a content element and moves the children of the root to the content element
+        // and then appends the content element to the root element.
+        var content = $('<div>');
+        content.addClass([rootStyle, 'content'].join('-'));
+        content.attr('role', 'presentation');
+        content.append(element[0].childNodes);    // @HTMLUpdateOK; move app defined children to content wrapper
+        content.appendTo(element);   // @HTMLUpdateOK; attach programmaticly generated node
+        this._content = content;
+
+        this._setChrome();
+        this._setupFocus(element);
+
+        // fixup the position option set via the widget constructor
+        var options = this.options;
+        options.position = oj.PositionUtils.coerceToJet(options.position);
+      },
+      /**
+       * @memberof oj.ojPopup
+       * @instance
+       * @protected
+       * @override
+       */
+      _AfterCreate: function () {
         // first apply rootAttributes that might define an id if unspecified
         this._super();
 
@@ -1002,28 +1021,27 @@ var __oj_popup_metadata =
        * @protected
        * @override
        */
-      _destroy : function ()
-      {
-        if (oj.ZOrderUtils.getStatus(this.element) === oj.ZOrderUtils.STATUS.OPEN)
+      _destroy: function () {
+        if (oj.ZOrderUtils.getStatus(this.element) === oj.ZOrderUtils.STATUS.OPEN) {
           this._closeImplicitly();
+        }
 
-        this._setWhenReady("none");
+        this._setWhenReady('none');
         this._destroyTail();
         delete this._popupServiceEvents;
 
         // make sure the root element is hidden
         var element = this.element;
-        element.hide().attr("aria-hidden", "true").removeUniqueId();
+        element.hide().attr('aria-hidden', 'true').removeUniqueId();
 
         // Move the children back under the root node removing the content node.
         var content = this._content;
         delete this._content;
-        element.append(content[0].childNodes);  //@HTMLUpdateOK; destructor move children back under root
+        element.append(content[0].childNodes);  // @HTMLUpdateOK; destructor move children back under root
         content.remove();
 
         var closeDelayTimer = this._closeDelayTimer;
-        if (closeDelayTimer)
-        {
+        if (closeDelayTimer) {
           delete this._closeDelayTimer;
           closeDelayTimer();
         }
@@ -1055,61 +1073,75 @@ var __oj_popup_metadata =
        * @example <caption>Invoke the <code class="prettyprint">open</code> method:</caption>
        * var open = myPopup.open("#launcher");
        */
-      open : function (launcher, position)
-      {
-        if (this._isOperationPending("open", [launcher, position]))
+      open: function (launcher, position) {
+        if (this._isOperationPending('open', [launcher, position])) {
           return;
+        }
 
-        if (oj.ZOrderUtils.getStatus(this.element) === oj.ZOrderUtils.STATUS.OPEN)
-          this._closeImplicitly();
-
-        this._setLauncher(launcher);
+        if (oj.ZOrderUtils.getStatus(this.element) === oj.ZOrderUtils.STATUS.OPEN) {
+          this._closeImplicitly();  // synchronous close
+        }
 
         var element = this.element;
-        launcher = this._launcher;
-
-        if (this._trigger("beforeOpen") === false)
+        var status = oj.ZOrderUtils.getStatus(element);
+        if (!(status === oj.ZOrderUtils.STATUS.CLOSE ||
+              status === oj.ZOrderUtils.STATUS.UNKNOWN)) {
           return;
+        }
 
-        this._setWhenReady("open");
+        // status change is needed to prevent calling open from an on before open
+        // handler.  The _isOperationPending doens't gurard until this._setWhenReady('open');
+        oj.ZOrderUtils.setStatus(element, oj.ZOrderUtils.STATUS.BEFORE_OPEN);
+        if (this._trigger('beforeOpen') === false) {
+          oj.ZOrderUtils.setStatus(this.element, status);
+          return;
+        }
+
+        // activates the _isOperationPending gatekeeper
+        this._setWhenReady('open');
+
+        this._setLauncher(launcher);
+        var _launcher = this._launcher;
 
         var options = this.options;
-        position = position ? position : options["position"];
-        if (!position["of"])
-        {
+        // eslint-disable-next-line no-param-reassign
+        position = position || options.position;
+        if (!position.of) {
           this._hasPositionOfLauncherOverride = true;
-          position["of"] = launcher;
+          // eslint-disable-next-line no-param-reassign
+          position.of = _launcher;
         }
 
         this._setPosition(position);
 
-        this._setAutoDismiss(options["autoDismiss"]);
+        this._setAutoDismiss(options.autoDismiss);
         this._addDescribedBy();
 
-        if (!this._IsCustomElement() || !element[0].hasAttribute("role"))
-          element.attr("role", options["role"]);
+        if (!this._IsCustomElement() || !element[0].hasAttribute('role')) {
+          element.attr('role', options.role);
+        }
 
         // convert to the jquery ui position format
-        position = this._getPositionAsJqUi();
+        var _position = this._getPositionAsJqUi();
 
         // build layer class selectors applied to the popup layer
         var rootStyle = this._getRootStyle();
-        var layerClass = [rootStyle, "layer"].join("-");
-        var tailDecoration = options['tail'];
-        if ("none" !== tailDecoration)
-          layerClass += " " + [rootStyle, "tail", tailDecoration].join("-");
+        var layerClass = [rootStyle, 'layer'].join('-');
+        var tailDecoration = options.tail;
+        if (tailDecoration !== 'none') {
+          layerClass += ' ' + [rootStyle, 'tail', tailDecoration].join('-');
+        }
 
         /** @type {!Object.<oj.PopupService.OPTION, ?>} */
         var psOptions = {};
         psOptions[oj.PopupService.OPTION.POPUP] = element;
-        psOptions[oj.PopupService.OPTION.LAUNCHER] = launcher;
-        psOptions[oj.PopupService.OPTION.POSITION] = position;
+        psOptions[oj.PopupService.OPTION.LAUNCHER] = _launcher;
+        psOptions[oj.PopupService.OPTION.POSITION] = _position;
         psOptions[oj.PopupService.OPTION.EVENTS] = this._getPopupServiceEvents();
         psOptions[oj.PopupService.OPTION.LAYER_SELECTORS] = layerClass;
-        psOptions[oj.PopupService.OPTION.MODALITY] = options["modality"];
+        psOptions[oj.PopupService.OPTION.MODALITY] = options.modality;
         psOptions[oj.PopupService.OPTION.CUSTOM_ELEMENT] = this._IsCustomElement();
         oj.PopupService.getInstance().open(psOptions);
-
       },
       /**
        * Before open callback is called after the popup has been reparented into the
@@ -1120,29 +1152,25 @@ var __oj_popup_metadata =
        * @param {!Object.<oj.PopupService.OPTION, ?>} psOptions property bag for opening the popup
        * @return {Promise|void}
        */
-      _beforeOpenHandler : function (psOptions)
-      {
+      _beforeOpenHandler: function (psOptions) {
         var element = psOptions[oj.PopupService.OPTION.POPUP];
         var position = psOptions[oj.PopupService.OPTION.POSITION];
 
         element.show();
-        element["position"](position);
+        element.position(position);
 
         // TODO might want to add fadeIn for the modal overlay in the future.
-        var animationOptions = this.options["animation"];
-        if (animationOptions && animationOptions["open"])
-        {
-          var actionPrefix = animationOptions["actionPrefix"];
-          var action = actionPrefix ? [actionPrefix, "open"].join("-") : "open";
-
-          return oj.AnimationUtils.startAnimation(element[0], action,
+        var animationOptions = this.options.animation;
+        if (animationOptions && animationOptions.open) {
+          var actionPrefix = animationOptions.actionPrefix;
+          var action = actionPrefix ? [actionPrefix, 'open'].join('-') : 'open';
+          // eslint-disable-next-line no-undef
+          return AnimationUtils.startAnimation(element[0], action,
             oj.PositionUtils.addTransformOriginAnimationEffectsOption(element,
-            animationOptions["open"]), this);
+            animationOptions.open), this);
         }
-        else
-        {
-          return void(0);
-        }
+
+        return undefined;
       },
       /**
        * Called after the popup is shown. Perform open finalization.
@@ -1152,20 +1180,20 @@ var __oj_popup_metadata =
        * @param {!Object.<oj.PopupService.OPTION, ?>} psOptions property bag for opening the popup
        * @return {void}
        */
-      _afterOpenHandler : function (psOptions)
-      {
+      _afterOpenHandler: function (psOptions) {
         var element = psOptions[oj.PopupService.OPTION.POPUP];
         var launcher = psOptions[oj.PopupService.OPTION.LAUNCHER];
 
         this._initVoiceOverAssist();
 
-        this._trigger("open");
+        this._trigger('open');
 
         this._intialFocus();
 
-        this._on(element, {'keydown' : this._keyHandler, 'keyup' : this._keyHandler});
-        if (launcher && launcher.length > 0)
-          this._on(launcher, {'keydown' : this._keyHandler, 'keyup' : this._keyHandler});
+        this._on(element, { keydown: this._keyHandler, keyup: this._keyHandler });
+        if (launcher && launcher.length > 0) {
+          this._on(launcher, { keydown: this._keyHandler, keyup: this._keyHandler });
+        }
       },
       /**
        * Override to retrieve the context menu element from the context area of the popup
@@ -1175,17 +1203,17 @@ var __oj_popup_metadata =
        * @protected
        * @override
        */
-      _GetContextMenu: function()
-      {
-        if (this._IsCustomElement())
-        {
+      _GetContextMenu: function () {
+        if (this._IsCustomElement()) {
           var slotMap = oj.BaseCustomElementBridge.getSlotMap(this._content[0]);
-          var slot = slotMap['contextMenu'];
-          if (slot && slot.length > 0)
+          var slot = slotMap.contextMenu;
+          if (slot && slot.length > 0) {
             return slot[0];
-        }
-        else
+          }
+        } else {
           return this._super();
+        }
+        return undefined;
       },
       /**
        * Closes the popup. This method does not accept any arguments.
@@ -1204,37 +1232,45 @@ var __oj_popup_metadata =
        * @example <caption>Invoke the <code class="prettyprint">close</code> method:</caption>
        * myPopup.close();
        */
-      close : function ()
-      {
-        if (this._isOperationPending("close", []))
+      close: function () {
+        if (this._isOperationPending('close', [])) {
           return;
+        }
 
-        if (oj.ZOrderUtils.getStatus(this.element) !== oj.ZOrderUtils.STATUS.OPEN)
+        var element = this.element;
+        var status = oj.ZOrderUtils.getStatus(element);
+        if (status !== oj.ZOrderUtils.STATUS.OPEN) {
           return;
+        }
 
-        if (this._trigger("beforeClose") === false && !this._ignoreBeforeCloseResultant)
+        // Status toggle is needed to prevent a recursive closed callled from a
+        // beforeClose handler. The _isOperationPending gatekeeper isn't activated
+        // until after the _setWhenReady('close'|'open') call.
+        oj.ZOrderUtils.setStatus(element, oj.ZOrderUtils.STATUS.BEFORE_CLOSE);
+        if (this._trigger('beforeClose') === false && !this._ignoreBeforeCloseResultant) {
+          oj.ZOrderUtils.setStatus(element, status);
           return;
+        }
 
-        this._setWhenReady("close");
+        // activates the _isOperationPending gatekeeper
+        this._setWhenReady('close');
+
+        var launcher = this._launcher;
+        this._off(element, 'keydown keyup');
+        if (launcher && launcher.length > 0) {
+          this._off(launcher, 'keydown keyup');
+        }
 
         // if the content has focus, restore the the launcher
         this._restoreFocus();
 
-        var launcher = this._launcher;
-        var element = this.element;
-
-        this._off(element, "keydown keyup");
-        if (launcher && launcher.length > 0)
-          this._off(launcher, "keydown keyup");
-
-        //clean up voice over assist
+        // clean up voice over assist
         this._destroyVoiceOverAssist();
 
         /** @type {!Object.<oj.PopupService.OPTION, ?>} */
         var psOptions = {};
         psOptions[oj.PopupService.OPTION.POPUP] = element;
         oj.PopupService.getInstance().close(psOptions);
-
       },
       /**
        * Before callback is invoked while the popup is still visible and still parented in the
@@ -1245,35 +1281,31 @@ var __oj_popup_metadata =
        * @param {!Object.<oj.PopupService.OPTION, ?>} psOptions property bag for closing the popup
        * @return {Promise|void}
        */
-      _beforeCloseHandler : function (psOptions)
-      {
+      _beforeCloseHandler: function (psOptions) {
         var element = psOptions[oj.PopupService.OPTION.POPUP];
 
-        //TODO might want to add fadeOut for the modal overlay in the future.
-        var animationOptions = this.options["animation"];
+        // TODO might want to add fadeOut for the modal overlay in the future.
+        var animationOptions = this.options.animation;
 
-        if (!this._ignoreBeforeCloseResultant && animationOptions && animationOptions["close"])
-        {
-          var style = element.attr("style");
-          var actionPrefix = animationOptions["actionPrefix"];
-          var action = actionPrefix ? [actionPrefix, "close"].join("-") : "close";
+        if (!this._ignoreBeforeCloseResultant && animationOptions && animationOptions.close) {
+          var style = element.attr('style');
+          var actionPrefix = animationOptions.actionPrefix;
+          var action = actionPrefix ? [actionPrefix, 'close'].join('-') : 'close';
 
           /** @type {?} */
-          var promise = oj.AnimationUtils.startAnimation(element[0], action,
+          // eslint-disable-next-line no-undef
+          var promise = AnimationUtils.startAnimation(element[0], action,
             oj.PositionUtils.addTransformOriginAnimationEffectsOption(element,
-              animationOptions["close"]), this)
-            .then(function ()
-            {
-              element.attr("style", style);
+              animationOptions.close), this)
+            .then(function () {
+              element.attr('style', style);
               element.hide();
             });
           return promise;
         }
-        else
-        {
-          element.hide();
-          return void(0);
-        }
+
+        element.hide();
+        return undefined;
       },
       /**
        * Close finalization callback.
@@ -1284,18 +1316,17 @@ var __oj_popup_metadata =
        * @param {!Object.<oj.PopupService.OPTION, ?>} psOptions property bag for closing the popup
        * @return {void}
        */
-      _afterCloseHandler : function (psOptions)
-      {
+      // eslint-disable-next-line no-unused-vars
+      _afterCloseHandler: function (psOptions) {
         this._removeDescribedBy();
         this._setAutoDismiss();
 
         delete this._launcher;
-        this._trigger("close");
+        this._trigger('close');
 
-        if (this._hasPositionOfLauncherOverride)
-        {
+        if (this._hasPositionOfLauncherOverride) {
           var options = this.options;
-          options["position"]["of"] = null;
+          options.position.of = null;
           delete this._hasPositionOfLauncherOverride;
         }
       },
@@ -1316,11 +1347,12 @@ var __oj_popup_metadata =
        * @example <caption>Invoke the <code class="prettyprint">isOpen</code> method:</caption>
        * var isOpen = myPopup.isOpen();
        */
-      isOpen : function ()
-      {
+      isOpen: function () {
         var status = oj.ZOrderUtils.getStatus(this.element);
+        // the window is visible and reparented to the zorder container for these statuses
         return (status === oj.ZOrderUtils.STATUS.OPENING ||
                 status === oj.ZOrderUtils.STATUS.OPEN ||
+                status === oj.ZOrderUtils.STATUS.BEFORE_CLOSE ||
                 status === oj.ZOrderUtils.STATUS.CLOSING);
       },
       /**
@@ -1339,15 +1371,16 @@ var __oj_popup_metadata =
        * @example <caption>Invoke the <code class="prettyprint">refresh</code> method:</caption>
        * myPopup.refresh();
        */
-      refresh : function ()
-      {
+      refresh: function () {
         this._super();
 
-        if (oj.ZOrderUtils.getStatus(this.element) !== oj.ZOrderUtils.STATUS.OPEN)
+        if (oj.ZOrderUtils.getStatus(this.element) !== oj.ZOrderUtils.STATUS.OPEN) {
           return;
+        }
 
-        if (!this._reposition())
+        if (!this._reposition()) {
           return;
+        }
 
         // trigger refresh of descendents if reposition was successful
         var element = this.element;
@@ -1362,36 +1395,34 @@ var __oj_popup_metadata =
        * @param {?Object} value of the target option identified by the key
        * @override
        */
-      _setOption : function (key, value)
-      {
-
+      _setOption: function (key, value) {
         var options = this.options;
-        switch (key)
-        {
-          case "tail":
-            if (value !== options["tail"])
-            {
+        switch (key) {
+          case 'tail':
+            if (value !== options.tail) {
               this._setTail(value);
             }
             break;
-          case "chrome":
-            if (value !== options["chrome"])
+          case 'chrome':
+            if (value !== options.chrome) {
               this._setChrome(value);
+            }
             break;
-          case "position":
+          case 'position':
             this._setPosition(value);
             this.refresh();
             // don't call super because setPosition sets the option after creating a new
             // instance.  This prevents the same position instance from getting registered
             // with multiple component instances.
             return;
-          case "autoDismiss":
-            if (oj.ZOrderUtils.getStatus(this.element) === oj.ZOrderUtils.STATUS.OPEN && value !== options["autoDismiss"])
+          case 'autoDismiss':
+            if (oj.ZOrderUtils.getStatus(this.element) === oj.ZOrderUtils.STATUS.OPEN &&
+                value !== options.autoDismiss) {
               this._setAutoDismiss(value);
+            }
             break;
-          case "modality":
-            if (oj.ZOrderUtils.getStatus(this.element) === oj.ZOrderUtils.STATUS.OPEN)
-            {
+          case 'modality':
+            if (oj.ZOrderUtils.getStatus(this.element) === oj.ZOrderUtils.STATUS.OPEN) {
               var element = this.element;
               /** @type {!Object.<oj.PopupService.OPTION, ?>} */
               var psOptions = {};
@@ -1399,6 +1430,8 @@ var __oj_popup_metadata =
               psOptions[oj.PopupService.OPTION.MODALITY] = value;
               oj.PopupService.getInstance().changeOptions(psOptions);
             }
+            break;
+          default:
             break;
         }
 
@@ -1414,9 +1447,8 @@ var __oj_popup_metadata =
        * @private
        * @return {string}
        */
-      _getRootStyle : function ()
-      {
-        return "oj-popup";
+      _getRootStyle: function () {
+        return 'oj-popup';
       },
       /**
        * Handles setting up the target tail.
@@ -1426,8 +1458,7 @@ var __oj_popup_metadata =
        * @private
        * @param {string} tail option value
        */
-      _setTail : function (tail)
-      {
+      _setTail: function (tail) {
         this._destroyTail();
         this._createTail(tail);
         this._reposition();
@@ -1438,34 +1469,33 @@ var __oj_popup_metadata =
        * @private
        * @param {string} tail option value
        */
-      _createTail : function (tail)
-      {
-        var tailDecoration = tail ? tail : this.options['tail'];
-        if ("none" === tailDecoration)
+      _createTail: function (tail) {
+        var tailDecoration = tail || this.options.tail;
+        if (tailDecoration === 'none') {
           return;
+        }
 
         var rootStyle = this._getRootStyle();
-        var tailMarkerStyle = [rootStyle, "tail"].join("-");
-        var tailStyle = [tailMarkerStyle, tailDecoration].join("-");
+        var tailMarkerStyle = [rootStyle, 'tail'].join('-');
+        var tailStyle = [tailMarkerStyle, tailDecoration].join('-');
 
-        var tailDom = $("<div>").hide();
+        var tailDom = $('<div>').hide();
         tailDom.addClass(tailMarkerStyle).addClass(tailStyle);
-        tailDom.attr("role", "presentation");
+        tailDom.attr('role', 'presentation');
 
         // id over "marker style" due to nesting popups in popups
-        this._tailId = tailDom.attr("id", this._getSubId("tail")).attr("id");
+        this._tailId = tailDom.attr('id', this._getSubId('tail')).attr('id');
         var element = this.element;
-        tailDom.appendTo(element);  //@HTMLUpdateOK; attach programmaticly generated node
+        tailDom.appendTo(element);  // @HTMLUpdateOK; attach programmaticly generated node
 
         // tail "value" style is applied to the root dom for shadow and z-index adjustments
         element.addClass(tailStyle);
 
         // The tail can change the z-index of the layer that defines the stacking context
         // of the popup.  If the popup is open, update the layers class.
-        if (oj.ZOrderUtils.getStatus(this.element) === oj.ZOrderUtils.STATUS.OPEN)
-        {
-          var layerClass = [rootStyle, "layer"].join("-");
-          layerClass += " " + tailStyle;
+        if (oj.ZOrderUtils.getStatus(this.element) === oj.ZOrderUtils.STATUS.OPEN) {
+          var layerClass = [rootStyle, 'layer'].join('-');
+          layerClass += ' ' + tailStyle;
 
           /** @type {!Object.<oj.PopupService.OPTION, ?>} */
           var options = {};
@@ -1473,7 +1503,6 @@ var __oj_popup_metadata =
           options[oj.PopupService.OPTION.LAYER_SELECTORS] = layerClass;
           oj.PopupService.getInstance().changeOptions(options);
         }
-
       },
       /**
        * @memberof oj.ojPopup
@@ -1481,11 +1510,11 @@ var __oj_popup_metadata =
        * @private
        * @return {jQuery}
        */
-      _getTail : function ()
-      {
+      _getTail: function () {
         var tailId = this._tailId;
-        if (!tailId)
+        if (!tailId) {
           return null;
+        }
 
         return $(document.getElementById(tailId));
       },
@@ -1494,34 +1523,31 @@ var __oj_popup_metadata =
        * @instance
        * @private
        */
-      _destroyTail : function ()
-      {
-
+      _destroyTail: function () {
         var tail = this._getTail();
-        if (tail)
+        if (tail) {
           tail.remove();
+        }
 
         delete this._tailId;
 
-        var tailDecoration = this.options['tail'];
+        var tailDecoration = this.options.tail;
         var rootStyle = this._getRootStyle();
-        var tailStyle = [rootStyle, "tail", tailDecoration].join("-");
+        var tailStyle = [rootStyle, 'tail', tailDecoration].join('-');
 
         var element = this.element;
         element.removeClass(tailStyle);
 
         // if the popup is open, reseed the layer class removing the
         // tail style.
-        if (oj.ZOrderUtils.getStatus(this.element) === oj.ZOrderUtils.STATUS.OPEN)
-        {
-          var layerClass = [rootStyle, "layer"].join("-");
+        if (oj.ZOrderUtils.getStatus(this.element) === oj.ZOrderUtils.STATUS.OPEN) {
+          var layerClass = [rootStyle, 'layer'].join('-');
           /** @type {!Object.<oj.PopupService.OPTION, ?>} */
           var options = {};
           options[oj.PopupService.OPTION.POPUP] = element;
           options[oj.PopupService.OPTION.LAYER_SELECTORS] = layerClass;
           oj.PopupService.getInstance().changeOptions(options);
         }
-
       },
       /**
        * @memberof oj.ojPopup
@@ -1529,50 +1555,48 @@ var __oj_popup_metadata =
        * @private
        * @param {string} chrome option value
        */
-      _setChrome : function (chrome)
-      {
-        var chromeDecoration = (chrome ? chrome : this.options["chrome"]);
-        var noChromeStyle = [this._getRootStyle(), "no-chrome"].join("-");
+      _setChrome: function (chrome) {
+        var chromeDecoration = (chrome || this.options.chrome);
+        var noChromeStyle = [this._getRootStyle(), 'no-chrome'].join('-');
         var element = this.element;
 
-        if ("default" === chromeDecoration && element.hasClass(noChromeStyle))
+        if (chromeDecoration === 'default' && element.hasClass(noChromeStyle)) {
           element.removeClass(noChromeStyle);
-        else if ("none" === chromeDecoration && !element.hasClass(noChromeStyle))
+        } else if (chromeDecoration === 'none' && !element.hasClass(noChromeStyle)) {
           element.addClass(noChromeStyle);
+        }
       },
       /**
        * @memberof oj.ojPopup
        * @instance
        * @private
-       * @param {string|Node|jQuery|null} launcher provided when the popup is open
+       * @param {string|Node|jQuery|null} _launcher provided when the popup is open
        */
-      _setLauncher : function (launcher)
-      {
-        if (!launcher)
+      _setLauncher: function (_launcher) {
+        var launcher = _launcher;
+        if (!launcher) {
           launcher = $(document.activeElement);
-        else if ($.type(launcher) === "string")//id jquery selector
+        } else if ($.type(launcher) === 'string') { // id jquery selector
           launcher = $(launcher);
-        else if (launcher.nodeType === 1)//dom element
+        } else if (launcher.nodeType === 1) { // dom element
           launcher = $(launcher);
+        }
 
         // if a jquery collection, select the first dom node not in the popups content
-        if (launcher instanceof $ && launcher.length > 1)
-        {
+        if (launcher instanceof $ && launcher.length > 1) {
           var element = this.element;
 
-          for (var i = 0; i < launcher.length; i++)
-          {
+          for (var i = 0; i < launcher.length; i++) {
             var target = launcher[0];
-            if (!oj.DomUtils.isAncestorOrSelf(element[0], target))
-            {
+            if (!oj.DomUtils.isAncestorOrSelf(element[0], target)) {
               launcher = $(target);
               break;
             }
           }
-        }
-        else if (!(launcher instanceof $) || //object is not a jq
-          ((launcher instanceof $) && launcher.length === 0))// empty jq collection
+        } else if (!(launcher instanceof $) || // object is not a jq
+                   ((launcher instanceof $) && launcher.length === 0)) { // empty jq collection
           launcher = $(document.activeElement);
+        }
 
         this._launcher = launcher;
       },
@@ -1583,15 +1607,13 @@ var __oj_popup_metadata =
        * @param {?Object} position object set as an option or passed as an argument to the open
        *                  method.
        */
-      _setPosition : function (position)
-      {
+      _setPosition: function (position) {
         var options = this.options;
 
         // new position extends the existing object
         // covert to jet internal position format
-        if (position)
-        {
-          options["position"] = oj.PositionUtils.coerceToJet(position, options["position"]);
+        if (position) {
+          options.position = oj.PositionUtils.coerceToJet(position, options.position);
         }
       },
 
@@ -1602,19 +1624,18 @@ var __oj_popup_metadata =
        * @private
        * @returns {Object}
        */
-      _getPositionAsJqUi: function ()
-      {
+      _getPositionAsJqUi: function () {
         var options = this.options;
-        var position = oj.PositionUtils.coerceToJqUi(options["position"]);
-        var isRtl = this._GetReadingDirection() === "rtl";
+        var position = oj.PositionUtils.coerceToJqUi(options.position);
+        var isRtl = this._GetReadingDirection() === 'rtl';
         position = oj.PositionUtils.normalizeHorizontalAlignment(position, isRtl);
 
-        var origUsing = position["using"];
+        var origUsing = position.using;
         origUsing = $.isFunction(origUsing) ? origUsing : null;
 
         // override with our proxy to handle positioning of the tail
         // overload the callback arguments forcing the original using as the first argument
-        position["using"] = this._usingHandler.bind(this, origUsing);
+        position.using = this._usingHandler.bind(this, origUsing);
 
         return position;
       },
@@ -1626,8 +1647,7 @@ var __oj_popup_metadata =
        * @private
        * @param {Function} busyStateResolver
        */
-      _resolveBusyStateAndCloseImplicitly: function(busyStateResolver)
-      {
+      _resolveBusyStateAndCloseImplicitly: function (busyStateResolver) {
         busyStateResolver();
         delete this._closeDelayTimer;
         this._closeImplicitly();
@@ -1640,8 +1660,7 @@ var __oj_popup_metadata =
        * @param {number} timer
        * @param {Function} busyStateResolver
        */
-      _resolveBusyStateAndCancelDelayedClosure: function (timer, busyStateResolver)
-      {
+      _resolveBusyStateAndCancelDelayedClosure: function (timer, busyStateResolver) {
         window.clearTimeout(timer);
         busyStateResolver();
       },
@@ -1653,26 +1672,24 @@ var __oj_popup_metadata =
        * @param {Object} pos "my" element associated with the position object
        * @param {Object} props directions as to where the element should be moved
        */
-      _usingHandler : function (origUsing, pos, props)
-      {
-        var element = props["element"]["element"];
+      _usingHandler: function (origUsing, pos, props) {
+        var element = props.element.element;
 
         // do nothing if the position is the same
-        if (pos["top"] === element.css("top") && pos["left"] === element.css("left"))
+        if (pos.top === element.css('top') && pos.left === element.css('left')) {
           return;
+        }
 
         var tail = this._getTail();
-        if (!tail)
+        if (!tail) {
           element.css(pos);
-        else
-        {
+        } else {
           tail.hide();
-          for (var i = 0; i < _TAIL_STYLES.length; i++)
-          {
+          for (var i = 0; i < _TAIL_STYLES.length; i++) {
             tail.removeClass(_TAIL_STYLES[i]);
             element.removeClass(_TAIL_STYLES[i]);
           }
-          tail.removeAttr("style");
+          tail.removeAttr('style');
 
           // 
           // Check if "of" alignment is to a x,y versus a dom element.  The horizontal
@@ -1686,24 +1703,26 @@ var __oj_popup_metadata =
           // "Element.getClientRects()". Many types of SVG elements such as <g> fall into this
           // category.  The popup will appear in the top left of the browser.
           //
-          if (props["target"] && props["target"]["height"] === 0 && props["target"]["width"] === 0)
-          {
-            var isRtl = this._GetReadingDirection() === "rtl";
-            var position = oj.PositionUtils.normalizeHorizontalAlignment(this.options["position"], isRtl);
-            var myrule = position["my"];
-            if (!oj.StringUtils.isEmptyOrUndefined(myrule))
-            {
+          if (props.target && props.target.height === 0 && props.target.width === 0) {
+            var isRtl = this._GetReadingDirection() === 'rtl';
+            var position =
+                oj.PositionUtils.normalizeHorizontalAlignment(this.options.position, isRtl);
+            var myrule = position.my;
+            if (!oj.StringUtils.isEmptyOrUndefined(myrule)) {
               // If the original horizontal rule is center, use it; otherwise, use the calculated
               // hint. The left/right rules reflect the actual positioning but center is never
               // represented correctly aligned to a point even though the alignment is correct.
-              var suggestedHrule = "center" === myrule["horizontal"] ? myrule["horizontal"] : props["horizontal"];
-              var suggestedVrule = ("center" === myrule["vertical"]) ? "middle" : myrule["vertical"];
-              props['horizontal'] = suggestedHrule;
-              props['vertical'] = suggestedVrule;
+              var suggestedHrule =
+                  myrule.horizontal === 'center' ? myrule.horizontal : props.horizontal;
+              var suggestedVrule = (myrule.vertical === 'center') ? 'middle' : myrule.vertical;
+              // eslint-disable-next-line no-param-reassign
+              props.horizontal = suggestedHrule;
+              // eslint-disable-next-line no-param-reassign
+              props.vertical = suggestedVrule;
             }
           }
 
-          var alignMnemonic = [props["horizontal"], props["vertical"]].join("-");
+          var alignMnemonic = [props.horizontal, props.vertical].join('-');
           var tailStyle = _TAIL_ALIGN_RULES[alignMnemonic];
           tail.addClass(tailStyle);
           element.addClass(tailStyle);
@@ -1712,33 +1731,33 @@ var __oj_popup_metadata =
           // adjust the vertical and horizontal positioning to account for the tail
           // so that the page developer doesn't have to factor that in
           var borderFactor = 2; // factor in a little extra so the borders overlap
-          if ("left" === props["horizontal"])
-          {
-            var tailHOffset = tail.outerWidth();
-            tailHOffset -= (tailHOffset + oj.DomUtils.getCSSLengthAsInt(tail.css("left")));
-            pos["left"] = pos["left"] + (tailHOffset - borderFactor);
-          }
-          else if ("right" === props["horizontal"])
-          {
-            var tailHOffset = tail.outerWidth();
-            tailHOffset -= (tailHOffset + oj.DomUtils.getCSSLengthAsInt(tail.css("right")));
-            pos["left"] = pos["left"] - (tailHOffset - borderFactor);
+          var tailHOffset;
+          if (props.horizontal === 'left') {
+            tailHOffset = tail.outerWidth();
+            tailHOffset -= (tailHOffset + oj.DomUtils.getCSSLengthAsInt(tail.css('left')));
+            // eslint-disable-next-line no-param-reassign
+            pos.left += (tailHOffset - borderFactor);
+          } else if (props.horizontal === 'right') {
+            tailHOffset = tail.outerWidth();
+            tailHOffset -= (tailHOffset + oj.DomUtils.getCSSLengthAsInt(tail.css('right')));
+            // eslint-disable-next-line no-param-reassign
+            pos.left -= (tailHOffset - borderFactor);
           }
 
+          var tailVOffset;
           // tail adjustments when the offset of the image is not the total size of the image
-          if ("top" === props["vertical"])
-          {
-            var tailVOffset = tail.outerHeight();
+          if (props.vertical === 'top') {
+            tailVOffset = tail.outerHeight();
             tailVOffset -= (tailVOffset +
-              oj.DomUtils.getCSSLengthAsInt(tail.css(props["vertical"])));
-            pos["top"] = pos["top"] + (tailVOffset - borderFactor);
-          }
-          else if ("bottom" === props["vertical"])
-          {
-            var tailVOffset = tail.outerHeight();
+              oj.DomUtils.getCSSLengthAsInt(tail.css(props.vertical)));
+            // eslint-disable-next-line no-param-reassign
+            pos.top += (tailVOffset - borderFactor);
+          } else if (props.vertical === 'bottom') {
+            tailVOffset = tail.outerHeight();
             tailVOffset -= (tailVOffset +
-              oj.DomUtils.getCSSLengthAsInt(tail.css(props["vertical"])));
-            pos["top"] = pos["top"] - (tailVOffset - borderFactor);
+              oj.DomUtils.getCSSLengthAsInt(tail.css(props.vertical)));
+            // eslint-disable-next-line no-param-reassign
+            pos.top -= (tailVOffset - borderFactor);
           }
           element.css(pos);
 
@@ -1746,24 +1765,21 @@ var __oj_popup_metadata =
           // the edge of the tail versus the center of the image.  The tail can't be located
           // at "center, middle". In this case (dead center), horizintal center looks better
           // on small viewports (_TAIL_ALIGN_RULES["center-middle"] === 'oj-left oj-middle')
-          if ("center" === props["horizontal"] && "middle" !== props["vertical"])
-          {
+          if (props.horizontal === 'center' && props.vertical !== 'middle') {
             var rootWidth = element.width();
             var leftPercent = Math.round((((rootWidth / 2) - (tail.outerWidth() / 2))
               / rootWidth) * 100);
             tail.css(
               {
-                left : leftPercent + '%'
+                left: leftPercent + '%'
               });
-          }
-          else if ("middle" === props["vertical"])
-          {
+          } else if (props.vertical === 'middle') {
             var rootHeight = element.height();
             var topPercent = Math.round((((rootHeight / 2) - (tail.outerHeight() / 2))
               / rootHeight) * 100);
             tail.css(
               {
-                top : topPercent + '%'
+                top: topPercent + '%'
               });
           }
         }
@@ -1771,18 +1787,17 @@ var __oj_popup_metadata =
         oj.PositionUtils.captureTransformOriginAnimationEffectsOption(element, props);
 
         // call on the original using regardless of the tail
-        if (origUsing)
+        if (origUsing) {
           origUsing(pos, props);
+        }
 
         var options = this.options;
 
         // The "origUsing" could alter the positon.  This check needs to be last.
         // When focusLoss auto dismissal is enabled, implicitly close the popup when the
         // position.of is clipped in an overflow container.
-        if ("focusLoss" === options["autoDismiss"])
-        {
-          if (oj.PositionUtils.isAligningPositionClipped(props))
-          {
+        if (options.autoDismiss === 'focusLoss') {
+          if (oj.PositionUtils.isAligningPositionClipped(props)) {
             // Ignore focus back to what had focus before the popup was open. Focus
             // restore could fight scroll if the popup was closed due to the aligning
             // element being clipped.
@@ -1790,9 +1805,9 @@ var __oj_popup_metadata =
 
             // operation needs to happen in the next stacking frame and guarded by a
             // busy state.
-            var busyContext = oj.Context.getContext(this.element[0]).getBusyContext();
-            var bsOptions = {description: ["ojPopup identified by '", this.element.attr('id'),
-                                         "' is pending implicit closure."].join("")};
+            var busyContext = Context.getContext(this.element[0]).getBusyContext();
+            var bsOptions = { description: ["ojPopup identified by '", this.element.attr('id'),
+              "' is pending implicit closure."].join('') };
             var resolver = busyContext.addBusyState(bsOptions);
             var delayTimer = window.setTimeout(this._resolveBusyStateAndCloseImplicitly
               .bind(this, resolver), 0);
@@ -1808,19 +1823,18 @@ var __oj_popup_metadata =
        * @private
        * @return {boolean} <code>false</code> if the position was skipped
        */
-      _reposition : function ()
-      {
+      _reposition: function () {
         var element = this.element;
         var position = this._getPositionAsJqUi();
 
         // verify selector is valid; otherwise, skip the reposition
-        if (oj.StringUtils.isString(position["of"]))
-        {
-          var jqOf = $(position["of"]);
-          if (jqOf.length === 0)
+        if (oj.StringUtils.isString(position.of)) {
+          var jqOf = $(position.of);
+          if (jqOf.length === 0) {
             return false;
+          }
 
-          position["of"] = jqOf;
+          position.of = jqOf;
         }
 
         element.position(position);
@@ -1833,79 +1847,88 @@ var __oj_popup_metadata =
        * @param {boolean=} waiAriaAssisted focus established via keyboard or voice over versus from
        *        open API
        */
-      _intialFocus : function (waiAriaAssisted)
-      {
+      _intialFocus: function (waiAriaAssisted) {
+        var initialFocus = this._deriveInitialFocus();
+        if (waiAriaAssisted || initialFocus !== 'none') {
+          var element = this.GetFocusElement();
+          element.focus();
+          this._trigger('focus');
+        }
+      },
+
+      /**
+       * Returns the current focusable element for this component which can be the root custom element
+       * or an HTML element like an input or select.
+       * @return {Element}
+       * @memberof oj.ojPopup
+       * @instance
+       * @protected
+       * @override
+       */
+      GetFocusElement: function () {
+        var activeElement = document.activeElement;
+        if (activeElement && this._isFocusInPopup(activeElement)) {
+          return activeElement;
+        }
+
         var initialFocus = this._deriveInitialFocus();
 
-        // We are toggling focus into the popup due to F6 or voice over skip link.
-        if (waiAriaAssisted && "none" === initialFocus)
-          initialFocus = "popup";
+        if (initialFocus === 'none') {
+          initialFocus = 'popup';
+        }
 
-        if ("firstFocusable" === initialFocus)
-        {
+        var element;
+        if (initialFocus === 'firstFocusable') {
           var content = this._content;
-          var nodes = content.find(":focusable");
-          var first;
-          for (var i = 0; i < nodes.length; i++)
-          {
-            if (oj.FocusUtils.isFocusable(nodes[i]))
-            {
-              first = nodes[i];
+          var nodes = content.find(':focusable');
+
+          for (var i = 0; i < nodes.length; i++) {
+            if (oj.FocusUtils.isFocusable(nodes[i])) {
+              element = $(nodes[i]);
               break;
             }
           }
 
-          if (first)
-          {
-            first.focus();
-            this._trigger("focus");
+          if (!element) {
+            // nothing to set focus to, default to "popup"
+            initialFocus = 'popup';
           }
-          else  // nothing to set focus to, default to "popup"
-            initialFocus = "popup";
         }
 
         // Establish focus to the root element of the popup.  It's not a natural focus stop
-        if ("popup" === initialFocus)
-        {
-          var element = this.element;
-          element.attr("tabindex", "-1");
-
+        if (initialFocus === 'popup') {
           var closeSkipLink = this._closeSkipLink;
-          if (closeSkipLink)
-          {
-            var linkElement = closeSkipLink.getLink();
-            linkElement.focus();
+          if (closeSkipLink) {
+            element = closeSkipLink.getLink();
+          } else {
+            element = this.element;
+            element.attr('tabindex', '-1');
           }
-          else
-          {
-            element.focus();
-          }
-
-          this._trigger("focus");
         }
+
+        return element[0];
       },
+
       /**
        * @memberof oj.ojPopup
        * @private
        * @return {string} derives the target initialFocus option when the default is auto
        */
-      _deriveInitialFocus : function ()
-      {
+      _deriveInitialFocus: function () {
         var options = this.options;
-        var initialFocus = options["initialFocus"];
+        var initialFocus = options.initialFocus;
 
-        if ("auto" === initialFocus)
-        {
-          var modality = options["modality"];
-          if (modality === "modal")
-          {
-            if (oj.DomUtils.isTouchSupported())
-              initialFocus = "popup";
-            else
-              initialFocus = "firstFocusable";
+        if (initialFocus === 'auto') {
+          var modality = options.modality;
+          if (modality === 'modal') {
+            if (oj.DomUtils.isTouchSupported()) {
+              initialFocus = 'popup';
+            } else {
+              initialFocus = 'firstFocusable';
+            }
+          } else {
+            initialFocus = 'none';
           }
-          else
-            initialFocus = "none";
         }
 
         return initialFocus;
@@ -1920,21 +1943,24 @@ var __oj_popup_metadata =
        * @return {boolean} <code>true</code> if the active element is within the content of the
        *                   popup
        */
-      _isFocusInPopup : function (activeElement, includeChildren)
-      {
-        if (!activeElement)
+      _isFocusInPopup: function (activeElement, includeChildren) {
+        if (!activeElement) {
+          // eslint-disable-next-line no-param-reassign
           activeElement = document.activeElement;
+        }
 
         // added to avoid automation issues where an active element is not established
-        if (!activeElement)
+        if (!activeElement) {
           return false;
+        }
 
         var element = this.element;
 
         // popups that are children are siblings to the parent popup within the
         // layer that defines the stacking context.
-        if (includeChildren)
+        if (includeChildren) {
           element = element.parent();
+        }
 
         return oj.DomUtils.isAncestorOrSelf(element[0], activeElement);
       },
@@ -1946,10 +1972,11 @@ var __oj_popup_metadata =
        * @return {boolean} <code>true</code> if the active element the launcher or a decedent of the
        *         launcher
        */
-      _isFocusInLauncher : function (activeElement)
-      {
-        if (!activeElement)
+      _isFocusInLauncher: function (activeElement) {
+        if (!activeElement) {
+          // eslint-disable-next-line no-param-reassign
           activeElement = document.activeElement;
+        }
 
         var launcher = this._launcher;
         return oj.DomUtils.isAncestorOrSelf(launcher[0], activeElement);
@@ -1959,17 +1986,14 @@ var __oj_popup_metadata =
        * @instance
        * @private
        */
-      _restoreFocus : function ()
-      {
-        if (this._ignoreRestoreFocus)
-        {
+      _restoreFocus: function () {
+        if (this._ignoreRestoreFocus) {
           delete this._ignoreRestoreFocus;
           return;
         }
 
         // extend the focus check to include popups that are children
-        if (this._isFocusInPopup(null, true))
-        {
+        if (this._isFocusInPopup(null, true)) {
           var launcher = this._launcher;
           launcher.focus();
         }
@@ -1980,102 +2004,84 @@ var __oj_popup_metadata =
        * @private
        * @param {jQuery.Event|Event} event keydown
        */
-      _keyHandler : function (event)
-      {
-        if (event.isDefaultPrevented())
+      _keyHandler: function (event) {
+        if (event.isDefaultPrevented()) {
           return;
+        }
 
         var eventType = event.type;
         var content = this._content;
+        var options;
+        var launcher;
 
         /** @type {?} */
         var target = event.target;
-        if ("keyup" === eventType && event.keyCode === $.ui.keyCode.ESCAPE &&
-          (this._isFocusInPopup(target) || this._isFocusInLauncher(target)))
-        {
+        if (eventType === 'keyup' && event.keyCode === $.ui.keyCode.ESCAPE &&
+          (this._isFocusInPopup(target) || this._isFocusInLauncher(target))) {
           event.preventDefault();
           this.close();
-        }
-        else if ("keydown" === eventType && event.keyCode === 117)
-        {
-          //F6 - toggle focus to launcher or popup
-          if (this._isFocusInPopup(target))
-          {
+        } else if (eventType === 'keydown' && event.keyCode === 117) {
+          // F6 - toggle focus to launcher or popup
+          if (this._isFocusInPopup(target)) {
             // If this is a modeless popup, toggle focus to the launcher;
             // otherwise, close the popup as we can't set focus under the
             // modal glass pane.
-            var options = this.options;
-            if ("modeless" === options['modality'])
-            {
+            options = this.options;
+            if (options.modality === 'modeless') {
               event.preventDefault();
-              var launcher = this._launcher;
+              launcher = this._launcher;
               launcher.focus();
-            }
-            else
+            } else {
               this.close();
-          }
-          else if (this._isFocusInLauncher(target))
-          {
+            }
+          } else if (this._isFocusInLauncher(target)) {
             event.preventDefault();
             this._intialFocus(true);
           }
-        }
-        else if ("keydown" === eventType && event.keyCode === $.ui.keyCode.TAB &&
-          this._isFocusInPopup(target))
-        {
+        } else if (eventType === 'keydown' && event.keyCode === $.ui.keyCode.TAB &&
+          this._isFocusInPopup(target)) {
           // TAB within popup
-          var nodes = content.find(":tabbable");
-          if (nodes.length > 0)
-          {
+          var nodes = content.find(':tabbable');
+          if (nodes.length > 0) {
             var firstNode = nodes[0];
             var lastNode = nodes[nodes.length - 1];
             var element = this.element;
 
-            if ((firstNode === target || element[0] === target) && event.shiftKey)
-            {
-              //tabbing backwards, cycle focus to last node
+            if ((firstNode === target || element[0] === target) && event.shiftKey) {
+              // tabbing backwards, cycle focus to last node
               event.preventDefault();
               // If the first and last tab stops are the same,
               // force focus to the root popup dom.  This will
               // cause the blur to fire on any input components.
               // If we are back tabbing on the popup dom, jump to the
               // last tab stop.
-              if (firstNode === lastNode && firstNode === target)
-              {
-                element.attr("tabindex", "-1");
+              if (firstNode === lastNode && firstNode === target) {
+                element.attr('tabindex', '-1');
                 element.focus();
+              } else {
+                $(lastNode).focus(); // tabbing backwards, cycle focus to last node
               }
-              else
-                $(lastNode).focus();  //tabbing backwards, cycle focus to last node
-            }
-            else if (lastNode === target && !event.shiftKey)
-            {
+            } else if (lastNode === target && !event.shiftKey) {
               event.preventDefault();
               // If the first and last tab stops are the same,
               // force focus to the root popup dom.  This will
               // cause the blur to fire on any input components.
-              if (lastNode === firstNode)
-              {
-                element.attr("tabindex", "-1");
+              if (lastNode === firstNode) {
+                element.attr('tabindex', '-1');
                 element.focus();
+              } else {
+                $(firstNode).focus(); // tabbing forwards, cycle to the first node
               }
-              else
-                $(firstNode).focus(); //tabbing forwards, cycle to the first node
             }
-          }
-          else
-          {
+          } else {
             event.preventDefault();
-            var options = this.options;
-            if ("modeless" === options['modality'])
-            {
+            options = this.options;
+            if (options.modality === 'modeless') {
               // if there is nothing in the popup that is tabbable, handle as a F6
               // toggle to the launcher
-              var launcher = this._launcher;
+              launcher = this._launcher;
               launcher.focus();
-            }
-            else
-            {
+            } else {
               // Modal popup can't set focus to something under the overlay,
               // implicitly close.
               this.close();
@@ -2089,26 +2095,22 @@ var __oj_popup_metadata =
        * @private
        * @param {string|null} autoDismiss option value
        */
-      _setAutoDismiss : function (autoDismiss)
-      {
-
+      _setAutoDismiss: function (autoDismiss) {
         // unregister any existing handlers, might need to add mouseOut in the future
         var focusLossCallback = this._focusLossCallback;
         var events = this._getPopupServiceEvents();
-        if (focusLossCallback)
-        {
+        if (focusLossCallback) {
           delete events[oj.PopupService.EVENT.POPUP_AUTODISMISS];
           delete this._focusLossCallback;
         }
 
-        if ("focusLoss" === autoDismiss)
-        {
-          focusLossCallback = this._focusLossCallback = this._dismissalHandler.bind(this);
+        if (autoDismiss === 'focusLoss') {
+          focusLossCallback = this._dismissalHandler.bind(this);
+          this._focusLossCallback = focusLossCallback;
           events[oj.PopupService.EVENT.POPUP_AUTODISMISS] = focusLossCallback;
         }
 
-        if (oj.ZOrderUtils.getStatus(this.element) === oj.ZOrderUtils.STATUS.OPEN)
-        {
+        if (oj.ZOrderUtils.getStatus(this.element) === oj.ZOrderUtils.STATUS.OPEN) {
           var element = this.element;
           /** @type {!Object.<oj.PopupService.OPTION, ?>} */
           var options = {};
@@ -2123,10 +2125,10 @@ var __oj_popup_metadata =
        * @private
        * @param {Event} event native doc
        */
-      _dismissalHandler : function (event)
-      {
-        if (oj.ZOrderUtils.getStatus(this.element) !== oj.ZOrderUtils.STATUS.OPEN)
+      _dismissalHandler: function (event) {
+        if (oj.ZOrderUtils.getStatus(this.element) !== oj.ZOrderUtils.STATUS.OPEN) {
           return;
+        }
 
         var launcher = this._launcher;
         var element = this.element;
@@ -2139,25 +2141,24 @@ var __oj_popup_metadata =
 
         // if the target is on the focus skip link next to the launcher, ignore.
         var focusSkipLink = this._focusSkipLink;
-        if (focusSkipLink)
-        {
+        if (focusSkipLink) {
           var link = focusSkipLink.getLink();
-          if (link && oj.DomUtils.isAncestorOrSelf(link[0], target))
+          if (link && oj.DomUtils.isAncestorOrSelf(link[0], target)) {
             return;
+          }
         }
 
         // if event target is not under the laucher or popup root dom subtrees, dismiss
         if (!oj.DomUtils.isAncestorOrSelf(launcher[0], target) &&
-          !oj.DomUtils.isAncestorOrSelf(layer[0], target))
-        {
-          if (oj.FocusUtils.isFocusable(target))
-          {
+          !oj.DomUtils.isAncestorOrSelf(layer[0], target)) {
+          if (oj.FocusUtils.isFocusable(target)) {
             // If the dismissal event target can take focus and the
             // event type is a mousedown or touchstart, wait for the focus event
             // to trigger dismissal.  This allows the blur to happen
             // on input components which triggers validation.
-            if ("mousedown" === event.type || "touchstart" === event.type)
+            if (event.type === 'mousedown' || event.type === 'touchstart') {
               return;
+            }
 
             this._ignoreRestoreFocus = true;
           }
@@ -2172,80 +2173,83 @@ var __oj_popup_metadata =
        * @instance
        * @private
        */
-      _addDescribedBy : function ()
-      {
+      _addDescribedBy: function () {
         var launcher = this._launcher;
         var element = this.element;
 
-        var popupId = element.attr("id");
-        var describedby = launcher.attr("aria-describedby");
+        var popupId = element.attr('id');
+        var describedby = launcher.attr('aria-describedby');
         var tokens = describedby ? describedby.split(/\s+/) : [];
         tokens.push(popupId);
-        describedby = $.trim(tokens.join(" "));
-        launcher.attr("aria-describedby", describedby);
+        describedby = $.trim(tokens.join(' '));
+        launcher.attr('aria-describedby', describedby);
       },
       /**
        * @memberof oj.ojPopup
        * @instance
        * @private
        */
-      _removeDescribedBy : function () {
+      _removeDescribedBy: function () {
         var launcher = this._launcher;
         var element = this.element;
 
-        if (!launcher || launcher.length === 0)
+        if (!launcher || launcher.length === 0) {
           return;
+        }
 
-        var popupId = element.attr("id");
-        var describedby = launcher.attr("aria-describedby");
+        var popupId = element.attr('id');
+        var describedby = launcher.attr('aria-describedby');
         var tokens = describedby ? describedby.split(/\s+/) : [];
         var index = $.inArray(popupId, tokens);
-        if (index !== -1)
+        if (index !== -1) {
           tokens.splice(index, 1);
+        }
 
-        describedby = $.trim(tokens.join(" "));
-        if (describedby)
-          launcher.attr("aria-describedby", describedby);
-        else
-          launcher.removeAttr("aria-describedby");
+        describedby = $.trim(tokens.join(' '));
+        if (describedby) {
+          launcher.attr('aria-describedby', describedby);
+        } else {
+          launcher.removeAttr('aria-describedby');
+        }
       },
       /**
        * @memberof oj.ojPopup
        * @instance
        * @private
        */
-      _initVoiceOverAssist : function ()
-      {
-        var isVOSupported = (oj.AgentUtils.getAgentInfo()['os'] === oj.AgentUtils.OS.IOS ||
-                             oj.AgentUtils.getAgentInfo()['os'] === oj.AgentUtils.OS.ANDROID);
+      _initVoiceOverAssist: function () {
+        var isVOSupported = (oj.AgentUtils.getAgentInfo().os === oj.AgentUtils.OS.IOS ||
+                             oj.AgentUtils.getAgentInfo().os === oj.AgentUtils.OS.ANDROID);
         var liveRegion = this._liveRegion;
-        if (!liveRegion)
-          liveRegion = this._liveRegion = new oj.PopupLiveRegion();
+        if (!liveRegion) {
+          liveRegion = new oj.PopupLiveRegion();
+          this._liveRegion = liveRegion;
+        }
 
         var message;
         var initialFocus = this._deriveInitialFocus();
-        if (isVOSupported)
-          message = this.getTranslatedString("none" === initialFocus ?
-            "ariaLiveRegionInitialFocusNoneTouch" :
-            "ariaLiveRegionInitialFocusFirstFocusableTouch");
-        else
-          message = this.getTranslatedString("none" === initialFocus ?
-            "ariaLiveRegionInitialFocusNone" :
-            "ariaLiveRegionInitialFocusFirstFocusable");
+        if (isVOSupported) {
+          message = this.getTranslatedString(initialFocus === 'none' ?
+            'ariaLiveRegionInitialFocusNoneTouch' :
+            'ariaLiveRegionInitialFocusFirstFocusableTouch');
+        } else {
+          message = this.getTranslatedString(initialFocus === 'none' ?
+            'ariaLiveRegionInitialFocusNone' :
+            'ariaLiveRegionInitialFocusFirstFocusable');
+        }
         liveRegion.announce(message);
 
-        if (isVOSupported)
-        {
-          var focusSkipLinkId = this._getSubId("focusSkipLink");
+        if (isVOSupported) {
+          var focusSkipLinkId = this._getSubId('focusSkipLink');
           var launcher = this._launcher;
           var callback = this._intialFocus.bind(this, true);
-          message = this.getTranslatedString("ariaFocusSkipLink");
+          message = this.getTranslatedString('ariaFocusSkipLink');
           this._focusSkipLink = new oj.PopupSkipLink(launcher, message, callback, focusSkipLinkId);
 
           var content = this._content;
-          var closeSkipLinkId = this._getSubId("closeSkipLink");
+          var closeSkipLinkId = this._getSubId('closeSkipLink');
           callback = this._closeImplicitly.bind(this);
-          message = this.getTranslatedString("ariaCloseSkipLink");
+          message = this.getTranslatedString('ariaCloseSkipLink');
           this._closeSkipLink = new oj.PopupSkipLink(content, message, callback, closeSkipLinkId);
         }
       },
@@ -2254,23 +2258,19 @@ var __oj_popup_metadata =
        * @instance
        * @private
        */
-      _destroyVoiceOverAssist : function ()
-      {
-
+      _destroyVoiceOverAssist: function () {
         var liveRegion = this._liveRegion;
         liveRegion.destroy();
         delete this._liveRegion;
 
         var focusSkipLink = this._focusSkipLink;
-        if (focusSkipLink)
-        {
+        if (focusSkipLink) {
           focusSkipLink.destroy();
           delete this._focusSkipLink;
         }
 
         var closeSkipLink = this._closeSkipLink;
-        if (closeSkipLink)
-        {
+        if (closeSkipLink) {
           closeSkipLink.destroy();
           delete this._closeSkipLink;
         }
@@ -2282,23 +2282,35 @@ var __oj_popup_metadata =
        * @param {string} sub id that will become a composite id prefixed with the components uuid
        * @return {string}
        */
-      _getSubId : function (sub)
-      {
+      _getSubId: function (sub) {
         /** @type {?} */
-        var id = this.element.attr("id");
-        if (oj.StringUtils.isEmptyOrUndefined(id))
-          id = this["uuid"];
-        return [id, sub].join("_");
+        var id = this.element.attr('id');
+        if (oj.StringUtils.isEmptyOrUndefined(id)) {
+          id = this.uuid;
+        }
+        return [id, sub].join('_');
       },
       /**
        * @memberof oj.ojPopup
        * @instance
        * @private
        */
-      _surrogateRemoveHandler : function ()
-      {
+      _surrogateRemoveHandler: function () {
+        // In all cases except when the dialog is already open, removal of the
+        // surrogate during opening or closing will result in implicit removal.
+        // 1) CLOSING: Handled in oj.ZOrderUtils.removeFromAncestorLayer.  If the
+        //    surrogate doesn't exist the layer containing the popup dom is detached.
+        // 2) OPENING: in the PopupServiceImpl#open _finalize, if the surrogate doesn't
+        //    exist after in the open state, this remove callback is invoked.
+        //
+        // Custom element will call _NotifyDetached after element.remove but
+        // but jquery UI instances will invoke the _destory method.
+
         var element = this.element;
-        element.remove();
+        var status = oj.ZOrderUtils.getStatus(element);
+        if (status === oj.ZOrderUtils.STATUS.OPEN) {
+          element.remove();
+        }
       },
       /**
        * @memberof oj.ojPopup
@@ -2306,12 +2318,11 @@ var __oj_popup_metadata =
        * @private
        * @return {!Object.<oj.PopupService.EVENT, function(...)>}
        */
-      _getPopupServiceEvents : function ()
-      {
-        if (!this._popupServiceEvents)
-        {
+      _getPopupServiceEvents: function () {
+        if (!this._popupServiceEvents) {
           /** @type {!Object.<oj.PopupService.EVENT, function(...)>} **/
-          var events = this._popupServiceEvents = {};
+          var events = {};
+          this._popupServiceEvents = events;
           events[oj.PopupService.EVENT.POPUP_CLOSE] = this._closeImplicitly.bind(this);
           events[oj.PopupService.EVENT.POPUP_REMOVE] = this._surrogateRemoveHandler.bind(this);
           events[oj.PopupService.EVENT.POPUP_REFRESH] = this.refresh.bind(this);
@@ -2327,8 +2338,7 @@ var __oj_popup_metadata =
        * @instance
        * @private
        */
-      _closeImplicitly : function ()
-      {
+      _closeImplicitly: function () {
         this._ignoreBeforeCloseResultant = true;
         this.close();
         delete this._ignoreBeforeCloseResultant;
@@ -2341,21 +2351,20 @@ var __oj_popup_metadata =
        * @instance
        * @private
        */
-      _setWhenReady : function (operation)
-      {
+      _setWhenReady: function (operation) {
         /** @type {oj.PopupWhenReadyMediator} */
         var mediator = this._whenReadyMediator;
-        if (mediator)
-        {
+        if (mediator) {
           mediator.destroy();
           delete this._whenReadyMediator;
         }
 
         // operation === none
-        if (["open", "close"].indexOf(operation) < 0)
+        if (['open', 'close'].indexOf(operation) < 0) {
           return;
+        }
 
-        this._whenReadyMediator = new oj.PopupWhenReadyMediator(this.element, operation, "ojPopup",
+        this._whenReadyMediator = new oj.PopupWhenReadyMediator(this.element, operation, 'ojPopup',
           this._IsCustomElement());
       },
 
@@ -2372,14 +2381,13 @@ var __oj_popup_metadata =
        * @param {Array} args passed to a queue operation
        * @returns {boolean} <code>true</code> if a close or open operation is pending completion.
        */
-      _isOperationPending : function (operation, args)
-      {
+      _isOperationPending: function (operation, args) {
         /** @type {oj.PopupWhenReadyMediator} **/
         var mediator = this._whenReadyMediator;
-        if (mediator)
+        if (mediator) {
           return mediator.isOperationPending(this, operation, operation, args);
-        else
-          return false;
+        }
+        return false;
       },
       /**
        * @memberof oj.ojPopup
@@ -2387,17 +2395,16 @@ var __oj_popup_metadata =
        * @private
        * @param {jQuery} elem to manage the focus ring on
        */
-      _setupFocus : function (elem) {
-
+      _setupFocus: function (elem) {
         var self = this;
         this._focusable({
-          'applyHighlight' : true,
-          'setupHandlers' : function (focusInHandler, focusOutHandler) {
+          applyHighlight: true,
+          setupHandlers: function (focusInHandler, focusOutHandler) {
             self._on(elem, {
-              focus : function (event) {
+              focus: function (event) {
                 focusInHandler($(event.currentTarget));
               },
-              blur : function (event) {
+              blur: function (event) {
                 focusOutHandler($(event.currentTarget));
               }
             });
@@ -2413,35 +2420,33 @@ var __oj_popup_metadata =
        * @protected
        * @override
        */
-      _NotifyDetached: function()
-      {
+      _NotifyDetached: function () {
         // detaching an open popup results in implicit dismissal
-        if (oj.ZOrderUtils.getStatus(this.element) === oj.ZOrderUtils.STATUS.OPEN)
+        if (oj.ZOrderUtils.getStatus(this.element) === oj.ZOrderUtils.STATUS.OPEN) {
           this._closeImplicitly();
+        }
 
         this._super();
       }
     });
 
-    // sets the default modality option from the current theme
-    oj.Components.setDefaultOptions(
+  // sets the default modality option from the current theme
+  Components.setDefaultOptions(
+    {
+      ojPopup:
       {
-        'ojPopup' :
-          {
-            'modality' : oj.Components.createDynamicPropertyGetter(
-              function ()
-              {
-                return (oj.ThemeUtils.parseJSONFromFontFamily('oj-popup-option-defaults')
-                  || {})["modality"];
+        modality: Components.createDynamicPropertyGetter(
+              function () {
+                return (ThemeUtils.parseJSONFromFontFamily('oj-popup-option-defaults')
+                  || {}).modality;
               }),
-            'animation' : oj.Components.createDynamicPropertyGetter(
-              function ()
-              {
-                return (oj.ThemeUtils.parseJSONFromFontFamily('oj-popup-option-defaults')
-                  || {})["animation"];
+        animation: Components.createDynamicPropertyGetter(
+              function () {
+                return (ThemeUtils.parseJSONFromFontFamily('oj-popup-option-defaults')
+                  || {}).animation;
               })
-          }
-      });
+      }
+    });
 }());
 
 // Fragments:
@@ -2542,8 +2547,7 @@ var __oj_popup_metadata =
 /* global __oj_popup_metadata:false */
 (function () {
   __oj_popup_metadata.extension._WIDGET_NAME = 'ojPopup';
-  oj.CustomElementBridge.registerMetadata('oj-popup', 'baseComponent', __oj_popup_metadata);
-  oj.CustomElementBridge.register('oj-popup', { metadata: oj.CustomElementBridge.getMetadata('oj-popup') });
+  oj.CustomElementBridge.register('oj-popup', { metadata: __oj_popup_metadata });
 }());
 
 });

@@ -2931,6 +2931,7 @@ dvt.Timeline.prototype._populateSeries = function()
 
       seriesOptions['_isRandomItemLayout'] = (this._itemPosition == 'random');
       seriesOptions['_cts'] = this.Options['_cts'];
+      seriesOptions['_data'] = series[i];
       this._seriesOptions.push(seriesOptions);
 
       if (this._series[i] == null)
@@ -3936,6 +3937,10 @@ DvtTimelineAutomation.prototype.GetSubIdForDomElement = function(displayable)
  */
 DvtTimelineAutomation.prototype.getDomElementForSubId = function(subId)
 {
+  // TOOLTIP
+  if (subId == dvt.Automation.TOOLTIP_SUBID)
+    return this.GetTooltipElement(this._timeline);
+
   if (subId)
   {
     var parenIndex = subId.indexOf('[');
@@ -4022,7 +4027,10 @@ DvtTimelineDefaults.VERSION_1 = {
       'colors': dvt.CSSStyle.COLORS_ALTA,
       'emptyTextStyle': new dvt.CSSStyle('font-family: Helvetica Neue, Helvetica, Arial, sans-serif; font-size: 12px; font-weight: normal; color: #333333; white-space: nowrap;'),
       'labelStyle': new dvt.CSSStyle('font-family: Helvetica Neue, Helvetica, Arial, sans-serif; font-size: 13px; font-weight: bold; color: #252525; white-space: nowrap;')
-    }
+    },
+    '_tooltipStyle': new dvt.CSSStyle('border-collapse: separate; border-spacing: 2px; overflow: hidden; display: block;'),
+    'tooltipLabelStyle': new dvt.CSSStyle('color: #666666; padding: 0px 2px; white-space: nowrap;'),
+    'tooltipValueStyle': new dvt.CSSStyle('color: #333333; padding: 0px 2px;')
   }
 };
 
@@ -6165,6 +6173,8 @@ DvtTimelineSeries.prototype._applyParsedProperties = function(props)
   this._scale = props.scale;
   this._converter = props.converter;
 
+  this._data = props.data;
+
   this.applyStyleValues();
 };
 
@@ -6373,6 +6383,11 @@ DvtTimelineSeries.prototype.prepareItems = function(items)
 
     DvtTimelineSeriesItemRenderer.initializeItem(item, this, i);
   }
+};
+
+DvtTimelineSeries.prototype.getData = function()
+{
+  return this._data;
 };
 
 DvtTimelineSeries.prototype.getLabel = function()
@@ -7284,6 +7299,7 @@ DvtTimelineSeriesNode.prototype.Init = function(timeline, seriesIndex, props)
   this._title = props.title;
   this._desc = props.desc;
   this._thumbnail = props.thumbnail;
+  this._shortDesc = props.shortDesc;
 
   this._style = props.style;
   this._data = props.data;
@@ -7302,6 +7318,8 @@ DvtTimelineSeriesNode.prototype.Init = function(timeline, seriesIndex, props)
   this._markerGradientFill = props.markerGradientFill;
   this._markerOpacity = props.markerOpacity;
   this._markerSD = props.markerSD;
+  
+  this._data = props.data;
 };
 
 DvtTimelineSeriesNode.prototype.getId = function()
@@ -7357,6 +7375,11 @@ DvtTimelineSeriesNode.prototype.getDescription = function()
 DvtTimelineSeriesNode.prototype.getThumbnail = function()
 {
   return this._thumbnail;
+};
+
+DvtTimelineSeriesNode.prototype.getShortDesc = function()
+{
+  return this._shortDesc;
 };
 
 DvtTimelineSeriesNode.prototype.getStyle = function()
@@ -7668,7 +7691,45 @@ DvtTimelineSeriesNode.prototype.getAriaLabel = function()
   var states = [];
   if (this.isSelectable())
     states.push(dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, this.isSelected() ? 'STATE_SELECTED' : 'STATE_UNSELECTED'));
-  return dvt.Displayable.generateAriaLabel(this.getLabel(), states);
+  var shortDesc = DvtTimelineTooltipUtils.getDatatip(this, false);
+  return dvt.Displayable.generateAriaLabel(shortDesc, states);
+};
+
+DvtTimelineSeriesNode.prototype.getData = function()
+{
+  return this._data;
+};
+
+/**
+ * Returns the data context (e.g. for passing to tooltip renderer, etc.)
+ * @return {object}
+ */
+DvtTimelineSeriesNode.prototype.getDataContext = function()
+{
+  return {
+    'data': this.getData(),
+    'seriesData': this._series.getData(),
+    'color': DvtTimelineTooltipUtils.getDatatipColor(this),
+    'component': this._timeline.getOptions()['_widgetConstructor']
+  };
+};
+
+/**
+ * Implemented for DvtTooltipSource
+ * @override
+ */
+DvtTimelineSeriesNode.prototype.getDatatip = function()
+{
+  return DvtTimelineTooltipUtils.getDatatip(this, true);
+};
+
+/**
+ * Implemented for DvtTooltipSource
+ * @override
+ */
+DvtTimelineSeriesNode.prototype.getDatatipColor = function()
+{
+  return DvtTimelineTooltipUtils.getDatatipColor(this);
 };
 
 /**
@@ -7840,6 +7901,8 @@ DvtTimelineSeriesParser.prototype.parse = function(options, oldItems)
   else
     ret.isTopToBottom = (options['itemLayout'] == 'topToBottom');
 
+  ret.data = options['_data'];
+
   return ret;
 };
 
@@ -7986,6 +8049,7 @@ DvtTimelineSeriesParser.prototype.ParseNodeAttributes = function(data, compStart
   ret.title = data['title'];
   ret.desc = data['description'];
   ret.thumbnail = data['thumbnail'];
+  ret.shortDesc = data['shortDesc'];
 
   ret.data = data;
   ret.style = data['style'];
@@ -8008,6 +8072,8 @@ DvtTimelineSeriesParser.prototype.ParseNodeAttributes = function(data, compStart
     ret.markerSD = 'false';
   else
     ret.markerSD = 'true';
+
+  ret.data = data;
 
   return ret;
 };
@@ -8658,6 +8724,248 @@ DvtTimelineSeriesRenderer._animateItemRemoval = function(items, series, animatio
       animationElems.push(durationBar);
     }
   }
+};
+
+/**
+ * Utility functions for dvt.Timeline tooltips.
+ * @class
+ */
+var DvtTimelineTooltipUtils = new Object();
+
+dvt.Obj.createSubclass(DvtTimelineTooltipUtils, dvt.Obj);
+
+/**
+ * Returns the datatip color for the tooltip of the target item.
+ * @param {DvtTimelineSeriesNode} seriesNode
+ * @return {string} The datatip color.
+ */
+DvtTimelineTooltipUtils.getDatatipColor = function(seriesNode) {
+  var fillColor = seriesNode.getDurationFillColor();
+  if (fillColor)
+    return fillColor;
+  else
+    return null;
+};
+
+/**
+ * Returns the datatip string for the target item.
+ * @param {DvtTimelineSeriesNode} seriesNode
+ * @param {boolean} isTabular Whether the datatip is in a table format.
+ * @param {boolean=} isAria whether the datatip is used for accessibility.
+ * @return {string} The datatip string.
+ */
+DvtTimelineTooltipUtils.getDatatip = function(seriesNode, isTabular, isAria) {
+  var timeline = seriesNode._timeline;
+
+  // Custom Tooltip via Function
+  var customTooltip = timeline.getOptions()['tooltip'];
+  var tooltipFunc = customTooltip ? customTooltip['renderer'] : null;
+
+  if (isTabular && tooltipFunc) {
+    var tooltipManager = timeline.getCtx().getTooltipManager();
+    var dataContext = seriesNode.getDataContext();
+    return tooltipManager.getCustomTooltip(tooltipFunc, dataContext);
+  }
+
+  // Custom Tooltip via Short Desc
+  var shortDesc = seriesNode.getShortDesc();
+  if (shortDesc != null)
+    return shortDesc;
+
+  // Behavior: If someone upgrades from 5.0.0 to 6.0.0 with no code changes (ie, no shortDesc, valueFormat set),
+  // old aria-label format with the translation options will work as before. If shortDesc or valueFormat is set,
+  // then new behavior will override the old aria-label format and any translation settings.
+  if (isAria && !timeline.getCtx().isCustomElement()) {
+    var options = timeline.getOptions();
+    var start = seriesNode.getStartTime();
+    var formattedStart = timeline.getTimeAxis().formatDate(new Date(start), null, 'general');
+    var itemDesc = dvt.Bundle.getTranslation(options, 'accessibleItemStart', dvt.Bundle.UTIL_PREFIX, 'ITEM_START', [formattedStart]);
+
+    var end = seriesNode.getEndTime();
+    if (end && end != start)
+    {
+      var formattedEnd = timeline.getTimeAxis().formatDate(new Date(end), null, 'general');
+      itemDesc = itemDesc + ' ' + dvt.Bundle.getTranslation(options, 'accessibleItemEnd', dvt.Bundle.UTIL_PREFIX, 'ITEM_END', [formattedEnd]);
+    }
+
+    var title = seriesNode.getTitle();
+    if (title && title != '')
+      itemDesc = itemDesc + ' ' + dvt.Bundle.getTranslation(options, 'accessibleItemTitle', dvt.Bundle.UTIL_PREFIX, 'ITEM_TITLE', [title]);
+
+    var description = seriesNode.getDescription();
+    if (description && description != '')
+      itemDesc = itemDesc + ' ' + dvt.Bundle.getTranslation(options, 'accessibleItemDesc', dvt.Bundle.UTIL_PREFIX, 'ITEM_DESC', [description]);
+    return itemDesc;
+  }
+
+  // Default Tooltip Support
+  var datatip = '';
+  datatip = DvtTimelineTooltipUtils._addItemDatatip(datatip, seriesNode, isTabular);
+
+  return DvtTimelineTooltipUtils._processDatatip(datatip, timeline, isTabular);
+};
+
+/**
+ * Final processing for the datatip.
+ * @param {string} datatip The current datatip.
+ * @param {dvt.Timeline} timeline The owning timeline instance.
+ * @param {boolean} isTabular Whether the datatip is in a table format.
+ * @return {string} The updated datatip.
+ * @private
+ */
+DvtTimelineTooltipUtils._processDatatip = function(datatip, timeline, isTabular) {
+  // Don't render tooltip if empty
+  if (datatip == '')
+    return null;
+
+  // Add outer table tags
+  if (isTabular)
+    return dvt.HtmlTooltipManager.createStartTag('table', timeline.getOptions()['styleDefaults']['_tooltipStyle']) + datatip + '<\/table>';
+
+  return datatip;
+};
+
+/**
+ * Adds the item strings to the datatip.
+ * @param {string} datatip The current datatip.
+ * @param {DvtTimelineSeriesNode} seriesNode The item node.
+ * @param {boolean} isTabular Whether the datatip is in a table format.
+ * @return {string} The updated datatip.
+ * @private
+ */
+DvtTimelineTooltipUtils._addItemDatatip = function(datatip, seriesNode, isTabular) {
+  var timeline = seriesNode._timeline;
+
+  var title = seriesNode.getTitle();
+  if (title)
+    datatip = DvtTimelineTooltipUtils._addDatatipRow(datatip, timeline, 'title', 'Title', title, isTabular);
+
+  var description = seriesNode.getDescription();
+  if (description)
+    datatip = DvtTimelineTooltipUtils._addDatatipRow(datatip, timeline, 'description', 'Description', description, isTabular);
+
+  var start = seriesNode.getStartTime();
+  var end = seriesNode.getEndTime();
+  if (start && end && end != start)
+  {
+    datatip = DvtTimelineTooltipUtils._addDatatipRow(datatip, timeline, 'start', 'Start', start, isTabular);
+    datatip = DvtTimelineTooltipUtils._addDatatipRow(datatip, timeline, 'end', 'End', end, isTabular);
+  }
+  else
+    datatip = DvtTimelineTooltipUtils._addDatatipRow(datatip, timeline, 'date', 'Date', start, isTabular);
+
+  var series = seriesNode._series.getLabel();
+  if (series == null)
+    series = seriesNode._series.getId();
+  datatip = DvtTimelineTooltipUtils._addDatatipRow(datatip, timeline, 'series', 'Series', series, isTabular);
+
+  return datatip;
+};
+
+/**
+ * Adds a row of item to the datatip string.
+ * @param {string} datatip The current datatip.
+ * @param {dvt.Timeline} timeline The timeline instance.
+ * @param {string} type The item type, e.g. series, start, end, title
+ * @param {string} defaultLabel The bundle resource string for the default label.
+ * @param {string|number} value The item value.
+ * @param {boolean} isTabular Whether the datatip is in a table format.
+ * @param {number} index (optional) The index of the tooltipLabel string to be used
+ * @return {string} The updated datatip.
+ * @private
+ */
+DvtTimelineTooltipUtils._addDatatipRow = function(datatip, timeline, type, defaultLabel, value, isTabular, index) {
+  if (value == null || value === '')
+    return datatip;
+
+  var options = timeline.getOptions()['styleDefaults'];
+  var valueFormat = DvtTimelineTooltipUtils.getValueFormat(timeline, type);
+  var tooltipDisplay = valueFormat['tooltipDisplay'];
+
+  if (tooltipDisplay == 'off')
+    return datatip;
+
+  // Create tooltip label
+  var tooltipLabel;
+  if (typeof valueFormat['tooltipLabel'] === 'string')
+    tooltipLabel = valueFormat['tooltipLabel'];
+
+  if (tooltipLabel == null)
+  {
+    if (defaultLabel == null)
+      tooltipLabel = '';
+    else
+      tooltipLabel = dvt.Bundle.getTranslation(timeline.getOptions(), 'label' + defaultLabel);
+  }
+
+  // Create tooltip value
+  value = DvtTimelineTooltipUtils.formatValue(timeline, type, valueFormat, value);
+
+  if (isTabular) {
+    var isRTL = dvt.Agent.isRightToLeft(timeline.getCtx());
+    options['tooltipLabelStyle'].setStyle(dvt.CSSStyle.TEXT_ALIGN, isRTL ? 'left' : 'right');
+    options['tooltipValueStyle'].setStyle(dvt.CSSStyle.TEXT_ALIGN, isRTL ? 'right' : 'left');
+
+    return datatip +
+        '<tr>' +
+        dvt.HtmlTooltipManager.createStartTag('td', options['tooltipLabelStyle']) + tooltipLabel + '<\/td>' +
+        dvt.HtmlTooltipManager.createStartTag('td', options['tooltipValueStyle']) + value + '<\/td>' +
+        '<\/tr>';
+  }
+  else {
+    if (datatip.length > 0)
+      datatip += '<br>';
+
+    return datatip + dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'COLON_SEP_LIST', [tooltipLabel, value]);
+  }
+};
+
+/**
+ * Returns the valueFormat of the specified type.
+ * @param {dvt.Timeline} timeline
+ * @param {string} type The valueFormat type, e.g. row, start, end, label.
+ * @return {object} The valueFormat.
+ */
+DvtTimelineTooltipUtils.getValueFormat = function(timeline, type) {
+  var valueFormats = timeline.getOptions()['valueFormats'];
+  if (!valueFormats)
+    return {};
+  else if (valueFormats instanceof Array) {
+    // TODO remove deprecated array support
+    // Convert the deprecated array syntax to object syntax
+    var obj = {};
+    for (var i = 0; i < valueFormats.length; i++) {
+      var valueFormat = valueFormats[i];
+      obj[valueFormat['type']] = valueFormat;
+    }
+    timeline.getOptions()['valueFormats'] = obj;
+    valueFormats = obj;
+  }
+
+  if (valueFormats[type])
+    return valueFormats[type];
+
+  return {};
+};
+
+/**
+ * Formats value with the converter from the valueFormat.
+ * @param {dvt.Timeline} timeline
+ * @param {string} type The item type, e.g. series, start, end, title
+ * @param {object} valueFormat
+ * @param {number} value The value to format.
+ * @return {string} The formatted value string.
+ */
+DvtTimelineTooltipUtils.formatValue = function(timeline, type, valueFormat, value) {
+  var converter = valueFormat['converter'];
+
+  if (type == 'start' || type == 'end' || type == 'date')
+    return timeline.getTimeAxis().formatDate(new Date(value), converter, 'general');
+
+  if (converter && converter['format'])
+    return converter['format'](value);
+
+  return value;
 };
 
 dvt.exportProperty(dvt, 'Timeline', dvt.Timeline);

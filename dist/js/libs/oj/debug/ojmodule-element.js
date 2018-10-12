@@ -4,7 +4,7 @@
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
-define(['ojs/ojcore', 'knockout', 'ojs/ojmodule', 'ojs/ojcomposite'], function(oj, ko)
+define(['ojs/ojcore', 'knockout', 'ojs/ojcontext', 'ojs/ojcomposite', 'ojs/ojmodule'], function(oj, ko, Context, Composite)
 {
  
 
@@ -15,7 +15,7 @@ var __oj_module_metadata =
       "type": "object"
     },
     "config": {
-      "type": "object",
+      "type": "object|Promise",
       "properties": {
         "cleanupMode": {
           "type": "string",
@@ -47,14 +47,17 @@ var __oj_module_metadata =
  * All rights reserved.
  */
 
+/* global ko:false, Promise:false, Context:false */
+
 /**
  * @ojcomponent oj.ojModule
  * @since 4.2.0
  * @ojdisplayname ojModule Element
  * @ojshortdesc Navigational element that manages content replacement within a particular region of the page.
+ * @ojsignature {target: "Type", value: "class ojModule extends JetElement<ojModuleSettableProperties>"}
  * @ojstatus preview
 
- * @classdesc 
+ * @classdesc
  * <h3 id="ojModuleOverview-section">
  *   JET Module
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#ojModuleOverview-section"></a>
@@ -62,7 +65,7 @@ var __oj_module_metadata =
  *
  * <p>
  * The oj-module custom element is used for binding a view and a corresponding view model to an element
- * to provide content replacement within a particular region of the page. In case of a single page application 
+ * to provide content replacement within a particular region of the page. In case of a single page application
  * the element <code>config</code> attribute defines navigation within a region.
  * </p>
  * <pre class="prettyprint">
@@ -77,57 +80,57 @@ var __oj_module_metadata =
  * <p>
  * If a ViewModel is provided as a part of configuration for the oj-module element, the following optional
  * callback methods can be defined on its ViewModel and will be called at each stage of the
- * component's lifecycle. 
+ * component's lifecycle.
  *
  * <h4 class="name">connected<span class="signature">()</span></h4>
  * <div class="description">
  * <p>The optional method may be implemented on the ViewModel and will be invoked after the View is inserted into the DOM.</p>
- * <p>This method might be called multiple times - after the View is created and inserted into the DOM, 
- * after the View is reconnected after being disconnected and after a parent element, oj-module, with attached View 
+ * <p>This method might be called multiple times - after the View is created and inserted into the DOM,
+ * after the View is reconnected after being disconnected and after a parent element, oj-module, with attached View
  * is reconnected to the DOM.</p>
  * </div>
  *
  * <h4 class="name">transitionCompleted<span class="signature">()</span></h4>
  * <div class="description">
- * <p>This optional method may be implemented on ViewModel and invoked after transition to the new View is complete. 
+ * <p>This optional method may be implemented on ViewModel and invoked after transition to the new View is complete.
  * That includes any possible animation between the old and the new View.</p>
  * </div>
  *
  * <h4 class="name">disconnected<span class="signature">()</span></h4>
  * <div class="description">
  * <p>This optional method maybe implemented on the ViewModel and will be invoked when the View is disconnected from the DOM.</p>
- * <p>This method might be called multiple times - after the View is disconnected from the DOM and after a parent 
+ * <p>This method might be called multiple times - after the View is disconnected from the DOM and after a parent
  * element,oj-module, with attached View is disconnected from the DOM.</p>
  * </div>
  */
 
 /**
- * Configuration object that defines a view and a corresponding view model responsible the markup section 
+ * Configuration object that defines a view and a corresponding view model responsible the markup section
  * under oj-module. An application can also specify a clean up mode for the view as a part of the configuration object.
- * See details for each attribute.
- * 
+ * See details for each attribute.  The configuration object can be specified either directly or via a Promise.
+ *
  * @member
  * @name config
  * @memberof! oj.ojModule
  * @instance
- * @type {Object}
- * @ojshortdesc An array of strings of allowed MIME types or file extensions that can be uploaded. If not specified, accept all file types
+ * @type {Object|Promise}
+ * @ojshortdesc The module configuration object
  *
  * @example <caption>Initialize the ojModule element with the <code class="prettyprint">config</code> attribute:</caption>
  * &lt;oj-module config='[[moduleConfig]]'>&lt;/oj-module>
- * 
+ *
  * @example <caption>Get or set the <code class="prettyprint">accept</code> property after initialization:</caption>
  * // getter
  * var config = myModule.config;
- * 
+ *
  * // setter
  * myModule.config = {'view':view,'viewModel':viewModel}; // where view is an Array of DOM nodes and viewModel is a model object for the view
  */
- 
+
 /**
- * Defines the view for the ojModule. 
- * <p>Note that oj-module will not be cloning the node array before using it as the module's View 
- * and applying bindings to it. If the application needs to have an access to the original node array, 
+ * Defines the view for the ojModule.
+ * <p>Note that oj-module will not be cloning the node array before using it as the module's View
+ * and applying bindings to it. If the application needs to have an access to the original node array,
  * it should be setting the 'view' property to a cloned copy.</p>
  * @expose
  * @name config.view
@@ -140,19 +143,25 @@ var __oj_module_metadata =
 
 /**
  * Defines model for the view.
- * <p>The following optional lifecycle methods can be defined on the ViewModel object and will be called 
+ * <p>The following optional lifecycle methods can be defined on the ViewModel object and will be called
  * at the corresponding lifecycle stage. See <a href="./oj.ojModule.html#lifecycle">View Model Lifecycle section</a></p>
  * @expose
  * @name config.viewModel
  * @ojshortdesc The ViewModel instance.
  * @memberof! oj.ojModule
  * @instance
- * @type {Object}
+ * @type {Object|null}
  * @default null
  */
 
 /**
- * Defines the clean up mode for the view.
+ * Defines the clean up mode for the view. The setting allows an application to use an external cache for the view and view model.
+ * By default the oj-module element will clean up and release the view nodes when the view is removed from the DOM.
+ * If an application wants to keep the view and view model in memory for faster access,
+ * it should set the cleanupMode to "none" and retain references to the view and viewModel to be used when the module is reloaded.
+ * Note, when the cached view is no longer needed, the application should call the Knockout <code>ko.cleanNode()</code> method
+ * on all the top-level nodes in the view.
+ * Also, if the cached view might receive observable changes, it must be kept connected in the DOM (perhaps with the CSS <code>display:none</code> style).
  * @expose
  * @name config.cleanupMode
  * @ojshortdesc The cleanup mode for the view.
@@ -160,12 +169,16 @@ var __oj_module_metadata =
  * @instance
  * @type {string}
  * @default "onDisconnect"
+ * @ojsignature { target: "Type",
+ *                value: "?"}
  * @ojvalue {string} "onDisconnect" The View nodes will be destroyed on disconnect.
  * @ojvalue {string} "none" Use the setting to preserve the view, e.g. if the view and view model will be stored in external cache.
  */
 
 /**
  * Instance of the {@link oj.ModuleElementAnimation} duck-typing interface that will manage animation effects during View transitions.
+ * Note that during the animation transition, the original View and the View that is being transitioned to may both be simultaneously
+ * attached to the DOM.  Consequently, it is the application's responsbility to ensure that element IDs are unique across Views.
  * @member
  * @name animation
  * @memberof! oj.ojModule
@@ -174,7 +187,7 @@ var __oj_module_metadata =
  * @default null
  * @ojshortdesc Defines animation object used for view transitions.
  */
- 
+
 /**
  * Triggered before transition to the new View is started - before View is inserted into the DOM.
  * @member
@@ -185,7 +198,7 @@ var __oj_module_metadata =
  * @ojshortdesc Triggered before transition to the new View is started
  * @property {Object} viewModel ViewModel for the new View.
  */
- 
+
 /**
  * Triggered after the View is inserted into the DOM.
  * @member
@@ -207,7 +220,7 @@ var __oj_module_metadata =
  * @ojshortdesc Triggered after transition to the new View is complete
  * @property {Object} viewModel ViewModel for the new View.
  */
- 
+
 /**
  * Triggered after the View is removed from the DOM
  * @member
@@ -222,58 +235,90 @@ var __oj_module_metadata =
 
 function moduleViewModel(context) {
   var element = context.element;
-  var props = context['properties'];
+  var props = context.properties;
   var self = this;
-  this.animation = context['properties'].animation;
-  this.propertyChanged = function(detail)
-  {
-    if (detail.property === 'animation')
-    {
+  this.animation = context.properties.animation;
+  this.config = ko.observable({ view: [] });
+  this.configPromise = null;
+
+  this.propertyChanged = function (detail) {
+    if (detail.property === 'animation') {
       self.animation = detail.value;
+    } else if (detail.property === 'config') {
+      updateConfig();
     }
   };
 
-  function isViewAttached(config) 
-  {
-    var view = config ? config['view'] : null;
+  function updateConfig() {
+    if (!self.busyCallback) {
+      self.busyCallback = Context.getContext(element).getBusyContext().addBusyState({ description: 'oj-module is waiting on config Promise resolution' });
+    }
+    var configPromise = Promise.resolve(props.config);
+    self.configPromise = configPromise;
+    configPromise.then(function (config) {
+      if (configPromise === self.configPromise) {
+        // Make sure the promise that just resolved is the latest one we're waiting for
+        self.config(config);
+        self.busyCallback();
+        self.busyCallback = null;
+      }
+    }, function (reason) {
+      if (configPromise === self.configPromise) {
+        // Make sure the promise that just resolved is the latest one we're waiting for
+        self.busyCallback();
+        self.busyCallback = null;
+        throw reason;
+      }
+    });
+  }
+
+  updateConfig();
+
+  function isViewAttached(config) {
+    var view = config ? config.view : null;
     return view && view.length > 0 && element.contains(view[0]);
-  };
-  
-  function invokeViewModelMethod(model, name) 
-  {
+  }
+
+  function invokeViewModelMethod(model, name) {
     var handler = model && model[name];
-    if (typeof handler === 'function') 
-    {
+    if (typeof handler === 'function') {
       ko.ignoreDependencies(handler, model);
     }
-  };
-  
-  this['connected'] = function(context) 
-  {
-    if(isViewAttached(props && props['config'])) 
-    {
-      var model = props['config'] ? props['config']['viewModel'] : null;
-      invokeViewModelMethod(model, 'connected');
+  }
+
+  function dispatchLifecycleEvent(eventName, viewModel, view) {
+    var detail = {};
+    if (viewModel) {
+      detail.viewModel = viewModel;
+    }
+    if (view) {
+      detail.view = view;
+    }
+    var customEvent = new CustomEvent(eventName, { detail: detail });
+    element.dispatchEvent(customEvent);
+  }
+
+  this.connected = function () {
+    if (isViewAttached(props && props.config)) {
+      invokeViewModelMethod(props.config.viewModel, 'connected');
+      dispatchLifecycleEvent('ojViewConnected', props.config.viewModel);
     }
   };
-  
-  this['disconnected'] = function(context) 
-  {
-    if(isViewAttached(props && props['config']))
-    {
-      var model = props['config'] ? props['config']['viewModel'] : null;
-      invokeViewModelMethod(model, 'disconnected');
-    }
+
+  this.disconnected = function () {
+    invokeViewModelMethod(props.config.viewModel, 'disconnected');
+    dispatchLifecycleEvent('ojViewDisconnected', props.config.viewModel, props.config.view);
   };
-};
+}
 
-var moduleValue = '{\"view\":$properties.config.view, \"viewModel\":$properties.config.viewModel,' + 
-                  '\"cleanupMode\":$properties.config.cleanupMode,\"animation\":animation}';
+var moduleValue = '{"view":config().view, "viewModel":config().viewModel,' +
+                  '"cleanupMode":config().cleanupMode,"animation":animation}';
 
-var moduleView = "<!-- ko ojModule: "+ moduleValue +" --><!-- /ko -->";
+var moduleView = '<!-- ko ojModule: ' + moduleValue + ' --><!-- /ko -->';
 
 /* global __oj_module_metadata */
-oj.Composite.register('oj-module',
+// eslint-disable-next-line no-undef
+Composite.register('oj-module',
   {
     view: moduleView,
     metadata: __oj_module_metadata,
@@ -281,7 +326,7 @@ oj.Composite.register('oj-module',
   });
 
 /**
- * A duck-typing interface that defines a contract for managing animations during the oj-module element View transitions. 
+ * A duck-typing interface that defines a contract for managing animations during the oj-module element View transitions.
  * Use 'animation' attribute on the [Module]{@link oj.ojModule#animation} to set ModuleElementAnimation instance.
  * @interface ModuleElementAnimation
  * @memberof oj
@@ -289,11 +334,11 @@ oj.Composite.register('oj-module',
  * @export
  * @ojstatus preview
  */
- 
+
  /**
  * Optional method that determines whether the animated transition should proceed. If the method is not implemented, all
  * transitions will be allowed to proceed
- * @method 
+ * @method
  * @name canAnimate
  *
  * @param {Object} context a context object with the keys detailed below
@@ -306,7 +351,7 @@ oj.Composite.register('oj-module',
  * @memberof oj.ModuleElementAnimation
  * @instance
  */
- 
+
  /**
  * Prepares animation by designating where the new View should be inserted and optionally specifying where the old View
  * should be moved
@@ -329,7 +374,7 @@ oj.Composite.register('oj-module',
  * @memberof oj.ModuleElementAnimation
  * @instance
  */
- 
+
  /**
  * Prepares animation by designating where the new View should be inserted and optionally specifying where the old View
  * should be moved
@@ -344,7 +389,7 @@ oj.Composite.register('oj-module',
  * @param {Node} context.newViewParent the 'newViewParent' parameter returned by the prepareAnimation() method
  * @param {Node} context.oldViewParent the 'oldViewParent' parameter returned by the prepareAnimation() method
  * @param {Function} context.removeOldView calling this function will remove the DOM nodes representing the old View. If this
- * function is not invoked by the ModuleElementAnimation implementation, and the old View is still connected when the Promise is 
+ * function is not invoked by the ModuleElementAnimation implementation, and the old View is still connected when the Promise is
  * resolved, the old View will be removed by the component.
  * @param {Function} context.insertNewView calling this function will insert new View's DOM nodes into the location
  * managed by the component. If this function is not invoked by the ModuleElementAnimation implementation, and the new View is not at
@@ -352,8 +397,10 @@ oj.Composite.register('oj-module',
  * @param {Array} context.oldDomNodes an array of DOM nodes representing the old View
  * @return {Promise} - a Promise that should be resolved when the animation, moving/removing of DOM nodes and the
  * cleanup are complete. Note that the component will not be able to navigate to a new View until the Promise is resolved.
- *
+ * @ojsignature [{target: "Type", value: "()=> undefined", for:"context.removeOldView"},
+ *               {target: "Type", value: "()=> undefined", for:"context.insertNewView"}]
  * @memberof oj.ModuleElementAnimation
  * @instance
  */
+
 });

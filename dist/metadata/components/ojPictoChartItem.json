@@ -1,55 +1,63 @@
 {
   "name": "oj-picto-chart-item",
-  "version": "5.2.0",
-  "jetVersion": "5.2.0",
+  "version": "6.0.0",
+  "jetVersion": "6.0.0",
   "displayName": "Picto Chart Item",
   "type": "core",
   "description": "ojPictoChartItem",
+  "help": "https://docs.oracle.com/en/middleware/jet/6/reference-api/oj.ojPictoChartItem.html",
   "properties": {
     "borderColor": {
       "description": "The border color of the item. Does not apply if custom image is specified.",
       "type": "string",
       "displayName": "Border Color",
       "value": "",
-      "format": "color"
+      "format": "color",
+      "help": "borderColor"
     },
     "borderWidth": {
       "description": "The border width of the item in pixels. Does not apply if custom image is specified.",
       "type": "number",
       "displayName": "Border Width",
-      "value": 0
+      "value": 0,
+      "help": "borderWidth"
     },
     "categories": {
       "description": "An array of category strings corresponding to the picto chart items. This allows highlighting and filtering of items.",
       "type": "Array<string>",
       "displayName": "Categories",
-      "value": []
+      "value": [],
+      "help": "categories"
     },
     "color": {
       "description": "The color of the item. Does not apply if custom image is specified.",
       "type": "string",
       "displayName": "Color",
       "value": "",
-      "format": "color"
+      "format": "color",
+      "help": "color"
     },
     "columnSpan": {
       "description": "The number of columns each shape (or custom image) spans. Used for creating a picto chart with mixed item sizes.",
       "type": "number",
       "displayName": "Column Span",
       "value": 1,
-      "minimum": 0
+      "minimum": 0,
+      "help": "columnSpan"
     },
     "count": {
       "description": "Specifies the number of times that the shape (or custom image) is drawn. Fractional counts (such as 4.5) are supported; however, fractions other than the multiples of 0.5 should be avoided because the fractional rendering ignores the gaps between shapes and the irregularity of the shapes.",
       "type": "number",
       "displayName": "Count",
-      "value": 1
+      "value": 1,
+      "help": "count"
     },
     "drilling": {
       "description": "Whether drilling is enabled for the item. Drillable items will show a pointer cursor on hover and fire an ojDrill event on click (double click if selection is enabled). To enable drilling for all items at once, use the drilling attribute in the top level.",
       "type": "string",
       "displayName": "Drilling",
       "value": "inherit",
+      "help": "drilling",
       "enumValues": [
         "inherit",
         "off",
@@ -72,106 +80,72 @@
       "type": "string",
       "displayName": "Name",
       "value": "",
-      "translatable": true
+      "translatable": true,
+      "help": "name"
     },
     "rowSpan": {
       "description": "The number of rows each shape (or custom image) spans. Used for creating a picto chart with mixed item sizes.",
       "type": "number",
       "displayName": "Row Span",
-      "value": 1
+      "value": 1,
+      "help": "rowSpan"
     },
     "shape": {
       "description": "The shape of the item. Can take the name of a built-in shape or the svg path commands for a custom shape. \"None\" will make the item transparent and can be used to create gaps. Does not apply if custom image is specified.",
-      "type": "string",
+      "type": "\"circle\"|\"diamond\"|\"human\"|\"plus\"|\"rectangle\"|\"square\"|\"star\"|\"triangleDown\"|\"triangleUp\"|\"none\"|string",
       "displayName": "Shape",
       "value": "rectangle",
       "translatable": true,
-      "enumValues": [
-        "circle",
-        "diamond",
-        "human",
-        "none",
-        "plus",
-        "rectangle",
-        "square",
-        "star",
-        "triangleDown",
-        "triangleUp"
-      ],
-      "propertyEditorValues": {
-        "circle": {
-          "displayName": "Circle"
-        },
-        "diamond": {
-          "displayName": "Diamond"
-        },
-        "human": {
-          "displayName": "Human"
-        },
-        "none": {
-          "displayName": "None"
-        },
-        "plus": {
-          "displayName": "Plus"
-        },
-        "rectangle": {
-          "displayName": "Rectangle"
-        },
-        "square": {
-          "displayName": "Square"
-        },
-        "star": {
-          "displayName": "Star"
-        },
-        "triangleDown": {
-          "displayName": "Triangle Down"
-        },
-        "triangleUp": {
-          "displayName": "Triangle Up"
-        }
-      }
+      "help": "shape"
     },
     "shortDesc": {
       "description": "The description of the item. This is used for customizing the tooltip text.",
       "type": "string",
       "displayName": "Short Desc",
-      "value": ""
+      "value": "",
+      "help": "shortDesc"
     },
     "source": {
       "description": "The URI of the custom image. If specified, it takes precedence over shape.",
       "type": "string",
       "displayName": "Source",
-      "value": ""
+      "value": "",
+      "help": "source"
     },
     "sourceHover": {
       "description": "The optional URI for the hover state. If not specified, the source image will be used.",
       "type": "string",
       "displayName": "Source Hover",
-      "value": ""
+      "value": "",
+      "help": "sourceHover"
     },
     "sourceHoverSelected": {
       "description": "The optional URI for the hover selected state. If not specified, the source image will be used.",
       "type": "string",
       "displayName": "Source Hover Selected",
-      "value": ""
+      "value": "",
+      "help": "sourceHoverSelected"
     },
     "sourceSelected": {
       "description": "The optional URI for the selected state. If not specified, the source image will be used.",
       "type": "string",
       "displayName": "Source Selected",
-      "value": ""
+      "value": "",
+      "help": "sourceSelected"
     },
     "svgClassName": {
       "description": "The CSS style class to apply to the item. The style class and inline style will override any other styling specified with other properties. For tooltip interactivity, it's recommended to also pass a representative color to the item color attribute. Does not apply if custom image is specified.",
       "type": "string",
       "displayName": "Svg Class Name",
-      "value": ""
+      "value": "",
+      "help": "svgClassName"
     },
     "svgStyle": {
       "description": "The inline style to apply to the item. The style class and inline style will override any other styling specified with other properties. For tooltip interactivity, it's recommended to also pass a representative color to the item color attribute. Does not apply if custom image is specified.",
       "type": "object",
       "displayName": "Svg Style",
-      "value": {}
+      "value": {},
+      "help": "svgStyle"
     }
   }
 }

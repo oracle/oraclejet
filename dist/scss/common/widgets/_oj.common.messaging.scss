@@ -31,30 +31,52 @@
       overflow: hidden;
     }
 
-    /* wraps all messaging content that displays inline */
+     /* wraps all messaging content that displays inline */
     .oj-messaging-inline-container .oj-message {
       padding: 10px;
       border-style: solid;
       border-width: 0 1px 1px 1px;
-      // if border-radius is > 3, then detach from the form, and also detach from each message
-      // box if there is more than one message box per component.
-      @if($formControlBorderRadius != null 
-          and $formControlBorderRadius != 0 and $formControlBorderRadius/1px > 3) {
-        margin-top: 5px;
-        border-top-width: 1px;
-        border-radius: $formControlBorderRadius;
+
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        margin-top: var(--oj-message-component-inline-margin-top);
+        border-top-width: var(--oj-message-component-inline-border-top-width);
+        border-radius: var(--oj-message-component-inline-border-radius);
       }
+      @else {
+       
+         margin-top: $messageComponentInlineMarginTop;
+         border-top-width: $messageComponentInlineBorderTopWidth;
+         border-radius:$messageComponentInlineBorderRadius;
+      } 
     }
     
-    // if theme doesn't have a border around the radioset/checkboxset, it needs to 
-    // detach even if the border-radius is 0.
-    @if(($radioCheckboxSetBorderColor == null or $radioCheckboxSetBorderColor == transparent)) {
-      .oj-checkboxset .oj-messaging-inline-container .oj-message:first-child,
-      .oj-radioset .oj-messaging-inline-container .oj-message:first-child {
-        margin-top: 5px;
-        border-top-width: 1px;
-      }
+   .oj-checkboxset .oj-messaging-inline-container .oj-message:first-child,
+   .oj-radioset .oj-messaging-inline-container .oj-message:first-child {
+    @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+    {
+
+        margin-top: var(--oj-message-radiocheckbox-inline-margin-top);
+        border-top-width: var(--oj-message-radiocheckbox-inline-border-top-width);
+
     }
+    @else {
+      // if theme doesn't have a border around the radioset/checkboxset, it needs to 
+      // detach even if the border-radius is 0.
+      @if(($radioCheckboxSetBorderColor == null or $radioCheckboxSetBorderColor == transparent)) {
+
+          margin-top: 5px;
+          border-top-width: 1px;
+
+      }
+      @else
+        {
+          margin-top: 0;
+          border-top-width: 0;
+        }
+     
+    }
+   }
 
     // For these components it needs a top border regardless of border radius.
     .oj-switch .oj-messaging-inline-container .oj-message:first-child,
@@ -75,26 +97,54 @@
 
     // red box
     .oj-messaging-inline-container .oj-message.oj-message-error {
-      background-color: $messageComponentInlineBgColorError;
-      border-color: $messageComponentInlineBorderColorError;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        background-color: var(--oj-message-component-inline-bg-color-error);
+        border-color: var(--oj-message-component-inline-border-color-error);
+      }
+      @else {
+        background-color: $messageComponentInlineBgColorError;
+        border-color: $messageComponentInlineBorderColorError;        
+      }
     }
 
     // gold box
     .oj-messaging-inline-container .oj-message.oj-message-warning {
-      background-color: $messageComponentInlineBgColorWarning;
-      border-color: $messageComponentInlineBorderColorWarning;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        background-color: var(--oj-message-component-inline-bg-color-warning);
+        border-color: var(--oj-message-component-inline-border-color-warning);
+      }
+      @else {
+        background-color: $messageComponentInlineBgColorWarning;
+        border-color: $messageComponentInlineBorderColorWarning;
+      }
     }    
 
     // blue box
     .oj-messaging-inline-container .oj-message.oj-message-info {
-      background-color: $messageComponentInlineBgColorInfo;
-      border-color: $messageComponentInlineBorderColorInfo;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        background-color: var(--oj-message-component-inline-bg-color-info);
+        border-color: var(--oj-message-component-inline-border-color-info);
+      }
+      @else {
+        background-color: $messageComponentInlineBgColorInfo;
+        border-color: $messageComponentInlineBorderColorInfo;
+      }
     }
 
     // green box
     .oj-messaging-inline-container .oj-message.oj-message-confirmation {
-      background-color: $messageComponentInlineBgColorConfirmation;
-      border-color: $messageComponentInlineBorderColorConfirmation;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        background-color: var(--oj-message-component-inline-bg-color-confirmation);
+        border-color: var(--oj-message-component-inline-border-color-confirmation);
+      }
+      @else {
+        background-color: $messageComponentInlineBgColorConfirmation;
+        border-color: $messageComponentInlineBorderColorConfirmation;
+      }
     }
 
     /** 
@@ -103,7 +153,7 @@
      */
     
     .oj-message {
-      @include oj-display-flex-property();
+      display: flex;
       @include oj-bidi-property($property: 'text-align', $startOrEnd: start);
       white-space: nowrap; /* 1 */
     }
@@ -180,7 +230,7 @@
     // so that the icon doesn't get cut off or stretch. It's
     // a fixed size - the width set on the icon.
     .oj-message-status-icon {
-      @include oj-flex-property(0 0 auto);
+      flex: 0 0 auto;
       position: relative;
     }
     .oj-message-status-icon:before {
@@ -210,12 +260,12 @@
     
     $noteWindowAnimationDefaults: ();
  
-    @if ($noteWindowOpenAnimation) {
-      $noteWindowAnimationDefaults: map-merge($noteWindowAnimationDefaults, (open: $noteWindowOpenAnimation));
+    @if ($popupTailOpenAnimation) {
+      $noteWindowAnimationDefaults: map-merge($noteWindowAnimationDefaults, (open: $popupTailOpenAnimation));
     }
  
-    @if ($noteWindowCloseAnimation) {
-      $noteWindowAnimationDefaults: map-merge($noteWindowAnimationDefaults, (close: $noteWindowCloseAnimation));
+    @if ($popupTailCloseAnimation) {
+      $noteWindowAnimationDefaults: map-merge($noteWindowAnimationDefaults, (close: $popupTailCloseAnimation));
     }
 
     $noteWindowDefaultOptions: ();

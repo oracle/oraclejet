@@ -127,6 +127,18 @@
         background-image: none;
       }
 
+      .oj-radioset-wrapper .oj-radiocheckbox-icon {
+        // we still need to set the width and height to have a consistent layout
+        // we can do this by including the scale mixin for an existing image
+        @include oj-fwk-icon-radio-ena-selected-scale;
+      }
+
+      .oj-checkboxset-wrapper .oj-radiocheckbox-icon {
+        // we still need to set the width and height to have a consistent layout
+        // we can do this by including the scale mixin for an existing image
+        @include oj-fwk-icon-checkbox-ena-selected-scale;
+      }
+
       // TODO Bug 25897533: Clean up after sprite tooling is implemented
       @if ($radioCheckboxImageDir)
       {

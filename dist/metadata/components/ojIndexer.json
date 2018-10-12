@@ -1,16 +1,18 @@
 {
   "name": "oj-indexer",
-  "version": "5.2.0",
-  "jetVersion": "5.2.0",
+  "version": "6.0.0",
+  "jetVersion": "6.0.0",
   "displayName": "Indexer",
   "type": "core",
   "description": "Displays a list of sections that corresponds to group headers of a list.",
+  "help": "https://docs.oracle.com/en/middleware/jet/6/reference-api/oj.ojIndexer.html",
   "properties": {
     "data": {
       "description": "The data provider for the Indexer.",
       "type": "oj.IndexerModel",
       "displayName": "Data",
-      "value": null
+      "value": null,
+      "help": "data"
     },
     "translations": {
       "description": "A collection of translated resources from the translation bundle, or null if this component has no resources.",
@@ -18,41 +20,49 @@
       "displayName": "Translations",
       "value": {},
       "translatable": true,
+      "help": "translations",
       "properties": {
         "ariaDisabledLabel": {
           "description": "Provides properties to customize the text to read to the screen reader when there is no matching group header.",
           "type": "string",
-          "displayName": "Aria Disabled Label"
+          "displayName": "Aria Disabled Label",
+          "help": "translations.ariaDisabledLabel"
         },
         "ariaInBetweenText": {
           "description": "Provides properties to customize the text that represents between two characters in the Indexer.",
           "type": "string",
-          "displayName": "Aria In Between Text"
+          "displayName": "Aria In Between Text",
+          "help": "translations.ariaInBetweenText"
         },
         "ariaKeyboardInstructionText": {
           "description": "Provides properties to customize the screen reader keyboard instructional text for the the Indexer.",
           "type": "string",
-          "displayName": "Aria Keyboard Instruction Text"
+          "displayName": "Aria Keyboard Instruction Text",
+          "help": "translations.ariaKeyboardInstructionText"
         },
         "ariaOthersLabel": {
           "description": "Provides properties to customize the text to read to the screen reader when the non-letter characters is selected.",
           "type": "string",
-          "displayName": "Aria Others Label"
+          "displayName": "Aria Others Label",
+          "help": "translations.ariaOthersLabel"
         },
         "ariaTouchInstructionText": {
           "description": "Provides properties to customize the screen reader touch instructional text for the the Indexer.",
           "type": "string",
-          "displayName": "Aria Touch Instruction Text"
+          "displayName": "Aria Touch Instruction Text",
+          "help": "translations.ariaTouchInstructionText"
         },
         "indexerCharacters": {
           "description": "Provides properties to customize the characters to display in the Indexer.",
           "type": "string",
-          "displayName": "Indexer Characters"
+          "displayName": "Indexer Characters",
+          "help": "translations.indexerCharacters"
         },
         "indexerOthers": {
           "description": "Provides properties to customize the non-letter characters to display in the Indexer.",
           "type": "string",
-          "displayName": "Indexer Others"
+          "displayName": "Indexer Others",
+          "help": "translations.indexerOthers"
         }
       }
     }
@@ -60,10 +70,12 @@
   "methods": {
     "refresh": {
       "description": "Redraw the entire indexer.",
+      "help": "refresh",
       "return": "void"
     },
     "setProperty": {
-      "description": "Sets a property or a single subproperty for complex properties and notifies the component\nof the change, triggering a [property]Changed event.",
+      "description": "Sets a property or a single subproperty for complex properties and notifies the component of the change, triggering a [property]Changed event.",
+      "help": "setProperty",
       "params": [
         {
           "name": "property",
@@ -80,6 +92,7 @@
     },
     "getProperty": {
       "description": "Retrieves a value for a property or a single subproperty for complex properties.",
+      "help": "getProperty",
       "params": [
         {
           "name": "property",
@@ -91,6 +104,7 @@
     },
     "setProperties": {
       "description": "Performs a batch set of properties.",
+      "help": "setProperties",
       "params": [
         {
           "name": "properties",
@@ -103,7 +117,9 @@
   },
   "slots": {
     "contextMenu": {
-      "description": "The contextMenu slot is set on the oj-menu within this element. \nThis is used to designate the JET Menu that this component should launch as a context menu on right-click, Shift-F10, Press & Hold, or component-specific gesture. \nIf specified, the browser's native context menu will be replaced by the JET Menu specified in this slot.\n\nThe application can register a listener for the Menu's ojBeforeOpen event. The listener can cancel the launch via event.preventDefault(), \nor it can customize the menu contents by editing the menu DOM directly, and then calling refresh() on the Menu.\n\nTo help determine whether it's appropriate to cancel the launch or customize the menu, the ojBeforeOpen listener can use component API's to determine which \ntable cell, chart item, etc., is the target of the context menu. See the JSDoc and demos of the individual components for details. \n\nKeep in mind that any such logic must work whether the context menu was launched via right-click, Shift-F10, Press & Hold, or component-specific touch gesture."
+      "description": "The contextMenu slot is set on the <oj-menu> instance within this element. It designates the JET Menu that this component should launch as a context menu.",
+      "maxItems": 1,
+      "help": "contextMenu"
     }
   }
 }

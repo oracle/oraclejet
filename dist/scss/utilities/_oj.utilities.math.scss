@@ -139,19 +139,19 @@
 ///*****************************************************************************
 @mixin oj-property-multiplier($selectorName, $propertyName, $propertyMultiplicand, $minMultiplier, $maxMultiplier)
 {
-  @if (unit($propertyMultiplicand) == 'rem')
-  {
-    $propertyMultiplicand: oj-rem-to-px($propertyMultiplicand, $rootFontSize);
-  }
+  //@if (unit($propertyMultiplicand) == 'rem')
+  //{
+  //  $propertyMultiplicand: oj-rem-to-px($propertyMultiplicand, $rootFontSize);
+  //}
 
-  @if (unit($propertyMultiplicand) == 'px')
+  @if (unit($propertyMultiplicand) == 'px' or unit($propertyMultiplicand) == 'rem')
   {
     @for $i from $minMultiplier through $maxMultiplier
     {
       #{if(&, "&", "*")}.#{$selectorName}-#{$i} {
         // $dimensionValue needs to be rounded and in pixels in the case that multiplying the rem value
         // by i is different than converting to pixels and summing over the three values.
-        #{$propertyName}: ($i * round($propertyMultiplicand))
+        #{$propertyName}: calc(#{$i} * #{$propertyMultiplicand})
       }
     }
   }

@@ -29,12 +29,17 @@
 	}
 		
 	// ENABLED ON
-	.oj-switch.oj-selected .oj-switch-track {
-		background-color: $switchTrackBgColorSelected;
-		background-color: rgba($switchTrackBgColorSelected, 0.6);
-		border-color: $switchTrackBorderColorSelected;
-		border-color: rgba($switchTrackBorderColorSelected, 0.6);
-	}
+         
+           .oj-switch.oj-selected .oj-switch-track {
+               @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+		  background-color: var(--oj-switch-track-bg-color-selected);
+		  border-color: var(--oj-switch-track-border-color-selected);
+	       }
+               @else {
+		 background-color: $switchTrackBgColorSelected;
+		 border-color: $switchTrackBorderColorSelected;
+	      }
+            } 
 
 	// DISABLED OFF
 	.oj-switch.oj-disabled {
@@ -44,18 +49,31 @@
 	}
 
 	// HOVER/ACTIVE OFF
-	.oj-switch.oj-hover .oj-switch-thumb,
-	.oj-switch.oj-active .oj-switch-thumb {	
-		border-color: $switchThumbBorderColorHover;
-		border-color: rgba($switchThumbBorderColorHover, 0.6);
-	}
+       
+	  .oj-switch.oj-hover .oj-switch-thumb,
+	  .oj-switch.oj-active .oj-switch-thumb {
+             @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+               border-color: var(--oj-switch-thumb-border-color-hover);
+	     }
+             @else {	
+	       border-color: $switchThumbBorderColorHover;
+	     }
+            
+           }
 	
 	// HOVER/ACTIVE ON
-	.oj-switch.oj-selected.oj-hover .oj-switch-thumb,
-	.oj-switch.oj-selected.oj-active .oj-switch-thumb {	
+        
+	  .oj-switch.oj-selected.oj-hover .oj-switch-thumb,
+	  .oj-switch.oj-selected.oj-active .oj-switch-thumb {
+             @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+		
+                border-color: var(--oj-switch-thumb-border-color-selected-hover);
+	     }
+             @else {
 		border-color: $switchThumbBorderColorSelectedHover;
-		border-color: rgba($switchThumbBorderColorSelectedHover, 0.6);
-	}
+	     }
+              
+           }
 	
 	// DISABLED ON
 	.oj-switch.oj-disabled.oj-selected {
@@ -73,27 +91,50 @@
 		-moz-background-clip: padding;
 		-webkit-background-clip: padding;
 	}
-
-	.oj-switch.oj-hover:not(.oj-read-only) .oj-switch-thumb,
-	.oj-switch.oj-active:not(.oj-read-only) .oj-switch-thumb {
+	  .oj-switch.oj-hover:not(.oj-read-only) .oj-switch-thumb,
+	  .oj-switch.oj-active:not(.oj-read-only) .oj-switch-thumb {
+            @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
 		@include oj-ltr() {
-			margin-left: -$switchThumbBorderWidthHover;
+			
+                        margin-left: calc(0px - var(--oj-switch-thumb-border-width-hover));
 		}
 		@include oj-rtl() {
-			margin-right: -$switchThumbBorderWidthHover;
+			
+                        margin-right: calc(0px - var(--oj-switch-thumb-border-width-hover));
 		}
-	}
-
-	.oj-switch.oj-selected.oj-hover:not(.oj-read-only) .oj-switch-thumb,
-	.oj-switch.oj-selected.oj-active:not(.oj-read-only) .oj-switch-thumb {
-		@include oj-ltr() {
-			margin-right: -$switchThumbBorderWidthHover;
+	    }
+            @else {
+                @include oj-ltr() {
+			margin-left: calc(0px - #{$switchThumbBorderWidthHover});
 		}
 		@include oj-rtl() {
-			margin-left: -$switchThumbBorderWidthHover;
+			margin-right: calc(0px - #{$switchThumbBorderWidthHover});
 		}
-	}	
-	
+            }
+          } 
+
+	  .oj-switch.oj-selected.oj-hover:not(.oj-read-only) .oj-switch-thumb,
+	  .oj-switch.oj-selected.oj-active:not(.oj-read-only) .oj-switch-thumb {
+              @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+		@include oj-ltr() {
+			
+                        margin-right: calc(0px - var(--oj-switch-thumb-border-width-hover));
+		}
+		@include oj-rtl() {
+			
+                        margin-left: calc(0px - var(--oj-switch-thumb-border-width-hover));
+		}
+	    }
+            @else {
+		@include oj-ltr() {
+			margin-right: calc(0px - #{$switchThumbBorderWidthHover});
+		}
+		@include oj-rtl() {
+			margin-left: calc(0px - #{$switchThumbBorderWidthHover});
+		}
+	    }    
+            
+          }
 	// READONLY ON/OFF 
 	.oj-switch.oj-read-only .oj-switch-thumb,
 	.oj-switch.oj-selected.oj-read-only .oj-switch-thumb {

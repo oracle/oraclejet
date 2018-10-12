@@ -6,7 +6,7 @@
 // ----- start dependencies ---------
 
 // set up include variables before importing dependencies
-@if $includeConveyerBeltClasses != false {
+@if $includeConveyorBeltClasses != false {
   $includeIconClasses: true !global;
 }
 
@@ -21,7 +21,7 @@
 @import "../../common/widgets/oj.common.conveyorbelt"; 
 
 
-@if $includeConveyerBeltClasses != false  {
+@if $includeConveyorBeltClasses != false  {
   @include module-include-once("alta.android.conveyerbelt") {
 
   }

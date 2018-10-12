@@ -229,8 +229,7 @@ var ListDataProviderView = /** @class */ (function () {
         var mappedFilterCriterion = this._getMappedFilterCriterion(filterCriterion);
         var self = this;
         if (self[this._FROM] == null &&
-            self[this._OFFSET] > 0 &&
-            oj.DataProviderFeatureChecker.isFetchByOffset(self.dataProvider)) {
+            self[this._OFFSET] > 0) {
             var offset_1 = self[this._OFFSET];
             return new this.AsyncIterable(this, new this.AsyncIterator(this, function (cachedData) {
                 return function () {
@@ -535,12 +534,13 @@ oj['FetchByOffsetMixin'].applyMixin(ListDataProviderView);
  * http://jquery.org/license
  */
 
-/*jslint browser: true,devel:true*/
+/* jslint browser: true,devel:true*/
 /**
  * @ojstatus preview
  * @since 4.1.0
  * @export
  * @class oj.ListDataProviderView
+ * @ojtsmodule
  * @implements oj.DataProvider
  * @classdesc Provides list based optimizations for oj.DataProvider. Supports fetchFirst starting at arbitrary key or index offset, sortCriteria,
  * and field mapping. Please see the select demos for examples of DataMapping [Select]{@link oj.ojSelect}
@@ -553,14 +553,17 @@ oj['FetchByOffsetMixin'].applyMixin(ListDataProviderView);
  * @ojsignature [{target: "Type",
  *               value: "class ListDataProviderView<K, D, Kin, Din> implements DataProvider<K, D>"},
  *               {target: "Type",
- *               value: "DataProvider<K, D>", 
+ *               value: "DataProvider<K, D>",
  *               for: "dataProvider"},
  *               {target: "Type",
- *               value: "SortCriterion<D>[]", 
+ *               value: "Array<SortCriterion<D>>",
  *               for: "options.sortCriteria"},
  *               {target: "Type",
- *               value: "DataMapping<K, D, Kin, Din>", 
+ *               value: "DataMapping<K, D, Kin, Din>",
  *               for: "options.dataMapping"}]
+ * @ojtsimport {module: "ojdataprovider", type: "AMD", imported: ["DataProvider", "SortCriterion", "FetchByKeysParameters",
+ *   "ContainsKeysResults","FetchByKeysResults","FetchByOffsetParameters","FetchByOffsetResults", "DataMapping",
+ *   "FetchListResult","FetchListParameters"]}
  */
 
 /**
@@ -616,7 +619,7 @@ oj['FetchByOffsetMixin'].applyMixin(ListDataProviderView);
 
 /**
  * Fetch the first block of data.
- * 
+ *
  * @ojstatus preview
  * @since 4.1.0
  * @param {oj.FetchListParameters=} params Fetch parameters
@@ -629,12 +632,12 @@ oj['FetchByOffsetMixin'].applyMixin(ListDataProviderView);
  * @method
  * @name fetchFirst
  * @ojsignature {target: "Type",
- *               value: "<F extends FetchListResult<K, D>>(params?: FetchListParameters<D>): AsyncIterable<F>"}
+ *               value: "(params?: FetchListParameters<D>): AsyncIterable<FetchListResult<K, D>>"}
  */
 
 /**
  * Determines whether this DataProvider supports certain feature.
- * 
+ *
  * @ojstatus preview
  * @since 4.1.0
  * @param {string} capabilityName capability name. Supported capability names
@@ -647,12 +650,12 @@ oj['FetchByOffsetMixin'].applyMixin(ListDataProviderView);
  * @method
  * @name getCapability
  * @ojsignature {target: "Type",
- *               value: "(capabilityName: string)"}
+ *               value: "(capabilityName: string): any"}
  */
 
 /**
  * Return the total number of rows in this dataprovider
- * 
+ *
  * @ojstatus preview
  * @return {Promise.<number>} Returns a Promise which resolves to the total number of rows. -1 is unknown row count.
  * @export
@@ -665,7 +668,7 @@ oj['FetchByOffsetMixin'].applyMixin(ListDataProviderView);
 
 /**
  * Return a string that indicates if this data provider is empty
- * 
+ *
  * @ojstatus preview
  * @return {"yes"|"no"|"unknown"} a string that indicates if this data provider is empty. Valid values are:
  *                  "yes": this data provider is empty.
@@ -681,7 +684,7 @@ oj['FetchByOffsetMixin'].applyMixin(ListDataProviderView);
 
 /**
  * Optional key to start fetching from.
- * 
+ *
  * @ojstatus preview
  * @since 4.1.0
  * @export
@@ -695,7 +698,7 @@ oj['FetchByOffsetMixin'].applyMixin(ListDataProviderView);
 /**
  * Optional offset to start fetching from. Should be greater than or equal to zero.
  * If a negative offset is used then it will be treated as zero.
- * 
+ *
  * @ojstatus preview
  * @since 4.1.0
  * @export
@@ -708,7 +711,7 @@ oj['FetchByOffsetMixin'].applyMixin(ListDataProviderView);
 
 /**
  * Optional sortCriteria to apply
- * 
+ *
  * @ojstatus preview
  * @since 4.1.0
  * @export
@@ -717,12 +720,12 @@ oj['FetchByOffsetMixin'].applyMixin(ListDataProviderView);
  * @instance
  * @name sortCriteria
  * @ojsignature {target: "Type",
- *               value: "SortCriterion<D>[]"}
+ *               value: "Array<SortCriterion<D>>"}
  */
 
 /**
  * Optional dataMapping to apply
- * 
+ *
  * @ojstatus preview
  * @since 4.1.0
  * @export
@@ -773,5 +776,6 @@ oj['FetchByOffsetMixin'].applyMixin(ListDataProviderView);
 /**
  * End of jsdoc
  */
+
   return ListDataProviderView;
 });

@@ -41,6 +41,7 @@
     // For small dppx, sprites may be clipped significantly, so we disable it.
     // IE and Safari do not support dppx, so they will always use sprites, and
     // that is fine because the clipping is insignificant on IE and Safari. 
+    /* autoprefixer: ignore next */
     @media print, (max-resolution: .99dppx) {
       .oj-fwk-icon-{{base}} {
         background-image: none;

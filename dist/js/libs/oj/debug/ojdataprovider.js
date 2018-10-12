@@ -23,10 +23,10 @@ define(['ojs/ojcore', 'ojs/ojeventtarget'], function(oj)
  * http://jquery.org/license
  */
 
-/*jslint browser: true,devel:true*/
+/* jslint browser: true,devel:true*/
 /**
  * The interface for oj.FetchByKeysParameters
- * 
+ *
  * @ojstatus preview
  * @since 4.1.0
  * @export
@@ -52,7 +52,7 @@ define(['ojs/ojcore', 'ojs/ojeventtarget'], function(oj)
 
 /**
  * The interface for oj.FetchByKeysResults
- * 
+ *
  * @ojstatus preview
  * @since 4.1.0
  * @export
@@ -63,7 +63,7 @@ define(['ojs/ojcore', 'ojs/ojeventtarget'], function(oj)
 
 /**
  * The parameters used for the fetch call.
- * 
+ *
  * @ojstatus preview
  * @since 4.1.0
  * @export
@@ -78,7 +78,7 @@ define(['ojs/ojcore', 'ojs/ojeventtarget'], function(oj)
 
 /**
  * Map of keys and corresponding {@link oj.Item}.
- * 
+ *
  * @ojstatus preview
  * @since 4.1.0
  * @export
@@ -93,7 +93,7 @@ define(['ojs/ojcore', 'ojs/ojeventtarget'], function(oj)
 
 /**
  * The interface for oj.ContainsKeysResults
- * 
+ *
  * @ojstatus preview
  * @since 4.1.0
  * @export
@@ -104,7 +104,7 @@ define(['ojs/ojcore', 'ojs/ojeventtarget'], function(oj)
 
 /**
  * The parameters used for the containsKeys call.
- * 
+ *
  * @ojstatus preview
  * @since 4.1.0
  * @export
@@ -119,7 +119,7 @@ define(['ojs/ojcore', 'ojs/ojeventtarget'], function(oj)
 
 /**
  * Requested keys subset which are contained in the DataProvider.
- * 
+ *
  * @ojstatus preview
  * @since 4.1.0
  * @export
@@ -147,7 +147,7 @@ define(['ojs/ojcore', 'ojs/ojeventtarget'], function(oj)
  * http://jquery.org/license
  */
 
-/*jslint browser: true,devel:true*/
+/* jslint browser: true,devel:true*/
 /**
  * @ojstatus preview
  * @since 4.1.0
@@ -159,7 +159,7 @@ define(['ojs/ojcore', 'ojs/ojeventtarget'], function(oj)
 
 /**
  * sort attribute upon which the data should be sorted.
- * 
+ *
  * @ojstatus preview
  * @since 4.1.0
  * @export
@@ -174,7 +174,7 @@ define(['ojs/ojcore', 'ojs/ojeventtarget'], function(oj)
 
 /**
  * sort direction, either "ascending" or "descending".
- * 
+ *
  * @ojstatus preview
  * @since 4.1.0
  * @export
@@ -188,6 +188,7 @@ define(['ojs/ojcore', 'ojs/ojeventtarget'], function(oj)
 /**
  * End of jsdoc
  */
+
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
@@ -199,7 +200,7 @@ define(['ojs/ojcore', 'ojs/ojeventtarget'], function(oj)
  * http://jquery.org/license
  */
 
-/*jslint browser: true,devel:true*/
+/* jslint browser: true,devel:true*/
 /**
  * @ojstatus preview
  * @since 4.1.0
@@ -211,7 +212,7 @@ define(['ojs/ojcore', 'ojs/ojeventtarget'], function(oj)
 
 /**
  * Field mapping function which takes an item and returns the mapped item
- * 
+ *
  * @ojstatus preview
  * @export
  * @expose
@@ -225,7 +226,7 @@ define(['ojs/ojcore', 'ojs/ojeventtarget'], function(oj)
 
 /**
  * Optional FilterCriterion mapping function which takes filterOperator and returns the mapped filterOperator
- * 
+ *
  * @ojstatus preview
  * @export
  * @expose
@@ -234,12 +235,12 @@ define(['ojs/ojcore', 'ojs/ojeventtarget'], function(oj)
  * @name mapFilterCriterion
  * @type {Function}
  * @ojsignature {target: "Type",
- *               value: "?(filterCriterion: FilterOperator<D>[]) => FilterOperator<Din>[]"}
+ *               value: "?(filterCriterion: Array<FilterOperator<D>>) => Array<FilterOperator<Din>>"}
  */
 
 /**
  * Optional SortCriterion mapping function which takes sortCriteria and returns the mapped sortCriteria
- * 
+ *
  * @ojstatus preview
  * @export
  * @expose
@@ -248,12 +249,12 @@ define(['ojs/ojcore', 'ojs/ojeventtarget'], function(oj)
  * @name mapSortCriteria
  * @type {Function}
  * @ojsignature {target: "Type",
- *               value: "?(sortCriteria: SortCriterion<D>[]) => SortCriterion<Din>[]"}
+ *               value: "?(sortCriteria: Array<SortCriterion<D>>) => Array<SortCriterion<Din>>"}
  */
 
 /**
  * Optional SortCriterion unmapping function which takes mapped sortCriteria and returns the unmapped sortCriteria
- * 
+ *
  * @ojstatus preview
  * @export
  * @expose
@@ -262,12 +263,13 @@ define(['ojs/ojcore', 'ojs/ojeventtarget'], function(oj)
  * @name unmapSortCriteria
  * @type {Function}
  * @ojsignature {target: "Type",
- *               value: "?(sortCriteria: SortCriterion<Din>[]) => SortCriterion<D>[]"}
+ *               value: "?(sortCriteria: Array<SortCriterion<Din>>) => Array<SortCriterion<D>>"}
  */
 
 /**
  * End of jsdoc
  */
+
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
@@ -279,7 +281,7 @@ define(['ojs/ojcore', 'ojs/ojeventtarget'], function(oj)
  * http://jquery.org/license
  */
 
-/*jslint browser: true,devel:true*/
+/* jslint browser: true,devel:true*/
 /**
  * The interface for oj.FetchFunc
  * @ojstatus preview
@@ -309,10 +311,10 @@ define(['ojs/ojcore', 'ojs/ojeventtarget'], function(oj)
  * http://jquery.org/license
  */
 
-/*jslint browser: true,devel:true*/
+/* jslint browser: true,devel:true*/
 /**
  * The interface for oj.FetchListParameters
- * 
+ *
  * @ojstatus preview
  * @since 4.1.0
  * @export
@@ -323,7 +325,7 @@ define(['ojs/ojcore', 'ojs/ojeventtarget'], function(oj)
 
 /**
  * Optional number of rows to fetch starting from offset.  If fewer than that number of rows exist, the fetch will succeed but be truncated.
- * 
+ *
  * @ojstatus preview
  * @since 4.1.0
  * @export
@@ -336,7 +338,7 @@ define(['ojs/ojcore', 'ojs/ojeventtarget'], function(oj)
 
 /**
  * Optional sort criteria to apply.
- * 
+ *
  * @ojstatus preview
  * @since 4.1.0
  * @export
@@ -346,17 +348,17 @@ define(['ojs/ojcore', 'ojs/ojeventtarget'], function(oj)
  * @name sortCriteria
  * @type {Array.<oj.SortCriterion>}
  * @ojsignature {target: "Type",
- *               value: "?SortCriterion<D>[]"}
+ *               value: "?Array<SortCriterion<D>>"}
  */
 
 /**
  * Optional filter criterion to apply. The filter criterion would be composed of a
  * supported FilterOperator such as a AttributeFilterOperator or a CompoundFilterOperator.
- * 
+ *
  * @example
  * The following would be a valid filterCriterion:
  * {op: '$or', criteria: [{op: '$eq', attribute: 'name', value: 'Bob'}, {op: '$gt', attribute: 'level', value: 'Low'}]}
- * 
+ *
  * @ojstatus preview
  * @since 4.1.0
  * @export
@@ -372,6 +374,7 @@ define(['ojs/ojcore', 'ojs/ojeventtarget'], function(oj)
 /**
  * End of jsdoc
  */
+
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
@@ -383,10 +386,10 @@ define(['ojs/ojcore', 'ojs/ojeventtarget'], function(oj)
  * http://jquery.org/license
  */
 
-/*jslint browser: true,devel:true*/
+/* jslint browser: true,devel:true*/
 /**
  * The interface for oj.FetchListResult
- * 
+ *
  * @ojstatus preview
  * @since 4.1.0
  * @export
@@ -412,7 +415,7 @@ define(['ojs/ojcore', 'ojs/ojeventtarget'], function(oj)
 
 /**
  * Array of data for each row
- * 
+ *
  * @ojstatus preview
  * @since 4.1.0
  * @export
@@ -427,7 +430,7 @@ define(['ojs/ojcore', 'ojs/ojeventtarget'], function(oj)
 
 /**
  * Array of {link@ oj.ItemMetadata} for each row
- * 
+ *
  * @ojstatus preview
  * @since 4.1.0
  * @export
@@ -437,9 +440,9 @@ define(['ojs/ojcore', 'ojs/ojeventtarget'], function(oj)
  * @name metadata
  * @type {Array.<oj.ItemMetadata>}
  * @ojsignature {target: "Type",
- *               value: "ItemMetadata<K>[]"}
+ *               value: "Array<ItemMetadata<K>>"}
  */
- 
+
  /**
   * end of jsdoc
   */
@@ -455,10 +458,10 @@ define(['ojs/ojcore', 'ojs/ojeventtarget'], function(oj)
  * http://jquery.org/license
  */
 
-/*jslint browser: true,devel:true*/
+/* jslint browser: true,devel:true*/
 /**
  * The interface for oj.ItemMetadata
- * 
+ *
  * @ojstatus preview
  * @since 4.1.0
  * @export
@@ -522,7 +525,7 @@ oj['AttributeFilterOperator']['AttributeOperator'] = AttributeFilterOperator.Att
  * http://jquery.org/license
  */
 
-/*jslint browser: true,devel:true*/
+/* jslint browser: true,devel:true*/
 
 /**
  * The interface for oj.AttributeFilterOperator
@@ -538,7 +541,7 @@ oj['AttributeFilterOperator']['AttributeOperator'] = AttributeFilterOperator.Att
 
 /**
  * Operator one of enum oj.AttributeOperator {$co, $eq, $ew, $pr, $gt, $ge, $lt, $le, $ne, $regex, $sw}
- * 
+ *
  * @ojstatus preview
  * @since 5.0.0
  * @export
@@ -551,7 +554,7 @@ oj['AttributeFilterOperator']['AttributeOperator'] = AttributeFilterOperator.Att
 
 /**
  * Attribute
- * 
+ *
  * @ojstatus preview
  * @since 5.0.0
  * @export
@@ -564,7 +567,7 @@ oj['AttributeFilterOperator']['AttributeOperator'] = AttributeFilterOperator.Att
 
 /**
  * Value
- * 
+ *
  * @ojstatus preview
  * @since 5.0.0
  * @export
@@ -589,23 +592,24 @@ oj['AttributeFilterOperator']['AttributeOperator'] = AttributeFilterOperator.Att
  * @enum {string}
  * @name AttributeOperator
  * @memberof oj.AttributeFilterOperator
- * @property {string} $co The entire operator value must be a substring of the attribute value for a match.
- * @property {string} $eq The attribute and operator values must be identical for a match.
- * @property {string} $ew The entire operator value must be a substring of the attribute value matching at the end of the attribute value.  This criterion is satisfied if the two strings are identical.     
- * @property {string} $pr If the attribute has a non-empty or non-null value, or if it contains a non-empty node for complex attributes, there is a match.
- * @property {string} $gt If the attribute value is greater than the operator value, there is a match.
- * @property {string} $ge If the attribute value is greater than or equal to the operator value, there is a match. 
- * @property {string} $lt If the attribute value is less than the operator value, there is a match.
- * @property {string} $le If the attribute value is less than or equal to the operator value, there is a match.
- * @property {string} $ne The attribute and operator values are not identical.  
- * @property {string} $regex If the attribute value satisfies the regular expression, there is a match.
- * @property {string} $sw The entire operator value must be a substring of the attribute value, starting at the beginning of the attribute value.  This criterion is satisfied if the two strings are identical.   
+ * @property {string} $co=$co The entire operator value must be a substring of the attribute value for a match.
+ * @property {string} $eq=$eq The attribute and operator values must be identical for a match.
+ * @property {string} $ew=$ew The entire operator value must be a substring of the attribute value matching at the end of the attribute value.  This criterion is satisfied if the two strings are identical.
+ * @property {string} $pr=$pr If the attribute has a non-empty or non-null value, or if it contains a non-empty node for complex attributes, there is a match.
+ * @property {string} $gt=$gt If the attribute value is greater than the operator value, there is a match.
+ * @property {string} $ge=$ge If the attribute value is greater than or equal to the operator value, there is a match.
+ * @property {string} $lt=$lt If the attribute value is less than the operator value, there is a match.
+ * @property {string} $le=$le If the attribute value is less than or equal to the operator value, there is a match.
+ * @property {string} $ne=$ne The attribute and operator values are not identical.
+ * @property {string} $regex=$regex If the attribute value satisfies the regular expression, there is a match.
+ * @property {string} $sw=$sw The entire operator value must be a substring of the attribute value, starting at the beginning of the attribute value.  This criterion is satisfied if the two strings are identical.
  * @since 5.0.0
  */
 
 /**
  * End of jsdoc
  */
+
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
@@ -633,7 +637,7 @@ oj['CompoundFilterOperator']['CompoundOperator'] = CompoundFilterOperator.Compou
  * http://jquery.org/license
  */
 
-/*jslint browser: true,devel:true*/
+/* jslint browser: true,devel:true*/
 
 /**
  * The interface for oj.CompoundFilterOperator
@@ -649,7 +653,7 @@ oj['CompoundFilterOperator']['CompoundOperator'] = CompoundFilterOperator.Compou
 
 /**
  * Operator one of enum oj.CompoundOperator {$and, $or}
- * 
+ *
  * @ojstatus preview
  * @since 5.0.0
  * @export
@@ -662,7 +666,7 @@ oj['CompoundFilterOperator']['CompoundOperator'] = CompoundFilterOperator.Compou
 
 /**
  * Array of FilterOperators on which to apply the operator
- * 
+ *
  * @ojstatus preview
  * @since 5.0.0
  * @export
@@ -672,7 +676,7 @@ oj['CompoundFilterOperator']['CompoundOperator'] = CompoundFilterOperator.Compou
  * @name criteria
  * @type {Array.<oj.FilterOperator>}
  * @ojsignature {target: "Type",
- *               value: "FilterOperator<D>[]"}
+ *               value: "Array<FilterOperator<D>>"}
  */
 
 /**
@@ -689,14 +693,15 @@ oj['CompoundFilterOperator']['CompoundOperator'] = CompoundFilterOperator.Compou
  * @enum {string}
  * @name CompoundOperator
  * @memberof oj.CompoundFilterOperator
- * @property {string} $and The filter is only a match if both expressions evaluate to true.
- * @property {string} $or The filter is a match if either expression evaluates to true.
+ * @property {string} $and=$and The filter is only a match if both expressions evaluate to true.
+ * @property {string} $or=$or The filter is a match if either expression evaluates to true.
  * @since 5.0.0
  */
 
 /**
  * End of jsdoc
  */
+
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
@@ -723,7 +728,7 @@ oj['CompoundFilterOperator']['CompoundOperator'] = CompoundFilterOperator.Compou
  * http://jquery.org/license
  */
 
-/*jslint browser: true,devel:true*/
+/* jslint browser: true,devel:true*/
 
 /**
  * @ojstatus preview
@@ -736,9 +741,9 @@ oj['CompoundFilterOperator']['CompoundOperator'] = CompoundFilterOperator.Compou
  */
 
 /**
- * Optional keys of items located after the items involved in the operation. If null and
+ * Optional set of keys for items located after the items involved in the operation. If null and
  * index not specified then insert at the end.
- * 
+ *
  * @ojstatus preview
  * @since 4.2.0
  * @export
@@ -747,13 +752,51 @@ oj['CompoundFilterOperator']['CompoundOperator'] = CompoundFilterOperator.Compou
  * @instance
  * @name afterKeys
  * @type {Set.<any>}
+ * @ojdeprecated {since: '6.0.0', description: 'Use addBeforeKeys instead.  addBeforeKeys is an Array instead of a Set.'}
  * @ojsignature {target: "Type",
  *               value: "?Set<K>"}
  */
 
 /**
+ * Optional array of keys for items located after the items involved in the operation. If null and
+ * index not specified then insert at the end.
+ *
+ * @ojstatus preview
+ * @since 6.0.0
+ * @export
+ * @expose
+ * @memberof oj.DataProviderAddOperationEventDetail
+ * @instance
+ * @name addBeforeKeys
+ * @type {Array.<any>}
+ * @ojsignature {target: "Type",
+ *               value: "?K[]"}
+ */
+
+/**
+ * Keys of parents for the items involved in the operation.
+ * <p>If this property is undefined, the items involved in the operation have no parent.
+ * This is the case for non-hierarchical DataProvider implementatons such as ArrayDataProvider.</p>
+ * <p>If this property has a value, each entry in the array represents the parent key of
+ * the corresponding item.  A parent key of null indicates that the item is at the root level.
+ * TreeDataProvider implementations should always set this property.</p>
+ *
+ * @ojstatus preview
+ * @since 6.0.0
+ * @export
+ * @expose
+ * @memberof oj.DataProviderAddOperationEventDetail
+ * @instance
+ * @name parentKeys
+ * @type {Array.<any>}
+ * @ojsignature {target: "Type",
+ *               value: "?K[]"}
+ */
+
+/**
  * End of jsdoc
  */
+
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
@@ -789,14 +832,14 @@ oj['DataProviderMutationEvent'] = DataProviderMutationEvent;
  * http://jquery.org/license
  */
 
-/*jslint browser: true,devel:true*/
+/* jslint browser: true,devel:true*/
 
 /**
  * This interface specifies as one atomic event all the mutation operations which
  * occurred. The keys for each operation must be disjoint from each other, e.g. for example
  * an add and remove cannot occur on the same item. In addition, any indexes specified must
  * be monotonically increasing.
- * 
+ *
  * @ojstatus preview
  * @since 4.2.0
  * @export
@@ -807,7 +850,7 @@ oj['DataProviderMutationEvent'] = DataProviderMutationEvent;
 
 /**
  * Optional add operation detail
- * 
+ *
  * @ojstatus preview
  * @since 4.2.0
  * @export
@@ -822,7 +865,7 @@ oj['DataProviderMutationEvent'] = DataProviderMutationEvent;
 
 /**
  * Optional remove operation detail
- * 
+ *
  * @ojstatus preview
  * @since 4.2.0
  * @export
@@ -837,7 +880,7 @@ oj['DataProviderMutationEvent'] = DataProviderMutationEvent;
 
 /**
  * Optional update operation detail
- * 
+ *
  * @ojstatus preview
  * @since 4.2.0
  * @export
@@ -853,6 +896,7 @@ oj['DataProviderMutationEvent'] = DataProviderMutationEvent;
 /**
  * End of jsdoc
  */
+
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
@@ -864,25 +908,26 @@ oj['DataProviderMutationEvent'] = DataProviderMutationEvent;
  * http://jquery.org/license
  */
 
-/*jslint browser: true,devel:true*/
+/* jslint browser: true,devel:true*/
 /**
  * @ojstatus preview
  * @since 4.2.0
  * @export
  * @class oj.DataProviderMutationEvent
  * @implements Event
+ * @ojtsnoexport
  * @classdesc Mutation event dispatched by oj.DataProvider
  * @param {oj.DataProviderMutationEventDetail} detail the event detail
  * @ojsignature [{target: "Type",
  *               value: "class DataProviderMutationEvent<K, D> implements Event"},
  *               {target: "Type",
- *               value: "DataProviderMutationEventDetail<K, D>", 
+ *               value: "DataProviderMutationEventDetail<K, D>",
  *               for: "detail"}]
  */
 
 /**
  * Event detail
- * 
+ *
  * @ojstatus preview
  * @since 4.2.0
  * @export
@@ -937,7 +982,18 @@ oj['DataProviderMutationEvent'] = DataProviderMutationEvent;
  * @instance
  * @name cancelBubble
  * @type {boolean}
- */  
+ */
+
+/**
+ * @ojstatus preview
+ * @since 6.0.0
+ * @export
+ * @expose
+ * @memberof oj.DataProviderMutationEvent
+ * @instance
+ * @name composed
+ * @type {boolean}
+ */
 
 /**
  * @ojstatus preview
@@ -1133,8 +1189,20 @@ oj['DataProviderMutationEvent'] = DataProviderMutationEvent;
  */
 
 /**
+ * @ojstatus preview
+ * @since 6.0.0
+ * @export
+ * @expose
+ * @memberof oj.DataProviderMutationEvent
+ * @instance
+ * @name NONE
+ * @type {number}
+ */
+
+/**
  * End of jsdoc
  */
+
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
@@ -1151,7 +1219,7 @@ oj['DataProviderMutationEvent'] = DataProviderMutationEvent;
  * http://jquery.org/license
  */
 
-/*jslint browser: true,devel:true*/
+/* jslint browser: true,devel:true*/
 
 /**
  * @ojstatus preview
@@ -1164,7 +1232,7 @@ oj['DataProviderMutationEvent'] = DataProviderMutationEvent;
 
 /**
  * keys of items involved in the operation
- * 
+ *
  * @ojstatus preview
  * @since 4.2.0
  * @export
@@ -1179,7 +1247,7 @@ oj['DataProviderMutationEvent'] = DataProviderMutationEvent;
 
 /**
  * Optional metadata of items involved in the operation
- * 
+ *
  * @ojstatus preview
  * @since 4.2.0
  * @export
@@ -1189,12 +1257,12 @@ oj['DataProviderMutationEvent'] = DataProviderMutationEvent;
  * @name metadata
  * @type {Array.<ItemMetadata>}
  * @ojsignature {target: "Type",
- *               value: "?ItemMetadata<K>[]"}
+ *               value: "?Array<ItemMetadata<K>>"}
  */
 
 /**
  * Optional data of items involved in the operation
- * 
+ *
  * @ojstatus preview
  * @since 4.2.0
  * @export
@@ -1209,7 +1277,7 @@ oj['DataProviderMutationEvent'] = DataProviderMutationEvent;
 
 /**
  * Optional indexes of items involved in the operation
- * 
+ *
  * @ojstatus preview
  * @since 4.2.0
  * @export
@@ -1225,6 +1293,7 @@ oj['DataProviderMutationEvent'] = DataProviderMutationEvent;
 /**
  * End of jsdoc
  */
+
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
@@ -1250,16 +1319,17 @@ oj['DataProviderRefreshEvent'] = DataProviderRefreshEvent;
  * http://jquery.org/license
  */
 
-/*jslint browser: true,devel:true*/
+/* jslint browser: true,devel:true*/
 
 /**
  * The oj.DataProviderRefreshEvent class
- * 
+ *
  * @ojstatus preview
  * @since 4.1.0
  * @export
  * @class oj.DataProviderRefreshEvent
  * @implements Event
+ * @ojtsnoexport
  * @classdesc Refresh Event dispatched by the DataProvider. This event is fired when
  * the data has been refreshed and components need to re-fetch the data.
  * @ojsignature {target: "Type",
@@ -1308,7 +1378,18 @@ oj['DataProviderRefreshEvent'] = DataProviderRefreshEvent;
  * @instance
  * @name cancelBubble
  * @type {boolean}
- */  
+ */
+
+/**
+ * @ojstatus preview
+ * @since 6.0.0
+ * @export
+ * @expose
+ * @memberof oj.DataProviderRefreshEvent
+ * @instance
+ * @name composed
+ * @type {boolean}
+ */
 
 /**
  * @ojstatus preview
@@ -1504,6 +1585,17 @@ oj['DataProviderRefreshEvent'] = DataProviderRefreshEvent;
  */
 
 /**
+ * @ojstatus preview
+ * @since 6.0.0
+ * @export
+ * @expose
+ * @memberof oj.DataProviderRefreshEvent
+ * @instance
+ * @name NONE
+ * @type {number}
+ */
+
+/**
  * End of jsdoc
  */
 
@@ -1518,7 +1610,7 @@ oj['DataProviderRefreshEvent'] = DataProviderRefreshEvent;
  * http://jquery.org/license
  */
 
-/*jslint browser: true,devel:true*/
+/* jslint browser: true,devel:true*/
 /**
  * @ojstatus preview
  * @since 4.2.0
@@ -1535,7 +1627,7 @@ oj['DataProviderRefreshEvent'] = DataProviderRefreshEvent;
  * Applications can also create their own implementations of this interface and use them with JET components that support it.  For example, an application can create a DataProvider implementation
  * that fetches data from a REST endpoint.
  * </p><p>
- * Implementation class must implement all of the interface methods.  It should also fire the events described below when appropriate, so that JET components or other consumers can respond to data change accordingly. 
+ * Implementation class must implement all of the interface methods.  It should also fire the events described below when appropriate, so that JET components or other consumers can respond to data change accordingly.
  * </p>
  *
  * <h3 id="events-section">
@@ -1580,13 +1672,12 @@ oj['DataProviderRefreshEvent'] = DataProviderRefreshEvent;
  * dataProvider.addEventListener("mutate", listener);
  * </code></pre>
  */
-oj.DataProvider = function()
-{
+oj.DataProvider = function () {
 };
 
 /**
  * Get an asyncIterator which can be used to fetch a block of data.
- * 
+ *
  * @ojstatus preview
  * @since 4.2.0
  * @param {oj.FetchListParameters=} params fetch parameters
@@ -1599,7 +1690,7 @@ oj.DataProvider = function()
  * @method
  * @name fetchFirst
  * @ojsignature {target: "Type",
- *               value: "(FetchListParameters?): AsyncIterable<FetchListResult<K, D>>"}
+ *               value: "(parameters?: FetchListParameters<D>): AsyncIterable<FetchListResult<K, D>>"}
  * @example <caption>Get an asyncIterator and then fetch first block of data by executing next() on the iterator. Subsequent blocks can be fetched by executing next() again.</caption>
  * var asyncIterator = dataprovider.fetchFirst(options)[Symbol.asyncIterator]();
  * asyncIterator.next().then(function(result) {
@@ -1612,7 +1703,7 @@ oj.DataProvider = function()
 
 /**
  * Determines whether this DataProvider supports a certain feature.
- * 
+ *
  * @ojstatus preview
  * @since 4.2.0
  * @param {string} capabilityName capability name. Supported capability names are:
@@ -1641,7 +1732,7 @@ oj.DataProvider = function()
 
 /**
  * Return the total number of rows in this dataprovider
- * 
+ *
  * @ojstatus preview
  * @return {Promise.<number>} Returns a Promise which resolves to the total number of rows. -1 is unknown row count.
  * @export
@@ -1759,7 +1850,7 @@ oj.DataProvider = function()
  * <li>"no": this data provider is not empty.</li>
  * <li>"unknown": it is not known if this data provider is empty until a fetch is made.</li>
  * </ul>
- * 
+ *
  * @ojstatus preview
  * @since 4.2.0
  * @return {"yes" | "no" | "unknown"} string that indicates if this data provider is empty
@@ -1779,6 +1870,7 @@ oj.DataProvider = function()
 /**
  * End of jsdoc
  */
+
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
@@ -1800,7 +1892,7 @@ oj.DataProvider = function()
  * http://jquery.org/license
  */
 
-/*jslint browser: true,devel:true*/
+/* jslint browser: true,devel:true*/
 
 /**
  * The interface for oj.FetchByKeysCapability
@@ -1819,7 +1911,7 @@ oj.DataProvider = function()
  * <li>"iteration": the implementation uses fetchFirst iteratively to find the result</li>
  * <li>"lookup": the implementation uses direct lookup to find the result</li>
  * </ul>
- * 
+ *
  * @ojstatus preview
  * @since 4.2.0
  * @export
@@ -1833,6 +1925,7 @@ oj.DataProvider = function()
 /**
  * End of jsdoc
  */
+
 var FetchByKeysMixin = /** @class */ (function () {
     function FetchByKeysMixin() {
     }
@@ -1966,11 +2059,11 @@ oj['FetchByKeysMixin']['applyMixin'] = FetchByKeysMixin.applyMixin;
  * http://jquery.org/license
  */
 
-/*jslint browser: true,devel:true*/
+/* jslint browser: true,devel:true*/
 /**
  * @ojstatus preview
  * @export
- * @class oj.FetchByKeysMixin
+ * @namespace oj.FetchByKeysMixin
  * @classdesc Mixin class to provide generic implementation of fetchByKeys and containsKeys
  * methods for the {@link oj.DataProvider} interface.
  * <p>
@@ -2016,6 +2109,7 @@ oj['FetchByKeysMixin']['applyMixin'] = FetchByKeysMixin.applyMixin;
  * }
  *
  * oj.FetchByKeysMixin.applyMixin(CustomDataProvider);
+ * @ojsignature {target: "Type", value: "(derivedCtor: {new(): DataProvider<any, any>}): any;"}
  */
 
  /**
@@ -2043,7 +2137,7 @@ oj['FetchByKeysMixin']['applyMixin'] = FetchByKeysMixin.applyMixin;
  * http://jquery.org/license
  */
 
-/*jslint browser: true,devel:true*/
+/* jslint browser: true,devel:true*/
 
 /**
  * The interface for oj.FetchByOffsetCapability
@@ -2062,7 +2156,7 @@ oj['FetchByKeysMixin']['applyMixin'] = FetchByKeysMixin.applyMixin;
  * <li>"iteration": the implementation uses fetchFirst iteratively to find the result</li>
  * <li>"randomAccess": the implementation uses random access to find the result</li>
  * </ul>
- * 
+ *
  * @ojstatus preview
  * @since 4.2.0
  * @export
@@ -2076,6 +2170,7 @@ oj['FetchByKeysMixin']['applyMixin'] = FetchByKeysMixin.applyMixin;
 /**
  * End of jsdoc
  */
+
 var FetchByOffsetMixin = /** @class */ (function () {
     function FetchByOffsetMixin() {
     }
@@ -2189,11 +2284,11 @@ oj['FetchByOffsetMixin']['applyMixin'] = FetchByOffsetMixin.applyMixin;
  * http://jquery.org/license
  */
 
-/*jslint browser: true,devel:true*/
+/* jslint browser: true,devel:true*/
 /**
  * @ojstatus preview
  * @export
- * @class oj.FetchByOffsetMixin
+ * @namespace oj.FetchByOffsetMixin
  * @classdesc Mixin class to provide generic implementation of fetchByOffset
  * method for the {@link oj.DataProvider} interface.
  * <p>
@@ -2238,11 +2333,13 @@ oj['FetchByOffsetMixin']['applyMixin'] = FetchByOffsetMixin.applyMixin;
  * }
  *
  * oj.FetchByOffsetMixin.applyMixin(CustomDataProvider);
+ * @ojsignature {target: "Type", value: "(derivedCtor: {new(): DataProvider<any, any>}): any;"}
  */
 
  /**
   * end of jsdoc
   */
+
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
@@ -2254,10 +2351,10 @@ oj['FetchByOffsetMixin']['applyMixin'] = FetchByOffsetMixin.applyMixin;
  * http://jquery.org/license
  */
 
-/*jslint browser: true,devel:true*/
+/* jslint browser: true,devel:true*/
 /**
  * The interface for oj.FetchByOffsetParameters
- * 
+ *
  * @ojstatus preview
  * @since 4.1.0
  * @export
@@ -2269,7 +2366,7 @@ oj['FetchByOffsetMixin']['applyMixin'] = FetchByOffsetMixin.applyMixin;
 
 /**
  * The offset used for the fetch call.
- * 
+ *
  * @ojstatus preview
  * @since 4.1.0
  * @export
@@ -2282,7 +2379,7 @@ oj['FetchByOffsetMixin']['applyMixin'] = FetchByOffsetMixin.applyMixin;
 
 /**
  * The interface for oj.FetchByOffsetResults
- * 
+ *
  * @ojstatus preview
  * @since 4.1.0
  * @export
@@ -2293,7 +2390,7 @@ oj['FetchByOffsetMixin']['applyMixin'] = FetchByOffsetMixin.applyMixin;
 
 /**
  * The parameters used for the fetch call.
- * 
+ *
  * @ojstatus preview
  * @since 4.1.0
  * @export
@@ -2309,7 +2406,7 @@ oj['FetchByOffsetMixin']['applyMixin'] = FetchByOffsetMixin.applyMixin;
 
 /**
  * Array of {@link oj.Item}.
- * 
+ *
  * @ojstatus preview
  * @since 4.1.0
  * @export
@@ -2326,7 +2423,7 @@ oj['FetchByOffsetMixin']['applyMixin'] = FetchByOffsetMixin.applyMixin;
  * Indicates whether there are more items which can be fetched.
  * <p>If this is true, fetching the next block will likely return an empty array as the result.  A DataProvider can potentially make a stronger guarantee (if the DataProvider is running against an immutable repository or the DataProvider doesn’t attempt to retrieve a subsequent block if the DataProvider believes it is complete).  We don’t generally make the stronger guarantee since the repository may have been mutated since the previous response with done:true, such that new records would be returned.</p>
  * <p>If this is false, fetching the next block may or may not return an empty array as a result.</p>
- * 
+ *
  * @ojstatus preview
  * @since 4.1.0
  * @export
@@ -2340,6 +2437,7 @@ oj['FetchByOffsetMixin']['applyMixin'] = FetchByOffsetMixin.applyMixin;
  /**
   * end of jsdoc
   */
+
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
@@ -2371,7 +2469,7 @@ oj['FetchByOffsetMixin']['applyMixin'] = FetchByOffsetMixin.applyMixin;
  * http://jquery.org/license
  */
 
-/*jslint browser: true,devel:true*/
+/* jslint browser: true,devel:true*/
 
 /**
  * The interface for oj.FilterCapability
@@ -2386,7 +2484,7 @@ oj['FetchByOffsetMixin']['applyMixin'] = FetchByOffsetMixin.applyMixin;
 
 /**
  * An array of supported filter operator strings
- * 
+ *
  * @ojstatus preview
  * @since 5.0.0
  * @export
@@ -2400,6 +2498,7 @@ oj['FetchByOffsetMixin']['applyMixin'] = FetchByOffsetMixin.applyMixin;
 /**
  * End of jsdoc
  */
+
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
@@ -2416,7 +2515,7 @@ oj['FetchByOffsetMixin']['applyMixin'] = FetchByOffsetMixin.applyMixin;
  * http://jquery.org/license
  */
 
-/*jslint browser: true,devel:true*/
+/* jslint browser: true,devel:true*/
 
 /**
  * The interface for oj.FilterOperator
@@ -2431,7 +2530,7 @@ oj['FetchByOffsetMixin']['applyMixin'] = FetchByOffsetMixin.applyMixin;
 
 /**
  * The operator, either an oj.AttributeFilterOperator.AttributeOperator or oj.CompoundFilterOperator.CompoundOperator.
- * 
+ *
  * @ojstatus preview
  * @since 5.0.0
  * @export
@@ -2444,7 +2543,7 @@ oj['FetchByOffsetMixin']['applyMixin'] = FetchByOffsetMixin.applyMixin;
 
 /**
  * Optional function which is used to locally filter the data.
- * 
+ *
  * @ojstatus preview
  * @since 5.0.0
  * @export
@@ -2460,6 +2559,7 @@ oj['FetchByOffsetMixin']['applyMixin'] = FetchByOffsetMixin.applyMixin;
 /**
  * End of jsdoc
  */
+
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
@@ -2481,10 +2581,10 @@ oj['FetchByOffsetMixin']['applyMixin'] = FetchByOffsetMixin.applyMixin;
  * http://jquery.org/license
  */
 
-/*jslint browser: true,devel:true*/
+/* jslint browser: true,devel:true*/
 /**
  * The interface for oj.Item
- * 
+ *
  * @ojstatus preview
  * @since 4.1.0
  * @export
@@ -2543,7 +2643,7 @@ oj['FetchByOffsetMixin']['applyMixin'] = FetchByOffsetMixin.applyMixin;
  * http://jquery.org/license
  */
 
-/*jslint browser: true,devel:true*/
+/* jslint browser: true,devel:true*/
 
 /**
  * The interface for oj.SortCapability
@@ -2563,7 +2663,7 @@ oj['FetchByOffsetMixin']['applyMixin'] = FetchByOffsetMixin.applyMixin;
  * <li>"single": only one attribute can be sorted at a time.</li>
  * <li>"multiple": more than one attribute can be sorted at a time.</li>
  * </ul>
- * 
+ *
  * @ojstatus preview
  * @since 4.2.0
  * @export
@@ -2577,9 +2677,15 @@ oj['FetchByOffsetMixin']['applyMixin'] = FetchByOffsetMixin.applyMixin;
 /**
  * End of jsdoc
  */
+
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
  */
 
+var __DataProvider = {};
+__DataProvider.FetchByKeysMixin = oj.FetchByKeysMixin;
+__DataProvider.FetchByOffsetMixin = oj.FetchByOffsetMixin;
+
+  ;return __DataProvider;
 });

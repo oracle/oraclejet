@@ -1,22 +1,25 @@
 {
   "name": "oj-gantt-row",
-  "version": "5.2.0",
-  "jetVersion": "5.2.0",
+  "version": "6.0.0",
+  "jetVersion": "6.0.0",
   "displayName": "Gantt Row",
   "type": "core",
   "description": "ojGanttRow",
+  "help": "https://docs.oracle.com/en/middleware/jet/6/reference-api/oj.ojGanttRow.html",
   "properties": {
     "label": {
       "description": "The label associated with the row.",
       "type": "string",
       "displayName": "Label",
-      "value": ""
+      "value": "",
+      "help": "label"
     },
     "labelStyle": {
       "description": "The CSS style defining the style of the label. Only CSS style applicable to SVG elements can be used.",
       "type": "object",
       "displayName": "Label Style",
-      "value": {}
+      "value": {},
+      "help": "labelStyle"
     }
   }
 }

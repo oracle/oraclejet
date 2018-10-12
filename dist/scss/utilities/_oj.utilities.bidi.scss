@@ -177,6 +177,11 @@ $textDirection: null !default;
   @else if ($justifyContentVal == center)
   {
     text-align: center;
+    // added to allow precss to match
+    @include oj-rtl()
+    {
+      text-align: center;
+    }
   }
   @else if ($justifyContentVal == flex-end)
   {

@@ -405,6 +405,10 @@ define('eventDispatcher',[],function() {
     // Add missing DragEvent property to the event
     event.dataTransfer = dataTransfer;
 
+    // Marked as pseudo event so that internally we can differentiate between real DOM
+    // event vs. event created by this class
+    event.__isPseudo = true;
+
     return event;
   }
 
@@ -643,6 +647,7 @@ define('dragController',['./dataTransfer', './dragImage', './eventDispatcher', '
     var _currentDragOp = "none";
     var _bodyCursor;
     var _dataMode;
+    var _dragImageOffset;
 
     /**
      * Called by platform-specific driver to notify the controller that
@@ -784,6 +789,7 @@ define('dragController',['./dataTransfer', './dragImage', './eventDispatcher', '
       }
 
       if (element && element.cloneNode) {
+        _dragImageOffset = {x: x, y: y};
         _dragImage = new DragImage(element, x, y);
         _dragImage.start();
       }
@@ -1011,7 +1017,10 @@ define('dragController',['./dataTransfer', './dragImage', './eventDispatcher', '
         } else {
           _currentDragOp = "none";
         }
+
+        return eventCanceled;
       }
+      return true;
     }
 
     function _isDropActive(cancelDrag) {
@@ -1042,10 +1051,70 @@ define('dragController',['./dataTransfer', './dragImage', './eventDispatcher', '
       _bodyCursor = null;
     }
 
+    // make sure the drag image is not right on top of the cursor, as it will
+    // interfere with dragenter/leave/over function (showing invalid drop)
+    var TOUCH_IMAGE_LEFT_OFFSET = 50;
+    var TOUCH_IMAGE_RIGHT_OFFSET = 10;
+
+    // for directly handling of dnd event
+    // basically this will fire pseudo dnd event in place of dnd event, so that
+    // it can support advance datatransfer object than what native browser offers
+    function _handleDndEvent(event) {
+      var target = event.target;
+      var relatedTarget = event.relatedTarget;
+      // replicate input props, note that dnd events inherits from MouseEvent 
+      var inputProps = EventDispatcher.getMouseEventProps(event);
+
+      switch(event.type) {
+        case "drag":
+          if (_dragImage) {
+            _dragImage.show(true);
+          }
+          _fireEvent("drag", target, inputProps, _dataTransfer);      
+          break;
+        case "dragenter":
+          _fireEvent("dragenter", target, inputProps, _dataTransfer, relatedTarget);      
+          break;
+        case "dragleave":
+          _fireEvent("dragleave", target, inputProps, _dataTransfer, relatedTarget);      
+          break;
+        case "dragover":
+          var x = _dragImageOffset.x > 0 ? inputProps.clientX - TOUCH_IMAGE_LEFT_OFFSET : inputProps.clientX + TOUCH_IMAGE_RIGHT_OFFSET;
+          var y = inputProps.clientY;
+          _dragImage.move(x, y);
+
+          var canceled = _fireEvent("dragover", target, inputProps, _dataTransfer);      
+          _updateCurrentDragOp(canceled);
+          if (canceled) {
+            event.preventDefault();
+          }
+          break;
+        case "dragend":
+          if (_dragImage) {
+            _dragImage.show(false);
+          }
+          _fireEvent("dragend", target, inputProps, _dataTransfer, relatedTarget);
+          _resetDragState();
+          // cleanup native event
+          event.dataTransfer.clearData();
+          break;
+        case "drop":
+          if (_dragImage) {
+            _dragImage.show(false);
+          }
+          canceled = _handleDrop(target, inputProps, false);
+          if (canceled) {
+            event.preventDefault();
+          }
+          break;
+      }
+    }    
+
     this.start = _start;
     this.drag = _drag;
     this.end = _end;
     this.cancel = _cancel;
+    this.handleDndEvent = _handleDndEvent;
   }
 
   return DragController;
@@ -1234,6 +1303,8 @@ define('desktopDragDriver',['./args', './glassPane', './eventDispatcher'],
     Args.required('controller', controller);
 
     var _glassPane;
+    var _pointerType;
+    var _dragSource;
 
     /**
      * Installs the desktop drag driver.
@@ -1250,6 +1321,17 @@ define('desktopDragDriver',['./args', './glassPane', './eventDispatcher'],
           userAgent.indexOf("edge") > 0 ||
           userAgent.indexOf("phantomjs") > 0) {
         rootElement.addEventListener('dragstart', _handleDragStart, true);
+
+        // these has to be registered before pointer/dragstart event
+        // there should be no effect for phantomjs since pointer type will
+        // never be "touch"
+        rootElement.addEventListener("drag", _handleDndEvent, true);
+        rootElement.addEventListener("dragover", _handleDndEvent, true);
+        rootElement.addEventListener("dragend", _handleDndEvent, true);
+        rootElement.addEventListener("dragenter", _handleDndEvent, true);
+        rootElement.addEventListener("dragleave", _handleDndEvent, true);
+        rootElement.addEventListener("drop", _handleDndEvent, true);  
+        rootElement.addEventListener('pointerdown', _handlePointerDown, true);
       }
     }
 
@@ -1258,6 +1340,20 @@ define('desktopDragDriver',['./args', './glassPane', './eventDispatcher'],
      */
     function _remove() {
       rootElement.removeEventListener('dragstart', _handleDragStart, true);
+      rootElement.removeEventListener("drag", _handleDndEvent, true);
+      rootElement.removeEventListener("dragover", _handleDndEvent, true);
+      rootElement.removeEventListener("dragend", _handleDndEvent, true);
+      rootElement.removeEventListener("dragenter", _handleDndEvent, true);
+      rootElement.removeEventListener("dragleave", _handleDndEvent, true);
+      rootElement.removeEventListener("drop", _handleDndEvent, true);
+      rootElement.removeEventListener('pointerdown', _handlePointerDown, true);
+    }
+
+    /**
+     * Keep track of the pointer type that triggers the dnd
+     */
+    function _handlePointerDown(event) {      
+      _pointerType = event.pointerType;      
     }
 
     // Capture listener for drag start events.  Our strategy is this:
@@ -1270,7 +1366,26 @@ define('desktopDragDriver',['./args', './glassPane', './eventDispatcher'],
     // not, we copy properties/data over to the native event and let the
     // default processing kick in.)
     function _handleDragStart(event) {
+      if (_pointerType === "touch") {
+        // to prevent IE from rendering the ghost image
+        var target = event.target;
+        target.style.visibility = "hidden";
 
+        // for desktop that supports touch such as the surface pro
+        _handleTouchDragStart(event);
+
+        setTimeout(function()
+        {
+          target.style.visibility = "visible";
+        }, 0);
+      }
+      else {
+        // all others, including phantomjs
+        _handleMouseDragStart(event);
+      }
+    }
+
+    function _handleMouseDragStart(event) {
       var inputProps = EventDispatcher.getMouseEventProps(event);
       var dragProps;
 
@@ -1395,6 +1510,71 @@ define('desktopDragDriver',['./args', './glassPane', './eventDispatcher'],
         _teardownEventListeners();
 
         controller.cancel(lastInputProps);
+      }
+    }
+
+    /////////////////// Edge Touch Support /////////////////////////////
+    /**
+     * For touch on Edge, we cannot rely on touch event because by default
+     * they are not enabled (even worse on hybrid app use case the option
+     * is not exposed).  Using a touch event polyfill (that simulate touch
+     * events based on pointer events) would not work either because pointer
+     * events are immediately cancelled when the element is draggable.
+     *
+     * The strategy that we decided to use is to listen for the native dnd event
+     * and enhance them to add advance datatransfer support (drag image support 
+     * in a later release).
+     */
+    function _handleTouchDragStart(event) {      
+      // bail if the event is a pseudo event created by the controller
+      if (event.__isPseudo) {
+        return;
+      }
+
+      // we'll be firing our own dragstart event
+      event.stopPropagation();
+      
+      var elem = event.target;
+      
+      // Find the first draggable ancestor element of the touch target
+      while (elem && !elem.draggable) {
+        elem = elem.parentNode;
+      }
+      
+      if (elem) {
+        _dragSource = elem;
+      
+        var inputProps = EventDispatcher.getMouseEventProps(event);
+        var status = controller.start(_dragSource, null, inputProps);
+        if (!status.dragStarted) {
+          // cancel drag
+          event.preventDefault();
+          _dragSource = null;
+        }
+      }      
+    }
+
+    // for the rest of dnd event we will just delegate to the controller to fire
+    // the pseudo event
+    function _handleDndEvent(event) {
+      // bail if the event is a pseudo event
+      if (event.__isPseudo) {
+        return;
+      }
+      
+      // bail if dragstart did not succeed
+      if (!_dragSource) {
+        return;
+      }
+
+      // we'll be firing our own event
+      event.stopPropagation();  
+  
+      controller.handleDndEvent(event);    
+
+      // reset _dragSource when done
+      if (event.type === "dragend") {
+        _dragSource = null;
       }
     }
 
@@ -1560,7 +1740,10 @@ define('bootstrap',['./dragController', './desktopDragDriver', './touchDragDrive
       // Todo: support platform-specific bootstrapping, so that we
       // do not need to install mobile driver on desktop and
       // vice versa.
-      var driverConstructors = [DesktopDragDriver, TouchDragDriver];
+      var userAgent = navigator.userAgent.toLowerCase();
+
+      // do not use TouchDragDriver for Edge, it will be handled with DesktopDragDriver
+      var driverConstructors = userAgent.indexOf("edge") !== -1 ? [DesktopDragDriver] : [DesktopDragDriver, TouchDragDriver];
       _installDragDrivers(controller, driverConstructors);
     }
   }

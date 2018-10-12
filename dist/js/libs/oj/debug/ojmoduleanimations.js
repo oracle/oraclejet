@@ -4,7 +4,7 @@
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
-define(['ojs/ojcore', 'knockout', 'jquery', 'promise', 'ojs/ojanimation'], function(oj, ko, $)
+define(['ojs/ojcore', 'knockout', 'jquery', 'ojs/ojthemeutils', 'ojs/ojanimation', 'promise'], function(oj, ko, $, ThemeUtils, AnimationUtils)
 {
 
 /**
@@ -12,7 +12,7 @@ define(['ojs/ojcore', 'knockout', 'jquery', 'promise', 'ojs/ojanimation'], funct
  * All rights reserved.
  */
 
-/* global ko:false, Promise:false */
+/* global ko:false, Promise:false, ThemeUtils:false */
 
 /**
  * A collection of ModuleAnimation implementations that can be specified on the "animation"
@@ -49,11 +49,16 @@ define(['ojs/ojcore', 'knockout', 'jquery', 'promise', 'ojs/ojanimation'], funct
  * </ul>
  *
  * @namespace
- * @ojtsimport ojmodule-element
+ * @ojtsimport {module: "ojanimation", type: "AMD", importName: "AnimationUtils"}
+ * @ojtsimport {module: "ojmodule-element", type: "AMD", imported: ["ModuleElementAnimation"]}
  * @since 1.2
+ * @ojtsmodule
  * @export
  */
 oj.ModuleAnimations = {};
+// mapping variable definition, used in a no-require environment. Maps the oj.ModuleAnimations object to the name used in the require callback.
+// eslint-disable-next-line no-unused-vars
+var ModuleAnimations = oj.ModuleAnimations;
 
 oj.ModuleAnimations._addContainedElements = function (node, roots) {
   var child = ko.virtualElements.firstChild(node);
@@ -155,8 +160,8 @@ oj.ModuleAnimations._createViewParent = function (oldView) {
   * @return {Object} an implementation of the ModuleAnimation interface
   * @export
   *@ojsignature [
-  *  { target: "Type", for: "oldViewEffect", value: "{effect: oj.AnimationUtils.AnimationMethods, [key:string]: any}|oj.AnimationUtils.AnimationMethods|null"},
-  *  { target: "Type", for: "newViewEffect", value: "{effect: oj.AnimationUtils.AnimationMethods, [key:string]: any}|oj.AnimationUtils.AnimationMethods|null"},
+  *  { target: "Type", for: "oldViewEffect", value: "{effect: AnimationUtils.AnimationMethods, [key:string]: any}|AnimationUtils.AnimationMethods|null"},
+  *  { target: "Type", for: "newViewEffect", value: "{effect: AnimationUtils.AnimationMethods, [key:string]: any}|AnimationUtils.AnimationMethods|null"},
   *  { target: "Type", for: "returns", value: "oj.ModuleElementAnimation"}
   * ]
   *
@@ -191,11 +196,13 @@ oj.ModuleAnimations.createAnimation = function (oldViewEffect, newViewEffect, ne
       var promises = [];
 
       if (oldViewHost && oldViewEffect) {
-        promises.push(oj.AnimationUtils.startAnimation(oldViewHost, 'close', oldViewEffect));
+        // eslint-disable-next-line no-undef
+        promises.push(AnimationUtils.startAnimation(oldViewHost, 'close', oldViewEffect));
       }
 
       if (newViewHost && newViewEffect) {
-        promises.push(oj.AnimationUtils.startAnimation(newViewHost, 'open', newViewEffect));
+        // eslint-disable-next-line no-undef
+        promises.push(AnimationUtils.startAnimation(newViewHost, 'open', newViewEffect));
       }
 
       var animatePromise = Promise.all(promises);
@@ -229,7 +236,7 @@ oj.ModuleAnimations._postAnimationProcess = function (context) {
 oj.ModuleAnimations._getModuleEffect = function (animateName) {
   if (oj.ModuleAnimations._moduleEffects == null) {
     oj.ModuleAnimations._moduleEffects =
-      oj.ThemeUtils.parseJSONFromFontFamily('oj-animation-module-effects');
+      ThemeUtils.parseJSONFromFontFamily('oj-animation-module-effects');
   }
 
   if (oj.ModuleAnimations._moduleEffects) {
@@ -253,7 +260,7 @@ oj.ModuleAnimations._getImplementation = function (animateName) {
 oj.ModuleAnimations._getNavigateMethod = function (context, navigationType) {
   if (oj.ModuleAnimations._navigateMethods == null) {
     oj.ModuleAnimations._navigateMethods =
-      oj.ThemeUtils.parseJSONFromFontFamily('oj-animation-navigate-methods');
+      ThemeUtils.parseJSONFromFontFamily('oj-animation-navigate-methods');
   }
 
   if (oj.ModuleAnimations._navigateMethods) {
@@ -575,7 +582,7 @@ oj.ModuleAnimations.navSiblingLater =
   *
   * @return {Object} switching implementation of the ModuleAnimation interface
   * @ojsignature [
-  *    {target:"Type", for: "callback", value: "(param0: oj.ModuleAnimations.SwitcherCallBackParam) => oj.ModuleAnimations.Animations"},
+  *    {target:"Type", for: "callback", value: "(param0: ModuleAnimations.SwitcherCallBackParam) => ModuleAnimations.Animations"},
   *    {target:"Type", for: "returns", value: "oj.ModuleElementAnimation"}
   *  ]
   * @export
@@ -646,4 +653,5 @@ oj.ModuleAnimations.switcher = function (callback) {
  * @ojvalue {string} "zoomOut"
  */
 
+  ;return oj.ModuleAnimations;
 });

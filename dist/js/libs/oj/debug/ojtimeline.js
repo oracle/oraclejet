@@ -4,7 +4,9 @@
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
-define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojtime-base', 'ojs/internal-deps/dvt/DvtTimeline'], function (oj, $, comp, base, dvt)
+define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojtime-base', 'ojs/internal-deps/dvt/DvtTimeline', 
+'ojs/ojattributegrouphandler', 'ojs/ojvalidation-base'], 
+function (oj, $, comp, base, dvt, attributeGroupHandler, __ValidationBase)
 {
   
 
@@ -331,6 +333,34 @@ var __oj_timeline_metadata =
         }
       }
     },
+    "tooltip": {
+      "type": "object",
+      "value": {
+        "renderer": null
+      },
+      "properties": {
+        "renderer": {
+          "type": "function",
+          "properties": {
+            "parentElement": {
+              "type": "Element"
+            },
+            "data": {
+              "type": "oj.ojTimeline.SeriesItem"
+            },
+            "seriesData": {
+              "type": "oj.ojTimeline.Series"
+            },
+            "componentElement": {
+              "type": "Element"
+            },
+            "color": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
     "trackResize": {
       "type": "string",
       "enumValues": [
@@ -370,6 +400,15 @@ var __oj_timeline_metadata =
         "labelDataVisualization": {
           "type": "string"
         },
+        "labelDate": {
+          "type": "string"
+        },
+        "labelDescription": {
+          "type": "string"
+        },
+        "labelEnd": {
+          "type": "string"
+        },
         "labelInvalidData": {
           "type": "string"
         },
@@ -377,6 +416,12 @@ var __oj_timeline_metadata =
           "type": "string"
         },
         "labelSeries": {
+          "type": "string"
+        },
+        "labelStart": {
+          "type": "string"
+        },
+        "labelTitle": {
           "type": "string"
         },
         "stateCollapsed": {
@@ -417,6 +462,116 @@ var __oj_timeline_metadata =
         }
       }
     },
+    "valueFormats": {
+      "type": "object",
+      "properties": {
+        "date": {
+          "type": "object",
+          "properties": {
+            "converter": {
+              "type": "object"
+            },
+            "tooltipDisplay": {
+              "type": "string",
+              "enumValues": [
+                "auto",
+                "off"
+              ],
+              "value": "auto"
+            },
+            "tooltipLabel": {
+              "type": "string"
+            }
+          }
+        },
+        "description": {
+          "type": "object",
+          "properties": {
+            "tooltipDisplay": {
+              "type": "string",
+              "enumValues": [
+                "auto",
+                "off"
+              ],
+              "value": "off"
+            },
+            "tooltipLabel": {
+              "type": "string"
+            }
+          }
+        },
+        "end": {
+          "type": "object",
+          "properties": {
+            "converter": {
+              "type": "object"
+            },
+            "tooltipDisplay": {
+              "type": "string",
+              "enumValues": [
+                "auto",
+                "off"
+              ],
+              "value": "auto"
+            },
+            "tooltipLabel": {
+              "type": "string"
+            }
+          }
+        },
+        "series": {
+          "type": "object",
+          "properties": {
+            "tooltipDisplay": {
+              "type": "string",
+              "enumValues": [
+                "auto",
+                "off"
+              ],
+              "value": "off"
+            },
+            "tooltipLabel": {
+              "type": "string"
+            }
+          }
+        },
+        "start": {
+          "type": "object",
+          "properties": {
+            "converter": {
+              "type": "object"
+            },
+            "tooltipDisplay": {
+              "type": "string",
+              "enumValues": [
+                "auto",
+                "off"
+              ],
+              "value": "auto"
+            },
+            "tooltipLabel": {
+              "type": "string"
+            }
+          }
+        },
+        "title": {
+          "type": "object",
+          "properties": {
+            "tooltipDisplay": {
+              "type": "string",
+              "enumValues": [
+                "auto",
+                "off"
+              ],
+              "value": "off"
+            },
+            "tooltipLabel": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
     "viewportEnd": {
       "type": "string",
       "value": ""
@@ -440,6 +595,7 @@ var __oj_timeline_metadata =
   },
   "extension": {}
 };
+/* global dvt:false, attributeGroupHandler:false, __ValidationBase:false */
 /**
  * @ojcomponent oj.ojTimeline
  * @ojdisplayname Timeline
@@ -485,7 +641,7 @@ var __oj_timeline_metadata =
  * </h3>
  *
  * {@ojinclude "name":"formatsDoc"}
- * 
+ *
  * <h3 id="touch-section">
  *   Touch End User Information
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#touch-section"></a>
@@ -529,11 +685,11 @@ var __oj_timeline_metadata =
  *
  * {@ojinclude "name":"rtl"}
  */
-oj.__registerWidget('oj.ojTimeline', $['oj']['dvtTimeComponent'],
-{
-  widgetEventPrefix: "oj",
-  options:
+oj.__registerWidget('oj.ojTimeline', $.oj.dvtTimeComponent,
   {
+    widgetEventPrefix: 'oj',
+    options:
+    {
     /**
      * Defines the animation that is applied on data changes.
      * @expose
@@ -555,7 +711,7 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtTimeComponent'],
      * // setter
      * myTimeline.animationOnDataChange = 'auto';
      */
-    animationOnDataChange: "none",
+      animationOnDataChange: 'none',
     /**
      * Defines the animation that is shown on initial display.
      * @expose
@@ -577,7 +733,7 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtTimeComponent'],
      * // setter
      * myTimeline.animationOnDisplay = 'auto';
      */
-    animationOnDisplay: "none",
+      animationOnDisplay: 'none',
     /**
      * The end time of the timeline. A valid value is required in order for the timeline to properly render. See <a href="#formats-section">Date and Time Formats</a> for more details on the required string formats.
      * @expose
@@ -595,7 +751,7 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtTimeComponent'],
      * // setter
      * myTimeline.end = '2017-12-31T05:00:00.000Z';
      */
-    end: "",
+      end: '',
     /**
      * An object with the following properties, used to define a timeline axis. This is required in order for the timeline to properly render.
      * @expose
@@ -620,7 +776,7 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtTimeComponent'],
      *
      * // Get all
      * var values = myTimeline.minorAxis;
-     * 
+     *
      * // Set all. Must list every resource key, as those not listed are lost.
      * myTimeline.minorAxis = {
      *     "converter": myConverterObject,
@@ -629,10 +785,10 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtTimeComponent'],
      *     "zoomOrder": ["quarters", "months", "weeks", "days"]
      * };
      */
-    minorAxis: {
+      minorAxis: {
       /**
-       * A converter (an object literal or instance that duck types {@link oj.Converter}) used to format the labels of the minor axis for all 'scale' values, or 
-       * an object literal whose keys are 'scale' values that map specific converters for scale specific formatting (see {@link oj.ojTimeAxis.Converter}). 
+       * A converter (an object literal or instance that duck types {@link oj.Converter}) used to format the labels of the minor axis for all 'scale' values, or
+       * an object literal whose keys are 'scale' values that map specific converters for scale specific formatting (see {@link oj.ojTimeAxis.Converters}).
        * See {@link oj.DateTimeConverterFactory} for details on creating built-in datetime converters.
        * <br></br>See the <a href="#minorAxis">minor-axis</a> attribute for usage examples.
        * @expose
@@ -640,20 +796,36 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtTimeComponent'],
        * @memberof! oj.ojTimeline
        * @instance
        * @type {Object}
-       * @ojsignature {target: "Type", value: "?(oj.ojTimeAxis.Converter|oj.Converter<string>)", jsdocOverride: true}
+       * @ojsignature {target: "Type", value: "?(oj.ojTimeAxis.Converters|oj.Converter<string>)", jsdocOverride: true}
        * @default {"default": null, "seconds": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric', 'minute': '2-digit', 'second': '2-digit'}), "minutes": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric', 'minute': '2-digit'}), "hours": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric'}), "days": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'numeric', 'day': '2-digit'}), "weeks": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'numeric', 'day': '2-digit'}), "months": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'long'}), "quarters": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'long'}), "years": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'year': 'numeric'})}
        */
-      converter: {
-        "default": null,
-        "seconds": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric', 'minute': '2-digit', 'second': '2-digit'}),
-        "minutes": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric', 'minute': '2-digit'}),
-        "hours": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric'}),
-        "days": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'numeric', 'day': '2-digit'}),
-        "weeks": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'numeric', 'day': '2-digit'}),
-        "months": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'long'}),
-        "quarters": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'long'}),
-        "years": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'year': 'numeric'})
-      },
+        converter: {
+          default: null,
+          seconds: __ValidationBase.Validation.converterFactory(
+            oj.ConverterFactory.CONVERTER_TYPE_DATETIME)
+            .createConverter({ hour: 'numeric', minute: '2-digit', second: '2-digit' }),
+          minutes: __ValidationBase.Validation.converterFactory(
+            oj.ConverterFactory.CONVERTER_TYPE_DATETIME)
+            .createConverter({ hour: 'numeric', minute: '2-digit' }),
+          hours: __ValidationBase.Validation.converterFactory(
+            oj.ConverterFactory.CONVERTER_TYPE_DATETIME)
+            .createConverter({ hour: 'numeric' }),
+          days: __ValidationBase.Validation.converterFactory(
+            oj.ConverterFactory.CONVERTER_TYPE_DATETIME)
+            .createConverter({ month: 'numeric', day: '2-digit' }),
+          weeks: __ValidationBase.Validation.converterFactory(
+            oj.ConverterFactory.CONVERTER_TYPE_DATETIME)
+            .createConverter({ month: 'numeric', day: '2-digit' }),
+          months: __ValidationBase.Validation.converterFactory(
+            oj.ConverterFactory.CONVERTER_TYPE_DATETIME)
+            .createConverter({ month: 'long' }),
+          quarters: __ValidationBase.Validation.converterFactory(
+            oj.ConverterFactory.CONVERTER_TYPE_DATETIME)
+            .createConverter({ month: 'long' }),
+          years: __ValidationBase.Validation.converterFactory(
+            oj.ConverterFactory.CONVERTER_TYPE_DATETIME)
+            .createConverter({ year: 'numeric' })
+        },
       /**
        * The time scale used for the minor axis. This is required in order for the timeline to properly render.
        * <br></br>See the <a href="#minorAxis">minor-axis</a> attribute for usage examples.
@@ -672,7 +844,7 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtTimeComponent'],
        * @ojvalue {string} "years"
        * @default null
        */
-      scale: null,
+        scale: null,
       /**
        * The CSS style defining any additional styling of the axis. If not specified, no additional styling will be applied.
        * <br></br>See the <a href="#minorAxis">minor-axis</a> attribute for usage examples.
@@ -684,7 +856,7 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtTimeComponent'],
        * @ojsignature {target: "Type", value: "?"}
        * @default {}
        */
-      svgStyle: {},
+        svgStyle: {},
       /**
        * An array of strings containing the names of scales used for zooming from longest to shortest. If not specified, the 'scale' specified on the axis will be used at all zoom levels.
        * <br></br>See the <a href="#minorAxis">minor-axis</a> attribute for usage examples.
@@ -696,8 +868,8 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtTimeComponent'],
        * @ojsignature {target: "Type", value: "?"}
        * @default null
        */
-      zoomOrder: null
-    },
+        zoomOrder: null
+      },
     /**
      * An object with the following properties, used to define a timeline axis. If not specified, no axis labels will be shown above the minor axis or in the overview.
      * @expose
@@ -722,17 +894,17 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtTimeComponent'],
      *
      * // Get all
      * var values = myTimeline.majorAxis;
-     * 
+     *
      * // Set all. Must list every resource key, as those not listed are lost.
      * myTimeline.majorAxis = {
      *     "converter": myConverterObject,
      *     "scale": "months"
      * };
      */
-    majorAxis: {
+      majorAxis: {
       /**
-       * A converter (an object literal or instance that duck types {@link oj.Converter}) used to format the labels of the major axis for all 'scale' values, or 
-       * an object literal whose keys are 'scale' values that map specific converters for scale specific formatting (see {@link oj.ojTimeAxis.Converter}). 
+       * A converter (an object literal or instance that duck types {@link oj.Converter}) used to format the labels of the major axis for all 'scale' values, or
+       * an object literal whose keys are 'scale' values that map specific converters for scale specific formatting (see {@link oj.ojTimeAxis.Converters}).
        * See {@link oj.DateTimeConverterFactory} for details on creating built-in datetime converters.
        * <br></br>See the <a href="#majorAxis">major-axis</a> attribute for usage examples.
        * @expose
@@ -740,20 +912,36 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtTimeComponent'],
        * @memberof! oj.ojTimeline
        * @instance
        * @type {Object}
-       * @ojsignature {target: "Type", value: "?(oj.ojTimeAxis.Converter|oj.Converter<string>)", jsdocOverride: true}
+       * @ojsignature {target: "Type", value: "?(oj.ojTimeAxis.Converters|oj.Converter<string>)", jsdocOverride: true}
        * @default {"default": null, "seconds": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric', 'minute': '2-digit', 'second': '2-digit'}), "minutes": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric', 'minute': '2-digit'}), "hours": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric'}), "days": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'numeric', 'day': '2-digit'}), "weeks": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'numeric', 'day': '2-digit'}), "months": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'long'}), "quarters": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'long'}), "years": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'year': 'numeric'})}
        */
-      converter: {
-        "default": null,
-        "seconds": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric', 'minute': '2-digit', 'second': '2-digit'}),
-        "minutes": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric', 'minute': '2-digit'}),
-        "hours": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric'}),
-        "days": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'numeric', 'day': '2-digit'}),
-        "weeks": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'numeric', 'day': '2-digit'}),
-        "months": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'long'}),
-        "quarters": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'long'}),
-        "years": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'year': 'numeric'})
-      },
+        converter: {
+          default: null,
+          seconds: __ValidationBase.Validation.converterFactory(
+            oj.ConverterFactory.CONVERTER_TYPE_DATETIME)
+            .createConverter({ hour: 'numeric', minute: '2-digit', second: '2-digit' }),
+          minutes: __ValidationBase.Validation.converterFactory(
+            oj.ConverterFactory.CONVERTER_TYPE_DATETIME)
+            .createConverter({ hour: 'numeric', minute: '2-digit' }),
+          hours: __ValidationBase.Validation.converterFactory(
+            oj.ConverterFactory.CONVERTER_TYPE_DATETIME)
+            .createConverter({ hour: 'numeric' }),
+          days: __ValidationBase.Validation.converterFactory(
+            oj.ConverterFactory.CONVERTER_TYPE_DATETIME)
+            .createConverter({ month: 'numeric', day: '2-digit' }),
+          weeks: __ValidationBase.Validation.converterFactory(
+            oj.ConverterFactory.CONVERTER_TYPE_DATETIME)
+            .createConverter({ month: 'numeric', day: '2-digit' }),
+          months: __ValidationBase.Validation.converterFactory(
+            oj.ConverterFactory.CONVERTER_TYPE_DATETIME)
+            .createConverter({ month: 'long' }),
+          quarters: __ValidationBase.Validation.converterFactory(
+            oj.ConverterFactory.CONVERTER_TYPE_DATETIME)
+            .createConverter({ month: 'long' }),
+          years: __ValidationBase.Validation.converterFactory(
+            oj.ConverterFactory.CONVERTER_TYPE_DATETIME)
+            .createConverter({ year: 'numeric' })
+        },
       /**
        * The time scale used for the major axis. If not specified, no axis labels will be shown above the minor axis or in the overview.
        * <br></br>See the <a href="#majorAxis">major-axis</a> attribute for usage examples.
@@ -772,7 +960,7 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtTimeComponent'],
        * @ojvalue {string} "years"
        * @default null
        */
-      scale: null,
+        scale: null,
       /**
        * The CSS style defining any additional styling of the axis. If not specified, no additional styling will be applied.
        * <br></br>See the <a href="#majorAxis">major-axis</a> attribute for usage examples.
@@ -784,8 +972,8 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtTimeComponent'],
        * @ojsignature {target: "Type", value: "?"}
        * @default {}
        */
-      svgStyle: {}
-    },
+        svgStyle: {}
+      },
     /**
      * The orientation of the element.
      * @expose
@@ -807,7 +995,7 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtTimeComponent'],
      * // setter
      * myTimeline.orientation = 'vertical';
      */
-    orientation: "horizontal",
+      orientation: 'horizontal',
     /**
      * An object with the following properties, used to define a timeline overview. If not specified, no overview will be shown.
      * @expose
@@ -832,14 +1020,14 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtTimeComponent'],
      *
      * // Get all
      * var values = myTimeline.rendered;
-     * 
+     *
      * // Set all. Must list every resource key, as those not listed are lost.
      * myTimeline.majorAxis = {
      *     "rendered": "on",
      *     "svgStyle": {"height":"50px"}
      * };
      */
-    overview: {
+      overview: {
       /**
        * Specifies whether the overview scrollbar is rendered.
        * <br></br>See the <a href="#overview">overview</a> attribute for usage examples.
@@ -853,7 +1041,7 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtTimeComponent'],
        * @ojvalue {string} "off"
        * @default "off"
        */
-      rendered: "off",
+        rendered: 'off',
       /**
        * The CSS style defining any additional styling of the overview. If not specified, no additional styling will be applied.
        * <br></br>See the <a href="#overview">overview</a> attribute for usage examples.
@@ -865,8 +1053,8 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtTimeComponent'],
        * @ojsignature {target: "Type", value: "?"}
        * @default {}
        */
-      svgStyle: {}
-    },
+        svgStyle: {}
+      },
     /**
      * The array of reference objects associated with the timeline. For each reference object, a line is rendered at the specified value. Currently only the first reference object in the array is supported. Any additional objects supplied in the array will be ignored.
      * @expose
@@ -876,21 +1064,21 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtTimeComponent'],
      * @type {Array.<Object>}
      * @ojsignature {target: "Type", value: "Array<oj.ojTimeline.ReferenceObject>", jsdocOverride: true}
      * @default []
-     * 
+     *
      * @example <caption>Initialize the Timeline with the <code class="prettyprint">reference-objects</code> attribute specified:</caption>
      * &lt;oj-timeline reference-objects='[{"value": "2017-04-15T04:00:00.000Z"}]'>&lt;/oj-timeline>
      *
      * @example <caption>Get or set the <code class="prettyprint">referenceObjects</code> property after initialization:</caption>
      * // Get one
      * var value = myTimeline.referenceObjects[0];
-     * 
+     *
      * // Get all
      * var values = myTimeline.referenceObjects;
      *
      * // Set all (There is no permissible "set one" syntax.)
      * myTimeline.referenceObjects = [{"value": "2017-04-15T00:00:00.000Z"}];
      */
-    referenceObjects: [],
+      referenceObjects: [],
     /**
      * An array of strings containing the ids of the initially selected items.
      * @expose
@@ -900,21 +1088,21 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtTimeComponent'],
      * @type {Array.<string>}
      * @ojwriteback
      * @default []
-     * 
+     *
      * @example <caption>Initialize the Timeline with the <code class="prettyprint">selection</code> attribute specified:</caption>
      * &lt;oj-timeline selection='["itemID1", "itemID2", "itemID3"]'>&lt;/oj-timeline>
      *
      * @example <caption>Get or set the <code class="prettyprint">gridlines</code> property after initialization:</caption>
      * // Get one
      * var value = myTimeline.selection[0];
-     * 
+     *
      * // Get all
      * var values = myTimeline.selection;
      *
      * // Set all (There is no permissible "set one" syntax.)
      * myTimeline.selection = ["itemID1", "itemID2", "itemID3"];
      */
-    selection: [],
+      selection: [],
     /**
      * The type of selection behavior that is enabled on the timeline. If 'single' is specified, only a single item across all series can be selected at once. If 'multiple', any number of items across all series can be selected at once. Otherwise, selection is disabled.
      * @expose
@@ -926,18 +1114,18 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtTimeComponent'],
      * @ojvalue {string} "multiple"
      * @ojvalue {string} "none"
      * @default "none"
-     * 
+     *
      * @example <caption>Initialize the Timeline with the <code class="prettyprint">selection-mode</code> attribute specified:</caption>
      * &lt;oj-timeline selection-mode='multiple'>&lt;/oj-timeline>
      *
      * @example <caption>Get or set the <code class="prettyprint">selectionMode</code> property after initialization:</caption>
      * // getter
      * var value = myTimeline.selectionMode;
-     * 
+     *
      * // setter
      * myTimeline.selectionMode = 'multiple';
      */
-    selectionMode: "none",
+      selectionMode: 'none',
     /**
      * An array of objects with the following properties, used to define a timeline series. Also accepts a Promise that will resolve with an array for deferred data rendering. No data will be rendered if the Promise is rejected.
      * @expose
@@ -1002,8 +1190,71 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtTimeComponent'],
      *         ]
      *     }
      * ];
+     * @ojtsexample <caption>set or get
+     * <code class="prettyprint">series</code> property:</caption>
+     * let elem = document.getElementById('timeline') as ojTimeline;
+     * //set series to Promise. Assuming that getSeries is a method which returns type Promise<Array<ojTimeline.Series>>
+     * elem.series = getSeries();
+     * //or
+     * elem.set('series', getSeries());
+     *
+     * //set series to an array of ojNBox.Row
+     * let series = [
+     *     {
+     *         "id": "s1",
+     *         "emptyText": "No Tournaments Played.",
+     *         "label": "Rafael Nadal: 75-7",
+     *         "items": [
+     *             {
+     *                 "id": "e1",
+     *                 "title":"ATP VTR Open",
+     *                 "start": "2013-02-04",
+     *                 "description":"Finalist: 3-1"
+     *             },
+     *             {
+     *                 "id": "e2",
+     *                 "title":"ATP Brasil Open",
+     *                 "start": "2013-02-11",
+     *                 "description":"Champion: 4-0"
+     *             }
+     *         ]
+     *     },
+     *     {
+     *         "id": "s2",
+     *         "emptyText": "No Tournaments Played.",
+     *         "label": "Novak Djokovic: 74-9",
+     *         "items": [
+     *             {
+     *                 "id": "e101",
+     *                 "title":"AUSTRALIAN OPEN",
+     *                 "start": "2013-01-14",
+     *                 "description":"Champion: 7-0"
+     *             },
+     *             {
+     *                 "id": "e102",
+     *                 "title":"Davis Cup World Group Round 1n",
+     *                 "start": "2013-02-01",
+     *                 "description":"Results: 1-0"
+     *             },
+     *             {
+     *                 "id": "e103",
+     *                 "title":"ATP Dubai Duty Free Tennis Championships",
+     *                 "start": "2013-02-25",
+     *                 "description":"Champion: 5-0"
+     *             }
+     *         ]
+     *     }
+     * ];
+     * //elem.series = series; Please note this wont compile. Use the format below
+     * elem.set('series', series);
+     *
+     * //get series property value
+     * let seriesVal = elem.series; //This is guaranteed to be of the type Promise<Array<ojNBox.Row>>|null
+     *
+     * //reset the value of series to its default,
+     * elem.unset('series');
      */
-    series: null,
+      series: null,
     /**
      * The start time of the timeline. A valid value is required in order for the timeline to properly render. See <a href="#formats-section">Date and Time Formats</a> for more details on the required string formats.
      * @expose
@@ -1013,7 +1264,7 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtTimeComponent'],
      * @type {string}
      * @ojformat date-time
      * @default ""
-     * 
+     *
      * @example <caption>Initialize the Timeline with the <code class="prettyprint">start</code> attribute specified:</caption>
      * &lt;oj-timeline start='2017-01-01T05:00:00.000Z'>&lt;/oj-timeline>
      *
@@ -1024,42 +1275,42 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtTimeComponent'],
      * // setter
      * myTimeline.start = "2017-01-01T05:00:00.000Z";
      */
-    start: "",
+      start: '',
     /**
      * An object with the following properties, used to define default styling for the timeline.
      * Component CSS classes should be used to set component wide styling. This API should be used
-     * only for styling a specific instance of the component. Properties specified on this object may 
-     * be overridden by specifications on the data item. Some property default values come from the CSS 
+     * only for styling a specific instance of the component. Properties specified on this object may
+     * be overridden by specifications on the data item. Some property default values come from the CSS
      * and varies based on theme.
      * @expose
      * @name styleDefaults
      * @memberof oj.ojTimeline
      * @instance
      * @type {Object}
-     * 
+     *
      * @example <caption>Initialize the Timeline with the <code class="prettyprint">style-defaults</code> attribute specified:</caption>
      * &lt;!-- Using dot notation -->
      * &lt;oj-timeline style-defaults.animation-duration='200'>&lt;/oj-timeline>
-     * 
+     *
      * &lt;!-- Using JSON notation -->
      * &lt;oj-timeline style-defaults='{"animationDuration": 200, "item": {"backgroundColor": "red"}'>&lt;/oj-timeline>
-     * 
-     * @example <caption>Get or set the <code class="prettyprint">styleDefaults</code> 
+     *
+     * @example <caption>Get or set the <code class="prettyprint">styleDefaults</code>
      * property after initialization:</caption>
      * // Get one
      * var value = myTimeline.styleDefaults.animationDuration;
-     * 
+     *
      * // Get all
      * var values = myTimeline.styleDefaults;
      *
-     * // Set one, leaving the others intact. Always use the setProperty API for 
+     * // Set one, leaving the others intact. Always use the setProperty API for
      * // subproperties rather than setting a subproperty directly.
      * myTimeline.setProperty('styleDefaults.borderColor', 'red');
-     * 
+     *
      * // Set all. Must list every resource key, as those not listed are lost.
      * myTimeline.styleDefaults = {'borderColor': 'red'};
      */
-    styleDefaults: {
+      styleDefaults: {
       /**
        * The duration of the animations, in milliseconds. The default value comes from the CSS and varies based on theme. For data change animations with multiple stages, this attribute defines the duration of each stage. For example, if an animation contains two stages, the total duration will be two times this attribute's value.
        * <br></br>See the <a href="#styleDefaults">style-defaults</a> attribute for usage examples.
@@ -1071,7 +1322,7 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtTimeComponent'],
        * @ojsignature {target: "Type", value: "?"}
        * @ojunits "milliseconds"
        */
-      animationDuration: undefined,
+        animationDuration: undefined,
       /**
        * The border color of the timeline. The default value comes from the CSS and varies based on theme.
        * <br></br>See the <a href="#styleDefaults">style-defaults</a> attribute for usage examples.
@@ -1083,7 +1334,7 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtTimeComponent'],
        * @ojformat color
        * @ojsignature {target: "Type", value: "?"}
        */
-      borderColor: undefined,
+        borderColor: undefined,
       /**
        * An object with the following properties, used to define the default styling for the timeline item.
        * <br></br>See the <a href="#styleDefaults">style-defaults</a> attribute for usage examples.
@@ -1095,7 +1346,7 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtTimeComponent'],
        * @ojsignature {target: "Type", value: "?"}
        * @default {}
        */
-      item: {
+        item: {
         /**
          * The background color of the timeline items. The default value comes from the CSS and varies based on theme.
          * <br></br>See the <a href="#styleDefaults">style-defaults</a> attribute for usage examples.
@@ -1107,7 +1358,7 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtTimeComponent'],
          * @ojformat color
          * @ojsignature {target: "Type", value: "?"}
          */
-        backgroundColor: undefined,
+          backgroundColor: undefined,
         /**
          * The border color of the timeline items. The default value comes from the CSS and varies based on theme.
          * <br></br>See the <a href="#styleDefaults">style-defaults</a> attribute for usage examples.
@@ -1119,7 +1370,7 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtTimeComponent'],
          * @ojformat color
          * @ojsignature {target: "Type", value: "?"}
          */
-        borderColor: undefined,
+          borderColor: undefined,
         /**
          * The CSS style defining the style of the timeline item description text. The default value comes from the CSS and varies based on theme.
          * <br></br>See the <a href="#styleDefaults">style-defaults</a> attribute for usage examples.
@@ -1130,7 +1381,7 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtTimeComponent'],
          * @type {Object}
          * @ojsignature {target: "Type", value: "?"}
          */
-        descriptionStyle: undefined,
+          descriptionStyle: undefined,
         /**
          * The background color of the highlighted timeline items. The default value comes from the CSS and varies based on theme.
          * <br></br>See the <a href="#styleDefaults">style-defaults</a> attribute for usage examples.
@@ -1142,7 +1393,7 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtTimeComponent'],
          * @ojformat color
          * @ojsignature {target: "Type", value: "?"}
          */
-        hoverBackgroundColor: undefined,
+          hoverBackgroundColor: undefined,
         /**
          * The border color of the highlighted timeline items. The default value comes from the CSS and varies based on theme.
          * <br></br>See the <a href="#styleDefaults">style-defaults</a> attribute for usage examples.
@@ -1154,7 +1405,7 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtTimeComponent'],
          * @ojformat color
          * @ojsignature {target: "Type", value: "?"}
          */
-        hoverBorderColor: undefined,
+          hoverBorderColor: undefined,
         /**
          * The background color of the selected timeline items. The default value comes from the CSS and varies based on theme.
          * <br></br>See the <a href="#styleDefaults">style-defaults</a> attribute for usage examples.
@@ -1166,7 +1417,7 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtTimeComponent'],
          * @ojformat color
          * @ojsignature {target: "Type", value: "?"}
          */
-        selectedBackgroundColor: undefined,
+          selectedBackgroundColor: undefined,
         /**
          * The border color of the selected timeline items. The default value comes from the CSS and varies based on theme.
          * <br></br>See the <a href="#styleDefaults">style-defaults</a> attribute for usage examples.
@@ -1178,7 +1429,7 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtTimeComponent'],
          * @ojformat color
          * @ojsignature {target: "Type", value: "?"}
          */
-        selectedBorderColor: undefined,
+          selectedBorderColor: undefined,
         /**
          * The CSS style defining the style of the timeline item title text. The default value comes from the CSS and varies based on theme.
          * <br></br>See the <a href="#styleDefaults">style-defaults</a> attribute for usage examples.
@@ -1189,8 +1440,8 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtTimeComponent'],
          * @type {Object}
          * @ojsignature {target: "Type", value: "?"}
          */
-        titleStyle: undefined
-      },
+          titleStyle: undefined
+        },
       /**
        * An object with the following properties, used to define the default styling for the time axis.
        * <br></br>See the <a href="#styleDefaults">style-defaults</a> attribute for usage examples.
@@ -1202,7 +1453,7 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtTimeComponent'],
        * @ojsignature {target: "Type", value: "?"}
        * @default {}
        */
-      minorAxis: {
+        minorAxis: {
         /**
          * The background color of the time axis. The default value comes from the CSS and varies based on theme.
          * <br></br>See the <a href="#styleDefaults">style-defaults</a> attribute for usage examples.
@@ -1214,7 +1465,7 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtTimeComponent'],
          * @ojformat color
          * @ojsignature {target: "Type", value: "?"}
          */
-        backgroundColor: undefined,
+          backgroundColor: undefined,
         /**
          * The border color of the time axis. The default value comes from the CSS and varies based on theme.
          * <br></br>See the <a href="#styleDefaults">style-defaults</a> attribute for usage examples.
@@ -1226,7 +1477,7 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtTimeComponent'],
          * @ojformat color
          * @ojsignature {target: "Type", value: "?"}
          */
-        borderColor: undefined,
+          borderColor: undefined,
         /**
          * The CSS style defining the style of the time axis label text. The default value comes from the CSS and varies based on theme.
          * <br></br>See the <a href="#styleDefaults">style-defaults</a> attribute for usage examples.
@@ -1237,7 +1488,7 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtTimeComponent'],
          * @type {Object}
          * @ojsignature {target: "Type", value: "?"}
          */
-        labelStyle: undefined,
+          labelStyle: undefined,
         /**
          * The color of the time axis separators. The default value comes from the CSS and varies based on theme.
          * <br></br>See the <a href="#styleDefaults">style-defaults</a> attribute for usage examples.
@@ -1249,9 +1500,9 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtTimeComponent'],
          * @ojformat color
          * @ojsignature {target: "Type", value: "?"}
          */
-        separatorColor: undefined
-      },
-      
+          separatorColor: undefined
+        },
+
       /**
        * An object with the following properties, used to define the default styling for the major time axis.
        * <br></br>See the <a href="#styleDefaults">style-defaults</a> attribute for usage examples.
@@ -1263,7 +1514,7 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtTimeComponent'],
        * @ojsignature {target: "Type", value: "?"}
        * @default {}
        */
-      majorAxis: {
+        majorAxis: {
         /**
          * The CSS style defining the style of the major time axis label text. The default value comes from the CSS and varies based on theme.
          * <br></br>See the <a href="#styleDefaults">style-defaults</a> attribute for usage examples.
@@ -1274,7 +1525,7 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtTimeComponent'],
          * @type {Object}
          * @ojsignature {target: "Type", value: "?"}
          */
-        labelStyle: undefined,
+          labelStyle: undefined,
         /**
          * The color of the major time axis separators. The default value comes from the CSS and varies based on theme.
          * <br></br>See the <a href="#styleDefaults">style-defaults</a> attribute for usage examples.
@@ -1286,8 +1537,8 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtTimeComponent'],
          * @ojformat color
          * @ojsignature {target: "Type", value: "?"}
          */
-        separatorColor: undefined
-      },
+          separatorColor: undefined
+        },
       /**
        * An object with the following properties, used to define the default styling for the timeline overview.
        * <br></br>See the <a href="#styleDefaults">style-defaults</a> attribute for usage examples.
@@ -1298,7 +1549,7 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtTimeComponent'],
        * @type {Object}
        * @ojsignature {target: "Type", value: "?"}
        */
-      overview: {
+        overview: {
         /**
          * The background color of the timeline overview. The default value comes from the CSS and varies based on theme.
          * <br></br>See the <a href="#styleDefaults">style-defaults</a> attribute for usage examples.
@@ -1310,7 +1561,7 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtTimeComponent'],
          * @ojformat color
          * @ojsignature {target: "Type", value: "?"}
          */
-        backgroundColor: undefined,
+          backgroundColor: undefined,
         /**
          * The CSS style defining the style of the timeline overview label text. The default value comes from the CSS and varies based on theme.
          * <br></br>See the <a href="#styleDefaults">style-defaults</a> attribute for usage examples.
@@ -1321,7 +1572,7 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtTimeComponent'],
          * @type {Object}
          * @ojsignature {target: "Type", value: "?"}
          */
-        labelStyle: undefined,
+          labelStyle: undefined,
         /**
          * An object with the following properties, used to define the default styling for the timeline overview window.
          * <br></br>See the <a href="#styleDefaults">style-defaults</a> attribute for usage examples.
@@ -1333,7 +1584,7 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtTimeComponent'],
          * @ojsignature {target: "Type", value: "?"}
          * @default {}
          */
-        window: {
+          window: {
           /**
            * The background color of the timeline overview window. The default value comes from the CSS and varies based on theme.
            * <br></br>See the <a href="#styleDefaults">style-defaults</a> attribute for usage examples.
@@ -1345,7 +1596,7 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtTimeComponent'],
            * @ojformat color
            * @ojsignature {target: "Type", value: "?"}
            */
-          backgroundColor: undefined,
+            backgroundColor: undefined,
           /**
            * The border color of the timeline overview window. The default value comes from the CSS and varies based on theme.
            * <br></br>See the <a href="#styleDefaults">style-defaults</a> attribute for usage examples.
@@ -1357,9 +1608,9 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtTimeComponent'],
            * @ojformat color
            * @ojsignature {target: "Type", value: "?"}
            */
-          borderColor: undefined
-        }
-      },
+            borderColor: undefined
+          }
+        },
       /**
        * An object with the following properties, used to define the default styling for the reference objects.
        * <br></br>See the <a href="#styleDefaults">style-defaults</a> attribute for usage examples.
@@ -1371,7 +1622,7 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtTimeComponent'],
        * @ojsignature {target: "Type", value: "?"}
        * @default {}
        */
-      referenceObject: {
+        referenceObject: {
         /**
          * The color of the reference objects. The default value comes from the CSS and varies based on theme.
          * <br></br>See the <a href="#styleDefaults">style-defaults</a> attribute for usage examples.
@@ -1383,8 +1634,8 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtTimeComponent'],
          * @ojformat color
          * @ojsignature {target: "Type", value: "?"}
          */
-        color: undefined
-      },
+          color: undefined
+        },
       /**
        * An object with the following properties, used to define the default styling for the timeline series.
        * <br></br>See the <a href="#styleDefaults">style-defaults</a> attribute for usage examples.
@@ -1396,7 +1647,7 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtTimeComponent'],
        * @ojsignature {target: "Type", value: "?"}
        * @default {}
        */
-      series: {
+        series: {
         /**
          * The background color of the series. The default value comes from the CSS and varies based on theme.
          * <br></br>See the <a href="#styleDefaults">style-defaults</a> attribute for usage examples.
@@ -1408,7 +1659,7 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtTimeComponent'],
          * @ojformat color
          * @ojsignature {target: "Type", value: "?"}
          */
-        backgroundColor: undefined,
+          backgroundColor: undefined,
         /**
          * The array defining the default color ramp for the series items.
          * <br></br>See the <a href="#styleDefaults">style-defaults</a> attribute for usage examples.
@@ -1419,7 +1670,10 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtTimeComponent'],
          * @type {Array.<string>}
          * @ojsignature {target: "Type", value: "?"}
          */
-        colors: ["#237bb1", "#68c182", "#fad55c", "#ed6647", "#8561c8", "#6ddbdb", "#ffb54d", "#e371b2", "#47bdef", "#a2bf39", "#a75dba", "#f7f37b"],
+          colors: [
+            '#237bb1', '#68c182', '#fad55c', '#ed6647', '#8561c8', '#6ddbdb',
+            '#ffb54d', '#e371b2', '#47bdef', '#a2bf39', '#a75dba', '#f7f37b'
+          ],
         /**
          * The CSS style defining the style of the series empty text. The default value comes from the CSS and varies based on theme.
          * <br></br>See the <a href="#styleDefaults">style-defaults</a> attribute for usage examples.
@@ -1430,7 +1684,7 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtTimeComponent'],
          * @type {Object}
          * @ojsignature {target: "Type", value: "?"}
          */
-        emptyTextStyle: undefined,
+          emptyTextStyle: undefined,
         /**
          * The CSS style defining the style of the series label text. The default value comes from the CSS and varies based on theme.
          * <br></br>See the <a href="#styleDefaults">style-defaults</a> attribute for usage examples.
@@ -1441,9 +1695,347 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtTimeComponent'],
          * @type {Object}
          * @ojsignature {target: "Type", value: "?"}
          */
-        labelStyle: undefined
-      }
-    },
+          labelStyle: undefined
+        }
+      },
+      /**
+       * An object containing an optional callback function for tooltip customization.
+       * @expose
+       * @name tooltip
+       * @memberof oj.ojTimeline
+       * @instance
+       * @type {Object}
+       * @default {"renderer": null}
+       *
+       * @example <caption>Initialize the Timeline with the <code class="prettyprint">tooltip</code> attribute specified:</caption>
+       * &lt;oj-timeline tooltip.renderer='[[tooltipFun]]'>&lt;/oj-timeline>
+       *
+       * &lt;oj-timeline tooltip='[[{"renderer": tooltipFun}]]'>&lt;/oj-timeline>
+       *
+       * @example <caption>Get or set the <code class="prettyprint">tooltip</code> property after initialization:</caption>
+       * // Get one
+       * var value = myTimeline.tooltip.renderer;
+       *
+       * // Set one, leaving the others intact.
+       * myTimeline.setProperty('tooltip.renderer', tooltipFun);
+       *
+       * // Get all
+       * var values = myTimeline.tooltip;
+       *
+       * // Set all. Must list every resource key, as those not listed are lost.
+       * myTimeline.tooltip = {'renderer': tooltipFun};
+       */
+      tooltip: {
+        /**
+         * A function that returns a custom tooltip. Note that the default is for a tooltip to be displayed.
+         * <br></br>See the <a href="#tooltip">tooltip</a> attribute for usage examples.
+         * @expose
+         * @name tooltip.renderer
+         * @memberof! oj.ojTimeline
+         * @instance
+         * @type {?(function(Object):Object)}
+         * @ojsignature {target: "Type", value: "((context: oj.ojTimeline.TooltipContext) => ({insert: Element|string}|{preventDefault: boolean}))", jsdocOverride: true}
+         * @default null
+         */
+        renderer: null
+      },
+      /**
+       * An object specifying value formatting and tooltip behavior, whose keys generally correspond to item properties.
+       * @expose
+       * @name valueFormats
+       * @memberof oj.ojTimeline
+       * @instance
+       * @type {Object}
+       *
+       * @example <caption>Initialize the Timeline with the <code class="prettyprint">value-formats</code> attribute specified:</caption>
+       * &lt;!-- Using dot notation -->
+       * &lt;oj-timeline value-formats.series.tooltip-label="Employee" value-formats.title.tooltip-display="off">&lt;/oj-timeline>
+       *
+       * &lt;!-- Using JSON notation -->
+       * &lt;oj-timeline value-formats='{"series": {"tooltipLabel": "Employee"}, "title": {"tooltipDisplay": "off"}}'>&lt;/oj-timeline>
+       *
+       * @example <caption>Get or set the <code class="prettyprint">valueFormats</code> property after initialization:</caption>
+       * // Get one
+       * var value = myTimeline.valueFormats.series.tooltipLabel;
+       *
+       * // Set one, leaving the others intact
+       * myTimeline.setProperty('valueFormats.series.tooltipLabel', 'Employee');
+       *
+       * // Get all
+       * var values = myTimeline.valueFormats;
+       *
+       * // Set all. Must list every resource key, as those not listed are lost.
+       * myTimeline.valueFormats = {
+       *     "series": {"tooltipLabel": "Employee"},
+       *     "title": {"tooltipDisplay": "off"}
+       * };
+       */
+      valueFormats: {
+        /**
+         * Specifies tooltip behavior for the series value.
+         * <br></br>See the <a href="#valueFormats">value-formats</a> attribute for usage examples.
+         * @expose
+         * @name valueFormats.series
+         * @memberof! oj.ojTimeline
+         * @instance
+         * @type {Object}
+         * @ojsignature {target: "Type", value: "?"}
+         */
+        series: {
+          /**
+           * A string representing the label that is displayed before the value in the tooltip. The default value comes from {@link oj.ojTimeline.translations.labelSeries}.
+           * <br></br>See the <a href="#valueFormats">value-formats</a> attribute for usage examples.
+           * @expose
+           * @name valueFormats.series.tooltipLabel
+           * @memberof! oj.ojTimeline
+           * @instance
+           * @type {string}
+           * @ojsignature {target: "Type", value: "?"}
+           * @ojtranslatable
+           */
+          tooltipLabel: undefined,
+          /**
+           * Whether the value is displayed in the tooltip.
+           * <br></br>See the <a href="#valueFormats">value-formats</a> attribute for usage examples.
+           * @expose
+           * @name valueFormats.series.tooltipDisplay
+           * @memberof! oj.ojTimeline
+           * @instance
+           * @type {string}
+           * @ojsignature {target: "Type", value: "?"}
+           * @ojvalue {string} "off"
+           * @ojvalue {string} "auto"
+           * @default "off"
+           */
+          tooltipDisplay: 'off'
+        },
+        /**
+         * Specifies tooltip behavior for the start value.
+         * <br></br>See the <a href="#valueFormats">value-formats</a> attribute for usage examples.
+         * @expose
+         * @name valueFormats.start
+         * @memberof! oj.ojTimeline
+         * @instance
+         * @type {Object}
+         * @ojsignature {target: "Type", value: "?"}
+         */
+        start: {
+          /**
+           * A converter (an object literal or instance that duck types {@link oj.Converter}) used to format the label. If not specified, a default converter depending on the axes scale is used. See {@link oj.DateTimeConverterFactory} for details on creating built-in datetime converters.
+           * <br></br>See the <a href="#valueFormats">value-formats</a> attribute for usage examples.
+           * @expose
+           * @name valueFormats.start.converter
+           * @memberof! oj.ojTimeline
+           * @instance
+           * @type {?Object}
+           * @ojsignature {target: "Type", value: "?(oj.Converter<string>)", jsdocOverride: true}
+           * @default null
+           */
+          converter: null,
+          /**
+           * A string representing the label that is displayed before the value in the tooltip. The default value comes from {@link oj.ojTimeline.translations.labelStart}.
+           * <br></br>See the <a href="#valueFormats">value-formats</a> attribute for usage examples.
+           * @expose
+           * @name valueFormats.start.tooltipLabel
+           * @memberof! oj.ojTimeline
+           * @instance
+           * @type {string}
+           * @ojsignature {target: "Type", value: "?"}
+           * @ojtranslatable
+           */
+          tooltipLabel: undefined,
+          /**
+           * Whether the value is displayed in the tooltip.
+           * <br></br>See the <a href="#valueFormats">value-formats</a> attribute for usage examples.
+           * @expose
+           * @name valueFormats.start.tooltipDisplay
+           * @memberof! oj.ojTimeline
+           * @instance
+           * @type {string}
+           * @ojsignature {target: "Type", value: "?"}
+           * @ojvalue {string} "off"
+           * @ojvalue {string} "auto"
+           * @default "auto"
+           */
+          tooltipDisplay: 'auto'
+        },
+        /**
+         * Specifies tooltip behavior for the end value.
+         * <br></br>See the <a href="#valueFormats">value-formats</a> attribute for usage examples.
+         * @expose
+         * @name valueFormats.end
+         * @memberof! oj.ojTimeline
+         * @instance
+         * @type {Object}
+         * @ojsignature {target: "Type", value: "?"}
+         */
+        end: {
+          /**
+           * A converter (an object literal or instance that duck types {@link oj.Converter}) used to format the label. If not specified, a default converter depending on the axes scale is used. See {@link oj.DateTimeConverterFactory} for details on creating built-in datetime converters.
+           * <br></br>See the <a href="#valueFormats">value-formats</a> attribute for usage examples.
+           * @expose
+           * @name valueFormats.end.converter
+           * @memberof! oj.ojTimeline
+           * @instance
+           * @type {?Object}
+           * @ojsignature {target: "Type", value: "?(oj.Converter<string>)", jsdocOverride: true}
+           * @default null
+           */
+          converter: null,
+          /**
+           * A string representing the label that is displayed before the value in the tooltip. The default value comes from {@link oj.ojTimeline.translations.labelEnd}.
+           * <br></br>See the <a href="#valueFormats">value-formats</a> attribute for usage examples.
+           * @expose
+           * @name valueFormats.end.tooltipLabel
+           * @memberof! oj.ojTimeline
+           * @instance
+           * @type {string}
+           * @ojsignature {target: "Type", value: "?"}
+           * @ojtranslatable
+           */
+          tooltipLabel: undefined,
+          /**
+           * Whether the value is displayed in the tooltip.
+           * <br></br>See the <a href="#valueFormats">value-formats</a> attribute for usage examples.
+           * @expose
+           * @name valueFormats.end.tooltipDisplay
+           * @memberof! oj.ojTimeline
+           * @instance
+           * @type {string}
+           * @ojsignature {target: "Type", value: "?"}
+           * @ojvalue {string} "off"
+           * @ojvalue {string} "auto"
+           * @default "auto"
+           */
+          tooltipDisplay: 'auto'
+        },
+        /**
+         * Specifies tooltip behavior for the date value of an instance item.
+         * <br></br>See the <a href="#valueFormats">value-formats</a> attribute for usage examples.
+         * @expose
+         * @name valueFormats.date
+         * @memberof! oj.ojTimeline
+         * @instance
+         * @type {Object}
+         * @ojsignature {target: "Type", value: "?"}
+         */
+        date: {
+          /**
+           * A converter (an object literal or instance that duck types {@link oj.Converter}) used to format the label. If not specified, a default converter depending on the axes scale is used. See {@link oj.DateTimeConverterFactory} for details on creating built-in datetime converters.
+           * <br></br>See the <a href="#valueFormats">value-formats</a> attribute for usage examples.
+           * @expose
+           * @name valueFormats.date.converter
+           * @memberof! oj.ojTimeline
+           * @instance
+           * @type {?Object}
+           * @ojsignature {target: "Type", value: "?(oj.Converter<string>)", jsdocOverride: true}
+           * @default null
+           */
+          converter: null,
+          /**
+           * A string representing the label that is displayed before the value in the tooltip. The default value comes from {@link oj.ojTimeline.translations.labelDate}.
+           * <br></br>See the <a href="#valueFormats">value-formats</a> attribute for usage examples.
+           * @expose
+           * @name valueFormats.date.tooltipLabel
+           * @memberof! oj.ojTimeline
+           * @instance
+           * @type {string}
+           * @ojsignature {target: "Type", value: "?"}
+           * @ojtranslatable
+           */
+          tooltipLabel: undefined,
+          /**
+           * Whether the value is displayed in the tooltip.
+           * <br></br>See the <a href="#valueFormats">value-formats</a> attribute for usage examples.
+           * @expose
+           * @name valueFormats.date.tooltipDisplay
+           * @memberof! oj.ojTimeline
+           * @instance
+           * @type {string}
+           * @ojsignature {target: "Type", value: "?"}
+           * @ojvalue {string} "off"
+           * @ojvalue {string} "auto"
+           * @default "auto"
+           */
+          tooltipDisplay: 'auto'
+        },
+        /**
+         * Specifies tooltip behavior for the title value.
+         * <br></br>See the <a href="#valueFormats">value-formats</a> attribute for usage examples.
+         * @expose
+         * @name valueFormats.title
+         * @memberof! oj.ojTimeline
+         * @instance
+         * @type {Object}
+         * @ojsignature {target: "Type", value: "?"}
+         */
+        title: {
+          /**
+           * A string representing the label that is displayed before the value in the tooltip. The default value comes from {@link oj.ojTimeline.translations.labelTitle}.
+           * <br></br>See the <a href="#valueFormats">value-formats</a> attribute for usage examples.
+           * @expose
+           * @name valueFormats.title.tooltipLabel
+           * @memberof! oj.ojTimeline
+           * @instance
+           * @type {string}
+           * @ojsignature {target: "Type", value: "?"}
+           * @ojtranslatable
+           */
+          tooltipLabel: undefined,
+          /**
+           * Whether the value is displayed in the tooltip.
+           * <br></br>See the <a href="#valueFormats">value-formats</a> attribute for usage examples.
+           * @expose
+           * @name valueFormats.title.tooltipDisplay
+           * @memberof! oj.ojTimeline
+           * @instance
+           * @type {string}
+           * @ojsignature {target: "Type", value: "?"}
+           * @ojvalue {string} "off"
+           * @ojvalue {string} "auto"
+           * @default "off"
+           */
+          tooltipDisplay: 'off'
+        },
+        /**
+         * Specifies tooltip behavior for the description value.
+         * <br></br>See the <a href="#valueFormats">value-formats</a> attribute for usage examples.
+         * @expose
+         * @name valueFormats.description
+         * @memberof! oj.ojTimeline
+         * @instance
+         * @type {Object}
+         * @ojsignature {target: "Type", value: "?"}
+         */
+        description: {
+          /**
+           * A string representing the label that is displayed before the value in the tooltip. The default value comes from {@link oj.ojTimeline.translations.labelDescription}.
+           * <br></br>See the <a href="#valueFormats">value-formats</a> attribute for usage examples.
+           * @expose
+           * @name valueFormats.description.tooltipLabel
+           * @memberof! oj.ojTimeline
+           * @instance
+           * @type {string}
+           * @ojsignature {target: "Type", value: "?"}
+           * @ojtranslatable
+           */
+          tooltipLabel: undefined,
+          /**
+           * Whether the value is displayed in the tooltip.
+           * <br></br>See the <a href="#valueFormats">value-formats</a> attribute for usage examples.
+           * @expose
+           * @name valueFormats.description.tooltipDisplay
+           * @memberof! oj.ojTimeline
+           * @instance
+           * @type {string}
+           * @ojsignature {target: "Type", value: "?"}
+           * @ojvalue {string} "off"
+           * @ojvalue {string} "auto"
+           * @default "off"
+           */
+          tooltipDisplay: 'off'
+        }
+      },
     /**
      * The end time of the timeline's viewport. If not specified or invalid, this will default to a value determined by the initial 'scale' of the minor axis and the width of the timeline. See <a href="#formats-section">Date and Time Formats</a> for more details on the required string formats.
      * @expose
@@ -1464,7 +2056,7 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtTimeComponent'],
      * // setter
      * myTimeline.viewportEnd = '2017-12-31T05:00:00.000Z';
      */
-    viewportEnd: "",
+      viewportEnd: '',
     /**
      * The start time of the timeline's viewport. If not specified or invalid, this will default to a value determined by the initial 'scale' of the minor axis and the width of the timeline. See <a href="#formats-section">Date and Time Formats</a> for more details on the required string formats.
      * @expose
@@ -1485,7 +2077,7 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtTimeComponent'],
      * // setter
      * myTimeline.viewportStart = '2017-01-01T05:00:00.000Z';
      */
-    viewportStart: "",
+      viewportStart: '',
     /**
      * Triggered after the viewport is changed due to a zoom or scroll operation.
      *
@@ -1499,34 +2091,13 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtTimeComponent'],
      * @instance
      * @ojbubbles
      */
-    viewportChange: null
-  },
+      viewportChange: null
+    },
 
-  //@inheritdoc
-  _CreateDvtComponent: function(context, callback, callbackObj)
-  {
-    return dvt.Timeline.newInstance(context, callback, callbackObj);
-  },
-
-  /**
-   * @override
-   * @instance
-   * @memberof oj.ojTimeline
-   * @protected
-   */
-  _ConvertLocatorToSubId : function(locator) {
-    var subId = locator['subId'];
-
-    // Convert the supported locators
-    if(subId == 'oj-timeline-item') {
-      // timelineItem[seriesIndex][itemIndex]
-      subId = 'timelineItem[' + locator['seriesIndex'] + '][' + locator['itemIndex'] + ']';
-    }
-
-    // Return the converted result or the original subId if a supported locator wasn't recognized. We will remove
-    // support for the old subId syntax in 1.2.0.
-    return subId;
-  },
+  // @inheritdoc
+    _CreateDvtComponent: function (context, callback, callbackObj) {
+      return dvt.Timeline.newInstance(context, callback, callbackObj);
+    },
 
   /**
    * @override
@@ -1534,189 +2105,222 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtTimeComponent'],
    * @memberof oj.ojTimeline
    * @protected
    */
-  _ConvertSubIdToLocator : function(subId) {
-    var locator = {};
+    _ConvertLocatorToSubId: function (locator) {
+      var subId = locator.subId;
 
-    if(subId.indexOf('timelineItem') == 0) {
-      // timelineItem[seriesIndex][itemIndex]
-      var indexPath = this._GetIndexPath(subId);
+      // Convert the supported locators
+      if (subId === 'oj-timeline-item') {
+        // timelineItem[seriesIndex][itemIndex]
+        subId = 'timelineItem[' + locator.seriesIndex + '][' + locator.itemIndex + ']';
+      } else if (subId === 'oj-timeline-tooltip') {
+        subId = 'tooltip';
+      }
 
-      locator['subId'] = 'oj-timeline-item';
-      locator['seriesIndex'] = indexPath[0];
-      locator['itemIndex'] = indexPath[1];
-    }
+      // Return the converted result or the original subId if a supported locator wasn't recognized. We will remove
+      // support for the old subId syntax in 1.2.0.
+      return subId;
+    },
 
-    return locator;
-  },
+  /**
+   * @override
+   * @instance
+   * @memberof oj.ojTimeline
+   * @protected
+   */
+    _ConvertSubIdToLocator: function (subId) {
+      var locator = {};
 
-  //@inheritdoc
-  _ProcessStyles: function()
-  {
-    this._super();
-    if (!this.options['styleDefaults'])
-      this.options['styleDefaults'] = {};
+      if (subId.indexOf('timelineItem') === 0) {
+        // timelineItem[seriesIndex][itemIndex]
+        var indexPath = this._GetIndexPath(subId);
 
-    if (!this.options['styleDefaults']['series'])
-      this.options['styleDefaults']['series'] = {};
+        locator.subId = 'oj-timeline-item';
+        locator.seriesIndex = indexPath[0];
+        locator.itemIndex = indexPath[1];
+      } else if (subId === 'tooltip') {
+        locator.subId = 'oj-timeline-tooltip';
+      }
 
-    if (!this.options['styleDefaults']['series']['colors'])
-    {
-      var handler = new oj.ColorAttributeGroupHandler();
+      return locator;
+    },
+
+  // @inheritdoc
+    _ProcessStyles: function () {
+      if (!this.options.styleDefaults) {
+        this.options.styleDefaults = {};
+      }
+
+      if (!this.options.styleDefaults.series) {
+        this.options.styleDefaults.series = {};
+      }
+
+      if (!this.options.styleDefaults.series.colors) {
+        var handler = new attributeGroupHandler.ColorAttributeGroupHandler();
 
       // override default colors with css attribute group colors
-      this.options['styleDefaults']['series']['colors'] = handler.getValueRamp();
-    }
-  },
+        this.options.styleDefaults.series.colors = handler.getValueRamp();
+      }
 
-  //@inheritdoc
-  _GetComponentStyleClasses: function()
-  {
-    var styleClasses = this._super();
-    styleClasses.push('oj-timeline');
-    return styleClasses;
-  },
+      this._super();
+    },
 
-  //@inheritdoc
-  _GetComponentRendererOptions: function() {
-    //the function should be removed if the timeline will support 'tooltip.renderer' attr
-    return [];
-  },
+  // @inheritdoc
+    _GetComponentStyleClasses: function () {
+      var styleClasses = this._super();
+      styleClasses.push('oj-timeline');
+      return styleClasses;
+    },
 
-  //@inheritdoc
-  _GetChildStyleClasses: function()
-  {
-    var styleClasses = this._super();
-    styleClasses['oj-dvtbase oj-timeline'] = {'path': 'styleDefaults/animationDuration', 'property': 'ANIM_DUR'};
-    styleClasses['oj-timeline'] = {'path': 'styleDefaults/borderColor', 'property': 'border-color'};
-    styleClasses['oj-timeline-item'] = [
-      {'path': 'styleDefaults/item/borderColor', 'property': 'border-color'},
-      {'path': 'styleDefaults/item/backgroundColor', 'property': 'background-color'}
-    ];
-    styleClasses['oj-timeline-item oj-hover'] = [
-      {'path': 'styleDefaults/item/hoverBorderColor', 'property': 'border-color'},
-      {'path': 'styleDefaults/item/hoverBackgroundColor', 'property': 'background-color'}
-    ];
-    styleClasses['oj-timeline-item oj-selected'] = [
-      {'path': 'styleDefaults/item/selectedBorderColor', 'property': 'border-color'},
-      {'path': 'styleDefaults/item/selectedBackgroundColor', 'property': 'background-color'}
-    ];
-    styleClasses['oj-timeline-item-description'] = {'path': 'styleDefaults/item/descriptionStyle', 'property': 'TEXT'};
-    styleClasses['oj-timeline-item-title'] = {'path': 'styleDefaults/item/titleStyle', 'property': 'TEXT'};
-    styleClasses['oj-timeline-major-axis-label'] = {'path': 'styleDefaults/majorAxis/labelStyle', 'property': 'TEXT'};
-    styleClasses['oj-timeline-major-axis-separator'] = {'path': 'styleDefaults/majorAxis/separatorColor', 'property': 'color'};
-    styleClasses['oj-timeline-minor-axis'] = [
-      {'path': 'styleDefaults/minorAxis/backgroundColor', 'property': 'background-color'},
-      {'path': 'styleDefaults/minorAxis/borderColor', 'property': 'border-color'}
-    ];
-    styleClasses['oj-timeline-minor-axis-label'] = {'path': 'styleDefaults/minorAxis/labelStyle', 'property': 'TEXT'};
-    styleClasses['oj-timeline-minor-axis-separator'] = {'path': 'styleDefaults/minorAxis/separatorColor', 'property': 'color'};
-    styleClasses['oj-timeline-overview'] = {'path': 'styleDefaults/overview/backgroundColor', 'property': 'background-color'};
-    styleClasses['oj-timeline-overview-label'] = {'path': 'styleDefaults/overview/labelStyle', 'property': 'TEXT'};
-    styleClasses['oj-timeline-overview-window'] = [
-      {'path': 'styleDefaults/overview/window/backgroundColor', 'property': 'background-color'},
-      {'path': 'styleDefaults/overview/window/borderColor', 'property': 'border-color'}
-    ];
-    styleClasses['oj-timeline-reference-object'] = {'path': 'styleDefaults/referenceObject/color', 'property': 'color'};
-    styleClasses['oj-timeline-series'] = {'path': 'styleDefaults/series/backgroundColor', 'property': 'background-color'};
-    styleClasses['oj-timeline-series-empty-text'] = {'path': 'styleDefaults/series/emptyTextStyle', 'property': 'TEXT'};
-    styleClasses['oj-timeline-series-label'] = {'path': 'styleDefaults/series/labelStyle', 'property': 'TEXT'};
+  // @inheritdoc
+    _GetChildStyleClasses: function () {
+      var styleClasses = this._super();
+      styleClasses['oj-dvtbase oj-timeline'] =
+        { path: 'styleDefaults/animationDuration', property: 'ANIM_DUR' };
+      styleClasses['oj-timeline'] =
+        { path: 'styleDefaults/borderColor', property: 'border-color' };
+      styleClasses['oj-timeline-item'] = [
+        { path: 'styleDefaults/item/borderColor', property: 'border-color' },
+        { path: 'styleDefaults/item/backgroundColor', property: 'background-color' }
+      ];
+      styleClasses['oj-timeline-item oj-hover'] = [
+        { path: 'styleDefaults/item/hoverBorderColor', property: 'border-color' },
+        { path: 'styleDefaults/item/hoverBackgroundColor', property: 'background-color' }
+      ];
+      styleClasses['oj-timeline-item oj-selected'] = [
+        { path: 'styleDefaults/item/selectedBorderColor', property: 'border-color' },
+        { path: 'styleDefaults/item/selectedBackgroundColor', property: 'background-color' }
+      ];
+      styleClasses['oj-timeline-item-description'] =
+        { path: 'styleDefaults/item/descriptionStyle', property: 'TEXT' };
+      styleClasses['oj-timeline-item-title'] =
+        { path: 'styleDefaults/item/titleStyle', property: 'TEXT' };
+      styleClasses['oj-timeline-major-axis-label'] =
+        { path: 'styleDefaults/majorAxis/labelStyle', property: 'TEXT' };
+      styleClasses['oj-timeline-major-axis-separator'] =
+        { path: 'styleDefaults/majorAxis/separatorColor', property: 'color' };
+      styleClasses['oj-timeline-minor-axis'] = [
+        { path: 'styleDefaults/minorAxis/backgroundColor', property: 'background-color' },
+        { path: 'styleDefaults/minorAxis/borderColor', property: 'border-color' }
+      ];
+      styleClasses['oj-timeline-minor-axis-label'] =
+        { path: 'styleDefaults/minorAxis/labelStyle', property: 'TEXT' };
+      styleClasses['oj-timeline-minor-axis-separator'] =
+        { path: 'styleDefaults/minorAxis/separatorColor', property: 'color' };
+      styleClasses['oj-timeline-overview'] =
+        { path: 'styleDefaults/overview/backgroundColor', property: 'background-color' };
+      styleClasses['oj-timeline-overview-label'] =
+        { path: 'styleDefaults/overview/labelStyle', property: 'TEXT' };
+      styleClasses['oj-timeline-overview-window'] = [
+        { path: 'styleDefaults/overview/window/backgroundColor', property: 'background-color' },
+        { path: 'styleDefaults/overview/window/borderColor', property: 'border-color' }
+      ];
+      styleClasses['oj-timeline-reference-object'] =
+        { path: 'styleDefaults/referenceObject/color', property: 'color' };
+      styleClasses['oj-timeline-series'] =
+        { path: 'styleDefaults/series/backgroundColor', property: 'background-color' };
+      styleClasses['oj-timeline-series-empty-text'] =
+        { path: 'styleDefaults/series/emptyTextStyle', property: 'TEXT' };
+      styleClasses['oj-timeline-series-label'] =
+        { path: 'styleDefaults/series/labelStyle', property: 'TEXT' };
+      styleClasses['oj-timeline-tooltip-label'] =
+        { path: 'styleDefaults/tooltipLabelStyle', property: 'TEXT' };
 
     // Zoom Control Icons
-    styleClasses['oj-timeline-zoomin-icon'] = [
-      {'path': '_resources/zoomIn_bgc', 'property': 'background-color'},
-      {'path': '_resources/zoomIn_bc', 'property': 'border-color'}
-    ];
-    styleClasses['oj-timeline-zoomin-icon oj-hover'] = [
-      {'path': '_resources/zoomIn_h_bgc', 'property': 'background-color'},
-      {'path': '_resources/zoomIn_h_bc', 'property': 'border-color'}
-    ];
-    styleClasses['oj-timeline-zoomin-icon oj-active'] = [
-      {'path': '_resources/zoomIn_a_bgc', 'property': 'background-color'},
-      {'path': '_resources/zoomIn_a_bc', 'property': 'border-color'}
-    ];
-    styleClasses['oj-timeline-zoomin-icon oj-disabled'] = [
-      {'path': '_resources/zoomIn_d_bgc', 'property': 'background-color'},
-      {'path': '_resources/zoomIn_d_bc', 'property': 'border-color'}
-    ];
-    styleClasses['oj-timeline-zoomout-icon'] = [
-      {'path': '_resources/zoomOut_bgc', 'property': 'background-color'},
-      {'path': '_resources/zoomOut_bc', 'property': 'border-color'}
-    ];
-    styleClasses['oj-timeline-zoomout-icon oj-hover'] = [
-      {'path': '_resources/zoomOut_h_bgc', 'property': 'background-color'},
-      {'path': '_resources/zoomOut_h_bc', 'property': 'border-color'}
-    ];
-    styleClasses['oj-timeline-zoomout-icon oj-active'] = [
-      {'path': '_resources/zoomOut_a_bgc', 'property': 'background-color'},
-      {'path': '_resources/zoomOut_a_bc', 'property': 'border-color'}
-    ];
-    styleClasses['oj-timeline-zoomout-icon oj-disabled'] = [
-      {'path': '_resources/zoomOut_d_bgc', 'property': 'background-color'},
-      {'path': '_resources/zoomOut_d_bc', 'property': 'border-color'}
-    ];
+      styleClasses['oj-timeline-zoomin-icon'] = [
+        { path: '_resources/zoomIn_bgc', property: 'background-color' },
+        { path: '_resources/zoomIn_bc', property: 'border-color' }
+      ];
+      styleClasses['oj-timeline-zoomin-icon oj-hover'] = [
+        { path: '_resources/zoomIn_h_bgc', property: 'background-color' },
+        { path: '_resources/zoomIn_h_bc', property: 'border-color' }
+      ];
+      styleClasses['oj-timeline-zoomin-icon oj-active'] = [
+        { path: '_resources/zoomIn_a_bgc', property: 'background-color' },
+        { path: '_resources/zoomIn_a_bc', property: 'border-color' }
+      ];
+      styleClasses['oj-timeline-zoomin-icon oj-disabled'] = [
+        { path: '_resources/zoomIn_d_bgc', property: 'background-color' },
+        { path: '_resources/zoomIn_d_bc', property: 'border-color' }
+      ];
+      styleClasses['oj-timeline-zoomout-icon'] = [
+        { path: '_resources/zoomOut_bgc', property: 'background-color' },
+        { path: '_resources/zoomOut_bc', property: 'border-color' }
+      ];
+      styleClasses['oj-timeline-zoomout-icon oj-hover'] = [
+        { path: '_resources/zoomOut_h_bgc', property: 'background-color' },
+        { path: '_resources/zoomOut_h_bc', property: 'border-color' }
+      ];
+      styleClasses['oj-timeline-zoomout-icon oj-active'] = [
+        { path: '_resources/zoomOut_a_bgc', property: 'background-color' },
+        { path: '_resources/zoomOut_a_bc', property: 'border-color' }
+      ];
+      styleClasses['oj-timeline-zoomout-icon oj-disabled'] = [
+        { path: '_resources/zoomOut_d_bgc', property: 'background-color' },
+        { path: '_resources/zoomOut_d_bc', property: 'border-color' }
+      ];
 
-    return styleClasses;
-  },
+      return styleClasses;
+    },
 
-  //@inheritdoc
-  _GetTranslationMap: function() {
+  // @inheritdoc
+    _GetTranslationMap: function () {
     // The translations are stored on the options object.
-    var translations = this.options['translations'];
+      var translations = this.options.translations;
 
     // Safe to modify super's map because function guarentees a new map is returned
-    var ret = this._super();
-    ret['DvtUtilBundle.TIMELINE'] = translations['componentName'];
-    ret['DvtUtilBundle.TIMELINE_SERIES'] = translations['labelSeries'];
-    ret['DvtUtilBundle.ZOOM_IN'] = translations['tooltipZoomIn'];
-    ret['DvtUtilBundle.ZOOM_OUT'] = translations['tooltipZoomOut'];
+      var ret = this._super();
+      ret['DvtUtilBundle.TIMELINE'] = translations.componentName;
+      ret['DvtUtilBundle.TIMELINE_SERIES'] = translations.labelSeries;
+      ret['DvtUtilBundle.ZOOM_IN'] = translations.tooltipZoomIn;
+      ret['DvtUtilBundle.ZOOM_OUT'] = translations.tooltipZoomOut;
 
-    return ret;
-  },
+      return ret;
+    },
 
-  //@inheritdoc
-  _LoadResources: function() {
-    this._super();
+  // @inheritdoc
+    _LoadResources: function () {
+      this._super();
 
-    var resources = this.options['_resources'];
-    var converter = resources['converter'];
-    var converterFactory = resources['converterFactory'];
+      var resources = this.options._resources;
+      var converter = resources.converter;
+      var converterFactory = resources.converterFactory;
 
     // Create default converters for vertical timeline
-    var monthsConverterVert = converterFactory.createConverter({'month': 'short'});
-    var yearsConverterVert = converterFactory.createConverter({'year': '2-digit'});
+      var monthsConverterVert = converterFactory.createConverter({ month: 'short' });
+      var yearsConverterVert = converterFactory.createConverter({ year: '2-digit' });
 
-    var converterVert = {
-      'seconds': converter['seconds'],
-      'minutes': converter['minutes'],
-      'hours': converter['hours'],
-      'days': converter['days'],
-      'weeks': converter['weeks'],
-      'months': monthsConverterVert,
-      'quarters': monthsConverterVert,
-      'years': yearsConverterVert
-    };
+      var converterVert = {
+        seconds: converter.seconds,
+        minutes: converter.minutes,
+        hours: converter.hours,
+        days: converter.days,
+        weeks: converter.weeks,
+        months: monthsConverterVert,
+        quarters: monthsConverterVert,
+        years: yearsConverterVert
+      };
 
-    resources['converterVert'] = converterVert;
+      resources.converterVert = converterVert;
 
     // Zoom control icons
-    resources['zoomIn'] = 'oj-timeline-zoomin-icon';
-    resources['zoomIn_h'] = 'oj-timeline-zoomin-icon oj-hover';
-    resources['zoomIn_a'] = 'oj-timeline-zoomin-icon oj-active';
-    resources['zoomIn_d'] = 'oj-timeline-zoomin-icon oj-disabled';
-    resources['zoomOut'] = 'oj-timeline-zoomout-icon';
-    resources['zoomOut_h'] = 'oj-timeline-zoomout-icon oj-hover';
-    resources['zoomOut_a'] = 'oj-timeline-zoomout-icon oj-active';
-    resources['zoomOut_d'] = 'oj-timeline-zoomout-icon oj-disabled';
+      resources.zoomIn = 'oj-timeline-zoomin-icon';
+      resources.zoomIn_h = 'oj-timeline-zoomin-icon oj-hover';
+      resources.zoomIn_a = 'oj-timeline-zoomin-icon oj-active';
+      resources.zoomIn_d = 'oj-timeline-zoomin-icon oj-disabled';
+      resources.zoomOut = 'oj-timeline-zoomout-icon';
+      resources.zoomOut_h = 'oj-timeline-zoomout-icon oj-hover';
+      resources.zoomOut_a = 'oj-timeline-zoomout-icon oj-active';
+      resources.zoomOut_d = 'oj-timeline-zoomout-icon oj-disabled';
 
     // Overview icons
-    resources['overviewHandleHor'] = 'oj-timeline-overview-window-handle-horizontal';
-    resources['overviewHandleVert'] = 'oj-timeline-overview-window-handle-vertical';
-  },
+      resources.overviewHandleHor = 'oj-timeline-overview-window-handle-horizontal';
+      resources.overviewHandleVert = 'oj-timeline-overview-window-handle-vertical';
+    },
 
-  //@inheritdoc
-  _GetComponentDeferredDataPaths : function() {
-    return {'root': ['series']};
-  },
+  // @inheritdoc
+    _GetComponentDeferredDataPaths: function () {
+      return { root: ['series'] };
+    },
 
   /**
    * {@ojinclude "name":"nodeContextDoc"}
@@ -1730,12 +2334,17 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtTimeComponent'],
    * @instance
    * @memberof oj.ojTimeline
    */
-  getContextByNode: function(node)
-  {
-    // context objects are documented with @ojnodecontext
-    return this.getSubIdByNode(node);
-  }
-});
+    getContextByNode: function (node) {
+      // context objects are documented with @ojnodecontext
+      var context = this.getSubIdByNode(node);
+      if (context && context.subId !== 'oj-timeline-tooltip') {
+        return context;
+      }
+
+      return null;
+    }
+  });
+
 /**
  * <table class="keyboard-table">
  *   <thead>
@@ -1750,6 +2359,13 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtTimeComponent'],
  *       <td>Timeline Item</td>
  *       <td>Tap</td>
  *       <td>Select when <code class="prettyprint">selectionMode</code> is enabled.</td>
+ *     </tr>
+ *     <tr>
+ *       <td rowspan="2"><kbd>Press & Hold</kbd></td>
+ *       <td>Display tooltip.</td>
+ *     </tr>
+ *     <tr>
+ *       <td>Display context menu on release.</td>
  *     </tr>
  *     <tr>
  *       <td rowspan="2">Timeline Panel</td>
@@ -1959,13 +2575,22 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtTimeComponent'],
 /**
  * @typedef {Object} oj.ojTimeline.SeriesItem
  * @property {string=} description The description text displayed on the timeline item. If not specified, no description will be shown.
- * @property {string=} end The end time of this timeline item. If not specified, no duration bar will be shown. See <a href="#formats-section">Date and Time Formats</a> for more details on the required string formats.
  * @property {string=} durationFillColor The color applied to the duration bar of the timeline item. If not specified, this will be determined by the color ramp of the series.
+ * @property {string=} end The end time of this timeline item. If not specified, no duration bar will be shown. See <a href="#formats-section">Date and Time Formats</a> for more details on the required string formats.
  * @property {string} id The identifier for the timeline item. This must be unique across all items in the timeline, and is required in order for the timeline to properly render.
  * @property {string} start The start time of this timeline item. This is required in order for the timeline item to properly render. See <a href="#formats-section">Date and Time Formats</a> for more details on the required string formats.
+ * @property {string=} shortDesc The description of the item. This is used for accessibility and for customizing the tooltip text.
  * @property {Object=} svgStyle The CSS style defining any additional styling of the item. If not specified, no additional styling will be applied.
  * @property {string=} thumbnail An optional URI specifying the location of an image resource to be displayed on the item. The image will be rendered at 32px x 32px in size. If not specified, no thumbnail will be shown.
  * @property {string=} title The title text displayed on the timeline item. If not specified, no title will be shown.
+ */
+/**
+ * @typedef {Object} oj.ojTimeline.TooltipContext
+ * @property {Element} parentElement The tooltip element. This can be used to change the tooltip border or background color.
+ * @property {oj.ojTimeline.SeriesItem} data The data object of the hovered item.
+ * @property {oj.ojTimeline.Series} seriesData The data for the series the hovered item belongs to.
+ * @property {Element} componentElement The timeline element.
+ * @property {string} color The color of the hovered item.
  */
 
 // METHOD TYPEDEFS
@@ -1994,6 +2619,16 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtTimeComponent'],
  * var node = myComponent.getNodeBySubId({'subId': 'oj-timeline-item', 'seriesIndex': 0, 'itemIndex': 1});
  */
 
+/**
+ * <p>Sub-ID for the the Timeline tooltip.</p>
+ *
+ * @ojsubid oj-timeline-tooltip
+ * @memberof oj.ojTimeline
+ *
+ * @example <caption>Get the tooltip object of the timeline, if displayed:</caption>
+ * var nodes = myTimeline.getNodeBySubId({'subId': 'oj-timeline-tooltip'});
+ */
+
 // Node Context Objects ********************************************************
 
 /**
@@ -2005,6 +2640,7 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtTimeComponent'],
  * @ojnodecontext oj-timeline-item
  * @memberof oj.ojTimeline
  */
+
 /* global __oj_timeline_metadata:false */
 /**
  * Ignore tag only needed for DVTs that have jsDoc in separate _doc.js files.
@@ -2012,8 +2648,7 @@ oj.__registerWidget('oj.ojTimeline', $['oj']['dvtTimeComponent'],
  */
 (function () {
   __oj_timeline_metadata.extension._WIDGET_NAME = 'ojTimeline';
-  oj.CustomElementBridge.registerMetadata('oj-timeline', 'dvtTimeComponent', __oj_timeline_metadata);
-  oj.CustomElementBridge.register('oj-timeline', { metadata: oj.CustomElementBridge.getMetadata('oj-timeline') });
+  oj.CustomElementBridge.register('oj-timeline', { metadata: __oj_timeline_metadata });
 }());
 
 });

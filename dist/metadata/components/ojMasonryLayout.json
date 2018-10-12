@@ -1,16 +1,68 @@
 {
   "name": "oj-masonry-layout",
-  "version": "5.2.0",
-  "jetVersion": "5.2.0",
+  "version": "6.0.0",
+  "jetVersion": "6.0.0",
   "displayName": "Masonry Layout",
   "type": "core",
+  "styleClasses": [
+    {
+      "styleGroup": [
+        "oj-masonrylayout-tile-1x1"
+      ],
+      "description": "A tile that spans 1 column and 1 row."
+    },
+    {
+      "styleGroup": [
+        "oj-masonrylayout-tile-1x2"
+      ],
+      "description": "A tile that spans 1 column and 2 rows."
+    },
+    {
+      "styleGroup": [
+        "oj-masonrylayout-tile-1x3"
+      ],
+      "description": "A tile that spans 1 column and 3 rows."
+    },
+    {
+      "styleGroup": [
+        "oj-masonrylayout-tile-2x1"
+      ],
+      "description": "A tile that spans 2 columns and 1 row."
+    },
+    {
+      "styleGroup": [
+        "oj-masonrylayout-tile-2x2"
+      ],
+      "description": "A tile that spans 2 columns and 2 rows."
+    },
+    {
+      "styleGroup": [
+        "oj-masonrylayout-tile-2x3"
+      ],
+      "description": "A tile that spans 2 columns and 3 rows."
+    },
+    {
+      "styleGroup": [
+        "oj-masonrylayout-tile-3x1"
+      ],
+      "description": "A tile that spans 3 columns and 1 row."
+    },
+    {
+      "styleGroup": [
+        "oj-masonrylayout-tile-3x2"
+      ],
+      "description": "A tile that spans 3 columns and 2 rows."
+    }
+  ],
   "description": "Container element that lays out its children in a grid of tiles.",
+  "help": "https://docs.oracle.com/en/middleware/jet/6/reference-api/oj.ojMasonryLayout.html",
   "properties": {
     "reorderHandle": {
       "description": "Specifies the selector of the child DOM element that can be used to reorder the child.",
       "type": "string",
       "displayName": "Reorder Handle",
-      "value": null
+      "value": null,
+      "help": "reorderHandle"
     },
     "translations": {
       "description": "A collection of translated resources from the translation bundle, or null if this component has no resources.",
@@ -18,21 +70,25 @@
       "displayName": "Translations",
       "value": {},
       "translatable": true,
+      "help": "translations",
       "properties": {
         "labelCut": {
           "description": "Context menu text used for cutting a tile.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "Label Cut"
+          "displayName": "Label Cut",
+          "help": "translations.labelCut"
         },
         "labelPasteAfter": {
           "description": "Context menu text used for pasting a tile after another tile.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "Label Paste After"
+          "displayName": "Label Paste After",
+          "help": "translations.labelPasteAfter"
         },
         "labelPasteBefore": {
           "description": "Context menu text used for pasting a tile before another tile.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "Label Paste Before"
+          "displayName": "Label Paste Before",
+          "help": "translations.labelPasteBefore"
         }
       }
     }
@@ -40,10 +96,12 @@
   "methods": {
     "refresh": {
       "description": "Refreshes the visual state of the masonryLayout.",
+      "help": "refresh",
       "return": "void"
     },
     "resizeTile": {
       "description": "Resize a tile.",
+      "help": "resizeTile",
       "params": [
         {
           "name": "selector",
@@ -60,6 +118,7 @@
     },
     "insertTile": {
       "description": "Insert a tile.",
+      "help": "insertTile",
       "params": [
         {
           "name": "selector",
@@ -76,6 +135,7 @@
     },
     "removeTile": {
       "description": "Remove a tile.",
+      "help": "removeTile",
       "params": [
         {
           "name": "selector",
@@ -86,7 +146,8 @@
       "return": "void"
     },
     "setProperty": {
-      "description": "Sets a property or a single subproperty for complex properties and notifies the component\nof the change, triggering a [property]Changed event.",
+      "description": "Sets a property or a single subproperty for complex properties and notifies the component of the change, triggering a [property]Changed event.",
+      "help": "setProperty",
       "params": [
         {
           "name": "property",
@@ -103,6 +164,7 @@
     },
     "getProperty": {
       "description": "Retrieves a value for a property or a single subproperty for complex properties.",
+      "help": "getProperty",
       "params": [
         {
           "name": "property",
@@ -114,6 +176,7 @@
     },
     "setProperties": {
       "description": "Performs a batch set of properties.",
+      "help": "setProperties",
       "params": [
         {
           "name": "properties",
@@ -128,6 +191,7 @@
     "ojAnimateStart": {
       "description": "Event triggered when the default animation of a particular action is about to start.",
       "cancelable": true,
+      "help": "animateStart",
       "detail": {
         "action": {
           "description": "The action that triggers the animation. Supported values are: \"insert\" - when a tile is inserted \"move\" - when a tile is moved \"remove\" - when a tile is removed \"resize\" - when a tile is resized \"reorder\" - when a tile is reordered Note that some animation effects may not look appropriate for a given action.",
@@ -145,6 +209,7 @@
     },
     "ojAnimateEnd": {
       "description": "Event triggered when the default animation of a particular action has ended.",
+      "help": "animateEnd",
       "detail": {
         "action": {
           "description": "The action that triggers the animation. Supported values are: \"insert\" - when a tile is inserted \"move\" - when a tile is moved \"remove\" - when a tile is removed \"resize\" - when a tile is resized \"reorder\" - when a tile is reordered ",
@@ -159,6 +224,7 @@
     "ojBeforeInsert": {
       "description": "Event triggered before a tile is inserted.",
       "cancelable": true,
+      "help": "beforeInsert",
       "detail": {
         "tile": {
           "description": "The tile that is about to be inserted.",
@@ -172,6 +238,7 @@
     },
     "ojInsert": {
       "description": "Event triggered after a tile is inserted.",
+      "help": "insert",
       "detail": {
         "tile": {
           "description": "The tile that was inserted.",
@@ -186,6 +253,7 @@
     "ojBeforeRemove": {
       "description": "Event triggered before a tile is removed.",
       "cancelable": true,
+      "help": "beforeRemove",
       "detail": {
         "tile": {
           "description": "The tile that will be removed.",
@@ -195,6 +263,7 @@
     },
     "ojRemove": {
       "description": "Event triggered after a tile is removed.",
+      "help": "remove",
       "detail": {
         "tile": {
           "description": "The tile that was removed.",
@@ -205,6 +274,7 @@
     "ojBeforeResize": {
       "description": "Event triggered before a tile is resized.",
       "cancelable": true,
+      "help": "beforeResize",
       "detail": {
         "tile": {
           "description": "The tile that will be resized.",
@@ -222,6 +292,7 @@
     },
     "ojResize": {
       "description": "Event triggered after a tile is resized.",
+      "help": "resize",
       "detail": {
         "tile": {
           "description": "The tile that was resized.",
@@ -240,6 +311,7 @@
     "ojBeforeReorder": {
       "description": "Event triggered before a tile is reordered.",
       "cancelable": true,
+      "help": "beforeReorder",
       "detail": {
         "tile": {
           "description": "The tile that will be reordered.",
@@ -253,6 +325,7 @@
     },
     "ojReorder": {
       "description": "Event triggered after a tile is reordered.",
+      "help": "reorder",
       "detail": {
         "tile": {
           "description": "The tile that was reordered.",
@@ -272,10 +345,13 @@
   "slots": {
     "": {
       "description": " <oj-masonry-layout> accepts arbitrary direct child elements that can be\nsized and positioned, which it will lay out as a grid of tiles. Each direct\nchild element must be styled using one of the predefined oj-masonrylayout-tile-CxR style classes to specify\nthe size of that tile. A tile can span multiple columns and/or rows.",
-      "displayName": "default"
+      "displayName": "default",
+      "help": "Default"
     },
     "contextMenu": {
-      "description": "The contextMenu slot is set on the oj-menu within this element. \nThis is used to designate the JET Menu that this component should launch as a context menu on right-click, Shift-F10, Press & Hold, or component-specific gesture. \nIf specified, the browser's native context menu will be replaced by the JET Menu specified in this slot.\n\nThe application can register a listener for the Menu's ojBeforeOpen event. The listener can cancel the launch via event.preventDefault(), \nor it can customize the menu contents by editing the menu DOM directly, and then calling refresh() on the Menu.\n\nTo help determine whether it's appropriate to cancel the launch or customize the menu, the ojBeforeOpen listener can use component API's to determine which \ntable cell, chart item, etc., is the target of the context menu. See the JSDoc and demos of the individual components for details. \n\nKeep in mind that any such logic must work whether the context menu was launched via right-click, Shift-F10, Press & Hold, or component-specific touch gesture."
+      "description": "The contextMenu slot is set on the <oj-menu> instance within this element. It designates the JET Menu that this component should launch as a context menu.",
+      "maxItems": 1,
+      "help": "contextMenu"
     }
   }
 }

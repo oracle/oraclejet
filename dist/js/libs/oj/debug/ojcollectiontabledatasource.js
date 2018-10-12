@@ -9,7 +9,7 @@
  * Copyright (c) 2015, Oracle and/or its affiliates.
  * All rights reserved.
  */
-define(['ojs/ojcore', 'jquery', 'ojs/ojdatasource-common', 'ojs/ojmodel'], function(oj, $)
+define(['ojs/ojcore', 'jquery', 'ojs/ojmodel', 'ojs/ojdatasource-common'], function(oj, $, Model)
 {
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
@@ -22,53 +22,54 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojdatasource-common', 'ojs/ojmodel'], funct
  * http://jquery.org/license
  */
 
-/*jslint browser: true,devel:true*/
+/* global Promise:false, Model:false */
+
+/* jslint browser: true,devel:true*/
 /**
  * @export
  * @class oj.CollectionTableDataSource
  * @extends oj.TableDataSource
- * @classdesc Object representing data available from an {@link oj.Collection} object, such as an external data source.  This data source can be used by [ListView]{@link oj.ojListView}, [NavigationList]{@link oj.ojNavigationList}, 
+ * @classdesc Object representing data available from an {@link oj.Collection} object, such as an external data source.  This data source can be used by [ListView]{@link oj.ojListView}, [NavigationList]{@link oj.ojNavigationList},
  *            [TabBar]{@link oj.ojTabBar}, and [Table]{@link oj.ojTable}.<br><br>
  *            See the <a href="../jetCookbook.html?component=crud&demo=table">Table - Using oj.Collection</a> demo for an example.<br><br>
  *            Refer to {@link oj.TableDataSource} for other data sources that represent tabular data.
  * @param {oj.Collection} data data supported by the components
  * @param {Object|null} [options] Options for the TableDataSource
  * @param {"enabled"|"disabled"} [options.startFetch] Control whether to start initial fetch when the TableDataSource is bound to a component.  Valid values are:<br><br>
- *                                    <b>"enabled"</b> (default) - Start initial fetch automatically when the TableDataSource is bound to a component.<br>
- *                                    <b>"disabled"</b> - Do not start initial fetch automatically.  Application will call the <a href="#fetch">fetch()</a> method to
+ *          <b>"enabled"</b> (default) - Start initial fetch automatically when the TableDataSource is bound to a component.<br>
+ *          <b>"disabled"</b> - Do not start initial fetch automatically.  Application will call the <a href="#fetch">fetch()</a> method to
  *                                                        start the first fetch.
  * @constructor
+ * @ojdeprecated {since: '6.0.0', description: 'Use CollectionDataProvider instead.'}
  * @ojtsignore
  * @since 1.0
  */
-oj.CollectionTableDataSource = function(data, options)
-{
+oj.CollectionTableDataSource = function (data, options) {
   // Initialize
   this.data = {};   // This was put in to keep closure happy...
-  if (!(data instanceof oj.Collection))
-  {
+  if (!(data instanceof Model.Collection)) {
     // we only support oj.Collection
-    var errSummary = oj.TableDataSource._LOGGER_MSG['_ERR_DATA_INVALID_TYPE_SUMMARY'];
-    var errDetail = oj.TableDataSource._LOGGER_MSG['_ERR_DATA_INVALID_TYPE_DETAIL'];
+    var errSummary = oj.TableDataSource._LOGGER_MSG._ERR_DATA_INVALID_TYPE_SUMMARY;
+    var errDetail = oj.TableDataSource._LOGGER_MSG._ERR_DATA_INVALID_TYPE_DETAIL;
     throw new Error(errSummary + '\n' + errDetail);
   }
-  
+
   oj.CollectionTableDataSource.superclass.constructor.call(this, data, options);
 
   this._collection = data;
   this._addCollectionEventListeners();
-  
+
   this.Init();
 
-  if ((options != null && (options['startFetch'] == 'enabled' || options['startFetch'] == null))
-    || options == null)
-  {
+  if ((options != null && (options.startFetch === 'enabled' || options.startFetch == null))
+    || options == null) {
     this._startFetchEnabled = true;
   }
 };
 
-// Subclass from oj.DataSource 
-oj.Object.createSubclass(oj.CollectionTableDataSource, oj.TableDataSource, "oj.CollectionTableDataSource");
+// Subclass from oj.DataSource
+oj.Object.createSubclass(oj.CollectionTableDataSource, oj.TableDataSource,
+                         'oj.CollectionTableDataSource');
 
 /**
  * @export
@@ -87,15 +88,14 @@ oj.CollectionTableDataSource.prototype.comparator = null;
  * @override
  * @protected
  */
-oj.CollectionTableDataSource.prototype.Init = function()
-{
+oj.CollectionTableDataSource.prototype.Init = function () {
   oj.CollectionTableDataSource.superclass.Init.call(this);
 };
 
 /**
  * Return the row data found at the given index.
- * 
- * @param {number} index Index for which to return the row data. 
+ *
+ * @param {number} index Index for which to return the row data.
  * @param {Object=} options Options to control the at.
  * @return {Promise} Promise resolves to a compound object which has the structure below. If the index is out of range, Promise resolves to null.<p>
  * <table>
@@ -114,34 +114,27 @@ oj.CollectionTableDataSource.prototype.Init = function()
  * @memberof oj.CollectionTableDataSource
  * @instance
  */
-oj.CollectionTableDataSource.prototype.at = function(index, options)
-{
-  options = options || {};
-  options['deferred'] = true;
-  var model = this._collection.at(index, options);
+oj.CollectionTableDataSource.prototype.at = function (index, options) {
+  var _options = options || {};
+  _options.deferred = true;
+  var model = this._collection.at(index, _options);
   var self = this;
   // the at() call can result in fetches
   self._isFetchingForAt = true;
   var row;
-  return new Promise(function(resolve, reject) 
-  {
-    if (model != null)
-    {
-      model.then(function(resolvedModel)
-      {
+  return new Promise(function (resolve, reject) {
+    if (model != null) {
+      model.then(function (resolvedModel) {
         self._isFetchingForAt = false;
-        row = {'data': resolvedModel['attributes'], 'index': index, 'key': resolvedModel['id']};
+        row = { data: resolvedModel.attributes, index: index, key: resolvedModel.id };
         resolve(row);
       },
-      function(e)
-      {
+      function (e) {
         self._isFetchingForAt = false;
-        oj.TableDataSource.superclass.handleEvent.call(self, oj.TableDataSource.EventType['ERROR'], e);
+        oj.TableDataSource.superclass.handleEvent.call(self, oj.TableDataSource.EventType.ERROR, e);
         reject(e);
       });
-    }
-    else
-    {
+    } else {
       resolve(null);
     }
   });
@@ -160,7 +153,7 @@ oj.CollectionTableDataSource.prototype.at = function(index, options)
  * <tr><td><b>keys</b></td><td>An array of key values for the rows</td></tr>
  * <tr><td><b>startIndex</b></td><td>The startIndex for the returned set of rows</td></tr>
  * </tbody>
- * </table>  
+ * </table>
  * @ojsignature {target:"Type",
  *               value: "Promise<null|oj.TableDataSource.RowDatas>",
  *               for: "returns",
@@ -170,22 +163,20 @@ oj.CollectionTableDataSource.prototype.at = function(index, options)
  * @memberof oj.CollectionTableDataSource
  * @instance
  */
-oj.CollectionTableDataSource.prototype.fetch = function(options)
-{
-  options = options || {};
-  var fetchType = options['fetchType'];
-  
-  if (fetchType == 'init' && !this._startFetchEnabled)
-  {
+oj.CollectionTableDataSource.prototype.fetch = function (options) {
+  var _options = options || {};
+  var fetchType = _options.fetchType;
+
+  if (fetchType === 'init' && !this._startFetchEnabled) {
     return Promise.resolve();
   }
-  
-  return this._fetchInternal(options);
+
+  return this._fetchInternal(_options);
 };
 
 /**
  * Return the first row data whose id value is the given id
- * @param {string} id ID for which to return the row data, if found. 
+ * @param {string} id ID for which to return the row data, if found.
  * @param {Object=} options Options to control the get.
  * @return {Promise} Promise which resolves to a compound object which has the structure below where the id matches the given id. If none are found, resolves to null.<p>
  * <table>
@@ -204,32 +195,24 @@ oj.CollectionTableDataSource.prototype.fetch = function(options)
  * @memberof oj.CollectionTableDataSource
  * @instance
  */
-oj.CollectionTableDataSource.prototype.get = function(id, options)
-{
-  options = options || {};
-  options['deferred'] = true;
-  var model = this._collection.get(id, options);
-  
+oj.CollectionTableDataSource.prototype.get = function (id, options) {
+  var _options = options || {};
+  _options.deferred = true;
+  var model = this._collection.get(id, _options);
   var self = this;
-  var row, wrappedRow;
-  return new Promise(function(resolve, reject) 
-  {
-    if (model != null)
-    {
-      model.then(function(resolvedModel)
-      {
-        wrappedRow = self._wrapWritableValue(resolvedModel, resolvedModel['attributes']);
-        row = {'data': wrappedRow, 'index': resolvedModel['index'], 'key': resolvedModel['id']};
+
+  return new Promise(function (resolve, reject) {
+    if (model != null) {
+      model.then(function (resolvedModel) {
+        var wrappedRow = self._wrapWritableValue(resolvedModel, resolvedModel.attributes);
+        var row = { data: wrappedRow, index: resolvedModel.index, key: resolvedModel.id };
         resolve(row);
       },
-      function(e)
-      {
-        oj.TableDataSource.superclass.handleEvent.call(self, oj.TableDataSource.EventType['ERROR'], e);
+      function (e) {
+        oj.TableDataSource.superclass.handleEvent.call(self, oj.TableDataSource.EventType.ERROR, e);
         reject(e);
       });
-    }
-    else
-    {
+    } else {
       resolve(null);
     }
   });
@@ -246,43 +229,33 @@ oj.CollectionTableDataSource.prototype.get = function(id, options)
  * @memberof oj.CollectionTableDataSource
  * @instance
  */
-oj.CollectionTableDataSource.prototype.sort = function(criteria)
-{   
-  if (criteria == null)
-  {
-    criteria = this['sortCriteria'];
+oj.CollectionTableDataSource.prototype.sort = function (criteria) {
+  if (criteria == null) {
+    // eslint-disable-next-line no-param-reassign
+    criteria = this.sortCriteria;
+  } else {
+    this.sortCriteria = criteria;
   }
-  else
-  {
-    this['sortCriteria'] = criteria;
-  }
-  
-  var comparator = this['comparator'];
-  
-  var self = this;
-  return new Promise(function(resolve, reject) {
-    
-    if (comparator == null)
-    {
-      self._collection['comparator'] = criteria['key'];
 
-      if (criteria['direction'] == 'ascending')
-      {
-        self._collection['sortDirection'] = 1;
+  var comparator = this.comparator;
+
+  var self = this;
+  return new Promise(function (resolve) {
+    if (comparator == null) {
+      self._collection.comparator = criteria.key;
+
+      if (criteria.direction === 'ascending') {
+        self._collection.sortDirection = 1;
+      } else {
+        self._collection.sortDirection = -1;
       }
-      else
-      {
-        self._collection['sortDirection'] = -1;
-      }
-    }
-    else
-    {
-      self._collection['comparator'] = comparator;
+    } else {
+      self._collection.comparator = comparator;
     }
     self._collection.sort(null);
-    var result = {'header': criteria['key'], 'direction': criteria['direction']};
+    var result = { header: criteria.key, direction: criteria.direction };
     resolve(result);
-  });    
+  });
 };
 
 /**
@@ -293,35 +266,29 @@ oj.CollectionTableDataSource.prototype.sort = function(criteria)
  * @memberof oj.CollectionTableDataSource
  * @instance
  */
-oj.CollectionTableDataSource.prototype.totalSize = function()
-{
-  var totalSize = this._collection['totalResults'] >= 0 ? this._collection['totalResults'] : -1;
-  
-  if (totalSize > -1)
-  {
+oj.CollectionTableDataSource.prototype.totalSize = function () {
+  var totalSize = this._collection.totalResults >= 0 ? this._collection.totalResults : -1;
+
+  if (totalSize > -1) {
     var size = this._collection.size();
     return size > totalSize ? size : totalSize;
   }
-  else
-  {
-    if (this._fetchResultSize > 0)
-    {
-      totalSize = this._fetchResultSize;
-    }
-    else if (this.totalSizeConfidence() == "atLeast")
-    {
-      return this._collection.size();
-    }
+
+  if (this._fetchResultSize > 0) {
+    totalSize = this._fetchResultSize;
+  } else if (this.totalSizeConfidence() === 'atLeast') {
+    return this._collection.size();
   }
-  
+
+
   return totalSize;
 };
 
 /**
- * Returns the confidence for the totalSize value. 
- * @return {string} "actual" if the totalSize is the time of the fetch is an exact number 
- *                  "estimate" if the totalSize is an estimate 
- *                  "atLeast" if the totalSize is at least a certain number 
+ * Returns the confidence for the totalSize value.
+ * @return {string} "actual" if the totalSize is the time of the fetch is an exact number
+ *                  "estimate" if the totalSize is an estimate
+ *                  "atLeast" if the totalSize is at least a certain number
  *                  "unknown" if the totalSize is unknown
  * @ojsignature {target:"Type",
  *               value: "'actual'|'estimate'|'atLeast'|'unknown'",
@@ -329,21 +296,17 @@ oj.CollectionTableDataSource.prototype.totalSize = function()
  * @export
  * @expose
  * @memberof oj.CollectionTableDataSource
- * @instance 
+ * @instance
  */
-oj.CollectionTableDataSource.prototype.totalSizeConfidence = function()
-{ 
-  if (this._collection['totalResults'] >= 0)
-  {
-    return "actual";
-  }
-  else if (this._collection['hasMore'])
-  {
+oj.CollectionTableDataSource.prototype.totalSizeConfidence = function () {
+  if (this._collection.totalResults >= 0) {
+    return 'actual';
+  } else if (this._collection.hasMore) {
     // if totalResults is unknown but we know we have more then
     // we know we have at least a certain number of rows
-    return "atLeast";
+    return 'atLeast';
   }
-  return "unknown";
+  return 'unknown';
 };
 
 /**
@@ -351,205 +314,205 @@ oj.CollectionTableDataSource.prototype.totalSizeConfidence = function()
  * @private
  * @memberof oj.CollectionTableDataSource
  */
-oj.CollectionTableDataSource.prototype._addCollectionEventListeners = function()
-{
+oj.CollectionTableDataSource.prototype._addCollectionEventListeners = function () {
   var self = this;
-  this._collection.on(oj.Events.EventType['SYNC'], function(event) 
-  {
-    if (event instanceof oj.Model)
-    {
-      oj.TableDataSource.superclass.handleEvent.call(self, oj.TableDataSource.EventType['CHANGE'], {'data': [event['attributes']], 'keys': [event['id']], 'indexes': [event['index']]});
-    }
-    else if (event instanceof oj.Collection)
-    {
-      if (!self._isFetchingForAt && !self._isFetching)
-      {
-        var startIndex = event['offset'];
-        var pageSize = event['lastFetchCount'] || event['lastFetchSize'];
+  this._collection.on(Model.Events.EventType.SYNC, function (event) {
+    if (event instanceof Model.Model) {
+      oj.TableDataSource.superclass.handleEvent.call(self,
+                                                     oj.TableDataSource.EventType.CHANGE, {
+                                                       data: [event.attributes],
+                                                       keys: [event.id],
+                                                       indexes: [event.index]
+                                                     });
+    } else if (event instanceof Model.Collection) {
+      if (!self._isFetchingForAt && !self._isFetching) {
+        var startIndex = event.offset;
+        var pageSize = event.lastFetchCount || event.lastFetchSize;
 
         // Do not call _getRowArray if this datasource is paged,
         // or if the underlying oj.Collection is virtual since _getRowArray
         // assumes collection.at returns Model objects, which is not the case
         // for virtual collection.
-        if (pageSize > 0 || self._collection.IsVirtual())
-        {
+        if (pageSize > 0 || self._collection.IsVirtual()) {
           self._startIndex = startIndex;
           self._pageSize = pageSize;
           var endIndex = 0;
-          
-          if (self._collection.totalResults > 0 || 
-            self._collection.hasMore)
-          {
+
+          if (self._collection.totalResults > 0 ||
+            self._collection.hasMore) {
             endIndex = startIndex + pageSize;
           }
-          
+
           // paged fetch
           self._isFetchingForAt = true;
-          event.IterativeAt(startIndex, endIndex).then(function(modelArray)
-          {
+          event.IterativeAt(startIndex, endIndex).then(function (modelArray) {
             self._isFetchingForAt = false;
             var rowArray = [];
             var keyArray = [];
-            var i, model, wrappedRow;
-            for (i = 0; i < modelArray.length; i++)
-            {
-              if (modelArray[i] != null)
-              {
-                model = modelArray[i];
-                wrappedRow = self._wrapWritableValue(model, model['attributes']);
+
+            for (var i = 0; i < modelArray.length; i++) {
+              if (modelArray[i] != null) {
+                var model = modelArray[i];
+                var wrappedRow = self._wrapWritableValue(model, model.attributes);
                 rowArray.push(wrappedRow);
-                keyArray.push(model['id']);
+                keyArray.push(model.id);
               }
             }
-            var result = {'data': rowArray, 'keys': keyArray, 'startIndex': startIndex};
-            self._endFetch.call(self, {'silent': false}, result, null);
+            var result = { data: rowArray, keys: keyArray, startIndex: startIndex };
+            self._endFetch.call(self, { silent: false }, result);
           });
-        }
-        else
-        {
+        } else {
           var result = self._getRowArray();
-          self._endFetch.call(self, {'silent': false}, result, null);
+          self._endFetch.call(self, { silent: false }, result);
         }
       }
     }
   });
-  this._collection.on(oj.Events.EventType['ALLADDED'], function(event, modelArray) {
+  this._collection.on(Model.Events.EventType.ALLADDED, function (event, modelArray) {
     var rowArray = [];
     var keyArray = [];
     var indexArray = [];
-    var i, model, wrappedRow;
-    for (i = 0; i < modelArray.length; i++)
-    {
-      model = modelArray[i];
-      wrappedRow = self._wrapWritableValue(model, model['attributes']);
+
+    for (var i = 0; i < modelArray.length; i++) {
+      var model = modelArray[i];
+      var wrappedRow = self._wrapWritableValue(model, model.attributes);
       rowArray.push(wrappedRow);
-      keyArray.push(model['id']);
-      indexArray.push(model['index']);
+      keyArray.push(model.id);
+      indexArray.push(model.index);
     }
-    oj.TableDataSource.superclass.handleEvent.call(self, oj.TableDataSource.EventType['ADD'], {'data': rowArray, 'keys': keyArray, 'indexes': indexArray});
+    oj.TableDataSource.superclass.handleEvent.call(self,
+                                                   oj.TableDataSource.EventType.ADD, {
+                                                     data: rowArray,
+                                                     keys: keyArray,
+                                                     indexes: indexArray
+                                                   });
   });
-  this._collection.on(oj.Events.EventType['ALLREMOVED'], function(event, modelArray) {
+  this._collection.on(Model.Events.EventType.ALLREMOVED, function (event, modelArray) {
     var rowArray = [];
     var keyArray = [];
     var indexArray = [];
-    var i, model;
-    for (i = 0; i < modelArray.length; i++)
-    {
-      model = modelArray[i];
+
+    for (var i = 0; i < modelArray.length; i++) {
+      var model = modelArray[i];
       // no need to wrapWritableValue as we are just deleting
-      rowArray.push(model['attributes']);
-      keyArray.push(model['id']);
-      indexArray.push(model['index']);
+      rowArray.push(model.attributes);
+      keyArray.push(model.id);
+      indexArray.push(model.index);
     }
-    oj.TableDataSource.superclass.handleEvent.call(self, oj.TableDataSource.EventType['REMOVE'], {'data': rowArray, 'keys': keyArray, 'indexes': indexArray});
+    oj.TableDataSource.superclass.handleEvent.call(self,
+                                                   oj.TableDataSource.EventType.REMOVE, {
+                                                     data: rowArray,
+                                                     keys: keyArray,
+                                                     indexes: indexArray
+                                                   });
   });
-  this._collection.on(oj.Events.EventType['RESET'], function(event) {
-    oj.TableDataSource.superclass.handleEvent.call(self, oj.TableDataSource.EventType['RESET'], event);
+  this._collection.on(Model.Events.EventType.RESET, function (event) {
+    oj.TableDataSource.superclass.handleEvent.call(self,
+                                                   oj.TableDataSource.EventType.RESET, event);
   });
-  this._collection.on(oj.Events.EventType['SORT'], function(event, eventOpts) {
-    if (eventOpts == null || !eventOpts['add'])
-    {
+  this._collection.on(Model.Events.EventType.SORT, function (event, eventOpts) {
+    if (eventOpts == null || !eventOpts.add) {
       var sortCriteria = {};
-      
-      if (event != null && !event['comparator'] != null && !$.isFunction(event['comparator']))
-      {
-        sortCriteria['header'] = event['comparator'];
-        sortCriteria['direction'] = event['sortDirection'] === 1 ? 'ascending' : 'descending';
+
+      if (event != null && !event.comparator != null && !$.isFunction(event.comparator)) {
+        sortCriteria.header = event.comparator;
+        sortCriteria.direction = event.sortDirection === 1 ? 'ascending' : 'descending';
       }
-      oj.TableDataSource.superclass.handleEvent.call(self, oj.TableDataSource.EventType['SORT'], sortCriteria);
+      oj.TableDataSource.superclass.handleEvent.call(self,
+                                                     oj.TableDataSource.EventType.SORT,
+                                                     sortCriteria);
     }
   });
-  this._collection.on(oj.Events.EventType['CHANGE'], function(event) {
-    oj.TableDataSource.superclass.handleEvent.call(self, oj.TableDataSource.EventType['CHANGE'], {'data': [event['attributes']], 'keys': [event['id']], 'indexes': [event['index']]});
+  this._collection.on(Model.Events.EventType.CHANGE, function (event) {
+    oj.TableDataSource.superclass.handleEvent.call(self,
+                                                   oj.TableDataSource.EventType.CHANGE, {
+                                                     data: [event.attributes],
+                                                     keys: [event.id],
+                                                     indexes: [event.index]
+                                                   });
   });
-  this._collection.on(oj.Events.EventType['DESTROY'], function(event) {
-    oj.TableDataSource.superclass.handleEvent.call(self, oj.TableDataSource.EventType['DESTROY'], event);
+  this._collection.on(Model.Events.EventType.DESTROY, function (event) {
+    oj.TableDataSource.superclass.handleEvent.call(self,
+                                                   oj.TableDataSource.EventType.DESTROY,
+                                                   event);
   });
-  this._collection.on(oj.Events.EventType['REFRESH'], function(event) {
-    oj.TableDataSource.superclass.handleEvent.call(self, oj.TableDataSource.EventType['REFRESH'], event);
+  this._collection.on(Model.Events.EventType.REFRESH, function (event) {
+    oj.TableDataSource.superclass.handleEvent.call(self,
+                                                   oj.TableDataSource.EventType.REFRESH,
+                                                   event);
   });
-  this._collection.on(oj.Events.EventType['ERROR'], function(collection, xhr, options) {
-    oj.TableDataSource.superclass.handleEvent.call(self, oj.TableDataSource.EventType['ERROR'], collection, xhr, options);
+  this._collection.on(Model.Events.EventType.ERROR, function (collection, xhr, options) {
+    oj.TableDataSource.superclass.handleEvent.call(self,
+                                                   oj.TableDataSource.EventType.ERROR,
+                                                   collection, xhr, options);
   });
-  this._collection.on(oj.Events.EventType['REQUEST'], function(event) {
+  this._collection.on(Model.Events.EventType.REQUEST, function (event) {
     // If this datasource is fetching, it calls setRangeLocal on the collection, which
     // causes the collection to fire the REQUEST event.  In this case we don't want this
     // datasource to fire its own REQUEST event since it has already done that in _startFetch.
     if (!self._isFetching) {
-      oj.TableDataSource.superclass.handleEvent.call(self, oj.TableDataSource.EventType['REQUEST'], event);
+      oj.TableDataSource.superclass.handleEvent.call(self,
+                                                    oj.TableDataSource.EventType.REQUEST,
+                                                    event);
     }
   });
 };
 
-oj.CollectionTableDataSource.prototype._fetchInternal = function(options)
-{
-  this._startFetch(options);
-  options = options || {};
+oj.CollectionTableDataSource.prototype._fetchInternal = function (_options) {
+  this._startFetch(_options);
+  var options = _options || {};
   var self = this;
-  this._isPaged =  options['pageSize'] > 0 ? true : false;
-  this._startIndex = options['startIndex'] == null ? this._startIndex : options['startIndex'];
-  this._pageSize = options['pageSize'] > 0 ? options['pageSize'] : -1;
-  options['pageSize'] = this._pageSize;
-  options['startIndex'] = this._startIndex;
-  options['refresh'] = true;
+  this._isPaged = options.pageSize > 0;
+  this._startIndex = options.startIndex == null ? this._startIndex : options.startIndex;
+  this._pageSize = options.pageSize > 0 ? options.pageSize : -1;
+  options.pageSize = this._pageSize;
+  options.startIndex = this._startIndex;
+  options.refresh = true;
 
-  return new Promise(function (resolve, reject)
-  {
+  return new Promise(function (resolve, reject) {
     var pageSize = self._pageSize;
-    
-    if (!self._isPaged)
-    {
+
+    if (!self._isPaged) {
       // set an arbitrary page size for setRangeLocal. When non-virtual, will fetch everything anyway.
       pageSize = 25;
     }
-    
-    self._collection.setRangeLocal(self._startIndex, pageSize).then(function(actual) 
-      {
-        var result;
-        
+
+    self._collection.setRangeLocal(self._startIndex, pageSize).then(function (actual) {
+      var result;
+
         // Do not call _getRowArray if this datasource is paged,
         // or if the underlying oj.Collection is virtual since _getRowArray
         // assumes collection.at returns Model objects, which is not the case
         // for virtual collection.
-        if (self._isPaged || self._collection.IsVirtual())
-        {
-          var rowArray = [];
-          var keyArray = [];
-          var i,  model, wrappedRow;
-          for (i = 0; i < actual['models'].length; i++)
-          {
-            model = actual['models'][i];
-            wrappedRow = self._wrapWritableValue(model, model['attributes']);
-            rowArray[i] = wrappedRow;
-            keyArray[i] = model['id'];
-          }
-          result = {'data': rowArray, 'keys': keyArray, 'startIndex': self._startIndex};
-          
-          if (actual['models'].length < self._pageSize)
-          {
+      if (self._isPaged || self._collection.IsVirtual()) {
+        var rowArray = [];
+        var keyArray = [];
+
+        for (var i = 0; i < actual.models.length; i++) {
+          var model = actual.models[i];
+          var wrappedRow = self._wrapWritableValue(model, model.attributes);
+          rowArray[i] = wrappedRow;
+          keyArray[i] = model.id;
+        }
+        result = { data: rowArray, keys: keyArray, startIndex: self._startIndex };
+
+        if (actual.models.length < self._pageSize) {
             // it returned less than a page of data so we're at the end
             // set the totalSize if unknown
-            if (self.totalSize() < 0)
-            {
-              self._fetchResultSize = self._startIndex + actual['models'].length;
-            }
+          if (self.totalSize() < 0) {
+            self._fetchResultSize = self._startIndex + actual.models.length;
           }
-          else
-          {
-            self._fetchResultSize = null;
-          }
+        } else {
+          self._fetchResultSize = null;
         }
-        else
-        {
-          result = self._getRowArray();
-        }
+      } else {
+        result = self._getRowArray();
+      }
 
-        self._endFetch.call(self, options, result, null);
-        resolve(result);
-      },
-      function(error) 
-      {
-        self._endFetch.call(self, options, null, error);
+      self._endFetch.call(self, options, result);
+      resolve(result);
+    },
+      function (error) {
         reject(error);
       });
   });
@@ -561,12 +524,12 @@ oj.CollectionTableDataSource.prototype._fetchInternal = function(options)
  * @private
  * @memberof oj.CollectionTableDataSource
  */
-oj.CollectionTableDataSource.prototype._startFetch = function(options)
-{
+oj.CollectionTableDataSource.prototype._startFetch = function (options) {
   this._isFetching = true;
-  if (!options['silent'])
-  {
-    oj.TableDataSource.superclass.handleEvent.call(this, oj.TableDataSource.EventType['REQUEST'], {'startIndex' : options['startIndex']});
+  if (!options.silent) {
+    oj.TableDataSource.superclass.handleEvent.call(this,
+                                                   oj.TableDataSource.EventType.REQUEST,
+                                                   { startIndex: options.startIndex });
   }
 };
 
@@ -574,86 +537,70 @@ oj.CollectionTableDataSource.prototype._startFetch = function(options)
  * Indicate ending fetch
  * @param {Object} options
  * @param {Object} result Result object
- * @param {any} error Error
  * @private
  * @memberof oj.CollectionTableDataSource
  */
-oj.CollectionTableDataSource.prototype._endFetch = function(options, result, error)
-{
+oj.CollectionTableDataSource.prototype._endFetch = function (options, result) {
   this._isFetching = false;
-  if (error != null)
-  {
-    oj.TableDataSource.superclass.handleEvent.call(this, oj.TableDataSource.EventType['ERROR'], error);
-  }
-  else
-  {
-    if (!options['silent'])
-    {
-      oj.TableDataSource.superclass.handleEvent.call(this, oj.TableDataSource.EventType['SYNC'],  result);
-    }
+  if (!options.silent) {
+    oj.TableDataSource.superclass.handleEvent.call(this, oj.TableDataSource.EventType.SYNC, result);
   }
 };
 
-oj.CollectionTableDataSource.prototype._getRowArray = function()
-{
+oj.CollectionTableDataSource.prototype._getRowArray = function () {
   var endIndex = this._collection.size() - 1;
   var rowArray = [];
   var keyArray = [];
-  var i, wrappedRow, model;
-  for (i = 0; i <= endIndex; i++)
-  {
-    model = this._collection.at(i);
-    wrappedRow = this._wrapWritableValue(model, model['attributes']);
+  for (var i = 0; i <= endIndex; i++) {
+    var model = this._collection.at(i);
+    var wrappedRow = this._wrapWritableValue(model, model.attributes);
     rowArray[i] = wrappedRow;
-    keyArray[i] = model['id'];
+    keyArray[i] = model.id;
   }
-  return {'data': rowArray, 'keys': keyArray, 'startIndex': this._startIndex};
+  return { data: rowArray, keys: keyArray, startIndex: this._startIndex };
 };
 
 /**
  * Determines whether this TableDataSource supports certain feature.
  * @param {string} feature the feature in which its capabilities is inquired.  Currently the only valid feature is "sort".
- * @return {string|null} the name of the feature.  For "sort", the valid return values are: "full", "none".  
+ * @return {string|null} the name of the feature.  For "sort", the valid return values are: "full", "none".
  *         Returns null if the feature is not recognized.
  * @export
  * @expose
  * @memberof oj.CollectionTableDataSource
  * @instance
  */
-oj.CollectionTableDataSource.prototype.getCapability = function(feature)
-{
-    return null;
+// eslint-disable-next-line no-unused-vars
+oj.CollectionTableDataSource.prototype.getCapability = function (feature) {
+  if (feature === 'sort') {
+    return 'full';
+  }
+  return null;
 };
 
-oj.CollectionTableDataSource.prototype._wrapWritableValue = function(model, m)
-{
+oj.CollectionTableDataSource.prototype._wrapWritableValue = function (model, m) {
   var returnObj = {};
-  var prop;
-  
-  for (prop in m)
-  {
-    if (m.hasOwnProperty(prop))
-    {
-      (function()
-      {
-        var localProp = prop;
-        var localModel = model;
-        Object.defineProperty(returnObj, prop,
-          {
-            get: function()
-            {
-              return localModel.get(localProp);
-            },
-            set: function(newValue)
-            {
-              localModel.set(localProp, newValue, {'silent':true});
-            },
-            enumerable: true
-          });
-      })();
-    }
+  var props = Object.keys(m);
+
+  for (var i = 0; i < props.length; i++) {
+    var prop = props[i];
+    (function (localProp) {
+      var localModel = model;
+      Object.defineProperty(
+          returnObj, localProp,
+        {
+          get: function () {
+            return localModel.get(localProp);
+          },
+          set: function (newValue) {
+            localModel.set(localProp, newValue, { silent: true });
+          },
+          enumerable: true
+        });
+    }(prop));
   }
-  
+
   return returnObj;
 };
+
 });

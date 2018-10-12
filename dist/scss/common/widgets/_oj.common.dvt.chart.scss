@@ -14,7 +14,7 @@
     @if $initialVisibility == hidden {
       oj-chart:not(.oj-complete) {
         visibility: hidden;
-      }      
+      }
     }
 
     oj-chart {
@@ -64,27 +64,51 @@
     }
 
     .oj-chart-data-label {
-      font-size: $smallFontSize;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        font-size: var(--oj-font-size-sm);
+      } @else {
+        font-size: $smallFontSize;
+      }
     }
 
     .oj-chart-data-cursor-line {
-      color: $textColor;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        color: var(--oj-text-color);
+      } @else {
+        color: $textColor;
+      }
     }
     
     .oj-chart-stock-falling {
-      background-color: $dvtChartStockFallingBgColor;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        background-color: var(--oj-chart-stock-falling-bg-color);
+      } @else {
+        background-color: $dvtChartStockFallingBgColor;
+      }
     }
 
     .oj-chart-stock-range {
-      background-color: $dvtChartStockRangeBgColor;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        background-color: var(--oj-chart-stock-range-bg-color);
+      } @else {
+        background-color: $dvtChartStockRangeBgColor;
+      }
     }
 
     .oj-chart-stock-rising {
-      background-color: $dvtChartStockRisingBgColor;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        background-color: var(--oj-chart-stock-rising-bg-color);
+      } @else {
+        background-color: $dvtChartStockRisingBgColor;
+      }
     }
     
     .oj-chart-stack-label{
-      font-size: $smallFontSize;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        font-size: var(--oj-font-size-sm);
+      } @else {
+        font-size: $smallFontSize;
+      }
       font-weight: bold;
     }
 
@@ -92,27 +116,42 @@
     .oj-chart-xaxis-title,
     .oj-chart-yaxis-title,
     .oj-chart-y2axis-title {
-      font-size: $fontSize;
-      color: $dvtAxisTitleTextColor;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+          font-size: var(--oj-font-size);
+          color: var(--oj-chart-axis-title-textcolor);
+      } @else {
+          font-size: $fontSize;
+          color: $dvtAxisTitleTextColor;
+      }
     }
-    
+
     .oj-chart-tooltip-label {
-      font-size: $smallFontSize;
-      color: $formControlLabelColor;
+        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+          font-size: var(--oj-font-size-sm);
+          color:var(--oj-chart-tooltip-label-color);
+        } @else {
+          font-size: $smallFontSize;
+          color: $formControlLabelColor;
+        }
     }
 
     .oj-chart-xaxis-tick-label,
     .oj-chart-yaxis-tick-label,
     .oj-chart-y2axis-tick-label {
-      font-size: $smallFontSize;
-      color: $textColor;
+        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+          font-size: var(--oj-font-size-sm);
+          color: var(--oj-text-color);
+        } @else {
+          font-size: $smallFontSize;
+          color: $textColor;
+        }
     }
 
     // This is to prevent the flash of unstyled content before the html becomes JET components.
     @if $initialVisibility == hidden {
       oj-spark-chart:not(.oj-complete) {
         visibility: hidden;
-      }      
+      }
     }
 
     oj-spark-chart {
@@ -125,7 +164,12 @@
     }
 
     .oj-sparkchart.oj-focus-highlight {
-      @include oj-browser-focus-outline-approximation($primaryTextColor);
+        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+          outline: dotted 1px var(--oj-primary-text-color);
+          outline: -webkit-focus-ring-color auto;
+        } @else {
+          @include oj-browser-focus-outline-approximation($primaryTextColor);
+        }
     }
   }
 }

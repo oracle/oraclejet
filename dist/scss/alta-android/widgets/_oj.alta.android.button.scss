@@ -24,21 +24,5 @@
   @include module-include-once("alta.android.button") {
 
 
-      // alternate button colors
-      //----------------------------------
-
-    .oj-button-primary {
-      @if $buttonPrimaryColor != null {
-        @include oj-button-alt($altColor: $buttonPrimaryColor);
-      }
-    }
-
-    .oj-button-confirm {
-      @if $buttonConfirmColor != null {
-        @include oj-button-alt($altColor: $buttonConfirmColor);
-      }
-    }
-
-
   }
 }

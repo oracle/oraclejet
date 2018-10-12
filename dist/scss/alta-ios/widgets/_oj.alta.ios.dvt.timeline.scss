@@ -32,8 +32,6 @@
     
     .oj-timeline-zoomin-icon.oj-active {
       background-image:oj-common-image-url("dvt/common/zoom_in_16_act.svg");
-      background-color:$buttonBgColorActive;
-      border-color:$buttonBorderColorActive;
     }
     
     .oj-timeline-zoomin-icon.oj-disabled {
@@ -50,8 +48,6 @@
     
     .oj-timeline-zoomout-icon.oj-active {
       background-image:oj-common-image-url("dvt/common/zoom_out_16_act.svg");
-      background-color:$buttonBgColorActive;
-      border-color:$buttonBorderColorActive;
     }
     
     .oj-timeline-zoomout-icon.oj-disabled {

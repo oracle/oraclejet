@@ -1,7 +1,7 @@
 {
   "name": "oj-navigation-list",
-  "version": "5.2.0",
-  "jetVersion": "5.2.0",
+  "version": "6.0.0",
+  "jetVersion": "6.0.0",
   "displayName": "Navigation List",
   "type": "core",
   "styleClasses": [
@@ -79,25 +79,36 @@
     }
   ],
   "description": "Displays items as a collapsible or sliding navigation list with highly interactive features.",
+  "help": "https://docs.oracle.com/en/middleware/jet/6/reference-api/oj.ojNavigationList.html",
   "properties": {
+    "as": {
+      "description": "Gets and sets the alias for the current item when referenced inside the item template.",
+      "type": "string",
+      "displayName": "As",
+      "value": "",
+      "help": "as"
+    },
     "currentItem": {
       "description": "Gets and sets the key of the item that should have keyboard focus.",
       "type": "any",
       "displayName": "Current Item",
       "value": null,
-      "writeback": true
+      "writeback": true,
+      "help": "currentItem"
     },
     "data": {
       "description": "Gets and sets the data provider for Navigation List.",
       "type": "oj.TableDataSource|oj.TreeDataSource|oj.DataProvider|null",
       "displayName": "Data",
-      "value": null
+      "value": null,
+      "help": "data"
     },
     "display": {
       "description": "Gets and sets whether all or only icons need to be displayed.",
       "type": "string",
       "displayName": "Display",
       "value": "all",
+      "help": "display",
       "enumValues": [
         "all",
         "icons"
@@ -118,6 +129,7 @@
       "type": "string",
       "displayName": "Drill Mode",
       "value": "none",
+      "help": "drillMode",
       "enumValues": [
         "collapsible",
         "none",
@@ -143,6 +155,7 @@
       "type": "string",
       "displayName": "Edge",
       "value": "start",
+      "help": "edge",
       "enumValues": [
         "start",
         "top"
@@ -159,28 +172,32 @@
       }
     },
     "expanded": {
-      "description": "Specifies the key set containing the keys of the items that should be expanded. Use the ExpandedKeySet class to specify items to expand. Use the ExpandAllKeySet class to expand all items.",
+      "description": "Specifies the key set containing the keys of the items that should be expanded.\n\nUse the ExpandedKeySet class to specify items to expand.\nUse the ExpandAllKeySet class to expand all items.",
       "type": "KeySet",
       "displayName": "Expanded",
       "value": "new ExpandedKeySet();",
-      "writeback": true
+      "writeback": true,
+      "help": "expanded"
     },
     "hierarchyMenuThreshold": {
       "description": "Gets and sets the level at which user can see hierarchical menu button (defaults to 0 if not specified in theme).",
       "type": "number",
       "displayName": "Hierarchy Menu Threshold",
-      "value": 0
+      "value": 0,
+      "help": "hierarchyMenuThreshold"
     },
     "item": {
       "description": "Customize the functionalities of each item in Navigation List.",
       "type": "object",
       "displayName": "Item",
+      "help": "item",
       "properties": {
         "renderer": {
           "description": "Gets and sets the renderer for the item.",
           "type": "function|null",
           "displayName": "Renderer",
           "value": null,
+          "help": "item.renderer",
           "properties": {
             "componentElement": {
               "description": "oj-navigation-list element",
@@ -213,6 +230,7 @@
           "type": "function|boolean",
           "displayName": "Selectable",
           "value": true,
+          "help": "item.selectable",
           "properties": {
             "componentElement": {
               "description": "oj-navigation-list element",
@@ -247,6 +265,7 @@
       "type": "string",
       "displayName": "Overflow",
       "value": "hidden",
+      "help": "overflow",
       "enumValues": [
         "hidden",
         "popup"
@@ -266,14 +285,16 @@
       "description": "Gets and sets the label for top level list items.",
       "type": "string",
       "displayName": "Root Label",
-      "value": "Navigation List"
+      "value": "Navigation List",
+      "help": "rootLabel"
     },
     "selection": {
       "description": "Gets and sets the key of the selected item.",
       "type": "any",
       "displayName": "Selection",
       "value": null,
-      "writeback": true
+      "writeback": true,
+      "help": "selection"
     },
     "translations": {
       "description": "A collection of translated resources from the translation bundle, or null if this component has no resources.",
@@ -281,28 +302,33 @@
       "displayName": "Translations",
       "value": {},
       "translatable": true,
+      "help": "translations",
       "properties": {
         "defaultRootLabel": {
           "description": "Provides properties to customize the title text used by Sliding Navigation List for root node. \n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "Default Root Label"
+          "displayName": "Default Root Label",
+          "help": "translations.defaultRootLabel"
         },
         "hierMenuBtnLabel": {
           "description": "Provides properties to customize the hover message text used by Sliding Navigation List as label for Hierarchical Menu button.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "Hier Menu Btn Label"
+          "displayName": "Hier Menu Btn Label",
+          "help": "translations.hierMenuBtnLabel"
         },
         "previousIcon": {
           "description": "Provides properties to customize the hover message text used by Sliding Navigation List for previous button.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "Previous Icon"
+          "displayName": "Previous Icon",
+          "help": "translations.previousIcon"
         }
       }
     }
   },
   "methods": {
     "getContextByNode": {
-      "description": "Returns an object with context for the given child DOM node. This will always contain the subid for the node,\ndefined as the 'subId' property on the context object. Additional component specific information may also be included.\n\nFor more details on returned objects, see context objects.",
+      "description": "Returns an object with context for the given child DOM node. This will always contain the subid for the node, defined as the 'subId' property on the context object. Additional component specific information may also be included. For more details on returned objects, see context objects.",
+      "help": "getContextByNode",
       "params": [
         {
           "name": "node",
@@ -313,11 +339,13 @@
       "return": "object|null"
     },
     "refresh": {
-      "description": "Refreshes the visual state of the Navigation List. JET components require a refresh() after the DOM is programmatically changed underneath the component. This method does not accept any arguments.",
+      "description": "Refreshes the visual state of the Navigation List. JET components require a refresh() after the DOM is\nprogrammatically changed underneath the component.\nThis method does not accept any arguments.",
+      "help": "refresh",
       "return": "void"
     },
     "setProperty": {
-      "description": "Sets a property or a single subproperty for complex properties and notifies the component\nof the change, triggering a [property]Changed event.",
+      "description": "Sets a property or a single subproperty for complex properties and notifies the component of the change, triggering a [property]Changed event.",
+      "help": "setProperty",
       "params": [
         {
           "name": "property",
@@ -334,6 +362,7 @@
     },
     "getProperty": {
       "description": "Retrieves a value for a property or a single subproperty for complex properties.",
+      "help": "getProperty",
       "params": [
         {
           "name": "property",
@@ -345,6 +374,7 @@
     },
     "setProperties": {
       "description": "Performs a batch set of properties.",
+      "help": "setProperties",
       "params": [
         {
           "name": "properties",
@@ -358,6 +388,7 @@
   "events": {
     "ojAnimateStart": {
       "description": "Event handler for when the default animation of a particular action is about to start.",
+      "help": "animateStart",
       "detail": {
         "action": {
           "description": "the action that starts the animation. See animation section for a list of actions.",
@@ -375,6 +406,7 @@
     },
     "ojAnimateEnd": {
       "description": "Event handler for when the default animation of a particular action has ended.",
+      "help": "animateEnd",
       "detail": {
         "action": {
           "description": "the action that started the animation. See animation section for a list of actions.",
@@ -389,6 +421,7 @@
     "ojBeforeSelect": {
       "description": "Event handler for when before the selection is changed.",
       "cancelable": true,
+      "help": "beforeSelect",
       "detail": {
         "key": {
           "description": "Selected list item Key.",
@@ -403,6 +436,7 @@
     "ojBeforeCollapse": {
       "description": "Event handler for when an item is about to collapse.",
       "cancelable": true,
+      "help": "beforeCollapse",
       "detail": {
         "key": {
           "description": "the Key of the item to be collapse",
@@ -417,6 +451,7 @@
     "ojBeforeCurrentItem": {
       "description": "Event handler for when before the current item is changed.",
       "cancelable": true,
+      "help": "beforeCurrentItem",
       "detail": {
         "previousKey": {
           "description": "the Key of the previous item",
@@ -438,6 +473,7 @@
     },
     "ojCollapse": {
       "description": "Event handler for after an item has collapsed.",
+      "help": "collapse",
       "detail": {
         "key": {
           "description": "The Key of the item that was just collapsed.",
@@ -452,6 +488,7 @@
     "ojBeforeExpand": {
       "description": "Event handler for when an item is about to expand.",
       "cancelable": true,
+      "help": "beforeExpand",
       "detail": {
         "key": {
           "description": "the Key of the item to be expand",
@@ -465,6 +502,7 @@
     },
     "ojExpand": {
       "description": "Event handler for after an item has expanded.",
+      "help": "expand",
       "detail": {
         "key": {
           "description": "The Key of the item that was just expanded.",
@@ -479,7 +517,44 @@
   },
   "slots": {
     "contextMenu": {
-      "description": "The contextMenu slot is set on the oj-menu within this element. \nThis is used to designate the JET Menu that this component should launch as a context menu on right-click, Shift-F10, Press & Hold, or component-specific gesture. \nIf specified, the browser's native context menu will be replaced by the JET Menu specified in this slot.\n\nThe application can register a listener for the Menu's ojBeforeOpen event. The listener can cancel the launch via event.preventDefault(), \nor it can customize the menu contents by editing the menu DOM directly, and then calling refresh() on the Menu.\n\nTo help determine whether it's appropriate to cancel the launch or customize the menu, the ojBeforeOpen listener can use component API's to determine which \ntable cell, chart item, etc., is the target of the context menu. See the JSDoc and demos of the individual components for details. \n\nKeep in mind that any such logic must work whether the context menu was launched via right-click, Shift-F10, Press & Hold, or component-specific touch gesture."
+      "description": "The contextMenu slot is set on the <oj-menu> instance within this element. It designates the JET Menu that this component should launch as a context menu.",
+      "maxItems": 1,
+      "help": "contextMenu"
+    },
+    "itemTemplate": {
+      "description": "The itemTemplate slot is used to specify the template for rendering each item in the list. The slot must be a <template> element.\nThe content of the template could either include the <li> element, in which case that will be used as\nthe root of the item. Or it can be just the content which excludes the <li> element.\nWhen the template is executed for each item, it will have access to the binding context containing the following properties: $current - an object that contains information for the current item. (See the table below for a list of properties available on $current) alias - if as attribute was specified, the value will be used to provide an application-named alias for $current.\n",
+      "maxItems": 1,
+      "help": "itemTemplate",
+      "data": {
+        "componentElement": {
+          "description": "The <oj-navigation-list> custom element",
+          "type": "Element"
+        },
+        "data": {
+          "description": "The data for the current item being rendered",
+          "type": "object"
+        },
+        "index": {
+          "description": "The zero-based index of the curent item",
+          "type": "number"
+        },
+        "key": {
+          "description": "The key of the current item being rendered",
+          "type": "any"
+        },
+        "depth": {
+          "description": "The depth of the current item (available when hierarchical data is provided) being rendered. The depth of the first level children under the invisible root is 1.",
+          "type": "number"
+        },
+        "leaf": {
+          "description": "True if the current item is a leaf node (available when hierarchical data is provided).",
+          "type": "boolean"
+        },
+        "parentkey": {
+          "description": "The key of the parent item (available when hierarchical data is provided). The parent key is null for root nodes.",
+          "type": "any"
+        }
+      }
     }
   }
 }

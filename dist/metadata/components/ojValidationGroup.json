@@ -1,17 +1,19 @@
 {
   "name": "oj-validation-group",
-  "version": "5.2.0",
-  "jetVersion": "5.2.0",
+  "version": "6.0.0",
+  "jetVersion": "6.0.0",
   "displayName": "Validation Group",
   "type": "core",
   "description": "ojValidationGroup",
+  "help": "https://docs.oracle.com/en/middleware/jet/6/reference-api/oj.ojValidationGroup.html",
   "properties": {
     "valid": {
-      "description": "The current validity state of the \noj-validation-group element. \n\nThe oj-validation-group's \nvalid property value is calculated from all the \nenabled components it tracks. The most 'invalid' component's\nvalid property value will be\noj-validation-group's valid property value.\nFor example,\nif all the components are valid except one is \"invalidShown\", then oj-validation-group's \nvalid value will be \"invalidShown\". If one is \"invalidShown\" and one is \"invalidHidden\",\nthen oj-validation-group's valid value will be \"invalidShown\" since \"invalidShown\" is more\ninvalid than \"invalidHidden\".\n\n\nWhen any of the enabled tracked component's valid value changes, oj-validation-group will\nbe notified and will update its own valid value if it has changed.\nThere is no default value for the valid property \nsince it is a read-only property that is calculated on initialization\nand kept updated if any of its tracked component's valid value changes.\n\n\nThe oj-validation-group does not filter out components that are hidden.\nHidden components will be considered \nin oj-validation-group's valid calculation as long as they are enabled. \nA hidden enabled component's valid state is no different \nthan a visible enabled component; if there\nis an error that isn't a deferred error, its valid value is \"invalidShown\".\nYou can disable any components you do not want\nconsidered in oj-validation-group's valid value. Note: New valid states may be added to the list of valid values in future releases. If so, we will keep the convention where if it is valid, it will start with \"valid\". If it is invalid, it will start with \"invalid\". If it is pending, it will start with \"pending\".\n",
+      "description": "The current validity state of the\noj-validation-group element.\n\nThe oj-validation-group's\nvalid property value is calculated from all the\nenabled components it tracks. The most 'invalid' component's\nvalid property value will be\noj-validation-group's valid property value.\nFor example,\nif all the components are valid except one is \"invalidShown\", then oj-validation-group's\nvalid value will be \"invalidShown\". If one is \"invalidShown\" and one is \"invalidHidden\",\nthen oj-validation-group's valid value will be \"invalidShown\" since \"invalidShown\" is more\ninvalid than \"invalidHidden\".\n\n\nWhen any of the enabled tracked component's valid value changes, oj-validation-group will\nbe notified and will update its own valid value if it has changed.\nThere is no default value for the valid property\nsince it is a read-only property that is calculated on initialization\nand kept updated if any of its tracked component's valid value changes.\n\n\nThe oj-validation-group does not filter out components that are hidden.\nHidden components will be considered\nin oj-validation-group's valid calculation as long as they are enabled.\nA hidden enabled component's valid state is no different\nthan a visible enabled component; if there\nis an error that isn't a deferred error, its valid value is \"invalidShown\".\nYou can disable any components you do not want\nconsidered in oj-validation-group's valid value. Note: New valid states may be added to the list of valid values in future releases. If so, we will keep the convention where if it is valid, it will start with \"valid\". If it is invalid, it will start with \"invalid\". If it is pending, it will start with \"pending\".\n",
       "type": "string",
       "displayName": "Valid",
       "writeback": true,
       "readOnly": true,
+      "help": "valid",
       "enumValues": [
         "invalidHidden",
         "invalidShown",
@@ -41,6 +43,7 @@
   "methods": {
     "setProperty": {
       "description": "Sets a property or a single subproperty for complex properties and notifies the component\nof the change, triggering a [property]Changed event.",
+      "help": "setProperty",
       "params": [
         {
           "name": "property",
@@ -57,6 +60,7 @@
     },
     "getProperty": {
       "description": "Retrieves a value for a property or a single subproperty for complex properties.",
+      "help": "getProperty",
       "params": [
         {
           "name": "property",
@@ -68,6 +72,7 @@
     },
     "setProperties": {
       "description": "Performs a batch set of properties.",
+      "help": "setProperties",
       "params": [
         {
           "name": "properties",
@@ -78,11 +83,13 @@
       "return": "void"
     },
     "showMessages": {
-      "description": "Takes all deferred messages and shows them on each enabled component. An enabled\ncomponent is one that is not disabled or readonly.\nAs a result, the valid property may be updated; e.g.,\nif the valid state was \"invalidHidden\"\nbefore showMessages(), the valid state will become \"invalidShown\" after showMessages(). \n\nIf there were no deferred messages this method simply returns. \n",
+      "description": "Takes all deferred messages and shows them on each enabled component. An enabled\ncomponent is one that is not disabled or readonly.\nAs a result, the valid property may be updated; e.g.,\nif the valid state was \"invalidHidden\"\nbefore showMessages(), the valid state will become \"invalidShown\" after showMessages().\n\nIf there were no deferred messages this method simply returns.\n",
+      "help": "showMessages",
       "return": "void"
     },
     "focusOn": {
-      "description": "If the parameter passed in is \"@firstInvalidShown\", then\nit sets focus on the first enabled component with invalid messages showing, if any.\nIf nothing is passed in, it will set focus to the first enabled component being tracked, \nif any. An enabled\ncomponent is one that is not disabled or readonly.",
+      "description": "If the parameter passed in is \"@firstInvalidShown\", then\nit sets focus on the first enabled component with invalid messages showing, if any.\nIf nothing is passed in, it will set focus to the first enabled component being tracked,\nif any. An enabled\ncomponent is one that is not disabled or readonly.",
+      "help": "focusOn",
       "params": [
         {
           "name": "key",

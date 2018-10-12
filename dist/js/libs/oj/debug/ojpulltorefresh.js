@@ -4,14 +4,14 @@
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
-define(['ojs/ojcore', 'jquery', 'hammerjs', 'promise', 'ojs/ojjquery-hammer', 'ojs/ojcomponentcore'],
+define(['ojs/ojcore', 'jquery', 'ojs/ojcontext', 'ojs/ojtranslation', 'hammerjs', 'promise', 'ojs/ojjquery-hammer', 'ojs/ojcomponentcore', 'touchr'],
        /*
         * @param {Object} oj 
         * @param {jQuery} $
-        * @param {jQuery} Hammer
+        * @param {Object} Hammer
         */
-       function(oj, $, Hammer)
- 
+       function(oj, $, Context, Translations, Hammer)
+  
 {
 
 /**
@@ -19,14 +19,15 @@ define(['ojs/ojcore', 'jquery', 'hammerjs', 'promise', 'ojs/ojjquery-hammer', 'o
  * All rights reserved.
  */
 
-/* global Hammer:false Promise:false */
+/* global Hammer:false Promise:false, Translations:false, Context:false */
 
 /**
- * @class oj.PullToRefreshUtils
+ * @namespace oj.PullToRefreshUtils
  * @since 1.2.0
  * @export
  * @hideconstructor
  * @ojstatus preview
+ * @ojtsmodule
  *
  * @classdesc
  * This class provides functions for adding pull to refresh functionality to any container element which hosts refreshable content.
@@ -53,6 +54,9 @@ define(['ojs/ojcore', 'jquery', 'hammerjs', 'promise', 'ojs/ojjquery-hammer', 'o
  * {@ojinclude "name":"keyboardDoc"}
  */
 oj.PullToRefreshUtils = {};
+// mapping variable definition, used in a no-require environment. Maps the oj.PullToRefreshUtils object to the name used in the require callback.
+// eslint-disable-next-line no-unused-vars
+var PullToRefreshUtils = oj.PullToRefreshUtils;
 
 /**
  * Setup content container for pull to refresh capability.  This method adds touch listeners on the content container.  The following events are fired by this method:
@@ -61,7 +65,7 @@ oj.PullToRefreshUtils = {};
  * ojcomplete is fired when the refresh is done and the panel is completely closed.  The event contains the content element.
  *
  * @export
- * @param {Element} element the DOM element that hosts the content to refresh.  When the content is scrollable, the value of this parameter must be the scrollable element.  
+ * @param {Element} element the DOM element that hosts the content to refresh.  When the content is scrollable, the value of this parameter must be the scrollable element.
  *                  Specifically, when using this with ListView, the ListView element might not necessarily be the scrollable element, but is one of its ancestors instead.
  * @param {function():Promise.<any>} refreshFunc the function to invoke when refresh is triggered.  It must return a Promise.
  * @param {Object=} options optional values that controls aspects of pull to refresh
@@ -72,338 +76,322 @@ oj.PullToRefreshUtils = {};
  *
  * @see #tearDownPullToRefresh
  */
-oj.PullToRefreshUtils.setupPullToRefresh = function(element, refreshFunc, options)
-{
-    var outer, content, panel, checkTolerance, threshold, start, height, movex, icon, iconOffset, lastIconClass, title, ratio, iconClass, mOptions, isTouch, type;
+oj.PullToRefreshUtils.setupPullToRefresh = function (element, refreshFunc, options) {
+  var outer;
+  var content;
+  var panel;
+  var checkTolerance;
+  var threshold;
+  var start;
+  var height;
+  var movex;
+  var icon;
+  var iconOffset;
+  var lastIconClass;
+  var title;
+  var ratio;
+  var iconClass;
+  var mOptions;
+  var isTouch;
+  var type;
 
-    isTouch = oj.DomUtils.isTouchSupported();
+  isTouch = oj.DomUtils.isTouchSupported();
 
-    // make sure we are clean
-    oj.PullToRefreshUtils.tearDownPullToRefresh(element);
+  // make sure we are clean
+  oj.PullToRefreshUtils.tearDownPullToRefresh(element);
 
-    outer = $(document.createElement("div")).addClass("oj-pulltorefresh-outer");
-    oj.PullToRefreshUtils._renderAccessibleLink(element, outer, refreshFunc, options);
+  outer = $(document.createElement('div')).addClass('oj-pulltorefresh-outer');
+  oj.PullToRefreshUtils._renderAccessibleLink(element, outer, refreshFunc, options);
 
-    // create the element containing the content
-    content = $(document.createElement("div")).addClass("oj-pulltorefresh-panel");    
-    outer.append(content); // @HtmlUpdateOK
+  // create the element containing the content
+  content = $(document.createElement('div')).addClass('oj-pulltorefresh-panel');
+  outer.append(content); // @HtmlUpdateOK
 
-    // prepend it to the panel
-    panel = $(element);
-    panel.prepend(outer); //@HTMLUpdateOK; outer is created by the component
+  // prepend it to the panel
+  panel = $(element);
+  panel.prepend(outer); // @HTMLUpdateOK; outer is created by the component
 
-    if (isTouch) {
-        type = 'touch';
-    } else {
-        type = 'pan';
-        mOptions = {
-            recognizers: [
-                [Hammer.Pan, { direction: Hammer.DIRECTION_VERTICAL }]
-            ] };
-        panel.ojHammer(mOptions);
-    }
+  if (isTouch) {
+    type = 'touch';
+  } else {
+    type = 'pan';
+    mOptions = {
+      recognizers: [
+         [Hammer.Pan, { direction: Hammer.DIRECTION_VERTICAL }]
+      ] };
+    panel.ojHammer(mOptions);
+  }
 
-    panel
-    .ojHammer(mOptions)
-    .on(type + "start.pulltorefresh", function(event) 
-    {
-        // checks if we are still refreshing
-        if ($.data(content[0], "data-pullstart") != null)
-        {
-             return;
+  panel
+    .on(type + 'start.pulltorefresh', function (event) {
+      // checks if we are still refreshing
+      if ($.data(content[0], 'data-pullstart') != null) {
+        return;
+      }
+
+      // make sure we are at the top
+      if (panel[0].scrollTop === 0) {
+        oj.PullToRefreshUtils._handlePull(event, content, options);
+
+        // extract these info up front instead of in move
+        icon = content.find('.oj-pulltorefresh-icon');
+        if (icon.length > 0) {
+          iconOffset = icon.parent().outerHeight(true);
         }
 
-        // make sure we are at the top
-        if (panel[0].scrollTop === 0)
-        {
-            oj.PullToRefreshUtils._handlePull(event, content, options);
-
-            // extract these info up front instead of in move
-            icon = content.find(".oj-pulltorefresh-icon");
-            if (icon.length > 0)
-            {
-                iconOffset = icon.parent().outerHeight(true);
-            }
-
-            if (options && !isNaN(options['threshold']))
-            {
-                threshold = parseInt(options['threshold'], 10);
-            }
-
-            if (isNaN(threshold))
-            {
-                threshold = content.outerHeight(true);
-            }
-            else
-            {
-                threshold = Math.max(0, Math.min(threshold, content.outerHeight(true)));
-            }
-
-            // hide it
-            content.css("height", 0);
-            content.removeClass("oj-pulltorefresh-transition");
-            if (isTouch) {
-                $.data(content[0], 'data-pullstart', event.originalEvent.touches[0].clientY);
-                $.data(content[0], 'data-pullstart-horiz', event.originalEvent.touches[0].clientX);
-            } else {
-                $.data(content[0], 'data-pullstart', 0);
-            }
-
-            checkTolerance = true;
+        if (options && !isNaN(options.threshold)) {
+          threshold = parseInt(options.threshold, 10);
         }
+
+        if (isNaN(threshold)) {
+          threshold = content.outerHeight(true);
+        } else {
+          threshold = Math.max(0, Math.min(threshold, content.outerHeight(true)));
+        }
+
+        // hide it
+        content.css('height', 0);
+        content.removeClass('oj-pulltorefresh-transition');
+        if (isTouch) {
+          $.data(content[0], 'data-pullstart', event.originalEvent.touches[0].clientY);
+          $.data(content[0], 'data-pullstart-horiz', event.originalEvent.touches[0].clientX);
+        } else {
+          $.data(content[0], 'data-pullstart', 0);
+        }
+
+        checkTolerance = true;
+      }
     })
-    .on(type + "move.pulltorefresh", function(event) 
-    {
-        // first checks whether if the pull had started
-        start = $.data(content[0], "data-pullstart");
-        if (start == null)
-        {
-             return;
+    .on(type + 'move.pulltorefresh', function (event) {
+      // first checks whether if the pull had started
+      start = $.data(content[0], 'data-pullstart');
+      if (start == null) {
+        return;
+      }
+
+      // see how far it's been pull
+      height = isTouch ? event.originalEvent.touches[0].clientY
+        - parseInt(start, 10) : event.gesture.deltaY;
+
+      // wrong direction
+      if (height < 0) {
+        return;
+      }
+
+      // make sure the page doesn't scrolls
+      event.preventDefault();
+
+      // checks if we are in the middle of closing the panel
+      if ($.data(content[0], 'data-closing') != null) {
+        return;
+      }
+
+      // checks if we are still in the loading stage
+      if ($.data(content[0], 'data-loading') != null) {
+        content.css('height', Math.max(height, threshold));
+        return;
+      }
+
+      if (checkTolerance) {
+        movex = isTouch ? event.originalEvent.touches[0].clientX
+          - parseInt($.data(content[0], 'data-pullstart-horiz'), 10) : event.gesture.deltaX;
+
+        // check if the intention is swipe left, if it is don't show the panel yet
+        if (Math.abs(movex) > height) {
+          return;
         }
 
-        // see how far it's been pull
-        height = isTouch ? event.originalEvent.touches[0].clientY - parseInt(start, 10) : event.gesture.deltaY;
+        // we only want to check this as long as the panel is not visible yet
+        checkTolerance = false;
+      }
 
-        // wrong direction
-        if (height < 0)
-        {
-            return;
-        }
+      content.css('height', height);
 
-        // make sure the page doesn't scrolls
-        event.preventDefault();
+      // fire pull event
+      oj.PullToRefreshUtils._fireEvent(event, 'pull', content, height);
 
-        // checks if we are in the middle of closing the panel
-        if ($.data(content[0], "data-closing") != null)
-        {
-            return;
-        }
-
-        // checks if we are still in the loading stage
-        if ($.data(content[0], "data-loading") != null)
-        {
-            content.css("height", Math.max(height, threshold));
-            return;
-        }
-
-        if (checkTolerance)
-        {
-            movex = isTouch ? event.originalEvent.touches[0].clientX - parseInt($.data(content[0], 'data-pullstart-horiz'), 10) : event.gesture.deltaX;
-            // check if the intention is swipe left, if it is don't show the panel yet
-            if (Math.abs(movex) > height)
-            {
-                return;
-            }
-
-            // we only want to check this as long as the panel is not visible yet
-            checkTolerance = false;
-        }    
-
-        content.css("height", height);
-
-        // fire pull event
-        oj.PullToRefreshUtils._fireEvent(event, "pull", content, height);
-
-        if (icon != null && icon.length > 0)
-        {
-            // remove last class
-            lastIconClass = $.data(content[0], "data-lasticonclass");
-            if (lastIconClass != null)
-            {
-                icon.removeClass(lastIconClass);
-            }
-
-            // find the appropriate class
-            ratio = Math.round((height / threshold) * 10) * 10;
-            if (ratio >= 100)
-            {
-                iconClass = "oj-pulltorefresh-icon-full";
-                title = oj.Translations.getTranslatedString('oj-pullToRefresh.titleIconFull');
-            }
-            else
-            {
-                iconClass = "oj-pulltorefresh-icon-" + ratio + "-percent";
-                title = oj.Translations.getTranslatedString('oj-pullToRefresh.titleIcon' + ratio + 'percent');
-            }
-            icon.addClass(iconClass);
-            icon.attr("title", title);
-
-            $.data(content[0], "data-lasticonclass", iconClass);
-
-            // check whether to show/hide primary/secondary text
-            oj.PullToRefreshUtils._showHideDefaultText(content, height > iconOffset);            
-        }
-    })
-    .on(type + "cancel.pulltorefresh", function(event) 
-    {
-        oj.PullToRefreshUtils._cleanup(content);
-    })
-    .on(type + "end.pulltorefresh", function(event) 
-    {
-        // first checks whether if the pull had started
-        start = $.data(content[0], "data-pullstart");
-        if (start == null)
-        {
-            return;
-        }
-
-        // checks if we are in the middle of closing the panel
-        if ($.data(content[0], "data-closing") != null)
-        {
-            return;
-        }
-
-        // checks if we are still in the loading stage
-        if ($.data(content[0], "data-loading") != null)
-        {
-            height = $.data(content[0], "data-panelheight");
-            content.css("height", height);
-            return;
-        }
-
-        // less than threshold, hide panel and do nothing
-        if (content.outerHeight() < threshold)
-        {
-            content.addClass("oj-pulltorefresh-transition")
-                   .css("height", 0);
-
-            oj.PullToRefreshUtils._cleanup(content);
-        }
-        else
-        {
-            oj.PullToRefreshUtils._handleRelease(event, element, content, refreshFunc);
-        }
-    });
-};
-
-oj.PullToRefreshUtils._handlePull = function(event, content, options)
-{
-    var primaryText, secondaryText, icon, iconOffset;
-
-    oj.PullToRefreshUtils._fireEvent(event, "pull", content, 0);
-
-    if (content.children().length == 0)
-    {
-        if (options)
-        {
-            primaryText = options['primaryText'];
-            secondaryText = options['secondaryText'];
-        }
-
-        oj.PullToRefreshUtils._createDefaultContent(content, primaryText, secondaryText);
-    }
-
-    content.prev().text(oj.Translations.getTranslatedString('oj-pullToRefresh.ariaRefreshingLink'));
-
-    // set it back to auto so we can get the actual height
-    content.css("height", "auto");
-    $.data(content[0], "data-panelheight", content.outerHeight());
-};
-
-oj.PullToRefreshUtils._handleRelease = function(event, element, content, refreshFunc)
-{
-    var height, icon, lastIconClass, busyContext, busyStateResolve, listener;
-
-    height = $.data(content[0], "data-panelheight");
-    content.addClass("oj-pulltorefresh-transition")
-           .css("height", height);
-
-    oj.PullToRefreshUtils._fireEvent(event, "release", content, height);
-
-    // mark that we are in loading stage
-    $.data(content[0], "data-loading", true);
-
-    icon = content.find(".oj-pulltorefresh-icon");
-    if (icon.length > 0)
-    {
+      if (icon != null && icon.length > 0) {
         // remove last class
-        lastIconClass = $.data(content[0], "data-lasticonclass");
-        if (lastIconClass != null)
-        {
-            icon.removeClass(lastIconClass);
+        lastIconClass = $.data(content[0], 'data-lasticonclass');
+        if (lastIconClass != null) {
+          icon.removeClass(lastIconClass);
         }
-        icon.addClass("oj-pulltorefresh-icon-full");
+
+        // find the appropriate class
+        ratio = Math.round((height / threshold) * 10) * 10;
+        if (ratio >= 100) {
+          iconClass = 'oj-pulltorefresh-icon-full';
+          title = Translations.getTranslatedString('oj-pullToRefresh.titleIconFull');
+        } else {
+          iconClass = 'oj-pulltorefresh-icon-' + ratio + '-percent';
+          title = Translations.getTranslatedString('oj-pullToRefresh.titleIcon' + ratio + 'percent');
+        }
+        icon.addClass(iconClass);
+        icon.attr('title', title);
+
+        $.data(content[0], 'data-lasticonclass', iconClass);
+
+        // check whether to show/hide primary/secondary text
+        oj.PullToRefreshUtils._showHideDefaultText(content, height > iconOffset);
+      }
+    })
+    .on(type + 'cancel.pulltorefresh', function () {
+      oj.PullToRefreshUtils._cleanup(content);
+    })
+    .on(type + 'end.pulltorefresh', function (event) {
+      // first checks whether if the pull had started
+      start = $.data(content[0], 'data-pullstart');
+      if (start == null) {
+        return;
+      }
+
+      // checks if we are in the middle of closing the panel
+      if ($.data(content[0], 'data-closing') != null) {
+        return;
+      }
+
+      // checks if we are still in the loading stage
+      if ($.data(content[0], 'data-loading') != null) {
+        height = $.data(content[0], 'data-panelheight');
+        content.css('height', height);
+        return;
+      }
+
+      // less than threshold, hide panel and do nothing
+      if (content.outerHeight() < threshold) {
+        content.addClass('oj-pulltorefresh-transition')
+          .css('height', 0);
+
+        oj.PullToRefreshUtils._cleanup(content);
+      } else {
+        oj.PullToRefreshUtils._handleRelease(event, element, content, refreshFunc);
+      }
+    });
+};
+
+oj.PullToRefreshUtils._handlePull = function (event, content, options) {
+  var primaryText;
+  var secondaryText;
+
+  oj.PullToRefreshUtils._fireEvent(event, 'pull', content, 0);
+
+  if (content.children().length === 0) {
+    if (options) {
+      primaryText = options.primaryText;
+      secondaryText = options.secondaryText;
     }
 
-    // register busy state with host as the context, note you can't pull again until release is done
-    busyContext = oj.Context.getContext(element).getBusyContext();
-    busyStateResolve = busyContext.addBusyState({'description': 'PullToRefresh:handleRelease'});
-    $.data($(element)[0], "data-pulltorefresh-busystate", busyStateResolve);
+    oj.PullToRefreshUtils._createDefaultContent(content, primaryText, secondaryText);
+  }
 
-    refreshFunc().then(function(val)
-    {
-        listener = function()
-        {
-            oj.PullToRefreshUtils._fireEvent(event, "complete", content, height);
+  content.prev().text(Translations.getTranslatedString('oj-pullToRefresh.ariaRefreshingLink'));
 
-            // cleanup after everything is complete
-            oj.PullToRefreshUtils._cleanup(content);
+  // set it back to auto so we can get the actual height
+  content.css('height', 'auto');
+  $.data(content[0], 'data-panelheight', content.outerHeight());
+};
 
-            content.off("transitionend", listener);                  
+oj.PullToRefreshUtils._handleRelease = function (event, element, content, refreshFunc) {
+  var height;
+  var icon;
+  var lastIconClass;
+  var busyContext;
+  var busyStateResolve;
+  var listener;
 
-            // clear the text, otherwise voice over will allow text to be focusable
-            content.prev().text("");
+  height = $.data(content[0], 'data-panelheight');
+  content.addClass('oj-pulltorefresh-transition')
+    .css('height', height);
 
-            // clear busy state
-            oj.PullToRefreshUtils._resolveBusyState(element);
-        }
+  oj.PullToRefreshUtils._fireEvent(event, 'release', content, height);
 
-        // change text to complete
-        content.prev().text(oj.Translations.getTranslatedString('oj-pullToRefresh.ariaRefreshCompleteLink'));
-        // hide the link
-        content.prev().prev().css("position", "");
+  // mark that we are in loading stage
+  $.data(content[0], 'data-loading', true);
 
-        // mark that we are in the middle of closing the panel, we want this to complete without interruption
-        $.data(content[0], "data-closing", true);
+  icon = content.find('.oj-pulltorefresh-icon');
+  if (icon.length > 0) {
+    // remove last class
+    lastIconClass = $.data(content[0], 'data-lasticonclass');
+    if (lastIconClass != null) {
+      icon.removeClass(lastIconClass);
+    }
+    icon.addClass('oj-pulltorefresh-icon-full');
+  }
 
-        content.on("transitionend", listener);
-        content.css("height", 0);
-    }, function(e)
-    {
-        listener = function()
-        {
-            // cleanup after everything is complete
-            oj.PullToRefreshUtils._cleanup(content);
+  // register busy state with host as the context, note you can't pull again until release is done
+  busyContext = Context.getContext(element).getBusyContext();
+  busyStateResolve = busyContext.addBusyState({ description: 'PullToRefresh:handleRelease' });
+  $.data($(element)[0], 'data-pulltorefresh-busystate', busyStateResolve);
 
-            content.off("transitionend", listener);                  
+  refreshFunc().then(function () {
+    listener = function () {
+      oj.PullToRefreshUtils._fireEvent(event, 'complete', content, height);
 
-            // clear the text, otherwise voice over will allow text to be focusable
-            content.prev().text("");
+      // cleanup after everything is complete
+      oj.PullToRefreshUtils._cleanup(content);
 
-            // clear busy state
-            oj.PullToRefreshUtils._resolveBusyState(element);
-        }
+      content.off('transitionend', listener);
 
-        // hide the link
-        content.prev().prev().css("position", "");
+      // clear the text, otherwise voice over will allow text to be focusable
+      content.prev().text('');
 
-        // mark that we are in the middle of closing the panel, we want this to complete without interruption
-        $.data(content[0], "data-closing", true);
+      // clear busy state
+      oj.PullToRefreshUtils._resolveBusyState(element);
+    };
 
-        content.on("transitionend", listener);
-        content.css("height", 0);
-    });
+    // change text to complete
+    content.prev().text(Translations.getTranslatedString('oj-pullToRefresh.ariaRefreshCompleteLink'));
+    // hide the link
+    content.prev().prev().css('position', '');
+
+    // mark that we are in the middle of closing the panel, we want this to complete without interruption
+    $.data(content[0], 'data-closing', true);
+
+    content.on('transitionend', listener);
+    content.css('height', 0);
+  }, function () {
+    listener = function () {
+      // cleanup after everything is complete
+      oj.PullToRefreshUtils._cleanup(content);
+
+      content.off('transitionend', listener);
+
+      // clear the text, otherwise voice over will allow text to be focusable
+      content.prev().text('');
+
+      // clear busy state
+      oj.PullToRefreshUtils._resolveBusyState(element);
+    };
+
+    // hide the link
+    content.prev().prev().css('position', '');
+
+    // mark that we are in the middle of closing the panel, we want this to complete without interruption
+    $.data(content[0], 'data-closing', true);
+
+    content.on('transitionend', listener);
+    content.css('height', 0);
+  });
 };
 
 /**
  * Removes the listener that was added in setupPullToRefresh.  Page authors should call tearDownPullToRefresh when the content container is no longer needed.
- * 
+ *
  * @export
  * @param {Element} element the DOM element that hosts the content to refresh
  * @return {void}
  *
  * @see #setupPullToRefresh
  */
-oj.PullToRefreshUtils.tearDownPullToRefresh = function(element)
-{
+oj.PullToRefreshUtils.tearDownPullToRefresh = function (element) {
     // remove the content panel
-    $(element).children(".oj-pulltorefresh-outer").remove();
+  $(element).children('.oj-pulltorefresh-outer').remove();
 
     // remove all listeners
-    $(element).off(".pulltorefresh");
+  $(element).off('.pulltorefresh');
 
     // free up busy state if it's not done already
-    oj.PullToRefreshUtils._resolveBusyState(element);
+  oj.PullToRefreshUtils._resolveBusyState(element);
 };
 
 /**
@@ -411,69 +399,66 @@ oj.PullToRefreshUtils.tearDownPullToRefresh = function(element)
  * @param {Element} element the DOM element that hosts the content to refresh
  * @private
  */
-oj.PullToRefreshUtils._resolveBusyState = function(element)
-{
-    var elem, busyStateResolve;
+oj.PullToRefreshUtils._resolveBusyState = function (element) {
+  var elem;
+  var busyStateResolve;
 
-    elem = $(element)[0];
+  elem = $(element)[0];
 
-    busyStateResolve = /** @type {Function} */ ($.data(elem, "data-pulltorefresh-busystate"));
-    if (busyStateResolve)
-    {
-        busyStateResolve(null);
-        $.removeData(elem, "data-pulltorefresh-busystate");
-    }
+  busyStateResolve = /** @type {Function} */ ($.data(elem, 'data-pulltorefresh-busystate'));
+  if (busyStateResolve) {
+    busyStateResolve(null);
+    $.removeData(elem, 'data-pulltorefresh-busystate');
+  }
 };
 
 /**
  * Helper method to fire specific event
  * @private
  */
-oj.PullToRefreshUtils._fireEvent = function(originalEvent, key, content, distance)
-{
-    var event = $.Event("oj"+key);
-    event['originalEvent'] = originalEvent;
+oj.PullToRefreshUtils._fireEvent = function (originalEvent, key, content, distance) {
+  var event = $.Event('oj' + key);
+  event.originalEvent = originalEvent;
 
-    content.trigger(event, {'content': content, 'distance': distance});
+  content.trigger(event, { content: content, distance: distance });
 };
 
 /**
  * Creates default content inside refresh panel if one is not provided by the app through callbacks
  * @private
  */
-oj.PullToRefreshUtils._createDefaultContent = function(content, primaryText, secondaryText)
-{
-    var icon, iconContainer, primary, secondary;
+oj.PullToRefreshUtils._createDefaultContent = function (content, primaryText, secondaryText) {
+  var icon;
+  var iconContainer;
+  var primary;
+  var secondary;
 
-    content.addClass("oj-pulltorefresh-content")
-           .attr("aria-hidden", "true");
+  content.addClass('oj-pulltorefresh-content')
+           .attr('aria-hidden', 'true');
 
-    icon = $(document.createElement("div"));
-    icon.addClass("oj-icon oj-pulltorefresh-icon oj-pulltorefresh-icon-initial");
-    iconContainer = $(document.createElement("div"));
-    iconContainer.addClass("oj-pulltorefresh-icon-container");
+  icon = $(document.createElement('div'));
+  icon.addClass('oj-icon oj-pulltorefresh-icon oj-pulltorefresh-icon-initial');
+  iconContainer = $(document.createElement('div'));
+  iconContainer.addClass('oj-pulltorefresh-icon-container');
 
-    iconContainer.append(icon); // @HtmlUpdateOK
-    $.data(content[0], "data-lasticonclass", "oj-pulltorefresh-icon-initial");
-    content.append(iconContainer); // @HtmlUpdateOK
+  iconContainer.append(icon); // @HtmlUpdateOK
+  $.data(content[0], 'data-lasticonclass', 'oj-pulltorefresh-icon-initial');
+  content.append(iconContainer); // @HtmlUpdateOK
 
-    if (primaryText != null)
-    {
-        primary = $(document.createElement("div"))
-                      .addClass("oj-pulltorefresh-primary-text")
-                      .text(primaryText);
-        content.append(primary); // @HtmlUpdateOK
+  if (primaryText != null) {
+    primary = $(document.createElement('div'))
+      .addClass('oj-pulltorefresh-primary-text')
+      .text(primaryText);
+    content.append(primary); // @HtmlUpdateOK
 
-        // you can't have secondary text without primary text
-        if (secondaryText != null)
-        { 
-            secondary = $(document.createElement("div"))
-                            .addClass("oj-pulltorefresh-secondary-text")
-                            .text(secondaryText);
-            content.append(secondary); // @HtmlUpdateOK
-        }
+    // you can't have secondary text without primary text
+    if (secondaryText != null) {
+      secondary = $(document.createElement('div'))
+        .addClass('oj-pulltorefresh-secondary-text')
+        .text(secondaryText);
+      content.append(secondary); // @HtmlUpdateOK
     }
-
+  }
 };
 
 /**
@@ -481,98 +466,86 @@ oj.PullToRefreshUtils._createDefaultContent = function(content, primaryText, sec
  * is fully visible otherwise they will overlap.
  * @private
  */
-oj.PullToRefreshUtils._showHideDefaultText = function(content, show)
-{
-    var primaryText, secondaryText;
+oj.PullToRefreshUtils._showHideDefaultText = function (content, show) {
+  var primaryText;
+  var secondaryText;
 
-    primaryText = content.find(".oj-pulltorefresh-primary-text");
-    secondaryText = content.find(".oj-pulltorefresh-secondary-text");
+  primaryText = content.find('.oj-pulltorefresh-primary-text');
+  secondaryText = content.find('.oj-pulltorefresh-secondary-text');
 
-    if (show)
-    {
-        if (primaryText)
-        {
-            primaryText.show();
-        }
-        if (secondaryText)
-        {
-            secondaryText.show();
-        }
+  if (show) {
+    if (primaryText) {
+      primaryText.show();
     }
-    else
-    {
-        if (primaryText)
-        {
-            primaryText.hide();
-        }
-        if (secondaryText)
-        {
-            secondaryText.hide();
-        }
+    if (secondaryText) {
+      secondaryText.show();
     }
+  } else {
+    if (primaryText) {
+      primaryText.hide();
+    }
+    if (secondaryText) {
+      secondaryText.hide();
+    }
+  }
 };
 
 /**
  * Renders link to provide accessible way to refresh content
  * @private
  */
-oj.PullToRefreshUtils._renderAccessibleLink = function(element, panel, refreshFunc, options)
-{
-    var link, content, status;
+oj.PullToRefreshUtils._renderAccessibleLink = function (element, panel, refreshFunc, options) {
+  var link;
+  var content;
+  var status;
 
-    link = $(document.createElement("a"));
-    link.text(oj.Translations.getTranslatedString('oj-pullToRefresh.ariaRefreshLink'));
-    link.addClass("oj-helper-hidden-accessible")
-        .attr("href", "#")
-        .focus(function()
-        { 
-            // the link should be visible when tab to
-            // note if removeClass("oj-helper-hidden-accessible") is used here then it would cause
-            // weird behavior in Voiceover where the link will be skip immediately after focus
-            link.css("position", "static");
-        })
-        .blur(function(event)
-        {
-            // Voiceover focus would immediately cause a blur when making the link visible
-            if (event.relatedTarget != null)
-            {
-                link.css("position", "");
-            }
-        })
-        .click(function(event)
-        {
-            content = panel.children().last();
-            oj.PullToRefreshUtils._handlePull(event, content, options);
-            oj.PullToRefreshUtils._handleRelease(event, element, content, refreshFunc);
-        });
+  link = $(document.createElement('a'));
+  link.text(Translations.getTranslatedString('oj-pullToRefresh.ariaRefreshLink'));
+  link.addClass('oj-helper-hidden-accessible')
+    .attr('href', '#')
+    .focus(function () {
+      // the link should be visible when tab to
+      // note if removeClass("oj-helper-hidden-accessible") is used here then it would cause
+      // weird behavior in Voiceover where the link will be skip immediately after focus
+      link.css('position', 'static');
+    })
+    .blur(function (event) {
+      // Voiceover focus would immediately cause a blur when making the link visible
+      if (event.relatedTarget != null) {
+        link.css('position', '');
+      }
+    })
+    .click(function (event) {
+      content = panel.children().last();
+      oj.PullToRefreshUtils._handlePull(event, content, options);
+      oj.PullToRefreshUtils._handleRelease(event, element, content, refreshFunc);
+    });
 
-    status = $(document.createElement("div"));
-    status.addClass("oj-helper-hidden-accessible")
-          .attr("aria-live", "polite");
+  status = $(document.createElement('div'));
+  status.addClass('oj-helper-hidden-accessible')
+    .attr('aria-live', 'polite');
 
-    panel.append(link); // @HtmlUpdateOK
-    panel.append(status); // @HtmlUpdateOK
+  panel.append(link); // @HtmlUpdateOK
+  panel.append(status); // @HtmlUpdateOK
 };
 
 /**
  * Cleanup internals
  * @private
  */
-oj.PullToRefreshUtils._cleanup = function(content)
-{
-    var icon;
+oj.PullToRefreshUtils._cleanup = function (content) {
+  var icon;
 
-    $.removeData(content[0], "data-pullstart");
-    $.removeData(content[0], "data-pullstart-horiz");
-    $.removeData(content[0], "data-loading");
-    $.removeData(content[0], "data-closing");
+  $.removeData(content[0], 'data-pullstart');
+  $.removeData(content[0], 'data-pullstart-horiz');
+  $.removeData(content[0], 'data-loading');
+  $.removeData(content[0], 'data-closing');
 
-    // only clear if it's the default panel, give app full control on custom content
-    icon = content.find(".oj-pulltorefresh-icon");
-    if (icon.length > 0)
-    {
-        content.empty();
-    }
+  // only clear if it's the default panel, give app full control on custom content
+  icon = content.find('.oj-pulltorefresh-icon');
+  if (icon.length > 0) {
+    content.empty();
+  }
 };
 
 /**
@@ -623,4 +596,6 @@ oj.PullToRefreshUtils._cleanup = function(content)
  * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
  * @memberof oj.PullToRefreshUtils
  */
+
+  ;return oj.PullToRefreshUtils;
 });

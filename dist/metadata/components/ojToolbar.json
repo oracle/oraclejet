@@ -1,7 +1,7 @@
 {
   "name": "oj-toolbar",
-  "version": "5.2.0",
-  "jetVersion": "5.2.0",
+  "version": "6.0.0",
+  "jetVersion": "6.0.0",
   "displayName": "Toolbar",
   "type": "core",
   "styleClasses": [
@@ -43,11 +43,13 @@
     }
   ],
   "description": "Displays a strip of control elements (icons, buttons, separators, etc.) with support for touch, mouse, and keyboard interactions.",
+  "help": "https://docs.oracle.com/en/middleware/jet/6/reference-api/oj.ojToolbar.html",
   "properties": {
     "chroming": {
       "description": "Indicates in what states the toolbar's buttons and buttonsets have chrome (background and border). This option only affects buttons and buttonsets that have never had their own chroming option set. This allows individual buttons and buttonsets to opt out of their toolbar's chroming if needed. The default chroming varies by theme. Each theme can set its default by setting $toolbarChromingOptionDefault as seen in the example below. Once a value has been set on this option, that value applies regardless of theme.",
       "type": "string",
       "displayName": "Chroming",
+      "help": "chroming",
       "enumValues": [
         "full",
         "half",
@@ -73,16 +75,19 @@
       "type": "object|null",
       "displayName": "Translations",
       "value": {},
-      "translatable": true
+      "translatable": true,
+      "help": "translations"
     }
   },
   "methods": {
     "refresh": {
       "description": "Refreshes the toolbar, including the following: Re-applies focus management / keyboard navigation. Rechecks the reading direction (LTR vs. RTL). A refresh() is required in the following circumstances: After buttons or buttonsets are added to, removed from, or reordered within the toolbar. After a change to the [disabled]ojButton#disabled status of any of the buttons in the toolbar. After a programmatic change to the checked status of a radio button in the toolbar (which should be done via Buttonset's [checked]ojButtonset#checked option). This applies only to radios, not to checkboxes or push buttons. After the reading direction (LTR vs. RTL) changes. ",
+      "help": "refresh",
       "return": "void"
     },
     "setProperty": {
-      "description": "Sets a property or a single subproperty for complex properties and notifies the component\nof the change, triggering a [property]Changed event.",
+      "description": "Sets a property or a single subproperty for complex properties and notifies the component of the change, triggering a [property]Changed event.",
+      "help": "setProperty",
       "params": [
         {
           "name": "property",
@@ -99,6 +104,7 @@
     },
     "getProperty": {
       "description": "Retrieves a value for a property or a single subproperty for complex properties.",
+      "help": "getProperty",
       "params": [
         {
           "name": "property",
@@ -110,6 +116,7 @@
     },
     "setProperties": {
       "description": "Performs a batch set of properties.",
+      "help": "setProperties",
       "params": [
         {
           "name": "properties",
@@ -122,7 +129,9 @@
   },
   "slots": {
     "contextMenu": {
-      "description": "The contextMenu slot is set on the oj-menu within this element. \nThis is used to designate the JET Menu that this component should launch as a context menu on right-click, Shift-F10, Press & Hold, or component-specific gesture. \nIf specified, the browser's native context menu will be replaced by the JET Menu specified in this slot.\n\nThe application can register a listener for the Menu's ojBeforeOpen event. The listener can cancel the launch via event.preventDefault(), \nor it can customize the menu contents by editing the menu DOM directly, and then calling refresh() on the Menu.\n\nTo help determine whether it's appropriate to cancel the launch or customize the menu, the ojBeforeOpen listener can use component API's to determine which \ntable cell, chart item, etc., is the target of the context menu. See the JSDoc and demos of the individual components for details. \n\nKeep in mind that any such logic must work whether the context menu was launched via right-click, Shift-F10, Press & Hold, or component-specific touch gesture."
+      "description": "The contextMenu slot is set on the <oj-menu> instance within this element. It designates the JET Menu that this component should launch as a context menu.",
+      "maxItems": 1,
+      "help": "contextMenu"
     }
   }
 }

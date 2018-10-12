@@ -1,22 +1,25 @@
 {
   "name": "oj-thematic-map",
-  "version": "5.2.0",
-  "jetVersion": "5.2.0",
+  "version": "6.0.0",
+  "jetVersion": "6.0.0",
   "displayName": "Thematic Map",
   "type": "core",
   "description": "An interactive data visualization that displays data corresponding to geographic locations or regions.\r             Applications are required to supply a mapProvider for a valid thematic map.",
+  "help": "https://docs.oracle.com/en/middleware/jet/6/reference-api/oj.ojThematicMap.html",
   "properties": {
     "animationDuration": {
       "description": "We recommend using the component CSS classes to set component wide styling. This API should be used only for styling a specific instance of the component. The default values come from the CSS classess and varies based on theme. The duration of the animations in milliseconds.",
       "type": "number",
       "displayName": "Animation Duration",
-      "units": "\"milliseconds\""
+      "units": "\"milliseconds\"",
+      "help": "animationDuration"
     },
     "animationOnDisplay": {
       "description": "The type of animation to apply when the element is initially displayed.",
       "type": "string",
       "displayName": "Animation On Display",
       "value": "none",
+      "help": "animationOnDisplay",
       "enumValues": [
         "auto",
         "none"
@@ -34,13 +37,15 @@
       "description": "The oj.DataProvider for the areas of the thematic map. It should provide data rows where each row will map data for a single thematic map data area. The row key will be used as the id for thematic map areas. Note that when using this attribute, a template for the areaTemplate slot should be provided.",
       "type": "oj.DataProvider|null",
       "displayName": "Area Data",
-      "value": null
+      "value": null,
+      "help": "areaData"
     },
     "areas": {
       "description": "An array of objects that define a row of data for an area data layer. Also accepts a Promise where no data will be rendered if the Promise is rejected. Regardless of the set value type, we will wrap and return a Promise when accessing the areas property.",
       "type": "Array<Object>|Promise|null",
       "displayName": "Areas",
       "value": null,
+      "help": "areas",
       "extension": {
         "vbcs": {
           "itemProperties": {
@@ -97,13 +102,15 @@
       "description": "An alias for the $current context variable passed to slot content for the areaTemplate, markerTemplate, or linkTemplate slots.",
       "type": "string",
       "displayName": "As",
-      "value": ""
+      "value": "",
+      "help": "as"
     },
     "focusRenderer": {
       "description": "An optional callback function to update the data item in response to changes in keyboard focus state.",
       "type": "function|null",
       "displayName": "Focus Renderer",
       "value": null,
+      "help": "focusRenderer",
       "properties": {
         "color": {
           "description": "The color of the data item.",
@@ -204,13 +211,15 @@
       "type": "Array<string>",
       "displayName": "Hidden Categories",
       "value": [],
-      "writeback": true
+      "writeback": true,
+      "help": "hiddenCategories"
     },
     "highlightMatch": {
       "description": "The matching condition for the highlightedCategories option. By default, highlightMatch is 'all' and only items whose categories match all of the values specified in the highlightedCategories array will be highlighted. If highlightMatch is 'any', then items that match at least one of the highlightedCategories values will be highlighted.",
       "type": "string",
       "displayName": "Highlight Match",
       "value": "all",
+      "help": "highlightMatch",
       "enumValues": [
         "all",
         "any"
@@ -229,13 +238,15 @@
       "type": "Array<string>",
       "displayName": "Highlighted Categories",
       "value": [],
-      "writeback": true
+      "writeback": true,
+      "help": "highlightedCategories"
     },
     "hoverBehavior": {
       "description": "Defines the behavior applied when hovering over data items.",
       "type": "string",
       "displayName": "Hover Behavior",
       "value": "none",
+      "help": "hoverBehavior",
       "enumValues": [
         "dim",
         "none"
@@ -254,6 +265,7 @@
       "type": "function|null",
       "displayName": "Hover Renderer",
       "value": null,
+      "help": "hoverRenderer",
       "properties": {
         "color": {
           "description": "The color of the data item.",
@@ -354,6 +366,7 @@
       "type": "string",
       "displayName": "Initial Zooming",
       "value": "none",
+      "help": "initialZooming",
       "enumValues": [
         "auto",
         "none"
@@ -371,13 +384,15 @@
       "description": "The id for the isolated area of this area data layer. If set, only the isolated area will be displayed.",
       "type": "any",
       "displayName": "Isolated Item",
-      "value": "\"\""
+      "value": null,
+      "help": "isolatedItem"
     },
     "labelDisplay": {
       "description": "Determines how labels for this layer should be displayed.",
       "type": "string",
       "displayName": "Label Display",
       "value": "off",
+      "help": "labelDisplay",
       "enumValues": [
         "auto",
         "off",
@@ -401,6 +416,7 @@
       "type": "string",
       "displayName": "Label Type",
       "value": "short",
+      "help": "labelType",
       "enumValues": [
         "long",
         "short"
@@ -418,13 +434,15 @@
       "description": "The oj.DataProvider for the links of the thematic map. It should provide data rows where each row will map data for a single thematic map data link. The row key will be used as the id for thematic map links. Note that when using this attribute, a template for the linkTemplate slot should be provided.",
       "type": "oj.DataProvider|null",
       "displayName": "Link Data",
-      "value": null
+      "value": null,
+      "help": "linkData"
     },
     "links": {
       "description": "An array of objects that define the data for links. Also accepts a Promise where no data will be rendered if the Promise is rejected. Regardless of the set value type, we will wrap and return a Promise when accessing the links property.",
       "type": "Array<Object>|Promise|null",
       "displayName": "Links",
       "value": null,
+      "help": "links",
       "extension": {
         "vbcs": {
           "itemProperties": {
@@ -459,7 +477,7 @@
               }
             },
             "id": {
-              "description": "The identifier for this marker. The id should be set by the application if the oj.DataProvider is not being used. The row key will be used as id in the oj.DataProvider case.",
+              "description": "The identifier for this link. The id should be set by the application if the oj.DataProvider is not being used. The row key will be used as id in the oj.DataProvider case.",
               "type": "any"
             },
             "selectable": {
@@ -513,35 +531,41 @@
       "description": "An object with the following properties, used to define a custom map.",
       "type": "object",
       "displayName": "Map Provider",
+      "help": "mapProvider",
       "properties": {
         "geo": {
           "description": "The GeoJSON object containing custom area coordinates. Only GeoJSON objects of \"type\" Feature or FeatureCollection and Feature \"geometry\" objects of \"type\" Polygon or MultiPolygon are currently supported. Each Feature object will contain a thematic map area and each Feature's \"properties\" object will at a minimum need to contain a key, which can be defined in the propertiesKeys object, that will be used as the ID of the area.",
           "type": "object",
           "displayName": "Geo",
-          "value": {}
+          "value": {},
+          "help": "mapProvider.geo"
         },
         "propertiesKeys": {
           "description": "The object specifying the GeoJSON Feature \"properties\" object keys to use for the custom area id, short label, and long label mappings.",
           "type": "object",
           "displayName": "Properties Keys",
+          "help": "mapProvider.propertiesKeys",
           "properties": {
             "id": {
               "description": "The required name of the \"properties\" key to use as the location id that will map a data item to a map area.",
               "type": "string",
               "displayName": "Id",
-              "value": ""
+              "value": "",
+              "help": "mapProvider.propertiesKeys.id"
             },
             "longLabel": {
               "description": "The optional name of the \"properties\" key to use for rendering area labels when labelType is set to \"long\".",
               "type": "string",
               "displayName": "Long Label",
-              "value": ""
+              "value": "",
+              "help": "mapProvider.propertiesKeys.longLabel"
             },
             "shortLabel": {
               "description": "The optional name of the \"properties\" key to use for rendering area labels when labelType is set to \"short\".",
               "type": "string",
               "displayName": "Short Label",
-              "value": ""
+              "value": "",
+              "help": "mapProvider.propertiesKeys.shortLabel"
             }
           }
         }
@@ -551,13 +575,15 @@
       "description": "The oj.DataProvider for the markers of the thematic map. It should provide data rows where each row will map data for a single thematic map data marker. The row key will be used as the id for thematic map markers. Note that when using this attribute, a template for the markerTemplate slot should be provided.",
       "type": "oj.DataProvider|null",
       "displayName": "Marker Data",
-      "value": null
+      "value": null,
+      "help": "markerData"
     },
     "markerZoomBehavior": {
       "description": "Specifies marker behavior on zoom.",
       "type": "string",
       "displayName": "Marker Zoom Behavior",
       "value": "fixed",
+      "help": "markerZoomBehavior",
       "enumValues": [
         "fixed",
         "zoom"
@@ -576,6 +602,7 @@
       "type": "Array<Object>|Promise|null",
       "displayName": "Markers",
       "value": null,
+      "help": "markers",
       "extension": {
         "vbcs": {
           "itemProperties": {
@@ -695,13 +722,15 @@
       "description": "Specifies the maximum zoom level for this element. This can be any number greater than 1.0 which indicates the maximum point to which the map can be scaled. A value of 2.0 implies that the map can be zoomed in until it reaches twice the viewport size. A maxZoom of 1.0 indicates that the user cannot zoom the map beyond the viewport size.",
       "type": "number",
       "displayName": "Max Zoom",
-      "value": 6
+      "value": 6,
+      "help": "maxZoom"
     },
     "panning": {
       "description": "Determines whether element panning is allowed.",
       "type": "string",
       "displayName": "Panning",
       "value": "none",
+      "help": "panning",
       "enumValues": [
         "auto",
         "none"
@@ -720,6 +749,7 @@
       "type": "function|null",
       "displayName": "Renderer",
       "value": null,
+      "help": "renderer",
       "properties": {
         "color": {
           "description": "The color of the data item.",
@@ -820,13 +850,15 @@
       "type": "Array<any>",
       "displayName": "Selection",
       "value": [],
-      "writeback": true
+      "writeback": true,
+      "help": "selection"
     },
     "selectionMode": {
       "description": "The type of selection behavior that is enabled on the thematic map.",
       "type": "string",
       "displayName": "Selection Mode",
       "value": "none",
+      "help": "selectionMode",
       "enumValues": [
         "multiple",
         "none",
@@ -849,6 +881,7 @@
       "type": "function|null",
       "displayName": "Selection Renderer",
       "value": null,
+      "help": "selectionRenderer",
       "properties": {
         "color": {
           "description": "The color of the data item.",
@@ -948,41 +981,49 @@
       "description": "We recommend using the component CSS classes to set component wide styling. This API should be used only for styling a specific instance of the component. Properties specified on this object may be overridden by specifications on the data item. The default values come from the CSS classess and varies based on theme.",
       "type": "object",
       "displayName": "Style Defaults",
+      "help": "styleDefaults",
       "properties": {
         "areaSvgStyle": {
           "description": "The CSS style object defining the style of the area layer areas. The default value comes from the CSS and varies based on theme.",
           "type": "object",
-          "displayName": "Area Svg Style"
+          "displayName": "Area Svg Style",
+          "value": {},
+          "help": "styleDefaults.areaSvgStyle"
         },
         "dataAreaDefaults": {
           "description": "An object defining the default styles for data areas. Properties specified on this object may be overridden by specifications on the data object.",
           "type": "object",
           "displayName": "Data Area Defaults",
           "value": {},
+          "help": "styleDefaults.dataAreaDefaults",
           "properties": {
             "borderColor": {
               "description": "The area stroke color for the area data layer. The default value comes from the CSS and varies based on theme.",
               "type": "string",
               "displayName": "Border Color",
-              "format": "color"
+              "format": "color",
+              "help": "styleDefaults.dataAreaDefaults.borderColor"
             },
             "hoverColor": {
               "description": "The hover data area border color. The default value comes from the CSS and varies based on theme.",
               "type": "string",
               "displayName": "Hover Color",
-              "format": "color"
+              "format": "color",
+              "help": "styleDefaults.dataAreaDefaults.hoverColor"
             },
             "selectedInnerColor": {
               "description": "The inner selected data area border color. The default value comes from the CSS and varies based on theme.",
               "type": "string",
               "displayName": "Selected Inner Color",
-              "format": "color"
+              "format": "color",
+              "help": "styleDefaults.dataAreaDefaults.selectedInnerColor"
             },
             "selectedOuterColor": {
               "description": "The outer selected data area border color. The default value comes from the CSS and varies based on theme.",
               "type": "string",
               "displayName": "Selected Outer Color",
-              "format": "color"
+              "format": "color",
+              "help": "styleDefaults.dataAreaDefaults.selectedOuterColor"
             }
           }
         },
@@ -990,18 +1031,21 @@
           "description": "An object defining the default styles for data markers. Properties specified on this object may be overridden by specifications on the data object.",
           "type": "object",
           "displayName": "Data Marker Defaults",
+          "help": "styleDefaults.dataMarkerDefaults",
           "properties": {
             "borderColor": {
               "description": "The border color. The default value comes from the CSS and varies based on theme.",
               "type": "string",
               "displayName": "Border Color",
-              "format": "color"
+              "format": "color",
+              "help": "styleDefaults.dataMarkerDefaults.borderColor"
             },
             "borderStyle": {
               "description": "The border style.",
               "type": "string",
               "displayName": "Border Style",
               "value": "solid",
+              "help": "styleDefaults.dataMarkerDefaults.borderStyle",
               "enumValues": [
                 "none",
                 "solid"
@@ -1020,45 +1064,52 @@
               "type": "number",
               "displayName": "Border Width",
               "value": 0.5,
-              "units": "\"pixels\""
+              "units": "\"pixels\"",
+              "help": "styleDefaults.dataMarkerDefaults.borderWidth"
             },
             "color": {
               "description": "The fill color of a marker. The default value comes from the CSS and varies based on theme.",
               "type": "string",
               "displayName": "Color",
-              "format": "color"
+              "format": "color",
+              "help": "styleDefaults.dataMarkerDefaults.color"
             },
             "height": {
               "description": "The default marker pixel height. Note that this option will be ignored if a value is provided to calculate marker sizes.",
               "type": "number",
               "displayName": "Height",
               "value": 8,
-              "units": "\"pixels\""
+              "units": "\"pixels\"",
+              "help": "styleDefaults.dataMarkerDefaults.height"
             },
             "labelStyle": {
               "description": "The CSS style for a marker label.",
               "type": "object",
               "displayName": "Label Style",
-              "value": {}
+              "value": {},
+              "help": "styleDefaults.dataMarkerDefaults.labelStyle"
             },
             "opacity": {
               "description": "The default marker opacity.",
               "type": "number",
               "displayName": "Opacity",
-              "value": 1
+              "value": 1,
+              "help": "styleDefaults.dataMarkerDefaults.opacity"
             },
             "shape": {
               "description": "The default marker shape. Can take the name of a built-in shape or the svg path commands for a custom shape.",
               "type": "string",
               "displayName": "Shape",
-              "value": "circle"
+              "value": "circle",
+              "help": "styleDefaults.dataMarkerDefaults.shape"
             },
             "width": {
               "description": "The default marker pixel width. Note that this option will be ignored if a value is provided to calculate marker sizes.",
               "type": "number",
               "displayName": "Width",
               "value": 8,
-              "units": "\"pixels\""
+              "units": "\"pixels\"",
+              "help": "styleDefaults.dataMarkerDefaults.width"
             }
           }
         },
@@ -1067,31 +1118,36 @@
           "type": "number",
           "displayName": "Hover Behavior Delay",
           "value": 200,
-          "units": "\"milliseconds\""
+          "units": "\"milliseconds\"",
+          "help": "styleDefaults.hoverBehaviorDelay"
         },
         "labelStyle": {
           "description": "The CSS style for the area layer labels.",
           "type": "object",
           "displayName": "Label Style",
-          "value": {}
+          "value": {},
+          "help": "styleDefaults.labelStyle"
         },
         "linkDefaults": {
           "description": "An object defining the default styles for data areas. Properties specified on this object may be overridden by specifications on the data object.",
           "type": "object",
           "displayName": "Link Defaults",
+          "help": "styleDefaults.linkDefaults",
           "properties": {
             "color": {
               "description": "The stroke color for links. The default value comes from the CSS and varies based on theme.",
               "type": "string",
               "displayName": "Color",
-              "format": "color"
+              "format": "color",
+              "help": "styleDefaults.linkDefaults.color"
             },
             "width": {
               "description": "The stroke width for links in pixels.",
               "type": "number",
               "displayName": "Width",
               "value": 2,
-              "units": "\"pixels\""
+              "units": "\"pixels\"",
+              "help": "styleDefaults.linkDefaults.width"
             }
           }
         }
@@ -1101,12 +1157,14 @@
       "description": "An object containing an optional callback function for tooltip customization.",
       "type": "object",
       "displayName": "Tooltip",
+      "help": "tooltip",
       "properties": {
         "renderer": {
           "description": "A function that returns a custom tooltip.",
           "type": "function",
           "displayName": "Renderer",
           "value": null,
+          "help": "tooltip.renderer",
           "properties": {
             "color": {
               "description": "The color of the hovered item or null if the hovered item if not associated with any data.",
@@ -1165,6 +1223,7 @@
       "type": "string",
       "displayName": "Tooltip Display",
       "value": "auto",
+      "help": "tooltipDisplay",
       "enumValues": [
         "auto",
         "labelAndShortDesc",
@@ -1191,6 +1250,7 @@
       "type": "string",
       "displayName": "Touch Response",
       "value": "auto",
+      "help": "touchResponse",
       "enumValues": [
         "auto",
         "touchStart"
@@ -1209,6 +1269,7 @@
       "type": "string",
       "displayName": "Track Resize",
       "value": "on",
+      "help": "trackResize",
       "enumValues": [
         "off",
         "on"
@@ -1228,91 +1289,109 @@
       "displayName": "Translations",
       "value": {},
       "translatable": true,
+      "help": "translations",
       "properties": {
         "componentName": {
           "description": "Used to describe the data visualization type for accessibility.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "Component Name"
+          "displayName": "Component Name",
+          "help": "translations.componentName"
         },
         "labelAndValue": {
           "description": "Used to display a label and its value.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "Label And Value"
+          "displayName": "Label And Value",
+          "help": "translations.labelAndValue"
         },
         "labelClearSelection": {
           "description": "Text shown for clearing multiple selection on touch devices.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "Label Clear Selection"
+          "displayName": "Label Clear Selection",
+          "help": "translations.labelClearSelection"
         },
         "labelCountWithTotal": {
           "description": "Used to display a count out of a total.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "Label Count With Total"
+          "displayName": "Label Count With Total",
+          "help": "translations.labelCountWithTotal"
         },
         "labelDataVisualization": {
           "description": "Label for data visualizations used for accessibility.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "Label Data Visualization"
+          "displayName": "Label Data Visualization",
+          "help": "translations.labelDataVisualization"
         },
         "labelInvalidData": {
           "description": "Text shown when the component receives invalid data.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "Label Invalid Data"
+          "displayName": "Label Invalid Data",
+          "help": "translations.labelInvalidData"
         },
         "labelNoData": {
           "description": "Text shown when the component receives no data.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "Label No Data"
+          "displayName": "Label No Data",
+          "help": "translations.labelNoData"
         },
         "stateCollapsed": {
           "description": "Used to describe the collapsed state for accessibility.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "State Collapsed"
+          "displayName": "State Collapsed",
+          "help": "translations.stateCollapsed"
         },
         "stateDrillable": {
           "description": "Used to describe a drillable object for accessibility.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "State Drillable"
+          "displayName": "State Drillable",
+          "help": "translations.stateDrillable"
         },
         "stateExpanded": {
           "description": "Used to describe the expanded state for accessibility.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "State Expanded"
+          "displayName": "State Expanded",
+          "help": "translations.stateExpanded"
         },
         "stateHidden": {
           "description": "Used to describe the hidden state for accessibility.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "State Hidden"
+          "displayName": "State Hidden",
+          "help": "translations.stateHidden"
         },
         "stateIsolated": {
           "description": "Used to describe the isolated state for accessibility.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "State Isolated"
+          "displayName": "State Isolated",
+          "help": "translations.stateIsolated"
         },
         "stateMaximized": {
           "description": "Used to describe the maximized state for accessibility.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "State Maximized"
+          "displayName": "State Maximized",
+          "help": "translations.stateMaximized"
         },
         "stateMinimized": {
           "description": "Used to describe the minimized state for accessibility.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "State Minimized"
+          "displayName": "State Minimized",
+          "help": "translations.stateMinimized"
         },
         "stateSelected": {
           "description": "Used to describe the selected state for accessibility.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "State Selected"
+          "displayName": "State Selected",
+          "help": "translations.stateSelected"
         },
         "stateUnselected": {
           "description": "Used to describe the unselected state for accessibility.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "State Unselected"
+          "displayName": "State Unselected",
+          "help": "translations.stateUnselected"
         },
         "stateVisible": {
           "description": "Used to describe the visible state for accessibility.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "State Visible"
+          "displayName": "State Visible",
+          "help": "translations.stateVisible"
         }
       }
     },
@@ -1321,6 +1400,7 @@
       "type": "string",
       "displayName": "Zooming",
       "value": "none",
+      "help": "zooming",
       "enumValues": [
         "auto",
         "none"
@@ -1338,6 +1418,7 @@
   "methods": {
     "getArea": {
       "description": "Returns an object for automation testing verification of an area with the specified index in the areas property.",
+      "help": "getArea",
       "params": [
         {
           "name": "index",
@@ -1349,6 +1430,7 @@
     },
     "getMarker": {
       "description": "Returns an object for automation testing verification of a marker with the specified index in the markers property.",
+      "help": "getMarker",
       "params": [
         {
           "name": "index",
@@ -1360,6 +1442,7 @@
     },
     "getLink": {
       "description": "Returns an object for automation testing verification of a link with the specified index in the links property.",
+      "help": "getLink",
       "params": [
         {
           "name": "index",
@@ -1370,7 +1453,8 @@
       "return": "object|null"
     },
     "getContextByNode": {
-      "description": "Returns an object with context for the given child DOM node. This will always contain the subid for the node,\ndefined as the 'subId' property on the context object. Additional component specific information may also be included.\n\nFor more details on returned objects, see context objects.",
+      "description": "Returns an object with context for the given child DOM node. This will always contain the subid for the node, defined as the 'subId' property on the context object. Additional component specific information may also be included. For more details on returned objects, see context objects.",
+      "help": "getContextByNode",
       "params": [
         {
           "name": "node",
@@ -1382,10 +1466,12 @@
     },
     "refresh": {
       "description": "Refreshes the component.",
+      "help": "refresh",
       "return": "void"
     },
     "setProperty": {
-      "description": "Sets a property or a single subproperty for complex properties and notifies the component\nof the change, triggering a [property]Changed event.",
+      "description": "Sets a property or a single subproperty for complex properties and notifies the component of the change, triggering a [property]Changed event.",
+      "help": "setProperty",
       "params": [
         {
           "name": "property",
@@ -1402,6 +1488,7 @@
     },
     "getProperty": {
       "description": "Retrieves a value for a property or a single subproperty for complex properties.",
+      "help": "getProperty",
       "params": [
         {
           "name": "property",
@@ -1413,6 +1500,7 @@
     },
     "setProperties": {
       "description": "Performs a batch set of properties.",
+      "help": "setProperties",
       "params": [
         {
           "name": "properties",
@@ -1426,6 +1514,8 @@
   "slots": {
     "areaTemplate": {
       "description": " The areaTemplate slot is used to specify the template for creating areas of the thematic map. The slot content must be wrapped in a <template> element. The content of the template should be a single <oj-thematic-map-area> element. See the [oj-thematic-map-area]ojThematicMapArea doc for more details. When the template is executed for each area, it will have access to the components's binding context containing the following properties: $current - an object that contains information for the current area. (See the table below for a list of properties available on $current) alias - if 'as' attribute was specified, the value will be used to provide an application-named alias for $current. \n",
+      "maxItems": 1,
+      "help": "areaTemplate",
       "data": {
         "componentElement": {
           "description": "The <oj-thematic-map> custom element",
@@ -1446,10 +1536,14 @@
       }
     },
     "contextMenu": {
-      "description": "The contextMenu slot is set on the oj-menu within this element. \nThis is used to designate the JET Menu that this component should launch as a context menu on right-click, Shift-F10, Press & Hold, or component-specific gesture. \nIf specified, the browser's native context menu will be replaced by the JET Menu specified in this slot.\n\nThe application can register a listener for the Menu's ojBeforeOpen event. The listener can cancel the launch via event.preventDefault(), \nor it can customize the menu contents by editing the menu DOM directly, and then calling refresh() on the Menu.\n\nTo help determine whether it's appropriate to cancel the launch or customize the menu, the ojBeforeOpen listener can use component API's to determine which \ntable cell, chart item, etc., is the target of the context menu. See the JSDoc and demos of the individual components for details. \n\nKeep in mind that any such logic must work whether the context menu was launched via right-click, Shift-F10, Press & Hold, or component-specific touch gesture."
+      "description": "The contextMenu slot is set on the <oj-menu> instance within this element. It designates the JET Menu that this component should launch as a context menu.",
+      "maxItems": 1,
+      "help": "contextMenu"
     },
     "linkTemplate": {
       "description": " The linkTemplate slot is used to specify the template for creating links of the thematic map. The slot content must be wrapped in a <template> element. The content of the template should be a single <oj-thematic-map-link> element. See the [oj-thematic-map-link]ojThematicMapLink doc for more details. When the template is executed for each link, it will have access to the components's binding context containing the following properties: $current - an object that contains information for the current link. (See the table below for a list of properties available on $current) alias - if 'as' attribute was specified, the value will be used to provide an application-named alias for $current. \n",
+      "maxItems": 1,
+      "help": "linkTemplate",
       "data": {
         "componentElement": {
           "description": "The <oj-thematic-map> custom element",
@@ -1471,6 +1565,8 @@
     },
     "markerTemplate": {
       "description": " The markerTemplate slot is used to specify the template for creating markers of the thematic map. The slot content must be wrapped in a <template> element. The content of the template should be a single <oj-thematic-map-marker> element. See the [oj-thematic-map-marker]ojThematicMapMarker doc for more details. When the template is executed for each marker, it will have access to the components's binding context containing the following properties: $current - an object that contains information for the current marker. (See the table below for a list of properties available on $current) alias - if 'as' attribute was specified, the value will be used to provide an application-named alias for $current. \n",
+      "maxItems": 1,
+      "help": "markerTemplate",
       "data": {
         "componentElement": {
           "description": "The <oj-thematic-map> custom element",

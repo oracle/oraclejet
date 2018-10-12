@@ -91,14 +91,14 @@ $smallBorderRadius:  1px !default;
 
 // shadow
 //----------------------------------
-$boxShadowColor:                      $neutralColor17 !default;
-$smallBoxShadow:                      1px 1px 3px 0 transparentize($boxShadowColor, .65) !default;
-$mediumBoxShadow:                     1px 1px 5px 0 transparentize($boxShadowColor, .60) !default;
-$largeBoxShadow:                      1px 1px 10px 0 transparentize($boxShadowColor, .55) !default;
+$boxShadowHsl:      0,0%,0% !default;
+$smallBoxShadow:    1px 1px 3px 0 unquote('hsla(#{$boxShadowHsl},0.35)') !default;
+$mediumBoxShadow:   1px 1px 5px 0 unquote('hsla(#{$boxShadowHsl},0.4)') !default;
+$largeBoxShadow:    1px 1px 10px 0 unquote('hsla(#{$boxShadowHsl},0.45)') !default;
 
 // disabled
 //----------------------------------
-$opacityDisabled: null !default;
+$opacityDisabled: 1 !default;
 
 
 //----------------------------------------------------------------
@@ -182,7 +182,8 @@ $radioCheckboxRowHeight: 1.9rem !default;
 $radioCheckboxItemBgColorActive: transparent !default;
 $radioCheckboxInputToEdgePadding: 0 !default;
 $radioCheckboxInputToLabelPadding: .6rem !default;
-$radioCheckboxLabelToEdgePadding: 22px !default;
+$radioCheckboxMessagePadding: .3rem .6rem .3rem .6rem !default; //settings: ignore
+$radioCheckboxLabelToEdgePadding: 0 !default;
 
 // INPUT DATE/TIME
 //-----------------------------------------------------------------------------
@@ -211,15 +212,13 @@ $dialogCloseIconPosition:   center !default;
 //----------------------------------
 
 $messagesGeneralOverlayWidth:               calc(100% - 20px) !default;
-$messagesGeneralOverlayBorderStyle:         solid !default;
 $messagesGeneralOverlayBorderWidth:         $windowBorderWidth !default;
 $messagesGeneralOverlayBorderColor:         $neutralColor9 !default;
 $messagesGeneralOverlayBorderRadius:        $smallBorderRadius !default;
 $messagesGeneralOverlayBoxShadow:           $smallBoxShadow !default;
 
-$messageGeneralOverlaySeparatorMargin:      0px !default;
-$messageGeneralOverlayBorderStyle:          solid !default;
-$messageGeneralOverlayBorderWidth:          0px 0px $windowBorderWidth 0px !default;
+$messageGeneralOverlaySeparatorMargin:      0 !default;
+$messageGeneralOverlayBorderWidth:          0 0 $windowBorderWidth 0 !default;
 $messageGeneralOverlayBorderColor:          $neutralColor9 !default;
 $messageGeneralOverlayBorderRadius:         null !default;
 $messageGeneralOverlayBoxShadow:            null !default;
@@ -228,7 +227,6 @@ $messagesNotificationOverlayMinWidth:       320px !default;
 $messagesNotificationOverlayMaxWidth:       400px !default;
 
 $messageNotificationOverlaySeparatorMargin: 10px !default;
-$messageNotificationOverlayBorderStyle:     solid !default;
 $messageNotificationOverlayBorderWidth:     $windowBorderWidth !default;
 $messageNotificationOverlayBorderColor:     $neutralColor9 !default;
 
@@ -274,7 +272,9 @@ $menuTextToIconPadding:                $menuIconToEdgePadding !default;
 
 // applies to menu items in a text-only menu, i.e. a menu where no item has a start icon (but might have a submenu icon) :
 $menuTextToEdgePadding:   calc(#{$menuIconToEdgePadding} + #{$menuIconSize} + #{$menuTextToIconPadding}) !default; // Alta spec leaves a space for icons even if no item in the menu has an icon
-
+$menuItemTopBorderWidth:               0px !default;
+$menuSheetItemTopBorderWidth:          0px !default;
+$menuItemBottomBorderWidth:            0px !default;
 
 // menu parts
 //----------------------------------
@@ -308,7 +308,7 @@ $buttonLargeFontSize:  $buttonFontSize !default;
 $buttonXlargeFontSize: $buttonFontSize !default;
 
 $buttonHeight:       oj-px-to-rem(32px, $baseFontSize: 14px) !default;
-$buttonSmallHeight:  $buttonHeight * .875 !default;
+$buttonSmallHeight:  2rem !default;
 
 // button padding
 //----------------------------------
@@ -435,7 +435,8 @@ $buttonConfirmColor:      $accentColorConfirmation5 !default;
 
 // LISTVIEW
 //----------------------------------------------------------------
-$listViewHeaderBorderWidth: 1px !default;
+$listViewHeaderBorderWidth:          1px !default;
+$listViewHeaderBorderWidthCollapsed: 1px 1px 0 !default;
 
 
 // TREEVIEW
@@ -497,7 +498,7 @@ $navigationListItemStartEndPadding:                           oj-px-to-rem(15px,
 $navigationListIconToTextPadding:                             oj-px-to-rem(10px, $baseFontSize: 14px) !default;
 $navigationListItemMinHeight:                                 oj-px-to-rem(44px, $baseFontSize: 14px) !default;   //applies to vertical only
 $navigationListIconOnlyStyle:                                 circle !default;
-$navigationListIconOnlyItemPadding:                           4px !default;
+$navigationListIconOnlyItemPadding:                           4px 0 0 !default;
 
 $navigationListHierarchyMenuThresholdOptionDefault:           3 !default;
 
@@ -506,7 +507,6 @@ $navigationListHierarchyMenuThresholdOptionDefault:           3 !default;
 $navigationListHorizontalItemLabelColorDefault:               $textColor4 !default;
 $navigationListHorizontalItemIconColorDefault:                $neutralColor15 !default;
 $navigationListHorizontalItemDividerColor:                    $neutralColor7 !default;
-$navigationListHorizontalItemBorderColorSelected:             $brandColor !default;
 $navigationListHorizontalItemLabelColorSelected:              $brandColorDark1 !default;
 $navigationListHorizontalItemIconColorSelected:               $iconColorSelected !default;
 $navigationListHorizontalItemContrastLabelColorSelected:      $neutralColor3 !default;
@@ -526,12 +526,10 @@ $navigationListHorizontalIconOnlyStyle:                       circle !default;
 $tabBarItemLabelColorDefault:                         $linkTextColor !default;
 $tabBarItemIconColorDefault:                          $iconColorDefault !default;
 //Hover
-$tabBarItemIconOnlyBgColorHover:                      $neutralColor6 !default;
 $tabBarItemBorderColorHover:                          $iconColorHover !default;
 $tabBarItemBgColorHover:                              $neutralColor6 !default;
 $tabBarItemIconColorHover:                            $iconColorHover !default;
 //Selected
-$tabBarItemIconOnlyBgColorSelected:                   $brandColor !default;
 $tabBarItemLabelColorSelected:                        $tabBarItemLabelColorDefault !default;
 $tabBarItemIconColorSelected:                         $brandColor !default;
 $tabBarItemBorderColorSelected:                       $brandColor !default;
@@ -556,7 +554,7 @@ $tabBarItemStartEndPadding:                           oj-px-to-rem(15px, $baseFo
 $tabBarIconToTextPadding:                             oj-px-to-rem(10px, $baseFontSize: 14px) !default;
 $tabBarVerticalItemMinHeight:                         oj-px-to-rem(44px, $baseFontSize: 14px) !default;   //applies to vertical only
 $tabBarIconOnlyStyle:                                 circle !default;
-$tabBarVerticalIconOnlyItemPadding:                   4px !default;
+$tabBarVerticalIconOnlyItemPadding:                   4px 0 0 !default;
 
 //---Start of Horizontal Navigation tabs---
 //Selected
@@ -579,7 +577,9 @@ $tabBarHorizontalIconOnlyStyle:                       circle !default;
 //-----------------------------------------------------------------------------
 $progressBarBgOpacity:                   0.3 !default;
 $progressBarIndeterminateOverlayOpacity: 0 !default;
-$progressBarIndeterminateOverlayImage:   null !default;
+$progressBarIndeterminateOverlayImage:   "images/animated-overlay.gif" !default;
+$progressCircleIndeterminateOverlayImage: null !default;
+$progressCircleIndeterminateOverlaySize:  null !default;
 
 // TRAIN
 //-----------------------------------------------------------------------------
@@ -595,6 +595,7 @@ $trainBgColorVisited:                     $trainBgColor !default;
 $trainBorderColorVisited:                 $trainBorderColor !default;
 $trainLabelColorVisited:                  $trainLabelColor !default;
 $trainButtonTextColorVisited:             $brandColor !default;
+$trainButtonTextVisitedDisplay:           none !default;
 
 
 // selected state
@@ -627,7 +628,7 @@ $trainButtonTextColorActive:              $trainButtonTextColorSelected !default
 $trainButtonFontSize:                     13px !default;
 
 // the default width of a step
-$trainStepWidth:                          7rem !default;
+$trainStepWidth:                          98px !default;
 
 $trainLabelPaddingTop:                    14px !default;
 
@@ -640,20 +641,11 @@ $trainButtonMessagingIconColor:           $neutralColor1 !default;
 // step connector type. Valid values are 'individual' or 'continuous. A 'continuous'
 // connector is a single shape behind all of the step buttons while the 'individual'
 // connector renders seperate shapes between each step.
-$trainConnectorType:                      individual !default;
 $trainConnectorBgColor:                   $neutralColor7 !default;
 $trainConnectorHeight:                    2px !default;
 $trainIndividualConnectorBgColorSelected: $neutralColor10 !default;
 
 $trainIndividualConnectorPaddingSelected: 0 !default;
-
-// FILM STRIP
-//----------------------------------------------------------------
-
-// opacity of arrows
-$filmStripArrowOpacity: 0.8 !default;
-// border radius of arrows
-$filmStripArrowBorderRadius: 50% !default;
 
 // PAGING CONTROL
 //-----------------------------------------------------------------------------
@@ -679,6 +671,12 @@ $indexerFontWeight:             normal !default;
 $indexerTextDecorationHover:    underline !default;
 
 // DVT
+//-----------------------------------------------------------------------------
+$dvtIconBgColorActive:          $neutralColor1 !default;
+$dvtIconBorderColorActive:      $neutralColor7 !default;
+
+$overlayOpacity: 0.4 !default;
+
 //-----------------------------------------------------------------------------
 
 @import "../common/oj.common.variables";

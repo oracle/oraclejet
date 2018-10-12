@@ -414,7 +414,7 @@ DvtGanttStyleUtils._DEPENDENCY_MARKER_HEIGHT = 8;
 DvtGanttStyleUtils._DEPENDENCY_MARKER_WIDTH = 6;
 
 /**
- * The maximum distance from an edge of the viewport such that auto 
+ * The maximum distance from an edge of the viewport such that auto
  * panning happens during drag (or equivalent).
  * @const
  * @private
@@ -549,10 +549,13 @@ DvtGanttStyleUtils.getTaskShadeAlpha = function()
 
 /**
  * Gets the default height of the time axis.
+ * @param {object} axisOptions The axis options
  * @return {number} The default height of time axis.
  */
-DvtGanttStyleUtils.getTimeAxisHeight = function()
+DvtGanttStyleUtils.getTimeAxisHeight = function(axisOptions)
 {
+  if (axisOptions && axisOptions['height'])
+    return axisOptions['height'];
   return DvtGanttStyleUtils._DEFAULT_AXIS_HEIGHT;
 };
 
@@ -639,7 +642,7 @@ DvtGanttStyleUtils.getDependencyLineTaskGap = function()
 };
 
 /**
- * Gets the maximum distance from an edge of the viewport such that auto 
+ * Gets the maximum distance from an edge of the viewport such that auto
  * panning happens during drag (or equivalent).
  * @return {number} The maximum distance from an edge in px.
  */
@@ -1036,7 +1039,7 @@ DvtGanttTooltipUtils.getDatatip = function(taskNode, isTabular, isAria) {
   }
 
   // Custom Tooltip via Short Desc
-  var shortDesc = taskNode.getProps()['shortDesc'];
+  var shortDesc = taskNode.getValue('shortDesc');
   if (shortDesc != null)
     return shortDesc;
 
@@ -1049,12 +1052,11 @@ DvtGanttTooltipUtils.getDatatip = function(taskNode, isTabular, isAria) {
   if (isAria && !gantt.getCtx().isCustomElement()) {
     var valueFormats = gantt.getOptions()['valueFormats'];
     if (!valueFormats || valueFormats.length == 0) {
-      var taskProps = taskNode.getProps();
       var task = taskNode.getTask();
-      var start = taskProps['start'];
-      var end = taskProps['end'];
-      var baselineStart = taskProps['baseline']['start'];
-      var baselineEnd = taskProps['baseline']['end'];
+      var start = taskNode.getValue('start');
+      var end = taskNode.getValue('end');
+      var baselineStart = taskNode.getValue('baseline', 'start');
+      var baselineEnd = taskNode.getValue('baseline', 'end');
       var progressValue = task.getProgressValue();
       var options = gantt.getOptions();
       var isMainMilestone = task.isMilestone('main');
@@ -1092,7 +1094,7 @@ DvtGanttTooltipUtils.getDatatip = function(taskNode, isTabular, isAria) {
 
       if (validActualTask)
       {
-        var label = taskProps['label'];
+        var label = taskNode.getValue('label');
         if (label != null)
           var labelDesc = dvt.Bundle.getTranslation(gantt.getOptions(), 'labelLabel') + ': ' + label;
 
@@ -1112,7 +1114,7 @@ DvtGanttTooltipUtils.getDatatip = function(taskNode, isTabular, isAria) {
         }
       }
 
-      var row = taskNode.getRow();
+      var row = taskNode.getRowNode();
       var rowLabel = row.getLabel();
       if (rowLabel == null)
         rowLabel = row.getIndex() + 1;
@@ -1181,11 +1183,11 @@ DvtGanttTooltipUtils._addRowDatatip = function(datatip, taskNode, isTabular) {
   var gantt = taskNode.getGantt();
   if (gantt.getEventManager().isDnDDragging())
   {
-    var row = taskNode.getSandboxProps()['row'];
+    var row = taskNode.getSandboxValue('_rowNode');
   }
   else
   {
-    row = taskNode.getRow();
+    row = taskNode.getRowNode();
   }
 
   var rowLabel = row.getLabel();
@@ -1204,14 +1206,14 @@ DvtGanttTooltipUtils._addRowDatatip = function(datatip, taskNode, isTabular) {
  */
 DvtGanttTooltipUtils._addTaskDatatip = function(datatip, taskNode, isTabular) {
   var gantt = taskNode.getGantt();
-  var taskProps = gantt.getEventManager().isDnDDragging() ? taskNode.getSandboxProps() : taskNode.getProps();
+  var valueGetter = gantt.getEventManager().isDnDDragging() ? taskNode.getSandboxValue : taskNode.getValue;
   var task = taskNode.getTask();
 
-  var start = taskProps['start'];
-  var end = taskProps['end'];
-  var baselineStart = taskProps['baseline']['start'];
-  var baselineEnd = taskProps['baseline']['end'];
-  var label = taskProps['label'];
+  var start = valueGetter.call(taskNode, 'start');
+  var end = valueGetter.call(taskNode, 'end');
+  var baselineStart = valueGetter.call(taskNode, 'baseline', 'start');
+  var baselineEnd = valueGetter.call(taskNode, 'baseline', 'end');
+  var label = valueGetter.call(taskNode, 'label');
   var progress = task.getProgressValue(); // main Milestone check happens here too
 
   var validActualTask = !(start == null && end == null);
@@ -1421,7 +1423,6 @@ dvt.Obj.createSubclass(DvtGanttAnimationManager, dvt.Obj);
  */
 DvtGanttAnimationManager.prototype.Init = function(gantt)
 {
-  // DvtGanttAnimationManager.superclass.Init.call(this, gantt.getCtx());
   this._gantt = gantt;
 };
 
@@ -1484,6 +1485,24 @@ DvtGanttAnimationManager.prototype.prepareForAnimations = function()
 };
 
 /**
+ * Gets the current animation mode of the Gantt
+ * @return {string} the animation mode ('dataChange', 'onDisplay', or 'none')
+ */
+DvtGanttAnimationManager.prototype.getAnimationMode = function()
+{
+  return this._animationMode;
+};
+
+/**
+ * Sets the animation mode of the Gantt
+ * @param {string} animationMode The new animation mode
+ */
+DvtGanttAnimationManager.prototype.setAnimationMode = function(animationMode)
+{
+  this._animationMode = animationMode;
+};
+
+/**
  * Generates a playable object with specified easing animation.
  * @param {function} easing The easing function to use when animating.
  * @return {dvt.CustomAnimation} The playable.
@@ -1532,7 +1551,15 @@ DvtGanttAnimationManager.prototype.triggerAnimations = function()
     dvt.Playable.appendOnEnd(this._gantt.Animation, this._showDepLines, this);
 
     // Disable event listeners temporarily
-    this._gantt.EventManager.removeListeners(this._gantt);
+    // Only do this if DnD is not enabled, because
+    // 1) If animation is triggered by DnD, and listeners are removed, the dragEnd event will never fire.
+    // 2) If we try to limit this to explicit dragging cases, there'll be a slew of side effects/conflicts with pan drag events and DnD events
+    // 3) DnD with animation is not expected to be a common usecase, and it's only an "issue" if someone tries to scroll/zoom etc. in the half second animation is happening. Even so, nothing will break; animation will just look more chaotic.
+    if (!this._gantt.isDndEnabled())
+    {
+      this._gantt.EventManager.removeListeners(this._gantt);
+      this._bListenersRemoved = true;
+    }
 
     // Append callbacks to be executed at the end of animation
     for (var i = 0; i < this._onEnds.length; i++)
@@ -1552,7 +1579,7 @@ DvtGanttAnimationManager.prototype.triggerAnimations = function()
  */
 DvtGanttAnimationManager.prototype._hideDepLines = function()
 {
-  var deplines = this._gantt.getDependencyLines();
+  var deplines = this._gantt.getDependenciesContainer();
   if (deplines != null)
     dvt.ToolkitUtils.setAttrNullNS(deplines.getElem(), 'display', 'none');
 };
@@ -1563,7 +1590,7 @@ DvtGanttAnimationManager.prototype._hideDepLines = function()
  */
 DvtGanttAnimationManager.prototype._showDepLines = function()
 {
-  var deplines = this._gantt.getDependencyLines();
+  var deplines = this._gantt.getDependenciesContainer();
   if (deplines != null)
     dvt.ToolkitUtils.removeAttrNullNS(deplines.getElem(), 'display');
 };
@@ -1578,14 +1605,19 @@ DvtGanttAnimationManager.prototype._onAnimationEnd = function()
   if (!this._gantt.AnimationStopped)
     this._gantt.RenderComplete();
 
-  // Restore event listeners
-  this._gantt.EventManager.addListeners(this._gantt);
+  // Restore event listeners if removed
+  if (this._bListenersRemoved)
+    this._gantt.EventManager.addListeners(this._gantt);
 
   // Reset animation flags
   this._gantt.Animation = null;
   this._gantt.AnimationStopped = false;
 
   this._animationMode = 'none';
+
+  // Refresh the viewport to absolutely ensure the final state looks right
+  // This also ensures a clean slate, and clears out any hidden things from the DOM that were there just for animation
+  this._gantt.renderViewport();
 };
 
 /*
@@ -2116,6 +2148,1239 @@ DvtGanttAnimationManager.prototype.preAnimateRowLabelRemove = function(labelCont
 };
 
 /**
+ * Data view layout manager for dvt.Gantt
+ * @param {dvt.Gantt} gantt the Gantt component
+ * @class
+ * @constructor
+ */
+var DvtGanttDataLayoutManager = function(gantt)
+{
+  this.Init(gantt);
+};
+
+dvt.Obj.createSubclass(DvtGanttDataLayoutManager, dvt.Obj);
+
+/**
+ * Initialize the layout manager
+ * @param {dvt.Gantt} gantt the Gantt component
+ * @protected
+ */
+DvtGanttDataLayoutManager.prototype.Init = function(gantt)
+{
+  this._gantt = gantt;
+  this._ctx = gantt.getCtx();
+  this._rowObjs = [];
+  this._dependencyObjs = [];
+  this._contentHeight = 0;
+};
+
+/**
+ * Clears the row layout objects array
+ */
+DvtGanttDataLayoutManager.prototype.clear = function()
+{
+  this._rowObjs = [];
+  this._dependencyObjs = [];
+  this._contentHeight = 0;
+
+  this._prevScrollMinRowInd = null;
+  this._prevScrollMaxRowInd = null;
+};
+
+/**
+ * Gets the row layout objects
+ * @return {Array} an array of row layout objects
+ */
+DvtGanttDataLayoutManager.prototype.getRowObjs = function()
+{
+  return this._rowObjs;
+};
+
+/**
+ * Gets the dependency layout objects
+ * @return {Array} an array of dependency layout objects
+ */
+DvtGanttDataLayoutManager.prototype.getDependencyObjs = function()
+{
+  return this._dependencyObjs;
+};
+
+/**
+ * Gets the height of the entire Gantt content
+ * @return {number} the height of the gantt content area, including rows, gridlines, etc.
+ */
+DvtGanttDataLayoutManager.prototype.getContentHeight = function()
+{
+  return this._contentHeight;
+};
+
+/**
+ * Helper method to convert ISO date string to milliseconds.
+ * @param {string} date The query ISO date string
+ * @return {number} date in milliseconds
+ * @private
+ */
+DvtGanttDataLayoutManager.prototype._getTime = function(date)
+{
+  if (date == null || date === '')
+    return null;
+  var time = new Date(date).getTime();
+  return isNaN(time) ? null : time;
+};
+
+/**
+ * Determines whether given two tasks overlap chronologically
+ * @param {Object} taskObj1 task layout object
+ * @param {Object} taskObj2 task layout object
+ * @return {boolean} Whether the two tasks overlap chronologically
+ * @private
+ */
+DvtGanttDataLayoutManager.prototype._isOverlap = function(taskObj1, taskObj2)
+{
+  // Decision now is if task1 ends at the same time task2 starts, they are still not overlapping.
+  // If we decide that they should be considered overlapping, change the < to <=
+  return taskObj1['overallStartTime'] < taskObj2['overallEndTime'] && taskObj2['overallStartTime'] < taskObj1['overallEndTime'];
+};
+
+/**
+ * Calculates height values of the task and stores them in the given task layout object
+ * @param {Object} taskObj task layout object
+ * @private
+ */
+DvtGanttDataLayoutManager.prototype._calcTaskHeight = function(taskObj)
+{
+  var taskDefaults = this._gantt.getOptions()['taskDefaults'];
+  var taskProps = taskObj['data'];
+  var progressProps = taskProps['progress'];
+  var baselineProps = taskProps['baseline'];
+
+  var isBaselineMilestone = false;
+  var taskType = taskProps['type'] ? taskProps['type'] : taskDefaults['type'];
+
+  var taskHeight = taskProps['height'] != null ? taskProps['height'] : taskDefaults['height'];
+  var baselineHeight = 0;
+  if (baselineProps && !(taskObj['baselineStartTime'] == null && taskObj['baselineEndTime'] == null))
+  {
+    baselineHeight = baselineProps['height'] != null ? baselineProps['height'] : taskDefaults['baseline']['height'];
+    isBaselineMilestone = (taskType === 'milestone') || (taskType === 'auto' && (taskObj['baselineStartTime'] === taskObj['baselineEndTime']));
+    // If app didn't set a height value on the baseline or on the task defaults, then use the default height
+    if (baselineProps['height'] == null && taskDefaults['baseline']['height'] === DvtGanttStyleUtils.getBaselineTaskHeight())
+    {
+      baselineHeight = isBaselineMilestone ? DvtGanttStyleUtils.getActualTaskHeight() : taskDefaults['baseline']['height'];
+    }
+    // If app didn't set a height value on the task or on the task defaults, then use the default height for when the baseline is present
+    if (taskProps['height'] == null && taskDefaults['height'] === DvtGanttStyleUtils.getStandaloneTaskHeight())
+    {
+      taskHeight = DvtGanttStyleUtils.getActualTaskHeight();
+    }
+  }
+
+  taskObj['height'] = taskHeight;
+  taskObj['baselineHeight'] = baselineHeight;
+
+  var heightTaskToptoBaselineBottom = isBaselineMilestone ? DvtGanttStyleUtils.getMilestoneBaselineYOffset() + Math.max(baselineHeight, taskHeight) : taskHeight + baselineHeight;
+  taskObj['overallHeightNoProgress'] = heightTaskToptoBaselineBottom;
+  taskObj['overallHeight'] = heightTaskToptoBaselineBottom;
+  taskObj['progressHeight'] = 0;
+
+  var isTaskMilestone = (taskType === 'milestone') || (taskType === 'auto' && (taskObj['startTime'] === taskObj['endTime']) && taskObj['startTime'] != null);
+  if (!isTaskMilestone && progressProps && typeof progressProps['value'] === 'number')
+  {
+    var progressHeight = progressProps['height'] != null ? progressProps['height'] : taskDefaults['progress']['height'];
+    progressHeight = progressHeight === '100%' ? taskHeight : DvtGanttStyleUtils.getSizeInPixels(progressHeight, taskHeight);
+    taskObj['progressHeight'] = progressHeight;
+    if (taskHeight < progressHeight)
+    {
+      taskObj['overallHeight'] = Math.max(progressHeight, (progressHeight - taskHeight) / 2 + heightTaskToptoBaselineBottom);
+    }
+  }
+};
+
+/**
+ * Clears adjacency information of the given task layout object
+ * @param {Object} taskObj The task layout object
+ * @private
+ */
+DvtGanttDataLayoutManager.prototype._clearAdjacency = function(taskObj)
+{
+  taskObj['previousAdjacentTaskObj'] = null;
+  taskObj['nextAdjacentTaskObj'] = null;
+  taskObj['prevAdjMilestoneBaselineTaskObj'] = null;
+  taskObj['nextAdjMilestoneBaselineTaskObj'] = null;
+};
+
+/**
+ * Calculates the height of the row (and those of the tasks within it) and stores them in the given row layout object.
+ * @param {Object} rowObj The row layout object
+ * @param {number} horizontalLineHeightOffset The horizontal line height
+ * @private
+ */
+DvtGanttDataLayoutManager.prototype._calcRowTaskYHeight = function(rowObj, horizontalLineHeightOffset)
+{
+  var taskObjs = rowObj['taskObjs'];
+  var rowDefaultsHeight = this._gantt.getOptions()['rowDefaults']['height'];
+
+  // If row default height is set, fix the row heights, and mid align all tasks without staggering
+  if (rowDefaultsHeight != null)
+  {
+    rowObj['height'] = rowDefaultsHeight - horizontalLineHeightOffset;
+    var previousAdjacentTaskObj = null;
+    for (var i = 0; i < taskObjs.length; i++)
+    {
+      var taskObj = taskObjs[i];
+      this._calcTaskHeight(taskObj);
+      // Enforce integer px to ensure consistent rendering across browsers
+      taskObj['y'] = rowObj['y'] + Math.floor((rowDefaultsHeight - taskObj['overallHeight']) / 2);
+
+      this._clearAdjacency(taskObj);
+      if (previousAdjacentTaskObj)
+      {
+        taskObj['previousAdjacentTaskObj'] = previousAdjacentTaskObj;
+        previousAdjacentTaskObj['nextAdjacentTaskObj'] = taskObj;
+      }
+      previousAdjacentTaskObj = taskObj;
+    }
+  }
+  // Otherwise, assign the row height based on task heights and their overlap staggering
+  else
+  {
+    // If no tasks in the row, still show empty row with height as if a single task is there.
+    if (taskObjs.length === 0)
+    {
+      rowObj['height'] = DvtGanttStyleUtils.getStandaloneTaskHeight() + 2 * DvtGanttStyleUtils.getTaskPadding();
+      return;
+    }
+
+    var rowLevelRecentTaskObjs = [];
+    var rowLevelHeights = [];
+    for (var i = 0; i < taskObjs.length; i++)
+    {
+      var taskObj = taskObjs[i];
+      this._calcTaskHeight(taskObj);
+      var taskHeightWithPadding = taskObj['overallHeight'] + 2 * DvtGanttStyleUtils.getTaskPadding();
+      var rowLevel = 0;
+      var previousAdjacentTaskObj = null;
+
+      if (rowLevelRecentTaskObjs.length === 0)
+      {
+        rowLevelRecentTaskObjs.push(taskObj);
+        rowLevelHeights.push(taskHeightWithPadding);
+      }
+      else
+      {
+        var promote = true;
+        for (var j = 0; j < rowLevelRecentTaskObjs.length; j++)
+        {
+          if (this._isOverlap(taskObj, rowLevelRecentTaskObjs[j]))
+          {
+            rowLevel += 1;
+          }
+          else
+          {
+            previousAdjacentTaskObj = rowLevelRecentTaskObjs[j];
+            rowLevelRecentTaskObjs[j] = taskObj;
+            if (taskHeightWithPadding > rowLevelHeights[j])
+            {
+              rowLevelHeights[j] = taskHeightWithPadding;
+            }
+            promote = false;
+            break;
+          }
+        }
+        if (promote)
+        {
+          rowLevelRecentTaskObjs.push(taskObj);
+          rowLevelHeights.push(taskHeightWithPadding);
+        }
+      }
+      taskObj['rowLevel'] = rowLevel;
+
+      // Clear any old adjacency relationships
+      this._clearAdjacency(taskObj);
+
+      // Set new relationships
+      if (previousAdjacentTaskObj)
+      {
+        taskObj['previousAdjacentTaskObj'] = previousAdjacentTaskObj;
+        previousAdjacentTaskObj['nextAdjacentTaskObj'] = taskObj;
+      }
+    }
+
+    // Track row level baseline milestones (used later for label auto positioning, since baseline milestones can collide with labels)
+    // O(blgb + cn) algo to find baseline milestones between tasks. Most cases b is small (few baseline milestones) so essentially linear time
+    // TODO: Consider moving this calculation to when row rendering actually happens to alleviate layout calculation time
+    var rowLevelBaselineMilestonesObjs = [];
+    for (j = 0; j < rowLevelRecentTaskObjs.length; j++)
+    {
+      rowLevelBaselineMilestonesObjs.push([]);
+    }
+    for (i = 0; i < taskObjs.length; i++)
+    {
+      taskObj = taskObjs[i];
+      var taskDefaults = this._gantt.getOptions()['taskDefaults'];
+      var taskProps = taskObj['data'];
+      var taskType = taskProps['type'] ? taskProps['type'] : taskDefaults['type'];
+      var isBaselineMilestone = (taskType === 'milestone') || (taskType === 'auto' && (taskObj['baselineStartTime'] === taskObj['baselineEndTime']));
+      if (isBaselineMilestone)
+      {
+        rowLevelBaselineMilestonesObjs[taskObj['rowLevel']].push(taskObj);
+      }
+    }
+    for (j = 0; j < rowLevelRecentTaskObjs.length; j++)
+    {
+      rowLevelBaselineMilestonesObjs[j].sort(function(a, b) {
+        return b['baselineStartTime'] - a['baselineStartTime'] // descending order by time
+      });
+    }
+    for (i = 0; i < taskObjs.length; i++)
+    {
+      taskObj = taskObjs[i];
+      var baselineMilestoneObjs = rowLevelBaselineMilestonesObjs[taskObj['rowLevel']];
+      var numMilestoneObjs = baselineMilestoneObjs.length;
+      if (numMilestoneObjs > 0)
+      {
+        var taskObjWithBaseline = baselineMilestoneObjs[numMilestoneObjs - 1];
+        var baselineTime = taskObjWithBaseline['baselineStartTime'];
+        var currentTaskObjStartTime = taskObj['startTime'];
+        var currentTaskObjEndTime = taskObj['endTime'];
+        if (baselineTime < currentTaskObjStartTime)
+        {
+          taskObj['prevAdjMilestoneBaselineTaskObj'] = taskObjWithBaseline;
+          baselineMilestoneObjs.pop();
+        }
+        else if (baselineTime > currentTaskObjEndTime && taskObj['nextAdjMilestoneBaselineTaskObj'] == null)
+        {
+          taskObj['nextAdjMilestoneBaselineTaskObj'] = taskObjWithBaseline;
+        }
+        else if (baselineTime === currentTaskObjStartTime || baselineTime === currentTaskObjEndTime)
+        {
+          baselineMilestoneObjs.pop();
+        }
+      }
+    }
+
+    var rowLevelCumHeights = rowLevelHeights.reduce(function(r, v, i) {
+      r.push((r[i - 1] || 0) + v);
+      return r;
+    }, []);
+
+    for (var k = 0; k < taskObjs.length; k++)
+    {
+      var rowLevelY = 0;
+      taskObj = taskObjs[k];
+      if (taskObj['rowLevel'] > 0)
+      {
+        rowLevelY = rowLevelCumHeights[taskObj['rowLevel'] - 1];
+      }
+      taskObj['y'] = rowLevelY + rowObj['y'] + DvtGanttStyleUtils.getTaskPadding();
+    }
+    rowObj['height'] = rowLevelCumHeights[rowLevelCumHeights.length - 1];
+  }
+};
+
+/**
+ * Generate an array of row layout objects given the rows data array
+ * @param {Array} rows The rows data array
+ * @return {Array} The row layout objects array
+ * @private
+ */
+DvtGanttDataLayoutManager.prototype._generateRowObjs = function(rows)
+{
+  var options = this._gantt.getOptions();
+  var horizontalLineHeightOffset = 0;
+  if (this._gantt.isHorizontalGridlinesVisible())
+    horizontalLineHeightOffset = DvtGanttStyleUtils.getHorizontalGridlineWidth(options);
+
+  var rowObjs = [];
+  var top = 0;
+  for (var i = 0; i < rows.length; i++)
+  {
+    var row = rows[i];
+    var tasks = row['tasks'];
+    if (tasks != null)
+    {
+      var rowObj = {
+        'id': row['id'] != null ? row['id'] : (tasks.length > 0 ? tasks[0]['id'] : null),
+        'data': row,
+        'index': i,
+        'y': top,
+        'renderState': 'add'
+      };
+
+      var taskObjs = [];
+      for (var j = 0; j < tasks.length; j++)
+      {
+        var task = tasks[j];
+        var taskObj = {
+          'id': task['id'],
+          'data': task,
+          'startTime': (task['start'] && task['start'] !== '') ? this._getTime(task['start']) : this._getTime(task['end']),
+          'endTime': (task['end'] && task['end'] !== '') ? this._getTime(task['end']) : this._getTime(task['start']),
+          'rowObj': rowObj,
+          'renderState': 'add'
+        };
+
+        var overallStartTime = taskObj['startTime'];
+        var overallEndTime = taskObj['endTime'];
+        var baseline = task['baseline'];
+        if (baseline)
+        {
+          var baselineStartTime = (baseline['start'] && baseline['start'] !== '') ? this._getTime(baseline['start']) : this._getTime(baseline['end']);
+          var baselineEndTime = (baseline['end'] && baseline['end'] !== '') ? this._getTime(baseline['end']) : this._getTime(baseline['start']);
+          if (!(baselineStartTime == null && baselineEndTime == null))
+          {
+            taskObj['baselineStartTime'] = baselineStartTime;
+            taskObj['baselineEndTime'] = baselineEndTime;
+            if ((baselineStartTime < overallStartTime) || overallStartTime == null)
+            {
+              overallStartTime = baselineStartTime;
+            }
+            if ((baselineEndTime > overallEndTime) || overallEndTime == null)
+            {
+              overallEndTime = baselineEndTime;
+            }
+          }
+        }
+        if (overallStartTime != null && overallEndTime != null)
+        {
+          taskObj['overallStartTime'] = overallStartTime;
+          taskObj['overallEndTime'] = overallEndTime;
+          taskObjs.push(taskObj);
+        }
+      }
+      taskObjs.sort(function(a, b) {
+        return a['startTime'] - b['startTime'];
+      });
+      rowObj['taskObjs'] = taskObjs;
+      rowObjs.push(rowObj);
+
+      this._calcRowTaskYHeight(rowObj, horizontalLineHeightOffset);
+      top += rowObj['height'] + horizontalLineHeightOffset;
+    }
+  }
+
+  return rowObjs;
+};
+
+/**
+ * Generate an array of dependency layout objects given the dependency data array
+ * @param {Array} dependencies The dependency data array
+ * @param {*=} idTaskObjMap ojMap keyed by task ids valued by task layout objects
+ * @return {Array} The dependency layout objects array
+ * @private
+ */
+DvtGanttDataLayoutManager.prototype._generateDependencyObjs = function(dependencies, idTaskObjMap)
+{
+  var idTaskObjMap = idTaskObjMap || this._createIdObjMap(this._rowObjs, 'taskObjs');
+  var dependencyObjs = [];
+
+  for (var i = 0; i < dependencies.length; i++)
+  {
+    var dependency = dependencies[i];
+    var predecessorId = dependency['predecessorTaskId'];
+    var successorId = dependency['successorTaskId'];
+    var type = dependency['type'] == null ? DvtGanttDependencyNode.FINISH_START : dependency['type'];
+
+    var isPredecessorIdValid = predecessorId != null && idTaskObjMap.has(predecessorId);
+    var isSuccessorIdValid = successorId != null && idTaskObjMap.has(successorId);
+
+    // make sure all the mandatory fields are available and valid
+    if (DvtGanttDependencyNode._isValidType(type) &&
+        isPredecessorIdValid && isSuccessorIdValid &&
+        !dvt.Obj.compareValues(this._ctx, predecessorId, successorId))
+    {
+      var predecessorTaskObj = idTaskObjMap.get(predecessorId);
+      var successorTaskObj = idTaskObjMap.get(successorId);
+      var rowObj1 = predecessorTaskObj['rowObj'];
+      var rowObj2 = successorTaskObj['rowObj'];
+      var rowObjTop, rowObjBottom;
+      if (rowObj1['index'] <= rowObj2['index'])
+      {
+        rowObjTop = rowObj1;
+        rowObjBottom = rowObj2;
+      }
+      else
+      {
+        rowObjTop = rowObj2;
+        rowObjBottom = rowObj1;
+      }
+      var dependencyObj = {
+        'id': dependency['id'],
+        'data': dependency,
+        'index': i,
+        'type': type,
+        'predecessorTaskObj': predecessorTaskObj,
+        'successorTaskObj': successorTaskObj,
+        'rowObjTop': rowObjTop,
+        'rowObjBottom': rowObjBottom
+      };
+      dependencyObjs.push(dependencyObj);
+    }
+  }
+  // First sort dependency objs by row top indices, store that information,
+  // then finally sort by row bottom indices. This allows us to efficiently
+  // find out the set of dependencies crossing the current viewport later.
+  dependencyObjs.sort(function(a, b) {
+    return a['rowObjTop']['index'] - b['rowObjTop']['index'];
+  });
+  for (var j = 0; j < dependencyObjs.length - 1; j++)
+  {
+    dependencyObjs[j]['nextTopDependencyObj'] = dependencyObjs[j + 1];
+    dependencyObjs[j + 1]['prevTopDependencyObj'] = dependencyObjs[j];
+  }
+  dependencyObjs.sort(function(a, b) {
+    return a['rowObjBottom']['index'] - b['rowObjBottom']['index'];
+  });
+
+  return dependencyObjs;
+};
+
+/**
+ * Creates a map keyed by ids and valued by layout objects
+ * @param {Array} layoutObjects The array of layout objects
+ * @param {string=} subObjsProp Optional string to specify the layout objects array is a sub property of the given layoutObjects
+ * @return {*} An ojMap
+ * @private
+ */
+DvtGanttDataLayoutManager.prototype._createIdObjMap = function(layoutObjs, subObjsProp)
+{
+  var idObjMap = new this._ctx.ojMap();
+  for (var i = 0; i < layoutObjs.length; i++)
+  {
+    var layoutObj = layoutObjs[i];
+    if (subObjsProp)
+    {
+      var subLayoutObjs = layoutObj[subObjsProp];
+      for (var j = 0; j < subLayoutObjs.length; j++)
+      {
+        var subLayoutObj = subLayoutObjs[j];
+        idObjMap.set(subLayoutObj['id'], subLayoutObj);
+      }
+    }
+    else
+    {
+      idObjMap.set(layoutObj['id'], layoutObj);
+    }
+  }
+  return idObjMap;
+};
+
+/**
+ * Takes the set difference of the provided layoutObjs ids and ids in the provided ojMap
+ * and mark the resulting set of layout objects with the given renderState
+ * @param {Array} layoutObjs The array of layout objects
+ * @param {*} idObjMap The ojMap keyed by ids and valued by layout objects
+ * @param {string} renderState The render state to mark the resulting set of layout objects as
+ * @param {string=} subObjsProp Optional string to specify the layout objects array is a sub property of the given layoutObjects
+ * @private
+ */
+DvtGanttDataLayoutManager.prototype._setDifferenceRenderState = function(layoutObjs, idObjMap, renderState, subObjsProp)
+{
+  for (var i = 0; i < layoutObjs.length; i++)
+  {
+    var layoutObj = layoutObjs[i];
+    if (subObjsProp)
+    {
+      var subLayoutObjs = layoutObj[subObjsProp];
+      for (var j = 0; j < subLayoutObjs.length; j++)
+      {
+        var subLayoutObj = subLayoutObjs[j];
+        if (!idObjMap.has(subLayoutObj['id']))
+        {
+          subLayoutObj['renderState'] = renderState;
+          if (renderState === 'delete')
+          {
+            var subNode = subLayoutObj['node'];
+            if (subNode && subNode.getParent())
+            {
+              var parentRenderState = layoutObj['renderState'];
+              if (parentRenderState !== 'delete')
+              {
+                // explicitly call remove() on 'deleted' tasks that are in the DOM, and not in a 'deleted' row
+                subNode.remove();
+              }
+            }
+          }
+        }
+      }
+    }
+    else if (!idObjMap.has(layoutObj['id']))
+    {
+      layoutObj['renderState'] = renderState;
+      // explicitly call remove() on 'deleted' rows that are in the DOM
+      if (renderState === 'delete')
+      {
+        var node = layoutObj['node'];
+        if (node && node.getParent())
+        {
+          node.remove();
+        }
+      }
+    }
+  }
+};
+
+/**
+ * Takes the set intersection of the ids in the provided old ojMap and ids of the new layout objects
+ * and mark the resulting set of new layout objects with the appropriate render states ('exist' or 'migrate')
+ * @param {*} oldIdObjsMap The ojMap keyed by ids and valued by old layout objects
+ * @param {Array} newObjs The array of new layout objects
+ * @param {string=} subObjsProp Optional string to specify the layout objects array is a sub property of the given layoutObjects
+ * @private
+ */
+DvtGanttDataLayoutManager.prototype._setIntersectionRenderState = function(oldIdObjsMap, newObjs, subObjsProp)
+{
+  for (var i = 0; i < newObjs.length; i++)
+  {
+    var newObj = newObjs[i];
+    if (subObjsProp)
+    {
+      var newSubObjs = newObj[subObjsProp];
+      for (var j = 0; j < newSubObjs.length; j++)
+      {
+        var newSubObj = newSubObjs[j];
+        var entangledOldSubObj = oldIdObjsMap.get(newSubObj['id']);
+        if (entangledOldSubObj)
+        {
+          if (dvt.Obj.compareValues(this._ctx, entangledOldSubObj['rowObj']['id'], newObj['id']))
+          {
+            newSubObj['renderState'] = 'exist';
+          }
+          else
+          {
+            newSubObj['renderState'] = 'migrate';
+            var subNode = entangledOldSubObj['node'];
+            // If not animating and task node migrates, explicitly remove from the original row.
+            // Normally if the final new row exists, adding the task node to the new row would automatically remove it
+            // from the original row. However, the new row may not be in the DOM, so we should explicitly remove it.
+            if (subNode && subNode.getParent() && this._gantt.getAnimationManager().getAnimationMode() === 'none')
+            {
+              subNode.getRowNode().removeChild(subNode);
+            }
+          }
+          newSubObj['_oldObj'] = entangledOldSubObj;
+        }
+      }
+    }
+    else
+    {
+      var entangledOldObj = oldIdObjsMap.get(newObj['id']);
+      if (entangledOldObj)
+      {
+        newObj['renderState'] = 'exist';
+        newObj['_oldObj'] = entangledOldObj;
+      }
+    }
+  }
+};
+
+/**
+ * In the animation case, we need to be able to show progression of initial to final states.
+ * All initial state elements need to be present in the DOM, and all final state elements need to be rendered.
+ * Current rendering strategy is virtual row rendering only, so we'll only consider row layout objects:
+ * Relevant visible Initial --> Final state transitions involving rows:
+ *     - OLD rows in OLD viewport --> NEW rows (visible or not)
+ *     - OLD rows (visible or not) --> NEW rows in NEW viewport
+ *     - Task migration:
+ *         - Task in OLD viewport from OLD row --> NEW row (visible or not)
+ *             - Initial state elements: OLD row, OLD version of the NEW row
+ *             - Final state elements: NEW row
+ *         - Task from OLD row (visible or not) --> NEW row in NEW viewport
+ *             - Initial state elements: OLD row
+ *             - Final state elements: NEW row, NEW version of the OLD row
+ * NOTE: A side effect of this strategy is that although all initial and final states are shown
+ * and followed (which is arguably the most important), any elements that would normally
+ * pass through the active viewport during the animation transition are not shown because they won't be in the DOM.
+ * This generally shouldn't be noticeable unless there are really drastic data differences
+ * causing complex animations (at which point, application should probably just turn off animation because it gets confusing)
+ * A full analysis of what would pass through the viewport may also be expensive, so unless someone complains
+ * about this being a big deal, this strategy should be sufficient especially since all initial --> final states can be followed.
+ * @param {Array} newRowObjs
+ * @param {*} oldRowIdObjsMap
+ * @param {*} newRowIdObjsMap
+ * @param {*} oldTaskIdObjsMap
+ * @param {*} newTaskIdObjsMap
+ * @private
+ */
+DvtGanttDataLayoutManager.prototype._prepareAnimationDOM = function(newRowObjs, oldRowIdObjsMap, newRowIdObjsMap, oldTaskIdObjsMap, newTaskIdObjsMap)
+{
+  var animationManager = this._gantt.getAnimationManager();
+  var animationMode = animationManager.getAnimationMode();
+
+  // temporarily turn off animation
+  animationManager.setAnimationMode('none');
+
+  this._animationFinalStateRowObjs = new Set();
+  this._animationInitialStateRowObjsDelete = [];
+
+  // Find out what the final viewport is
+  // Need to temporarily update the contentHeight to the final state contentHeight so that the bounded scrollPosition can be calculated for the final state
+  var initialContentHeight = this._contentHeight;
+  var newLastRowObj = newRowObjs[newRowObjs.length - 1];
+  this._contentHeight = newLastRowObj['y'] + newLastRowObj['height'];
+  var finalTranslateY = this._gantt.scrollPositionToTranslateY(this._gantt.getOptions()['scrollPosition']);
+  var viewportYBounds = this._gantt.getViewportYBounds(finalTranslateY);
+  var yMin = viewportYBounds['yMin'];
+  var yMax = viewportYBounds['yMax'];
+  this._contentHeight = initialContentHeight;
+
+  var oldViewportRowIndRange = this._findRowIndRange(this._rowObjs, yMin, yMax);
+  var oldMinRowInd = oldViewportRowIndRange['minRowInd'];
+  var oldMaxRowInd = oldViewportRowIndRange['maxRowInd'];
+  for (var i = oldMinRowInd; i <= oldMaxRowInd; i++)
+  {
+    var oldRowObj = this._rowObjs[i];
+    if (oldRowObj)
+    {
+      // OLD row in the OLD viewport (initial state row layout object)
+      this.ensureInDOM(oldRowObj, 'row');
+      if (oldRowObj['renderState'] === 'delete' && oldRowObj['node'].getRowLabelContent())
+      {
+        // For old rows with labels in view getting deleted, we need to make sure their labels
+        // are in the DOM initially--we'll do this in renderViewport after the row axis is cleared
+        this._animationInitialStateRowObjsDelete.push(oldRowObj);
+      }
+
+      var entangledNewRowObj = newRowIdObjsMap.get(oldRowObj['id']);
+      if (entangledNewRowObj)
+      {
+        // NEW row corresponding to the OLD row in the OLD viewport (final state row layout object)
+        this._animationFinalStateRowObjs.add(entangledNewRowObj);
+      }
+
+      var oldTaskObjs = oldRowObj['taskObjs'];
+      for (var j = 0; j < oldTaskObjs.length; j++)
+      {
+        var oldTaskObj = oldTaskObjs[j];
+        var entangledNewTaskObj = newTaskIdObjsMap.get(oldTaskObj['id']);
+        if (entangledNewTaskObj)
+        {
+          var entangledTaskNewRowObj = entangledNewTaskObj['rowObj'];
+          if (!dvt.Obj.compareValues(this._ctx, entangledTaskNewRowObj['id'], oldRowObj['id']))
+          {
+            // Task in OLD viewport from OLD row --> NEW row (visible or not)
+            // Initial state row layout object: OLD version of the NEW row
+            var oldEntangledTaskNewRowObj = oldRowIdObjsMap.get(entangledTaskNewRowObj['id']);
+            if (oldEntangledTaskNewRowObj)
+            {
+              this.ensureInDOM(oldEntangledTaskNewRowObj, 'row');
+            }
+
+            // Final state layout object: NEW row
+            this._animationFinalStateRowObjs.add(entangledTaskNewRowObj);
+
+          }
+        }
+      }
+    }
+  }
+
+  var newViewportRowIndRange = this._findRowIndRange(newRowObjs, yMin, yMax);
+  var newMinRowInd = newViewportRowIndRange['minRowInd'];
+  var newMaxRowInd = newViewportRowIndRange['maxRowInd'];
+  for (var i = newMinRowInd; i <= newMaxRowInd; i++)
+  {
+    var newRowObj = newRowObjs[i];
+    if (newRowObj)
+    {
+      // NEW row in the NEW viewport (final state row layout object)
+      this._animationFinalStateRowObjs.add(newRowObj);
+
+      var entangledOldRowObj = oldRowIdObjsMap.get(newRowObj['id']);
+      if (entangledOldRowObj)
+      {
+        // OLD row corresponding to the NEW row in the NEW viewport (initial state layout object)
+        this.ensureInDOM(entangledOldRowObj, 'row');
+      }
+
+      var newTaskObjs = newRowObj['taskObjs'];
+      for (var j = 0; j < newTaskObjs.length; j++)
+      {
+        var newTaskObj = newTaskObjs[j];
+        var entangledOldTaskObj = oldTaskIdObjsMap.get(newTaskObj['id']);
+        if (entangledOldTaskObj)
+        {
+          var entangledTaskOldRowObj = entangledOldTaskObj['rowObj'];
+          if (!dvt.Obj.compareValues(this._ctx, entangledTaskOldRowObj['id'], newRowObj['id']))
+          {
+            // Task from OLD row (visible or not) --> NEW row in NEW viewport
+            // Initial state row layout object: OLD row
+            this.ensureInDOM(entangledTaskOldRowObj, 'row');
+
+            // Final state row layout object: NEW version of the OLD row
+            var newEntangledTaskOldRowObj = newRowIdObjsMap.get(entangledTaskOldRowObj['id']);
+            if (newEntangledTaskOldRowObj)
+            {
+              this._animationFinalStateRowObjs.add(newEntangledTaskOldRowObj);
+            }
+          }
+        }
+      }
+    }
+  }
+  // reapply animation mode
+  animationManager.setAnimationMode(animationMode);
+
+  // Set flag to not clear the DOM in renderViewport() because we need the old state present
+  this._keepOldViewport = true;
+};
+
+/**
+ * Given a set of new row layout objects, associate all the layout objects with their existing nodes and vice versa
+ * @param {Array} newRowObjs Array of new row objects
+ * @private
+ */
+DvtGanttDataLayoutManager.prototype._associateOldNodesAndNewLayoutObjs = function(newRowObjs)
+{
+  for (var i = 0; i < newRowObjs.length; i++)
+  {
+    var rowObj = newRowObjs[i];
+    var oldRowObj = rowObj['_oldObj'];
+    if (oldRowObj)
+    {
+      var rowNode = oldRowObj['node'];
+      if (rowNode)
+      {
+        rowObj['node'] = rowNode;
+        rowNode.setLayoutObject(rowObj);
+      }
+      rowObj['_oldObj'] = null;
+    }
+    var taskObjs = rowObj['taskObjs'];
+    for (var j = 0; j < taskObjs.length; j++)
+    {
+      var taskObj = taskObjs[j];
+      var oldTaskObj = taskObj['_oldObj'];
+      if (oldTaskObj)
+      {
+        var taskNode = oldTaskObj['node'];
+        if (taskNode)
+        {
+          taskObj['node'] = taskNode;
+          taskNode.setLayoutObject(taskObj);
+          if (taskNode.isSelected())
+          {
+            // remove selection effects/states before render
+            // selection will be reapplied if necessary in the next render call
+            taskNode.clearSelectionState();
+          }
+        }
+        taskObj['_oldObj'] = null;
+      }
+    }
+  }
+};
+
+/**
+ * Calculates layout information from data supplied in component options.
+ */
+DvtGanttDataLayoutManager.prototype.calcLayout = function()
+{
+  var options = this._gantt.getOptions();
+  var rows = options['rows'];
+  if (rows == null || rows.length === 0)
+    return;
+
+  if (this._gantt.isInitialRender() || !this._gantt.isLastRenderValid())
+  {
+    this._rowObjs = this._generateRowObjs(rows);
+  }
+  else
+  {
+    var newRowObjs = this._generateRowObjs(rows);
+    var oldRowIdObjsMap = this._createIdObjMap(this._rowObjs);
+    var newRowIdObjsMap = this._createIdObjMap(newRowObjs);
+    var oldTaskIdObjsMap = this._createIdObjMap(this._rowObjs, 'taskObjs');
+    var newTaskIdObjsMap = this._createIdObjMap(newRowObjs, 'taskObjs');
+
+    // Row Difference Analysis:
+    // Each old row object either continues to exist, or is removed
+    // Each new row object either existed, or is added
+    // In other words:
+    //     set(old) - set(new) are removed
+    //     set(new) - set(old) are added
+    //     intersect(set(old), set(new)) are updated
+    this._setDifferenceRenderState(this._rowObjs, newRowIdObjsMap, 'delete');
+    this._setDifferenceRenderState(newRowObjs, oldRowIdObjsMap, 'add');
+    this._setIntersectionRenderState(oldRowIdObjsMap, newRowObjs);
+
+    // Task Difference Analysis:
+    // Each old task object can be removed, updated in its row, or migrated to another row
+    // Each new task object can be added, updated in its row, or migrated to another row
+    // In other words:
+    //     set(old) - set(new) are removed
+    //     set(new) - set(old) are added
+    //     intersect(set(old), set(new)) are updated, either in its old row or migrated to another row
+    this._setDifferenceRenderState(this._rowObjs, newTaskIdObjsMap, 'delete', 'taskObjs');
+    this._setDifferenceRenderState(newRowObjs, oldTaskIdObjsMap, 'add', 'taskObjs');
+    this._setIntersectionRenderState(oldTaskIdObjsMap, newRowObjs, 'taskObjs');
+
+    // Ensure DOM is complete enough to be able to show progression of initial to final states.
+    if (this._gantt.getAnimationManager().getAnimationMode() !== 'none')
+    {
+      this._prepareAnimationDOM(newRowObjs, oldRowIdObjsMap, newRowIdObjsMap, oldTaskIdObjsMap, newTaskIdObjsMap);
+    }
+
+    // Associate nodes with the new layout objects. This is done after old nodes rendering in the animation case above
+    // so that the old nodes can use the old layout objects for rendering.
+    this._associateOldNodesAndNewLayoutObjs(newRowObjs);
+
+    this._rowObjs = newRowObjs;
+  }
+
+  if (this._rowObjs.length > 0)
+  {
+    var lastRowObj = this._rowObjs[this._rowObjs.length - 1];
+    this._contentHeight = lastRowObj['y'] + lastRowObj['height'];
+
+    var dependencies = options['dependencies'];
+    if (dependencies != null && dependencies.length > 0)
+    {
+      this._dependencyObjs = this._generateDependencyObjs(dependencies, newTaskIdObjsMap);
+    }
+  }
+};
+
+/**
+ * Renders the row represented by the given row layout object
+ * @param {Object} rowObj The row layout object
+ * @return {boolean} True if render is not skipped. False otherwise (e.g. if row is already in the DOM, then render is not called on it).
+ * @private
+ */
+DvtGanttDataLayoutManager.prototype._renderRowObj = function(rowObj)
+{
+  var databody = this._gantt.getDatabody();
+  var rowNode = rowObj['node'];
+  if (!this._keepOldViewport && rowNode && rowNode.getParent())
+  {
+    return false;
+  }
+
+  if (!rowNode)
+  {
+    rowNode = new DvtGanttRowNode(this._gantt);
+    rowNode.setLayoutObject(rowObj);
+    rowObj['node'] = rowNode;
+  }
+  if (this._gantt.isRowAxisEnabled())
+  {
+    var rowAxis = this._gantt.getRowAxis();
+    if (rowAxis)
+    {
+      var rowLabelContents = rowAxis.getRowLabelContents();
+      var rowIndex = rowObj['index'];
+      var rowLabelContent = rowLabelContents[rowIndex];
+      if (!rowLabelContent)
+      {
+        rowLabelContent = new DvtGanttRowLabelContent(rowAxis, rowAxis.getLabelContentType());
+        rowLabelContent.setRowIndex(rowIndex);
+        rowLabelContents[rowIndex] = rowLabelContent;
+      }
+      rowLabelContent.render(rowObj);
+      rowNode.setRowLabelContent(rowLabelContent);
+    }
+  }
+  rowNode.render(databody);
+  return true;
+};
+
+/**
+ * Renders the dependency represented by the given dependency layout object
+ * @param {Object} dependencyObj The dependency layout object
+ * @return {boolean} True if render is not skipped. False otherwise (e.g. if dependency is already in the DOM, then render is not called on it).
+ * @private
+ */
+DvtGanttDataLayoutManager.prototype._renderDependencyObj = function(dependencyObj)
+{
+  var dependenciesContainer = this._gantt.getDependenciesContainer();
+  var dependencyNode = dependencyObj['node'];
+  if (dependencyNode && dependencyNode.getParent())
+  {
+    return false;
+  }
+
+  // Render the associated rows if not already, then render the dependency
+  this.ensureInDOM(dependencyObj['rowObjTop'], 'row');
+  this.ensureInDOM(dependencyObj['rowObjBottom'], 'row');
+
+  if (!dependencyNode)
+  {
+    dependencyNode = new DvtGanttDependencyNode(this._gantt);
+    dependencyNode.setLayoutObject(dependencyObj);
+    dependencyObj['node'] = dependencyNode;
+  }
+  dependencyNode.render(dependenciesContainer);
+  return true;
+}
+
+/**
+ * Given a layout object, render it to the DOM if it doesn't exist already.
+ * @param {Object} obj Layout object
+ * @param {string} type The type of the layout object
+ */
+DvtGanttDataLayoutManager.prototype.ensureInDOM = function(obj, type)
+{
+  if (type === 'dependency')
+  {
+    this._renderDependencyObj(obj);
+    return;
+  }
+
+  var rowObj;
+  switch (type)
+  {
+    case 'task':
+      rowObj = obj['rowObj'];
+      break;
+    case 'row':
+      rowObj = obj;
+      break;
+    case 'rowLabel':
+      rowObj = obj;
+      break;
+  }
+  this._renderRowObj(rowObj);
+};
+
+/**
+ * Binary search for the index of the leftmost element that equals the target.
+ * If the target is not in the array, then the returned value is:
+ *     - the index of rightmost element less than the target if approximateMode is 'predecessor'
+ *     - the index of the leftmost element greater than the target if approximateMode is 'successor'
+ * Search is O(lgN), N being the length of the array.
+ * @param {Array} array The array
+ * @param {number} target The target
+ * @param {string} approximateMode The behavior if target is not in the array. 'predecessor' or 'successor'
+ * @param {string=} property The optinal property to access the element object from
+ * @param {string=} subProperty The optional subproperty to access the element object from
+ * @return {number} The leftmost index at which the target is found, or the index of the predecessor/successor element as per approximateMode param
+ * @private
+ */
+DvtGanttDataLayoutManager.prototype._binarySearchLeftMost = function(array, target, approximateMode, property, subProperty)
+{
+  if (array.length === 0)
+    return 0;
+
+  var L = 0;
+  var R = array.length;
+  while (L < R)
+  {
+    var m = Math.floor((L + R) / 2);
+    var value = property ? (subProperty ? array[m][property][subProperty] : array[m][property]) : array[m];
+    if (value < target)
+      L = m + 1;
+    else
+      R = m;
+  }
+  // If target is not in the array, then L at this point is the rank of the target in the array,
+  // i.e. the number of elements in the array that are less than the target.
+  if (L < array.length)
+  {
+    value = property ? (subProperty ? array[L][property][subProperty] : array[L][property]) : array[L];
+    if (value === target || approximateMode === 'successor')
+      return L;
+  }
+  // L - 1 would give the index of the rightmost element less than the target (predecessor)
+  return L > 0 ? L - 1 : 0;
+};
+
+/**
+ * Finds the minimum and maximum row indices relevant to the given viewport bounds
+ * @param {Array} rowObjs Array of row layout objects
+ * @param {number} yMin The minimum y bound
+ * @param {number} yMax The maximum y bound
+ * @return {Object} An object with the 'minRowInd' and 'maxRowInd' properties
+ * @private
+ */
+DvtGanttDataLayoutManager.prototype._findRowIndRange = function(rowObjs, yMin, yMax)
+{
+  // O(lgN) binary search for first row (intersecting yMin)
+  var minRowInd = this._binarySearchLeftMost(rowObjs, yMin, 'predecessor', 'y');
+  var maxRowInd = minRowInd;
+
+  // linear search from that row to search for last row (intersecting yMax)
+  for (var i = minRowInd; i < rowObjs.length; i++)
+  {
+    var rowObj = rowObjs[i];
+    if (rowObj['y'] <= yMax)
+    {
+      maxRowInd = i;
+    }
+    else
+    {
+      break;
+    }
+  }
+  return {'minRowInd': minRowInd, 'maxRowInd': maxRowInd};
+};
+
+/**
+ * Renders any visible items in the viewport as defined by the given min and max y bounds
+ * @param {number} yMin The minimum y bound
+ * @param {number} yMax The maximum y bound
+ * @param {boolean=} bFromScrolling Whether the viewport refresh is to due scrolling/panning
+ * @return {Object} Object of the shape {"minRowInd": index of first row in the viewport, "maxRowInd": index of last row in the viewport}. If there's no data, the values are -1.
+ */
+DvtGanttDataLayoutManager.prototype.renderViewport = function(yMin, yMax, bFromScrolling)
+{
+  var minRowInd = -1;
+  var maxRowInd = -1;
+  var databody = this._gantt.getDatabody();
+  if (databody)
+  {
+    // Clear previous viewport
+    // In the case of animation, we don't clear the viewport to keep old states around
+    // In the case of panning/scrolling, also don't clear the entire viewport straight up, as usually there's a lot that should be kept
+    //   - Also panning can be induced via DnD, and dragEnter/Leave events go haywire (especially on FF) if things keep disappearing and reappearing under the mouse
+    if (!this._keepOldViewport && !bFromScrolling)
+    {
+      databody.removeChildren();
+      this._gantt.getDatabodyBackground().removeChildren();
+    }
+    var rowAxis = this._gantt.getRowAxis();
+    if (this._gantt.isRowAxisEnabled() && rowAxis && !bFromScrolling)
+      rowAxis.removeChildren();
+    var dependenciesContainer = this._gantt.getDependenciesContainer();
+    if (dependenciesContainer)
+      dependenciesContainer.removeChildren();
+
+    var bRenderDependencies = this._dependencyObjs.length > 0;
+
+    var viewportRowIndRange = this._findRowIndRange(this._rowObjs, yMin, yMax);
+    minRowInd = viewportRowIndRange['minRowInd'];
+    maxRowInd = viewportRowIndRange['maxRowInd'];
+
+    // Panning/Scrolling case, viewport is not cleared.
+    // Remove just the rows that became out of view. New rows will be rendered in downstream logic.
+    // DO NOT do this for the case where the Gantt is panned during Drag and Drop on Mobile--for some
+    // mysterious reason, changing the DOM order underneath the touch point during Drag and Drop sometimes cause
+    // the dragOver event to stop firing, including the downstream drop/dragEnd events...but this is not an issue on Desktop browsers.
+    // The only side effect is a possible slight perf hit during drag on mobile, because the DOM may accumulate rows if
+    // someone tries to drag something for large distances, but subsequent interactions will cause a fresh viewport render
+    // that restores performance.
+    var eventManager = this._gantt.getEventManager();
+    if (!(dvt.TimeAxis.supportsTouch() && eventManager && eventManager.isDnDDragging()))
+    {
+      if (bFromScrolling && this._prevScrollMinRowInd != null)
+      {
+        var rowNode;
+        if (this._prevScrollMinRowInd < minRowInd) // Scrolled down, remove now hidden rows from the top
+        {
+          for (var k = this._prevScrollMinRowInd; k < minRowInd; k++)
+          {
+            rowNode = this._rowObjs[k]['node'];
+            if (rowNode)
+            {
+              rowNode.remove();
+            }
+          }
+        }
+        else if (maxRowInd < this._prevScrollMaxRowInd) // Scrolled up, remove now hidden rows from the bottom
+        {
+          for (var k = maxRowInd + 1; k <= this._prevScrollMaxRowInd; k++)
+          {
+            rowNode = this._rowObjs[k]['node'];
+            if (rowNode)
+            {
+              rowNode.remove();
+            }
+          }
+        }
+      }
+    }
+
+    // Animation case, render the curated particpating rows (which includes more than what's in the viewport)
+    // Also for old rows with row labels, restore them to DOM to show initial state (row axis DOM is cleared at this point)
+    if (this._keepOldViewport && this._animationFinalStateRowObjs)
+    {
+      this._animationFinalStateRowObjs.forEach(this._renderRowObj, this);
+      // Note that this._animationInitialStateRowObjsDelete is empty if there are no labels, so no need to null check rowAxis
+      for (var j = 0; j < this._animationInitialStateRowObjsDelete.length; j++)
+      {
+        var oldRowObjWithLabel = this._animationInitialStateRowObjsDelete[j];
+        var oldLabelContent = oldRowObjWithLabel['node'].getRowLabelContent();
+        rowAxis.addChild(oldLabelContent.getDisplayable());
+      }
+    }
+    else // Render viewport related rows
+    {
+      for (var i = minRowInd; i <= maxRowInd; i++)
+      {
+        var rowObj = this._rowObjs[i];
+        var isRenderNotSkipped = this._renderRowObj(rowObj);
+        // In the panning/scrolling case, most of the rows are kept in the viewport, and so tasks in those rows won't receive new render calls.
+        // However, normally dependencies are cleared from the task each new render, so we'll do that here before dependencies are rendered.
+        if (!isRenderNotSkipped && bFromScrolling && bRenderDependencies)
+        {
+          var taskObjs = rowObj['taskObjs'];
+          for (var _i = 0; _i < taskObjs.length; _i++)
+          {
+            taskObjs[_i]['node'].clearDependencies();
+          }
+        }
+      }
+    }
+
+    // Render viewport related dependencies
+    // O(N) search for dependencies overlapping the viewport (more precisely, O(lgN) search + O(2k) iterations),
+    // N being the total number of dependencies, and k being the number of dependencies from the top of the chart to the end of the viewport
+    // TODO: If need be in the future, implement (centered) interval tree data structure
+    // to perform O(lgN + K) search for the K dependencies overlapping the viewport
+    if (this._dependencyObjs.length > 0)
+    {
+      // Find first dependency from the top with bottom row below upper viewport bound
+      var referenceDependencyInd = this._binarySearchLeftMost(this._dependencyObjs, minRowInd, 'successor', 'rowObjBottom', 'index');
+      var referenceDependencyObj = this._dependencyObjs[referenceDependencyInd];
+      var referencePrevTopDependencyObj = referenceDependencyObj['prevTopDependencyObj'];
+
+      // All subsequent dependencies with top row below the reference dep's top row but above the lower viewport bound must be visible.
+      // Any dependencies with top row below the lower viewport bound are definitely not visible and so not considered.
+      while (referenceDependencyObj && referenceDependencyObj['rowObjTop']['index'] <= maxRowInd)
+      {
+        this._renderDependencyObj(referenceDependencyObj);
+        referenceDependencyObj = referenceDependencyObj['nextTopDependencyObj'];
+      }
+      // The only lines we may have missed so far are ones with bottom row >= reference bottom row, but have top row < reference top row.
+      // Iterate up from the reference dependency to find any lines we missed
+      while (referencePrevTopDependencyObj)
+      {
+        var rowBottomInd = referencePrevTopDependencyObj['rowObjBottom']['index']
+        if (rowBottomInd >= minRowInd)
+        {
+          this._renderDependencyObj(referencePrevTopDependencyObj);
+        }
+        referencePrevTopDependencyObj = referencePrevTopDependencyObj['prevTopDependencyObj'];
+      }
+    }
+
+    if (bFromScrolling)
+    {
+      // If scrolling, save viewport for subsequent scrolling viewport comparisons
+      this._prevScrollMinRowInd = minRowInd;
+      this._prevScrollMaxRowInd = maxRowInd;
+    }
+    else
+    {
+      // If not scrolling, clear out the cached viewport to ensure full subsequent viewport rerenders
+      this._prevScrollMinRowInd = null;
+      this._prevScrollMaxRowInd = null;
+    }
+  }
+  else
+  {
+    this._prevScrollMinRowInd = null;
+    this._prevScrollMaxRowInd = null;
+  }
+
+  // Subsequent viewport renders don't induce animation
+  this._keepOldViewport = false;
+  this._animationFinalStateRowObjs = null;
+  this._animationInitialStateRowObjsDelete = [];
+
+  return { "minRowInd": minRowInd, "maxRowInd": maxRowInd };
+};
+
+/**
  * Gantt component.  The component should never be instantiated directly.  Use the newInstance function instead
  * @param {dvt.Context} context The rendering context.
  * @param {function} callback The function that should be called to dispatch component events.
@@ -2124,7 +3389,7 @@ DvtGanttAnimationManager.prototype.preAnimateRowLabelRemove = function(labelCont
  * @constructor
  * @extends {dvt.TimeComponent}
  */
-dvt.Gantt = function(context, callback, callbackObj) 
+dvt.Gantt = function(context, callback, callbackObj)
 {
   this.Init(context, callback, callbackObj);
 };
@@ -2138,7 +3403,7 @@ dvt.Obj.createSubclass(dvt.Gantt, dvt.TimeComponent);
  * @param {object} callbackObj The optional object instance on which the callback function is defined.
  * @return {dvt.Gantt}
  */
-dvt.Gantt.newInstance = function(context, callback, callbackObj) 
+dvt.Gantt.newInstance = function(context, callback, callbackObj)
 {
   return new dvt.Gantt(context, callback, callbackObj);
 };
@@ -2150,7 +3415,7 @@ dvt.Gantt.newInstance = function(context, callback, callbackObj)
  * @param {object} callbackObj The optional object instance on which the callback function is defined.
  * @protected
  */
-dvt.Gantt.prototype.Init = function(context, callback, callbackObj) 
+dvt.Gantt.prototype.Init = function(context, callback, callbackObj)
 {
   this._isInitialRender = true;
   dvt.Gantt.superclass.Init.call(this, context, callback, callbackObj);
@@ -2173,7 +3438,7 @@ dvt.Gantt.prototype.Init = function(context, callback, callbackObj)
 /**
  * @override
  */
-dvt.Gantt.prototype.SetOptions = function(options) 
+dvt.Gantt.prototype.SetOptions = function(options)
 {
   // As of 5.0.0 default values are introduced. Some defaults are null, but dvt.JsonUtils.merge() assumes null values are intentional.
   // Explicitly set null values to undefined so that merging with our internal defaults work properly:
@@ -2183,7 +3448,7 @@ dvt.Gantt.prototype.SetOptions = function(options)
     options['taskDefaults']['baseline'] = {};
   options['taskDefaults']['height'] = options['taskDefaults']['height'] == null ? undefined : options['taskDefaults']['height'];
   options['taskDefaults']['baseline']['height'] = options['taskDefaults']['baseline']['height'] == null ? undefined : options['taskDefaults']['baseline']['height'];
-  
+
   dvt.Gantt.superclass.SetOptions.call(this, options);
 
   //initial setup
@@ -2229,7 +3494,7 @@ dvt.Gantt.prototype.SetOptions = function(options)
 /**
  * @return {DvtGanttAutomation} the automation object
  */
-dvt.Gantt.prototype.getAutomation = function() 
+dvt.Gantt.prototype.getAutomation = function()
 {
   if (!this.Automation)
     this.Automation = new DvtGanttAutomation(this);
@@ -2343,19 +3608,19 @@ dvt.Gantt.prototype._bundleTimeAxisOptions = function(options, axis)
  * @return {dvt.Dimension} The preferred dimensions.
  * @private
  */
-dvt.Gantt.prototype._getPreferredSize = function(width, height) 
+dvt.Gantt.prototype._getPreferredSize = function(width, height)
 {
   return new dvt.Dimension(width, height);
 };
 
 /**
- * Render the component
- * @param {object} list of options
+ * Renders the component
+ * @param {object} options options object
  * @param {number} width the width of the component
  * @param {number} height the height of the component
  * @override
  */
-dvt.Gantt.prototype.render = function(options, width, height) 
+dvt.Gantt.prototype.render = function(options, width, height)
 {
   // Reset cache
   this.getCache().clearCache();
@@ -2379,6 +3644,14 @@ dvt.Gantt.prototype.render = function(options, width, height)
   {
     this.removeAriaLiveRegion();
   }
+
+  this._animationManager = new DvtGanttAnimationManager(this);
+  this._animationManager.prepareForAnimations();
+
+  // Calculate certain layout information before any actual rendering
+  if (!this._dataLayoutManager)
+    this._dataLayoutManager = new DvtGanttDataLayoutManager(this);
+  this._dataLayoutManager.calcLayout();
 
   DvtGanttRenderer.renderRowAxis(this, this.getParent());
 
@@ -2444,9 +3717,6 @@ dvt.Gantt.prototype.render = function(options, width, height)
   if (this._minorAxis && this._minorAxis.hasValidOptions())
     this.prepareViewportLength();
 
-  this._animationManager = new DvtGanttAnimationManager(this);
-  this._animationManager.prepareForAnimations();
-
   DvtGanttRenderer.renderGantt(this);
 
   this._animationManager.triggerAnimations();
@@ -2470,6 +3740,49 @@ dvt.Gantt.prototype.getAnimationManager = function()
 };
 
 /**
+ * Gets the data layout manager.
+ * @return {DvtGanttDataLayoutManager} the data layout manager
+ */
+dvt.Gantt.prototype.getDataLayoutManager = function()
+{
+  return this._dataLayoutManager;
+};
+
+/**
+ * Gets the current viewport y bounds, or the y bounds associated with the given translateY
+ * @param {number=} translateY Optional translateY to use to convert to y bounds. Otherwise the current translateY is used.
+ * @return {Object} An object with yMin and yMax properties
+ */
+dvt.Gantt.prototype.getViewportYBounds = function(translateY)
+{
+  var viewportHeight = this._backgroundHeight - this.getAxesHeight();
+  var yMin = 0;
+  if (translateY != null)
+  {
+    yMin = this._translateYToScrollPositionY(translateY);
+  }
+  else if (this._databody)
+  {
+    yMin = this._translateYToScrollPositionY(this._databody.getTranslateY());
+  }
+  var yMax = yMin + viewportHeight;
+  return {'yMin': yMin, 'yMax': yMax};
+};
+
+/**
+ * Renders the current viewport.
+ * @param {boolean=} bFromScrolling Whether this viewport refresh is to due scrolling/panning
+ * @return {Object} Object of the shape {"mixRowInd": index of first row in the viewport, "maxRowInd": index of last row in the viewport}
+ */
+dvt.Gantt.prototype.renderViewport = function(bFromScrolling)
+{
+  var viewportYBounds = this.getViewportYBounds();
+  var yMin = viewportYBounds['yMin'];
+  var yMax = viewportYBounds['yMax'];
+  return this._dataLayoutManager.renderViewport(yMin, yMax, bFromScrolling);
+};
+
+/**
  * Whether this is initial render.
  * @return {boolean} whether this is initial render.
  */
@@ -2479,12 +3792,33 @@ dvt.Gantt.prototype.isInitialRender = function()
 };
 
 /**
+ * Whether the previous render (if initial render, then false) resulted in a valid render,
+ * e.g. if the gantt didn't have valid options in the previous render and resulted in "Invalid Data" being rendered,
+ * then the previous render is considered invalid.
+ * @return {boolean} whether the previous render (false for initial render) resulted in a valid render
+ */
+dvt.Gantt.prototype.isLastRenderValid = function()
+{
+  return this._isLastRenderValid;
+};
+
+/**
+ * Sets the whether last render was valid.
+ * @param {boolean} isLastRenderValid
+ */
+dvt.Gantt.prototype.setIsLastRenderValid = function(isLastRenderValid)
+{
+  this._isLastRenderValid = isLastRenderValid;
+};
+
+/**
  * Whether drag and drop is enabled on the component.
  * @return {boolean} whether drag and drop is enabled
  */
 dvt.Gantt.prototype.isDndEnabled = function()
 {
-  return this.getEventManager().isDndSupported() && this.getOptions()['dnd'];
+  var dndOptions = this.getOptions()['dnd'];
+  return this.getEventManager().isDndSupported() && dndOptions && dndOptions['move'] && dndOptions['move']['tasks'] === 'enabled';
 };
 
 /**
@@ -2541,6 +3875,105 @@ dvt.Gantt.prototype.removeAriaLiveRegion = function()
 };
 
 /**
+ * Scrolls the gantt according to the supplied scroll position object.
+ * Mainly called by framework when writeback happens to the scroll position option.
+ * @param {Object} scrollPosition The scroll position object
+ */
+dvt.Gantt.prototype.scroll = function(scrollPosition)
+{
+  // Only scroll if the databody exists -- otherwise there's nothing to scroll
+  if (this.getDatabody())
+  {
+    var translateY = this.scrollPositionToTranslateY(scrollPosition);
+
+    if (this.isContentDirScrollbarOn() && this.contentDirScrollbar)
+      this.contentDirScrollbar.setViewportRange(translateY - this.getDatabodyHeight(), translateY);
+
+    this.setDataRegionTranslateY(translateY);
+  }
+};
+
+/**
+ * Converts scroll position object to data region translate y
+ * @param {Object} scrollPosition The scroll position object
+ * @return {number} The data region translate y
+ */
+dvt.Gantt.prototype.scrollPositionToTranslateY = function(scrollPosition)
+{
+  var rowIndex = scrollPosition['rowIndex'];
+  var rowObjs = this.getRowLayoutObjs();
+  var scrollPositionY = 0;
+  if (rowIndex != null)
+  {
+    rowIndex = Math.min(Math.max(0, rowIndex), rowObjs.length - 1);
+    var rowY = rowObjs[rowIndex];
+    var offsetY = scrollPosition['offsetY'] != null ? scrollPosition['offsetY'] : 0;
+    scrollPositionY = rowY['y'] + offsetY;
+  }
+  else if (scrollPosition['y'] != null)
+  {
+    scrollPositionY = scrollPosition['y'];
+  }
+  return this._scrollPositionYToTranslateY(scrollPositionY);
+};
+
+/**
+ * Converts scroll position y to data region translate y
+ * @param {number} scrollPositionY The scroll position y
+ * @return {number} The data region translate y
+ * @private
+ */
+dvt.Gantt.prototype._scrollPositionYToTranslateY = function(scrollPositionY)
+{
+  return this.getBoundedContentTranslateY(this.getDatabodyStart() - scrollPositionY);
+};
+
+/**
+ * Converts data region translate y to scroll position y
+ * @param {number} translateY The data region translate y
+ * @return {number} The scroll position y
+ * @private
+ */
+dvt.Gantt.prototype._translateYToScrollPositionY = function(translateY)
+{
+  return this._databody ? -(translateY - this.getDatabodyStart()) : 0;
+};
+
+/**
+ * Sets the the y translate of data related containers
+ * @param {number} translateY The y translate to set
+ * @param {boolean=} bFromScrolling Whether this method is called due to scrolling/panning
+ */
+dvt.Gantt.prototype.setDataRegionTranslateY = function(translateY, bFromScrolling)
+{
+  // Translate relevant data regions
+  if (this._databody)
+    this._databody.setTranslateY(translateY);
+  if (this._databodyBackground)
+    this._databodyBackground.setTranslateY(translateY);
+  if (this.isDndEnabled() && this._dndArtifactsContainer)
+    this._dndArtifactsContainer.setTranslateY(translateY);
+  if (this.isRowAxisEnabled())
+    this.getRowAxis().setTranslateY(translateY + this.getStartYOffset());
+  if (this._dependenciesContainer)
+    this._dependenciesContainer.setTranslateY(translateY);
+
+  // render viewport
+  var viewportRowIndBounds = this.renderViewport(bFromScrolling);
+
+  // Fire scroll position change event
+  var y = this._translateYToScrollPositionY(translateY);
+  var rowIndex = viewportRowIndBounds['minRowInd'];
+  if (rowIndex !== -1)
+  {
+    var rowObj = this.getRowLayoutObjs()[rowIndex];
+    var offsetY = y - rowObj['y'];
+    var evt = dvt.EventFactory.newGanttScrollPositionChangeEvent(y, rowIndex, offsetY);
+    this.dispatchEvent(evt);
+  }
+};
+
+/**
  * Adjusts viewport based on scrollbar event.
  * @param {object} event
  * @param {object} component The component that is the source of the event, if available.
@@ -2551,11 +3984,7 @@ dvt.Gantt.prototype.processScrollbarEvent = function(event, component)
   if (component == this.contentDirScrollbar)
   {
     var newMax = event.getNewMax();
-    this._databody.setTranslateY(newMax);
-    if (this.isRowAxisEnabled())
-      this.getRowAxis().setTranslateY(newMax);
-    if (this._deplines != null)
-      this._deplines.setTranslateY(newMax);
+    this.setDataRegionTranslateY(newMax, true);
   }
 };
 
@@ -2566,7 +3995,9 @@ dvt.Gantt.prototype.processScrollbarEvent = function(event, component)
  */
 dvt.Gantt.prototype.createViewportChangeEvent = function()
 {
-  return dvt.EventFactory.newGanttViewportChangeEvent(this._viewStartTime, this._viewEndTime, this._slaveAxis ? this._slaveAxis.getScale() : null, this.getTimeAxis().getScale());
+  var majorAxisScale = this._majorAxis ? this._majorAxis.getScale() : null;
+  var minorAxisScale = this._minorAxis ? this._minorAxis.getScale() : null;
+  return dvt.EventFactory.newGanttViewportChangeEvent(this._viewStartTime, this._viewEndTime, majorAxisScale, minorAxisScale);
 };
 
 /**
@@ -2599,14 +4030,11 @@ dvt.Gantt.prototype._handleResize = function(width, height)
     if (this.isRowAxisEnabled())
       this.getRowAxis().adjustPosition();
 
-    this.updateRows();
-
-    DvtGanttRenderer._renderDependencies(this);
-
     var timeZoomCanvas = this.getTimeZoomCanvas();
     DvtGanttRenderer._renderAxes(this, timeZoomCanvas);
     DvtGanttRenderer._renderDatabodyBackground(this);
     DvtGanttRenderer._renderVerticalGridline(this, timeZoomCanvas);
+    DvtGanttRenderer._renderData(this);
     DvtGanttRenderer._renderReferenceObjects(this, timeZoomCanvas);
 
     DvtGanttRenderer._renderZoomControls(this);
@@ -2648,10 +4076,10 @@ dvt.Gantt.prototype.applyStyleValues = function()
     this._backgroundHeight = this._backgroundHeight - dvt.CSSStyle.toNumber(this.timeDirScrollbarStyles.getHeight()) - 3 * scrollbarPadding;
   if (this.isContentDirScrollbarOn())
   {
-    var widthOffset = 3 * scrollbarPadding;
-    this._backgroundWidth = this._backgroundWidth - dvt.CSSStyle.toNumber(this.contentDirScrollbarStyles.getWidth()) - widthOffset;
+    var widthOffset = 3 * scrollbarPadding + dvt.CSSStyle.toNumber(this.contentDirScrollbarStyles.getWidth());
+    this._backgroundWidth = this._backgroundWidth - widthOffset;
     if (isRTL)
-      this._widthOffset = widthOffset - this._borderWidth;
+      this._widthOffset = widthOffset;
   }
 
   this.setStartXOffset(this._widthOffset + this._borderWidth);
@@ -2663,30 +4091,11 @@ dvt.Gantt.prototype.applyStyleValues = function()
 };
 
 /**
- * Updates each row due to component resize
+ * Gets the component stroke width
  */
-dvt.Gantt.prototype.updateRows = function()
+dvt.Gantt.prototype.getBorderWidth = function()
 {
-  var rows = this._rows;
-  if (rows != null && rows.length > 0)
-  {
-    // Cache the base task label style dvt.CSSStyle object; it's expensive to instantiate one
-    // each time we render a task label.
-    this.getCache().putToCache('baseTaskLabelCSSStyle', DvtGanttStyleUtils.getTaskLabelStyle(this.Options));
-
-    // update databody
-    DvtGanttRenderer._renderDatabody(this);
-
-    // update the tasks on each row
-    for (var i = 0; i < rows.length; i++)
-    {
-      rows[i].render(this.getDatabody());
-    }
-  }
-  else
-  {
-    DvtGanttRenderer._renderEmptyText(this, true);
-  }
+  return this._borderWidth;
 };
 
 /**
@@ -2808,10 +4217,9 @@ dvt.Gantt.prototype.handleZoomWheel = function(newLength, time, compLoc, trigger
 
   var timeZoomCanvas = this.getTimeZoomCanvas();
   DvtGanttRenderer._renderAxes(this, timeZoomCanvas);
-  this.updateRows();
   DvtGanttRenderer._renderDatabodyBackground(this);
-  DvtGanttRenderer._renderDependencies(this);
   DvtGanttRenderer._renderVerticalGridline(this, timeZoomCanvas);
+  DvtGanttRenderer._renderData(this)
   DvtGanttRenderer._renderReferenceObjects(this, timeZoomCanvas);
   if (this.isDndEnabled())
       DvtGanttRenderer._renderDnDArtifactsContainer(this, timeZoomCanvas);
@@ -2824,7 +4232,7 @@ dvt.Gantt.prototype.handleZoomWheel = function(newLength, time, compLoc, trigger
 };
 
 /**
- * Retrieve the minor axis. If one is not specified, use the major axis.
+ * Retrieve the major axis.
  * @return {dvt.TimeAxis} the minor axis
  */
 dvt.Gantt.prototype.getMajorAxis = function()
@@ -2833,7 +4241,7 @@ dvt.Gantt.prototype.getMajorAxis = function()
 };
 
 /**
- * Retrieve the minor axis. If one is not specified, use the major axis.
+ * Retrieve the minor axis.
  * @return {dvt.TimeAxis} the minor axis
  */
 dvt.Gantt.prototype.getMinorAxis = function()
@@ -2989,7 +4397,7 @@ dvt.Gantt.prototype.getDnDArtifactsContainer = function()
   return this._dndArtifactsContainer;
 };
 
-/** 
+/**
  * Sets the container for DnD artifacts. This container should be layered on top of all chart area elements.
  * @param {dvt.Container} container. The container for DnD artifacts.
  */
@@ -3030,12 +4438,21 @@ dvt.Gantt.prototype.getRowsData = function()
 };
 
 /**
- * Gets the rows node
- * @return {Array} an array of DvtGanttRowNode
+ * Gets the row layout objects
+ * @return {Array} an array of row layout objects
  */
-dvt.Gantt.prototype.getRows = function()
+dvt.Gantt.prototype.getRowLayoutObjs = function()
 {
-  return this._rows;
+  return this._dataLayoutManager.getRowObjs();
+};
+
+/**
+ * Gets the dependency layout objects
+ * @return {Array} an array of row layout objects
+ */
+dvt.Gantt.prototype.getDependencyLayoutObjs = function()
+{
+  return this._dataLayoutManager.getDependencyObjs();
 };
 
 /**
@@ -3076,11 +4493,12 @@ dvt.Gantt.prototype.getAxisPosition = function()
 
 /**
  * Gets the axis height
+ * @param {object} axisOptions The axis options
  * @return {number} the axis height
  */
-dvt.Gantt.prototype.getAxisHeight = function()
+dvt.Gantt.prototype.getAxisHeight = function(axisOptions)
 {
-  return DvtGanttStyleUtils.getTimeAxisHeight();
+  return DvtGanttStyleUtils.getTimeAxisHeight(axisOptions);
 };
 
 /**
@@ -3135,16 +4553,7 @@ dvt.Gantt.prototype.isVerticalGridlinesVisible = function()
  */
 dvt.Gantt.prototype.getContentHeight = function()
 {
-  return this._contentHeight;
-};
-
-/**
- * Sets the height of the entire Gantt content
- * @param {number} height the height of the entire Gantt including all rows.
- */
-dvt.Gantt.prototype.setContentHeight = function(height)
-{
-  this._contentHeight = height;
+  return this._dataLayoutManager.getContentHeight();
 };
 
 /**
@@ -3358,20 +4767,10 @@ dvt.Gantt.prototype.panBy = function(deltaX, deltaY, diagonal)
   {
     var newTranslateY = this.getBoundedContentTranslateY(this._databody.getTranslateY() - deltaY);
 
-    this._databody.setTranslateY(newTranslateY);
-    this._databodyBackground.setTranslateY(newTranslateY);
-
-    if (this.isDndEnabled())
-      this._dndArtifactsContainer.setTranslateY(newTranslateY);
-
-    if (this.isRowAxisEnabled())
-      this.getRowAxis().setTranslateY(newTranslateY);
-
     if (this.isContentDirScrollbarOn())
       this.contentDirScrollbar.setViewportRange(newTranslateY - this.getDatabodyHeight(), newTranslateY);
 
-    if (this._deplines != null)
-      this._deplines.setTranslateY(newTranslateY);
+    this.setDataRegionTranslateY(newTranslateY, true);
   }
 
   if (this.isTimeDirScrollbarOn() && this.timeDirScrollbar)
@@ -3442,7 +4841,7 @@ dvt.Gantt.prototype.setTaskBrightness = function(task, dim)
 dvt.Gantt.prototype.findTaskNodeById = function(id)
 {
   var ctx = this.getCtx();
-  var rows = this._rows;
+  var rows = this.getRows();
   if (rows)
   {
     for (var i = 0; i < rows.length; i++)
@@ -3478,7 +4877,7 @@ dvt.Gantt.prototype.hasValidOptions = function()
 /**
  * @override
  */
-dvt.Gantt.prototype.GetComponentDescription = function() 
+dvt.Gantt.prototype.GetComponentDescription = function()
 {
   return dvt.Bundle.getTranslation(this.getOptions(), 'componentName', dvt.Bundle.UTIL_PREFIX, 'GANTT');
 };
@@ -3488,7 +4887,7 @@ dvt.Gantt.prototype.GetComponentDescription = function()
  * Gets selection handler
  * @return {dvt.SelectionHandler} selection handler
  */
-dvt.Gantt.prototype.getSelectionHandler = function() 
+dvt.Gantt.prototype.getSelectionHandler = function()
 {
   return this._selectionHandler;
 };
@@ -3497,7 +4896,7 @@ dvt.Gantt.prototype.getSelectionHandler = function()
  * Returns whether selecton is supported on the Gantt.
  * @return {boolean} True if selection is turned on and false otherwise.
  */
-dvt.Gantt.prototype.isSelectionSupported = function() 
+dvt.Gantt.prototype.isSelectionSupported = function()
 {
   return (this._selectionHandler ? true : false);
 };
@@ -3506,7 +4905,7 @@ dvt.Gantt.prototype.isSelectionSupported = function()
  * Sets the selection mode for the component
  * @param {string} selectionMode valid values dvt.SelectionHandler.TYPE_SINGLE, dvt.SelectionHandler.TYPE_MULTIPLE or null
  */
-dvt.Gantt.prototype.setSelectionMode = function(selectionMode) 
+dvt.Gantt.prototype.setSelectionMode = function(selectionMode)
 {
   if (selectionMode == 'single')
     this._selectionHandler = new dvt.SelectionHandler(this.getCtx(), dvt.SelectionHandler.TYPE_SINGLE);
@@ -3520,31 +4919,53 @@ dvt.Gantt.prototype.setSelectionMode = function(selectionMode)
 };
 
 /**
+ * @override
+ */
+dvt.Gantt.prototype.select = function(selection)
+{
+  if (this.isLastRenderValid())
+  {
+    // Update the options
+    this.Options['selection'] = dvt.JsonUtils.clone(selection);
+
+    // Perform the selection
+    this._processInitialSelections();
+  }
+};
+
+/**
  * Update the selection handler with the initial selections.
  * @private
  */
-dvt.Gantt.prototype._processInitialSelections = function() 
+dvt.Gantt.prototype._processInitialSelections = function()
 {
-  if (this._rows == null || this._rows.length == 0)
-    return;
-
   var selection = this.Options['selection'];
-  if (!selection)
+  if (selection == null || selection.length === 0)
     return;
 
   if (this.isSelectionSupported())
   {
+    var keySet = new this._context.KeySetImpl(selection);
+    var rowObjs = this.getRowLayoutObjs();
     var targets = [];
-    for (var i = 0; i < this._rows.length; i++)
+    for (var i = 0; i < rowObjs.length; i++)
     {
-      var tasks = this._rows[i].getTasks();
-      if (tasks != null && tasks.length > 0)
+      var rowObj = rowObjs[i];
+      var taskObjs = rowObj['taskObjs'];
+      for (var j = 0; j < taskObjs.length; j++)
       {
-        for (var j = 0; j < tasks.length; j++)
-          targets.push(tasks[j]);
+        var taskObj = taskObjs[j];
+        if (keySet.has(taskObj['id']))
+        {
+          // Ensure taskNode exists by explicitly rendering the task into DOM, even if it's not visible yet.
+          // TODO: See if we can avoid this for performance reasons, and set selection as we bring things into view.
+          // In many use cases, only a small proportion of all tasks are selected, so performance shouldn't be an issue.
+          this._dataLayoutManager.ensureInDOM(taskObj, 'task');
+          var taskNode = taskObjs[j]['node'];
+          targets.push(taskNode);
+        }
       }
     }
-
     this.getSelectionHandler().processInitialSelections(selection, targets);
   }
 };
@@ -3554,18 +4975,18 @@ dvt.Gantt.prototype._processInitialSelections = function()
  * Gets the container object for the dependency lines
  * @return {dvt.Container} the container for the dependency lines
  */
-dvt.Gantt.prototype.getDependencyLines = function()
+dvt.Gantt.prototype.getDependenciesContainer = function()
 {
-  return this._deplines;
+  return this._dependenciesContainer;
 };
 
 /**
  * Sets the container object for the dependency lines
- * @param {dvt.Container} deplines the container for the dependency lines
+ * @param {dvt.Container} dependenciesContainer the container for the dependency lines
  */
-dvt.Gantt.prototype.setDependencyLines = function(deplines)
+dvt.Gantt.prototype.setDependenciesContainer = function(dependenciesContainer)
 {
-  this._deplines = deplines;
+  this._dependenciesContainer = dependenciesContainer;
 };
 
 /**
@@ -3633,15 +5054,23 @@ DvtGanttAutomation.prototype.GetSubIdForDomElement = function(displayable)
   var logicalObj = this._gantt.getEventManager().GetLogicalObject(displayable);
   if (logicalObj && (logicalObj instanceof DvtGanttTaskNode))
   {
-    var row = logicalObj.getRow();
-    var rowIndex = this._gantt.getRows().indexOf(row);
-    var taskIndex = row.getTasks().indexOf(logicalObj);
+    var taskObj = logicalObj.getLayoutObject();
+    var rowObj = taskObj['rowObj'];
+    var rowIndex = rowObj['index'];
+    // Albeit not as efficient, simple one liner below should be sufficiently fast for most usecases.
+    var taskIndex = rowObj['taskObjs'].map(function(t) { return t['node']; }).indexOf(logicalObj);
     return 'taskbar[' + rowIndex + '][' + taskIndex + ']';
   }
   else if (logicalObj && (logicalObj instanceof DvtGanttRowLabelContent))
   {
     var rowIndex = logicalObj.getRowIndex();
     return 'rowLabel[' + rowIndex + ']';
+  }
+  else if (logicalObj && (logicalObj instanceof DvtGanttDependencyNode))
+  {
+    var dependencyObj = logicalObj.getLayoutObject();
+    var dependencyIndex = dependencyObj['index'];
+    return dependencyIndex;
   }
 
   return null;
@@ -3678,13 +5107,16 @@ DvtGanttAutomation.prototype.getDomElementForSubId = function(subId)
         if (isNaN(rowIndex) || isNaN(taskIndex))
           return null;
 
-        var rows = this._gantt.getRows();
-        if (rows != null && rows.length > rowIndex)
+        var rowObjs = this._gantt.getRowLayoutObjs();
+        if (rowObjs.length > rowIndex)
         {
-          var tasks = rows[rowIndex].getTasks();
-          if (tasks != null && tasks.length > taskIndex)
+          var taskObjs = rowObjs[rowIndex]['taskObjs'];
+          if (taskObjs.length > taskIndex)
           {
-            var repShape = tasks[taskIndex].getTask().getShape('main');
+            var taskObj = taskObjs[taskIndex];
+            this._gantt.getDataLayoutManager().ensureInDOM(taskObj, 'task');
+            var taskNode = taskObj['node'];
+            var repShape = taskNode.getTask().getShape('main');
             if (repShape != null)
               return repShape.getElem();
           }
@@ -3694,12 +5126,33 @@ DvtGanttAutomation.prototype.getDomElementForSubId = function(subId)
     else if (component == 'rowLabel')
     {
       rowIndex = parseInt(subId.substring(openParen1 + 1, closeParen1));
-      var rows = this._gantt.getRows();
-      if (rows != null && rows.length > rowIndex)
+      var rowObjs = this._gantt.getRowLayoutObjs();
+      if (rowObjs.length > rowIndex)
       {
-        var rowLabelContent = rows[rowIndex].getRowLabelContent();
+        var rowObj = rowObjs[rowIndex];
+        this._gantt.getDataLayoutManager().ensureInDOM(rowObj, 'rowLabel');
+        var rowLabelContent = rowObj['node'].getRowLabelContent();
         if (rowLabelContent != null)
           return rowLabelContent.getDisplayable().getElem();
+      }
+    }
+    else if (component == 'dependency')
+    {
+      var dependencyIndex = parseInt(subId.substring(openParen1 + 1, closeParen1));
+      var dependencyObjs = this._gantt.getDependencyLayoutObjs();
+      if (dependencyObjs.length > dependencyIndex)
+      {
+        for (var i = 0; i < dependencyObjs.length; i++)
+        {
+          var dependencyObj = dependencyObjs[i];
+          if (dependencyObj['index'] === dependencyIndex)
+          {
+            this._gantt.getDataLayoutManager().ensureInDOM(dependencyObj, 'dependency');
+            var dependencyNode = dependencyObj['node'];
+            if (dependencyNode != null)
+              return dependencyNode.getElem();
+          }
+        }
       }
     }
   }
@@ -3736,6 +5189,10 @@ DvtGanttDefaults.VERSION_1 = {
     'vertical': 'visible'
   },
   'selectionMode': 'none',
+  'scrollPosition': {"y": 0},
+  'rowDefaults': {
+    'height': null
+  },
   'taskDefaults': {
     'labelPosition': ['end', 'innerCenter', 'start', 'max'],
     'borderRadius': '0',
@@ -3773,9 +5230,8 @@ DvtGanttDefaults.prototype.getNoCloneObject = function()
     'end': true,
     'viewportStart': true,
     'viewportEnd': true,
-    'rows': {
-      'tasks': {'start': true, 'end': true}
-    },
+    'rows': true, // For performance reasons, don't clone data objects--we'll ensure data objects are not mutated downstream
+    'dependencies': true, // For performance reasons, don't clone data objects--we'll ensure data objects are not mutated downstream
     'referenceObjects': {'value': true}
   };
 };
@@ -3784,21 +5240,20 @@ DvtGanttDefaults.prototype.getNoCloneObject = function()
  * @override
  */
 DvtGanttDefaults.prototype.getAnimationDuration = function(options)
-{ 
+{
   return options['_resources'] ? options['_resources']['animationDuration'] : null;
 };
 
 /**
  * Class representing a GanttDependency node.
  * @param {dvt.Gantt} gantt The gantt component
- * @param {object} props The properties for the dependency.
  * @class
  * @constructor
  * @implements {DvtKeyboardNavigable}
  */
-var DvtGanttDependencyNode = function(gantt, props)
+var DvtGanttDependencyNode = function(gantt)
 {
-  this.Init(gantt, props);
+  this.Init(gantt);
 };
 
 dvt.Obj.createSubclass(DvtGanttDependencyNode, dvt.Container);
@@ -3849,26 +5304,14 @@ DvtGanttDependencyNode.CONFLICT_BOTH = 3;
 
 /**
  * @param {dvt.Gantt} gantt The gantt component
- * @param {object} props The properties for the node.
  * @protected
  */
-DvtGanttDependencyNode.prototype.Init = function(gantt, props)
+DvtGanttDependencyNode.prototype.Init = function(gantt)
 {
   DvtGanttDependencyNode.superclass.Init.call(this, gantt.getCtx(), null);
 
   this._gantt = gantt;
-  this._props = props;
-
   this._gantt.getEventManager().associate(this, this);
-};
-
-/**
- * Sets the properties for the node.
- * @param {object} props The properties.
- */
-DvtGanttDependencyNode.prototype.setProps = function(props)
-{
-  this._props = props;
 };
 
 /**
@@ -3898,57 +5341,48 @@ DvtGanttDependencyNode.prototype.getActiveElementId = function()
 };
 
 /**
- * Retrieve the id of the predecessor task
- * @return {*} the id of the predecessor task
+ * Sets the layout object associated with this dependency node
+ * @param {Object} dependencyObj Depenency layout object
  */
-DvtGanttDependencyNode.prototype.getPredecessor = function()
+DvtGanttDependencyNode.prototype.setLayoutObject = function(dependencyObj)
 {
-  return this._props['predecessorTaskId'];
+  this._dependencyObj = dependencyObj;
 };
 
 /**
- * Retrieve the id of the successor task
- * @return {*} the id of the successor task
+ * Gets the layout object associated with this dependency node
+ * @return {Object} The dependency layout object
  */
-DvtGanttDependencyNode.prototype.getSuccessor = function()
+DvtGanttDependencyNode.prototype.getLayoutObject = function()
 {
-  return this._props['successorTaskId'];
+  return this._dependencyObj;
 };
 
 /**
- * Retrieve the dependency type
- * @return {string} the dependency type
+ * Gets the value of query property of the dependency.
+ * @param {string} property The top level property name
+ * @return {*} The value
  */
-DvtGanttDependencyNode.prototype.getType = function()
+DvtGanttDependencyNode.prototype.getValue = function(property)
 {
-  return this._props['type'] == null ? DvtGanttDependencyNode.FINISH_START : this._props['type'];
-};
-
-/**
- * Retrieve the svg inline style to set on the dependency line
- * @return {string|object} the svg inline style to set on the dependency line
- */
-DvtGanttDependencyNode.prototype.getSvgStyle = function()
-{
-  return this._props['svgStyle'];
-};
-
-/**
- * Retrieve the svg style class to set on the dependency line
- * @return {string} the style class to set on the dependency line
- */
-DvtGanttDependencyNode.prototype.getSvgClassName = function()
-{
-  return this._props['svgClassName'];
-};
-
-/**
- * Retrieve the short description for the dependency line
- * @return {string} the short description for the dependency line
- */
-DvtGanttDependencyNode.prototype.getShortDesc = function()
-{
-  return this._props['shortDesc'];
+  var value;
+  switch (property)
+  {
+    case 'type':
+      value = this._dependencyObj['type'];
+      break;
+    // In case task id is complex object, get the reference to actual task id for
+    // more performant key comparisons downstream
+    case 'predecessorTaskId':
+      value = this._dependencyObj['predecessorTaskObj']['id'];
+      break;
+    case 'successorTaskId':
+      value = this._dependencyObj['successorTaskObj']['id'];
+      break;
+    default:
+      value = this._dependencyObj['data'][property];
+  }
+  return value;
 };
 
 /**
@@ -3957,7 +5391,8 @@ DvtGanttDependencyNode.prototype.getShortDesc = function()
  */
 DvtGanttDependencyNode.prototype.getPredecessorNode = function()
 {
-  return this._predecessorNode;
+  // By current design, the task node should already exists if this dependency node exists
+  return this._dependencyObj['predecessorTaskObj']['node'];
 };
 
 /**
@@ -3966,7 +5401,8 @@ DvtGanttDependencyNode.prototype.getPredecessorNode = function()
  */
 DvtGanttDependencyNode.prototype.getSuccessorNode = function()
 {
-  return this._successorNode;
+  // By current design, the task node should already exists if this dependency node exists
+  return this._dependencyObj['successorTaskObj']['node'];
 };
 
 /**
@@ -4017,7 +5453,7 @@ DvtGanttDependencyNode._getTaskMiddle = function(taskNode)
 {
   var task = taskNode.getTask();
   var taskMainShape = task.getShape('main');
-  var availableShapeHeight = (task.isSummary('main')) ? taskNode.getProps()['height'] : taskMainShape.getFinalHeight();
+  var availableShapeHeight = (task.isSummary('main')) ? taskNode.getLayoutObject()['height'] : taskMainShape.getFinalHeight();
   return DvtGanttDependencyNode._getTaskTop(taskNode) + taskMainShape.getFinalY() + Math.round(availableShapeHeight / 2);
 };
 
@@ -4104,42 +5540,21 @@ DvtGanttDependencyNode.prototype.render = function(container)
 
   this.setAriaRole('img');
 
-  var predecessor = this.getPredecessor();
-  var successor = this.getSuccessor();
-  var type = this.getType();
-
-  // make sure all the mandatory fields are available and valid
-  if (predecessor == null || successor == null || predecessor == successor || !DvtGanttDependencyNode._isValidType(type))
-  {
-    // remove existing line if it's invalid
-    this._cleanup();
-    return;
-  }
-
   var gantt = this.getGantt();
-  var predecessorNode = gantt.findTaskNodeById(predecessor);
-  var successorNode = gantt.findTaskNodeById(successor);
-  if (predecessorNode == null || successorNode == null)
-  {
-    // remove existing line if it's invalid
-    this._cleanup();
-    return;
-  }
-
-  // keep these around for highlighting and navigation
-  this._predecessorNode = predecessorNode;
-  this._successorNode = successorNode;
+  var type = this.getValue('type');
+  var predecessorNode = this.getPredecessorNode();
+  var successorNode = this.getSuccessorNode();
 
   // update task about predecessors and successors
-  this._predecessorNode.addSuccessorDependency(this);
-  this._successorNode.addPredecessorDependency(this);
+  predecessorNode.addSuccessorDependency(this);
+  successorNode.addPredecessorDependency(this);
 
   // for touch the aria-label needs to be available and aria-label on task needs to be updated
   if (dvt.TimeAxis.supportsTouch())
   {
     this.setAriaProperty('label', this.getAriaLabel());
-    this._predecessorNode.refreshAriaLabel();
-    this._successorNode.refreshAriaLabel();
+    predecessorNode.refreshAriaLabel();
+    successorNode.refreshAriaLabel();
   }
 
   // due to IE bug https://connect.microsoft.com/IE/feedback/details/781964/,
@@ -4150,7 +5565,7 @@ DvtGanttDependencyNode.prototype.render = function(container)
   if (this._line != null)
   {
     // update dependency line
-    this._line.setCmds(DvtGanttDependencyNode._calcDepLine(gantt.getCtx(), this._predecessorNode, this._successorNode, type));
+    this._line.setCmds(DvtGanttDependencyNode._calcDepLine(gantt.getCtx(), predecessorNode, successorNode, type));
     var elem = this._line.getElem();
   }
   else
@@ -4179,7 +5594,7 @@ DvtGanttDependencyNode.prototype.render = function(container)
   }
 
   // apply inline style
-  var style = this.getSvgStyle();
+  var style = this.getValue('svgStyle');
   if (style)
   {
     // TODO: once we fully deprecate string type in 4.0.0, remove the string logic below
@@ -4199,7 +5614,7 @@ DvtGanttDependencyNode.prototype.render = function(container)
   // For now, revert back to not using the Toolkit setClassName and just apply the class on the
   // line ourselves, to eliminate this regression from 2.3.0. Post 3.0.0, we should investigate a better way to do this.
   var defaultStyleClass = gantt.GetStyleClass('dependencyLine');
-  var styleClass = this.getSvgClassName();
+  var styleClass = this.getValue('svgClassName');
   if (styleClass)
     dvt.ToolkitUtils.setAttrNullNS(elem, 'class', defaultStyleClass + ' ' + styleClass);
   else
@@ -4230,15 +5645,15 @@ DvtGanttDependencyNode.prototype._calcConflict = function()
   var predecessorConflict = false;
   var successorConflict = false;
 
-  var type = this.getType();
+  var type = this.getValue('type');
 
   // checks if there's any dependency line rendered already that have the predecessor as its successor
-  var deps = this.getGantt().getNavigableDependencyLinesForTask(this._predecessorNode, 'predecessor');
+  var deps = this.getGantt().getNavigableDependencyLinesForTask(this.getPredecessorNode(), 'predecessor');
   if (deps != null)
   {
     for (var i = 0; i < deps.length; i++)
     {
-      var depType = deps[i].getType();
+      var depType = deps[i].getValue('type');
       if (((type == DvtGanttDependencyNode.START_START || type == DvtGanttDependencyNode.START_FINISH) &&
           (depType == DvtGanttDependencyNode.START_START || depType == DvtGanttDependencyNode.FINISH_START)) ||
           ((type == DvtGanttDependencyNode.FINISH_FINISH || type == DvtGanttDependencyNode.FINISH_START) &&
@@ -4250,12 +5665,12 @@ DvtGanttDependencyNode.prototype._calcConflict = function()
   }
 
   // checks if there's any dependency line rendered already that have the successor as its predecessor
-  deps = this.getGantt().getNavigableDependencyLinesForTask(this._successorNode, 'successor');
+  deps = this.getGantt().getNavigableDependencyLinesForTask(this.getSuccessorNode(), 'successor');
   if (deps != null)
   {
     for (i = 0; i < deps.length; i++)
     {
-      depType = deps[i].getType();
+      depType = deps[i].getValue('type');
       if (((type == DvtGanttDependencyNode.START_START || type == DvtGanttDependencyNode.FINISH_START) &&
           (depType == DvtGanttDependencyNode.START_START || depType == DvtGanttDependencyNode.START_FINISH)) ||
           ((type == DvtGanttDependencyNode.FINISH_FINISH || type == DvtGanttDependencyNode.START_FINISH) &&
@@ -4520,7 +5935,7 @@ DvtGanttDependencyNode._calcDepLineHelper = function(predecessorNode, successorN
 /**
  * @override
  */
-DvtGanttDependencyNode.prototype.getNextNavigable = function(event) 
+DvtGanttDependencyNode.prototype.getNextNavigable = function(event)
 {
   if (event.keyCode == dvt.KeyboardEvent.UP_ARROW || event.keyCode == dvt.KeyboardEvent.DOWN_ARROW)
   {
@@ -4563,7 +5978,7 @@ DvtGanttDependencyNode.prototype.getNextNavigable = function(event)
  * Sets a node that should be used for dependency line navigation
  * @param {DvtGanttTaskNode} node
  */
-DvtGanttDependencyNode.prototype.setKeyboardFocusTask = function(node) 
+DvtGanttDependencyNode.prototype.setKeyboardFocusTask = function(node)
 {
   this._keyboardNavNode = node;
 };
@@ -4572,7 +5987,7 @@ DvtGanttDependencyNode.prototype.setKeyboardFocusTask = function(node)
  * Gets a node that should be used for dependency line navigation
  * @return {DvtGanttTaskNode} a node that should be used for dependency line navigation
  */
-DvtGanttDependencyNode.prototype.getKeyboardFocusTask = function() 
+DvtGanttDependencyNode.prototype.getKeyboardFocusTask = function()
 {
   return this._keyboardNavNode;
 };
@@ -4580,7 +5995,7 @@ DvtGanttDependencyNode.prototype.getKeyboardFocusTask = function()
 /**
  * @override
  */
-DvtGanttDependencyNode.prototype.getKeyboardBoundingBox = function(targetCoordinateSpace) 
+DvtGanttDependencyNode.prototype.getKeyboardBoundingBox = function(targetCoordinateSpace)
 {
   return this.getDimensions(targetCoordinateSpace);
 };
@@ -4588,7 +6003,7 @@ DvtGanttDependencyNode.prototype.getKeyboardBoundingBox = function(targetCoordin
 /**
  * @override
  */
-DvtGanttDependencyNode.prototype.getTargetElem = function() 
+DvtGanttDependencyNode.prototype.getTargetElem = function()
 {
   return this._line.getElem();
 };
@@ -4596,7 +6011,7 @@ DvtGanttDependencyNode.prototype.getTargetElem = function()
 /**
  * @override
  */
-DvtGanttDependencyNode.prototype.showKeyboardFocusEffect = function() 
+DvtGanttDependencyNode.prototype.showKeyboardFocusEffect = function()
 {
   if (this._line)
   {
@@ -4637,7 +6052,7 @@ DvtGanttDependencyNode.prototype.isShowingKeyboardFocusEffect = function()
  * Retrieves the tooltip to display on the dependency line
  * @override
  */
-DvtGanttDependencyNode.prototype.getDatatip = function(target, x, y) 
+DvtGanttDependencyNode.prototype.getDatatip = function(target, x, y)
 {
   return this.getAriaLabel();
 };
@@ -4646,25 +6061,21 @@ DvtGanttDependencyNode.prototype.getDatatip = function(target, x, y)
  * Gets the aria label
  * @return {string} the aria label string.
  */
-DvtGanttDependencyNode.prototype.getAriaLabel = function() 
+DvtGanttDependencyNode.prototype.getAriaLabel = function()
 {
-  var desc = this.getShortDesc();
+  var desc = this.getValue('shortDesc');
   if (desc != null)
     return desc;
 
   var options = this._gantt.getOptions();
-
-  var predecessor = this.getPredecessor();
-  var successor = this.getSuccessor();
-  var type = this.getType();
-
-  if (predecessor == null || successor == null || !DvtGanttDependencyNode._isValidType(type))
-    return '';
+  var predecessorId = this.getValue('predecessorTaskId');
+  var successorId = this.getValue('successorTaskId');
+  var type = this.getValue('type');
 
   var key = dvt.Bundle.getTranslation(options, type + 'DependencyAriaDesc');
 
   // bundlePrefix and key param are not neccessary
-  desc = dvt.Bundle.getTranslation(options, 'accessibleDependencyInfo', '', '', [key, predecessor, successor]);
+  desc = dvt.Bundle.getTranslation(options, 'accessibleDependencyInfo', '', '', [key, predecessorId, successorId]);
   return desc;
 };
 
@@ -4723,7 +6134,7 @@ DvtGanttEventManager.prototype.hideTooltip = function()
 
 // Drag & Drop Support
 
-/** 
+/**
  * DataType for high level dnd.move tasks source
  * @type {string}
  */
@@ -4769,7 +6180,7 @@ DvtGanttEventManager.prototype._dragStartSetup = function()
 };
 
 /**
- * Cleanup when drag is happening, but deliberately cancelled, e.g. 
+ * Cleanup when drag is happening, but deliberately cancelled, e.g.
  * via Esc key during drag (NOT via event.preventDefault on dragStart event)
  * @private
  */
@@ -4797,14 +6208,14 @@ DvtGanttEventManager.prototype._dragCancelCleanup = function()
 };
 
 /**
- * Cleanup on drag end
+ * Cleanup on drop
  * @private
  */
-DvtGanttEventManager.prototype._dragEndCleanup = function()
+DvtGanttEventManager.prototype._dropCleanup = function()
 {
   // Fire viewport change event if viewport changed
-  if (this._dragInitialViewportStart != null && 
-      (this._dragInitialViewportStart !== this._gantt.getViewportStartTime() || 
+  if (this._dragInitialViewportStart != null &&
+      (this._dragInitialViewportStart !== this._gantt.getViewportStartTime() ||
         this._dragInitialViewportEnd !== this._gantt.getViewportEndTime()))
   {
     this._gantt.dispatchEvent(this._gantt.createViewportChangeEvent());
@@ -4814,9 +6225,11 @@ DvtGanttEventManager.prototype._dragEndCleanup = function()
   this._dragInitialY = null;
   this._dragInitialViewportStart = null;
   this._dragInitialViewportEnd = null;
+
+  this._isDndDragging = false;
 };
 
-/** 
+/**
  * Whether high level DnD Move is initiated
  * @return {boolean} whether high level DnD Move is initiated
  */
@@ -4854,9 +6267,9 @@ DvtGanttEventManager.prototype.handleMoveInitiation = function(event, sourceObj)
 
     var stagePos = sourceObj.localToStage({x: mainShape.getFinalX(), y: mainShape.getFinalY()});
     this._moveFeedbackLocalPos = this._gantt.getDnDArtifactsContainer().stageToLocal(stagePos);
-    sourceObj.showDragFeedback(event, this._moveFeedbackLocalPos, sourceObj.getRow(), {x: 0, y: 0}, true);
+    sourceObj.showDragFeedback(event, this._moveFeedbackLocalPos, sourceObj.getRowNode(), {x: 0, y: 0}, true);
     // As a result of bringing up the glass pane, if the mouse happens to be over the Gantt, a mouseout event is fired, which
-    // tries to hide tooltips. Result--the drag tooltip is not shown, which is not desirable. 
+    // tries to hide tooltips. Result--the drag tooltip is not shown, which is not desirable.
     // Flag that the feedback tooltip shouldn't be hidden no matter what stray mouse events fired in this scenario.
     if (glassPaneAdded)
     {
@@ -4864,18 +6277,13 @@ DvtGanttEventManager.prototype.handleMoveInitiation = function(event, sourceObj)
     }
 
     this._moveSourceObj = sourceObj;
-    this._moveTargetObj = sourceObj.getRow();
+    this._moveTargetObj = sourceObj.getRowNode();
 
-    var taskProps = sourceObj.getProps();
-    var startTime = taskProps['start'];
-    var endTime = taskProps['end'];
-    startTime = startTime ? startTime : endTime;
-    endTime = endTime ? endTime : startTime;
+    var startTime = sourceObj.getValue('start');
+    var endTime = sourceObj.getValue('end');
 
-    var baselineStartTime = taskProps['baseline'] ? taskProps['baseline']['start'] : null;
-    var baselineEndTime = taskProps['baseline'] ? taskProps['baseline']['end'] : null;
-    baselineStartTime = baselineStartTime ? baselineStartTime : baselineEndTime;
-    baselineEndTime = baselineEndTime ? baselineEndTime : baselineStartTime;
+    var baselineStartTime = sourceObj.getValue('baseline', 'start') || null;
+    var baselineEndTime = sourceObj.getValue('baseline', 'end') || null;
 
     this._moveFeedbackTime = {
       'start': startTime,
@@ -4917,7 +6325,7 @@ DvtGanttEventManager.prototype._handleMoveChronologically = function(event, dire
 
     var previousPos = dvt.TimeAxis.getDatePosition(ganttMinTime, ganttMaxTime, this._moveFeedbackTime['start'], ganttWidth);
     previousPos = isRTL ? ganttWidth - previousPos : previousPos;
-    
+
     var timeAxis = this._gantt.getTimeAxis();
     var adjacencyDirection = direction === 'forward' ? 'next' : 'previous';
     var newStart = timeAxis.getAdjacentDate(this._moveFeedbackTime['start'], navigationScale, adjacencyDirection).getTime();
@@ -5036,23 +6444,23 @@ DvtGanttEventManager.prototype._handleMoveRowDirection = function(event, directi
 {
   if (this._isMoveInitiated)
   {
-    var rows = this._gantt.getRows();
-    var rowIndex = rows.indexOf(this._moveTargetObj); // should always be found
+    var rowObjs = this._gantt.getRowLayoutObjs();
+    var rowIndex = this._moveTargetObj.getIndex();
     if (direction === 'above' && rowIndex > 0)
     {
-      var newTargetObj = rows[rowIndex - 1];
+      var newTargetRowObj = rowObjs[rowIndex - 1];
     }
-    else if (direction === 'below' && rowIndex < rows.length - 1)
+    else if (direction === 'below' && rowIndex < rowObjs.length - 1)
     {
-      newTargetObj = this._moveTargetObj = rows[rowIndex + 1];
+      newTargetRowObj = rowObjs[rowIndex + 1];
     }
 
-    if (newTargetObj)
+    if (newTargetRowObj)
     {
-      this._moveTargetObj = newTargetObj;
-      var mainShape = this._moveSourceObj.getTask().getShape('main');
+      this._gantt.getDataLayoutManager().ensureInDOM(newTargetRowObj, 'row');
+      this._moveTargetObj = newTargetRowObj['node'];
       // Only calculate and update new y position
-      var stagePos = this._moveTargetObj.localToStage({x: 0, y: this._moveTargetObj.getTop() + DvtGanttStyleUtils.getTaskPadding()})
+      var stagePos = this._moveTargetObj.localToStage({x: 0, y: this._moveTargetObj.getFinalY() + DvtGanttStyleUtils.getTaskPadding()})
       this._moveFeedbackLocalPos.y = this._gantt.getDnDArtifactsContainer().stageToLocal(stagePos).y;
     }
     // Update and show feedback
@@ -5090,7 +6498,7 @@ DvtGanttEventManager.prototype.handleMoveRowBelow = function(event)
 DvtGanttEventManager.prototype.handleMoveFinalize = function(event)
 {
   // Viewport adjustments need to be done before handling move callback (rerender may happen after move callback)
-  this._dragEndCleanup();
+  this._dropCleanup();
 
   var taskContexts = this._getDragDataContexts(this._moveSourceObj);
   var start = new Date(this._moveFeedbackTime['start']).toISOString();
@@ -5267,8 +6675,8 @@ DvtGanttEventManager.prototype.GetDropOffset = function(event) {
     var sourceType = this.getDnDTaskSubType(obj.getDraggedObject());
     if (sourceType === 'tasks')
     {
-      var startTime = obj.getProps()['start'];
-      var endTime = obj.getProps()['end'];
+      var startTime = obj.getValue('start');
+      var endTime = obj.getValue('end');
       var posSpan = obj.getTask().getTimeSpanDimensions(startTime, endTime);
 
       var relPosStage = this._context.pageToStageCoords(event.pageX, event.pageY);
@@ -5300,7 +6708,7 @@ DvtGanttEventManager.prototype._getDropObject = function(event) {
     var lowLevelTaskDropSpecified = options['dnd']['tasks'] && (options['dnd']['tasks']['dataTypes'] || options['dnd']['tasks']['dragStart']);
     if (obj instanceof DvtGanttTaskNode && highLevelMoveEnabled && !lowLevelTaskDropSpecified)
     {
-      this._dropObj = obj.getRow();
+      this._dropObj = obj.getRowNode();
     }
     else
     {
@@ -5364,17 +6772,11 @@ DvtGanttEventManager.prototype.GetDropEventPayload = function(event) {
     var dragObj = this.DragSource.getDragObject();
     if (dragObj instanceof DvtGanttTaskNode)
     {
-      var taskProps = dragObj.getProps();
+      var startTime = dragObj.getValue('start');
+      var endTime = dragObj.getValue('end');
 
-      var startTime = taskProps['start'];
-      var endTime = taskProps['end'];
-      startTime = startTime ? startTime : endTime;
-      endTime = endTime ? endTime : startTime;
-
-      var baselineStartTime = taskProps['baseline'] ? taskProps['baseline']['start'] : null;
-      var baselineEndTime = taskProps['baseline'] ? taskProps['baseline']['end'] : null;
-      baselineStartTime = baselineStartTime ? baselineStartTime : baselineEndTime;
-      baselineEndTime = baselineEndTime ? baselineEndTime : baselineStartTime;
+      var baselineStartTime = dragObj.getValue('baseline', 'start') || null;
+      var baselineEndTime = dragObj.getValue('baseline', 'end') || null;
 
       var taskSource = dragObj.getDraggedObject();
       var dragSourceType = this.getDnDTaskSubType(taskSource);
@@ -5477,50 +6879,60 @@ DvtGanttEventManager.prototype.OnDndDragStart = function(event) {
 DvtGanttEventManager.prototype.OnDndDragOver = function(event) {
   DvtGanttEventManager.superclass.OnDndDragOver.call(this, event);
 
-  // dragover event is fired every 350ms or so, even when the mouse didn't move.
-  // For performance reasons, only update feedback if the mouse moved
-  if (!this._prevDragOverEvent || this._prevDragOverEvent.pageX !== event.pageX || this._prevDragOverEvent.pageY !== event.pageY)
+  // Redrawing the drag feedback image every time the dragover event is fired (every 350ms or so, even when the mouse didn't move)
+  // affects performance, especially when the viewport refreshes on edge auto panning. Throttle the feedback drawing using
+  // requestAnimationFrame similar to the example outlined in https://developer.mozilla.org/en-US/docs/Web/Events/scroll#Example
+  var self = this;
+  this._lastKnownDragOverEvent = event;
+  self._isDndDragging = true;
+  // Only requestAnimationFrame if one is not requested already, and if the mouse moved (no need to update feedback if mouse didn't move).
+  if (!this._isDragOverTicking &&
+      (!this._lastProcessedDragOverEvent ||
+        this._lastKnownDragOverEvent.pageX !== this._lastProcessedDragOverEvent.pageX ||
+        this._lastKnownDragOverEvent.pageY !== this._lastProcessedDragOverEvent.pageY))
   {
-    this._isDndDragging = true;
-
-    // Need to do this here instead of onDndDrag because the drag event doesn't have pageX/Y on FF for some reason.
-    var obj = this.DragSource.getDragObject();
-    if (obj instanceof DvtGanttTaskNode)
-    {
-      if (event.getNativeEvent().defaultPrevented)
+    requestAnimationFrame(function() {
+      // Need to do this here instead of onDndDrag because the drag event doesn't have pageX/Y on FF for some reason.
+      var obj = self.DragSource.getDragObject();
+      if (obj instanceof DvtGanttTaskNode && self._isDndDragging)
       {
-        var stagePos = this._gantt.getCtx().pageToStageCoords(event.pageX, event.pageY);
-        // Note, "local" here means in the reference of the affordance container coord system
-        var localPos = this._gantt.getDnDArtifactsContainer().stageToLocal(stagePos);
-        obj.showDragFeedback(event, localPos, this._getDropObject(), this._dropOffset);
-
-        // For touch devices with screenreader, we're using passthru gesture (in iOS VoiceOVer, double tap and hold until tone, then drag) to perform real HTML5 drag and drop.
-        // Update the aria live region with position information if the position changed due to drag.
-        if (dvt.Agent.isTouchDevice())
+        if (self._lastKnownDragOverEvent.getNativeEvent().defaultPrevented)
         {
-          // Only update the aria live region if what we want to be read out changed,
-          // e.g. the finger may have stopped, but moved 1px by accident and we don't want what's currently being read be interrupted.
-          var screenReaderDragText = dvt.StringUtils.processAriaLabel(DvtGanttTooltipUtils.getDatatip(obj, false))
-          if (this._gantt.isSelectionSupported() && obj.isSelected())
-          {
-            var totalSelected = this._gantt.getSelectionHandler().getSelectedCount();
-            if (totalSelected > 1)
-            {
-              screenReaderDragText += '. ' + dvt.Bundle.getTranslation(this._gantt.getOptions(), 'taskMoveSelectionInfo', '', '', [totalSelected - 1]);
-            }
-          }
+          var stagePos = self._gantt.getCtx().pageToStageCoords(self._lastKnownDragOverEvent.pageX, self._lastKnownDragOverEvent.pageY);
+          // Note, "local" here means in the reference of the affordance container coord system
+          var localPos = self._gantt.getDnDArtifactsContainer().stageToLocal(stagePos);
+          obj.showDragFeedback(self._lastKnownDragOverEvent, localPos, self._getDropObject(), self._dropOffset);
 
-          if (!this._prevScreenReaderDragText || this._prevScreenReaderDragText !== screenReaderDragText)
+          // For touch devices with screenreader, we're using passthru gesture (in iOS VoiceOVer, double tap and hold until tone, then drag) to perform real HTML5 drag and drop.
+          // Update the aria live region with position information if the position changed due to drag.
+          if (dvt.Agent.isTouchDevice())
           {
-            this._gantt.updateLiveRegionText(screenReaderDragText);
+            // Only update the aria live region if what we want to be read out changed,
+            // e.g. the finger may have stopped, but moved 1px by accident and we don't want what's currently being read be interrupted.
+            var screenReaderDragText = dvt.StringUtils.processAriaLabel(DvtGanttTooltipUtils.getDatatip(obj, false))
+            if (self._gantt.isSelectionSupported() && obj.isSelected())
+            {
+              var totalSelected = self._gantt.getSelectionHandler().getSelectedCount();
+              if (totalSelected > 1)
+              {
+                screenReaderDragText += '. ' + dvt.Bundle.getTranslation(self._gantt.getOptions(), 'taskMoveSelectionInfo', '', '', [totalSelected - 1]);
+              }
+            }
+
+            if (!self._prevScreenReaderDragText || self._prevScreenReaderDragText !== screenReaderDragText)
+            {
+              self._gantt.updateLiveRegionText(screenReaderDragText);
+            }
+            self._prevScreenReaderDragText = screenReaderDragText;
           }
-          this._prevScreenReaderDragText = screenReaderDragText;
         }
+        else
+          obj.removeDragFeedbacks();
       }
-      else
-        obj.removeDragFeedbacks();
-    }
-    this._prevDragOverEvent = event;
+      self._lastProcessedDragOverEvent = self._lastKnownDragOverEvent;
+      self._isDragOverTicking = false;
+    });
+    this._isDragOverTicking = true;
   }
 };
 
@@ -5562,7 +6974,7 @@ DvtGanttEventManager.prototype.OnDndDrop = function(event) {
   DvtGanttEventManager.superclass.OnDndDrop.call(this, event);
 
   // Viewport adjustments need to be done before handling move callback (rerender may happen after move callback)
-  this._dragEndCleanup();
+  this._dropCleanup();
 
   // If high level dnd.move enabled, fire ojMove event upon valid drop
   var nativeEvent = event.getNativeEvent();
@@ -5660,6 +7072,23 @@ DvtGanttEventManager.prototype.HandleImmediateTouchStartInternal = function(even
 };
 
 /**
+ * @override
+ */
+DvtGanttEventManager.prototype.OnTouchMoveBubble = function(event) {
+  // Normally, on touch move, if touch is over an object that can show a tooltip, it's shown.
+  // Otherwise, the tooltip is explicitly hidden.
+  // During drag (for DnD), a tooltip is shown on the feedback, but the touch move handler tries to hide it.
+  // This causes flickering as the tooltip is shown and hidden very quickly.
+  // Make sure to prevent the tooltip from being hidden during drag and drop--the drag/drop events will handle
+  // showing/hiding the tooltip.
+  if (this._isDndDragging)
+  {
+    this._preventHideTooltip = true;
+  }
+  DvtGanttEventManager.superclass.OnTouchMoveBubble.call(this, event);
+};
+
+/**
  * Gantt keyboard handler.
  * @param {dvt.Gantt} gantt The Gantt component.
  * @param {dvt.EventManager} manager The owning dvt.EventManager.
@@ -5685,49 +7114,57 @@ DvtGanttKeyboardHandler.prototype.Init = function(gantt, manager)
 
 /**
  * Retrieve previous task.
- * @param {DvtGanttRowNode[]} rows
- * @param {DvtGanttRowNode} currentRow
+ * @param {dvt.Gantt} gantt
+ * @param {Array} rowObjs
+ * @param {Object} currentRowObj
  * @param {number} currentRowIndex
+ * @param {DvtGanttTaskNode} currentNavigable
  * @return {DvtGanttTaskNode} the previous task node
  * @private
  */
-DvtGanttKeyboardHandler._findPreviousTask = function(rows, currentRow, currentRowIndex)
+DvtGanttKeyboardHandler._findPreviousTask = function(gantt, rowObjs, currentRowObj, currentRowIndex, currentNavigable)
 {
-  var tasks = currentRow.getTasks();
-  if (tasks == null || tasks.length == 0)
+  var taskObjs = currentRowObj['taskObjs'];
+  if (taskObjs.length === 0)
   {
-    if (currentRowIndex == 0)
-      return null;
+    if (currentRowIndex === 0)
+      return currentNavigable;
     else
-      return DvtGanttKeyboardHandler._findPreviousTask(rows, rows[currentRowIndex - 1], currentRowIndex - 1);
+      return DvtGanttKeyboardHandler._findPreviousTask(gantt, rowObjs, rowObjs[currentRowIndex - 1], currentRowIndex - 1, currentNavigable);
   }
   else
   {
-    return tasks[tasks.length - 1];
+    var taskObj = taskObjs[taskObjs.length - 1];
+    gantt.getDataLayoutManager().ensureInDOM(taskObj, 'task');
+    return taskObj['node'];
   }
 };
 
 /**
  * Retrieve next task.
- * @param {DvtGanttRowNode[]} rows
- * @param {DvtGanttRowNode} currentRow
+ * @param {dvt.Gantt} gantt
+ * @param {Array} rowObjs
+ * @param {Object} currentRowObj
  * @param {number} currentRowIndex
+ * @param {DvtGanttTaskNode} currentNavigable
  * @return {DvtGanttTaskNode} the next task node
  * @private
  */
-DvtGanttKeyboardHandler._findNextTask = function(rows, currentRow, currentRowIndex)
+DvtGanttKeyboardHandler._findNextTask = function(gantt, rowObjs, currentRowObj, currentRowIndex, currentNavigable)
 {
-  var tasks = currentRow.getTasks();
-  if (tasks == null || tasks.length == 0)
+  var taskObjs = currentRowObj['taskObjs'];
+  if (taskObjs.length === 0)
   {
-    if (currentRowIndex == rows.length - 1)
-      return null;
+    if (currentRowIndex == rowObjs.length - 1)
+      return currentNavigable;
     else
-      return DvtGanttKeyboardHandler._findNextTask(rows, rows[currentRowIndex + 1], currentRowIndex + 1);
+      return DvtGanttKeyboardHandler._findNextTask(gantt, rowObjs, rowObjs[currentRowIndex + 1], currentRowIndex + 1, currentNavigable);
   }
   else
   {
-    return tasks[0];
+    var taskObj = taskObjs[0];
+    gantt.getDataLayoutManager().ensureInDOM(taskObj, 'task');
+    return taskObj['node'];
   }
 };
 
@@ -5739,24 +7176,20 @@ DvtGanttKeyboardHandler._findNextTask = function(rows, currentRow, currentRowInd
  * @param {DvtKeyboardNavigable=} originalNavigable The original item that initaited navigation.
  * @return {DvtKeyboardNavigable} The next navigable.
  */
-DvtGanttKeyboardHandler.getNextNavigable = function(gantt, currentNavigable, event, originalNavigable) 
+DvtGanttKeyboardHandler.getNextNavigable = function(gantt, currentNavigable, event, originalNavigable)
 {
   if (currentNavigable instanceof DvtGanttTaskNode)
   {
-    var currentRow = currentNavigable.getRow();
-    var rows = gantt.getRows();
-    var tasks = currentRow.getTasks();
-
-    // should not happen
-    if (tasks == null || tasks.length == 0)
-      return;
+    var currentRow = currentNavigable.getRowNode();
+    var rowObjs = gantt.getRowLayoutObjs();
+    var taskObjs = currentRow.getTaskObjs();
 
     var isRTL = dvt.Agent.isRightToLeft(gantt.getCtx());
-    var rowIndex = rows.indexOf(currentRow);
+    var rowIndex = currentRow.getIndex();
     switch (event.keyCode)
     {
       case (!isRTL ? dvt.KeyboardEvent.LEFT_ARROW : dvt.KeyboardEvent.RIGHT_ARROW):
-        var taskIndex = tasks.indexOf(currentNavigable);
+        var taskIndex = taskObjs.map(function(t) { return t['node']; }).indexOf(currentNavigable);
         // check if it's the first task in the row
         if (taskIndex == 0)
         {
@@ -5764,49 +7197,57 @@ DvtGanttKeyboardHandler.getNextNavigable = function(gantt, currentNavigable, eve
           if (rowIndex > 0)
           {
             // find the previous row with task
-            return DvtGanttKeyboardHandler._findPreviousTask(rows, rows[rowIndex - 1], rowIndex - 1);
+            return DvtGanttKeyboardHandler._findPreviousTask(gantt, rowObjs, rowObjs[rowIndex - 1], rowIndex - 1, currentNavigable);
           }
         }
         else
         {
-          return tasks[taskIndex - 1];
+          var taskObj = taskObjs[taskIndex - 1];
+          gantt.getDataLayoutManager().ensureInDOM(taskObj, 'task');
+          return taskObj['node'];
         }
         break;
       case (!isRTL ? dvt.KeyboardEvent.RIGHT_ARROW : dvt.KeyboardEvent.LEFT_ARROW):
-        taskIndex = tasks.indexOf(currentNavigable);
-        if (taskIndex == tasks.length - 1)
+        taskIndex = taskObjs.map(function(t) { return t['node']; }).indexOf(currentNavigable);
+        if (taskIndex == taskObjs.length - 1)
         {
           // go to the first task of the next row
-          if (rowIndex < rows.length - 1)
+          if (rowIndex < rowObjs.length - 1)
           {
             // find the next row with task
-            return DvtGanttKeyboardHandler._findNextTask(rows, rows[rowIndex + 1], rowIndex + 1);
+            return DvtGanttKeyboardHandler._findNextTask(gantt, rowObjs, rowObjs[rowIndex + 1], rowIndex + 1, currentNavigable);
           }
         }
         else
         {
-          return tasks[taskIndex + 1];
+          var taskObj = taskObjs[taskIndex + 1];
+          gantt.getDataLayoutManager().ensureInDOM(taskObj, 'task');
+          return taskObj['node'];
         }
         break;
       case dvt.KeyboardEvent.UP_ARROW:
         if (rowIndex > 0)
         {
-          currentNavigable = DvtGanttKeyboardHandler._findPreviousTask(rows, rows[rowIndex - 1], rowIndex - 1);
+          currentNavigable = DvtGanttKeyboardHandler._findPreviousTask(gantt, rowObjs, rowObjs[rowIndex - 1], rowIndex - 1, currentNavigable);
           if (currentNavigable != null)
           {
             // returns the first task of the previous row
-            return currentNavigable.getRow().getTasks()[0];
+            var taskObj = currentNavigable.getRowNode().getTaskObjs()[0];
+            gantt.getDataLayoutManager().ensureInDOM(taskObj, 'task');
+            return taskObj['node'];
           }
         }
         break;
       case dvt.KeyboardEvent.DOWN_ARROW:
-        if (rowIndex < rows.length - 1)
+        if (rowIndex < rowObjs.length - 1)
         {
-          currentNavigable = DvtGanttKeyboardHandler._findNextTask(rows, rows[rowIndex + 1], rowIndex + 1);
+          currentNavigable = DvtGanttKeyboardHandler._findNextTask(gantt, rowObjs, rowObjs[rowIndex + 1], rowIndex + 1, currentNavigable);
           if (currentNavigable != null)
           {
-            // returns the first task of the previous row
-            return currentNavigable.getRow().getTasks()[0];
+            // returns the first task of the next row
+            var taskObj = currentNavigable.getRowNode().getTaskObjs()[0];
+            gantt.getDataLayoutManager().ensureInDOM(taskObj, 'task');
+            return taskObj['node'];
           }
         }
         break;
@@ -5845,16 +7286,16 @@ DvtGanttKeyboardHandler.prototype.isNavigationEvent = function(event)
  */
 DvtGanttKeyboardHandler.prototype._getDistance = function(dep)
 {
-  var type = dep.getType();
+  var type = dep.getValue('type');
   var predecessor = dep.getPredecessorNode();
   var successor = dep.getSuccessorNode();
 
-  var date1 = (type == DvtGanttDependencyNode.START_START || type == DvtGanttDependencyNode.START_FINISH) ? predecessor.getProps()['start'] : predecessor.getProps()['end'];
+  var date1 = (type == DvtGanttDependencyNode.START_START || type == DvtGanttDependencyNode.START_FINISH) ? predecessor.getValue('start') : predecessor.getValue('end');
 
   if (type == DvtGanttDependencyNode.START_START || type == DvtGanttDependencyNode.FINISH_START)
-    var date2 = successor.getProps()['start'];
+    var date2 = successor.getValue('start');
   else
-    date2 = successor.getProps()['end'];
+    date2 = successor.getValue('end');
 
   return Math.abs(date2 - date1);
 };
@@ -5865,7 +7306,7 @@ DvtGanttKeyboardHandler.prototype._getDistance = function(dep)
  * @return {function} a function that compares to dependency lines around the node
  * @private
  */
-DvtGanttKeyboardHandler.prototype._getDependencyComparator = function() 
+DvtGanttKeyboardHandler.prototype._getDependencyComparator = function()
 {
   var self = this;
   var comparator = function(dep1, dep2) {
@@ -5904,9 +7345,9 @@ DvtGanttKeyboardHandler.prototype.getFirstNavigableDependencyLine = function(tas
     var dependencyLine = listOfLines[i];
 
     if (direction == dvt.KeyboardEvent.CLOSE_ANGLED_BRACKET)
-      var taskToCompare = isRTL ? dependencyLine.getPredecessor() : dependencyLine.getSuccessor();
+      var taskToCompare = isRTL ? dependencyLine.getValue('predecessorTaskId') : dependencyLine.getValue('successorTaskId');
     else
-      taskToCompare = isRTL ? dependencyLine.getSuccessor() : dependencyLine.getPredecessor();
+      taskToCompare = isRTL ? dependencyLine.getValue('successorTaskId') : dependencyLine.getValue('predecessorTaskId');
 
     // sanity check...
     if (dvt.Obj.compareValues(ctx, task.getId(), taskToCompare))
@@ -5932,7 +7373,7 @@ DvtGanttKeyboardHandler.prototype.getFirstNavigableDependencyLine = function(tas
  * @param {array} listOfLines the array of dependency lines for the node
  * @return {DvtGanttDependencyNode} next navigable dependency line
  */
-DvtGanttKeyboardHandler.prototype.getNextNavigableDependencyLine = function(task, currentDependencyLine, event, listOfLines) 
+DvtGanttKeyboardHandler.prototype.getNextNavigableDependencyLine = function(task, currentDependencyLine, event, listOfLines)
 {
   if (!listOfLines)
     return null;
@@ -6046,7 +7487,7 @@ DvtGanttKeyboardHandler.prototype.isMoveFinalizeEvent = function(event)
 
 /**
  * Whether keyboard event equates to cancelling a (high level) DnD dragging operation (dragging via keyboard)
- * Note that the cancelling a DnD drag (dragging via mouse) via keyboard Esc is detected in dragEnd event instead of 
+ * Note that the cancelling a DnD drag (dragging via mouse) via keyboard Esc is detected in dragEnd event instead of
  * through keyboard events, which are not fired.
  * @param {dvt.KeyboardEvent} event keyboard event
  * @return {boolean} whether key strokes equate to cancelling a move
@@ -6059,7 +7500,7 @@ DvtGanttKeyboardHandler.prototype.isDnDCancelEvent = function(event)
 /**
  * @override
  */
-DvtGanttKeyboardHandler.prototype.processKeyDown = function(event) 
+DvtGanttKeyboardHandler.prototype.processKeyDown = function(event)
 {
   var keyCode = event.keyCode;
   if (keyCode == dvt.KeyboardEvent.TAB)
@@ -6072,21 +7513,18 @@ DvtGanttKeyboardHandler.prototype.processKeyDown = function(event)
     }
     else
     {
-      // navigate to the default
-      var rows = this._gantt.getRows();
-      if (rows != null && rows.length > 0)
+      // navigate to the default: the first task of the first nonempty row
+      var rowObjs = this._gantt.getRowLayoutObjs();
+      for (var i = 0; i < rowObjs.length; i++)
       {
-        var tasks = rows[0].getTasks();
-        if (tasks != null && tasks.length > 0)
+        var rowObj = rowObjs[i];
+        var taskObjs = rowObj['taskObjs'];
+        if (taskObjs.length > 0)
         {
           dvt.EventManager.consumeEvent(event);
-          // Was 'this.getDefaultNavigable(tasks);', but that method looks at the
-          // svg bounding box, which includes labels and baseline elements, and looks at
-          // the left/right-most element in LTR/RTL based on these bounding boxes. The labels
-          // and variance tasks can mess up this logic though, so just return first task,
-          // which is gauranteed to the chronologically first since we sorted them.
-          // This is obviously also more performant.
-          return tasks[0];
+          var firstTaskObj = taskObjs[0];
+          this._gantt.getDataLayoutManager().ensureInDOM(firstTaskObj, 'task')
+          return firstTaskObj['node'];
         }
       }
     }
@@ -6283,8 +7721,7 @@ DvtGanttRenderer.renderGantt = function(gantt)
     if (gantt.isRowAxisEnabled())
       gantt.getRowAxis().adjustPosition();
 
-    DvtGanttRenderer._renderRows(gantt, timeZoomCanvas);
-    DvtGanttRenderer._renderDependencies(gantt, timeZoomCanvas);
+    DvtGanttRenderer._renderData(gantt, timeZoomCanvas);
 
     DvtGanttRenderer._renderReferenceObjects(gantt, timeZoomCanvas);
 
@@ -6299,10 +7736,13 @@ DvtGanttRenderer.renderGantt = function(gantt)
 
     if (gantt.isTimeDirScrollbarOn() || gantt.isContentDirScrollbarOn())
       DvtGanttRenderer._renderScrollbars(gantt, gantt);
+
+    gantt.setIsLastRenderValid(true);
   }
   else
   {
     DvtGanttRenderer._renderEmptyText(gantt);
+    gantt.setIsLastRenderValid(false);
   }
 };
 
@@ -6422,7 +7862,8 @@ DvtGanttRenderer._renderScrollbars = function(gantt, container)
   {
     availSpaceWidth = gantt.Width - scrollbarPadding;
     availSpaceHeight = gantt.getCanvasSize() - gantt.getAxesHeight();
-    var contentDirScrollbarDim = DvtGanttRenderer._prerenderContentDirScrollbar(gantt, gantt._scrollbarsCanvas, new dvt.Rectangle(0, 0, availSpaceWidth, availSpaceHeight));
+    var scrollbarXOffset = dvt.Agent.isRightToLeft(gantt.getCtx()) ? gantt.getScrollbarPadding() : 0;
+    var contentDirScrollbarDim = DvtGanttRenderer._prerenderContentDirScrollbar(gantt, gantt._scrollbarsCanvas, new dvt.Rectangle(scrollbarXOffset, 0, availSpaceWidth - scrollbarXOffset, availSpaceHeight));
   }
 
   if (gantt.timeDirScrollbar)
@@ -6497,6 +7938,7 @@ DvtGanttRenderer.renderRowAxis = function(gantt, container)
     // potentially rerender with rowAxis.rendered off when on before.
     if (container)
       container.removeChild(rowAxis);
+    gantt.setRowAxis(null);
   }
 };
 
@@ -6524,7 +7966,7 @@ DvtGanttRenderer._renderBackground = function(gantt)
   // not pixel aware, in cases where the edge is between two pixels (e.g. on resize), the 0.5px doesn't show up, and the
   // entire stroke disappear. Fix is to double up the pixel so there there is always > 0.5px on each side of the edge
   // and use a clippath to hide the inner half of the stroke to maintain stroke width.
-  gantt._background.SetSvgProperty('style', 'stroke-width:' + (gantt._borderWidth * 2) + 'px');
+  gantt._background.SetSvgProperty('style', 'stroke-width:' + (gantt.getBorderWidth() * 2) + 'px');
 
   gantt._background.setClassName(gantt.GetStyleClass('databody'));
   gantt._background.setPixelHinting(true);
@@ -6553,17 +7995,16 @@ DvtGanttRenderer._renderDatabodyBackground = function(gantt, container)
     databodyBackground = new dvt.Container(gantt.getCtx());
     container.addChild(databodyBackground);
     gantt.setDatabodyBackground(databodyBackground);
-
-    // Initial state: show from the top
-    databodyBackground.setTranslateY(gantt.getDatabodyStart());
+  }
+  if (gantt.getDatabody() == null)
+  {
+    // Initial state: honor scroll position
+    databodyBackground.setTranslateY(gantt.scrollPositionToTranslateY(gantt.getOptions()['scrollPosition']));
   }
 
   var cp = new dvt.ClipPath();
   cp.addRect(0, gantt.getDatabodyStart(), gantt.getContentLength(), gantt.getDatabodyHeight());
   databodyBackground.setClipPath(cp);
-
-  // Ensure databodyBackground translateY is within bounds
-  databodyBackground.setTranslateY(gantt.getBoundedContentTranslateY(databodyBackground.getTranslateY()));
 };
 
 /**
@@ -6574,23 +8015,24 @@ DvtGanttRenderer._renderDatabodyBackground = function(gantt, container)
  */
 DvtGanttRenderer._renderDnDArtifactsContainer = function(gantt, container)
 {
-  var artifactsContainer = gantt.getDnDArtifactsContainer();
-  if (artifactsContainer == null)
+  var databody = gantt.getDatabody();
+  if (databody) // don't bother in the no data case -- there's nothing to drag and drop
   {
-    artifactsContainer = new dvt.Container(gantt.getCtx());
-    gantt.setDnDArtifactsContainer(artifactsContainer);
+    var artifactsContainer = gantt.getDnDArtifactsContainer();
+    if (artifactsContainer == null)
+    {
+      artifactsContainer = new dvt.Container(gantt.getCtx());
+      gantt.setDnDArtifactsContainer(artifactsContainer);
 
-    // Initial state: show from the top
-    artifactsContainer.setTranslateY(gantt.getDatabodyStart());
+      // Initial state: sync with databody's initial state
+      artifactsContainer.setTranslateY(databody.getTranslateY());
+    }
+    container.addChild(artifactsContainer); // ensure topmost layering even on rerender
+
+    var cp = new dvt.ClipPath();
+    cp.addRect(0, gantt.getDatabodyStart(), gantt.getContentLength(), gantt.getDatabodyHeight());
+    artifactsContainer.setClipPath(cp);
   }
-  container.addChild(artifactsContainer); // ensure topmost layering even on rerender
-
-  var cp = new dvt.ClipPath();
-  cp.addRect(0, gantt.getDatabodyStart(), gantt.getContentLength(), gantt.getDatabodyHeight());
-  artifactsContainer.setClipPath(cp);
-
-  // Ensure artifactsContainer translateY is within bounds
-  artifactsContainer.setTranslateY(gantt.getBoundedContentTranslateY(artifactsContainer.getTranslateY()));
 };
 
 /**
@@ -6617,19 +8059,21 @@ DvtGanttRenderer._renderAxes = function(gantt, container)
   var majorAxis = gantt.getMajorAxis();
   var minorAxis = gantt.getMinorAxis();
   var axisPosition = gantt.getAxisPosition();
+  var majorAxisOptions = gantt.getOptions()['majorAxis'];
+  var minorAxisOptions = gantt.getOptions()['minorAxis'];
 
   if (axisPosition == 'top')
   {
     var axisStart = 0;
     if (majorAxis)
     {
-      DvtGanttRenderer._renderAxis(gantt, container, majorAxis, axisStart, gantt.getAxisHeight());
+      DvtGanttRenderer._renderAxis(gantt, container, majorAxis, axisStart, gantt.getAxisHeight(majorAxisOptions));
       axisStart = axisStart + majorAxis.getSize();
     }
 
     if (minorAxis)
     {
-      DvtGanttRenderer._renderAxis(gantt, container, minorAxis, axisStart, gantt.getAxisHeight());
+      DvtGanttRenderer._renderAxis(gantt, container, minorAxis, axisStart, gantt.getAxisHeight(minorAxisOptions));
       axisStart = axisStart + minorAxis.getSize();
     }
 
@@ -6642,7 +8086,7 @@ DvtGanttRenderer._renderAxes = function(gantt, container)
     if (majorAxis)
     {
       // _renderAxis needs to be called before calling timeAxis.getSize:
-      DvtGanttRenderer._renderAxis(gantt, container, majorAxis, null, gantt.getAxisHeight());
+      DvtGanttRenderer._renderAxis(gantt, container, majorAxis, null, gantt.getAxisHeight(majorAxisOptions));
       axisStart = axisStart - majorAxis.getSize();
       DvtGanttRenderer._positionAxis(majorAxis, axisStart);
     }
@@ -6650,7 +8094,7 @@ DvtGanttRenderer._renderAxes = function(gantt, container)
     if (minorAxis)
     {
       // _renderAxis needs to be called before calling timeAxis.getSize:
-      DvtGanttRenderer._renderAxis(gantt, container, minorAxis, axisStart, gantt.getAxisHeight());
+      DvtGanttRenderer._renderAxis(gantt, container, minorAxis, axisStart, gantt.getAxisHeight(minorAxisOptions));
       axisStart = axisStart - minorAxis.getSize();
       DvtGanttRenderer._positionAxis(minorAxis, axisStart);
     }
@@ -6784,7 +8228,7 @@ DvtGanttRenderer._renderEmptyText = function(gantt, noData)
       databody.getParent().removeChild(databody);
       gantt.setDatabody(null);
     }
-    gantt.setRows(null);
+    gantt.getDataLayoutManager().clear();
 
     var emptyTextStr = dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, 'NO_DATA', null);
     gantt.removeEmptyText();
@@ -6818,20 +8262,16 @@ DvtGanttRenderer._renderDatabody = function(gantt, container)
     container.addChild(databody);
     gantt.setDatabody(databody);
 
-    // Initial state: show from the top
-    databody.setTranslateY(gantt.getDatabodyStart());
+    // Initial state: sync with databody background's initial state
+    databody.setTranslateY(gantt.getDatabodyBackground().getTranslateY());
   }
 
   var cp = new dvt.ClipPath();
   cp.addRect(0, gantt.getDatabodyStart(), gantt.getContentLength(), gantt.getDatabodyHeight());
   databody.setClipPath(cp);
 
-  // Ensure databody translateY is within bounds
-  databody.setTranslateY(gantt.getBoundedContentTranslateY(databody.getTranslateY()));
-
-  // Ensure row axis scroll position is in sync
-  if (gantt.isRowAxisEnabled())
-    gantt.getRowAxis().setTranslateY(databody.getTranslateY() + gantt.getStartYOffset());
+  // Note row axis translateY is synced in renderData and continually synced
+  // through setDataRegionTranslateY calls
 };
 
 /**
@@ -6984,375 +8424,61 @@ DvtGanttRenderer._renderReferenceObjects = function(gantt, container)
 };
 
 /**
- * Render rows
+ * Render data (rows and dependencies)
  * @param {dvt.Gantt} gantt The gantt component
  * @param {dvt.Container} container The container to render into
  * @private
  */
-DvtGanttRenderer._renderRows = function(gantt, container)
+DvtGanttRenderer._renderData = function(gantt, container)
 {
   var options = gantt.getOptions();
-  var rows = options['rows'];
-  var isRowsCleanable = rows != null ? DvtGanttRenderer._prerenderRows(rows) : false;
-  if (gantt.isRowAxisEnabled())
-    var rowLabelContents = gantt.getRowAxis().getRowLabelContents();
-
-  if (!isRowsCleanable || rows.length == 0)
+  var rowObjs = gantt.getRowLayoutObjs();
+  var dependencyObjs = gantt.getDependencyLayoutObjs();
+  if (rowObjs.length === 0)
   {
     DvtGanttRenderer._renderEmptyText(gantt, true);
     return;
   }
 
   DvtGanttRenderer._renderDatabody(gantt, container);
-
-  var top = 0;
-  var databody = gantt.getDatabody();
-
-  var horizontalLineHeightOffset = 0;
-  if (gantt.isHorizontalGridlinesVisible())
-    horizontalLineHeightOffset = DvtGanttStyleUtils.getHorizontalGridlineWidth(options);
+  if (dependencyObjs.length > 0)
+    DvtGanttRenderer._renderDependenciesContainer(gantt, container);
 
   // Cache the base task label style dvt.CSSStyle object; it's expensive to instantiate one
   // each time we render a task label.
-  gantt.getCache().putToCache('baseTaskLabelCSSStyle', DvtGanttStyleUtils.getTaskLabelStyle(options));
-
-  if (!gantt.getRows())
-  {
-    var rowNodes = [];
-    for (var i = 0; i < rows.length; i++)
-    {
-      var rowNode = new DvtGanttRowNode(gantt, rows[i], i, top);
-      if (rowLabelContents)
-      {
-        var rowLabelContent = rowLabelContents[i];
-        rowNode.setRowLabelContent(rowLabelContent);
-      }
-
-      rowNode.render(databody);
-      rowNodes.push(rowNode);
-
-      top = top + rowNode.getRowHeight() + horizontalLineHeightOffset;
-    }
-    top = top - horizontalLineHeightOffset; // last row
-  }
-  else
-  {
-    rowNodes = DvtGanttRenderer._generateRowNodes(gantt, container);
-    for (i = 0; i < rowNodes.length; i++)
-    {
-      rowNode = rowNodes[i];
-      rowNode.setTop(top);
-      if (rowLabelContents)
-      {
-        var rowLabelContent = rowLabelContents[i];
-        rowNode.setRowLabelContent(rowLabelContent);
-      }
-
-      // for data change animations, row elements need to be in the correct order
-      // in the DOM tree to get desired layering. E.g. if row A is above row B, and if
-      // row B shifts up, we want to see elements of row B be layered on top of elements
-      // of row A when they cross path. There is a slight performance hit by ensuring this layering
-      // so we avoid this in the non-animation case.
-      if (gantt.isDCAnimationEnabled) // data change animation
-        rowNode.render(databody, i);
-      else
-        rowNode.render(databody);
-
-      top = top + rowNode.getRowHeight() + horizontalLineHeightOffset;
-    }
-    top = top - horizontalLineHeightOffset; // last row
-  }
-
-  gantt.setRows(rowNodes);
-  gantt.setContentHeight(top);
+  if (!gantt.getCache().getFromCache('baseTaskLabelCSSStyle'))
+    gantt.getCache().putToCache('baseTaskLabelCSSStyle', DvtGanttStyleUtils.getTaskLabelStyle(options));
 
   // Ensure the row dependent content containers' translateY is within bounds
-  // Note that dependency lines container and scrollbars are treated separately in their render calls
-  var dndArtifactsContainer = gantt.getDnDArtifactsContainer();
-  var databodyBackground = gantt.getDatabodyBackground();
-  var labelContainer = gantt.getRowAxis();
-  databody.setTranslateY(gantt.getBoundedContentTranslateY(databody.getTranslateY()));
-  databodyBackground.setTranslateY(gantt.getBoundedContentTranslateY(databodyBackground.getTranslateY()));
-  if (gantt.isDndEnabled() && dndArtifactsContainer)
-    dndArtifactsContainer.setTranslateY(gantt.getBoundedContentTranslateY(dndArtifactsContainer.getTranslateY()));
-  if (gantt.isRowAxisEnabled() && labelContainer)
-    labelContainer.setTranslateY(gantt.getBoundedContentTranslateY(labelContainer.getTranslateY()));
+  // and render the viewport
+  gantt.setDataRegionTranslateY(gantt.getBoundedContentTranslateY(gantt.getDatabody().getTranslateY()));
 };
 
 /**
- * Pre render rows setup: check to see that row ids are present. If not,
- * and there's a single task in the row, use the task id. Otherwise return false.
- * If all the rows are cleaned up/checked successfully, return true.
- * @param {object} rows The rows data object.
- * @return {boolean} whether the rows are cleaned/checked successfully.
- * @private
- */
-DvtGanttRenderer._prerenderRows = function(rows)
-{
-  for (var i = 0; i < rows.length; i++)
-  {
-    var row = rows[i];
-    var rowId = row['id'];
-    if (rowId == null)
-    {
-      var tasks = row['tasks'];
-      if (tasks.length == 1)
-        row['id'] = tasks[0]['id'];
-      else
-        return false;
-    }
-  }
-  return true;
-};
-
-/**
- * Intelligently generate a new set of row nodes according to new data.
- * Compares new data with current data, track differences, assign animation states, and decide what stays
- * on the screen and what doesn't.
- * Runs in O(cn) time, but the constant c is not very good. Still better than brute force O(n^2) comparison.
+ * Render dependency lines container
  * @param {dvt.Gantt} gantt The gantt component
- * @return {DvtGanttRowNodes[]} An array of DvtGanttRowNodes according to new data and current data comparisons.
+ * @param {dvt.Container} container the parent container for the dependency lines container
  * @private
  */
-DvtGanttRenderer._generateRowNodes = function(gantt)
+DvtGanttRenderer._renderDependenciesContainer = function(gantt, container)
 {
-  var ctx = gantt.getCtx();
-  var oldRowNodes = gantt.getRows();
-  var newRows = gantt.getRowsData();
-  var newRowNodes = [];
-
-  var oldRowIdRowNodeMap = new ctx.oj.Map();
-  var oldTaskIdRowIdMap = new ctx.oj.Map();
-
-  // Initially mark everything old as 'delete'
-  for (var i = 0; i < oldRowNodes.length; i++)
+  var dependenciesContainer = gantt.getDependenciesContainer();
+  if (dependenciesContainer == null)
   {
-    var oldRowNode = oldRowNodes[i];
-    oldRowNode.setRenderState('delete');
-    oldRowIdRowNodeMap.set(oldRowNode.getId(), oldRowNode);
-
-    var oldRowNodeTaskNodes = oldRowNode.getTasks();
-    for (var j = 0; j < oldRowNodeTaskNodes.length; j++)
-    {
-      var oldRowNodeTaskNode = oldRowNodeTaskNodes[j];
-      oldRowNodeTaskNode.setRenderState('delete');
-      if (oldRowNodeTaskNode.isSelected())
-      {
-        oldRowNodeTaskNode.setSelected(false);
-      }
-      oldTaskIdRowIdMap.set(oldRowNodeTaskNode.getId(), [oldRowNode.getId(), oldRowNodeTaskNode]);
-    }
-  }
-
-  var taskDefaults = gantt.getOptions()['taskDefaults'];
-  var deferredNewTaskNodeProps = new ctx.oj.Map();
-
-  // Determine states of new stuff
-  for (var i = 0; i < newRows.length; i++)
-  {
-    var newRow = newRows[i];
-    var rowId = newRow['id'];
-    var tasks = newRow['tasks'];
-
-    var rowNode = oldRowIdRowNodeMap.get(rowId);
-    if (rowNode) // row exist
-    {
-      rowNode.setRenderState('exist');
-
-      for (var j = 0; j < tasks.length; j++)
-      {
-        var task = tasks[j];
-        var taskId = task['id'];
-
-        if (rowNode.isTaskVisible(task))
-        {
-          var taskProps = rowNode.mergeTaskDefaults(task, taskDefaults);
-          var rowIdtaskNode = oldTaskIdRowIdMap.get(taskId);
-          if (rowIdtaskNode)
-          {
-            var taskRowId = rowIdtaskNode[0];
-            var taskNode = rowIdtaskNode[1];
-            if (dvt.Obj.compareValues(ctx, taskRowId, rowId)) // task exist, same row
-            {
-              taskNode.setRenderState('exist');
-            }
-            else // task exist, different row
-            {
-              taskNode.setRenderState('migrate');
-              oldRowIdRowNodeMap.get(taskRowId).removeTask(taskNode);
-              rowNode.addTask(taskNode);
-            }
-            taskNode.setProps(taskProps);
-            taskNode.setRow(rowNode);
-          }
-          else // new task
-          {
-            // Defer creating new task; see if we can use a refurbished one later for better performance
-            var deferredTaskPropsArray = deferredNewTaskNodeProps.get(rowId);
-            if (deferredTaskPropsArray)
-            {
-              deferredTaskPropsArray.push(taskProps);
-            }
-            else
-            {
-              deferredNewTaskNodeProps.set(rowId, [taskProps]);
-            }
-          }
-        }
-      }
-    }
-    else // new row
-    {
-      rowNode = new DvtGanttRowNode(gantt, newRow, i);
-      rowNode.setRenderState('add');
-
-      for (var j = 0; j < tasks.length; j++)
-      {
-        var task = tasks[j];
-        var taskId = task['id'];
-
-        if (rowNode.isTaskVisible(task))
-        {
-          var taskProps = rowNode.mergeTaskDefaults(task, taskDefaults);
-          var rowIdtaskNode = oldTaskIdRowIdMap.get(taskId);
-          if (rowIdtaskNode)
-          {
-            var taskRowId = rowIdtaskNode[0];
-            var taskNode = rowIdtaskNode[1];
-            if (taskNode) // task migrated from a different row
-            {
-              taskNode.setRenderState('migrate');
-              oldRowIdRowNodeMap.get(taskRowId).removeTask(taskNode);
-            }
-          }
-          else // new task
-          {
-            taskNode = new DvtGanttTaskNode(gantt, rowNode, taskProps);
-            taskNode.setRenderState('add');
-          }
-          rowNode.addTask(taskNode);
-          taskNode.setProps(taskProps);
-          taskNode.setRow(rowNode);
-        }
-      }
-    }
-    rowNode.setIndex(i);
-    rowNode.setProps(newRow);
-    newRowNodes.push(rowNode);
-  }
-
-  // Clear whatever came out of the sieve, and create any remaining new task nodes (from refurbished ones if any)
-  // Iterate backwards to preserve indices of loop as we remove
-  for (var i = oldRowNodes.length - 1; i >= 0; i--)
-  {
-    var oldRowNode = oldRowNodes[i];
-    if (oldRowNode.getRenderState() === 'delete')
-    {
-      oldRowNode.remove();
-    }
-    else
-    {
-      var deferredTaskPropsArray = deferredNewTaskNodeProps.get(oldRowNode.getId());
-      var oldRowNodeTaskNodes = oldRowNode.getTasks();
-      for (var j = oldRowNodeTaskNodes.length - 1; j >= 0; j--)
-      {
-        var oldRowNodeTaskNode = oldRowNodeTaskNodes[j];
-        if (oldRowNodeTaskNode.getRenderState() === 'delete')
-        {
-          // Refurbish the 'delete' task node if necessary
-          if (deferredTaskPropsArray && deferredTaskPropsArray.length > 0)
-          {
-            var deferredTaskNodeProps = deferredTaskPropsArray.pop();
-            oldRowNodeTaskNode.setRenderState('refurbish');
-            oldRowNodeTaskNode.setProps(deferredTaskNodeProps);
-          }
-          else
-          {
-            oldRowNode.removeTask(oldRowNodeTaskNode);
-          }
-          oldRowNodeTaskNode.remove(); // will take into account whether it's refurbish or actual delete
-        }
-      }
-      // Create remaining deferred new task nodes
-      if (deferredTaskPropsArray && deferredTaskPropsArray.length > 0)
-      {
-        for (var k = 0; k < deferredTaskPropsArray.length; k++)
-        {
-          deferredTaskNodeProps = deferredTaskPropsArray[k];
-          taskNode = new DvtGanttTaskNode(gantt, oldRowNode, deferredTaskNodeProps);
-          taskNode.setRenderState('add');
-          oldRowNode.addTask(taskNode);
-        }
-      }
-    }
-  }
-
-  return newRowNodes;
-};
-
-/**
- * Render dependency lines
- * @param {dvt.Gantt} gantt The gantt component
- * @param {dvt.Container=} container the parent container for the dependency lines
- * @private
- */
-DvtGanttRenderer._renderDependencies = function(gantt, container)
-{
-  // remove all existing dependency lines regardless whether it was visible/hidden
-  var deplines = gantt.getDependencyLines();
-  // container set to null for resize/zoom level cases in which we don't need to remove the lines
-  if (deplines != null && container != null)
-  {
-    deplines.removeChildren();
-  }
-
-  var options = gantt.getOptions();
-  var dependencies = options['dependencies'];
-
-  if (dependencies == null || dependencies.length == 0)
-    return;
-
-  if (deplines == null)
-  {
-    deplines = new dvt.Container(gantt.getCtx());
-    deplines.setTranslateY(gantt.getDatabodyStart());
-
-    gantt.setDependencyLines(deplines);
+    dependenciesContainer = new dvt.Container(gantt.getCtx());
+    // Initial state: sync with databody's initial state
+    dependenciesContainer.setTranslateY(gantt.getDatabody().getTranslateY());
+    container.addChild(dependenciesContainer);
+    gantt.setDependenciesContainer(dependenciesContainer);
     gantt.setDefaultMarkerId(DvtGanttRenderer._createDefaultMarker(gantt));
   }
 
-  if (container) // For initial render as well as rerender; on resize/zoom level cases, container is null
-  {
-    // Make sure dep lines are always on top of everything else, whether it's initial render or rerender
-    container.addChild(deplines);
-  }
-
-  // need to update clippath if canvas size updated
   var cp = new dvt.ClipPath();
   cp.addRect(0, gantt.getDatabodyStart(), gantt.getContentLength(), gantt.getDatabodyHeight());
-  deplines.setClipPath(cp);
+  dependenciesContainer.setClipPath(cp);
 
-  // ensure container translateY is within bounds
-  deplines.setTranslateY(gantt.getBoundedContentTranslateY(deplines.getTranslateY()));
-
-  // check if it's just updating dependency lines vs re-rendering
-  var numChildren = deplines.getNumChildren();
-  if (numChildren > 0)
-  {
-    for (var i = 0; i < numChildren; i++)
-    {
-      var dependencyNode = deplines.getChildAt(i);
-      dependencyNode.render(deplines);
-    }
-  }
-  else
-  {
-    for (i = 0; i < dependencies.length; i++)
-    {
-      dependencyNode = new DvtGanttDependencyNode(gantt, dependencies[i]);
-      dependencyNode.render(deplines);
-    }
-  }
+  // Note that translateY is synced with databody in renderData,
+  // and continually synced through setDataRegionTranslateY calls
 };
 
 /**
@@ -7414,11 +8540,48 @@ DvtGanttRowAxis.prototype.Init = function(gantt)
 };
 
 /**
- * Gets the label content type. 
- * @return {string} 'custom' if content is from provided custom renderer or 'text' otherwise, derived from the provided row label string.
+ * Gets the default row label CSSStyle object
+ * @param {boolean} useCache Whether to use a cached CSSStyle object or generate a new one
+ * @return {dvt.CSSStyle} The default row label CSSStyle object
+ */
+DvtGanttRowAxis.prototype.getDefaultRowLabelStyle = function(useCache)
+{
+  var options = this._gantt.getOptions();
+  if (!useCache)
+  {
+    return DvtGanttStyleUtils.getRowLabelStyle(options);
+  }
+
+  if (!this._defaultLabelCSSStyle)
+  {
+    this._defaultLabelCSSStyle = DvtGanttStyleUtils.getRowLabelStyle(options);
+  }
+  return this._defaultLabelCSSStyle;
+};
+
+/**
+ * Gets the CSSStyle object of the label style
+ * @param {string|Object} labelStyle The specified label style
+ * @return {dvt.CSSStyle} The CSSStyle object
  * @private
  */
-DvtGanttRowAxis.prototype._getLabelContentType = function()
+DvtGanttRowAxis.prototype._getCSSStyle = function(labelStyle)
+{
+  if (labelStyle != null && labelStyle !== '' && Object.keys(labelStyle).length !== 0)
+  {
+    // need to instantiate a new dvt.CSSStyle object because we're going to modify it
+    var customLabelCSSStyle = this.getDefaultRowLabelStyle(false);
+    customLabelCSSStyle.parseInlineStyle(labelStyle);
+    return customLabelCSSStyle
+  }
+  return this.getDefaultRowLabelStyle(true);
+};
+
+/**
+ * Gets the label content type.
+ * @return {string} 'custom' if content is from provided custom renderer or 'text' otherwise, derived from the provided row label string.
+ */
+DvtGanttRowAxis.prototype.getLabelContentType = function()
 {
   var options = this._gantt.getOptions()['rowAxis'];
   if (options['label'] && options['label']['renderer'])
@@ -7450,6 +8613,15 @@ DvtGanttRowAxis.prototype._getAvailableWidth = function(totalAvailWidth)
 };
 
 /**
+ * Gets the available width object, which contains the max width, width, and calculated width, in px. -1 width means 'max-content'
+ * @return {Object} The availableWidth object
+ */
+DvtGanttRowAxis.prototype.getAvailableWidth = function()
+{
+  return this._availableWidth;
+};
+
+/**
  * Gets the width of the row axis.
  * @return {number} the width
  */
@@ -7465,41 +8637,65 @@ DvtGanttRowAxis.prototype.getWidth = function()
  */
 DvtGanttRowAxis.prototype.render = function(totalAvailWidth, isResize)
 {
-  // Clear all previous content (unless resizing, them keep them there and update as necessary)
-  if (!isResize)
+  this._availableWidth = this._getAvailableWidth(totalAvailWidth);
+
+  if (isResize)
   {
-    this.removeChildren();
-    this._rowLabelContents = [];
+    if (this._availableWidth['width'] !== -1)
+      this._width = this._availableWidth['calculatedWidth'];
+    return;
   }
 
-  var rowsData = this._gantt.getRowsData();
-  var availableWidth = this._getAvailableWidth(totalAvailWidth);
-  var contentType = this._getLabelContentType();
-  var options = this._gantt.getOptions();
-  var labelCSSStyle = DvtGanttStyleUtils.getRowLabelStyle(options);
-  this._width = availableWidth['width'] !== -1 ? availableWidth['calculatedWidth'] : 0;
+  // Note the row axis DOM will be cleared in gantt.renderViewport(), so just need to clear _rowLabelContents
+  this._rowLabelContents = [];
+  var contentType = this.getLabelContentType();
+  var rowObjs = this._gantt.getRowLayoutObjs();
 
-  if (rowsData)
+
+  if (this._availableWidth['width'] === -1) // row axis width determined by content width
   {
-    for (var i = 0; i < rowsData.length; i++)
+    // If text content, cheaply calculate just the width of the biggest text, and defer actual rendering to when rows are rendered
+    if (contentType === 'text')
     {
-      var rowData = rowsData[i];
-
-      var labelContent = !isResize ? new DvtGanttRowLabelContent(this, contentType) : this._rowLabelContents[i];
-      labelContent.setRowIndex(i);
-      labelContent.render(rowData, labelCSSStyle, availableWidth);
-
-      if (availableWidth['width'] == -1)
+      var textStringArray = [];
+      var cssStyleArray = [];
+      for (var i = 0; i < rowObjs.length; i++)
       {
-        this._width = Math.min(Math.max(this._width, labelContent.getWidth()), availableWidth['maxWidth']);
+        var rowData = rowObjs[i]['data'];
+        var textString = rowData['label'] != null ? rowData['label'] : '';
+        var cssStyle = this._getCSSStyle(rowData['labelStyle']);
+        textStringArray.push(textString);
+        cssStyleArray.push(cssStyle);
+        this._rowLabelContents.push(null);
       }
-    
-      this._rowLabelContents.push(labelContent);    
+      this._width = dvt.TextUtils.getMaxTextStringWidth(this._gantt.getCtx(), textStringArray, cssStyleArray);
+    }
+    // If custom content, then we need to render all the contents to determine width to allocate
+    else if (contentType === 'custom')
+    {
+      this._width = 0;
+      for (var i = 0; i < rowObjs.length; i++)
+      {
+        var rowObj = rowObjs[i];
+        var labelContent = new DvtGanttRowLabelContent(this, contentType);
+        labelContent.setRowIndex(i);
+        labelContent.render(rowObj);
+        this._width = Math.max(this._width, labelContent.getWidth());
+        this._rowLabelContents.push(labelContent);
+      }
+    }
+  }
+  else // row axis width is not dependent on content width; defer actual content rendering to when rows are rendered
+  {
+    this._width = this._availableWidth['calculatedWidth'];
+    for (var i = 0; i < rowObjs.length; i++)
+    {
+      this._rowLabelContents.push(null);
     }
   }
 
-  // Make sure allocated width is integer pixels to avoid svg rendering issues
-  this._width = Math.ceil(this._width);
+  // Make sure allocated width is bounded by maxWidth, and is integer pixels to avoid svg rendering issues
+  this._width = Math.ceil(Math.min(this._width, this._availableWidth['maxWidth']));
 };
 
 /**
@@ -7520,7 +8716,7 @@ DvtGanttRowAxis.prototype.adjustPosition = function()
   var width = this._width;
   var height = this._gantt.getCanvasSize() - this._gantt.getAxesHeight();
   if (isRTL)
-    this.setTranslateX(this._gantt.getStartXOffset() + this._gantt.getCanvasLength() + this._gantt._borderWidth + DvtGanttStyleUtils.getRowAxisGap());
+    this.setTranslateX(this._gantt.getStartXOffset() + this._gantt.getCanvasLength() + this._gantt.getBorderWidth() + DvtGanttStyleUtils.getRowAxisGap());
   else
     this.setTranslateX(0);
 
@@ -7558,14 +8754,14 @@ DvtGanttRowLabelContent.prototype.Init = function(rowAxis, contentType)
 
 /**
  * Renders the row label content.
- * @param {object} rowData The associated row data object
- * @param {dvt.CSSStyle} labelCSSStyle The label css style object
- * @param {object} availabeWidth An object containing the max width, width, and calculated width, in px. -1 width means 'max-content'.
+ * @param {object} rowObj The associated row data layout object
  */
-DvtGanttRowLabelContent.prototype.render = function(rowData, labelCSSStyle, availableWidth)
+DvtGanttRowLabelContent.prototype.render = function(rowObj)
 {
+  var rowData = rowObj['data'];
   this._labelString = rowData['label'] != null ? rowData['label'] : '';
   var isRTL = dvt.Agent.isRightToLeft(this._gantt.getCtx());
+  var availableWidth = this._rowAxis.getAvailableWidth();
 
   if (this._contentType === 'custom')
   {
@@ -7579,33 +8775,28 @@ DvtGanttRowLabelContent.prototype.render = function(rowData, labelCSSStyle, avai
         this._contentDisplayable.setStyle(labelStyle);
       }
 
-      this._rowAxis.addChild(this._contentDisplayable);
       this._customContent = null;
       this._gantt.getEventManager().associate(this._contentDisplayable, this);
     }
-    
-    var renderer = this._gantt.getOptions()['rowAxis']['label']['renderer']; // must have been defined if reached here
-    
-    // maxWidth in the renderer context should be -1 if width is unbounded AND max-width is unbounded. Otherwise, width is bounded in some way, so give them that value in px
-    var maxWidthOption = this._gantt.getRowAxisMaxWidth();
-    var contextMaxWidth = (availableWidth['width'] === -1 && (maxWidthOption != null && maxWidthOption === 'none')) ? -1 : availableWidth['calculatedWidth'];
-    
-    var availableHeight = this._getAvailableHeight(rowData);
-    var customContent = renderer(this.getRendererContext(rowData, contextMaxWidth, availableHeight));
-    customContent = customContent != null ? customContent['insert'] : null;
+    this._rowAxis.addChild(this._contentDisplayable);
 
-    // Loosely based on Diagram's code. Could technically achieve same behavior by always removing this._customContent
-    // before getting here and then always adding customContent if it's not null here on, but the following structure
-    // would be helpful when we support rootElement in the renderer context (plus hover/focus renderers) in the future.
-    if (this._customContent && customContent != this._customContent)
+    if (!this._customContent)
     {
-      this._contentDisplayable.getContainerElem().removeChild(this._customContent);
-      this._customContent = null;
-    }
-    if (customContent && !this._customContent)
-    {
-      dvt.ToolkitUtils.appendChildElem(this._contentDisplayable.getContainerElem(), customContent);
-      this._customContent = customContent;
+      var renderer = this._gantt.getOptions()['rowAxis']['label']['renderer']; // must have been defined if reached here
+
+      // maxWidth in the renderer context should be -1 if width is unbounded AND max-width is unbounded. Otherwise, width is bounded in some way, so give them that value in px
+      var maxWidthOption = this._gantt.getRowAxisMaxWidth();
+      var contextMaxWidth = (availableWidth['width'] === -1 && (maxWidthOption != null && maxWidthOption === 'none')) ? -1 : availableWidth['calculatedWidth'];
+
+      var availableHeight = rowObj['height'];
+      var customContent = renderer(this.getRendererContext(rowData, contextMaxWidth, availableHeight));
+      customContent = customContent != null ? customContent['insert'] : null;
+
+      if (customContent)
+      {
+        dvt.ToolkitUtils.appendChildElem(this._contentDisplayable.getContainerElem(), customContent);
+        this._customContent = customContent;
+      }
     }
   }
   else
@@ -7617,30 +8808,19 @@ DvtGanttRowLabelContent.prototype.render = function(rowData, labelCSSStyle, avai
 
       // sets the style if specified in options
       labelStyle = rowData['labelStyle'];
-
-      if (labelStyle != null)
+      if (labelStyle != null && labelStyle !== '' && Object.keys(labelStyle).length !== 0)
       {
-        // need to instantiate a new dvt.CSSStyle object because we're going to modify it
-        var customLabelCSSStyle = DvtGanttStyleUtils.getRowLabelStyle(this._gantt.getOptions());
-        customLabelCSSStyle.parseInlineStyle(labelStyle);
         // TODO: once we fully deprecate string type in 4.0.0, remove the string logic
         if (typeof labelStyle === 'string' || labelStyle instanceof String)
           dvt.ToolkitUtils.setAttrNullNS(this._contentDisplayable.getElem(), 'style', labelStyle);
         else
           this._contentDisplayable.setStyle(labelStyle); // works if style is object
-
-        this._contentDisplayable.setCSSStyle(customLabelCSSStyle); // necessary for getDimension/fitText to obtain CSS style of the text
       }
-      else
-      {
-        this._contentDisplayable.setCSSStyle(labelCSSStyle); // necessary for getDimension/fitText to obtain CSS style of the text
-      }
+      this._contentDisplayable.setCSSStyle(this._rowAxis._getCSSStyle(labelStyle)); // necessary for getDimension/fitText to obtain CSS style of the text
 
       this._gantt.getEventManager().associate(this._contentDisplayable, this);
     }
-    // Label truncation and adding to DOM will happen in DvtGanttRowNode_finalizeRowLabelRender
-    // This has performance advantages because we'll avoid recalculating row height, what would be once here, and another during row render.
-    // Note however we cannot avoid this for custom content case because we need to provide height to the custom content renderer context
+    // Label truncation and adding to DOM will happen in DvtGanttRowNode._finalizeRowLabelRender
   }
 
   // TODO consider tweaking the logic to avoid this step when an explicit width is set on the row axis for potential performance improvements, especially for custom content
@@ -7667,76 +8847,11 @@ DvtGanttRowLabelContent.prototype.render = function(rowData, labelCSSStyle, avai
   else
   {
     // For custom content, calling getDimensions() on the contentDisplayable <g> element gives x, y relative to the container coordinate space,
-    // whereas calling getDimensions() on non custom dvt.OutputText gives x, y relative to the row axis container coordinate space, so there is no need to account for 
+    // whereas calling getDimensions() on non custom dvt.OutputText gives x, y relative to the row axis container coordinate space, so there is no need to account for
     // translations for the width/height of non custom text content.
     this._width = Math.min(contentDimensions.w, availableWidth['calculatedWidth']); // Label would have been truncated to fit if the available width is smaller than the label width
     this._height = contentDimensions.h;
   }
-};
-
-/**
- * Calculates the available height for row label content based on the row data.
- * @param {object} rowData
- * @return {number} The available height
- */
-DvtGanttRowLabelContent.prototype._getAvailableHeight = function(rowData)
-{
-  // Note: only takes into account the largest task in the row (excluding progress height), and not things like row height extensions due to overlapping tasks.
-  // Don't think it's necessary to take them into account, because most use cases probably want all the labels to be uniform
-  // Also the code is a bit redundant due to the catch 22 situation: we want to render all the row labels before actually rendering the rows, which is where the preprocessing and dimensional calculations are done.
-  // TODO: see if we can refactor and use the methods currently in DvtGanttTask to preprocess and calculate task heights
-  
-  var availableHeight = 0;
-  var tasksData = rowData['tasks'];
-
-  if (tasksData)
-  {
-    for (var i = 0; i < tasksData.length; i++)
-    {
-      var taskProps = tasksData[i];
-      var taskStart = taskProps['start'];
-      var taskEnd = taskProps['end'];
-      if (taskStart == null && taskEnd == null)
-        continue;
-      if (taskStart == null)
-        taskEnd = taskStart;
-      if (taskEnd == null)
-        taskEnd = taskStart;
-      taskStart = new Date(taskStart).getTime();
-      taskEnd = new Date(taskEnd).getTime();
-      if (taskStart <= taskEnd && taskStart >= this._gantt.getStartTime() && taskEnd <= this._gantt.getEndTime())
-      {
-        var baselineProps = taskProps['baseline'];
-        var isBaselineMilestone = false;
-        var isBaselinePresent = !((baselineProps == null) || (baselineProps['start'] == null && baselineProps['end'] == null));
-        var taskHeight = taskProps['height'] == null ? (isBaselinePresent ? DvtGanttStyleUtils.getActualTaskHeight() : DvtGanttStyleUtils.getStandaloneTaskHeight()) : taskProps['height'];
-        if (isBaselinePresent)
-        {
-          isBaselineMilestone = taskProps['type'] === 'milestone' || (baselineProps['start'] == null || baselineProps['end'] == null || baselineProps['start'] == baselineProps['end']);
-          if (isBaselineMilestone)
-          {
-            var baselineHeight = baselineProps['height'] == null ? DvtGanttStyleUtils.getActualTaskHeight() : baselineProps['height'];
-          }
-          else
-          {
-            baselineHeight = baselineProps['height'] == null ? DvtGanttStyleUtils.getBaselineTaskHeight() : baselineProps['height'];
-          }
-        }
-        else
-        {
-          baselineHeight = 0;
-        }
-
-        var heightTaskToptoBaselineBottom = isBaselineMilestone ? DvtGanttStyleUtils.getMilestoneBaselineYOffset() + Math.max(baselineHeight, taskHeight) : taskHeight + baselineHeight;
-        availableHeight = Math.max(availableHeight, heightTaskToptoBaselineBottom);
-      }
-    }
-  }
-
-  if (availableHeight == 0) // in case of empty row
-    availableHeight = DvtGanttStyleUtils.getStandaloneTaskHeight();
-
-  return availableHeight + 2 * DvtGanttStyleUtils.getTaskPadding();
 };
 
 /**
@@ -7755,7 +8870,7 @@ DvtGanttRowLabelContent.prototype.getRendererContext = function(rowData, maxWidt
       itemData.push(taskObjs[i]['_itemData']);
     }
   }
-  
+
   var dataContext = {
     'component': options['_widgetConstructor'],
     'parentElement': this._contentDisplayable.getContainerElem(),
@@ -7898,17 +9013,14 @@ DvtGanttRowLabelContent.prototype.getHeight = function()
 };
 
 /**
- * Class representing a GanttRow node.
+ * Class representing a Gantt Row node.
  * @param {dvt.Gantt} gantt the Gantt component
- * @param {object} props the properties for the node.
- * @param {number} index the initial index of the row
- * @param {number} top the top position of the row
  * @class
  * @constructor
  */
-var DvtGanttRowNode = function(gantt, props, index, top)
+var DvtGanttRowNode = function(gantt)
 {
-  this.Init(gantt, props, index, top);
+  this.Init(gantt);
 };
 
 dvt.Obj.createSubclass(DvtGanttRowNode, dvt.Container);
@@ -7916,23 +9028,23 @@ dvt.Obj.createSubclass(DvtGanttRowNode, dvt.Container);
 /**
  * Initialize the row
  * @param {dvt.Gantt} gantt the Gantt component
- * @param {object} props the properties for the node.
- * @param {number} index the initial index of the row
- * @param {number} top the top position of the row
  * @protected
  */
-DvtGanttRowNode.prototype.Init = function(gantt, props, index, top)
+DvtGanttRowNode.prototype.Init = function(gantt)
 {
   DvtGanttRowNode.superclass.Init.call(this, gantt.getCtx(), null);
 
   this._gantt = gantt;
-  this._props = props;
-  this._index = index;
-  this._top = top;
-  this._rowHeight = 0;
-  this._renderState = 'add';
-
   this._gantt.getEventManager().associate(this, this);
+};
+
+/**
+ * Retrieve the data id of the row
+ * @override
+ */
+DvtGanttRowNode.prototype.getId = function()
+{
+  return this._rowObj['id'];
 };
 
 /**
@@ -7945,21 +9057,30 @@ DvtGanttRowNode.prototype.getGantt = function()
 };
 
 /**
- * Gets the node properties/data.
- * @return {object} The properties/data for the node.
+ * Sets the layout object associated with this row node
+ * @param {Object} rowObj Row layout object
  */
-DvtGanttRowNode.prototype.getProps = function()
+DvtGanttRowNode.prototype.setLayoutObject = function(rowObj)
 {
-  return this._props;
+  this._rowObj = rowObj;
 };
 
 /**
- * Sets the node properties.
- * @param {object} props The new properties for the node.
+ * Gets the layout object associated with this row node
+ * @return {Object} The row layout object
  */
-DvtGanttRowNode.prototype.setProps = function(props)
+DvtGanttRowNode.prototype.getLayoutObject = function()
 {
-  this._props = props;
+  return this._rowObj;
+};
+
+/**
+ * Gets the data assocaited with this row node
+ * @return {Object} the data object
+ */
+DvtGanttRowNode.prototype.getData = function()
+{
+  return this._rowObj['data'];
 };
 
 /**
@@ -7968,61 +9089,16 @@ DvtGanttRowNode.prototype.setProps = function(props)
  */
 DvtGanttRowNode.prototype.getIndex = function()
 {
-  return this._index;
+  return this._rowObj['index'];
 };
 
 /**
- * Sets the index of the row.
- * @param {number} i the index of the row.
+ * Gets final y (animation independent, e.g. final y after animation finishes)
+ * @return {number} The final y.
  */
-DvtGanttRowNode.prototype.setIndex = function(i)
+DvtGanttRowNode.prototype.getFinalY = function()
 {
-  this._index = i;
-};
-
-/**
- * Retrieve the top position of the row in pixels.
- * @return {number} the top position of the row in pixels relative to the databody
- */
-DvtGanttRowNode.prototype.getTop = function()
-{
-  return this._top;
-};
-
-/**
- * Sets the top position of the row in pixels.
- * @param {number} top The top position of the row in pixels relative to the databody
- */
-DvtGanttRowNode.prototype.setTop = function(top)
-{
-  this._top = top;
-};
-
-/**
- * Retrieve the data id of the row
- * @override
- */
-DvtGanttRowNode.prototype.getId = function()
-{
-  return this._props['id'];
-};
-
-/**
- * Gets the render state.
- * @return {string} the render state.
- */
-DvtGanttRowNode.prototype.getRenderState = function()
-{
-  return this._renderState;
-};
-
-/**
- * Sets the render state.
- * @param {string} state The render state.
- */
-DvtGanttRowNode.prototype.setRenderState = function(state)
-{
-  this._renderState = state;
+  return this._rowObj['y'];
 };
 
 /**
@@ -8031,7 +9107,16 @@ DvtGanttRowNode.prototype.setRenderState = function(state)
  */
 DvtGanttRowNode.prototype.getLabel = function()
 {
-  return this._props['label'];
+  return this._rowObj['data']['label'];
+};
+
+/**
+ * Gets final y (animation independent, e.g. final y after animation finishes)
+ * @return {number} The final y.
+ */
+DvtGanttRowNode.prototype.getFinalY = function()
+{
+  return this._rowObj['y'];
 };
 
 /**
@@ -8053,366 +9138,72 @@ DvtGanttRowNode.prototype.getRowLabelContent = function()
 };
 
 /**
- * Determine whether task is visible.
- * @param {object} taskProps task properties
- * @return {boolean} whether the task bounds are within the viewport of interest
+ * Gets the render state.
+ * @return {string} the render state.
  */
-DvtGanttRowNode.prototype.isTaskVisible = function(taskProps)
+DvtGanttRowNode.prototype.getRenderState = function()
 {
-  var isTaskRepVisible = this._isElementVisible(taskProps);
-  var isBaselineVisible = this._isElementVisible(taskProps['baseline']);
-  return isTaskRepVisible || isBaselineVisible;
+  return this._rowObj['renderState'];
 };
 
 /**
- * Determine whether time bounds are within visible range. Also converts time bounds to milliseconds.
- * @param {object} props Object containing 'start' and 'end'
- * @return {boolean} whether the time bounds are within the gantt overall time bounds
- * @private
+ * Retrieve task layout objs of the row.
+ * @return {Array} an array of task layout objs.
  */
-DvtGanttRowNode.prototype._isElementVisible = function(props)
+DvtGanttRowNode.prototype.getTaskObjs = function()
 {
-  if (props)
-  {
-    // start/end only supports number or string type, e.g. excludes Date object type
-    // TODO: Remove number type support after complete deprecation in future release
-    var startType = typeof props['start'];
-    var endType = typeof props['end'];
-    if ((props['start'] == null || startType === 'string' || startType === 'number') &&
-        (props['end'] == null || endType === 'string' || endType === 'number'))
-    {
-      props['start'] = this._getDate(props['start']);
-      props['end'] = this._getDate(props['end']);
-
-      if (!(props['start'] == null && props['end'] == null))
-      {
-        var start = this._gantt.getStartTime();
-        var end = this._gantt.getEndTime();
-        var endTime = props['end'] ? props['end'] : props['start'];
-        var startTime = props['start'];
-        return !(endTime < start || startTime > end || end < start);
-      }
-    }
-  }
-  return false;
+  return this._rowObj['taskObjs'];
 };
 
 /**
- * Merge task properties with default properties.
- * @param {object} taskProps task properties
- * @param {object} taskDefaults task default properties
- * @return {object} The task properties merged with task defaults
+ * Renders the row to specified container.
+ * @param {dvt.Container} container the container
  */
-DvtGanttRowNode.prototype.mergeTaskDefaults = function(taskProps, taskDefaults)
+DvtGanttRowNode.prototype.render = function(container)
 {
-  var baselineProps = taskProps['baseline'];
-  var progressProps = taskProps['progress'];
-
-  // If app set to null, merge won't assume it's not specified. Need to be explicitly undefined for it to merge with the defaults.
-  if (baselineProps == null)
+  var taskObjs = this._rowObj['taskObjs'];
+  taskObjs.sort(function(a, b) {
+    return a['startTime'] - b['startTime'];
+  });
+  for (var i = 0; i < taskObjs.length; i++)
   {
-    taskProps['baseline'] = undefined;
-  }
-  if (progressProps == null)
-  {
-    taskProps['progress'] = undefined;
-  }
-
-  if (baselineProps && !(baselineProps['start'] == null && baselineProps['end'] == null))
-  {
-    // If app didn't set a height value on the task or on the task defaults, then use the default height for when the baseline is present
-    if (taskProps['height'] == null && taskDefaults['height'] === DvtGanttStyleUtils.getStandaloneTaskHeight())
+    var taskObj = taskObjs[i];
+    var taskNode = taskObj['node'];
+    if (!taskNode)
     {
-      taskProps['height'] = DvtGanttStyleUtils.getActualTaskHeight();
+      var taskNode = new DvtGanttTaskNode(this._gantt);
+      taskNode.setLayoutObject(taskObj);
+      taskObj['node'] = taskNode;
     }
 
-    var taskType = taskProps['type'] ? taskProps['type'] : taskDefaults['type'];
-    var isBaselineMilestone = (taskType === 'milestone') || (taskType === 'auto' && (baselineProps['start'] == baselineProps['end'] || baselineProps['start'] == null || baselineProps['end'] == null));
-    // If app didn't set a height value on the baseline or on the task defaults, and the baseline is a milestone, then use the default height
-    if (isBaselineMilestone && baselineProps['height'] == null && taskDefaults['baseline']['height'] === DvtGanttStyleUtils.getBaselineTaskHeight())
-    {
-      baselineProps['height'] = DvtGanttStyleUtils.getActualTaskHeight();
-    }
-  }
-  return dvt.JsonUtils.merge(taskProps, taskDefaults);
-};
-
-/**
- * Retrieve tasks of the row. Returns empty array if given tasks is null or undefined.
- * @return {Array} an array of DvtGanttTaskNode each representing a task.
- */
-DvtGanttRowNode.prototype.getTasks = function()
-{
-  var tasks = this._props['tasks'];
-  if (tasks == null)
-  {
-    this._tasks = [];
-  }
-  if (tasks && this._tasks == null)
-  {
-    this._tasks = [];
-    for (var i = 0; i < tasks.length; i++)
-    {
-      var task = tasks[i];
-      if (this.isTaskVisible(task))
-      {
-        task = this.mergeTaskDefaults(task, this._gantt.getOptions()['taskDefaults']);
-        this._tasks.push(new DvtGanttTaskNode(this._gantt, this, task));
-      }
-    }
-    this.sortTasks();
-  }
-
-  return this._tasks;
-};
-
-/**
- * Adds task node to task list.
- * @param {DvtGanttTaskNode} taskNode The task node to add.
- */
-DvtGanttRowNode.prototype.addTask = function(taskNode)
-{
-  if (this._tasks == null)
-    this._tasks = [taskNode];
-  else
-    this._tasks.push(taskNode);
-};
-
-/**
- * Removes task node from task list.
- * @param {DvtGanttTaskNode} taskNode The task node to remove.
- */
-DvtGanttRowNode.prototype.removeTask = function(taskNode)
-{
-  if (this._tasks != null)
-  {
-    var taskNodeIndex = this._tasks.indexOf(taskNode);
-    if (taskNodeIndex > -1)
-      this._tasks.splice(taskNodeIndex, 1);
-  }
-};
-
-/**
- * Sorts the task list by ascending start dates.
- */
-DvtGanttRowNode.prototype.sortTasks = function()
-{
-  if (this._tasks != null)
-  {
-    this._tasks.sort(function(a, b) {
-      var aProps = a.getProps();
-      var bProps = b.getProps();
-      var dateA = aProps['start'] ? aProps['start'] : aProps['end'];
-      var dateB = bProps['start'] ? bProps['start'] : bProps['end'];
-      return dateA - dateB;
-    });
-  }
-};
-
-/**
- * Assign each task its overlap level in the row.
- * @param {array} tasks The array of task nodes (sorted)
- * @return {array} The cumulative height sum array
- */
-DvtGanttRowNode.prototype.assignRowLevel = function(tasks)
-{
-  var task, taskHeightWithPadding, i, j, rowLevel, promote, previousAdjacentTaskNode,
-      oldPreviousAdjacentTaskNode, oldNextAdjacentTaskNode,
-      rowLevelBaselineMilestones = [],
-      rowLevelRecentTasks = [], rowLevelHeights = [];
-
-  // If no tasks in the row, still show empty row with height as if a single task is there.
-  if (tasks.length == 0)
-  {
-    return [DvtGanttStyleUtils.getStandaloneTaskHeight() + 2 * DvtGanttStyleUtils.getTaskPadding()];
-  }
-
-  // determine task top before rendering based on whether it overlaps with other tasks
-  // if n tasks:
-  //    best case: no tasks in the row overlap --> O(n)
-  //    worst case: all tasks in the row overlap --> O(n^2)
-  //    General: O(cn) where c is maximum # of tasks taking up the row height vertically. In most cases, c is constant, or essentially constant for c << n.
-  for (i = 0; i < tasks.length; i++)
-  {
-    task = tasks[i];
-    taskHeightWithPadding = task.getFinalHeight() + 2 * DvtGanttStyleUtils.getTaskPadding();
-    rowLevel = 0;
-    previousAdjacentTaskNode = null;
-
-    if (rowLevelRecentTasks.length === 0)
-    {
-      rowLevelRecentTasks.push(task);
-      rowLevelHeights.push(taskHeightWithPadding);
-    }
-    else
-    {
-      promote = true;
-      for (j = 0; j < rowLevelRecentTasks.length; j++)
-      {
-        if (task.overlaps(rowLevelRecentTasks[j]))
-        {
-          rowLevel += 1;
-        }
-        else
-        {
-          previousAdjacentTaskNode = rowLevelRecentTasks[j];
-          rowLevelRecentTasks[j] = task;
-          if (taskHeightWithPadding > rowLevelHeights[j])
-          {
-            rowLevelHeights[j] = taskHeightWithPadding;
-          }
-          promote = false;
-          break;
-        }
-      }
-      if (promote)
-      {
-        rowLevelRecentTasks.push(task);
-        rowLevelHeights.push(taskHeightWithPadding);
-      }
-    }
-    task.setRowLevel(rowLevel);
-
-    // Clear any old adjacency relationships
-    oldPreviousAdjacentTaskNode = task.getPreviousAdjacentTaskNode();
-    oldNextAdjacentTaskNode = task.getNextAdjacentTaskNode();
-    if (oldPreviousAdjacentTaskNode)
-    {
-      oldPreviousAdjacentTaskNode.setNextAdjacentTaskNode(null);
-    }
-    if (oldNextAdjacentTaskNode)
-    {
-      oldNextAdjacentTaskNode.setPreviousAdjacentTaskNode(null);
-    }
-    task.setPreviousAdjacentTaskNode(null);
-    task.setNextAdjacentTaskNode(null);
-
-    // Set new relationships
-    if (previousAdjacentTaskNode)
-    {
-      task.setPreviousAdjacentTaskNode(previousAdjacentTaskNode);
-      previousAdjacentTaskNode.setNextAdjacentTaskNode(task);
-    }
-  }
-
-  // Track row level baseline milestones (used later for label auto positioning, since baseline milestones can collide with labels)
-  // O(blgb + cn) algo to find baseline milestones between tasks. Most cases b is small (few baseline milestones) so essentially linear time
-  task.setPrevAdjMilestoneBaselineTaskNode(null);
-  task.setNextAdjMilestoneBaselineTaskNode(null);
-  for (j = 0; j < rowLevelRecentTasks.length; j++)
-  {
-    rowLevelBaselineMilestones.push([]);
-  }
-  for (i = 0; i < tasks.length; i++)
-  {
-    task = tasks[i];
-    if (task.getTask().isMilestone('baseline'))
-    {
-      rowLevelBaselineMilestones[task.getRowLevel()].push(task);
-    }
-  }
-  for (j = 0; j < rowLevelRecentTasks.length; j++)
-  {
-    rowLevelBaselineMilestones[j].sort(function(a, b) {
-      var aBaselineProps = a.getProps()['baseline'];
-      var bBaselineProps = b.getProps()['baseline'];
-      var dateA = aBaselineProps['start'] ? aBaselineProps['start'] : aBaselineProps['end'];
-      var dateB = bBaselineProps['start'] ? bBaselineProps['start'] : bBaselineProps['end'];
-      return dateB - dateA; // descending order by time
-    });
-  }
-  for (i = 0; i < tasks.length; i++)
-  {
-    task = tasks[i];
-    var baselineMilestones = rowLevelBaselineMilestones[task.getRowLevel()];
-    var numMilestones = baselineMilestones.length;
-    if (numMilestones > 0)
-    {
-      var taskNodeWithBaseline = baselineMilestones[numMilestones - 1];
-      var baselineProps = taskNodeWithBaseline.getProps()['baseline'];
-      var baselineTime = baselineProps['start'] ? baselineProps['start'] : baselineProps['end'];
-      var currentTaskProps = task.getProps();
-      var currentTaskStart = currentTaskProps['start'] ? currentTaskProps['start'] : currentTaskProps['end'];
-      var currentTaskEnd = currentTaskProps['end'] ? currentTaskProps['end'] : currentTaskProps['start'];
-      if (baselineTime < currentTaskStart)
-      {
-        task.setPrevAdjMilestoneBaselineTaskNode(taskNodeWithBaseline);
-        baselineMilestones.pop();
-      }
-      else if (baselineTime > currentTaskEnd && task.getNextAdjMilestoneBaselineTaskNode() == null)
-      {
-        task.setNextAdjMilestoneBaselineTaskNode(taskNodeWithBaseline);
-      }
-      else if (baselineTime == currentTaskStart || baselineTime == currentTaskEnd)
-      {
-        baselineMilestones.pop();
-      }
-    }
-  }
-
-  // return cumulative height sum array
-  return rowLevelHeights.reduce(function(r, v, i) {
-    r.push((r[i - 1] || 0) + v);
-    return r;
-  }, []);
-};
-
-/**
- * Renders the row to specified container. The row node is added to the container child list
- * at the specified index. If not specified, row node is simply appened to the end of the child list.
- * @param {dvt.Container} container the container to host artifacts of the row including tasks.
- * @param {number=} index The index of the container child list to add to.
- */
-DvtGanttRowNode.prototype.render = function(container, index)
-{
-  this.sortTasks();
-  var taskNodes = this.getTasks(); // always an array, albeit may be empty
-  var rowLevelHeights = this.assignRowLevel(taskNodes);
-  for (var i = 0; i < taskNodes.length; i++)
-  {
-    var taskNode = taskNodes[i];
-    var taskProps = taskNode.getProps();
     var task = taskNode.getTask();
-    var taskRepBounds = task.getTimeSpanDimensions(taskProps['start'], taskProps['end']);
+    var taskRepBounds = task.getTimeSpanDimensions(taskNode.getValue('start'), taskNode.getValue('end'));
     if (!taskRepBounds)
     {
-      taskRepBounds = task.getTimeSpanDimensions(taskProps['baseline']['start'], taskProps['baseline']['end']);
+      taskRepBounds = task.getTimeSpanDimensions(taskNode.getValue('baseline', 'start'), taskNode.getValue('baseline', 'end'));
     }
-    var x = taskRepBounds['startPos'];
-    var rowLevel = 0;
-    if (taskNode.getRowLevel() > 0)
-    {
-      rowLevel = rowLevelHeights[taskNode.getRowLevel() - 1];
-    }
-    taskNode.setFinalY(rowLevel + this.getTop() + DvtGanttStyleUtils.getTaskPadding());
-    taskNode.setFinalX(x);
+    taskObj['x'] = taskRepBounds['startPos'];
     taskNode.render(this);
   }
+
   // Need to render task labels AFTER all task shapes are rendered for auto label positioning
-  for (var j = 0; j < taskNodes.length; j++)
+  for (var j = 0; j < taskObjs.length; j++)
   {
-    taskNode = taskNodes[j];
+    taskObj = taskObjs[j];
+    taskNode = taskObj['node'];
     var taskLabel = taskNode.getTaskLabel();
     var task = taskNode.getTask();
     taskLabel.setAssociatedShape(task.getShape('main'));
     taskLabel.render();
   }
 
-  this.setRowHeight(rowLevelHeights[rowLevelHeights.length - 1]);
-
-  if (this._gantt.isRowAxisEnabled())
+  if (this._gantt.isRowAxisEnabled() && this._gantt.getRowAxis())
     this._finalizeRowLabelRender(this._gantt);
 
-  if (this.getParent() != container)
-  {
-    if (index != null)
-      container.addChildAt(this, index);
-    else
-      container.addChild(this);
-  }
+  this._renderBackground(this._gantt, this._gantt.getDatabodyBackground());
+  this._renderHorizontalGridline(this._gantt, this);
 
-  this._renderBackground(this._gantt, this._gantt.getDatabodyBackground(), this);
-  this._renderHorizontalGridline(this._gantt, this, this);
+  container.addChild(this);
 };
 
 /**
@@ -8423,6 +9214,8 @@ DvtGanttRowNode.prototype._finalizeRowLabelRender = function(gantt)
 {
   var isRTL = dvt.Agent.isRightToLeft(gantt.getCtx());
   var labelContent = this.getRowLabelContent();
+  var top = this.getFinalY();
+  var height = this._rowObj['height'];
 
   var rowAxis = gantt.getRowAxis();
   if (labelContent.getContentType() === 'custom')
@@ -8436,7 +9229,7 @@ DvtGanttRowNode.prototype._finalizeRowLabelRender = function(gantt)
       labelDisplayable.setTextString(labelDisplayable.getUntruncatedTextString());
 
     // Truncate label to fit
-    dvt.TextUtils.fitText(labelDisplayable, rowAxis.getWidth(), this.getRowHeight(), rowAxis, 1);
+    dvt.TextUtils.fitText(labelDisplayable, rowAxis.getWidth(), height, rowAxis, 1);
 
     if (!isRTL)
     {
@@ -8449,7 +9242,7 @@ DvtGanttRowNode.prototype._finalizeRowLabelRender = function(gantt)
     }
   }
 
-  var y = ((this.getTop() + (this.getTop() + this.getRowHeight())) - labelContent.getHeight()) / 2;
+  var y = ((top + (top + height)) - labelContent.getHeight()) / 2;
   labelContent.setRow(this);
 
   var finalStates = {
@@ -8475,15 +9268,14 @@ DvtGanttRowNode.prototype._finalizeRowLabelRender = function(gantt)
  * Renders the row background.
  * @param {dvt.Gantt} gantt The gantt component
  * @param {dvt.Container} container The container to render into.
- * @param {DvtGanttRowNode} row The row
  * @private
  */
-DvtGanttRowNode.prototype._renderBackground = function(gantt, container, row)
+DvtGanttRowNode.prototype._renderBackground = function(gantt, container)
 {
   var x = 0,
-      y = row.getTop(),
+      y = this._rowObj['y'],
       w = gantt.getContentLength(),
-      h = row.getRowHeight(),
+      h = this._rowObj['height'],
       renderState = 'exist', finalStates;
 
   if (!this._background)
@@ -8491,12 +9283,12 @@ DvtGanttRowNode.prototype._renderBackground = function(gantt, container, row)
     this._background = new dvt.Rect(gantt.getCtx(), x, y, w, h);
     this._background.setPixelHinting(true);
     this._background.setClassName(gantt.GetStyleClass('row'));
-    container.addChild(this._background);
     renderState = 'add';
 
     // Explicitly associate the row background with the DvtGanttRowNode, since the background is not a direct child.
     this._gantt.getEventManager().associate(this._background, this);
   }
+  container.addChild(this._background);
 
   finalStates = {
     'y': y,
@@ -8519,10 +9311,9 @@ DvtGanttRowNode.prototype.getBackground = function()
  * Renders horizontal grid lines
  * @param {dvt.Gantt} gantt The gantt component
  * @param {dvt.Container} container The container to render into.
- * @param {DvtGanttRowNode} row The row
  * @private
  */
-DvtGanttRowNode.prototype._renderHorizontalGridline = function(gantt, container, row)
+DvtGanttRowNode.prototype._renderHorizontalGridline = function(gantt, container)
 {
   var x1, x2, y1, y2, renderState = 'exist', finalStates,
       gridlineStyleClass = gantt.GetStyleClass('hgridline'),
@@ -8535,7 +9326,7 @@ DvtGanttRowNode.prototype._renderHorizontalGridline = function(gantt, container,
 
   if (gantt.isHorizontalGridlinesVisible())
   {
-    y1 = row.getTop() + row.getRowHeight() + yOffset;
+    y1 = this._rowObj['y'] + this._rowObj['height'] + yOffset;
     y2 = y1;
     x1 = 0;
     x2 = gantt.getContentLength();
@@ -8646,43 +9437,6 @@ DvtGanttRowNode.prototype._removeRowLabel = function()
   }
 };
 
-
-/**
- * Retrieves the height of the row
- * @return {number} the height of the row
- */
-DvtGanttRowNode.prototype.getRowHeight = function()
-{
-  return this._rowHeight;
-};
-
-/**
- * Sets the row height if the new height is greater than current.
- * @param {number} rowHeight The row height.
- */
-DvtGanttRowNode.prototype.setRowHeight = function(rowHeight)
-{
-  this._rowHeight = rowHeight;
-};
-
-/**
- * Helper method to get date in milliseconds.
- * @param {Date|string|number} date
- * @return {number} date is milliseconds
- * @private
- */
-DvtGanttRowNode.prototype._getDate = function(date)
-{
-  if (date == null || date === '')
-    return null;
-  else if (date.getTime) // check function reference
-    return date.getTime();
-  else if (!isNaN(date))
-    return date;
-  else
-    return (new Date(date)).getTime();
-};
-
 /**
  * Returns the data context (e.g. for DnD, etc.)
  * @return {object}
@@ -8690,7 +9444,7 @@ DvtGanttRowNode.prototype._getDate = function(date)
 DvtGanttRowNode.prototype.getDataContext = function()
 {
   return {
-    'rowData': this.getProps(),
+    'rowData': this.getData(),
     'component': this._gantt.getOptions()['_widgetConstructor']
   };
 };
@@ -8698,35 +9452,28 @@ DvtGanttRowNode.prototype.getDataContext = function()
 /**
  * Class representing a task container (i.e. container for shapes and labels that make up a task).
  * @param {dvt.Gantt} gantt The gantt component
- * @param {DvtGanttRowNode} row The row node.
- * @param {object} props The properties for the task.
  * @class
  * @constructor
  * @implements {DvtKeyboardNavigable}
  * @implements {DvtSelectable}
  * @implements {DvtDraggable}
  */
-var DvtGanttTaskNode = function(gantt, row, props)
+var DvtGanttTaskNode = function(gantt)
 {
-  this.Init(gantt, row, props);
+  this.Init(gantt);
 };
 
 dvt.Obj.createSubclass(DvtGanttTaskNode, dvt.Container);
 
 /**
  * @param {dvt.Gantt} gantt The gantt component
- * @param {DvtGanttRowNode} row The row node.
- * @param {object} props The properties for the task.
  * @protected
  */
-DvtGanttTaskNode.prototype.Init = function(gantt, row, props)
+DvtGanttTaskNode.prototype.Init = function(gantt)
 {
   DvtGanttTaskNode.superclass.Init.call(this, gantt.getCtx(), null);
 
   this._gantt = gantt;
-  this._row = row;
-  this._props = props;
-  this._renderState = 'add';
 
   this._task = new DvtGanttTask(gantt, this);
   this._taskLabel = new DvtGanttTaskLabel(gantt, this);
@@ -8735,46 +9482,12 @@ DvtGanttTaskNode.prototype.Init = function(gantt, row, props)
 };
 
 /**
- * Gets the node properties/data.
- * @return {object} The properties/data for the node.
- */
-DvtGanttTaskNode.prototype.getProps = function()
-{
-  return this._props;
-};
-
-/**
- * Gets a copy of node properties/data that is meant to be updated/manipulated to reflect
- * any intermediate states of a task (e.g. the state of the task feedback during drag, 
- * which is not final until dragend, and can potentially be cancelled before)
- * @return {object} Mutable object of properties/data for the node.
- */
-DvtGanttTaskNode.prototype.getSandboxProps = function()
-{
-  if (!this._sandboxProps)
-  {
-    this._sandboxProps = dvt.JsonUtils.merge(this._props, {});
-    this._sandboxProps['row'] = this.getRow();
-  }
-  return this._sandboxProps;
-};
-
-/**
- * Sets the properties for the node.
- * @param {object} props The properties.
- */
-DvtGanttTaskNode.prototype.setProps = function(props)
-{
-  this._props = props;
-};
-
-/**
  * Gets the task data id.
  * @override
  */
 DvtGanttTaskNode.prototype.getId = function()
 {
-  return this._props['id'];
+  return this._taskObj['id'];
 };
 
 /**
@@ -8786,21 +9499,157 @@ DvtGanttTaskNode.prototype.getActiveElementId = function()
 };
 
 /**
- * Gets the row associated with the task
- * @return {DvtGanttRowNode} the row
+ * Sets the layout object associated with this task node
+ * @param {Object} taskObj Task layout object
  */
-DvtGanttTaskNode.prototype.getRow = function()
+DvtGanttTaskNode.prototype.setLayoutObject = function(taskObj)
 {
-  return this._row;
+  this._taskObj = taskObj;
 };
 
 /**
- * Sets the row associated with the task
- * @param {DvtGanttRowNode} row The row node
+ * Gets the layout object associated with this task node
+ * @return {Object} The task layout object
  */
-DvtGanttTaskNode.prototype.setRow = function(row)
+DvtGanttTaskNode.prototype.getLayoutObject = function()
 {
-  this._row = row;
+  return this._taskObj;
+};
+
+/**
+ * Gets the data assocaited with this task node
+ * @return {Object} the data object
+ */
+DvtGanttTaskNode.prototype.getData = function()
+{
+  return this._taskObj['data'];
+};
+
+/**
+ * Gets the value of query property/subproperty of the task.
+ * @param {string} property The top level property name
+ * @param {string=} subProperty The subproperty name (optional)
+ * @return {*} The value
+ */
+DvtGanttTaskNode.prototype.getValue = function(property, subProperty)
+{
+  // Old strategy was to merge data properties with taskDefaults properties before downstream accesses.
+  // However, merging the objects for every single task we render, especially if only a small subset of the
+  // properties are accessed downdstream, is expensive. Having this method for on demand value access is more efficient.
+  var taskDefaults = this._gantt.getOptions()['taskDefaults'];
+  var value;
+  switch (property)
+  {
+    case 'start':
+      value = this._taskObj['startTime'];
+      break;
+    case 'end':
+      value = this._taskObj['endTime'];
+      break;
+    case 'height':
+      value = this._taskObj['height'];
+      break;
+    case 'baseline':
+      if (subProperty === 'height')
+      {
+        value = this._taskObj['baselineHeight'];
+        break;
+      }
+      value = this._taskObj['data']['baseline'];
+      if (value && subProperty != null)
+      {
+        switch (subProperty)
+        {
+          case 'start':
+            value = this._taskObj['baselineStartTime'];
+            break;
+          case 'end':
+            value = this._taskObj['baselineEndTime'];
+            break;
+          default:
+            value = value[subProperty] != null ? value[subProperty] : taskDefaults['baseline'][subProperty];
+        }
+      }
+      break;
+    case 'progress':
+      if (subProperty === 'height')
+      {
+        value = this._taskObj['progressHeight'];
+        break;
+      }
+      value = this._taskObj['data']['progress'];
+      if (value && subProperty != null)
+      {
+        value = value[subProperty] != null ? value[subProperty] : taskDefaults['progress'][subProperty];
+      }
+      break;
+    default: // assume top level property access
+      value = this._taskObj['data'][property] != null ? this._taskObj['data'][property] : taskDefaults[property];
+  }
+  return value;
+};
+
+/**
+ * Gets the value from sandbox data (see also getSandboxData() function description)
+ * @param {string} property The top level property name
+ * @param {string} subProperty The subproperty name (optional)
+ * @return {*} The value
+ */
+DvtGanttTaskNode.prototype.getSandboxValue = function(property, subProperty)
+{
+  var sandboxData = this.getSandboxData();
+  var taskDefaults = this._gantt.getOptions()['taskDefaults'];
+  var value = sandboxData[property];
+  var defaultValue = taskDefaults[property];
+  if (value && subProperty != null)
+  {
+    value = value[subProperty];
+  }
+  if (defaultValue && subProperty != null)
+  {
+    defaultValue = defaultValue[subProperty];
+  }
+  return value != null ? value : defaultValue;
+};
+
+/**
+ * Gets a copy of node properties/data that is meant to be updated/manipulated to reflect
+ * any intermediate states of a task (e.g. the state of the task feedback during drag,
+ * which is not final until dragend, and can potentially be cancelled before)
+ * @return {object} Mutable object of properties/data for the node.
+ */
+DvtGanttTaskNode.prototype.getSandboxData = function()
+{
+  if (!this._sandboxData)
+  {
+    this._sandboxData = dvt.JsonUtils.clone(this._taskObj['data']);
+    this._sandboxData['_rowNode'] = this.getRowNode();
+    this._sandboxData['start'] = this._taskObj['startTime'];
+    this._sandboxData['end'] = this._taskObj['endTime'];
+    this._sandboxData['height'] = this._taskObj['height'];
+    var sandboxBaseline = this._sandboxData['baseline'];
+    if (sandboxBaseline)
+    {
+      sandboxBaseline['start'] = this._taskObj['baselineStartTime'];
+      sandboxBaseline['end'] = this._taskObj['baselineEndTime'];
+      sandboxBaseline['height'] = this._taskObj['baselineHeight'];
+    }
+    var sandboxProgress = this._sandboxData['progress'];
+    if (sandboxProgress)
+    {
+      sandboxProgress['height'] = this._taskObj['progressHeight'];
+    }
+  }
+  return this._sandboxData;
+};
+
+/**
+ * Gets the row node associated with the task
+ * @return {DvtGanttRowNode} the row node
+ */
+DvtGanttTaskNode.prototype.getRowNode = function()
+{
+  return this._taskObj['rowObj']['node'];
 };
 
 /**
@@ -8818,34 +9667,7 @@ DvtGanttTaskNode.prototype.getGantt = function()
  */
 DvtGanttTaskNode.prototype.getRenderState = function()
 {
-  return this._renderState;
-};
-
-/**
- * Sets the render state
- * @param {string} state The render state
- */
-DvtGanttTaskNode.prototype.setRenderState = function(state)
-{
-  this._renderState = state;
-};
-
-/**
- * Gets the row level (overlap promotion level within a row)
- * @return {string} the row level
- */
-DvtGanttTaskNode.prototype.getRowLevel = function()
-{
-  return this._rowLevel;
-};
-
-/**
- * Sets the row level (overlap promotion level within a row)
- * @param {string} rowLevel The row level
- */
-DvtGanttTaskNode.prototype.setRowLevel = function(rowLevel)
-{
-  this._rowLevel = rowLevel;
+  return this._taskObj['renderState'];
 };
 
 /**
@@ -8854,16 +9676,7 @@ DvtGanttTaskNode.prototype.setRowLevel = function(rowLevel)
  */
 DvtGanttTaskNode.prototype.getPreviousAdjacentTaskNode = function()
 {
-  return this._previousAdjacentTaskNode;
-};
-
-/**
- * Sets the previous adjacent task node
- * @param {DvtGanttTaskNode} previousAdjacentTaskNode
- */
-DvtGanttTaskNode.prototype.setPreviousAdjacentTaskNode = function(previousAdjacentTaskNode)
-{
-  this._previousAdjacentTaskNode = previousAdjacentTaskNode;
+  return this._taskObj['previousAdjacentTaskObj'] ? this._taskObj['previousAdjacentTaskObj']['node'] : null;
 };
 
 /**
@@ -8872,16 +9685,7 @@ DvtGanttTaskNode.prototype.setPreviousAdjacentTaskNode = function(previousAdjace
  */
 DvtGanttTaskNode.prototype.getNextAdjacentTaskNode = function()
 {
-  return this._nextAdjacentTaskNode;
-};
-
-/**
- * Sets the next adjacent task node
- * @param {DvtGanttTaskNode} nextAdjacentTaskNode
- */
-DvtGanttTaskNode.prototype.setNextAdjacentTaskNode = function(nextAdjacentTaskNode)
-{
-  this._nextAdjacentTaskNode = nextAdjacentTaskNode;
+  return this._taskObj['nextAdjacentTaskObj'] ? this._taskObj['nextAdjacentTaskObj']['node'] : null;
 };
 
 /**
@@ -8890,16 +9694,7 @@ DvtGanttTaskNode.prototype.setNextAdjacentTaskNode = function(nextAdjacentTaskNo
  */
 DvtGanttTaskNode.prototype.getPrevAdjMilestoneBaselineTaskNode = function()
 {
-  return this._previousAdjacentMilestoneBaselineTaskNode;
-};
-
-/**
- * Sets the previous adjacent baseline task node
- * @param {DvtGanttTaskNode} previousAdjacentMilestoneBaselineTaskNode
- */
-DvtGanttTaskNode.prototype.setPrevAdjMilestoneBaselineTaskNode = function(previousAdjacentMilestoneBaselineTaskNode)
-{
-  this._previousAdjacentMilestoneBaselineTaskNode = previousAdjacentMilestoneBaselineTaskNode;
+  return this._taskObj['prevAdjMilestoneBaselineTaskObj'] ? this._taskObj['prevAdjMilestoneBaselineTaskObj']['node'] : null;
 };
 
 /**
@@ -8908,95 +9703,7 @@ DvtGanttTaskNode.prototype.setPrevAdjMilestoneBaselineTaskNode = function(previo
  */
 DvtGanttTaskNode.prototype.getNextAdjMilestoneBaselineTaskNode = function()
 {
-  return this._nextAdjacentMilestoneBaselineTaskNode;
-};
-
-/**
- * Sets the next adjacent task node
- * @param {DvtGanttTaskNode} nextAdjacentMilestoneBaselineTaskNode
- */
-DvtGanttTaskNode.prototype.setNextAdjMilestoneBaselineTaskNode = function(nextAdjacentMilestoneBaselineTaskNode)
-{
-  this._nextAdjacentMilestoneBaselineTaskNode = nextAdjacentMilestoneBaselineTaskNode;
-};
-
-/**
- * Whether a given task node overlaps this task node
- * @param {DvtGanttTaskNode} taskNode The task node in question
- * @return {boolean} whether the given task node overlaps this task node
- */
-DvtGanttTaskNode.prototype.overlaps = function(taskNode)
-{
-  var thisOverallStart = this.getOverallStartTime(),
-      thisOverallEnd = this.getOverallEndTime(),
-      thatOverallStart = taskNode.getOverallStartTime(),
-      thatOverallEnd = taskNode.getOverallEndTime();
-
-  // Decision now is if task1 ends at the same time task2 starts, they are still not overlapping.
-  // If we decide that they should be considered overlapping, change the < to <=
-  return thisOverallStart < thatOverallEnd && thatOverallStart < thisOverallEnd;
-};
-
-/**
- * Gets the overall start time of the task node,
- * i.e. the earliest time of all the elements of the task,
- * e.g. if a task node contains only a main shape and a baseline shape,
- * and the main shape starts at t_j, and baseline starts at t_i
- * such that t_j > t_i, then the overall start time is t_i
- *
- * @return {number} the overall start time
- */
-DvtGanttTaskNode.prototype.getOverallStartTime = function()
-{
-  var mainStart = this._props['start'] ? this._props['start'] : this._props['end'],
-      baselineProps = this._props['baseline'],
-      baselineStart = null;
-
-  if (baselineProps)
-  {
-    baselineStart = this._props['baseline']['start'] ? this._props['baseline']['start'] : this._props['baseline']['end'];
-  }
-
-  if (mainStart == null)
-  {
-    return baselineStart;
-  }
-  else if (baselineStart == null)
-  {
-    return mainStart;
-  }
-  return Math.min(mainStart, baselineStart);
-};
-
-/**
- * Gets the overall end time of the task node,
- * i.e. the latest time of all the elements of the task,
- * e.g. if a task node contains only a main shape and a baseline shape,
- * and the main shape ends at t_j, and baseline ends at t_i
- * such that t_j > t_i, then the overall end time is t_j
- *
- * @return {number} the overall end time
- */
-DvtGanttTaskNode.prototype.getOverallEndTime = function()
-{
-  var mainEnd = this._props['end'] ? this._props['end'] : this._props['start'],
-      baselineProps = this._props['baseline'],
-      baselineEnd = null;
-
-  if (baselineProps)
-  {
-    baselineEnd = this._props['baseline']['end'] ? this._props['baseline']['end'] : this._props['baseline']['start'];
-  }
-
-  if (mainEnd == null)
-  {
-    return baselineEnd;
-  }
-  else if (baselineEnd == null)
-  {
-    return mainEnd;
-  }
-  return Math.max(mainEnd, baselineEnd);
+  return this._taskObj['nextAdjMilestoneBaselineTaskObj'] ? this._taskObj['nextAdjMilestoneBaselineTaskObj']['node'] : null;
 };
 
 /**
@@ -9099,6 +9806,9 @@ DvtGanttTaskNode.prototype.dragEndCleanup = function()
 {
   // Remove all DnD artifacts
   this.hideDnDArtifacts();
+
+  // reset sandbox data
+  this._sandboxData = null;
 };
 
 /**
@@ -9111,9 +9821,12 @@ DvtGanttTaskNode.prototype.dragEndCleanup = function()
  */
 DvtGanttTaskNode.prototype.showDragFeedback = function(event, localPos, dropObj, dropOffset, autoPanOff)
 {
-  if (this._draggedObj)
+  var eventManager = this._gantt.getEventManager();
+  // Don't do anything if the eventManager doesn't exist anymore, which is possible because this method is invoked
+  // in requestAnimationFrame, and it's possible a requestAnimationFrame callback is invoked after the gantt is destroyed.
+  if (this._draggedObj && eventManager)
   {
-    var dragSourceType = this._gantt.getEventManager().getDnDTaskSubType(this._draggedObj);
+    var dragSourceType = eventManager.getDnDTaskSubType(this._draggedObj);
 
     var isRTL = dvt.Agent.isRightToLeft(this._gantt.getCtx());
     var orientationFactor = isRTL ? 1 : -1;
@@ -9154,7 +9867,7 @@ DvtGanttTaskNode.prototype.showDragFeedback = function(event, localPos, dropObj,
           // TODO: consider moving the offsets and time properties to within DvtGanttTaskShape (or a subclass of it)
           this._mainDragFeedbackOffsets = [new dvt.Point(0, 0)];
           // time information is necessary for updating the feedback, e.g. in case the Gantt resized during move the feedback needs to be placed correctly under the new time axis.
-          this._mainDragFeedbacksStartTime = [(this.getProps()['start'] != null) ? this.getProps()['start'] : this.getProps()['end']];
+          this._mainDragFeedbacksStartTime = [this.getValue('start')];
           artifactsContainer.addChild(referenceDragFeedback);
 
           if (this._gantt.isSelectionSupported() && this.isSelected() && this._gantt.getSelectionHandler().getSelectedCount() > 1)
@@ -9173,7 +9886,7 @@ DvtGanttTaskNode.prototype.showDragFeedback = function(event, localPos, dropObj,
                 dragFeedback = new DvtGanttTaskShape(this._gantt.getCtx(), dragFeedbackLocalX, dragFeedbackLocalY, mainShape.getFinalWidth(), mainShape.getFinalHeight(), mainShape.getBorderRadius(), selectionObj.getTask(), 'mainDragFeedback');
                 this._mainDragFeedbacks.push(dragFeedback);
                 this._mainDragFeedbackOffsets.push(new dvt.Point(offsetFromReferenceX, offsetFromReferenceY));
-                this._mainDragFeedbacksStartTime.push((selectionObj.getProps()['start'] != null) ? selectionObj.getProps()['start'] : selectionObj.getProps()['end']);
+                this._mainDragFeedbacksStartTime.push(selectionObj.getValue('start'));
                 artifactsContainer.addChild(dragFeedback);
               }
             }
@@ -9181,27 +9894,27 @@ DvtGanttTaskNode.prototype.showDragFeedback = function(event, localPos, dropObj,
         }
 
         // Show tooltip
-        var sandboxProps = this.getSandboxProps();
+        var sandboxData = this.getSandboxData();
         if (dropObj)
         {
           if (dropObj instanceof DvtGanttRowNode)
           {
-            sandboxProps['row'] = dropObj;
+            sandboxData['_rowNode'] = dropObj;
           }
           else if (dropObj instanceof DvtGanttTaskNode)
           {
-            sandboxProps['row'] = dropObj.getRow();
+            sandboxData['_rowNode'] = dropObj.getRowNode();
           }
         }
-        
+
         var sandboxStartTimePos = isRTL ? ganttContentLength - referenceFinalLocalX : referenceFinalLocalX;
         var sandboxEndTimePos = isRTL ? ganttContentLength - (referenceFinalLocalX - referenceMainShape.getFinalWidth()) : referenceFinalLocalX + referenceMainShape.getFinalWidth();
-        sandboxProps['start'] = dvt.TimeAxis.getPositionDate(ganttStartTime, ganttEndTime, sandboxStartTimePos, ganttContentLength);
-        sandboxProps['end'] = dvt.TimeAxis.getPositionDate(ganttStartTime, ganttEndTime, sandboxEndTimePos, ganttContentLength);
+        sandboxData['start'] = dvt.TimeAxis.getPositionDate(ganttStartTime, ganttEndTime, sandboxStartTimePos, ganttContentLength);
+        sandboxData['end'] = dvt.TimeAxis.getPositionDate(ganttStartTime, ganttEndTime, sandboxEndTimePos, ganttContentLength);
 
         var coords = this._mainDragFeedbacks[0].getDimensions(this.getCtx().getStage()).getCenter();
         var pageCoords = this.getCtx().stageToPageCoords(coords.x, coords.y);
-        this._gantt.getEventManager().ProcessObjectTooltip(event, pageCoords.x, pageCoords.y, this, this._mainDragFeedbacks[0].getElem());
+        eventManager.ProcessObjectTooltip(event, pageCoords.x, pageCoords.y, this, this._mainDragFeedbacks[0].getElem());
         break;
     }
   }
@@ -9267,7 +9980,7 @@ DvtGanttTaskNode.prototype.removeDragFeedbacks = function()
 DvtGanttTaskNode.prototype.hideDnDArtifacts = function(exclude)
 {
   var task = this.getTask();
-  this.removeDragFeedbacks();  
+  this.removeDragFeedbacks();
 };
 
 /**
@@ -9297,8 +10010,7 @@ DvtGanttTaskNode.prototype.render = function(container)
   var finalStates;
 
   // Clear any dependencies from previous renders
-  this._successors = null;
-  this._predecessors = null;
+  this.clearDependencies();
 
   if (this.isSelectable())
     this.setCursor(dvt.SelectionEffectUtils.getSelectingCursor());
@@ -9319,8 +10031,8 @@ DvtGanttTaskNode.prototype.render = function(container)
   this._updateDragFeedbacks();
 
   finalStates = {
-    'x': this._finalX,
-    'y': this._finalY
+    'x': this.getFinalX(),
+    'y': this.getFinalY()
   };
   this._gantt.getAnimationManager().preAnimateTaskNode(this, finalStates);
 };
@@ -9333,13 +10045,19 @@ DvtGanttTaskNode.prototype.remove = function()
   var onEnd, self = this;
 
   onEnd = function() {
-    if (self.getRenderState() === 'delete')
-    {
-      self._row.removeChild(self);
-    }
+    self.getRowNode().removeChild(self);
   };
 
   this._gantt.getAnimationManager().preAnimateTaskNodeRemove(this, onEnd);
+};
+
+/**
+ * Clears any stored predecessors and successors of the task
+ */
+DvtGanttTaskNode.prototype.clearDependencies = function()
+{
+  this._successors = null;
+  this._predecessors = null;
 };
 
 /**
@@ -9388,16 +10106,7 @@ DvtGanttTaskNode.prototype.getSuccessorDependencies = function()
  */
 DvtGanttTaskNode.prototype.getFinalX = function()
 {
-  return this._finalX;
-};
-
-/**
- * Sets final x
- * @param {number} finalX The final x
- */
-DvtGanttTaskNode.prototype.setFinalX = function(finalX)
-{
-  this._finalX = finalX;
+  return this._taskObj['x'];
 };
 
 /**
@@ -9406,16 +10115,7 @@ DvtGanttTaskNode.prototype.setFinalX = function(finalX)
  */
 DvtGanttTaskNode.prototype.getFinalY = function()
 {
-  return this._finalY;
-};
-
-/**
- * Sets final y
- * @param {number} finalY The final y
- */
-DvtGanttTaskNode.prototype.setFinalY = function(finalY)
-{
-  this._finalY = finalY;
+  return this._taskObj['y'];
 };
 
 /**
@@ -9457,7 +10157,7 @@ DvtGanttTaskNode.prototype.getDuration = function(startTime, endTime)
  * Gets the aria label
  * @return {string} the aria label string.
  */
-DvtGanttTaskNode.prototype.getAriaLabel = function() 
+DvtGanttTaskNode.prototype.getAriaLabel = function()
 {
   var states = [];
   var options = this._gantt.getOptions();
@@ -9531,7 +10231,7 @@ DvtGanttTaskNode.prototype.refreshAriaLabel = function()
  * when the activeElement is set.
  * @private
  */
-DvtGanttTaskNode.prototype._updateAriaLabel = function() 
+DvtGanttTaskNode.prototype._updateAriaLabel = function()
 {
   this.setAriaProperty('label', this.getAriaLabel());
   this.applyAriaProperties();
@@ -9543,11 +10243,11 @@ DvtGanttTaskNode.prototype._updateAriaLabel = function()
  */
 DvtGanttTaskNode.prototype.getDataContext = function()
 {
-  var data = this.getProps();
+  var data = this.getData();
   var itemData = data['_itemData'];
   return {
     'data': data,
-    'rowData': this._row.getProps(),
+    'rowData': this.getRowNode().getData(),
     'itemData': itemData ? itemData : null,
     'color': DvtGanttTooltipUtils.getDatatipColor(this),
     'component': this._gantt.getOptions()['_widgetConstructor']
@@ -9556,21 +10256,63 @@ DvtGanttTaskNode.prototype.getDataContext = function()
 
 /**
  * Gets a dataContext object that is meant to be updated/manipulated to reflect
- * any intermediate states of a task (e.g. the state of the task feedback during drag, 
+ * any intermediate states of a task (e.g. the state of the task feedback during drag,
  * which is not final until dragend, and can potentially be cancelled before)
  * @return {object} Mutable dataContext object
  */
 DvtGanttTaskNode.prototype.getSandboxDataContext = function()
 {
-  var data = this.getSandboxProps();
+  var data = this.getSandboxData();
+  // ensure dates are iso strings
+  data['start'] = new Date(data['start']).toISOString();
+  data['end'] = new Date(data['start']).toISOString();
+  if (data['baseline'])
+  {
+    data['baseline']['start'] = new Date(data['baseline']['start']).toISOString();
+    data['baseline']['end'] = new Date(data['baseline']['end']).toISOString();
+  }
+
   var itemData = data['_itemData'];
   return {
     'data': data,
-    'rowData': data['row'].getProps(),
+    'rowData': data['_rowNode'].getData(),
     'itemData': itemData ? itemData : null,
     'color': DvtGanttTooltipUtils.getDatatipColor(this),
     'component': this._gantt.getOptions()['_widgetConstructor']
   };
+};
+
+/**
+ * Sets selection state
+ * @param {boolean} selected
+ * @param {boolean=} enforceDOMLayering Whether to re-layer the DOM, which can be expensive. Defaults to true.
+ * @private
+ */
+DvtGanttTaskNode.prototype._setSelected = function(selected, enforceDOMLayering)
+{
+  this._selected = selected;
+
+  if (this._selected)
+  {
+    this._task.showEffect('selected');
+  }
+  else
+  {
+    this._task.removeEffect('selected', enforceDOMLayering);
+  }
+
+  this._updateAriaLabel();
+
+  this._gantt.setCurrentRow(this.getRowNode().getId());
+};
+
+/**
+ * Clears selection state (without enforcing DOM layering)
+ */
+DvtGanttTaskNode.prototype.clearSelectionState = function()
+{
+  // Clear selection state only, and don't bother trying to enforce DOM layering
+  this._setSelected(false, false);
 };
 
 //---------------------------------------------------------------------//
@@ -9596,7 +10338,7 @@ DvtGanttTaskNode.prototype.getDatatipColor = function() {
 /**
  * @override
  */
-DvtGanttTaskNode.prototype.isSelectable = function() 
+DvtGanttTaskNode.prototype.isSelectable = function()
 {
   return this._gantt.getOptions()['selectionMode'] != 'none';
 };
@@ -9604,7 +10346,7 @@ DvtGanttTaskNode.prototype.isSelectable = function()
 /**
  * @override
  */
-DvtGanttTaskNode.prototype.isSelected = function() 
+DvtGanttTaskNode.prototype.isSelected = function()
 {
   return this._selected;
 };
@@ -9614,27 +10356,15 @@ DvtGanttTaskNode.prototype.isSelected = function()
  */
 DvtGanttTaskNode.prototype.setSelected = function(selected)
 {
-  this._selected = selected;
-
-  if (this._selected)
-  {
-    this._task.showEffect('selected');
-  }
-  else
-  {
-    this._task.removeEffect('selected');
-  }
-
-  this._updateAriaLabel();
-
-  this._gantt.setCurrentRow(this.getRow().getId());
+  // Set selection and ensure proper DOM layering
+  this._setSelected(selected, true);
 };
 
 /**
  * Show hover effect on task bar
  * @override
  */
-DvtGanttTaskNode.prototype.showHoverEffect = function() 
+DvtGanttTaskNode.prototype.showHoverEffect = function()
 {
   this._task.showEffect('hover');
 };
@@ -9643,7 +10373,7 @@ DvtGanttTaskNode.prototype.showHoverEffect = function()
  * Hide hover effect on task bar
  * @override
  */
-DvtGanttTaskNode.prototype.hideHoverEffect = function() 
+DvtGanttTaskNode.prototype.hideHoverEffect = function()
 {
   this._task.removeEffect('hover');
 };
@@ -9655,7 +10385,7 @@ DvtGanttTaskNode.prototype.hideHoverEffect = function()
 /**
  * @override
  */
-DvtGanttTaskNode.prototype.getNextNavigable = function(event) 
+DvtGanttTaskNode.prototype.getNextNavigable = function(event)
 {
   var next = null;
   var keyboardHandler = this._gantt.getEventManager().getKeyboardHandler();
@@ -9689,7 +10419,7 @@ DvtGanttTaskNode.prototype.getNextNavigable = function(event)
 /**
  * @override
  */
-DvtGanttTaskNode.prototype.getTargetElem = function() 
+DvtGanttTaskNode.prototype.getTargetElem = function()
 {
   return this._task.getShape('main').getElem();
 };
@@ -9697,7 +10427,7 @@ DvtGanttTaskNode.prototype.getTargetElem = function()
 /**
  * @override
  */
-DvtGanttTaskNode.prototype.getKeyboardBoundingBox = function(targetCoordinateSpace) 
+DvtGanttTaskNode.prototype.getKeyboardBoundingBox = function(targetCoordinateSpace)
 {
   return this.getDimensions(targetCoordinateSpace);
 };
@@ -9705,7 +10435,7 @@ DvtGanttTaskNode.prototype.getKeyboardBoundingBox = function(targetCoordinateSpa
 /**
  * @override
  */
-DvtGanttTaskNode.prototype.showKeyboardFocusEffect = function() 
+DvtGanttTaskNode.prototype.showKeyboardFocusEffect = function()
 {
   this._isShowingKeyboardFocusEffect = true;
   this._task.showEffect('focus');
@@ -9823,39 +10553,56 @@ DvtGanttTask.prototype.getShape = function(shapeType)
 
 /**
  * Retrieve the style of the task
- * @param {object} parentProp The level of option that directly contains the svgStyle and svgClassName
+ * @param {string=} property If not at the options root level, the property that would yield the options containing the svgStyle
  * @return {string|object} the style of the task
  */
-DvtGanttTask.prototype.getSvgStyle = function(parentProp)
+DvtGanttTask.prototype.getSvgStyle = function(property)
 {
+  var svgStyle;
   // TODO: Once we finish deprecating 'style' just retrieve 'svgStyle'
-  return parentProp['svgStyle'] ? parentProp['svgStyle'] : parentProp['style'];
+  if (property == null)
+  {
+    svgStyle = this._container.getValue('svgStyle');
+    return svgStyle ? svgStyle : this._container.getValue('style');
+  }
+  svgStyle = this._container.getValue(property, 'svgStyle');
+  return svgStyle ? svgStyle : this._container.getValue(property, 'style');
 };
 
 /**
  * Retrieve the class name of the task
- * @param {object} parentProp
+ * @param {string=} property If not at the options root level, the property that would yield the options containing the svgClassName
  * @return {string} the class name of the task
  */
-DvtGanttTask.prototype.getSvgClassName = function(parentProp)
+DvtGanttTask.prototype.getSvgClassName = function(property)
 {
+  var svgClassName;
   // TODO: Once we finish deprecating 'className' just retrieve 'svgClassName'
-  return parentProp['svgClassName'] ? parentProp['svgClassName'] : parentProp['className'];
+  if (property == null)
+  {
+    svgClassName = this._container.getValue('svgClassName');
+    return svgClassName ? svgClassName : this._container.getValue('className');
+  }
+  svgClassName = this._container.getValue(property, 'svgClassName');
+  return svgClassName ? svgClassName : this._container.getValue(property, 'className');
 };
 
 /**
  * Applies svgStyle and svgClassname
  * @param {DvtGanttTaskShape} taskShape The target task shape
- * @param {object} parentProp The level of option that directly contains the svgStyle and svgClassName
+ * @param {string=} property If not at the options root level, the property that would yield the options containing the svgStyle/svgClassName
  * @private
  */
-DvtGanttTask.prototype._applyStyles = function(taskShape, parentProp)
+DvtGanttTask.prototype._applyStyles = function(taskShape, property)
 {
-  var svgClassName = this.getSvgClassName(parentProp),
-      svgStyle = this.getSvgStyle(parentProp);
+  var svgClassName = this.getSvgClassName(property),
+      svgStyle = this.getSvgStyle(property);
 
   if (svgClassName)
   {
+    // Apply default class names, which also removes any previous svgClassNames
+    taskShape.applyDefaultStyleClasses();
+    // Concatenate the default class names with the provided svgClassName
     taskShape.setClassName(taskShape.getClassName() + ' ' + svgClassName);
   }
 
@@ -9877,27 +10624,26 @@ DvtGanttTask.prototype._applyStyles = function(taskShape, parentProp)
  */
 DvtGanttTask.prototype.isMilestone = function(elementType)
 {
-  var taskProps = this._container.getProps(),
-      baselineProps = taskProps['baseline'],
-      start, end;
+  var start, end,
+      type = this._container.getValue('type');
 
-  if (taskProps['type'] === 'milestone')
+  if (type === 'milestone')
   {
     return true;
   }
-  else if (taskProps['type'] === 'auto')
+  else if (type === 'auto')
   {
     if (elementType === 'mainDragFeedback' || DvtGanttTaskShape.MAIN_TYPES.indexOf(elementType) > -1)
     {
-      start = taskProps['start'];
-      end = taskProps['end'];
+      start = this._container.getValue('start');
+      end = this._container.getValue('end');
     }
     else if (DvtGanttTaskShape.BASELINE_TYPES.indexOf(elementType) > -1)
     {
-      start = baselineProps['start'];
-      end = baselineProps['end'];
+      start = this._container.getValue('baseline', 'start');
+      end = this._container.getValue('baseline', 'end');
     }
-    return (start != null && start == end) || (start != null && end == null) || (start == null && end != null);
+    return start != null && start == end;
   }
   return false;
 };
@@ -9910,8 +10656,7 @@ DvtGanttTask.prototype.isMilestone = function(elementType)
 DvtGanttTask.prototype.isSummary = function(elementType)
 {
   // For now, whether a task is displayed as a summary is purely based on whether task type is 'summary'
-  var taskProps = this._container.getProps();
-  return elementType === 'main' && taskProps['type'] === 'summary';
+  return elementType === 'main' && this._container.getValue('type') === 'summary';
 };
 
 /**
@@ -9930,15 +10675,6 @@ DvtGanttTask.prototype.getTimeSpanDimensions = function(start, end)
 
   if (!(start == null && end == null))
   {
-    if (start == null)
-    {
-      start = end;
-    }
-    else if (end == null)
-    {
-      end = start;
-    }
-
     startPos = dvt.TimeAxis.getDatePosition(ganttMinTime, ganttMaxTime, start, ganttWidth);
     endPos = dvt.TimeAxis.getDatePosition(ganttMinTime, ganttMaxTime, end, ganttWidth);
 
@@ -9982,29 +10718,8 @@ DvtGanttTask.prototype.getFillColor = function()
  */
 DvtGanttTask.prototype.getFinalHeight = function(excludeProgress)
 {
-  // Calculate based on options so that one can call this method
-  // before task is fully rendered
-  var taskProps = this._container.getProps();
-  var baselineProps = taskProps['baseline'];
-
-  var taskHeight = taskProps['height'];
-  var baselineHeight = 0;
-  if (baselineProps && !(baselineProps['start'] == null && baselineProps['end'] == null))
-  {
-    baselineHeight = baselineProps['height'];
-  }
-
-  var heightTaskToptoBaselineBottom = this.isMilestone('baseline') ? DvtGanttStyleUtils.getMilestoneBaselineYOffset() + Math.max(baselineHeight, taskHeight) : taskHeight + baselineHeight;
-
-  if (!excludeProgress)
-  {
-    var progressHeight = this.getProgressValue() !== null ? this.getProgressHeight() : 0;
-    if (taskHeight < progressHeight)
-    {
-      return Math.max(progressHeight, (progressHeight - taskHeight) / 2 + heightTaskToptoBaselineBottom);
-    }
-  }
-  return heightTaskToptoBaselineBottom;
+  var taskObj = this._container.getLayoutObject();
+  return excludeProgress ? taskObj['overallHeightNoProgress'] : taskObj['overallHeight'];
 };
 
 /**
@@ -10019,10 +10734,11 @@ DvtGanttTask.prototype.showEffect = function(effectType)
 /**
  * Removes the task effects
  * @param {string} effectType The effect type (selected, hover, or focus)
+ * @param {boolean=} enforceDOMLayering Whether to re-layer the DOM, which can be expensive. Defaults to true.
  */
-DvtGanttTask.prototype.removeEffect = function(effectType)
+DvtGanttTask.prototype.removeEffect = function(effectType, enforceDOMLayering)
 {
-  this.removeMainEffect(effectType);
+  this.removeMainEffect(effectType, enforceDOMLayering);
 };
 
 /**
@@ -10030,14 +10746,14 @@ DvtGanttTask.prototype.removeEffect = function(effectType)
  */
 DvtGanttTask.prototype.render = function()
 {
-  // Task elements y positioning depends on progress bar height. Precalculate this value:
-  var progressHeight = this.getProgressValue() !== null ? this.getProgressHeight() : 0;
+  // Task elements y positioning depends on progress bar height.
+  var progressHeight = this._container.getValue('progress', 'height');
 
   // Rendering in this order to ensure desired stacking on initial render
   this.renderBaseline(progressHeight);
   this.renderMain(progressHeight);
   this.renderProgress(progressHeight);
-  if (this._container.getProps()['type'] === 'summary' && this._mainShape)
+  if (this._container.getValue('type') === 'summary' && this._mainShape)
   {
     this._container.addChild(this._mainShape); // summary shapes should be on top of everything
   }
@@ -10070,28 +10786,31 @@ DvtGanttTask.prototype.getRenderState = function(shapeType)
  */
 DvtGanttTask.prototype.renderBaseline = function(progressHeight)
 {
-  var taskProps = this._container.getProps(), isMilestone,
-      baselineProps = taskProps['baseline'], yOffset,
+  var isMilestone,
+      baselineProps = this._container.getValue('baseline'), baselineStart, baselineEnd,
+      yOffset,
       self = this, finalStates, offsetDim,
       onRenderEnd, baselineDim, x, y, width, height, borderRadius;
 
   if (baselineProps)
   {
     // If type is "milestone", and if 'start' and 'end' values are specified and unequal, the 'start' value is used to evaluate position.
-    baselineDim = this.getTimeSpanDimensions(baselineProps['start'], (taskProps['type'] === 'milestone' && baselineProps['start'] != null && baselineProps['start'] != baselineProps['end']) ? baselineProps['start'] : baselineProps['end']);
+    baselineStart = this._container.getValue('baseline', 'start');
+    baselineEnd = this._container.getValue('baseline', 'end');
+    baselineDim = this.getTimeSpanDimensions(baselineStart, (this._container.getValue('type') === 'milestone' && baselineStart != baselineEnd) ? baselineStart : baselineEnd);
     if (baselineDim)
     {
       // Determine offset from main element
-      offsetDim = this.getTimeSpanDimensions(taskProps['start'] ? taskProps['start'] : taskProps['end'], baselineProps['start']);
+      offsetDim = this.getTimeSpanDimensions(this._container.getValue('start'), baselineStart);
 
       isMilestone = this.isMilestone('baseline');
 
       // Calculate final dimensions
       x = offsetDim ? offsetDim['distance'] : 0;
       width = Math.abs(baselineDim['distance']);
-      height = baselineProps['height'];
-      yOffset = isMilestone ? Math.max(taskProps['height'], height) + DvtGanttStyleUtils.getMilestoneBaselineYOffset() - height : taskProps['height'];
-      y = Math.max(0, (progressHeight - taskProps['height']) / 2) + yOffset;
+      height = this._container.getValue('baseline', 'height');
+      yOffset = isMilestone ? Math.max(this._container.getValue('height'), height) + DvtGanttStyleUtils.getMilestoneBaselineYOffset() - height : this._container.getValue('height');
+      y = Math.max(0, (progressHeight - this._container.getValue('height')) / 2) + yOffset;
       borderRadius = baselineProps['borderRadius'];
 
       // element doesn't exist in DOM already
@@ -10111,7 +10830,7 @@ DvtGanttTask.prototype.renderBaseline = function(progressHeight)
       }
       else
       {
-        this._baselineShape.setRenderState(this._container.getRenderState() === 'refurbish' ? 'add' : 'exist');
+        this._baselineShape.setRenderState('exist');
         if (isMilestone) // case where was bar baseline, but turned to milestone baseline on rerender, then make sure it's behind everything
         {
           this._container.addChildAt(this._baselineShape, 0);
@@ -10127,7 +10846,7 @@ DvtGanttTask.prototype.renderBaseline = function(progressHeight)
 
       onRenderEnd = function() {
         // Apply styles (default classes handled by DvtGanttTaskShape instance)
-        self._applyStyles(self._baselineShape, baselineProps);
+        self._applyStyles(self._baselineShape, 'baseline');
       };
 
       finalStates = {
@@ -10172,15 +10891,17 @@ DvtGanttTask.prototype.removeBaseline = function()
  */
 DvtGanttTask.prototype.renderMain = function(progressHeight)
 {
-  var taskProps = this._container.getProps(),
-      taskHeight = taskProps['height'],
+  var taskProps = this._container.getData(),
+      taskHeight = this._container.getValue('height'),
+      start = this._container.getValue('start'),
+      end = this._container.getValue('end'),
       self = this, finalStates,
       onRenderEnd, mainDim, x, y, width, height, borderRadius;
 
   if (taskProps)
   {
     // If type is "milestone", and if 'start' and 'end' values are specified and unequal, the 'start' value is used to evaluate position.
-    mainDim = this.getTimeSpanDimensions(taskProps['start'], (taskProps['type'] === 'milestone' && taskProps['start'] != null && taskProps['start'] != taskProps['end']) ? taskProps['start'] : taskProps['end']);
+    mainDim = this.getTimeSpanDimensions(start, (this._container.getValue('type') === 'milestone' && start != end) ? start : end);
     if (mainDim)
     {
       // Calculate final dimensions
@@ -10189,7 +10910,7 @@ DvtGanttTask.prototype.renderMain = function(progressHeight)
       width = Math.abs(mainDim['distance']);
       // Summary task case, want the summary task shape to take on the full height
       height = this.isSummary('main') ? this._container.getFinalHeight(true) : taskHeight;
-      borderRadius = taskProps['borderRadius'];
+      borderRadius = this._container.getValue('borderRadius');
 
       if (this._mainShape == null) // element doesn't exist in DOM already
       {
@@ -10199,7 +10920,7 @@ DvtGanttTask.prototype.renderMain = function(progressHeight)
       }
       else
       {
-        this._mainShape.setRenderState(this._container.getRenderState() === 'refurbish' ? 'add' : 'exist');
+        this._mainShape.setRenderState('exist');
       }
 
       // Since final dimensions are not applied until after animations (if any), store
@@ -10213,7 +10934,7 @@ DvtGanttTask.prototype.renderMain = function(progressHeight)
       onRenderEnd = function() {
         // Apply styles (default classes handled by DvtGanttTaskShape instance)
         self._fillColor = null; // clear cached fill color
-        self._applyStyles(self._mainShape, taskProps);
+        self._applyStyles(self._mainShape);
       };
 
       finalStates = {
@@ -10280,9 +11001,13 @@ DvtGanttTask.prototype.showMainEffect = function(effectType)
 /**
  * Removes the main shape effect
  * @param {string} effectType The effect type (selected, hover, or focus)
+ * @param {boolean=} enforceDOMLayering Whether to re-layer the DOM, which can be expensive. Defaults to true.
  */
-DvtGanttTask.prototype.removeMainEffect = function(effectType)
+DvtGanttTask.prototype.removeMainEffect = function(effectType, enforceDOMLayering)
 {
+  enforceDOMLayering = enforceDOMLayering === undefined ? true : enforceDOMLayering;
+  var rowHeightSpecified = this._gantt.getOptions()['rowDefaults']['height'] != null;
+
   if (effectType === 'selected')
   {
     if (this._mainSelectShape != null)
@@ -10297,14 +11022,51 @@ DvtGanttTask.prototype.removeMainEffect = function(effectType)
     {
       this._container.removeChild(this._mainHoverShape);
 
-      // Layer this task behind all other tasks in the row
-      // to ensure selected tasks are in front (see )
-      if (!this._container.isSelected())
+      // Ensure selected tasks are in front (see )
+      // If row height is not specified, then tasks are always fully shown
+      // so it's sufficient to simply layer this task behind all other tasks in the row
+      if (enforceDOMLayering && !this._container.isSelected() && !rowHeightSpecified)
       {
         this._container.getParent().addChildAt(this._container, 0);
       }
     }
     this._mainHoverShape = null;
+  }
+
+
+  // If row height is specified, then tasks can overlap.
+  // Reparent the tasks such that selected tasks are on top in selection order,
+  // and all the other tasks are layered in render order (chronological order).
+  if (enforceDOMLayering && rowHeightSpecified)
+  {
+    var selectedNodes = [];
+    var currentRowNode = this._container.getRowNode()
+    if (this._gantt.isSelectionSupported())
+    {
+      var selection = this._gantt.getSelectionHandler().getSelection();
+      for (var j = 0; j < selection.length; j++)
+      {
+        if (selection[j] instanceof DvtGanttTaskNode && selection[j].getRowNode() === currentRowNode)
+        {
+          selectedNodes.push(selection[j]);
+        }
+      }
+    }
+    var containerParent = this._container.getParent();
+    var rowTaskObjs = currentRowNode.getTaskObjs();
+    for (var i = 0; i < rowTaskObjs.length; i++)
+    {
+      var taskObj = rowTaskObjs[i];
+      var taskNode = taskObj['node'];
+      if (!taskNode.isSelected())
+      {
+        containerParent.addChild(taskNode);
+      }
+    }
+    for (var j = 0; j < selectedNodes.length; j++)
+    {
+      containerParent.addChild(selectedNodes[j]);
+    }
   }
 };
 
@@ -10468,7 +11230,7 @@ DvtGanttTask.prototype.removeMain = function()
   if (this._mainShape)
   {
     onRemoveEnd = function() {
-      self.removeMainEffect('selected');
+      self.removeMainEffect('selected', false);
       self._container.removeChild(self._mainShape);
       self._mainShape = null;
 
@@ -10485,33 +11247,13 @@ DvtGanttTask.prototype.removeMain = function()
  */
 DvtGanttTask.prototype.getProgressValue = function()
 {
-  var taskProps = this._container.getProps(),
-      progressProps = taskProps['progress'];
+  var progressValue = this._container.getValue('progress', 'value');
 
-  if (!this.isMilestone('main') && progressProps && typeof progressProps['value'] === 'number')
+  if (!this.isMilestone('main') && typeof progressValue === 'number')
   {
-    return progressProps['value'];
+    return progressValue;
   }
   return null;
-};
-
-/**
- * Gets the progress height in pixels.
- * @return {number} The progress height in pixels.
- */
-DvtGanttTask.prototype.getProgressHeight = function()
-{
-  var taskProps = this._container.getProps(),
-      progressProps = taskProps['progress'],
-      progressHeightValue, taskHeight;
-
-  if (progressProps && !this.isMilestone('main'))
-  {
-    progressHeightValue = progressProps['height'];
-    taskHeight = taskProps['height'];
-    return progressHeightValue === '100%' ? taskHeight : DvtGanttStyleUtils.getSizeInPixels(progressHeightValue, taskHeight);
-  }
-  return 0;
 };
 
 /**
@@ -10520,9 +11262,8 @@ DvtGanttTask.prototype.getProgressHeight = function()
  */
 DvtGanttTask.prototype.renderProgress = function(progressHeight)
 {
-  var taskProps = this._container.getProps(),
-      progressProps = taskProps['progress'],
-      taskHeight = taskProps['height'],
+  var progressProps = this._container.getValue('progress'),
+      taskHeight = this._container.getValue('height'),
       progressValue = this.getProgressValue(),
       self = this, onRenderEnd, finalStates,
       progressDim, x, y, width, height, borderRadius;
@@ -10533,7 +11274,7 @@ DvtGanttTask.prototype.renderProgress = function(progressHeight)
     x = 0;
     y = Math.max(0, (taskHeight - progressHeight) / 2);
     width = progressValue * this._mainShape.getFinalWidth();
-    borderRadius = progressProps['borderRadius'];
+    borderRadius = this._container.getValue('progress', 'borderRadius');
 
     if (this._progressShape == null) // element doesn't exist in DOM already
     {
@@ -10543,7 +11284,7 @@ DvtGanttTask.prototype.renderProgress = function(progressHeight)
     }
     else
     {
-      this._progressShape.setRenderState(this._container.getRenderState() === 'refurbish' ? 'add' : 'exist');
+      this._progressShape.setRenderState('exist');
     }
 
     this._progressShape.setFinalWidth(width);
@@ -10553,7 +11294,7 @@ DvtGanttTask.prototype.renderProgress = function(progressHeight)
 
     onRenderEnd = function() {
       // Apply styles (default classes handled by DvtGanttTaskShape instance)
-      self._applyStyles(self._progressShape, progressProps);
+      self._applyStyles(self._progressShape, 'progress');
     };
 
     finalStates = {
@@ -10727,7 +11468,7 @@ DvtGanttTaskLabel.prototype._placeLabel = function(effectiveLabelPosition)
   }
 
   // Determine y position
-  associatedShapeHeight = (this._associatedShape.getType() === 'main' && this._container.getTask().isSummary('main')) ? this._container.getProps()['height'] : this._associatedShape.getFinalHeight();
+  associatedShapeHeight = (this._associatedShape.getType() === 'main' && this._container.getTask().isSummary('main')) ? this._container.getLayoutObject()['height'] : this._associatedShape.getFinalHeight();
   y = this._associatedShape.getFinalY() + ((associatedShapeHeight - labelDimensions.h) / 2);
   this.setFinalY(y);
 
@@ -10791,12 +11532,11 @@ DvtGanttTaskLabel.prototype._getAvailableWidth = function(position)
       taskMainBounds, progressShape, progressWidth, progressHeight, insideWidth, oProgressWidth,
       availableWidth, effectivePosition, labelDimensions,
       padding = DvtGanttStyleUtils.getTaskLabelPadding(),
-
-      taskProps, progressValue, hasProgress, isMilestone,
-
+      hasProgress, isMilestone,
       isRTL = dvt.Agent.isRightToLeft(this._gantt.getCtx()),
       ganttWidth = this._gantt.getContentLength(),
-      ganttStartPos, ganttEndPos;
+      ganttStartPos, ganttEndPos,
+      isPositionBlocked = false;
 
   // Calculate Gantt bounds
   ganttStartPos = !isRTL ? 0 : ganttWidth;
@@ -10805,9 +11545,27 @@ DvtGanttTaskLabel.prototype._getAvailableWidth = function(position)
   switch (position)
   {
     case 'end':
+    case 'end_ABSOLUTE':
+      effectivePosition = 'end';
       endBarrier = ganttEndPos;
       nextAdjacentTaskNode = this._container.getNextAdjacentTaskNode();
       nextAdjacentMilestoneBaselineTaskNode = this._container.getNextAdjMilestoneBaselineTaskNode();
+
+      // The case where row height is set and overlapping task staggering is disabled, and the position is blocked
+      if (nextAdjacentTaskNode &&
+          nextAdjacentTaskNode.getValue('start') < this._container.getValue('end') &&
+          nextAdjacentTaskNode.getValue('end') > this._container.getValue('end'))
+      {
+        availableWidth = 0;
+        break;
+      }
+      while (nextAdjacentTaskNode &&
+            nextAdjacentTaskNode.getValue('start') < this._container.getValue('end') &&
+            nextAdjacentTaskNode.getValue('end') < this._container.getValue('end'))
+      {
+        nextAdjacentTaskNode = nextAdjacentTaskNode.getNextAdjacentTaskNode();
+      }
+
       if (nextAdjacentTaskNode)
       {
         endBarrier = nextAdjacentTaskNode.getTaskShapePhysicalBounds('main')['startPos'];
@@ -10819,18 +11577,40 @@ DvtGanttTaskLabel.prototype._getAvailableWidth = function(position)
                      Math.min(endBarrier, nextAdjacentMilestoneBaselineTaskNode.getTaskShapePhysicalBounds('baseline')['startPos']);
       }
       availableWidth = Math.abs(this._container.getTaskShapePhysicalBounds('main')['endPos'] - endBarrier) - 2 * padding;
-      effectivePosition = 'end';
       break;
     case 'innerCenter':
     case 'innerStart':
     case 'innerEnd':
-      taskProps = this._container.getProps();
-      progressValue = taskProps['progress'] ? taskProps['progress']['value'] : null;
-      hasProgress = typeof progressValue === 'number';
+      // The case where row height is set and overlapping task staggering is disabled, and the position is blocked
+      // Only consider this case in the array label position cases. In the absolute cases, and all innerStart cases,
+      // just show the labels anyway.
+      nextAdjacentTaskNode = this._container.getNextAdjacentTaskNode();
+      if (nextAdjacentTaskNode)
+      {
+        if (position === 'innerCenter')
+          isPositionBlocked = nextAdjacentTaskNode.getValue('start') < (this._container.getValue('start') + ((this._container.getValue('end') - this._container.getValue('start')) / 2));
+        else if (position === 'innerEnd')
+          isPositionBlocked = nextAdjacentTaskNode.getValue('start') < this._container.getValue('end');
+      }
+    case 'innerCenter_ABSOLUTE':
+    case 'innerStart_ABSOLUTE':
+    case 'innerEnd_ABSOLUTE':
+      // normalize the _ABSOLUTE positions to the effective position name
+      if (position.slice(-('_ABSOLUTE'.length)) === '_ABSOLUTE')
+        position = position.slice(0, -('_ABSOLUTE'.length));
+
+      hasProgress = typeof this._container.getValue('progress', 'value') === 'number';
       task = this._container.getTask();
       isMilestone = task.isMilestone('main');
       if (!isMilestone)
       {
+        if (isPositionBlocked)
+        {
+          availableWidth = 0;
+          effectivePosition = position;
+          break;
+        }
+
         taskMainBounds = this._container.getTaskShapePhysicalBounds('main');
         insideWidth = Math.abs(taskMainBounds['endPos'] - taskMainBounds['startPos']);
         if (hasProgress)
@@ -10891,9 +11671,20 @@ DvtGanttTaskLabel.prototype._getAvailableWidth = function(position)
       effectivePosition = position;
       break;
     case 'start':
+    case 'start_ABSOLUTE':
+      effectivePosition = 'start';
       startBarrier = ganttStartPos;
       previousAdjacentTaskNode = this._container.getPreviousAdjacentTaskNode();
       previousAdjacentMilestoneBaselineTaskNode = this._container.getPrevAdjMilestoneBaselineTaskNode();
+
+      // The case where row height is set and overlapping task staggering is disabled, and the position is blocked
+      if (previousAdjacentTaskNode &&
+          previousAdjacentTaskNode.getValue('end') > this._container.getValue('start'))
+      {
+        availableWidth = 0;
+        break;
+      }
+
       if (previousAdjacentTaskNode)
       {
         startBarrier = previousAdjacentTaskNode.getTaskShapePhysicalBounds('main', true)['endPos'];
@@ -10905,7 +11696,6 @@ DvtGanttTaskLabel.prototype._getAvailableWidth = function(position)
                        Math.max(startBarrier, previousAdjacentMilestoneBaselineTaskNode.getTaskShapePhysicalBounds('baseline')['endPos']);
       }
       availableWidth = Math.abs(startBarrier - this._container.getTaskShapePhysicalBounds('main')['startPos']) - 2 * padding;
-      effectivePosition = 'start';
       break;
     default:
       return null;
@@ -10940,7 +11730,7 @@ DvtGanttTaskLabel.prototype._preprocessLabelPosition = function(labelPosition)
           break;
       }
     }
-    return [labelPosition];
+    return [labelPosition + '_ABSOLUTE']; // '_ABSOLUTE' flag to signify absolute positioning
   }
   else if (Array.isArray(labelPosition))
   {
@@ -11048,19 +11838,15 @@ DvtGanttTaskLabel.prototype._evaluatePosition = function(labelPosition)
  */
 DvtGanttTaskLabel.prototype.render = function()
 {
-  var taskProps = this._container.getProps(),
-      label, labelPosition, labelStyle, finalStates,
+  var label = this._container.getValue('label'),
+      labelPosition = this._container.getValue('labelPosition'),
+      labelStyle = this._container.getValue('labelStyle'),
+      finalStates,
       isPositionFeasible,
       self = this, onRenderEnd,
       styleClass = this._gantt.GetStyleClass('taskLabel');
 
-  this._renderState = this._container.getRenderState() === 'refurbish' ? 'add' : 'exist';
-  if (taskProps)
-  {
-    label = taskProps['label'];
-    labelPosition = taskProps['labelPosition'];
-    labelStyle = taskProps['labelStyle'];
-  }
+  this._renderState = 'exist';
 
   if (label != null && label.length > 0 && labelPosition !== 'none' && this._associatedShape)
   {
@@ -11280,7 +12066,7 @@ DvtGanttTaskShape.prototype.Init = function(context, x, y, w, h, r, task, type, 
   cmds = this._typeCmdGeneratorMap[this._type].call(this, this._x, this._y, this._w, this._h, this._r);
   DvtGanttTaskShape.superclass.Init.call(this, context, cmds, id);
 
-  this._applyDefaultStyleClasses();
+  this.applyDefaultStyleClasses();
 
   switch (this._type)
   {
@@ -11449,9 +12235,8 @@ DvtGanttTaskShape.prototype._generateDiamondCmd = function(x, y, h, r)
 
 /**
  * Applies any default classes and styles to the shape based on the specified type.
- * @private
  */
-DvtGanttTaskShape.prototype._applyDefaultStyleClasses = function()
+DvtGanttTaskShape.prototype.applyDefaultStyleClasses = function()
 {
   var styleClass, milestoneDefaultClass, barDefaultClass, summaryDefaultClass, taskFillColor, style,
       gantt = this._task.getGantt(), taskDraggable = gantt.getEventManager().IsDragSupported('tasks');
@@ -11720,7 +12505,7 @@ DvtGanttTaskShape.prototype.setWidth = function(width)
       (this._w === 0 || width === 0))
   {
     this._w = width;
-    this._applyDefaultStyleClasses();
+    this.applyDefaultStyleClasses();
   }
 
   this._w = width;
@@ -11873,7 +12658,7 @@ DvtGanttTaskShape.prototype.getBorderRadius = function()
 DvtGanttTaskShape.prototype.setBorderRadius = function(r)
 {
   var cmds;
-  this._r = r != null ? r : 0;
+  this._r = r != null ? r : "0";
   cmds = this._typeCmdGeneratorMap[this._type].call(this, this._x, this._y, this._w, this._h, this._r);
   this.setCmds(cmds);
 };
@@ -11896,7 +12681,7 @@ DvtGanttTaskShape.prototype.setDimensions = function(x, y, w, h, r)
       (this._w === 0 || w === 0))
   {
     this._w = w;
-    this._applyDefaultStyleClasses();
+    this.applyDefaultStyleClasses();
   }
 
   this._x = x;

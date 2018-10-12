@@ -1,26 +1,31 @@
 {
   "name": "oj-bind-for-each",
-  "version": "5.2.0",
-  "jetVersion": "5.2.0",
+  "version": "6.0.0",
+  "jetVersion": "6.0.0",
   "displayName": "Bind For Each",
   "type": "core",
   "description": "Binds items of an array to the specified markup section. The markup section is duplicated for each array item when element is rendered.",
+  "help": "https://docs.oracle.com/en/middleware/jet/6/reference-api/oj.ojBindForEach.html",
   "properties": {
     "as": {
-      "description": "An alias for the array item. This can be especially useful \nif multiple oj-bind-for-each elements are nested to provide access to the data \nfor each level of iteration.",
+      "description": "An alias for the array item. This can be especially useful\nif multiple oj-bind-for-each elements are nested to provide access to the data\nfor each level of iteration.",
       "type": "string",
-      "displayName": "As"
+      "displayName": "As",
+      "help": "as"
     },
     "data": {
-      "description": "The array or an oj.DataProvider that you wish to iterate over. Required property. \nNote that the <oj-bind-for-each&gt; will dynamically update the generated \nDOM in response to changes if the value is an observableArray.",
+      "description": "The array or an oj.DataProvider that you wish to iterate over. Required property.\nNote that the <oj-bind-for-each&gt; will dynamically update the generated\nDOM in response to changes if the value is an observableArray.",
       "type": "array|oj.DataProvider",
-      "displayName": "Data"
+      "displayName": "Data",
+      "help": "data"
     }
   },
   "slots": {
     "": {
-      "description": "The oj-bind-for-each default slot is used to specify the template for binding items of an array if \nno named slots were defined by the application. The slot must be a <template> element. \nWhen the template is executed for each item, it will have access to the same binding context that is applied to the <oj-bind-for-each&gt; element. \nIn addition the binding context will contain the following properties: $current - An object that contains information for the current item. (See the table below for a list of properties available on $current) alias - If as attribute was specified, the value will be used to provide an application-named alias for $current. This can be especially useful if multiple oj-bind-for-each elements are nested to provide access to the data for each level of iteration. \n",
+      "description": "The oj-bind-for-each default slot is used to specify the template for binding items of an array if\nno named slots were defined by the application. The slot must be a <template> element.\nWhen the template is executed for each item, it will have access to the same binding context that is applied to the <oj-bind-for-each&gt; element.\nIn addition the binding context will contain the following properties: $current - An object that contains information for the current item. (See the table below for a list of properties available on $current) alias - If as attribute was specified, the value will be used to provide an application-named alias for $current. This can be especially useful if multiple oj-bind-for-each elements are nested to provide access to the data for each level of iteration. \n",
       "displayName": "default",
+      "maxItems": 1,
+      "help": "Default",
       "data": {
         "data": {
           "description": "The current array item being rendered.",

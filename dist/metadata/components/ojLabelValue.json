@@ -1,16 +1,18 @@
 {
   "name": "oj-label-value",
-  "version": "5.2.0",
-  "jetVersion": "5.2.0",
+  "version": "6.0.0",
+  "jetVersion": "6.0.0",
   "displayName": "Label Value",
   "type": "core",
   "description": "Used to specify label element(s) and value element(s) in a single layout element.",
+  "help": "https://docs.oracle.com/en/middleware/jet/6/reference-api/oj.ojLabelValue.html",
   "properties": {
     "labelEdge": {
       "description": "Specifies how the label is aligned with its value component.\nIf the value is 'inherit', it will inherit label-edge from its closest custom element ancestor element. If the ancestor doesn't have a label-width attribute, the default is \"top\".",
       "type": "string",
       "displayName": "Label Edge",
       "value": "inherit",
+      "help": "labelEdge",
       "enumValues": [
         "inherit",
         "start",
@@ -35,12 +37,14 @@
       "description": "Specifies the label width.\nThis can be any legal CSS width or 'inherit',\nwhich will inherit label-width from its closest custom element ancestor element. If the value is \"inherit\" and ancestor doesn't have a label-width attribute, the default is \"33%\".",
       "type": "string",
       "displayName": "Label Width",
-      "value": "inherit"
+      "value": "inherit",
+      "help": "labelWidth"
     }
   },
   "methods": {
     "setProperty": {
       "description": "Sets a property or a single subproperty for complex properties and notifies the component\nof the change, triggering a [property]Changed event.",
+      "help": "setProperty",
       "params": [
         {
           "name": "property",
@@ -57,6 +61,7 @@
     },
     "getProperty": {
       "description": "Retrieves a value for a property or a single subproperty for complex properties.",
+      "help": "getProperty",
       "params": [
         {
           "name": "property",
@@ -68,6 +73,7 @@
     },
     "setProperties": {
       "description": "Performs a batch set of properties.",
+      "help": "setProperties",
       "params": [
         {
           "name": "properties",
@@ -79,7 +85,18 @@
     },
     "refresh": {
       "description": "Refreshes the visual state of the component.",
+      "help": "refresh",
       "return": "void"
+    }
+  },
+  "slots": {
+    "label": {
+      "description": "The label slot is used to specify the 'label' part of a label/value form layout item.",
+      "help": "label"
+    },
+    "value": {
+      "description": "The value slot is used to specify the 'value' part of a label/value form layout item.",
+      "help": "value"
     }
   }
 }

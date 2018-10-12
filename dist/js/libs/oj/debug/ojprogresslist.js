@@ -4,8 +4,8 @@
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
-define(['ojs/ojcore', 'jquery', 'knockout', 'ojs/ojcomponentcore', 'ojs/ojlistview', 'ojs/ojprogress', 'ojs/ojcomposite'], 
-       function(oj, $, ko)
+define(['ojs/ojcore', 'jquery', 'knockout', 'ojs/ojcomposite', 'ojs/ojknockouttemplateutils', 'ojs/ojcomponentcore', 'ojs/ojlistview', 'ojs/ojprogress'], 
+       function(oj, $, ko, Composite, KnockoutTemplateUtils)
 {
 
 var __oj_progress_list_metadata = 
@@ -278,24 +278,22 @@ function progressItemViewModel(context) {
   addListeners(context.properties.data);
 }
 
-oj.Composite.register('oj-progress-item',
+// eslint-disable-next-line no-undef
+Composite.register('oj-progress-item',
   {
     view: progressItemView,
     viewModel: progressItemViewModel,
     metadata: progressItemMetadata
   });
 
-
 /**
  * Copyright (c) 2017, Oracle and/or its affiliates.
  * All rights reserved.
  */
-
+/* global KnockoutTemplateUtils:false */
 /**
  * @ojcomponent oj.ojProgressList
- * @ojtsimport ojcomposite
- * @ojtsimport ojlistview
- * @ojtsimport ojprogress
+ * @ojtsimport {module: "ojdataprovider", type: "AMD", imported: ["DataProvider"]}
  * @since 4.0.0
  * @ojdisplayname Progress List
  * @ojshortdesc Displays a ListView where data rows are ProgressItems.
@@ -369,17 +367,19 @@ function progressListViewModel(context) {
   self.tempId = context.unique + '_templ';
 
   self.renderer = function () {
-    return oj.KnockoutTemplateUtils.getRenderer(self.tempId, true);
+    return KnockoutTemplateUtils.getRenderer(self.tempId, true);
   };
 }
 
 /* global __oj_progress_list_metadata */
-oj.Composite.register('oj-progress-list',
+// eslint-disable-next-line no-undef
+Composite.register('oj-progress-list',
   {
     view: progressListView,
     viewModel: progressListViewModel,
     metadata: __oj_progress_list_metadata
   });
+
 
 /**
  * Sets a property or a single subproperty for complex properties and notifies the component
@@ -483,11 +483,12 @@ var progressStatusView =
   "    <div class='oj-component-icon oj-progressstatus-error-icon' role='img' title='error'></div>" +
   '  </div>';
 
-oj.Composite.register('oj-progress-status',
+
+// eslint-disable-next-line no-undef
+Composite.register('oj-progress-status',
   {
     view: progressStatusView,
     metadata: progressStatusMetadata
   });
-
 
 });

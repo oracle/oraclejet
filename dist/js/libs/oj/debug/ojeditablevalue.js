@@ -4,14 +4,14 @@
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
-define(['ojs/ojcore', 'jquery', 'hammerjs', 'ojs/ojjquery-hammer', 'promise', 'ojs/ojcomponentcore', 
-'ojs/ojvalidation-base', 'ojs/ojpopup', 'ojs/ojlabel', 'ojs/ojanimation'], 
+define(['ojs/ojcore', 'jquery', 'hammerjs', 'ojs/ojtranslation', 'ojs/ojcontext', 'ojs/ojthemeutils', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojs/ojmessaging', 'ojs/ojvalidation-base', 'ojs/ojlogger',
+'ojs/ojjquery-hammer', 'promise', 'ojs/ojpopup', 'ojs/ojlabel'], 
   /*        
     * @param {Object} oj         
     * @param {jQuery} $        
     * @param {Object} Hammer        
-  */       
-  function(oj, $, Hammer)
+  */
+  function(oj, $, Hammer, Translations, Context, ThemeUtils, Components, AnimationUtils, Message, __ValidationBase, Logger)
 {
 
 /**
@@ -19,7 +19,7 @@ define(['ojs/ojcore', 'jquery', 'hammerjs', 'ojs/ojjquery-hammer', 'promise', 'o
  * All rights reserved.
  */
 
-/* global Promise:false */
+/* global Promise:false, __ValidationBase:false, Logger:false, Context:false */
 
 /**
  * @class oj.EditableValueUtils
@@ -28,76 +28,76 @@ define(['ojs/ojcore', 'jquery', 'hammerjs', 'ojs/ojjquery-hammer', 'promise', 'o
  * @since 0.6
  * @hideconstructor
  * @ignore
- * 
+ *
  */
 oj.EditableValueUtils = {};
 
-// S T A T I C    V A R S   
+// S T A T I C    V A R S
 /**
  * The various contexts under which validation can be run by component.
  * @ignore
- */ 
+ */
 oj.EditableValueUtils.validationContext = {
-  COMPONENT_CREATE : 1,
-  CONVERTER_OPTION_CHANGE : 2,
-  DISABLED_OPTION_CHANGE : 3,
+  COMPONENT_CREATE: 1,
+  CONVERTER_OPTION_CHANGE: 2,
+  DISABLED_OPTION_CHANGE: 3,
   READONLY_OPTION_CHANGE: 4,
   REFRESH_METHOD: 5,
-  REQUIRED_OPTION_CHANGE : 6,
-  RESET_METHOD : 7,
+  REQUIRED_OPTION_CHANGE: 6,
+  RESET_METHOD: 7,
   USER_ACTION: 8,
   VALIDATE_METHOD: 9,
-  VALIDATORS_OPTION_CHANGE : 10,
+  VALIDATORS_OPTION_CHANGE: 10,
   VALUE_OPTION_CHANGE: 11
 };
 
 /**
  * Default validation options used by validate method.
  * @ignore
- */ 
-oj.EditableValueUtils.validateMethodOptions = {doValueChangeCheck: false,
-                               validationContext: oj.EditableValueUtils.validationContext.VALIDATE_METHOD};
+ */
+oj.EditableValueUtils.validateMethodOptions = { doValueChangeCheck: false,
+  validationContext: oj.EditableValueUtils.validationContext.VALIDATE_METHOD };
 
 /**
  * Default validation options used when converter option changes
  * @ignore
  */
-oj.EditableValueUtils.converterOptionOptions = {doNotClearMessages: true,
-                                validationContext: oj.EditableValueUtils.validationContext.CONVERTER_OPTION_CHANGE};
-                              
+oj.EditableValueUtils.converterOptionOptions = { doNotClearMessages: true,
+  validationContext: oj.EditableValueUtils.validationContext.CONVERTER_OPTION_CHANGE };
+
 /**
  * Default validation options used when disabled option changes
  * @ignore
  */
-oj.EditableValueUtils.disabledOptionOptions = {doNotClearMessages: true,
-                               validationContext: oj.EditableValueUtils.validationContext.DISABLED_OPTION_CHANGE};
+oj.EditableValueUtils.disabledOptionOptions = { doNotClearMessages: true,
+  validationContext: oj.EditableValueUtils.validationContext.DISABLED_OPTION_CHANGE };
 
 /**
  * Default validation options used when required option changes
  * @ignore
  */
-oj.EditableValueUtils.requiredOptionOptions = {doNotClearMessages: true,
-                               validationContext: oj.EditableValueUtils.validationContext.REQUIRED_OPTION_CHANGE};
+oj.EditableValueUtils.requiredOptionOptions = { doNotClearMessages: true,
+  validationContext: oj.EditableValueUtils.validationContext.REQUIRED_OPTION_CHANGE };
 
 /**
  * Default validation options used when readOnly option changes
  * @ignore
  */
-oj.EditableValueUtils.readOnlyOptionOptions = {doNotClearMessages: true,
-                               validationContext: oj.EditableValueUtils.validationContext.READONLY_OPTION_CHANGE};
+oj.EditableValueUtils.readOnlyOptionOptions = { doNotClearMessages: true,
+  validationContext: oj.EditableValueUtils.validationContext.READONLY_OPTION_CHANGE };
 
 /**
  * Default validation options used when refresh method is called.
  * @ignore
  */
-oj.EditableValueUtils.refreshMethodOptions = {doNotClearMessages: true,
-                               validationContext: oj.EditableValueUtils.validationContext.REFRESH_METHOD};
+oj.EditableValueUtils.refreshMethodOptions = { doNotClearMessages: true,
+  validationContext: oj.EditableValueUtils.validationContext.REFRESH_METHOD };
 /**
  * Default validation options used when validators option changes
  * @ignore
  *  */
-oj.EditableValueUtils.validatorsOptionOptions = {doNotClearMessages: true,
-                                 validationContext: oj.EditableValueUtils.validationContext.VALIDATORS_OPTION_CHANGE};                      
+oj.EditableValueUtils.validatorsOptionOptions = { doNotClearMessages: true,
+  validationContext: oj.EditableValueUtils.validationContext.VALIDATORS_OPTION_CHANGE };
 
 /**
 * String used in the id on the span that surrounds the help icon.
@@ -106,7 +106,7 @@ oj.EditableValueUtils.validatorsOptionOptions = {doNotClearMessages: true,
 * @ignore
 * @type {string}
 */
-var _REQUIRED_ICON_ID = "_requiredIcon";
+var _REQUIRED_ICON_ID = '_requiredIcon';
 
 /**
 * String used in the label element's id for custom &lt;oj-label>
@@ -114,7 +114,7 @@ var _REQUIRED_ICON_ID = "_requiredIcon";
 * @ignore
 * @type {string}
 */
-oj.EditableValueUtils.CUSTOM_LABEL_ELEMENT_ID = "|label";
+oj.EditableValueUtils.CUSTOM_LABEL_ELEMENT_ID = '|label';
 
 /**
 * Enum for validate() return values
@@ -122,64 +122,62 @@ oj.EditableValueUtils.CUSTOM_LABEL_ELEMENT_ID = "|label";
 * @ignore
 */
 oj.EditableValueUtils.VALIDATE_VALUES = {
-  VALID : "valid",
-  INVALID : "invalid"
+  VALID: 'valid',
+  INVALID: 'invalid'
 };
 
 /**
- * This method is called during _InitOptions() to initialize a component option value from DOM. This 
- * uusally is the case when the option value is undefined, 
+ * This method is called during _InitOptions() to initialize a component option value from DOM. This
+ * uusally is the case when the option value is undefined,
  * i.e., this.options.optionName === undefined.
  * <br/>
- * Returns the attribute value for the given attribute on the element appropriately converted, or 
+ * Returns the attribute value for the given attribute on the element appropriately converted, or
  * the default, if the attribute isn't set on the element.<br/>
- * 
+ *
  * @param {Object} element the element the component is initialized with.
  * @param {string} attribute the name of the element's attribtue. Example, value, disabled etc.
- * 
+ *
  * @returns {Object} a JSON object containing the following properties - <br/>
  * <ul>
- * <li><b>fromDom</b> - whether the option value was initialized from DOM. When true the option's 
- * value is written back (to observable).</li> 
- * <li><b>value</b> - the option value. the attribute value or the default if the attribute isn't 
- * set on the element.</li> 
+ * <li><b>fromDom</b> - whether the option value was initialized from DOM. When true the option's
+ * value is written back (to observable).</li>
+ * <li><b>value</b> - the option value. the attribute value or the default if the attribute isn't
+ * set on the element.</li>
  * </ul>
- * 
+ *
  * @private
  */
-oj.EditableValueUtils.getAttributeValue = function (element, attribute)
-{
-  var result, returnVal = {}; 
-  
-  if (element && attribute)
-  {
+oj.EditableValueUtils.getAttributeValue = function (element, attribute) {
+  var result;
+  var returnVal = {};
+
+  if (element && attribute) {
     var elem = element[0];
-    switch (attribute)
-    {
-      case "disabled" :
+    switch (attribute) {
+      case 'disabled' :
         result = elem.hasAttribute('disabled') ?
           !!elem.disabled : undefined;
         break;
-        
-      case "pattern":
+
+      case 'pattern':
         result = elem.pattern || undefined;
-        break; 
-        
-      case "placeholder":
+        break;
+
+      case 'placeholder':
         result = elem.placeholder || undefined;
         break;
-      
-      case "readonly": 
+
+      case 'readonly':
         result = elem.hasAttribute('readonly') ?
           !!elem.readOnly : undefined;
         break;
-      case "required":
-        var propVal = elem.required;
 
+      case 'required':
         // If attribute is present
         //   - if the required property is undefined then return true since the attribute is set.
         //   - Otherwise set to !!propVal
         if (elem.hasAttribute('required')) {
+          var propVal = elem.required;
           if (propVal !== undefined) {
             result = !!propVal;
           } else {
@@ -189,36 +187,32 @@ oj.EditableValueUtils.getAttributeValue = function (element, attribute)
           result = undefined;
         }
         break;
-      
-      case "title":
+
+      case 'title':
         result = elem.hasAttribute('title') ?
           elem.title : undefined;
         break;
-        
-      case "value":
+
+      case 'value':
         // element attribute may not be set, in which case default to null
         result = element.val() || undefined;
         break;
-      
-      case "min": 
-        //same logic for min + max as in default
-      case "max":
-      
-      default: 
+
+      case 'min':
+      case 'max':
+      default:
+        // same logic for min + max as in default
         result = elem.getAttribute(attribute) || undefined;
         break;
     }
   }
-  
-  if (result !== undefined)
-  {
+
+  if (result !== undefined) {
     returnVal.fromDom = true;
     returnVal.value = result;
-  }
-  else
-  {
+  } else {
     returnVal.fromDom = false;
-    // returnVal.value = defaultValue; 
+    // returnVal.value = defaultValue;
   }
   return returnVal;
 };
@@ -227,64 +221,64 @@ oj.EditableValueUtils.getAttributeValue = function (element, attribute)
  * NOTE: This is unnecessary to call for custom elements.
  * Called from component._InitOptions() with an array of options
  * that the component might need to initialize from DOM (e.g.,
- * disabled, required, title, etc). This function loops through each of these and if the 
+ * disabled, required, title, etc). This function loops through each of these and if the
  * constructorOptions[option] is undefined, it tries to get the option from DOM.
  * The constructorOptions hold the options that the page author sets on the component, usually via
  * knockout bindings, and that takes precedence over DOM.
- * e.g., <input id="id" type="text" required data-bind="ojComponent: {component: 'ojInputText', 
+ * e.g., <input id="id" type="text" required data-bind="ojComponent: {component: 'ojInputText',
                                   value: value}"/>
  * value is a constructorOption and required is a DOM option in this example. If you have:
- * e.g., <input id="id" type="text" required data-bind="ojComponent: {component: 'ojInputText', 
+ * e.g., <input id="id" type="text" required data-bind="ojComponent: {component: 'ojInputText',
                                   value: value, required: false}"/>
  * required is both a constructorOption of false and a DOM of true. The constructorOption takes
  * precedence.
  * <p>
- * IMPORTANT: Do not call this method after component has been created, since option values are 
+ * IMPORTANT: Do not call this method after component has been created, since option values are
  * mutated directly after that point.</p>
- * 
- * The 'final' value an option uses/initializes from, can come from these places (in order of least 
+ *
+ * The 'final' value an option uses/initializes from, can come from these places (in order of least
  * to most likely) - <br/>
  * <ol>
  * <li>component default - this is the widget default </li><br/>
  * <li>app default - this is what a page author defines for the value in the page/app</li> <br/>
- * <li>dom value - if your option also has a dom attribute, this is the value set on element for 
+ * <li>dom value - if your option also has a dom attribute, this is the value set on element for
  * component. </li> <br/>
  * <li>constructor value - this is the value page author sets on the component binding </li><br/>
  * </ol>
- * 
- * At the time _InitOptions is called, (1), (2) and (4) are merged, but this may not be the value a 
- * component wants for the option, especially when (4) is undefined. For example, if these values 
+ *
+ * At the time _InitOptions is called, (1), (2) and (4) are merged, but this may not be the value a
+ * component wants for the option, especially when (4) is undefined. For example, if these values
  * were set for a component - <br/>
  * (1) - 'foo'<br/>
  * (2) - 'bar'<br/>
  * (3) - 'lucy'<br/>
  * (4) - undefined<br/>
  * <p>
- * at the time _InitOptions is called, this.options.option is set to 'bar'. But because DOM value 
- * wins over app default or component default, the component needs to check if the constructor value was 
+ * at the time _InitOptions is called, this.options.option is set to 'bar'. But because DOM value
+ * wins over app default or component default, the component needs to check if the constructor value was
  * undefined and if so, set option to the dom value which is 'lucy' in this example. This is what
  * this function does.<br/>
- * This method always defaults the value to be - this.options.option -  
+ * This method always defaults the value to be - this.options.option -
  * because we think if neither (3) nor (4) is set, then the value from (2) should win. <br/>
  * </p>
- * 
- * @param {Object} props Array holding Object-literal that a component provides 
+ *
+ * @param {Object} props Array holding Object-literal that a component provides
  * with the following properties that helps determine the final value for one or more options.
- * 
+ *
  * @property {string} props.attribute - name of DOM attribute
  * @property {string|undefined} props.option - name of the option if different from attribute name.
- * 
- * @property {Function|boolean|undefined} props.coerceDomValue - if the DOM value is set and 
- * coercing the dom value is needed, then either set to boolean true, which uses the default 
+ *
+ * @property {Function|boolean|undefined} props.coerceDomValue - if the DOM value is set and
+ * coercing the dom value is needed, then either set to boolean true, which uses the default
  * coercion rules for common attributes (a), or provide a custom callback (b). <p>
  * E.g., 'value' option for input number, input date etc. have special rules for coercing the value,
- *  so thse provide a custom callback. For common attributes like required and disabled, set the 
+ *  so thse provide a custom callback. For common attributes like required and disabled, set the
  *  value to true so the default oj.EditableValueUtils#coerceDomValueForOption method gets used.
- *  
- * @property {boolean|undefined} props.validateOption - if set to true, then it calls 
+ *
+ * @property {boolean|undefined} props.validateOption - if set to true, then it calls
  * oj.EditableValueUtils.validateValueForOption method to validate the option.
- * 
- * @param {Object} constructorOptions the options set on the component instance, often using 
+ *
+ * @param {Object} constructorOptions the options set on the component instance, often using
  * component binding. (this is the value page author sets on the component binding)
  * @param {Object} comp component instance.
  * @param {Function=} postprocessCallback - optional callback that will receive a map of initialized
@@ -292,144 +286,134 @@ oj.EditableValueUtils.getAttributeValue = function (element, attribute)
  * @ignore
  * @public
  */
-oj.EditableValueUtils.initializeOptionsFromDom = function (props, constructorOptions, comp, postprocessCallback)
-{
+oj.EditableValueUtils.initializeOptionsFromDom = function (
+  props, constructorOptions, comp, postprocessCallback
+) {
   var initializedOptions = {};
-  
-  // Loop through props to initialize option 
-  for (var i = 0; i < props.length; i++)
-  {
-    var finalValue, result, prop = props[i], 
-        attribute = prop.attribute, 
-        option = prop.option || attribute, 
-        coerceDomValue = prop.coerceDomValue,
-        validateOption = prop.validateOption,
-        element = comp.element, 
-        previousValue = comp.options[option];
+
+  // Loop through props to initialize option
+  for (var i = 0; i < props.length; i++) {
+    var finalValue;
+    var result;
+    var prop = props[i];
+    var attribute = prop.attribute;
+    var option = prop.option || attribute;
+    var coerceDomValue = prop.coerceDomValue;
+    var validateOption = prop.validateOption;
+    var element = comp.element;
+    var previousValue = comp.options[option];
 
     /* The precedence for the value that an option uses is as follows from lowest to highest -
      *
      * (1) component default - this is the widget default, already merged in to comp.options
      * (2) app default - this is what a page author defines for the value in the page / app,
      * already merged in to comp.options
-     * (3) dom value - if your option also has a dom attribute, this is the value set on element. 
+     * (3) dom value - if your option also has a dom attribute, this is the value set on element.
      * (4) constructor value - this is the value page author sets on the component binding, already
      * merged in to comp.options.
-     *      
-     * When (4) is undefined then attempt to default from (3). 
+     *
+     * When (4) is undefined then attempt to default from (3).
      */
 
     // Step 1: use DOM value
-    if (constructorOptions[option] === undefined)
-    {
+    if (constructorOptions[option] === undefined) {
       previousValue = comp.options[option];
       result = oj.EditableValueUtils.getAttributeValue(element, attribute);
 
-      // if we are using domValue then coerce the dom value before writing to options and trigegr 
+      // if we are using domValue then coerce the dom value before writing to options and trigegr
       // option change so the value is written back (to ko)
-      if (result.fromDom)
-      {
+      if (result.fromDom) {
         finalValue = result.value;
 
         // only required needs coercing so not bad
-        if (coerceDomValue) 
-        {
-          if (typeof coerceDomValue === "boolean")
-          {
+        if (coerceDomValue) {
+          if (typeof coerceDomValue === 'boolean') {
             finalValue = oj.EditableValueUtils.coerceDomValueForOption(option, finalValue);
-          }
-          else if (typeof coerceDomValue === "function")
-          {
+          } else if (typeof coerceDomValue === 'function') {
             finalValue = coerceDomValue.call(comp, finalValue);
           }
         }
         initializedOptions[option] = finalValue;
       }
     }
-    
-    var valueToValidate = (option in initializedOptions) ? initializedOptions[option] : previousValue;
+
+    var valueToValidate =
+        (option in initializedOptions) ? initializedOptions[option] : previousValue;
 
     // Step 2: validate the option value if needed
-    if (validateOption)
-    {
-      if (typeof validateOption === "boolean")
-      {
+    if (validateOption) {
+      if (typeof validateOption === 'boolean') {
         oj.EditableValueUtils.validateValueForOption(option, valueToValidate);
       }
     }
   }
-  
-  if (postprocessCallback != null)
-  {
+
+  if (postprocessCallback != null) {
     postprocessCallback(initializedOptions);
   }
-  
-  comp.option(initializedOptions, {'_context': {writeback: true, internalSet: true}});
+
+  comp.option(initializedOptions, { _context: { writeback: true, internalSet: true } });
 };
 
-  /**
-   * Validates value set for the option and throws error if invalid.
-   * 
-   * @param {string} option name of the option. Validates options common to all edtiableValue 
-   * holders.
-   * @param {string|Object|boolean|number|undefined} value of the option that is validated
-   * 
-   * @throws {Error} if option value is invalid
-   * @public
-   * @ignore
-   */
-  oj.EditableValueUtils.validateValueForOption = function (option, value)
-  {
-    var error = false;
-    
-    switch (option)
-    {
-      case 'required' :
-        if (value !== null &&  typeof value !== "boolean")
-        {
-          error = true; 
-        }
-        break;
-      
-      case "readOnly":
-      case "disabled" :
-        if (value !== null &&  typeof value !== "boolean")
-        {
-          error = true;
-        }
-        
-        break;
-    }
-    
-    if (error)
-    {
-      throw "Option '" + option + "' has invalid value set: " + value;
-    }
-  };
-  
-  
-  /**
-   * Coerces the dom value being used for the option, and throws error if invalid.
-   * 
-   * @param {string} option name of the option.
-   * @param {string|Object|boolean|number|null} domValue dom value that is being coerced to the 
-   * option value
-   * @throws {Error} if domValue cannot be coerced appropriately
-   * @public
-   * @ignore
-   */
-  oj.EditableValueUtils.coerceDomValueForOption = function(option, domValue) 
-  { 
-    var coerced = domValue;
-    switch (option)
-    {
-      case 'required' :
-        coerced = domValue ? true : false;
-        break;
-    }
-    
-    return coerced;
-  };
+/**
+ * Validates value set for the option and throws error if invalid.
+ *
+ * @param {string} option name of the option. Validates options common to all edtiableValue
+ * holders.
+ * @param {string|Object|boolean|number|undefined} value of the option that is validated
+ *
+ * @throws {Error} if option value is invalid
+ * @public
+ * @ignore
+ */
+oj.EditableValueUtils.validateValueForOption = function (option, value) {
+  var error = false;
+
+  switch (option) {
+    case 'required' :
+      if (value !== null && typeof value !== 'boolean') {
+        error = true;
+      }
+      break;
+
+    case 'readOnly':
+    case 'disabled' :
+      if (value !== null && typeof value !== 'boolean') {
+        error = true;
+      }
+      break;
+    default:
+      break;
+  }
+
+  if (error) {
+    throw new Error("Option '" + option + "' has invalid value set: " + value);
+  }
+};
+
+
+/**
+ * Coerces the dom value being used for the option, and throws error if invalid.
+ *
+ * @param {string} option name of the option.
+ * @param {string|Object|boolean|number|null} domValue dom value that is being coerced to the
+ * option value
+ * @throws {Error} if domValue cannot be coerced appropriately
+ * @public
+ * @ignore
+ */
+oj.EditableValueUtils.coerceDomValueForOption = function (option, domValue) {
+  var coerced = domValue;
+  switch (option) {
+    case 'required' :
+      coerced = !!domValue;
+      break;
+    default:
+      break;
+  }
+
+  return coerced;
+};
 
 
 /**
@@ -440,12 +424,10 @@ oj.EditableValueUtils.initializeOptionsFromDom = function (props, constructorOpt
  *
  * @ignore
  */
-oj.EditableValueUtils.setPickerAttributes = function (picker, pickerAttributes)
-{
-  // - let the popup picker accept the custom css class name from the component
-  if (picker && pickerAttributes)
-  {
-    var classValue = pickerAttributes["class"];
+oj.EditableValueUtils.setPickerAttributes = function (picker, pickerAttributes) {
+  //  - let the popup picker accept the custom css class name from the component
+  if (picker && pickerAttributes) {
+    var classValue = pickerAttributes.class;
     if (classValue) {
       var classes = classValue.split(' ');
       // IE11 doesn't support destructured parameters so we need to iterate across the list
@@ -455,17 +437,13 @@ oj.EditableValueUtils.setPickerAttributes = function (picker, pickerAttributes)
       }
     }
 
-    var styleValue = pickerAttributes["style"];
-    if (styleValue)
-    {
+    var styleValue = pickerAttributes.style;
+    if (styleValue) {
       var pickerElem = picker[0];
       var currStyle = pickerElem.getAttribute('style');
-      if (currStyle)
-      {
+      if (currStyle) {
         pickerElem.setAttribute('style', currStyle + ';' + styleValue);
-      }
-      else
-      {
+      } else {
         pickerElem.setAttribute('style', styleValue);
       }
     }
@@ -476,18 +454,16 @@ oj.EditableValueUtils.setPickerAttributes = function (picker, pickerAttributes)
  * Use this to get the oj-label's label element's id when there is a for/id relationship
  * between the oj-label and the form component. Some components need this information to
  * use as their aria-labelledby on their dom element(s) that takes focus.
- * @param {jQuery} widget The custom form component jQuery object. 
+ * @param {jQuery} widget The custom form component jQuery object.
  * We use this to find the oj-label element
  * by looking at oj-label's for attribute matching the id.
- * @param {string} defaultLabelId. the value we want to add to oj-label's label-id attribute if 
- * we can't find an existing id to use as aria-labelledby on the form component. 
+ * @param {string} defaultLabelId. the value we want to add to oj-label's label-id attribute if
+ * we can't find an existing id to use as aria-labelledby on the form component.
  * @return {string|null} return the string to use as the aria-labelledby on the form component's
  * focusable element. If oj-label doesn't exist, this will return null.
  * @ignore
  */
-oj.EditableValueUtils.getOjLabelId = function (widget, defaultLabelId)
-{
-
+oj.EditableValueUtils.getOjLabelId = function (widget, defaultLabelId) {
   var formCompId;
   var labelElements;
   var ojLabelCustom;
@@ -495,9 +471,10 @@ oj.EditableValueUtils.getOjLabelId = function (widget, defaultLabelId)
   var labelElement;
   var labelElementId;
   var labelId;
-  
-  if (this.hasNoLabelFlag(widget))
+
+  if (this.hasNoLabelFlag(widget)) {
     return null;
+  }
 
   var widgetElem = widget[0];
   formCompId = widgetElem.id;
@@ -507,56 +484,44 @@ oj.EditableValueUtils.getOjLabelId = function (widget, defaultLabelId)
       return child !== widgetElem && child.getAttribute('for') === formCompId;
     });
 
-  if (labelElements.length === 0)
-  {
-    ojLabelCustom =  document.querySelector("oj-label[for='" + formCompId + "']");
-  } 
-  else
+  if (labelElements.length === 0) {
+    ojLabelCustom = document.querySelector("oj-label[for='" + formCompId + "']");
+  } else {
     ojLabelCustom = labelElements[0];
-  
-  if (ojLabelCustom)
-  {
-    labelId = ojLabelCustom.getAttribute("label-id");
-    if (labelId)
-    {
+  }
+
+  if (ojLabelCustom) {
+    labelId = ojLabelCustom.getAttribute('label-id');
+    if (labelId) {
       // if label-id is set, oj-label writes it directly on the label element's id
-      return labelId;      
+      return labelId;
     }
-    else
-    {
-      id = ojLabelCustom.id;
-      if (id)
-      {
-        // the contract is for the label element's id, it's the oj-label id + this suffix 
-        // (if oj-label doesn't have the label-id attribute set)
-        return id + oj.EditableValueUtils.CUSTOM_LABEL_ELEMENT_ID;
-      }
-      else 
-      {
-        // oj-label has no label-id or id, so get oj-label's label element, get its id and use that.
-        labelElement = ojLabelCustom.querySelector("label");
-        if (labelElement)
-          labelElementId = labelElement.id;
-        if (labelElementId)
-          return labelElementId;
-        else
-        {
-          // if we get here, we did find oj-label, but it did not have label-id nor id,
-          // and we also didn't find its label element's id. 
-          // What we need to do now is write label-id onto oj-label, given the defaultLabelId parameter.
-          if (defaultLabelId)
-          {
-            ojLabelCustom.setAttribute("label-id", defaultLabelId);
-            return defaultLabelId;
-          }
- 
-        }  
-      }
+
+    id = ojLabelCustom.id;
+    if (id) {
+      // the contract is for the label element's id, it's the oj-label id + this suffix
+      // (if oj-label doesn't have the label-id attribute set)
+      return id + oj.EditableValueUtils.CUSTOM_LABEL_ELEMENT_ID;
+    }
+
+    // oj-label has no label-id or id, so get oj-label's label element, get its id and use that.
+    labelElement = ojLabelCustom.querySelector('label');
+    if (labelElement) {
+      labelElementId = labelElement.id;
+    }
+    if (labelElementId) {
+      return labelElementId;
+    }
+
+    // if we get here, we did find oj-label, but it did not have label-id nor id,
+    // and we also didn't find its label element's id.
+    // What we need to do now is write label-id onto oj-label, given the defaultLabelId parameter.
+    if (defaultLabelId) {
+      ojLabelCustom.setAttribute('label-id', defaultLabelId);
+      return defaultLabelId;
     }
   }
   return null;
-  
-
 };
 
 /**
@@ -564,40 +529,39 @@ oj.EditableValueUtils.getOjLabelId = function (widget, defaultLabelId)
  * This is a performance enhancement for the corner case where input components are rendered in a
  * ojTable. Input components rendered in an ojTable have no label so we don't need to waste time
  * looking for labels.
- * @param {jQuery} widget The component widget. 
+ * @param {jQuery} widget The component widget.
  * @return {boolean}
  * @ignore
-* @private
+ * @private
  */
-oj.EditableValueUtils.hasNoLabelFlag =  function (widget)
-{
+oj.EditableValueUtils.hasNoLabelFlag = function (widget) {
   return widget[0].hasAttribute('data-oj-no-labelledby');
 };
 
 /**
- * Validates the component's display value using the converter and all validators registered on 
- * the component and updates the <code class="prettyprint">value</code> option by performing the 
- * following steps. 
- * 
+ * Validates the component's display value using the converter and all validators registered on
+ * the component and updates the <code class="prettyprint">value</code> option by performing the
+ * following steps.
+ *
  * <p>
- * <ol> 
+ * <ol>
  * <li>All messages are cleared, including custom messages added by the app. </li>
- * <li>If no converter is present then processing continues to next step. If a converter is 
- * present, the UI value is first converted (i.e., parsed). If there is a parse error then 
+ * <li>If no converter is present then processing continues to next step. If a converter is
+ * present, the UI value is first converted (i.e., parsed). If there is a parse error then
  * messages are shown.</li>
- * <li>If there are no validators setup for the component the <code class="prettyprint">value</code> 
- * option is updated using the display value. Otherwise all 
- * validators are run in sequence using the parsed value from the previous step. The implicit 
- * required validator is run first if the component is marked required. When a validation error is 
+ * <li>If there are no validators setup for the component the <code class="prettyprint">value</code>
+ * option is updated using the display value. Otherwise all
+ * validators are run in sequence using the parsed value from the previous step. The implicit
+ * required validator is run first if the component is marked required. When a validation error is
  * encountered it is remembered and the next validator in the sequence is run. </li>
- * <li>At the end of validation if there are errors, the messages are shown. 
- * If there were no errors, then the 
+ * <li>At the end of validation if there are errors, the messages are shown.
+ * If there were no errors, then the
  * <code class="prettyprint">value</code> option is updated.</li>
  * </ol>
- * 
+ *
  * @example <caption>Validate component using its current value.</caption>
  * myComp.validate();
- * 
+ *
  * @example <caption>Validate component and use the Promise's resolved state.</caption>
  * myComp.validate().then(
  *  function(result) {
@@ -606,18 +570,17 @@ oj.EditableValueUtils.hasNoLabelFlag =  function (widget)
  *      submitForm();
  *    }
  *  });
- *  
- *  
+ *
+ *
  * @return {Promise} Promise resolves to "valid" if there were no converter parse errors and
- * the component passed all validations. 
- * The Promise resolves to "invalid" if there were converter parse errors or 
+ * the component passed all validations.
+ * The Promise resolves to "invalid" if there were converter parse errors or
  * if there were validation errors.
- * 
+ *
  * @ignore
  * @private
  */
-oj.EditableValueUtils.validate =  function ()
-{
+oj.EditableValueUtils.validate = function () {
   var promise;
   // returns array of async-validators
   var normalizedAsyncValidators = this._getAllAsyncValidators();
@@ -633,8 +596,8 @@ oj.EditableValueUtils.validate =  function ()
     // but for backward compatibility with 4.0, we keep the same logic -
     // that is, calling _ValidateReturnBoolean and wrapping it in a Promsie.
     validateFunction = function () {
-      return self._ValidateReturnBoolean() ? 
-        oj.EditableValueUtils.VALIDATE_VALUES.VALID : 
+      return self._ValidateReturnBoolean() ?
+        oj.EditableValueUtils.VALIDATE_VALUES.VALID :
         oj.EditableValueUtils.VALIDATE_VALUES.INVALID;
     };
     promise = Promise.resolve(validateFunction());
@@ -665,14 +628,14 @@ oj.EditableValueUtils._ValidateReturnPromise = function () {
 };
 
 /**
- * 
- * @returns boolean true if component passed validation, 
+ *
+ * @returns boolean true if component passed validation,
  * false if there were validation errors.
- * 
+ *
  * @example <caption>Validate component using its current value.</caption>
- * // validate display value. 
+ * // validate display value.
  * var rslt = myComp.validate();
- * 
+ *
  * @ignore
  * @protected
  */
@@ -692,42 +655,48 @@ oj.EditableValueUtils._ValidateReturnBoolean = function () {
  * @ignore
  * @private
  */
-oj.EditableValueUtils.setSubIdForCustomLabelFor = function(element, widgetId)
-{
-  element.setAttribute("id", widgetId + "|input");
+oj.EditableValueUtils.setSubIdForCustomLabelFor = function (element, widgetId) {
+  element.setAttribute('id', widgetId + '|input');
 };
-/**For custom element only.
+
+/** For custom element only.
  * When labelledBy changes, we need to update the aria-labelledby attribute.
  * Note: If labelledBy changes from a value to null, we should still remove the oldValue from
  * aria-labelledby.
  * @param {string|null} originalValue the old value of the labelledBy option
- * @param {string|null} value the new value of the labelledBy option. 
+ * @param {string|null} value the new value of the labelledBy option.
  * @param {jQuery} $elems jquery Object containing the node(s) to add/remove aria-labelledby to.
  * @private
  * @ignore
  */
-oj.EditableValueUtils._updateLabelledBy = function(originalValue, value, $elems)
-{
+oj.EditableValueUtils._updateLabelledBy = function (originalValue, value, $elems) {
   var suffix = oj.EditableValueUtils.CUSTOM_LABEL_ELEMENT_ID;
-  
-  if (!this._IsCustomElement())
-    return;
 
-  if (originalValue)
+  if (!this._IsCustomElement()) {
+    return;
+  }
+
+  if (originalValue) {
+    // eslint-disable-next-line no-param-reassign
     originalValue += suffix;
-  if (value)
+  }
+  if (value) {
+    // eslint-disable-next-line no-param-reassign
     value += suffix;
-  
-  if (originalValue)
+  }
+
+  if (originalValue) {
     oj.EditableValueUtils._removeAriaLabelledBy($elems, originalValue);
-  if (value)
-    oj.EditableValueUtils._addAriaLabelledBy($elems, value);    
+  }
+  if (value) {
+    oj.EditableValueUtils._addAriaLabelledBy($elems, value);
+  }
 };
 
 /**
  * Refresh everything that needs refreshing when the required option is toggled:
  * refreshes theming, aria-required, label.
- *  
+ *
  * Used by EditableValue components that support the required option.
  * The component links to this function like this:
  *   _refreshRequired : oj.EditableValueUtils._refreshRequired,
@@ -735,109 +704,106 @@ oj.EditableValueUtils._updateLabelledBy = function(originalValue, value, $elems)
  * @private
  * @ignore
  */
-oj.EditableValueUtils._refreshRequired = function(value)
-{
+oj.EditableValueUtils._refreshRequired = function (value) {
   var id;
   var contentNode;
   var ariaValue;
   var ariaRequiredUnsupported = this._AriaRequiredUnsupported();
-  
-  this._refreshTheming("required", value);
+
+  this._refreshTheming('required', value);
   // refresh aria-required
   // Most inputs/selects need aria-required on the input element (aka 'content')
   // But it is not legal to have aria-required on radio/checkboxes.
-  if (!ariaRequiredUnsupported)
-  { 
+  if (!ariaRequiredUnsupported) {
     contentNode = this._GetContentElement();
 
-    ariaValue = value; //(value == "required") ? true : false;
-    if (ariaValue && contentNode) 
+    ariaValue = value; // (value == "required") ? true : false;
+    if (ariaValue && contentNode) {
       contentNode[0].setAttribute('aria-required', ariaValue);
-    else
+    } else {
       contentNode[0].removeAttribute('aria-required');
+    }
   }
 
-  if (!this._IsCustomElement())
-  {
-    if (!this.$label)
+  if (!this._IsCustomElement()) {
+    if (!this.$label) {
       this._createOjLabel();
-    
+    }
+
     // need to keep the label's required in sync with the input's required
-    if (this.$label)
-    {
-      this.$label.ojLabel("option", "showRequired", value);
+    if (this.$label) {
+      this.$label.ojLabel('option', 'showRequired', value);
       // in most cases aria-required is supported and that is what we do to get JAWS to say
       // "Required" on focus of the input. But in the case of a 'set' of items where one is required,
       // say radioset/checkboxset, what do we do? aria-required doesn't make sense (nor is it valid
       // as it fails validation in some accessibility validators) on each input, when really it is
       // one in the set that is required, not each one. This is what we are doing from v1 on: we
       // put aria-describedby to point to the required icon text.
-      if (ariaRequiredUnsupported)
-      {
-        // if aria-labelledby is set, 
+      if (ariaRequiredUnsupported) {
+        // if aria-labelledby is set,
         // add/remove aria-describedby to the inputs pointing to
-        // the label+"_requiredIcon". 
+        // the label+"_requiredIcon".
         id = this._getAriaLabelledById(this.element);
-        if (id)
-        {   
-          if (value)
+        if (id) {
+          if (value) {
             this._addAriaDescribedBy(id + _REQUIRED_ICON_ID);
-          else
+          } else {
             this._removeAriaDescribedBy(id + _REQUIRED_ICON_ID);
+          }
         }
-      } 
+      }
     }
   }
 };
- 
+
 /**
  * Performs post processing after required option is set by taking the following steps.
- * 
- * - if component is invalid and has messgesShown -> required: false/true -> clear component errors; 
- * run full validation with UI value (we don't know if the UI error is from a required validator 
+ *
+ * - if component is invalid and has messgesShown -> required: false/true -> clear component errors;
+ * run full validation with UI value (we don't know if the UI error is from a required validator
  * or something else);<br/>
- * &nbsp;&nbsp;- if there are validation errors, then value not pushed to model; messagesShown is 
+ * &nbsp;&nbsp;- if there are validation errors, then value not pushed to model; messagesShown is
  * updated<br/>
- * &nbsp;&nbsp;- if no errors result from the validation, push value to model; author needs to 
+ * &nbsp;&nbsp;- if no errors result from the validation, push value to model; author needs to
  * listen to optionChange(value) to clear custom errors.<br/>
- * 
- * - if component is invalid and has messagesHidden -> required: false -> clear component 
+ *
+ * - if component is invalid and has messagesHidden -> required: false -> clear component
  * errors; no deferred validation is run.<br/>
- * - if component has no error -> required: true -> run deferred validation (we don't want to flag 
+ * - if component has no error -> required: true -> run deferred validation (we don't want to flag
  * errors unnecessarily)<br/>
  * - messagesCustom is never cleared<br/>
- * 
+ *
  * @param {string} option
- * 
+ *
  * @private
  * @ignore
- */  
-oj.EditableValueUtils._AfterSetOptionRequired = function (option)
-{
+ */
+// eslint-disable-next-line no-unused-vars
+oj.EditableValueUtils._AfterSetOptionRequired = function (option) {
   // refresh hints, theming and aria to reflect new state
   this._refreshRequired(this._IsRequired());
   this._runMixedValidationAfterSetOption(oj.EditableValueUtils.requiredOptionOptions);
 };
 
 /**
-   * When validators option changes, take the following steps.
-   * 
-   * - Clear the cached normalized list of all validator instances. push new hints to messaging.<br/>
-   * - if component is valid -> validators changes -> no change<br/>
-   * - if component is invalid has messagesShown -> validators changes -> clear all component 
-   * messages and re-run full validation on displayValue. if there are no errors push value to 
-   * model;<br/>
-   * - if component is invalid has messagesHidden -> validators changes -> do nothing; doesn't change 
-   * the required-ness of component <br/>
-   * - messagesCustom is not cleared.<br/>
-   * 
-   * NOTE: The behavior applies to any option that creates implicit validators - min, max, pattern, 
-   * etc. Components can call this method when these options change.
-   * 
-   * @returns {undefined}
-   * @private
-   * @ignore
-   */
+ * When validators option changes, take the following steps.
+ *
+ * - Clear the cached normalized list of all validator instances. push new hints to messaging.<br/>
+ * - if component is valid -> validators changes -> no change<br/>
+ * - if component is invalid has messagesShown -> validators changes -> clear all component
+ * messages and re-run full validation on displayValue. if there are no errors push value to
+ * model;<br/>
+ * - if component is invalid has messagesHidden -> validators changes -> do nothing; doesn't change
+ * the required-ness of component <br/>
+ * - messagesCustom is not cleared.<br/>
+ *
+ * NOTE: The behavior applies to any option that creates implicit validators - min, max, pattern,
+ * etc. Components can call this method when these options change.
+ *
+ * @returns {undefined}
+ * @private
+ * @ignore
+ */
 oj.EditableValueUtils._AfterSetOptionValidators = function () {
   // resets all validators and pushes new hints to messaging
   this._ResetAllValidators();
@@ -869,132 +835,120 @@ oj.EditableValueUtils._AfterSetOptionAsyncValidators = function () {
 
   this._runFullValidationIfNeeded(oj.EditableValueUtils.validatorsOptionOptions);
 };
-  /**
-   * Performs post processing after converter option changes by taking the following steps.
-   * 
-   * - always push new converter hint to messaging <br/>
-   * - if component has no errors -> refresh UI value<br/>
-   * - if component is invalid has messagesShown -> clear all component errors and run full 
-   * validation using display value. <br/>
-   * &nbsp;&nbsp;- if there are validation errors, value is not pushed to model; messagesShown is 
-   * updated.<br/>
-   * &nbsp;&nbsp;- if no errors result from the validation, push value to model; author needs to 
-   * listen to optionChange(value) to clear custom errors.<br/>
-   * - if component is invalid has messagesHidden -> refresh UI value. no need to run deferred 
-   * validations. <br/>
-   * - messagesCustom is never cleared<br/>
-   * 
-   * @param {String} option
-   * 
-   * @returns {undefined}
-   * @private
-   * @ignore
-   */
-    // called when 'converter' option changed, usually from option/setOption calls
-  oj.EditableValueUtils._AfterSetOptionConverter = function (option)
-  {
-    var runFullValidation = false;
-    
-    // clear the cached converter instance and push new hint to messaging
-    this._ResetConverter();
 
-    runFullValidation =
-      this._runFullValidationIfNeeded(oj.EditableValueUtils.converterOptionOptions);
+/**
+ * Performs post processing after converter option changes by taking the following steps.
+ *
+ * - always push new converter hint to messaging <br/>
+ * - if component has no errors -> refresh UI value<br/>
+ * - if component is invalid has messagesShown -> clear all component errors and run full
+ * validation using display value. <br/>
+ * &nbsp;&nbsp;- if there are validation errors, value is not pushed to model; messagesShown is
+ * updated.<br/>
+ * &nbsp;&nbsp;- if no errors result from the validation, push value to model; author needs to
+ * listen to optionChange(value) to clear custom errors.<br/>
+ * - if component is invalid has messagesHidden -> refresh UI value. no need to run deferred
+ * validations. <br/>
+ * - messagesCustom is never cleared<br/>
+ *
+ * @param {String} option
+ *
+ * @returns {undefined}
+ * @private
+ * @ignore
+ */
+// called when 'converter' option changed, usually from option/setOption calls
+oj.EditableValueUtils._AfterSetOptionConverter = function (option) {
+  var runFullValidation = false;
 
-    if (!runFullValidation) {
-      // refresh UI display value when there was no need to run full validation
-      this._Refresh(option, this.options[option], true);
-    }
-  };
-  /**
-   * Clears the cached converter stored in _converter and pushes new converter hint to messaging.
-   * Called when convterer option changes 
-   * 
-   * @private
-   * @ignore
-   */
-  oj.EditableValueUtils._ResetConverter = function ()
-  {
-    this._converter = null;
-    this._getComponentMessaging().update(
+  // clear the cached converter instance and push new hint to messaging
+  this._ResetConverter();
+
+  runFullValidation =
+  this._runFullValidationIfNeeded(oj.EditableValueUtils.converterOptionOptions);
+
+  if (!runFullValidation) {
+    // refresh UI display value when there was no need to run full validation
+    this._Refresh(option, this.options[option], true);
+  }
+};
+
+/**
+ * Clears the cached converter stored in _converter and pushes new converter hint to messaging.
+ * Called when convterer option changes
+ *
+ * @private
+ * @ignore
+ */
+oj.EditableValueUtils._ResetConverter = function () {
+  this._converter = null;
+  this._getComponentMessaging().update(
             this._getMessagingContent(this._MESSAGING_CONTENT_UPDATE_TYPE.CONVERTER_HINT));
-  };
-  /**
-   * Returns an array of all validators built by merging the validators option set on the component 
-   * and the implicit validators setup by the component. <br/>
-   * This does not include the implicit required validator. Components can override to add to this 
-   * array of validators.
-   * 
-   * @return {Array} of validators
-   * 
-   * @private
-   * @ignore
-   */
-  oj.EditableValueUtils._GetNormalizedValidatorsFromOption = function ()
-  {
-    var i;
-    var isValidatorInstance = true;
-    var normalizedValidators = [];
-    var validator;
-    var validatorsOption;
-    var vOptions;
-    var vType;
-    var vTypeStr;
-          
+};
 
-    validatorsOption = this.options['validators']; 
+/**
+ * Returns an array of all validators built by merging the validators option set on the component
+ * and the implicit validators setup by the component. <br/>
+ * This does not include the implicit required validator. Components can override to add to this
+ * array of validators.
+ *
+ * @return {Array} of validators
+ *
+ * @private
+ * @ignore
+ */
+oj.EditableValueUtils._GetNormalizedValidatorsFromOption = function () {
+  var i;
+  var isValidatorInstance = true;
+  var normalizedValidators = [];
+  var validator;
+  var validatorsOption;
+  var vOptions;
+  var vType;
+  var vTypeStr;
 
-    if (validatorsOption)
-    {
-      // Normalize validators 
-      for (i = 0; i < validatorsOption.length; i++)
-      {
-        validator = validatorsOption[i];
-        if (typeof validator === "object") 
-        {
-          // check if we have an actual validator instance that implements the validate() method
-          // oj.Validation.__doImplementsCheck(validator, oj.Validator);
-          if (!(validator['validate'] && typeof validator['validate'] === "function"))
-          {
-            isValidatorInstance = false;
-          }
 
-          if (!isValidatorInstance)
-          {
-            // we maybe dealing with an object literal
-            // {'type': 'numberRange', 'options': { 'min': 100, 'max': 1000,
-            //                                    'hint': {'min': 'some hint about min'}}}
-            vTypeStr = validator['type'];
-            if (vTypeStr && typeof vTypeStr === "string")
-            {
-              vType = oj.Validation.validatorFactory(vTypeStr);
-              if (vType)
-              {
-                vOptions = oj.CollectionUtils.copyInto({}, validator['options']) || {};
-                // we push converter into the options if not provided explicitly. This is to allow
-                // validators to format values shown in the hint and messages
-                vOptions['converter'] = vOptions['converter'] || this._GetConverter();
-                vOptions['label'] = vOptions['label'] || this._getLabelText();
-                validator = vType.createValidator(vOptions);
-              }
-              else
-              {
-                oj.Logger.error("Unable to locate a validatorFactory for the requested type: " + vTypeStr);
-              }
+  validatorsOption = this.options.validators;
+
+  if (validatorsOption) {
+    // Normalize validators
+    for (i = 0; i < validatorsOption.length; i++) {
+      validator = validatorsOption[i];
+      if (typeof validator === 'object') {
+        // check if we have an actual validator instance that implements the validate() method
+        // oj.Validation.__doImplementsCheck(validator, oj.Validator);
+        if (!(validator.validate && typeof validator.validate === 'function')) {
+          isValidatorInstance = false;
+        }
+
+        if (!isValidatorInstance) {
+          // we maybe dealing with an object literal
+          // {'type': 'numberRange', 'options': { 'min': 100, 'max': 1000,
+          //                                    'hint': {'min': 'some hint about min'}}}
+          vTypeStr = validator.type;
+          if (vTypeStr && typeof vTypeStr === 'string') {
+            vType = __ValidationBase.Validation.validatorFactory(vTypeStr);
+            if (vType) {
+              vOptions = oj.CollectionUtils.copyInto({}, validator.options) || {};
+              // we push converter into the options if not provided explicitly. This is to allow
+              // validators to format values shown in the hint and messages
+              vOptions.converter = vOptions.converter || this._GetConverter();
+              vOptions.label = vOptions.label || this._getLabelText();
+              validator = vType.createValidator(vOptions);
+            } else {
+              Logger.error('Unable to locate a validatorFactory for the requested type: ' + vTypeStr);
             }
           }
+        }
 
-          normalizedValidators.push(validator);
-        }
-        else
-        {
-          oj.Logger.error("Unable to parse the validator provided:" + validator);
-        }
+        normalizedValidators.push(validator);
+      } else {
+        Logger.error('Unable to parse the validator provided:' + validator);
       }
-
     }
-    return normalizedValidators;
-  };
+  }
+  return normalizedValidators;
+};
 /**
  * Returns an array of all async validators built by the async-validators attribute
  * set on the component. In this release, Objects that have validate method (
@@ -1017,49 +971,46 @@ oj.EditableValueUtils._GetNormalizedAsyncValidatorsFromOption = function () {
 
   validatorsOption = this.options.asyncValidators;
 
-  if (validatorsOption) {
-    // Normalize validators
-    for (i = 0; i < validatorsOption.length; i++) {
-      validator = validatorsOption[i];
-      if (typeof validator === 'object') {
-        // check if we have an actual asyncvalidator object that implements the validate() method
-        if (!(validator.validate && typeof validator.validate === 'function')) {
-          isValidatorInstance = false;
-        }
-        // in a future release we will look for object literals with 'type' attribute.
-
-        if (isValidatorInstance) {
-          normalizedValidators.push(validator);
-        }
-      } else {
-        oj.Logger.error('Unable to parse the validator provided:' + validator);
+  // Normalize validators
+  for (i = 0; i < validatorsOption.length; i++) {
+    validator = validatorsOption[i];
+    if (typeof validator === 'object') {
+      // check if we have an actual asyncvalidator object that implements the validate() method
+      if (!(validator.validate && typeof validator.validate === 'function')) {
+        isValidatorInstance = false;
       }
+      // in a future release we will look for object literals with 'type' attribute.
+
+      if (isValidatorInstance) {
+        normalizedValidators.push(validator);
+      }
+    } else {
+      Logger.error('Unable to parse the validator provided:' + validator);
     }
   }
+
   return normalizedValidators;
 };
-  /**
-   * Returns the normalized converter instance.
-   * 
-   * @return {Object} a converter instance or null
-   * 
-   * @private
-   * @ignore
-   */
-  oj.EditableValueUtils._GetConverter = function () 
-  {
-    var converterOption;
-    
-    // this._converter holds the instance
-    if (!this._converter)
-    {
-      converterOption = this.options['converter'];
-      this._converter = oj.IntlConverterUtils.getConverterInstance(converterOption);
-    }
-    
-    return this._converter || null;
-  };
-   
+/**
+ * Returns the normalized converter instance.
+ *
+ * @return {Object} a converter instance or null
+ *
+ * @private
+ * @ignore
+ */
+oj.EditableValueUtils._GetConverter = function () {
+  var converterOption;
+
+  // this._converter holds the instance
+  if (!this._converter) {
+    converterOption = this.options.converter;
+    this._converter = __ValidationBase.IntlConverterUtils.getConverterInstance(converterOption);
+  }
+
+  return this._converter || null;
+};
+
 /**
  * Set busy state for component for async validators for the displayValue.
  * We want to clear busy state for the same displayValue, not for a different displayValue.
@@ -1081,7 +1032,7 @@ oj.EditableValueUtils._SetBusyState = function (displayValue) {
   // Set a page-level busy state if not already set for this displayValue
   if (!resolveBusyStateAsync) {
     var domElem = this.element[0];
-    var busyContext = oj.Context.getContext(domElem).getBusyContext();
+    var busyContext = Context.getContext(domElem).getBusyContext();
     var description = 'The page is waiting for async validators for displayValue ' + displayValue;
 
     if (domElem && domElem.id) {
@@ -1131,7 +1082,7 @@ oj.EditableValueUtils._SetBusyStateAsyncValidatorHint = function (counter) {
   // Set a page-level busy state if not already set for this counter
   if (!resolveBusyStateAsyncHint) {
     var domElem = this.element[0];
-    var busyContext = oj.Context.getContext(domElem).getBusyContext();
+    var busyContext = Context.getContext(domElem).getBusyContext();
     var description = 'The page is waiting for async validator hint for counter ' + counter;
 
     if (domElem && domElem.id) {
@@ -1161,93 +1112,90 @@ oj.EditableValueUtils._ClearBusyStateAsyncValidatorHint = function (counter) {
   }
 };
 
-  /**.
-   * Add the id to the widget's aria-labelledby attribute.
-   * @param {jQuery} $elems the jquery element(s) that represents the node on which aria-labelledby is
-   * @param {string} id id to add to aria-labelledby
-   * @private
-   * @ignore
-   */
-  oj.EditableValueUtils._addAriaLabelledBy = function ($elems, id)
-  {
+/** .
+ * Add the id to the widget's aria-labelledby attribute.
+ * @param {jQuery} $elems the jquery element(s) that represents the node on which aria-labelledby is
+ * @param {string} id id to add to aria-labelledby
+ * @private
+ * @ignore
+ */
+oj.EditableValueUtils._addAriaLabelledBy = function ($elems, id) {
+  var index;
+
+  $elems.each(function () {
+    var labelledBy = this.getAttribute('aria-labelledby');
+    var tokens;
+
+    tokens = labelledBy ? labelledBy.split(/\s+/) : [];
+    // Get index that id is in the tokens, if at all.
+    index = tokens.indexOf(id);
+    // add id if it isn't already there
+    if (index === -1) {
+      tokens.push(id);
+    }
+    labelledBy = tokens.join(' ').trim();
+    if (labelledBy == null) {
+      this.removeAttribute('aria-labelledBy');
+    } else {
+      this.setAttribute('aria-labelledBy', labelledBy);
+    }
+  });
+};
+
+/** .
+ * Remove the id from the widget's aria-labelledby attribute.
+ * @param {jQuery} $elems the jquery element(s) that represents the node on which aria-labelledby is
+ * @param {string} id id to remove from aria-labelledby
+ * @private
+ * @ignore
+ */
+oj.EditableValueUtils._removeAriaLabelledBy = function ($elems, id) {
+  var labelledBy;
+
+  $elems.each(function () {
     var index;
-    
-    
-    $elems.each(function () {
-      var labelledBy = this.getAttribute('aria-labelledby');
-      var tokens;
+    var tokens;
 
-      tokens = labelledBy ? labelledBy.split(/\s+/) : [];
-      // Get index that id is in the tokens, if at all.
-      index = tokens.indexOf(id);
-        // add id if it isn't already there
-      if (index === -1)
-        tokens.push(id);
-      labelledBy = tokens.join(' ').trim();
-      if (labelledBy == null) {
-        this.removeAttribute('aria-labelledBy');
-      } else {
-        this.setAttribute('aria-labelledBy', labelledBy);
-      }
-    });   
-  };
-  /**.
-   * Remove the id from the widget's aria-labelledby attribute.
-   * @param {jQuery} $elems the jquery element(s) that represents the node on which aria-labelledby is
-   * @param {string} id id to remove from aria-labelledby
-   * @private
-   * @ignore
-   */
-  oj.EditableValueUtils._removeAriaLabelledBy = function ($elems, id)
-  {
-    var labelledBy;
-    
-    $elems.each(function() {
+    // get aria-labelledby that is on the element(s)
+    labelledBy = this.getAttribute('aria-labelledby');
+    // split into tokens
+    tokens = labelledBy ? labelledBy.split(/\s+/) : [];
+    // Get index that id is in the tokens, if at all.
+    index = tokens.indexOf(id);
+    // remove that from the tokens array
+    if (index !== -1) {
+      tokens.splice(index, 1);
+    }
+    // join the tokens back together and trim whitespace
+    labelledBy = tokens.join(' ').trim();
+    if (labelledBy) {
+      this.setAttribute('aria-labelledby', labelledBy);
+    } else {
+      this.removeAttribute('aria-labelledby');
+    }
+  });
+};
+/**
+ * Set the type of the input element based on virtualKeyboard option.
+ *
+ * @param {Array.<string>} allowedTypes an array of allowed types
+ *
+ * @protected
+ * @ignore
+ */
+oj.EditableValueUtils._SetInputType = function (allowedTypes) {
+  // Default input type is text
+  var inputType = 'text';
+  var agentInfo = oj.AgentUtils.getAgentInfo();
 
-      var index;
-      var tokens;
-      
-      // get aria-labelledby that is on the element(s)
-      labelledBy = this.getAttribute('aria-labelledby');
-      // split into tokens
-      tokens = labelledBy ? labelledBy.split(/\s+/) : [];
-      // Get index that id is in the tokens, if at all.
-      index = tokens.indexOf(id);
-      // remove that from the tokens array
-      if (index !== -1)
-        tokens.splice(index, 1);
-      // join the tokens back together and trim whitespace
-      labelledBy = tokens.join(' ').trim();
-      if (labelledBy)
-        this.setAttribute('aria-labelledby', labelledBy);
-      else
-        this.removeAttribute('aria-labelledby');
-     });
-  };
-  /**
-   * Set the type of the input element based on virtualKeyboard option.
-   * 
-   * @param {Array.<string>} allowedTypes an array of allowed types
-   * 
-   * @protected
-   * @ignore
-   */
-  oj.EditableValueUtils._SetInputType = function (allowedTypes)
-  {
-    // Default input type is text
-    var inputType = 'text';
-    var agentInfo = oj.AgentUtils.getAgentInfo();
-
-    // Only change the type on mobile browsers    
-    if (agentInfo['os'] === oj.AgentUtils.OS.ANDROID ||
-        agentInfo['os'] === oj.AgentUtils.OS.IOS ||
-        agentInfo['os'] === oj.AgentUtils.OS.WINDOWSPHONE)
-    {
-      // Get input type from component's virtualKeyboard option
-      if (allowedTypes.indexOf(this.options['virtualKeyboard']) >= 0)
-      {
-        inputType = this.options['virtualKeyboard'];
-      }
+  // Only change the type on mobile browsers
+  if (agentInfo.os === oj.AgentUtils.OS.ANDROID ||
+      agentInfo.os === oj.AgentUtils.OS.IOS ||
+      agentInfo.os === oj.AgentUtils.OS.WINDOWSPHONE) {
+    // Get input type from component's virtualKeyboard option
+    if (allowedTypes.indexOf(this.options.virtualKeyboard) >= 0) {
+      inputType = this.options.virtualKeyboard;
+    }
 /* For future support
       else
       {
@@ -1263,28 +1211,29 @@ oj.EditableValueUtils._ClearBusyStateAsyncValidatorHint = function (counter) {
         }
       }
 */
-    }
-    
-    if (inputType == null) {
-      this.element[0].removeAttribute('type');
-    } else {
-      this.element[0].setAttribute('type', inputType);
-    }
-  };
+  }
+
+  if (inputType == null) {
+    this.element[0].removeAttribute('type');
+  } else {
+    this.element[0].setAttribute('type', inputType);
+  }
+};
+
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
  */
-/* global Promise:false */
+/* global Promise:false, Components:false, Message:false, __ValidationBase:false, Logger:false, Translations:false */
 /**
  * The various validation modes
  * @ignore
- */ 
+ */
 
 var _sValidationMode = {
-  FULL : 1, 
-  VALIDATORS_ONLY : 2, 
-  REQUIRED_VALIDATOR_ONLY : 3
+  FULL: 1,
+  VALIDATORS_ONLY: 2,
+  REQUIRED_VALIDATOR_ONLY: 3
 };
 
 /**
@@ -1293,7 +1242,7 @@ var _sValidationMode = {
 * @private
 * @type {string}
 */
-var _HELP_ICON_ID = "_helpIcon";
+var _HELP_ICON_ID = '_helpIcon';
 
 /**
 * valid state constants
@@ -1327,16 +1276,8 @@ var _INVALID_SHOWN = 'invalidShown';
 */
 var _PENDING = 'pending';
 
-/**
-* String used in the label element's id for custom &lt;oj-label>
-* @const
-* @private
-* @type {string}
-*/
-var _CUSTOM_LABEL_ELEMENT_ID = "|label";
 
-
-// E D I T A B L E V A L U E    A B S T R A C T   W I D G E T  
+// E D I T A B L E V A L U E    A B S T R A C T   W I D G E T
 /**
  * @ojcomponent oj.editableValue
  * @augments oj.baseComponent
@@ -1350,27 +1291,27 @@ var _CUSTOM_LABEL_ELEMENT_ID = "|label";
  *                for: "SettableProperties"
  *               }
  *              ]
- * @ojtsimport ojmessaging
+ * @ojtsimport {module: "ojmessaging", type:"AMD", importName: "Message"}
  * @abstract
  * @since 0.6
  * @ojshortdesc Abstract EditableValue element
  * @ojrole input
  * @hideconstructor
- * 
+ *
  * @classdesc
- * Abstract base class for all editable components that are value holders and that require 
+ * Abstract base class for all editable components that are value holders and that require
  * validation and messaging capabilities. <br/>
- * 
+ *
  * {@ojinclude "name":"validationAndMessagingDoc"}
  *  * <p>
  * Note: The <code class="prettyprint">required</code>, <code class="prettyprint">validators</code>,
- * <code class="prettyprint">converter</code> properties and the <code class="prettyprint">validate</code> 
- * method are not on all EditableValue components so they are not on the EditableValue class. 
+ * <code class="prettyprint">converter</code> properties and the <code class="prettyprint">validate</code>
+ * method are not on all EditableValue components so they are not on the EditableValue class.
  * See the EditableValue subclasses for which ones have which of these properties. For example,
- * oj-switch, oj-slider, oj-color-palette, and oj-color-spectrum do not have the 
- * <code class="prettyprint">validate</code> method nor do they have the 
+ * oj-switch, oj-slider, oj-color-palette, and oj-color-spectrum do not have the
+ * <code class="prettyprint">validate</code> method nor do they have the
  * <code class="prettyprint">required</code>, <code class="prettyprint">validators</code>,
- * <code class="prettyprint">converter</code> properties since the components 
+ * <code class="prettyprint">converter</code> properties since the components
  * wouldn't do anything with these properties anyway. A user can't type into these components and there
  * is no visual representation for 'nothing is set' on these components. Whereas InputBase, inputNumber,
  * inputSearch and combobox do have these properties since a user can type into the field (so you may
@@ -1380,32 +1321,32 @@ var _CUSTOM_LABEL_ELEMENT_ID = "|label";
 
  * <p>
  * <h3 id="declarative-binding-section">
- * Declarative Binding 
+ * Declarative Binding
  * <a class="bookmarkable-link" title="Bookmarkable Link" href="#declarative-binding-section"></a>
  * </h3>
- * When the component's <code class="prettyprint">value</code> property is bound to a Knockout 
- * observable and when the value changes, whether the observable is updated or not, and whether a 
- * 'writeback' to the observable happens or not, depends on the action that caused the value to 
+ * When the component's <code class="prettyprint">value</code> property is bound to a Knockout
+ * observable and when the value changes, whether the observable is updated or not, and whether a
+ * 'writeback' to the observable happens or not, depends on the action that caused the value to
  * change.
  * <ul>
  * <li>when the value changes as a result of user interaction </li>
- * <li>when the value changes because normal validation was run as a result of these properties 
- * being changed by the app - <code class="prettyprint">converter</code>, <code class="prettyprint">disabled</code>, 
- * <code class="prettyprint">required</code>, <code class="prettyprint">validators</code>, then the 
+ * <li>when the value changes because normal validation was run as a result of these properties
+ * being changed by the app - <code class="prettyprint">converter</code>, <code class="prettyprint">disabled</code>,
+ * <code class="prettyprint">required</code>, <code class="prettyprint">validators</code>, then the
  * value is written to the observable. See the specific property docs for details.</li>
- * <li>when the value changes because normal validation was run as a result of these methods being 
- * called by the app - 
- * <code class="prettyprint">refresh</code>, <code class="prettyprint">validate</code>, 
+ * <li>when the value changes because normal validation was run as a result of these methods being
+ * called by the app -
+ * <code class="prettyprint">refresh</code>, <code class="prettyprint">validate</code>,
  * then the value is written to the observable. See the specific method docs for details.</li>
- * <li>when the value changes due to programmatic intervention by app then the value is not written 
- * back to observable. This is based on the assumption that the app has mutated the observable 
- * already. In this case updating the component's <code class="prettyprint">value</code> property 
- * alone will not propagate the change automatically to the observable. Updating the observable is 
+ * <li>when the value changes due to programmatic intervention by app then the value is not written
+ * back to observable. This is based on the assumption that the app has mutated the observable
+ * already. In this case updating the component's <code class="prettyprint">value</code> property
+ * alone will not propagate the change automatically to the observable. Updating the observable is
  * recommended as this will propagate the change automatically to the component.
  * </li>
  * </ul>
  * </p>
- * 
+ *
  * @example <caption>Initialize component</caption>
  * &lt;input id="foo" type="text"/&gt;
  * &lt;script&gt;
@@ -1421,156 +1362,156 @@ var _CUSTOM_LABEL_ELEMENT_ID = "|label";
  * @example <caption>Initialize component value using element value</caption>
  * &lt;input id="foo" data-bind="ojComponent: {component: 'ojInputText'}" value='abc'/&gt;
  */
-oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'], 
-{
-  widgetEventPrefix: "oj",
-  
-  options: 
+oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
   {
-    /** 
-     * It is used to establish a relationship between this component and another element.
-     * Typically this is not used by the application developer, but by the oj-label custom element's
-     * code. One use case is where the oj-label custom element code writes described-by
-     * on its form component for accessibility reasons.
-     * To facilitate correct screen reader behavior, the described-by attribute is
-     * copied to the aria-describedby attribute on the component's dom element.
-     * @example <caption>Initialize component with the <code class="prettyprint">described-by</code> attribute specified:</caption>
-     * &lt;oj-some-element described-by="someId">&lt;/oj-some-element>
-     *
-     * @example <caption>Get or set the <code class="prettyprint">describedBy</code> property after initialization:</caption>
-     * // getter
-     * var descById = myComp.describedBy;
-     *
-     * // setter
-     * myComp.describedBy = "someId";
-     *
-     * @ojshortdesc described the relationship between this component and another element.
-     * @expose 
-     * @type {?string}
-     * @public
-     * @instance
-     * @memberof oj.editableValue
-     * @since 4.0.0
-     */
-    describedBy : null,
-    /** 
-     * Whether the component is disabled. The default is false.
-     * 
-     * <p>
-     * When the <code class="prettyprint">disabled</code> property changes due to programmatic 
-     * intervention, the component may clear messages and run validation in some cases. </br>
-     * <ul>
-     * <li>when a required component is initialized as disabled 
-     * <code class="prettyprint">value="{{currentValue}}" required disabled</code>, 
-     * deferred validation is skipped.</li>
-     * <li>when a disabled component is enabled, 
-     *  <ul>
-     *  <li>if component is invalid and showing messages then all component messages are cleared, 
-     *  and full validation run using the display value.
-     *   <ul>
-     *    <li>if there are validation errors, they are shown.</li>
-     *    <li>if no errors result from the validation, the <code class="prettyprint">value</code> 
-     *    property is updated. Page authors can listen to the <code class="prettyprint">onValueChanged</code> 
-     *    event to clear custom errors.</li>
-     *   </ul>
-     *  </li>
-     *  
-     *  <li>if component is valid and has no errors then deferred validation is run.
-     *    <ul>
-     *    <li>if there is a deferred validation error, then the valid property is updated. </li>
-     *    </ul>
-     *  </li>
-     *  <li>if component is invalid and deferred errors then component messages are cleared and 
-     *  deferred validation re-run.
-     *    <ul>
-     *    <li>if there is a deferred validation error, then the valid property is updated.</li>
-     *    </ul>
-     *  </li>
-     *  </ul>
-     * </li>
-     * <li>when enabled component is disabled then no validation is run and the component appears 
-     * disabled.</li>
-     * </ul>
-     * </p>
-     * 
-     * @example <caption>Initialize component with <code class="prettyprint">disabled</code> attribute:</caption>
-     * &lt;oj-some-element disabled>&lt;/oj-some-element>
-     *
-     * @example <caption>Get or set the <code class="prettyprint">disabled</code> property after initialization:</caption>
-     * // getter
-     * var disabled = myComp.disabled;
-     *
-     * // setter
-     * myComp.disabled = false;
-     *
-     * @ojshortdesc Whether the component is disabled. The default is false.
-     * @expose 
-     * @type {boolean}
-     * @default false
-     * @public
-     * @instance
-     * @memberof oj.editableValue
-     * @since 0.7
-     */
-    disabled : false,
-    /**
-     * Display options for auxilliary content that determines where it should be displayed 
-     * in relation to the component. 
-     * 
-     * <p>
-     * The types of messaging content for which display options can be configured include 
-     * <code class="prettyprint">converterHint</code>, <code class="prettyprint">helpInstruction</code>, 
-     * <code class="prettyprint">messages</code>, and <code class="prettyprint">validatorHint</code>.<br/>
-     * The display options for each type is specified either as an array of strings or a string. When 
-     * an array is specified the first display option takes precedence over the second and so on. 
-     * </p>
-     * <p>
-     * When display-options changes due to programmatic intervention, the component updates its 
-     * display to reflect the updated choices. For example, if 'help.instruction' property goes from 
-     * 'notewindow' to 'none' then it no longer shows in the notewindow.
-     * </p>
-     * <p>
-     * A side note: help.instruction and message detail text can include formatted HTML text, whereas hints and 
-     * message summary text cannot. If you use formatted text, it should be accessible 
-     * and make sense to the user if formatting wasn't there.
-     * To format the help.instruction, you could do this:
-     * <pre class="prettyprint"><code>&lt;html>Enter &lt;b>at least&lt;/b> 6 characters&lt;/html></code></pre>
-     * </p>
-     *
-     * @example <caption>Override default values for <code class="prettyprint">display-options</code> 
-     * for one component:</caption>
-     * // In this example, the display-options are changed from the defaults.
-     * // The 'converterHint' is none, the 'validatorHint' is none and the 'helpInstruction' is none,
-     * // so only the 'messages' will display in its default state.
-     * //
-     * &lt;oj-some-element display-options='{"converterHint": "none",
-     *                                     "validatorHint": "none",
-     *                                     "helpInstruction": "none"}'>&lt;/oj-some-element>
-     * 
-     * @example <caption>Get or set the <code class="prettyprint">displayOptions</code> property after initialization:</caption>
-     * // Get one subproperty
-     * var hint = myComp.displayOptions.converterHint;
-     * 
-     * // Set one, leaving the others intact. Use the setProperty API for 
-     * // subproperties so that a property change event is fired.
-     * myComp.setProperty("displayOptions.converterHint", "none");
-     * 
-     * // get all
-     * var options = myComp.displayOptions;
-     *
-     * // set all.  Must list every resource key, as those not listed are lost.
-     * myComp.displayOptions = {converterHint: "none", validatorHint: "none", helpInstruction: "none"};
-     *
-     * @ojshortdesc Customize how to display to the user the
-     *  form field's messages, converter and validator hints and help instruction text.
-     * @expose 
-     * @access public
-     * @instance
-     * @memberof oj.editableValue
-     * @type {Object}
-     * @since 0.7
-     */
-    displayOptions : {
+    widgetEventPrefix: 'oj',
+
+    options:
+    {
+      /**
+       * It is used to establish a relationship between this component and another element.
+       * Typically this is not used by the application developer, but by the oj-label custom element's
+       * code. One use case is where the oj-label custom element code writes described-by
+       * on its form component for accessibility reasons.
+       * To facilitate correct screen reader behavior, the described-by attribute is
+       * copied to the aria-describedby attribute on the component's dom element.
+       * @example <caption>Initialize component with the <code class="prettyprint">described-by</code> attribute specified:</caption>
+       * &lt;oj-some-element described-by="someId">&lt;/oj-some-element>
+       *
+       * @example <caption>Get or set the <code class="prettyprint">describedBy</code> property after initialization:</caption>
+       * // getter
+       * var descById = myComp.describedBy;
+       *
+       * // setter
+       * myComp.describedBy = "someId";
+       *
+       * @ojshortdesc described the relationship between this component and another element.
+       * @expose
+       * @type {?string}
+       * @public
+       * @instance
+       * @memberof oj.editableValue
+       * @since 4.0.0
+       */
+      describedBy: null,
+      /**
+       * Whether the component is disabled. The default is false.
+       *
+       * <p>
+       * When the <code class="prettyprint">disabled</code> property changes due to programmatic
+       * intervention, the component may clear messages and run validation in some cases. </br>
+       * <ul>
+       * <li>when a required component is initialized as disabled
+       * <code class="prettyprint">value="{{currentValue}}" required disabled</code>,
+       * deferred validation is skipped.</li>
+       * <li>when a disabled component is enabled,
+       *  <ul>
+       *  <li>if component is invalid and showing messages then all component messages are cleared,
+       *  and full validation run using the display value.
+       *   <ul>
+       *    <li>if there are validation errors, they are shown.</li>
+       *    <li>if no errors result from the validation, the <code class="prettyprint">value</code>
+       *    property is updated. Page authors can listen to the <code class="prettyprint">onValueChanged</code>
+       *    event to clear custom errors.</li>
+       *   </ul>
+       *  </li>
+       *
+       *  <li>if component is valid and has no errors then deferred validation is run.
+       *    <ul>
+       *    <li>if there is a deferred validation error, then the valid property is updated. </li>
+       *    </ul>
+       *  </li>
+       *  <li>if component is invalid and deferred errors then component messages are cleared and
+       *  deferred validation re-run.
+       *    <ul>
+       *    <li>if there is a deferred validation error, then the valid property is updated.</li>
+       *    </ul>
+       *  </li>
+       *  </ul>
+       * </li>
+       * <li>when enabled component is disabled then no validation is run and the component appears
+       * disabled.</li>
+       * </ul>
+       * </p>
+       *
+       * @example <caption>Initialize component with <code class="prettyprint">disabled</code> attribute:</caption>
+       * &lt;oj-some-element disabled>&lt;/oj-some-element>
+       *
+       * @example <caption>Get or set the <code class="prettyprint">disabled</code> property after initialization:</caption>
+       * // getter
+       * var disabled = myComp.disabled;
+       *
+       * // setter
+       * myComp.disabled = false;
+       *
+       * @ojshortdesc Whether the component is disabled. The default is false.
+       * @expose
+       * @type {boolean}
+       * @default false
+       * @public
+       * @instance
+       * @memberof oj.editableValue
+       * @since 0.7
+       */
+      disabled: false,
+      /**
+       * Display options for auxilliary content that determines where it should be displayed
+       * in relation to the component.
+       *
+       * <p>
+       * The types of messaging content for which display options can be configured include
+       * <code class="prettyprint">converterHint</code>, <code class="prettyprint">helpInstruction</code>,
+       * <code class="prettyprint">messages</code>, and <code class="prettyprint">validatorHint</code>.<br/>
+       * The display options for each type is specified either as an array of strings or a string. When
+       * an array is specified the first display option takes precedence over the second and so on.
+       * </p>
+       * <p>
+       * When display-options changes due to programmatic intervention, the component updates its
+       * display to reflect the updated choices. For example, if 'help.instruction' property goes from
+       * 'notewindow' to 'none' then it no longer shows in the notewindow.
+       * </p>
+       * <p>
+       * A side note: help.instruction and message detail text can include formatted HTML text, whereas hints and
+       * message summary text cannot. If you use formatted text, it should be accessible
+       * and make sense to the user if formatting wasn't there.
+       * To format the help.instruction, you could do this:
+       * <pre class="prettyprint"><code>&lt;html>Enter &lt;b>at least&lt;/b> 6 characters&lt;/html></code></pre>
+       * </p>
+       *
+       * @example <caption>Override default values for <code class="prettyprint">display-options</code>
+       * for one component:</caption>
+       * // In this example, the display-options are changed from the defaults.
+       * // The 'converterHint' is none, the 'validatorHint' is none and the 'helpInstruction' is none,
+       * // so only the 'messages' will display in its default state.
+       * //
+       * &lt;oj-some-element display-options='{"converterHint": "none",
+       *                                     "validatorHint": "none",
+       *                                     "helpInstruction": "none"}'>&lt;/oj-some-element>
+       *
+       * @example <caption>Get or set the <code class="prettyprint">displayOptions</code> property after initialization:</caption>
+       * // Get one subproperty
+       * var hint = myComp.displayOptions.converterHint;
+       *
+       * // Set one, leaving the others intact. Use the setProperty API for
+       * // subproperties so that a property change event is fired.
+       * myComp.setProperty("displayOptions.converterHint", "none");
+       *
+       * // get all
+       * var options = myComp.displayOptions;
+       *
+       * // set all.  Must list every resource key, as those not listed are lost.
+       * myComp.displayOptions = {converterHint: "none", validatorHint: "none", helpInstruction: "none"};
+       *
+       * @ojshortdesc Customize how to display to the user the
+       *  form field's messages, converter and validator hints and help instruction text.
+       * @expose
+       * @access public
+       * @instance
+       * @memberof oj.editableValue
+       * @type {Object}
+       * @since 0.7
+       */
+      displayOptions: {
           /**
            * Display options for auxilliary converter hint text that determines where it should be displayed
            * in relation to the component.  When there is already a placeholder set on the component,
@@ -1626,1577 +1567,1519 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
            * @ojsignature {target: "Type", value: "Array<'notewindow'|'none'>|'notewindow'|'none'",  jsdocOverride: true}
            */
       },
-    /**
-     * Form component help information.
-     * <p>
-     * The properties supported on the <code class="prettyprint">help</code> option are:
-     * 
-     * @property {string=} instruction this represents advisory information for the component
-     * The default value is <code class="prettyprint">null</code>.
-     * 
-     * @expose 
-     * @memberof oj.editableValue
-     * @instance
-     * @public
-     * @type {Object}
-     * @since 0.7
-     */
-    help: undefined,
-    /**
-     * <p>help definition text.  See the top-level <code class="prettyprint">help</code> option for details.
-     * 
-     * @expose
-     * @alias help.definition
-     * @memberof! oj.editableValue
-     * @instance
-     * @type {?string}
-     * @ignore
-     * @default null
-     * 
-     * @example <caption>Get or set the <code class="prettyprint">help.definition</code> sub-option, after initialization:</caption>
-     * // getter
-     * var definitionText = $( ".selector" ).ojFoo( "option", "help.definition" );
-     * 
-     * // setter:
-     * $( ".selector" ).ojFoo( "option", "help.definition", "Enter your name" );
-     */     
-    /**
-     * <p>help source url.  See the top-level <code class="prettyprint">help</code> option for details.
-     * 
-     * @expose
-     * @alias help.source
-     * @memberof! oj.editableValue
-     * @instance
-     * @ignore
-     * @type {?string}
-     * @default null
-     * 
-     * @example <caption>Get or set the <code class="prettyprint">help.source</code> sub-option, after initialization:</caption>
-     * // getter
-     * var helpSource = $( ".selector" ).ojFoo( "option", "help.source" );
-     * 
-     * // setter:
-     * $( ".selector" ).ojFoo( "option", "help.source", "www.abc.com" );
-     */
-    /**
-     * Represents hints for oj-form-layout element to render help information on the label of the editable component. 
-     * <p>This is used only if the editable component is added as a direct child to an oj-form-layout element, and the labelHint property is also specified.</p>
-     * 
-     * <p>
-     * The helpHints object contains a definition property and a source property.
-     * </p>
-     * <ul>
-     * <li><code class="prettyprint">definition</code> - hint for help definition text.</li>
-     * <li><code class="prettyprint">source</code> - hint for help source URL.</li>
-     * </ul>
-     *
-     * @example <caption>Initialize the component with help hints:</caption>
-     * &lt;!-- Using dot notation -->
-     * &lt;oj-some-element help-hints.definition='some value' help-hints.source='some-url'>&lt;/oj-some-element>
-     * 
-     * &lt;!-- Using JSON notation -->
-     * &lt;oj-some-element help-hints='{"definition":"some value", "source":"some-url"}'>&lt;/oj-some-element>
-     *
-     * @example <caption>Get or set the <code class="prettyprint">helpHints</code> property after 
-     * initialization:</caption>
-     * 
-     * // Get one
-     * var value = myComponent.helpHints.definition;
-     * 
-     * // Set one, leaving the others intact. Always use the setProperty API for 
-     * // subproperties rather than setting a subproperty directly.
-     * myComponent.setProperty('helpHints.definition', 'some new value');
-     *
-     * // Get all
-     * var values = myComponent.helpHints;
-     *
-     * // Set all.  Must list every subproperty, as those not listed are lost.
-     * myComponent.helpHints = {
-     *     definition: 'some new value',
-     *     source: 'some-new-url'
-     * };
-     *
-     * @ojshortdesc Represents hints for oj-form-layout element to 
-     * render help information on the label of the editable component.
-     * @expose
-     * @access public
-     * @memberof oj.editableValue
-     * @ojtranslatable
-     * @instance
-     * @type {Object}
-     * @since 4.1.0
-     */
-     helpHints:
-     {
-    /**
-     * Hint for help definition text associated with the label. 
-     * <p>It is what shows up when the user hovers over the help icon, or tabs into the help icon, or press and holds the help icon on a mobile device. No formatted text is available for help definition attribute.</p>
-     * 
-     * <p>See the <a href="#helpHints">help-hints</a> attribute for usage examples.</p>
-     *
-     * @expose
-     * @alias helpHints.definition
-     * @memberof! oj.editableValue
-     * @instance
-     * @type {string}
-     * @ojsignature {target:"Type", value: "?"}
-     * @default ""
-     * @since 4.1.0
-     */
-      definition: "",
-    /**
-     * Hint for help source URL associated with the label. 
-     * <p>If present, a help icon will render next to the label. For security reasons we only support urls with protocol http: or https:. If the url doesn't comply we ignore it and throw an error. 
-     * Pass in an encoded URL since we do not encode the URL.</p>
-     * 
-     * <p>See the <a href="#helpHints">help-hints</a> attribute for usage examples.</p>
-     *
-     * @expose
-     * @alias helpHints.source
-     * @memberof! oj.editableValue
-     * @instance
-     * @type {string}
-     * @ojsignature {target:"Type", value: "?"}
-     * @default ""
-     * @since 4.1.0
-     */
-      source: ""
+      /**
+       * Form component help information.
+       * <p>
+       * The properties supported on the <code class="prettyprint">help</code> option are:
+       *
+       * @property {string=} instruction this represents advisory information for the component
+       * The default value is <code class="prettyprint">""</code>.
+       *
+       * @expose
+       * @memberof oj.editableValue
+       * @instance
+       * @public
+       * @type {Object}
+       * @since 0.7
+       */
+      help: undefined,
+      /**
+       * <p>help definition text.  See the top-level <code class="prettyprint">help</code> option for details.
+       *
+       * @expose
+       * @alias help.definition
+       * @memberof! oj.editableValue
+       * @instance
+       * @type {?string}
+       * @ignore
+       * @default null
+       *
+       * @example <caption>Get or set the <code class="prettyprint">help.definition</code> sub-option, after initialization:</caption>
+       * // getter
+       * var definitionText = $( ".selector" ).ojFoo( "option", "help.definition" );
+       *
+       * // setter:
+       * $( ".selector" ).ojFoo( "option", "help.definition", "Enter your name" );
+       */
+      /**
+       * <p>help source url.  See the top-level <code class="prettyprint">help</code> option for details.
+       *
+       * @expose
+       * @alias help.source
+       * @memberof! oj.editableValue
+       * @instance
+       * @ignore
+       * @type {?string}
+       * @default null
+       *
+       * @example <caption>Get or set the <code class="prettyprint">help.source</code> sub-option, after initialization:</caption>
+       * // getter
+       * var helpSource = $( ".selector" ).ojFoo( "option", "help.source" );
+       *
+       * // setter:
+       * $( ".selector" ).ojFoo( "option", "help.source", "www.abc.com" );
+       */
+      /**
+       * Represents hints for oj-form-layout element to render help information on the label of the editable component.
+       * <p>This is used only if the editable component is added as a direct child to an oj-form-layout element, and the labelHint property is also specified.</p>
+       *
+       * <p>
+       * The helpHints object contains a definition property and a source property.
+       * </p>
+       * <ul>
+       * <li><code class="prettyprint">definition</code> - hint for help definition text.</li>
+       * <li><code class="prettyprint">source</code> - hint for help source URL.</li>
+       * </ul>
+       *
+       * @example <caption>Initialize the component with help hints:</caption>
+       * &lt;!-- Using dot notation -->
+       * &lt;oj-some-element help-hints.definition='some value' help-hints.source='some-url'>&lt;/oj-some-element>
+       *
+       * &lt;!-- Using JSON notation -->
+       * &lt;oj-some-element help-hints='{"definition":"some value", "source":"some-url"}'>&lt;/oj-some-element>
+       *
+       * @example <caption>Get or set the <code class="prettyprint">helpHints</code> property after
+       * initialization:</caption>
+       *
+       * // Get one
+       * var value = myComponent.helpHints.definition;
+       *
+       * // Set one, leaving the others intact. Always use the setProperty API for
+       * // subproperties rather than setting a subproperty directly.
+       * myComponent.setProperty('helpHints.definition', 'some new value');
+       *
+       * // Get all
+       * var values = myComponent.helpHints;
+       *
+       * // Set all.  Must list every subproperty, as those not listed are lost.
+       * myComponent.helpHints = {
+       *     definition: 'some new value',
+       *     source: 'some-new-url'
+       * };
+       *
+       * @ojshortdesc Represents hints for an oj-form-layout element to render help information on the label of the editable component.
+       * @expose
+       * @access public
+       * @memberof oj.editableValue
+       * @ojtranslatable
+       * @instance
+       * @type {Object}
+       * @since 4.1.0
+       */
+      helpHints:
+      {
+        /**
+         * Hint for help definition text associated with the label.
+         * <p>It is what shows up when the user hovers over the help icon, or tabs into the help icon, or press and holds the help icon on a mobile device. No formatted text is available for help definition attribute.</p>
+         *
+         * <p>See the <a href="#helpHints">help-hints</a> attribute for usage examples.</p>
+         *
+         * @ojshortdesc Hint for help definition text associated with the label.
+         * @expose
+         * @alias helpHints.definition
+         * @memberof! oj.editableValue
+         * @instance
+         * @type {string}
+         * @ojsignature {target:"Type", value: "?"}
+         * @default ""
+         * @since 4.1.0
+         */
+        definition: '',
+        /**
+         * Hint for help source URL associated with the label.
+         * <p>If present, a help icon will render next to the label. For security reasons we only support urls with protocol http: or https:. If the url doesn't comply we ignore it and throw an error.
+         * Pass in an encoded URL since we do not encode the URL.</p>
+         *
+         * <p>See the <a href="#helpHints">help-hints</a> attribute for usage examples.</p>
+         *
+         * @ojshortdesc Hint for help source URL associated with the label.
+         * @expose
+         * @alias helpHints.source
+         * @memberof! oj.editableValue
+         * @instance
+         * @type {string}
+         * @ojsignature {target:"Type", value: "?"}
+         * @default ""
+         * @since 4.1.0
+         */
+        source: ''
+      },
+      /**
+       * Represents a hint for oj-form-layout element to render a label on the editable component.
+       * <p>This is used only if the editable component is added as a direct child to an oj-form-layout element.</p>
+       *
+       * <p>
+       * When labelHint is present it gives a hint to the oj-form-layout element to create an oj-label element for the editable component.
+       * When the <code class="prettyprint">labelHint</code> property changes oj-form-layout element refreshes to
+       * display the updated label information.
+       * </p>
+       *
+       * @example <caption>Initialize the component with the <code class="prettyprint">label-hint</code> attribute specified:</caption>
+       * &lt;oj-some-element label-hint='input label'>&lt;/oj-some-element>
+       *
+       * @example <caption>Get or set the <code class="prettyprint">labelHint</code> property after
+       * initialization:</caption>
+       *
+       * // getter
+       * var value = myComponent.labelHint;
+       *
+       * // setter
+       * myComponent.labelHint = 'some new value'
+       *
+       * @ojshortdesc Represents a hint for oj-form-layout element to render a label on the editable component.
+       * @expose
+       * @access public
+       * @instance
+       * @alias labelHint
+       * @ojtranslatable
+       * @default ""
+       * @memberof oj.editableValue
+       * @type {string}
+       * @since 4.1.0
+       */
+      labelHint: '',
+      /**
+       * List of messages an app would add to the component when it has business/custom validation
+       * errors that it wants the component to show. This allows the app to perform further validation
+       * before sending data to the server. When this option is set the message shows to the
+       * user right away. To clear the custom message, set <code class="prettyprint">messagesCustom</code>
+       * back to an empty array.<br/>
+       * <p>Each message in the array is an object that duck types oj.Message.
+       * See {@link oj.Message} for details.
+       * </p>
+       * <p>
+       * See the <a href="#validation-section">Validation and Messages</a> section
+       * for details on when the component clears <code class="prettyprint">messagesCustom</code>;
+       * for example, when full validation is run.
+       * </p>
+       *
+       *
+       * @example <caption>Get or set the <code class="prettyprint">messagesCustom</code> property after initialization:</caption>
+       * // getter
+       * var customMsgs = myComp.messagesCustom;
+       *
+       * // setter
+       * myComp.messagesCustom = [{summary:"hello", detail:"detail", severity:oj.Message.SEVERITY_LEVEL.INFO}];
+       *
+       * @example <caption>Set messagesCustom when there are cross-validation errors:</caption>
+       * --- HTML ---
+       * &lt;oj-some-element messages-custom='{{messagesCustom}}'>&lt;/oj-some-element>
+       *
+       * --- ViewModel code ---
+       * self.messagesCustom = ko.observableArray([]);
+       *
+       * // the app's function that gets called when the user presses the submit button
+       * if (!myValidateCrossValidationFields())
+       * {
+       *   // the app adds a custom messages to the component and it is displayed right away
+       *   var msgs = [];
+       *   msgs.push({'summary':'Cross field error', 'detail':'Field 1 needs to be less than Field 2'});
+       *   self.messagesCustom(msgs);
+       * }
+       * else
+       * {
+       *   // submit data to the server
+       * }
+       *
+       * @ojshortdesc List of messages an app would add to the component
+       * @expose
+       * @access public
+       * @instance
+       * @memberof oj.editableValue
+       * @default []
+       * @type {Array.<Object>}
+       * @ojsignature {target: "Type", value: "Array<oj.Message>"}
+       * @since 0.7
+       * @ojwriteback
+       */
+      messagesCustom: [],
+
+      /**
+       * List of messages currently hidden on component, these are added by component when it runs
+       * deferred validation. Each message in the array is an object that duck types oj.Message.
+       * See {@link oj.Message} for
+       * details. <br/>
+       *
+       * <p>
+       * This is a read-only option so page authors cannot set or change it directly.
+       * </p>
+       *
+       * <p>
+       * These messages are not shown to the end-user by default, but page author
+       * can show hidden messages using the {@link showMessages} method.
+       * </p>
+       *
+       * @example <caption>Get <code class="prettyprint">messagesShown</code> for the component:</caption>
+       * // Foo is InputText, InputNumber, Select, etc.
+       * var messages = $(".selector").ojFoo("option", "messagesShown");
+       *
+       * @expose
+       * @access public
+       * @instance
+       * @memberof oj.editableValue
+       * @default []
+       * @type {Array.<Object>|undefined}
+       * @since 0.7
+       * @see #showMessages
+       * @readonly
+       * @ignore
+       * @ojwriteback
+       */
+      messagesHidden: undefined,
+
+      /**
+       * List of messages currently shown on component, these include messages generated both by the
+       * component and ones provided by app using <code class="prettyprint">messagesCustom</code>.
+       * Each message in the array is an object that duck types oj.Message.
+       * See {@link oj.Message} for details. <br/>
+       *
+       * <p>
+       * This is a read-only option so page authors cannot set or change it directly.
+       * </p>
+       *
+       * <p>
+       * Messages retrieved using the <code class="prettyprint">messagesShown</code> option are by
+       * default shown inline, but this can be controlled using the 'messages' property of
+       * the <code class="prettyprint">displayOptions</code> option.
+       * </p>
+       *
+       * @example <caption>Get <code class="prettyprint">messagesShown</code> for the component:</caption>
+       * // Foo is InputText, InputNumber, Select, etc.
+       * var messages = $(".selector").ojFoo("option", "messagesShown");
+       *
+       * @expose
+       * @access public
+       * @instance
+       * @memberof oj.editableValue
+       * @default []
+       * @type {Array.<Object>|undefined}
+       * @since 0.7
+       * @readonly
+       * @ignore
+       * @ojwriteback
+       */
+      messagesShown: undefined,
+
+
+      /**
+       * Represents advisory information for the component, such as would be appropriate for a tooltip.
+       *
+       * <p>
+       * When help.instruction is present it is by default displayed in the notewindow, or as determined by the
+       * 'helpInstruction' property set on the <code class="prettyprint">displayOptions</code> attribute.
+       * When the <code class="prettyprint">help.instruction</code> property changes the component refreshes to
+       * display the updated information.
+       * </p>
+       *
+       * <p>
+       * JET takes the help instruction text and creates a notewindow with the text.
+       * The help instruction only shows up as a tooltip on mouse over, not on keyboard and not in a mobile
+       * device. So help instruction would only be for text that is not important enough to show all users, or
+       * for text that you show the users in another way as well, like in the label.
+       * Also you cannot theme the native browser's title window like you can the JET
+       * notewindow, so low vision users may have a hard time seeing it.
+       * For these reasons, the JET EditableValue components do not use the HTML's title
+       * attribute.
+       * </p>
+       *
+       * <p>
+       * To include formatted text in the help.instruction, format the string using html tags.
+       * For example the
+       * help.instruction might look like:
+       * <pre class="prettyprint"><code>&lt;oj-some-element help.instruction="&lt;html>Enter &lt;b>at least&lt;/b> 6 characters&lt;/html>">&lt;/oj-some-element></code></pre>
+       * If you use formatted text, it should be accessible
+       * and make sense to the user if formatting wasn't there.
+       *
+       * @example <caption>Initialize the component with the <code class="prettyprint">help.instruction</code> sub-attribute:</caption>
+       * &lt;oj-some-element help.instruction="some tooltip">&lt;/oj-some-element>
+       *
+       * @example <caption>Get or set the <code class="prettyprint">help.instruction</code> property after initialization:</caption>
+       * // Get one subproperty
+       * var instr = myComp.help.instruction;
+       *
+       * // Set one subproperty, leaving the others intact. Use the setProperty API for
+       * // subproperties so that a property change event is fired.
+       * myComponent.setProperty('help.instruction', 'some new value');
+       *
+       * // Get all
+       * var values = myComponent.help;
+       *
+       * // Set all.  Must list every resource key, as those not listed are lost.
+       * myComponent.help = {
+       *   instruction: 'some new value'
+       * };
+       *
+       * @ojshortdesc Represents advisory information for the component
+       * @expose
+       * @access public
+       * @instance
+       * @alias help.instruction
+       * @ojtranslatable
+       * @default ""
+       * @memberof! oj.editableValue
+       * @ojtsignore
+       * @type {string}
+       * @since 4.0.0
+       */
+      title: '',
+
+      /**
+       * <p>
+       * The current valid state of the component. It is evaluated on initial render.
+       * It is re-evaluated
+       * <ul>
+       *   <li>after each validator (validators or async-validators) is run (full or deferred)</li>
+       *   <li>when messagesCustom is updated,
+       *   since messagesCustom can be added by the app developer any time.</li>
+       *   <li>when showMessages() is called. Since showMessages() moves the
+       *   hidden messages into messages shown,
+       *   if the valid state was "invalidHidden" then it would become "invalidShown".</li>
+       *   <li>when the required property has changed. If a component is empty and has required
+       *   set, the valid state may be "invalidHidden" (if no invalid messages are being shown as well).
+       *   If required property is removed, the valid state would change to "valid".</li>
+       * </ul>
+       * </p>
+       * <p>
+       *  Note: New valid states may be added to the list of valid values in future releases.
+       *  Any new values will start with "invalid"
+       *  if it is an invalid state, "pending" if it is pending state,
+       *  and "valid" if it is a valid state.
+       * </p>
+       * @example <caption>Get <code class="prettyprint">valid</code> attribute, after initialization:</caption>
+       * // Getter:
+       * var valid = myComp.valid;
+       * @example <caption>Set the <code class="prettyprint">on-valid-changed</code>
+       *  listener so you can do work in the ViewModel based on the
+       *  <code class="prettyprint">valid</code> property:</caption>
+       * &lt;oj-some-element id='username' on-valid-changed='[[validChangedListener]]'>
+       * &lt;/oj-some-element>
+       * &lt;oj-some-element id='password' on-valid-changed='[[validChangedListener]]'>
+       * &lt;/oj-some-element>
+       * &lt;oj-button disabled='[[componentDisabled]]' on-click='[[submit]]'>Submit&lt;/oj-button>
+       * -- ViewModel --
+       * self.validChangedListener = function (event) {
+       *   var enableButton;
+       *   var usernameValidState;
+       *   var passwordValidState;
+       *
+       *   // update the button's disabled state.
+       *   usernameValidState = document.getElementById("username").valid;
+       *   passwordValidState = document.getElementById("password").valid;
+       *
+       *   // this updates the Submit button's disabled property's observable based
+       *   // on the valid state of two components, username and password.
+       *   // It is up to the application how it wants to handle the “pending�? state
+       *   // but we think that in general buttons don’t need to be
+       *   // enabled / disabled based on the "pending" state.
+       *   enableButton =
+       *    (usernameValidState !== "invalidShown") &&
+       *    (passwordValidState !== "invalidShown");
+       *   self.componentDisabled(!enableButton);;
+       * };
+       *
+       * @ojshortdesc The validity state of the component
+       * @expose
+       * @access public
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "valid" The component is valid
+       * @ojvalue {string} "pending" The component is waiting for the validation state to be determined.
+       * The "pending" state is set at the start of the convert/validate process.
+       * @ojvalue {string} "invalidHidden" The component has invalid messages hidden
+       *    and no invalid messages showing. An invalid message is one with severity "error" or higher.
+       * @ojvalue {string} "invalidShown" The component has invalid messages showing.
+       *  An invalid message is one with severity "error" or higher.
+       * @ojwriteback
+       * @readonly
+       * @memberof oj.editableValue
+       * @since 4.2.0
+       * @ojstatus preview
+       */
+      valid: undefined,
+
+      /**
+       * The value of the component.
+       *
+       * <p>
+       * When <code class="prettyprint">value</code> property changes due to programmatic
+       * intervention, the component always clears all messages
+       * including <code class="prettyprint">messagesCustom</code>, runs deferred validation, and
+       * always refreshes UI display value.</br>
+       *
+       * <h4>Running Validation</h4>
+       * <ul>
+       * <li>component always runs deferred validation; the
+       * <code class="prettyprint">valid</code> property is updated with the result.</li>
+       * </ul>
+       * </p>
+       *
+       * @example <caption>Initialize the component with the <code class="prettyprint">value</code> attribute specified:</caption>
+       * &lt;oj-some-element value='10'>&lt;/oj-some-element>
+       * @example <caption>Get or set <code class="prettyprint">value</code> attribute, after initialization:</caption>
+       * // Getter: returns '10'
+       * var val = myComp.value;
+       * // Setter: sets '20'
+       * myComp.value = '20';
+       *
+       * @ojshortdesc The value of the editablevalue component
+       * @expose
+       * @access public
+       * @instance
+       * @default null
+       * @ojwriteback
+       * @memberof oj.editableValue
+       * @since 0.6
+       * @type {any}
+       * @ojsignature {
+       *                 target: "Accessor",
+       *                 value: {
+       *                          GetterType: "V",
+       *                          SetterType: "SV"}
+       *              }
+       */
+      value: undefined,
+
+      // Events
+      /**
+       * Triggered when a default animation is about to start on an element owned by the component.
+       *
+       * <p>The default animation can be cancelled by calling <code class="prettyprint">event.preventDefault</code>, followed by
+       * a call to <code class="prettyprint">event.detail.endCallback</code>.  <code class="prettyprint">event.detail.endCallback</code> should be
+       * called immediately after <code class="prettyprint">event.preventDefault</code> if the application merely wants to cancel animation,
+       * or it should be called when the custom animation ends if the application is invoking another animation function.  Failure to
+       * call <code class="prettyprint">event.detail.endCallback</code> may prevent the component from working properly.</p>
+       * <p>For more information on customizing animations, see the documentation of
+       * <a href="oj.AnimationUtils.html">oj.AnimationUtils</a>.</p>
+       *
+       * <caption>The default animations are controlled via the theme (SCSS) :</caption>
+       * <pre class="prettyprint"><code>
+       * // default animations for "notewindow" display option
+       * $popupTailOpenAnimation: (effect: "zoomIn", transformOrigin: "#myPosition") !default;
+       * $popupTailCloseAnimation: (effect: "none") !default;
+       *
+       * // default animations for "inline" display option
+       * $messageComponentInlineOpenAnimation: (effect: "expand", startMaxHeight: "#oldHeight") !default;
+       * $messageComponentInlineCloseAnimation: (effect: "collapse", endMaxHeight: "#newHeight") !default;
+       * </code></pre>
+       *
+       * @ojshortdesc Triggered when a default animation is about to start, such as when the component is
+       * being opened/closed or a child item is being added/removed. The default animation can
+       * be cancelled by calling event.preventDefault.
+       *
+       * @expose
+       * @event
+       * @memberof oj.editableValue
+       * @since 4.0.0
+       * @ojbubbles
+       * @ojcancelable
+       * @instance
+       * @property {string} action The action that triggers the animation. Supported values are:
+       *                    <ul>
+       *                      <li>"inline-open" - when an inline message container opens or increases in size</li>
+       *                      <li>"inline-close" - when an inline message container closes or decreases in size</li>
+       *                      <li>"notewindow-open" - when a note window opens</li>
+       *                      <li>"notewindow-close" - when a note window closes</li>
+       *                    </ul>
+       * @property {Element} element The element being animated.
+       * @property {function():void} endCallback If the event listener calls event.preventDefault to
+       *            cancel the default animation, it must call the endCallback function when it
+       *            finishes its own animation handling and any custom animation has ended.
+       *
+       * @example <caption>Define an event listener for the
+       *          <code class="prettyprint">ojAnimateStart</code> event to override the default
+       *          "inline-open" animation:</caption>
+       * var listener = function( event )
+       *   {
+       *     // Change the "inline-open" animation for inline message
+       *     if (event.detail.action == "inline-open") {
+       *       // Cancel default animation
+       *       event.preventDefault();
+       *       // Invoke new animation and call endCallback when the animation ends
+       *       oj.AnimationUtils.fadeIn(event.detail.element).then(event.detail.endCallback);
+       *     }
+       *   };
+       *
+       * @example <caption>Define an event listener for the
+       *          <code class="prettyprint">ojAnimateStart</code> event to cancel the default
+       *          "notewindow-close" animation:</caption>
+       * var listener = function( event )
+       *   {
+       *     // Change the "notewindow-close" animation for note window
+       *     if (ui.action == "notewindow-close") {
+       *       // Cancel default animation
+       *       event.preventDefault();
+       *       // Call endCallback immediately to indicate no more animation
+       *       event.detail.endCallback();
+       *     }
+       *   };
+       */
+      animateStart: null,
+      /**
+       * Triggered when a default animation has ended.
+       *
+       * @expose
+       * @event
+       * @ojbubbles
+       * @ojcancelable
+       * @memberof oj.editableValue
+       * @since 4.0.0
+       * @instance
+       * @property {string} action The action that triggers the animation. Supported values are:
+       *                    <ul>
+       *                      <li>"inline-open" - when an inline message container opens or increases in size</li>
+       *                      <li>"inline-close" - when an inline message container closes or decreases in size</li>
+       *                      <li>"notewindow-open" - when a note window opens</li>
+       *                      <li>"notewindow-close" - when a note window closes</li>
+       *                    </ul>
+       * @property {Element} element The element being animated.
+       * @example <caption>Define an event listener for the
+       *          <code class="prettyprint">ojAnimateEnd</code> event to add any processing after the end of
+       *          "inline-open" animation:</caption>
+       * var listener = function( event )
+       * {
+       *   // Check if this is the end of "inline-open" animation for inline message
+       *   if (event.detail.action == "inline-open") {
+       *     // Add any processing here
+       *   }
+       * };
+       */
+      animateEnd: null
     },
-    /** 
-     * Represents a hint for oj-form-layout element to render a label on the editable component. 
-     * <p>This is used only if the editable component is added as a direct child to an oj-form-layout element.</p>
-     * 
-     * <p>
-     * When labelHint is present it gives a hint to the oj-form-layout element to create an oj-label element for the editable component.
-     * When the <code class="prettyprint">labelHint</code> property changes oj-form-layout element refreshes to 
-     * display the updated label information. 
-     * </p>
-     *  
-     * @example <caption>Initialize the component with the <code class="prettyprint">label-hint</code> attribute specified:</caption>
-     * &lt;oj-some-element label-hint='input label'>&lt;/oj-some-element>
-     *
-     * @example <caption>Get or set the <code class="prettyprint">labelHint</code> property after 
-     * initialization:</caption>
-     * 
-     * // getter
-     * var value = myComponent.labelHint;
-     * 
-     * // setter
-     * myComponent.labelHint = 'some new value'
-     * 
-     * @ojshortdesc Represents a hint for oj-form-layout element to render a label on the editable component.
-     * @expose 
-     * @access public
-     * @instance
-     * @alias labelHint
-     * @ojtranslatable
-     * @default ""
-     * @memberof oj.editableValue
-     * @type {string}
-     * @since 4.1.0
-     */  
-    labelHint: "",
-    /**
-     * List of messages an app would add to the component when it has business/custom validation 
-     * errors that it wants the component to show. This allows the app to perform further validation 
-     * before sending data to the server. When this option is set the message shows to the 
-     * user right away. To clear the custom message, set <code class="prettyprint">messagesCustom</code>
-     * back to an empty array.<br/>
-     * <p>Each message in the array is an object that duck types oj.Message.      
-     * See {@link oj.Message} for details.
-     * </p>
-     * <p>
-     * See the <a href="#validation-section">Validation and Messages</a> section
-     * for details on when the component clears <code class="prettyprint">messagesCustom</code>; 
-     * for example, when full validation is run.
-     * </p>
-     * 
-     *
-     * @example <caption>Get or set the <code class="prettyprint">messagesCustom</code> property after initialization:</caption>
-     * // getter
-     * var customMsgs = myComp.messagesCustom;
-     * 
-     * // setter
-     * myComp.messagesCustom = [{summary:"hello", detail:"detail", severity:oj.Message.SEVERITY_LEVEL.INFO}];
-     * 
-     * @example <caption>Set messagesCustom when there are cross-validation errors:</caption>
-     * --- HTML ---
-     * &lt;oj-some-element messages-custom='{{messagesCustom}}'>&lt;/oj-some-element> 
-     * 
-     * --- ViewModel code ---
-     * self.messagesCustom = ko.observableArray([]);
-     * 
-     * // the app's function that gets called when the user presses the submit button
-     * if (!myValidateCrossValidationFields())
-     * {
-     *   // the app adds a custom messages to the component and it is displayed right away
-     *   var msgs = [];
-     *   msgs.push({'summary':'Cross field error', 'detail':'Field 1 needs to be less than Field 2'});
-     *   self.messagesCustom(msgs);
-     * }
-     * else
-     * {
-     *   // submit data to the server
-     * }
-     * 
-     * @ojshortdesc List of messages an app would add to the component
-     * @expose 
-     * @access public
-     * @instance
-     * @memberof oj.editableValue
-     * @default []
-     * @type {Array.<Object>}
-     * @ojsignature {target: "Type", value: "Array<oj.Message>"}
-     * @since 0.7
-     * @ojwriteback
-     */    
-    messagesCustom : [],
-    
-    /**
-     * List of messages currently hidden on component, these are added by component when it runs 
-     * deferred validation. Each message in the array is an object that duck types oj.Message. 
-     * See {@link oj.Message} for 
-     * details. <br/>
-     * 
-     * <p>
-     * This is a read-only option so page authors cannot set or change it directly.
-     * </p>
-     * 
-     * <p>
-     * These messages are not shown to the end-user by default, but page author 
-     * can show hidden messages using the {@link showMessages} method. 
-     * </p>
-     * 
-     * @example <caption>Get <code class="prettyprint">messagesShown</code> for the component:</caption>
-     * // Foo is InputText, InputNumber, Select, etc.
-     * var messages = $(".selector").ojFoo("option", "messagesShown"); 
-     * 
-     * @expose 
-     * @access public
-     * @instance
-     * @memberof oj.editableValue
-     * @default []
-     * @type {Array.<Object>|undefined}
-     * @since 0.7
-     * @see #showMessages
-     * @readonly
-     * @ignore
-     * @ojwriteback
-     */    
-    messagesHidden : undefined,     
-    
-    /**
-     * List of messages currently shown on component, these include messages generated both by the 
-     * component and ones provided by app using <code class="prettyprint">messagesCustom</code>. 
-     * Each message in the array is an object that duck types oj.Message.
-     * See {@link oj.Message} for details. <br/>
-     * 
-     * <p>
-     * This is a read-only option so page authors cannot set or change it directly.
-     * </p>
-     * 
-     * <p>
-     * Messages retrieved using the <code class="prettyprint">messagesShown</code> option are by 
-     * default shown inline, but this can be controlled using the 'messages' property of 
-     * the <code class="prettyprint">displayOptions</code> option. 
-     * </p>
-     * 
-     * @example <caption>Get <code class="prettyprint">messagesShown</code> for the component:</caption>
-     * // Foo is InputText, InputNumber, Select, etc.
-     * var messages = $(".selector").ojFoo("option", "messagesShown"); 
-     * 
-     * @expose 
-     * @access public
-     * @instance
-     * @memberof oj.editableValue
-     * @default []
-     * @type {Array.<Object>|undefined}
-     * @since 0.7
-     * @readonly
-     * @ignore
-     * @ojwriteback
-     */    
-    messagesShown : undefined,    
 
-    
-    /** 
-     * Represents advisory information for the component, such as would be appropriate for a tooltip. 
-     * 
-     * <p>
-     * When help.instruction is present it is by default displayed in the notewindow, or as determined by the 
-     * 'helpInstruction' property set on the <code class="prettyprint">displayOptions</code> attribute. 
-     * When the <code class="prettyprint">help.instruction</code> property changes the component refreshes to 
-     * display the updated information. 
-     * </p>
-     * 
-     * <p>
-     * JET takes the help instruction text and creates a notewindow with the text.
-     * The help instruction only shows up as a tooltip on mouse over, not on keyboard and not in a mobile
-     * device. So help instruction would only be for text that is not important enough to show all users, or
-     * for text that you show the users in another way as well, like in the label.
-     * Also you cannot theme the native browser's title window like you can the JET
-     * notewindow, so low vision users may have a hard time seeing it. 
-     * For these reasons, the JET EditableValue components do not use the HTML's title
-     * attribute.
-     * </p>
-     * 
-     * <p>
-     * To include formatted text in the help.instruction, format the string using html tags. 
-     * For example the 
-     * help.instruction might look like: 
-     * <pre class="prettyprint"><code>&lt;oj-some-element help.instruction="&lt;html>Enter &lt;b>at least&lt;/b> 6 characters&lt;/html>">&lt;/oj-some-element></code></pre>
-     * If you use formatted text, it should be accessible 
-     * and make sense to the user if formatting wasn't there.
-     * 
-     * @example <caption>Initialize the component with the <code class="prettyprint">help.instruction</code> sub-attribute:</caption>
-     * &lt;oj-some-element help.instruction="some tooltip">&lt;/oj-some-element>
-     *  
-     * @example <caption>Get or set the <code class="prettyprint">help.instruction</code> property after initialization:</caption>
-     * // Get one subproperty
-     * var instr = myComp.help.instruction;
-     *
-     * // Set one subproperty, leaving the others intact. Use the setProperty API for 
-     * // subproperties so that a property change event is fired.
-     * myComponent.setProperty('help.instruction', 'some new value');
-     * 
-     * // Get all
-     * var values = myComponent.help;
-     * 
-     * // Set all.  Must list every resource key, as those not listed are lost.
-     * myComponent.help = {
-     *   instruction: 'some new value'
-     * };
-     * 
-     * @ojshortdesc Represents advisory information for the component
-     * @expose 
-     * @access public
-     * @instance
-     * @alias help.instruction
-     * @ojtranslatable
-     * @default ""
-     * @memberof! oj.editableValue
-     * @ojtsignore
-     * @type {string}
-     * @since 4.0.0
-     */    
-    title: "",
-    
-    /**
-     * <p> 
-     * The current valid state of the component. It is evaluated on initial render.
-     * It is re-evaluated 
-     * <ul>
-     *   <li>after validation is run (full or deferred)</li> 
-     *   <li>when messagesCustom is updated, 
-     *   since messagesCustom can be added by the app developer any time.</li>
-     *   <li>when showMessages() is called. Since showMessages() moves the 
-     *   hidden messages into messages shown,
-     *   if the valid state was "invalidHidden" then it would become "invalidShown".</li>
-     *   <li>when the required property has changed. If a component is empty and has required
-     *   set, the valid state may be "invalidHidden" (if no invalid messages are being shown as well). 
-     *   If required property is removed, the valid state would change to "valid".</li> 
-     * </ul>
-     * </p>
-     * <p>
-     *  Note: New valid states may be added to the list of valid values in future releases.
-     *  Any new values will start with "invalid" 
-     *  if it is an invalid state, "pending" if it is pending state, 
-     *  and "valid" if it is a valid state.
-     * </p>
-     * @example <caption>Get <code class="prettyprint">valid</code> attribute, after initialization:</caption>
-     * // Getter:
-     * var valid = myComp.valid;
-     * @example <caption>Set the <code class="prettyprint">on-valid-changed</code>
-     *  listener so you can do work in the ViewModel based on the 
-     *  <code class="prettyprint">valid</code> property:</caption>
-     * &lt;oj-some-element id='username' on-valid-changed='[[validChangedListener]]'>
-     * &lt;/oj-some-element>
-     * &lt;oj-some-element id='password' on-valid-changed='[[validChangedListener]]'>
-     * &lt;/oj-some-element>
-     * &lt;oj-button disabled='[[componentDisabled]]' on-click='[[submit]]'>Submit&lt;/oj-button>
-     * -- ViewModel --
-     * self.validChangedListener = function (event) {
-     *   var enableButton;
-     *   var usernameValidState;
-     *   var passwordValidState;
-     *   
-     *   // update the button's disabled state.
-     *   usernameValidState = document.getElementById("username").valid;
-     *   passwordValidState = document.getElementById("password").valid;
-     *   
-     *   // this updates the Submit button's disabled property's observable based
-     *   // on the valid state of two components, username and password.
-     *   // It is up to the application how it wants to handle the �pending� state 
-     *   // but we think that in general buttons don�t need to be 
-     *   // enabled / disabled based on the "pending" state.
-     *   enableButton = 
-     *    (usernameValidState !== "invalidShown") &&
-     *    (passwordValidState !== "invalidShown");
-     *   self.componentDisabled(!enableButton);;
-     * };
-     * 
-     * @ojshortdesc The validity state of the component
-     * @expose 
-     * @access public
-     * @instance
-     * @type {string}
-     * @ojvalue {string} "valid" The component is valid
-     * @ojvalue {string} "pending" The component is waiting for the validation state to be determined.
-     * The "pending" state is set at the start of the convert/validate process.
-     * @ojvalue {string} "invalidHidden" The component has invalid messages hidden
-     *    and no invalid messages showing. An invalid message is one with severity "error" or higher.
-     * @ojvalue {string} "invalidShown" The component has invalid messages showing.
-     *  An invalid message is one with severity "error" or higher.
-     * @ojwriteback
-     * @readonly
-     * @memberof oj.editableValue
-     * @since 4.2.0 
-     * @ojstatus preview
-     */
-    valid: undefined,
-    
-    /** 
-     * The value of the component. 
-     * 
-     * <p>
-     * When <code class="prettyprint">value</code> property changes due to programmatic 
-     * intervention, the component always clears all messages
-     * including <code class="prettyprint">messagesCustom</code>, runs deferred validation, and 
-     * always refreshes UI display value.</br>
-     * 
-     * <h4>Running Validation</h4>
-     * <ul>
-     * <li>component always runs deferred validation; the 
-     * <code class="prettyprint">valid</code> property is updated with the result.</li>
-     * </ul>
-     * </p>
-     * 
-     * @example <caption>Initialize the component with the <code class="prettyprint">value</code> attribute specified:</caption>
-     * &lt;oj-some-element value='10'>&lt;/oj-some-element>
-     * @example <caption>Get or set <code class="prettyprint">value</code> attribute, after initialization:</caption>
-     * // Getter: returns '10'
-     * var val = myComp.value;
-     * // Setter: sets '20'
-     * myComp.value = '20';
-     * 
-     * @ojshortdesc The value of the editablevalue component
-     * @expose 
-     * @access public
-     * @instance
-     * @default null
-     * @ojwriteback
-     * @memberof oj.editableValue
-     * @since 0.6
-     * @type {any}
-     * @ojsignature {
-     *                 target: "Accessor",
-     *                 value: {
-     *                          GetterType: "V",
-     *                          SetterType: "SV"}
-     *              }
-     */
-    value: undefined,
+    // P U B L I C    M E T H O D S
 
-    // Events
-    /**
-     * Triggered when a default animation is about to start on an element owned by the component.
-     *
-     * <p>The default animation can be cancelled by calling <code class="prettyprint">event.preventDefault</code>, followed by
-     * a call to <code class="prettyprint">event.detail.endCallback</code>.  <code class="prettyprint">event.detail.endCallback</code> should be
-     * called immediately after <code class="prettyprint">event.preventDefault</code> if the application merely wants to cancel animation, 
-     * or it should be called when the custom animation ends if the application is invoking another animation function.  Failure to
-     * call <code class="prettyprint">event.detail.endCallback</code> may prevent the component from working properly.</p>
-     * <p>For more information on customizing animations, see the documentation of 
-     * <a href="oj.AnimationUtils.html">oj.AnimationUtils</a>.</p>
-     *
-     * <caption>The default animations are controlled via the theme (SCSS) :</caption>
-     * <pre class="prettyprint"><code>
-     * // default animations for "notewindow" display option
-     * $noteWindowOpenAnimation: (effect: "zoomIn", transformOrigin: "#myPosition") !default;
-     * $noteWindowCloseAnimation: (effect: "none") !default;
-     *
-     * // default animations for "inline" display option
-     * $messageComponentInlineOpenAnimation: (effect: "expand", startMaxHeight: "#oldHeight") !default;
-     * $messageComponentInlineCloseAnimation: (effect: "collapse", endMaxHeight: "#newHeight") !default;
-     * </code></pre>
-     *
-     * @ojshortdesc Triggered when a default animation is about to start, such as when the component is
-     * being opened/closed or a child item is being added/removed. The default animation can
-     * be cancelled by calling event.preventDefault.
-     *
-     * @expose
-     * @event
-     * @memberof oj.editableValue
-     * @since 4.0.0
-     * @ojbubbles
-     * @ojcancelable
-     * @instance
-     * @property {string} action The action that triggers the animation. Supported values are:
-     *                    <ul>
-     *                      <li>"inline-open" - when an inline message container opens or increases in size</li>
-     *                      <li>"inline-close" - when an inline message container closes or decreases in size</li>
-     *                      <li>"notewindow-open" - when a note window opens</li>
-     *                      <li>"notewindow-close" - when a note window closes</li>
-     *                    </ul>
-     * @property {Element} element The element being animated.
-     * @property {function():void} endCallback If the event listener calls event.preventDefault to
-     *            cancel the default animation, it must call the endCallback function when it
-     *            finishes its own animation handling and any custom animation has ended.
-     *
-     * @example <caption>Define an event listener for the
-     *          <code class="prettyprint">ojAnimateStart</code> event to override the default
-     *          "inline-open" animation:</caption>
-     * var listener = function( event )
-     *   {
-     *     // Change the "inline-open" animation for inline message
-     *     if (event.detail.action == "inline-open") {
-     *       // Cancel default animation
-     *       event.preventDefault();
-     *       // Invoke new animation and call endCallback when the animation ends
-     *       oj.AnimationUtils.fadeIn(event.detail.element).then(event.detail.endCallback);
-     *     }
-     *   };
-     *
-     * @example <caption>Define an event listener for the
-     *          <code class="prettyprint">ojAnimateStart</code> event to cancel the default
-     *          "notewindow-close" animation:</caption>
-     * var listener = function( event )
-     *   {
-     *     // Change the "notewindow-close" animation for note window
-     *     if (ui.action == "notewindow-close") {
-     *       // Cancel default animation
-     *       event.preventDefault();
-     *       // Call endCallback immediately to indicate no more animation
-     *       event.detail.endCallback();
-     *   };
-     */
-    animateStart : null,
-    /**
-     * Triggered when a default animation has ended.
-     *
-     * @expose
-     * @event
-     * @ojbubbles
-     * @ojcancelable
-     * @memberof oj.editableValue
-     * @since 4.0.0
-     * @instance
-     * @property {string} action The action that triggers the animation. Supported values are:
-     *                    <ul>
-     *                      <li>"inline-open" - when an inline message container opens or increases in size</li>
-     *                      <li>"inline-close" - when an inline message container closes or decreases in size</li>
-     *                      <li>"notewindow-open" - when a note window opens</li>
-     *                      <li>"notewindow-close" - when a note window closes</li>
-     *                    </ul>
-     * @property {Element} element The element being animated.
-     * @example <caption>Define an event listener for the
-     *          <code class="prettyprint">ojAnimateEnd</code> event to add any processing after the end of
-     *          "inline-open" animation:</caption>
-     * var listener = function( event )
-     * {
-     *   // Check if this is the end of "inline-open" animation for inline message
-     *   if (event.detail.action == "inline-open") {
-     *     // Add any processing here
-     *   }
-     * };
-     */
-    animateEnd : null
-  },
-  
-  // P U B L I C    M E T H O D S
-  
-  // @inheritdoc
-  getNodeBySubId: function(locator)
-  {
-    var node;
-    var subId;
+    // @inheritdoc
+    getNodeBySubId: function (locator) {
+      var node;
+      var subId;
 
-    node = this._super(locator);
-    
-    // this subId is only for non-custom element components so skip if custom element
-    if (!node && !this._IsCustomElement())
-    {
-      subId = locator['subId'];
+      node = this._super(locator);
 
-      if (subId === "oj-label-help-icon")
-      {
-        var label = this._GetLabelElement();
+      // this subId is only for non-custom element components so skip if custom element
+      if (!node && !this._IsCustomElement()) {
+        subId = locator.subId;
 
-        if (label)
-          node = label.parent().find(".oj-label-help-icon");
+        if (subId === 'oj-label-help-icon') {
+          var label = this._GetLabelElement();
+
+          if (label) {
+            node = label.parent().find('.oj-label-help-icon');
+          }
+        }
       }
-    }
-    // Non-null locators have to be handled by the component subclasses
-    return node || null;
-  },
-  //** @inheritdoc */
-  getSubIdByNode : function(elem)
-  {
-    var $node,
-        anchor,
-        div,
-        label,
-        subId = null;
-    
-    if (elem != null)
-    {
-      $node = $(elem);
-      anchor = $node.closest("a.oj-label-help-icon");
-       
-      if (anchor != null)
-      {
-        // Go up to the top level element of the label
-        div = anchor.closest(".oj-label");
-        
-        if (div != null)
-        {
-          // Now find the actual label
-          label = div.find("label")[0];
-          
-          if (label)
-          {
-            // Make sure the label is the one associated with this component
-            if (label == this._GetLabelElement()[0])
-            {
-               subId = {"subId":"oj-label-help-icon"};
+      // Non-null locators have to be handled by the component subclasses
+      return node || null;
+    },
+    //* * @inheritdoc */
+    getSubIdByNode: function (elem) {
+      var $node;
+      var anchor;
+      var div;
+      var label;
+      var subId = null;
+
+      if (elem != null) {
+        $node = $(elem);
+        anchor = $node.closest('a.oj-label-help-icon');
+
+        if (anchor != null) {
+          // Go up to the top level element of the label
+          div = anchor.closest('.oj-label');
+
+          if (div != null) {
+            // Now find the actual label
+            label = div.find('label')[0];
+
+            if (label) {
+              // Make sure the label is the one associated with this component
+              if (label === this._GetLabelElement()[0]) {
+                subId = { subId: 'oj-label-help-icon' };
+              }
             }
           }
         }
       }
-    }
-     
-    return subId;
-  },
-  /**
-   * whether the component is currently valid.  It is valid if it doesn't have any errors.
-   * This method is final; do not override.
-   * Currently this is for the widget components and not custom elements.
-   * @example <caption>Check whether the component is valid:</caption>
-   * var valid = myInputElement.isValid();
-   * @returns {boolean}
-   * @access public
-   * @instance
-   * @expose
-   * @memberof oj.editableValue
-   * @final
-   * @ignore
-   */
-  isValid : function ()
-  {
-    if (this._valid === undefined)
-    {
-      this._valid = !this._hasInvalidMessages();
-    }
-    
-    return this._valid;
-  },
-  
-  /**
-   * Called when the DOM underneath the component changes requiring a re-render of the component. An 
-   * example is when the <code class="prettyprint">id</code> for the input changes. <br/>
-   * <p>
-   * Another time when refresh might be called is when the locale for the page changes. When it 
-   * changes, attributes used by its converter and validator that are locale specific, its hints, 
-   * messages and translations will be updated. 
-   * </p>
-   * 
-   * <p>
-   * When <code class="prettyprint">refresh</code> method is called, the component may take various 
-   * steps such as clearing messages, running validation etc., based on the state it is in. </br>
-   * 
-   * <h4>Steps Performed Always</h4>
-   * <ul>
-   * <li>The converter and validators used by the component are reset, and new converter and 
-   * validator hints is pushed to messaging. E.g., notewindow displays the new hint(s).
-   * </li>
-   * </ul>
-   *  
-   * <h4>Running Validation</h4>
-   * <ul>
-   * <li>if component is valid when refresh() is called, the display value is refreshed if component 
-   * has a converter set.</li>
-   * <li>if component is invalid and is showing messages when 
-   * <code class="prettyprint">refresh()</code> is called, then all component messages are cleared 
-   * and full validation run using the display value on the component. 
-   * <ul>
-   *   <li>if there are validation errors, then <code class="prettyprint">value</code> 
-   *   attribute is not updated and the error is shown. 
-   *   </li>
-   *   <li>if no errors result from the validation, the <code class="prettyprint">value</code> 
-   *   attribute is updated; page author can listen to the <code class="prettyprint">onValueChanged</code> 
-   *   event to clear custom errors.</li>
-   * </ul>
-   * </li>
-   * <li>if component is invalid and has deferred messages when <code class="prettyprint">refresh()</code> 
-   * is called, then all component messages are cleared and deferred validation is run.</li>
-   * </ul>
-   * </p>
-   * 
-   * <h4>Clearing Messages</h4>
-   * <ul>
-   * <li>If clearing messages only those created by the component are cleared.
-   * <li><code class="prettyprint">messagesCustom</code> attribute is not cleared.</li>
-   * </ul>
-   * </p>
-   * 
-   * @example <caption>Redraw the component element.</caption>
-   * myComp.refresh();
-   * 
-   * @access public
-   * @instance
-   * @expose
-   * @return {void}
-   * @memberof oj.editableValue
-   * @since 0.7
-   */
-  refresh : function ()
-  {
-    this._super();
-    this._doRefresh(true);
-  },
-  
-  /**
-   * Resets the component by clearing all messages and messages attributes - 
-   * <code class="prettyprint">messagesCustom</code> -
-   * and updates the component's display value using the attribute value. User entered values will be 
-   * erased when this method is called.
-   * 
-   * @example <caption>Reset component</caption>
-   * myComp.reset(); <br/>
-   * 
-   * @access public
-   * @instance
-   * @expose
-   * @return {void}
-   * @memberof oj.editableValue
-   * @since 0.7
-   */
-  reset : function ()
-  {
-    this._clearAllMessages();
-    // since we are pushing component value to UI, only deferred validation need to be run; this is
-    // same as setting value option.
-    this._runDeferredValidation(this._VALIDATION_CONTEXT.RESET_METHOD);
-    this._refreshComponentDisplayValue(this.options['value'], true);
-  },
-  
-  /**
-   * Takes all deferred messages and shows them. 
-   * It then updates the valid property; e.g.,
-   * if the valid state was "invalidHidden"
-   * before showMessages(), the valid state will become "invalidShown" after showMessages(). 
-   * <p>
-   * If there were no deferred messages this method simply returns. 
-   * </p>
-   * 
-   * 
-   * @example <caption>Display all messages including deferred ones.</caption>
-   * myComp.showMessages();
-   * @access public
-   * @instance
-   * @return {void}
-   * @expose
-   * @memberof oj.editableValue
-   * @since 0.7
-   */
-  showMessages : function ()
-  {
-    var clonedMsgs = [];
-    var i;
-    var msgHidden;
-    var msgsHidden = this.options['messagesHidden'];
-    var hasMessagesHidden = msgsHidden.length > 0;
-    var clonedMsg;
-    
-    // showMessages() copies messagesHidden into clonedMsgs, 
-    // then clears messagesHidden, and updates messagesShown with the clonedMsgs. 
-    // It then updates the valid property; e.g.,
-    // if the valid state was "invalidHidden"
-    // before showMessages(), the valid state will become "invalidShown" after showMessages(). 
-    for (i = 0; i < msgsHidden.length; i++)
-    {
-      msgHidden = msgsHidden[i];
-      
-      // The oj.Message and oj.ComponentMessage distinction is important in a few places in
-      // the EV code. For example, when messagesCustom property changes, we keep existing
-      // messagesShown only if they are ComponentMessage added by component.
-      // if (msg instanceof oj.ComponentMessage && msg._isMessageAddedByComponent())
-      if (msgHidden instanceof oj.ComponentMessage)
-      {
-        // change oj.ComponentMessage's display state to oj.ComponentMessage.DISPLAY.SHOWN
-        msgHidden._forceDisplayToShown();
-        
 
-        // 
-        // .clone() clones the message and the options that were passed in when the message
-        // was originally created.
-        clonedMsg = msgHidden.clone();
+      return subId;
+    },
+    /**
+     * whether the component is currently valid.  It is valid if it doesn't have any errors.
+     * This method is final; do not override.
+     * Currently this is for the widget components and not custom elements.
+     * @example <caption>Check whether the component is valid:</caption>
+     * var valid = myInputElement.isValid();
+     * @returns {boolean}
+     * @access public
+     * @instance
+     * @expose
+     * @memberof oj.editableValue
+     * @final
+     * @ignore
+     */
+    isValid: function () {
+      if (this._valid === undefined) {
+        this._valid = !this._hasInvalidMessages();
       }
-      else
-        // NOTE: oj.Message is a public class and oj.ComponentMessage is private.
-        // oj.Message's .clone is deprecated, so we purposely don't call it here.
-        clonedMsg = new oj.Message(msgHidden['summary'], msgHidden['detail'], msgHidden['severity']);
-      
-      clonedMsgs.push(clonedMsg);
-    }
-    
-    if (hasMessagesHidden)
-    {
 
-      this._clearMessages('messagesHidden');
-      
-      this._updateMessagesOption('messagesShown', clonedMsgs);
-      
-      this._setValidOption(_INVALID_SHOWN, null);
-    }
-  },
+      return this._valid;
+    },
 
-  
-  // P R O T E C T E D    C O N S T A N T S   A N D   M E T H O D S
+    /**
+     * Called when the DOM underneath the component changes requiring a re-render of the component. An
+     * example is when the <code class="prettyprint">id</code> for the input changes. <br/>
+     * <p>
+     * Another time when refresh might be called is when the locale for the page changes. When it
+     * changes, attributes used by its converter and validator that are locale specific, its hints,
+     * messages and translations will be updated.
+     * </p>
+     *
+     * <p>
+     * When <code class="prettyprint">refresh</code> method is called, the component may take various
+     * steps such as clearing messages, running validation etc., based on the state it is in. </br>
+     *
+     * <h4>Steps Performed Always</h4>
+     * <ul>
+     * <li>The converter and validators used by the component are reset, and new converter and
+     * validator hints is pushed to messaging. E.g., notewindow displays the new hint(s).
+     * </li>
+     * </ul>
+     *
+     * <h4>Running Validation</h4>
+     * <ul>
+     * <li>if component is valid when refresh() is called, the display value is refreshed if component
+     * has a converter set.</li>
+     * <li>if component is invalid and is showing messages when
+     * <code class="prettyprint">refresh()</code> is called, then all component messages are cleared
+     * and full validation run using the display value on the component.
+     * <ul>
+     *   <li>if there are validation errors, then <code class="prettyprint">value</code>
+     *   attribute is not updated and the error is shown.
+     *   </li>
+     *   <li>if no errors result from the validation, the <code class="prettyprint">value</code>
+     *   attribute is updated; page author can listen to the <code class="prettyprint">onValueChanged</code>
+     *   event to clear custom errors.</li>
+     * </ul>
+     * </li>
+     * <li>if component is invalid and has deferred messages when <code class="prettyprint">refresh()</code>
+     * is called, then all component messages are cleared and deferred validation is run.</li>
+     * </ul>
+     * </p>
+     *
+     * <h4>Clearing Messages</h4>
+     * <ul>
+     * <li>If clearing messages only those created by the component are cleared.
+     * <li><code class="prettyprint">messagesCustom</code> attribute is not cleared.</li>
+     * </ul>
+     * </p>
+     *
+     * @example <caption>Redraw the component element.</caption>
+     * myComp.refresh();
+     *
+     * @access public
+     * @instance
+     * @expose
+     * @return {void}
+     * @memberof oj.editableValue
+     * @since 0.7
+     */
+    refresh: function () {
+      this._super();
+      this._doRefresh();
+    },
 
-  // *********** START WIDGET FACTORY METHODS (they retain _camelcase naming convention) **********
-  
-  /**
-   * Validation mode specifying the kind of validation that gets run.
-   * <ul>
-   *   <li>FULL - the default and runs both the converter and all validators. </li>
-   *   <li>VALIDATORS_ONLY - runs all validators including the required validator is run.</li>
-   *   <li>REQUIRED_VALIDATOR_ONLY - runs just the required validator. </li>
-   * </ul>  
-   * @protected
-   * @const
-   * @type {Object}
-   * @memberof oj.editableValue
-   */       
-  _VALIDATION_MODE : _sValidationMode,
-  
-  /**
-   * The context the component can be in when validation is run. 
-   * <ul>
-   * <li>COMPONENT_CREATE - when component is created and we run validators. usually messages are 
-   * not displayed right away, i.e, are 'deferred'. </li>
-   * <li>VALUE_OPTION_CHANGE - when component's value is updated programmatically. messages are  
-   * deferred.</li>
-   * <li>REQUIRED_OPTION_CHANGE - when component's required option is updated programmatically. messages are
-   * deferred.</li>
-   * <li>USER_ACTION - when component runs validation as a result of user interating with component.
-   * messages are displayed immediately.</li>
-   * <li>VALIDATE_METHOD - when component's validate() method is called explicitly. messages are 
-   * displayed immediately.</li>
-   * </ul>
-   * 
-   * @protected
-   * @const
-   * @type {Object}
-   * @memberof oj.editableValue
-   * 
-   */
-  _VALIDATION_CONTEXT : oj.EditableValueUtils.validationContext,
-  
-  /**
-   * Default options used by validate method. 
-   * 
-   * @protected
-   * @const
-   * @type {Object}
-   * @memberof oj.editableValue
-   * @see #validate
-   */  
-  _VALIDATE_METHOD_OPTIONS : oj.EditableValueUtils.validateMethodOptions,  
-  
-  /**
-   * Called at component create time primarily to initialize options, often using DOM values. This 
-   * method is called before _ComponentCreate is called, so components that override this method 
-   * should be aware that the component has not been rendered yet. The element DOM is available and 
-   * can be relied on to retrieve any default values. <p>
-   * 
-   * This method sets defaults for its options that have a DOM namesake. E.g., value, required, 
-   * disabled etc. Subclasses can override this method to set their own defaults for these options.
-   * Example, the value option is often not set on this.element for components like radioset, which
-   * walk the sub-tree to determine the value.
-   * 
-   * @param {!Object} originalDefaults - original default options defined on the widget and its ancestors
-   * @param {?Object} constructorOptions - options passed into the wiget constructor
-   * 
-   * @memberof oj.editableValue
-   * @instance
-   * @protected
-   */
-  _InitOptions : function(originalDefaults, constructorOptions)
-  {
-    this._super(originalDefaults, constructorOptions); 
-    
-    // We need to do this for custom element components since
-    // help.instruction is used instead of title.
-    if (this._IsCustomElement())
-    {
-      // update the title option if help.instruction option exists
-      var help = this.options["help"];
+    /**
+     * Resets the component by clearing all messages and messages attributes -
+     * <code class="prettyprint">messagesCustom</code> -
+     * and updates the component's display value using the attribute value. User entered values will be
+     * erased when this method is called.
+     *
+     * @example <caption>Reset component</caption>
+     * myComp.reset(); <br/>
+     *
+     * @access public
+     * @instance
+     * @expose
+     * @return {void}
+     * @memberof oj.editableValue
+     * @since 0.7
+     */
+    reset: function () {
+      this._clearAllMessages();
+      // since we are pushing component value to UI, only deferred validation need to be run; this is
+      // same as setting value option.
+      this._runDeferredValidation(this._VALIDATION_CONTEXT.RESET_METHOD);
+      this._refreshComponentDisplayValue(this.options.value, true);
+    },
 
-      if (help != null)
-      {
-        var helpInstruction = help["instruction"];
+    /**
+     * Takes all deferred messages and shows them.
+     * It then updates the valid property; e.g.,
+     * if the valid state was "invalidHidden"
+     * before showMessages(), the valid state will become "invalidShown" after showMessages().
+     * <p>
+     * If there were no deferred messages this method simply returns.
+     * </p>
+     *
+     *
+     * @example <caption>Display all messages including deferred ones.</caption>
+     * myComp.showMessages();
+     * @access public
+     * @instance
+     * @return {void}
+     * @expose
+     * @memberof oj.editableValue
+     * @since 0.7
+     */
+    showMessages: function () {
+      var clonedMsgs = [];
+      var i;
+      var msgHidden;
+      var msgsHidden = this.options.messagesHidden;
+      var hasMessagesHidden = msgsHidden.length > 0;
+      var clonedMsg;
 
-        if (helpInstruction != null)
-        {
-          this.options["title"] = helpInstruction;
+      // showMessages() copies messagesHidden into clonedMsgs,
+      // then clears messagesHidden, and updates messagesShown with the clonedMsgs.
+      // It then updates the valid property; e.g.,
+      // if the valid state was "invalidHidden"
+      // before showMessages(), the valid state will become "invalidShown" after showMessages().
+      for (i = 0; i < msgsHidden.length; i++) {
+        msgHidden = msgsHidden[i];
+
+        // The oj.Message and oj.ComponentMessage distinction is important in a few places in
+        // the EV code. For example, when messagesCustom property changes, we keep existing
+        // messagesShown only if they are ComponentMessage added by component.
+        // if (msg instanceof oj.ComponentMessage && msg._isMessageAddedByComponent())
+        if (msgHidden instanceof oj.ComponentMessage) {
+          // change oj.ComponentMessage's display state to oj.ComponentMessage.DISPLAY.SHOWN
+          msgHidden._forceDisplayToShown();
+
+
+          //
+          // .clone() clones the message and the options that were passed in when the message
+          // was originally created.
+          clonedMsg = msgHidden.clone();
+        } else {
+          // NOTE: oj.Message is a public class and oj.ComponentMessage is private.
+          // oj.Message's .clone is deprecated, so we purposely don't call it here.
+          clonedMsg = new Message(msgHidden.summary, msgHidden.detail, msgHidden.severity);
+        }
+
+        clonedMsgs.push(clonedMsg);
+      }
+
+      if (hasMessagesHidden) {
+        this._clearMessages('messagesHidden');
+
+        this._updateMessagesOption('messagesShown', clonedMsgs);
+
+        this._setValidOption(_INVALID_SHOWN, null);
+      }
+    },
+
+
+    // P R O T E C T E D    C O N S T A N T S   A N D   M E T H O D S
+
+    // *********** START WIDGET FACTORY METHODS (they retain _camelcase naming convention) **********
+
+    /**
+     * Validation mode specifying the kind of validation that gets run.
+     * <ul>
+     *   <li>FULL - the default and runs both the converter and all validators. </li>
+     *   <li>VALIDATORS_ONLY - runs all validators including the required validator is run.</li>
+     *   <li>REQUIRED_VALIDATOR_ONLY - runs just the required validator. </li>
+     * </ul>
+     * @protected
+     * @const
+     * @type {Object}
+     * @memberof oj.editableValue
+     */
+    _VALIDATION_MODE: _sValidationMode,
+
+    /**
+     * The context the component can be in when validation is run.
+     * <ul>
+     * <li>COMPONENT_CREATE - when component is created and we run validators. usually messages are
+     * not displayed right away, i.e, are 'deferred'. </li>
+     * <li>VALUE_OPTION_CHANGE - when component's value is updated programmatically. messages are
+     * deferred.</li>
+     * <li>REQUIRED_OPTION_CHANGE - when component's required option is updated programmatically. messages are
+     * deferred.</li>
+     * <li>USER_ACTION - when component runs validation as a result of user interating with component.
+     * messages are displayed immediately.</li>
+     * <li>VALIDATE_METHOD - when component's validate() method is called explicitly. messages are
+     * displayed immediately.</li>
+     * </ul>
+     *
+     * @protected
+     * @const
+     * @type {Object}
+     * @memberof oj.editableValue
+     *
+     */
+    _VALIDATION_CONTEXT: oj.EditableValueUtils.validationContext,
+
+    /**
+     * Default options used by validate method.
+     *
+     * @protected
+     * @const
+     * @type {Object}
+     * @memberof oj.editableValue
+     * @see #validate
+     */
+    _VALIDATE_METHOD_OPTIONS: oj.EditableValueUtils.validateMethodOptions,
+
+    /**
+     * Called at component create time primarily to initialize options, often using DOM values. This
+     * method is called before _ComponentCreate is called, so components that override this method
+     * should be aware that the component has not been rendered yet. The element DOM is available and
+     * can be relied on to retrieve any default values. <p>
+     *
+     * This method sets defaults for its options that have a DOM namesake. E.g., value, required,
+     * disabled etc. Subclasses can override this method to set their own defaults for these options.
+     * Example, the value option is often not set on this.element for components like radioset, which
+     * walk the sub-tree to determine the value.
+     *
+     * @param {!Object} originalDefaults - original default options defined on the widget and its ancestors
+     * @param {?Object} constructorOptions - options passed into the wiget constructor
+     *
+     * @memberof oj.editableValue
+     * @instance
+     * @protected
+     */
+    _InitOptions: function (originalDefaults, constructorOptions) {
+      this._super(originalDefaults, constructorOptions);
+
+      var helpInstruction;
+
+      // We need to do this for custom element components since
+      // help.instruction is used instead of title.
+      if (this._IsCustomElement()) {
+        // update the title option if help.instruction option exists
+        var help = this.options.help;
+
+        if (help != null) {
+          helpInstruction = help.instruction;
+
+          if (helpInstruction != null) {
+            this.options.title = helpInstruction;
+          }
+        }
+
+        // update displayOptions.title from displayOptions.helpInstruction
+        var dispOpts = this.options.displayOptions;
+
+        if (dispOpts != null) {
+          helpInstruction = dispOpts.helpInstruction;
+
+          if (helpInstruction != null) {
+            dispOpts.title = helpInstruction;
+            this.options.displayOptions = dispOpts;
+          }
         }
       }
-      
-      // update displayOptions.title from displayOptions.helpInstruction
-      var dispOpts = this.options["displayOptions"];
-      
-      if (dispOpts != null)
-      {
-        var helpInstruction = dispOpts["helpInstruction"];
+    },
 
-        if (helpInstruction != null)
-        {
-          dispOpts["title"] = helpInstruction;
-          this.options["displayOptions"] = dispOpts;
-        }
+    /**
+     * Initializes options defined by this base class.
+     *
+     * @memberof oj.editableValue
+     * @instance
+     * @protected
+     */
+    _ComponentCreate: function () {
+      // remove attributes that trigger html5 validation + inline bubble
+      var attrsToRemove = ['required', 'title', 'pattern'];
+      var node = this.element;
+      var savedAttributes = this._GetSavedAttributes(node);
+
+      this._super();
+
+      this.options.messagesCustom = this.options.messagesCustom || [];
+      this.options.messagesHidden = [];
+      this.options.messagesShown = this.options.messagesCustom.length > 0 ?
+        this._cloneMessagesBeforeSet(this.options.messagesCustom) : [];
+
+      // update element DOM for disabled. TODO: say why
+      this._SetDisabledDom(node);
+
+      // we do this here instead of in _InitOptions because here we have the final value.
+      //  - an empty placeholder shows up if data changed after first binding
+      if (this._HasPlaceholderSet()) {
+        // update element placeholder
+        this._SetPlaceholder(this.options.placeholder);
+        this._customPlaceholderSet = true;
       }
-    }
-    
-    
-  },
 
-  /**
-   * Initializes options defined by this base class.
-   * 
-   * @memberof oj.editableValue
-   * @instance
-   * @protected
-   */
-  _ComponentCreate : function ()
-  {
-    //remove attributes that trigger html5 validation + inline bubble
-    var attrsToRemove = ["required", "title", "pattern"]; 
-    var node = this.element;
-    var savedAttributes = this._GetSavedAttributes(node); 
-    
-    this._super();
-    
-    this.options['messagesCustom'] = this.options['messagesCustom'] || [];
-    this.options['messagesHidden'] = []; 
-    this.options['messagesShown'] = this.options['messagesCustom'].length > 0 ? 
-      this._cloneMessagesBeforeSet(this.options['messagesCustom']) : [];
-    
-    // update element DOM for disabled. TODO: say why
-    this._SetDisabledDom(node);
-    
-    // we do this here instead of in _InitOptions because here we have the final value.
-    // - an empty placeholder shows up if data changed after first binding 
-    if (this._HasPlaceholderSet())
-    {
-      // update element placeholder
-      this._SetPlaceholder(this.options['placeholder']);
-      this._customPlaceholderSet = true;
-    }
-    
-    // remove html5 validation attributes; it's safe to remove these here because components should 
-    // have already initialized options based on DOM in _InitOptions().
-    // Only need to do for <input> elements
-    // custom elements create their input/textarea dom, so no need to do that for them.
-    if (savedAttributes && !this._IsCustomElement())
-    {
-      var tagName = node[0].tagName.toLowerCase();
+      // remove html5 validation attributes; it's safe to remove these here because components should
+      // have already initialized options based on DOM in _InitOptions().
+      // Only need to do for <input> elements
+      // custom elements create their input/textarea dom, so no need to do that for them.
+      if (savedAttributes && !this._IsCustomElement()) {
+        var tagName = node[0].tagName.toLowerCase();
         if (tagName === 'input' || tagName === 'textarea') {
           attrsToRemove.forEach(function (value) {
             if (value in savedAttributes) {
-            node.removeAttr(value);
-          }
-        });
+              node.removeAttr(value);
+            }
+          });
+        }
       }
-    }
-  },
-  
-  /**
-   * The value option alone is initialized here since it requires the component to be fully
-   * created. Calling this.options.value before this method does not guarantee the correct 
-   * value to be returned.
-   *
-   * @memberof oj.editableValue
-   * @instance
-   * @protected
-   */
-  _AfterCreate : function ()
-  {
-    var describedBy;
-    
-    this._super();
-    
-    // refresh value, theming and aria attributes
-    this._doRefresh(false);
+    },
 
-    // create an ojLabel only if this isn't a custom element. For example, ojInputText will
-    // create an ojLabel, but <oj-input-text> will not. Instead the app dev uses <oj-label>.
-    if (!this._IsCustomElement())
-      this._createOjLabel();
-    else
-    {
-      // If this is a custom element, we need to write the default style class + "-label" 
-      // onto the oj-label. The reason is so
-      // we can theme the oj-label based on what form control it is labeling. We use this in
-      // our themes to line up the label to the form control, 
-      // e.g., oj-label-inline.oj-radioset-label {margin-top:.5em;}.
-      if (this.customOjLabelElement === undefined)
-        this.customOjLabelElement = this._getCustomOjLabelElement();
-      if (this.customOjLabelElement)
-        $(this.customOjLabelElement).addClass(this._GetDefaultStyleClass()+"-label");
+    /**
+     * The value option alone is initialized here since it requires the component to be fully
+     * created. Calling this.options.value before this method does not guarantee the correct
+     * value to be returned.
+     *
+     * @memberof oj.editableValue
+     * @instance
+     * @protected
+     */
+    _AfterCreate: function () {
+      var describedBy;
 
-      if (this.customOjLabelElement) {
-        this.customOjLabelElement.classList.add(this._GetDefaultStyleClass() + '-label');
+      this._super();
+
+      this._refreshTheming('disabled', this.options.disabled);
+      this._refreshComponentDisplayValue(this.options.value, false);
+
+      // create an ojLabel only if this isn't a custom element. For example, ojInputText will
+      // create an ojLabel, but <oj-input-text> will not. Instead the app dev uses <oj-label>.
+      if (!this._IsCustomElement()) {
+        this._createOjLabel();
+      } else {
+        // If this is a custom element, we need to write the default style class + "-label"
+        // onto the oj-label. The reason is so
+        // we can theme the oj-label based on what form control it is labeling. We use this in
+        // our themes to line up the label to the form control,
+        // e.g., oj-label-inline.oj-radioset-label {margin-top:.5em;}.
+        if (this.customOjLabelElement === undefined) {
+          this.customOjLabelElement = this._getCustomOjLabelElement();
+        }
+        if (this.customOjLabelElement) {
+          this.customOjLabelElement.classList.add(this._GetDefaultStyleClass() + '-label');
+        }
       }
-    }
 
 
-    // set describedby on the element as aria-describedby
-    describedBy = this.options['describedBy'];
+      // set describedby on the element as aria-describedby
+      describedBy = this.options.describedBy;
 
-    if (describedBy)
-    {
-      this._addAriaDescribedBy(describedBy);
-    }
+      if (describedBy) {
+        this._addAriaDescribedBy(describedBy);
+      }
 
-    // initialize component messaging
-    this._initComponentMessaging();
-    
-    // run deferred validation 
-    this._runDeferredValidation(this._VALIDATION_CONTEXT.COMPONENT_CREATE);
-    
-    // trigger messagesShownChanged for messagesShown if it's non-empty. 
-    // this.options['messagesShown'] would have been 
-    // updated in _ComponentCreate if messagesCustom was non-empty. Because we are setting
-    // the 'changed' flag to true, the messagesShownChanged event will be fired, and that's what we want.
-    if (this.options['messagesShown'].length > 0)
-    {
-      this._setMessagesOption('messagesShown', this.options['messagesShown'], null, true);
-    }
+      // initialize component messaging
+      this._initComponentMessaging();
+
+      // run deferred validation
+      this._runDeferredValidation(this._VALIDATION_CONTEXT.COMPONENT_CREATE);
+
+      // trigger messagesShownChanged for messagesShown if it's non-empty.
+      // this.options['messagesShown'] would have been
+      // updated in _ComponentCreate if messagesCustom was non-empty. Because we are setting
+      // the 'changed' flag to true, the messagesShownChanged event will be fired, and that's what we want.
+      if (this.options.messagesShown.length > 0) {
+        this._setMessagesOption('messagesShown', this.options.messagesShown, null, true);
+      }
 
       this.widget()[0].classList.add('oj-form-control');
-  },
-  /**
-   * <p>Saves all the element's attributes. In _destroy all attributes will be restored.
-   * </p>
-   *
-   * @param {Object} element - jQuery selection to save attributes for
-   * @protected
-   * @memberof oj.editableValue
-   * @instance
-   * @override
-   */
-  _SaveAttributes : function (element)
-  {
-    if (!this._IsCustomElement())
-      this._SaveAllAttributes(element);
-  },
-  /**
-   * @protected
-   * @memberof oj.editableValue
-   * @instance
-   * @override
-   */
-  _RestoreAttributes : function (element)
-  {
-    if (!this._IsCustomElement())
-      this._RestoreAllAttributes(element);
-  },
-  /**
-   * Performs post processing after _SetOption() calls _superApply(). Different options, when changed, perform
-   * different tasks. 
-   * 
-   * @param {string} option
-   * @param {Object=} flags 
-   * @protected
-   * @memberof oj.editableValue
-   * @instance
-   */
-  _AfterSetOption : function (option, flags)
-  {
-    switch (option)
-    {
-      case "disabled":
-        this._AfterSetOptionDisabledReadOnly(option, oj.EditableValueUtils.disabledOptionOptions);
-        break;
+    },
 
-      case "displayOptions" :
-        // For custom element, we use displayOptions.helpInstruction instead of displayOptions.title
-        // so internally we need to update title with the value of helpInstruction
-        if (this._IsCustomElement())
-        {
-          var dispOpts = this.options["displayOptions"];
-          
-          if (dispOpts != null)
-          {
-            var helpInstruction = dispOpts["helpInstruction"];
+    /**
+     * <p>Saves all the element's attributes. In _destroy all attributes will be restored.
+     * </p>
+     *
+     * @param {Object} element - jQuery selection to save attributes for
+     * @protected
+     * @memberof oj.editableValue
+     * @instance
+     * @override
+     */
+    _SaveAttributes: function (element) {
+      if (!this._IsCustomElement()) {
+        this._SaveAllAttributes(element);
+      }
+    },
 
-            if (helpInstruction != null)
-            {
-              dispOpts["title"] = helpInstruction;
-              this.options["displayOptions"] = dispOpts;
+    /**
+     * @protected
+     * @memberof oj.editableValue
+     * @instance
+     * @override
+     */
+    _RestoreAttributes: function (element) {
+      if (!this._IsCustomElement()) {
+        this._RestoreAllAttributes(element);
+      }
+    },
+
+    /**
+     * Performs post processing after _SetOption() calls _superApply(). Different options, when changed, perform
+     * different tasks.
+     *
+     * @param {string} option
+     * @param {Object=} flags
+     * @protected
+     * @memberof oj.editableValue
+     * @instance
+     */
+    _AfterSetOption: function (option, flags) {
+      switch (option) {
+        case 'disabled':
+          this._AfterSetOptionDisabledReadOnly(option, oj.EditableValueUtils.disabledOptionOptions);
+          break;
+
+        case 'displayOptions' :
+          // For custom element, we use displayOptions.helpInstruction instead of displayOptions.title
+          // so internally we need to update title with the value of helpInstruction
+          if (this._IsCustomElement()) {
+            var dispOpts = this.options.displayOptions;
+
+            if (dispOpts != null) {
+              var helpInstruction = dispOpts.helpInstruction;
+
+              if (helpInstruction != null) {
+                dispOpts.title = helpInstruction;
+                this.options.displayOptions = dispOpts;
+              }
             }
           }
-        }
-        
-        // clear the cached merged options; the getter setup for this.options['displayOptions']
-        // will merge the new value with the defaults
-        this._initComponentMessaging();
-        break;
 
-      case "help":
-        if (!this._IsCustomElement())
-          this._Refresh(option, this.options[option]);
-        
-        // For custom element components, we use help.instruction instead of title
-        // so we need to update the internal title option with the value of
-        // help.instruction
-        if (this._IsCustomElement())
-        {
-          this.options["title"] = this.options.help["instruction"];
+          // clear the cached merged options; the getter setup for this.options['displayOptions']
+          // will merge the new value with the defaults
+          this._initComponentMessaging();
+          break;
+
+        case 'help':
+          if (!this._IsCustomElement()) {
+            this._Refresh(option, this.options[option]);
+          }
+
+          // For custom element components, we use help.instruction instead of title
+          // so we need to update the internal title option with the value of
+          // help.instruction
+          if (this._IsCustomElement()) {
+            this.options.title = this.options.help.instruction;
+            this._titleOptionChanged();
+          }
+
+          break;
+
+        case 'messagesCustom':
+          this._messagesCustomOptionChanged(flags);
+          this._setValidOption(this._determineValidFromMessagesOptions(), null);
+          break;
+
+        case 'placeholder':
+          this._placeholderOptionChanged(flags);
+          break;
+
+        case 'title':
+          // no reason to refresh component when title changes.
           this._titleOptionChanged();
-        }
-        
-        break;
+          break;
 
-      case "messagesCustom":
-        this._messagesCustomOptionChanged(flags);
-        this._setValidOption(this._determineValidFromMessagesOptions(), null);
-        break; 
-        
-      case "placeholder":
-        this._placeholderOptionChanged(flags);
-        break;
+        case 'translations':
+          this.refresh();
+          break;
 
-      case "title":
-        // no reason to refresh component when title changes.
-        this._titleOptionChanged();
-        break;
-        
-      case "translations": 
-        this.refresh();
-        break;
+        case 'value':
+          this._AfterSetOptionValue(option, flags);
+          break;
 
-      case 'value':
-        this._AfterSetOptionValue(option, flags);
-        break;
-  
-      default:
-        break;
-    }
-    
-  },
-  
-  /**
-   * Performs post processing after disabled or readOnly option changes by taking the following 
-   * steps. (Steps are same for readOnly option).
-   * <p>
-   * if disabled component is enabled then, <br/>
-   * - if there are no errors, run deferred validation. component could have been initialized with 
-   * empty value and disabled.<br/>
-   * - if component is invalid and showing messages clear component error, grab UI value and run 
-   * full validation.<br/>
-   * - if component is invalid and has hidden messages; do nothing. <br/>
-   * </p>
-   * <p>
-   * if enabled component is disabled no validation is run.<br/>
-   * </p>
-   * 
-   * @param {String} option
-   * @param {Object} validationOptions
-   * 
-   * @protected
-   * @memberof oj.editableValue
-   * @instance
-   */
-  _AfterSetOptionDisabledReadOnly : function (option, validationOptions)
-  {
-    var isEnabled = !(this.options[option] || false);
-    
-    // always refresh
-    this._Refresh(option, this.options[option]);
-    if (isEnabled)
-    {
-      this._runMixedValidationAfterSetOption(validationOptions);
-    }
-  },
-
-  /**
-   * Performs post processing after value option changes by taking the following steps.
-   * 
-   * - triggers a valueChanged event and does writeback if required.<br/>
-   * - if setOption was from programmatic intervention, <br/>
-   * &nbsp;&nbsp;- clear custom messages and component messages; <br/>
-   * &nbsp;&nbsp;- run deferred validation. if there is an error, updates messagesHidden. <br/>
-   * - always refreshes UI display <br/>
-   * 
-   * @param {string} option
-   * @param {Object=} flags
-   * 
-   * @protected
-   * @memberof oj.editableValue
-   * @instance
-   * 
-   */
-  _AfterSetOptionValue : function(option, flags)
-  {
-    var context = flags ? flags['_context'] : null;
-    var doNotClearMessages;
-    var isUIValueChange = false;
-
-    if (context)
-    {
-      isUIValueChange = context.originalEvent ? true : false;
-      doNotClearMessages = context.doNotClearMessages || false;
-    }
-
-    if (!isUIValueChange)
-    {
-      // value option can be updated directly (i.e., programmatically or through user interaction) 
-      // or updated indirectly as a result of some other option changing - e.g., converter, 
-      // validators, required etc. See _updateValueAsync() method for details.
-      // When value changes directly due to programatic intervention (usually page author does this) 
-      // then clear all messages and run deferred validation.
-      // If value changes indirectly do not clear custom messages (component messages are already 
-      // cleared) and run deferred validation.
-      if (!doNotClearMessages) 
-      {
-        this._clearAllMessages(null);
+        default:
+          break;
       }
-      this._runDeferredValidation(this._VALIDATION_CONTEXT.VALUE_OPTION_CHANGE);
-    }
-    
-    // refresh UI display value
-    this._Refresh(option, this.options[option], true);
-  },
-  
-  /**
-   * Whether the a value can be set on the component. For example, if the component is 
-   * disabled then setting value on component is a no-op. 
-   * 
-   * @see #_SetValue
-   * @return {boolean}
-   * @memberof oj.editableValue
-   * @instance
-   * @protected
-   */
-  _CanSetValue: function ()
-  {
-    var disabled = this.options['disabled'] || false;
-    
-    return (disabled) ? false : true;
-  },
-  
-  /**
-   * Detaches the widget from the element and restores element exactly like it was before the widget 
-   * was attached.
-   * @protected
-   * @expose
-   * @memberof oj.editableValue
-   * @instance
-   * 
-   */
-  _destroy : function ()
-  {
-    var labelIndex;
-    var labelLength;
-    var ret = this._super();
-    
-    this._clearAllMessages(null, true);
-    this._getComponentMessaging().deactivate();
+    },
 
-    // make sure the label is still "alive". Otherwise we could get error when we try to 
-    // destroy it if the dom was removed first and ojLabel was destroyed directly.
-    // also make sure to check if there is more than one label and destroy them individually.
-    if (this.$label)
-    {
-      labelLength = this.$label.length;
-      for (labelIndex = 0; labelIndex < labelLength; labelIndex++) 
-     {
-       if (this.$label[labelIndex] && 
-           oj.Components.__GetWidgetConstructor(this.$label[labelIndex]) != null)
-       {
-         $(this.$label[labelIndex]).ojLabel( "destroy" );
-       } 
-     }     
-    }
+    /**
+     * Performs post processing after disabled or readOnly option changes by taking the following
+     * steps. (Steps are same for readOnly option).
+     * <p>
+     * if disabled component is enabled then, <br/>
+     * - if there are no errors, run deferred validation. component could have been initialized with
+     * empty value and disabled.<br/>
+     * - if component is invalid and showing messages clear component error, grab UI value and run
+     * full validation.<br/>
+     * - if component is invalid and has hidden messages; do nothing. <br/>
+     * </p>
+     * <p>
+     * if enabled component is disabled no validation is run.<br/>
+     * </p>
+     *
+     * @param {String} option
+     * @param {Object} validationOptions
+     *
+     * @protected
+     * @memberof oj.editableValue
+     * @instance
+     */
+    _AfterSetOptionDisabledReadOnly: function (option, validationOptions) {
+      var isEnabled = !(this.options[option] || false);
 
+      // always refresh
+      this._Refresh(option, this.options[option]);
+      if (isEnabled) {
+        this._runMixedValidationAfterSetOption(validationOptions);
+      }
+    },
 
-    return ret;
-  },
+    /**
+     * Performs post processing after value option changes by taking the following steps.
+     *
+     * - triggers a valueChanged event and does writeback if required.<br/>
+     * - if setOption was from programmatic intervention, <br/>
+     * &nbsp;&nbsp;- clear custom messages and component messages; <br/>
+     * &nbsp;&nbsp;- run deferred validation. if there is an error, updates messagesHidden. <br/>
+     * - always refreshes UI display <br/>
+     *
+     * @param {string} option
+     * @param {Object=} flags
+     *
+     * @protected
+     * @memberof oj.editableValue
+     * @instance
+     *
+     */
+    _AfterSetOptionValue: function (option, flags) {
+      var context = flags ? flags._context : null;
+      var doNotClearMessages;
+      var isUIValueChange = false;
 
-  /**
-   * @memberof oj.editableValue
-   * @instance
-   * @override
-   * @protected
-   * @since 5.0.0
-   */
-  GetFocusElement : function ()
-  {
-    return this._GetContentElement()[0];
-  },
-  
-  /**
-   * Called (by the widget factory) when the option changes, this method responds to the change 
-   * by refreshing the component if needed. This method is not called for the options passed in 
-   * during the creation of the widget.
-   * 
-   * @param {string} name of the option
-   * @param {Object|string} value
-   * @param {Object?} flags - optional flags. The following flags are currently supported:
-   * <ul>
-   *  <li>changed - true if the caller wants to indicate the value has changed, so no comparison is necessary</li>
-   * </ul>
-   * 
-   * @expose
-   * @memberof oj.editableValue
-   * @instance
-   * @protected
-   */
-  _setOption : function (name, value, flags) 
-  {
-    var retVal;
-    var skipSetOption = false;
-    var oldValue;
-    var newValue;
-    
-    // Step 1: Remember previous values
-    if (typeof name === "string" && value !== undefined)
-    {
-      switch (name)
-      {
-        case "messagesHidden":
-          // this option can never be set programmatically by page author
-          skipSetOption = true;
-          break;          
-          
-        case "messagesShown":
-          // this option can never be set programmatically by page author
-          skipSetOption = true;
-          break;
-        
-        case "rawValue":
-          // rawValue is readOnly, so throw an error here.
-          skipSetOption = true;
-          break;
-                
-        case "describedBy":
-          // This sets the aria-describedby on the correct dom node
-          oldValue = this.options['describedBy'];
-          newValue = value;
+      if (context) {
+        isUIValueChange = !!context.originalEvent;
+        doNotClearMessages = context.doNotClearMessages || false;
+      }
 
-          if (oldValue)
-          {
-            this._removeAriaDescribedBy(oldValue);
-          }
-          if (newValue)
-          {
-            this._addAriaDescribedBy(newValue);
-          }
-    
-          break;
+      if (!isUIValueChange) {
+        // value option can be updated directly (i.e., programmatically or through user interaction)
+        // or updated indirectly as a result of some other option changing - e.g., converter,
+        // validators, required etc. See _updateValueAsync() method for details.
+        // When value changes directly due to programatic intervention (usually page author does this)
+        // then clear all messages and run deferred validation.
+        // If value changes indirectly do not clear custom messages (component messages are already
+        // cleared) and run deferred validation.
+        if (!doNotClearMessages) {
+          this._clearAllMessages(null);
         }
-    }
-    
-    
-    if (skipSetOption)
-    {
-      oj.Logger.error(name + " option cannot be set");
-      return this;
-    }
-    
-    // Step 2: Update option value 
-    retVal = this._superApply(arguments);
-    
-    // Step 3: Do post processing like triggering events, refreshing component DOM etc.
-    this._AfterSetOption(name, flags);
+        this._runDeferredValidation(this._VALIDATION_CONTEXT.VALUE_OPTION_CHANGE);
+      }
 
-    return retVal;
-  },
-  
-  // *********** END WIDGET FACTORY METHODS **********
-  
-  /**
-   * Returns a jquery object of the element representing the content node. This could be a jQuery 
-   * object of the element the widget was invoked on - typically this is an input or select or 
-   * textarea element for which a value can be set.
-   * 
-   * @memberof oj.editableValue
-   * @instance
-   * @protected
-   * @return {jQuery} the jquery element that represents the editable content. E.g., an input
-   */
-  _GetContentElement : function ()
-  {
-    return this.element;
-  },
+      // refresh UI display value
+      this._Refresh(option, this.options[option], true);
+    },
 
-  /**
-   * Returns a jquery object of the element(s) representing the label node(s) for the input 
-   * component. 
-   * First we look for the aria-labelledby attribute on the input.
-   * If that's not found, we look for the label with 'for' attribute 
-   * pointing to input.
-   * If that's not found, we walk up the dom looking for aria-labelledby.
-   * Note: multiple labels for one input is legal in html-5.
-   * @memberof oj.editableValue
-   * @instance
-   * @protected
-   * @return {Object} the jquery element that represents the input component's label.
-   *  return null if it can't find anything.
-   */
-  _GetLabelElement : function ()
-  {
-    var ariaElement;
-    var labelQuery;
-    
-    if (this.$label)
-      return this.$label;
-    
-    if (oj.EditableValueUtils.hasNoLabelFlag(this.widget()))
-      return null;
-    
-    // If input has aria-labelledby set, then look for label it is referring to.
-    var queryResult = this._getAriaLabelledByElement(this.element);
-    if (queryResult !== null && queryResult.length !== 0)
-    {
-      return queryResult;
-    }
-    
-    // if no aria-labelledby is on the input, then look for a label with 'for'
-    // set.
+    /**
+     * Whether the a value can be set on the component. For example, if the component is
+     * disabled then setting value on component is a no-op.
+     *
+     * @see #_SetValue
+     * @return {boolean}
+     * @memberof oj.editableValue
+     * @instance
+     * @protected
+     */
+    _CanSetValue: function () {
+      var disabled = this.options.disabled || false;
+
+      return !(disabled);
+    },
+
+    /**
+     * Detaches the widget from the element and restores element exactly like it was before the widget
+     * was attached.
+     * @protected
+     * @expose
+     * @memberof oj.editableValue
+     * @instance
+     *
+     */
+    _destroy: function () {
+      var labelIndex;
+      var labelLength;
+      var ret = this._super();
+
+      this._clearAllMessages(null, true);
+      this._getComponentMessaging().deactivate();
+
+      // make sure the label is still "alive". Otherwise we could get error when we try to
+      // destroy it if the dom was removed first and ojLabel was destroyed directly.
+      // also make sure to check if there is more than one label and destroy them individually.
+      if (this.$label) {
+        labelLength = this.$label.length;
+        for (labelIndex = 0; labelIndex < labelLength; labelIndex++) {
+          if (this.$label[labelIndex] &&
+              Components.__GetWidgetConstructor(this.$label[labelIndex]) != null) {
+            $(this.$label[labelIndex]).ojLabel('destroy');
+          }
+        }
+      }
+
+
+      return ret;
+    },
+
+    /**
+     * @memberof oj.editableValue
+     * @instance
+     * @override
+     * @protected
+     * @since 5.0.0
+     */
+    GetFocusElement: function () {
+      return this._GetContentElement()[0];
+    },
+
+    /**
+     * Called (by the widget factory) when the option changes, this method responds to the change
+     * by refreshing the component if needed. This method is not called for the options passed in
+     * during the creation of the widget.
+     *
+     * @param {string} name of the option
+     * @param {Object|string} value
+     * @param {Object?} flags - optional flags. The following flags are currently supported:
+     * <ul>
+     *  <li>changed - true if the caller wants to indicate the value has changed, so no comparison is necessary</li>
+     * </ul>
+     *
+     * @expose
+     * @memberof oj.editableValue
+     * @instance
+     * @protected
+     */
+    _setOption: function (name, value, flags) {
+      var retVal;
+      var skipSetOption = false;
+      var oldValue;
+      var newValue;
+
+      // Step 1: Remember previous values
+      if (typeof name === 'string' && value !== undefined) {
+        switch (name) {
+          case 'messagesHidden':
+            // this option can never be set programmatically by page author
+            skipSetOption = true;
+            break;
+
+          case 'messagesShown':
+            // this option can never be set programmatically by page author
+            skipSetOption = true;
+            break;
+
+          case 'rawValue':
+            // rawValue is readOnly, so throw an error here.
+            skipSetOption = true;
+            break;
+
+          case 'describedBy':
+            // This sets the aria-describedby on the correct dom node
+            oldValue = this.options.describedBy;
+            newValue = value;
+
+            if (oldValue) {
+              this._removeAriaDescribedBy(oldValue);
+            }
+            if (newValue) {
+              this._addAriaDescribedBy(newValue);
+            }
+            break;
+
+          default:
+            break;
+        }
+      }
+
+
+      if (skipSetOption) {
+        Logger.error(name + ' option cannot be set');
+        return this;
+      }
+
+      // Step 2: Update option value
+      retVal = this._superApply(arguments);
+
+      // Step 3: Do post processing like triggering events, refreshing component DOM etc.
+      this._AfterSetOption(name, flags);
+
+      return retVal;
+    },
+
+    // *********** END WIDGET FACTORY METHODS **********
+
+    /**
+     * Returns a jquery object of the element representing the content node. This could be a jQuery
+     * object of the element the widget was invoked on - typically this is an input or select or
+     * textarea element for which a value can be set.
+     *
+     * @memberof oj.editableValue
+     * @instance
+     * @protected
+     * @return {jQuery} the jquery element that represents the editable content. E.g., an input
+     */
+    _GetContentElement: function () {
+      return this.element;
+    },
+
+    /**
+     * Returns a jquery object of the element(s) representing the label node(s) for the input
+     * component.
+     * First we look for the aria-labelledby attribute on the input.
+     * If that's not found, we look for the label with 'for' attribute
+     * pointing to input.
+     * If that's not found, we walk up the dom looking for aria-labelledby.
+     * Note: multiple labels for one input is legal in html-5.
+     * @memberof oj.editableValue
+     * @instance
+     * @protected
+     * @return {Object} the jquery element that represents the input component's label.
+     *  return null if it can't find anything.
+     */
+    _GetLabelElement: function () {
+      var ariaElement;
+      var labelQuery;
+
+      if (this.$label) {
+        return this.$label;
+      }
+
+      if (oj.EditableValueUtils.hasNoLabelFlag(this.widget())) {
+        return null;
+      }
+
+      // If input has aria-labelledby set, then look for label it is referring to.
+      var queryResult = this._getAriaLabelledByElement(this.element);
+      if (queryResult !== null && queryResult.length !== 0) {
+        return queryResult;
+      }
+
+      // if no aria-labelledby is on the input, then look for a label with 'for'
+      // set.
       var id = this.element[0].id;
       if (id !== undefined) {
-      labelQuery = "label[for='" + id + "']";
-      queryResult = $(labelQuery);
-      if (queryResult.length !== 0)
-      {
-        return queryResult;
+        labelQuery = "label[for='" + id + "']";
+        queryResult = $(labelQuery);
+        if (queryResult.length !== 0) {
+          return queryResult;
+        }
       }
-    }
- 
-    // if no aria-labelledby on input and no label with 'for' pointing to input,
-    // then as a final step we walk up the dom to see if aria-labelledby is set.
-    // If so, then we find the label it is referring to.
-    // This would be the case when you have multiple inputs grouped in a div 
-    // <label id="grouplabel">Address</label>
-    // <div aria-labelledby="grouplabel"><input/><input/><input/></div>
-    ariaElement = this.element.closest("[aria-labelledby]");
-    if (ariaElement.length !== 0)
-    {
-      // Element has aria-labelledby set, so look for label it is referring to.
-      queryResult = this._getAriaLabelledByElement(ariaElement);
-      if (queryResult !== null && queryResult.length !== 0)
-      {
-        return queryResult;
+
+      // if no aria-labelledby on input and no label with 'for' pointing to input,
+      // then as a final step we walk up the dom to see if aria-labelledby is set.
+      // If so, then we find the label it is referring to.
+      // This would be the case when you have multiple inputs grouped in a div
+      // <label id="grouplabel">Address</label>
+      // <div aria-labelledby="grouplabel"><input/><input/><input/></div>
+      ariaElement = this.element.closest('[aria-labelledby]');
+      if (ariaElement.length !== 0) {
+        // Element has aria-labelledby set, so look for label it is referring to.
+        queryResult = this._getAriaLabelledByElement(ariaElement);
+        if (queryResult !== null && queryResult.length !== 0) {
+          return queryResult;
+        }
       }
-    }
-    return null;
+      return null;
+    },
 
-  },
-  
-  
-  /**
-   * Returns the element's value. Normally, this is a call to this.element.val(), but for some 
-   * components, it could be something else. E.g., for ojRadioset the element's value is really the 
-   * value of the selected radio in the set. 
-   * 
-   * @override
-   * @memberof oj.editableValue
-   * @instance
-   * @protected
-   */
-  _GetElementValue : function () 
-  {
-    return this.element.val();
-  },
-  
 
-/**
-   * Returns a jquery object of the element that triggers messaging behavior. The trigger element 
-   * is usually an input or select or textarea element for which a value can be set/retrieved and 
-   * validated. 
-   * 
-   * @return {jQuery} jquery object 
-   * 
-   * @memberof oj.editableValue
-   * @instance
-   * @protected
-   */
-  _GetMessagingLauncherElement : function ()
-  {
-    return this._GetContentElement();
-  },
-  
-  /**
-   * Returns the normalized converter instance. Since EditableValue does not have a converter 
-   * option, this returns null.
-   * 
-   * @return {Object} null
-   * 
-   * @memberof oj.editableValue
-   * @instance
-   * @protected
-   */
-  _GetConverter : function () 
-  {
-    return null;
-  },
+    /**
+     * Returns the element's value. Normally, this is a call to this.element.val(), but for some
+     * components, it could be something else. E.g., for ojRadioset the element's value is really the
+     * value of the selected radio in the set.
+     *
+     * @override
+     * @memberof oj.editableValue
+     * @instance
+     * @protected
+     */
+    _GetElementValue: function () {
+      return this.element.val();
+    },
 
-  /**
-   * Returns an array of implicit validators setup by component. This list contains validators for 
-   * the internal use of the component and are not a part of this.options.validators. <br/>
-   * E.g., if the pattern attribute or option is set, a RegExpValidator instance is automatically 
-   * created and added to this list. <br/>
-   * RequiredValidator is tracked separately from the default validators.
-   * 
-   * @return {Object} a map of string name to the validator instance. 
-   * 
-   * @memberof oj.editableValue
-   * @instance
-   * @protected
-   */
-  _GetImplicitValidators : function ()
-  {
-    if (!this._implicitValidators)
-    {
-      this._implicitValidators = {};
-    }
-    
-    return this._implicitValidators;
-  },
-          
-  /**
-   * Returns the display value that is ready to be passed to the converter.
-   * 
-   * @param {Object} value the stored value if available that needs to be formatted for display
-   * @return {string} usually a string display value
-   * 
-   * @memberof oj.editableValue
-   * @instance
-   * @protected
-   */
-  _GetDisplayValue : function (value) 
-  {
-    return this._GetContentElement().val();
-  },
-  /**
-   * For components that have the 'validators' option, 
-   * this returns an array of all validators 
-   * normalized from the validators option set on the component. <br/>
-   * Since EditableValue does not include the 'validators' option, this returns [].
-   * 
-   * @return {Array} of validators. 
-   * Since EditableValue does not include the 'validators' option, this returns [].
-   * 
-   * @memberof oj.editableValue
-   * @instance
-   * @protected
-   */
-  _GetNormalizedValidatorsFromOption: function () {
-    return [];
-  },
+
+    /**
+     * Returns a jquery object of the element that triggers messaging behavior. The trigger element
+     * is usually an input or select or textarea element for which a value can be set/retrieved and
+     * validated.
+     *
+     * @return {jQuery} jquery object
+     *
+     * @memberof oj.editableValue
+     * @instance
+     * @protected
+     */
+    _GetMessagingLauncherElement: function () {
+      return this._GetContentElement();
+    },
+
+    /**
+     * Returns the normalized converter instance. Since EditableValue does not have a converter
+     * option, this returns null.
+     *
+     * @return {Object} null
+     *
+     * @memberof oj.editableValue
+     * @instance
+     * @protected
+     */
+    _GetConverter: function () {
+      return null;
+    },
+
+    /**
+     * Returns an array of implicit validators setup by component. This list contains validators for
+     * the internal use of the component and are not a part of this.options.validators. <br/>
+     * E.g., if the pattern attribute or option is set, a RegExpValidator instance is automatically
+     * created and added to this list. <br/>
+     * RequiredValidator is tracked separately from the default validators.
+     *
+     * @return {Object} a map of string name to the validator instance.
+     *
+     * @memberof oj.editableValue
+     * @instance
+     * @protected
+     */
+    _GetImplicitValidators: function () {
+      if (!this._implicitValidators) {
+        this._implicitValidators = {};
+      }
+
+      return this._implicitValidators;
+    },
+
+    /**
+     * Returns the display value that is ready to be passed to the converter.
+     *
+     * @param {Object} value the stored value if available that needs to be formatted for display
+     * @return {string} usually a string display value
+     *
+     * @memberof oj.editableValue
+     * @instance
+     * @protected
+     */
+    // eslint-disable-next-line no-unused-vars
+    _GetDisplayValue: function (value) {
+      return this._GetContentElement().val();
+    },
+
+    /**
+     * For components that have the 'validators' option,
+     * this returns an array of all validators
+     * normalized from the validators option set on the component. <br/>
+     * Since EditableValue does not include the 'validators' option, this returns [].
+     *
+     * @return {Array} of validators.
+     * Since EditableValue does not include the 'validators' option, this returns [].
+     *
+     * @memberof oj.editableValue
+     * @instance
+     * @protected
+     */
+    _GetNormalizedValidatorsFromOption: function () {
+      return [];
+    },
     /**
      * For components that have the 'async-validators' attribute,
      * this returns an array of all validators
@@ -3210,178 +3093,171 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
      * @instance
      * @protected
      */
-  _GetNormalizedAsyncValidatorsFromOption: function () {
-    return [];
-  },
-  /**
-   * Returns an array of all validators built by merging the validators option set on the component 
-   * and the implicit validators setup by the component. <br/>
-   * This does not include the implicit required validator. Components can override to add to this 
-   * array of validators.
-   * 
-   * @return {Array} of validators
-   * 
-   * @memberof oj.editableValue
-   * @instance
-   * @protected
-   */
-  _GetAllValidators : function ()
-  {
-    var allValidators;
-    var idx;
-    var implicitValidatorMap;
-    var implicitValidators;
-    var normalizedValidators;
-          
-    if (!this._allValidators)
-    {
-      allValidators = [];
-      implicitValidatorMap = this._GetImplicitValidators(), 
-      implicitValidators = [];
+    _GetNormalizedAsyncValidatorsFromOption: function () {
+      return [];
+    },
 
-      // combine public and implicit validators to get the combined list
-      var keys = Object.keys(implicitValidatorMap), valType;
-      var len  = keys.length;
-      if (len > 0)
-      {
-        for (idx = 0; idx < len; idx++) 
-        {
-          valType = keys[idx];
-          implicitValidators.push(implicitValidatorMap[valType]);
+    /**
+     * Returns an array of all validators built by merging the validators option set on the component
+     * and the implicit validators setup by the component. <br/>
+     * This does not include the implicit required validator. Components can override to add to this
+     * array of validators.
+     *
+     * @return {Array} of validators
+     *
+     * @memberof oj.editableValue
+     * @instance
+     * @protected
+     */
+    _GetAllValidators: function () {
+      var allValidators;
+      var idx;
+      var implicitValidatorMap;
+      var implicitValidators;
+      var normalizedValidators;
+
+      if (!this._allValidators) {
+        allValidators = [];
+        implicitValidatorMap = this._GetImplicitValidators();
+        implicitValidators = [];
+
+        // combine public and implicit validators to get the combined list
+        var keys = Object.keys(implicitValidatorMap);
+        var valType;
+        var len = keys.length;
+        if (len > 0) {
+          for (idx = 0; idx < len; idx++) {
+            valType = keys[idx];
+            implicitValidators.push(implicitValidatorMap[valType]);
+          }
+          allValidators = allValidators.concat(implicitValidators);
         }
-        allValidators = allValidators.concat(implicitValidators);
+
+        normalizedValidators = this._GetNormalizedValidatorsFromOption();
+        if (normalizedValidators.length > 0) {
+          // Add normalize validators
+          allValidators = allValidators.concat(normalizedValidators);
+        }
+
+        this._allValidators = allValidators;
       }
-        
-      normalizedValidators = this._GetNormalizedValidatorsFromOption();
-      if (normalizedValidators.length > 0)
-      {
-        // Add normalize validators 
-        allValidators = allValidators.concat(normalizedValidators);
+
+      return this._allValidators || [];
+    },
+
+    /**
+     * EditableValue caches the validators to be run, within this._allValidators variable.
+     * This is great; however when the implicit validator needs to be reset [i.e. min + max changing]
+     * or the validators option changes, then the cached this._allValidators needs to be cleared.
+     * This method also updates the messaging strategies as hints associated with validators could
+     * have changed.
+     *
+     * @memberof oj.editableValue
+     * @instance
+     * @protected
+     */
+    _ResetAllValidators: function () {
+      if (this._allValidators) {
+        this._allValidators.length = 0;
       }
-      
-      this._allValidators = allValidators;
-    }
-    
-    return this._allValidators || [];
-  },
-  
-  /**
-   * EditableValue caches the validators to be run, within this._allValidators variable.
-   * This is great; however when the implicit validator needs to be reset [i.e. min + max changing] 
-   * or the validators option changes, then the cached this._allValidators needs to be cleared. 
-   * This method also updates the messaging strategies as hints associated with validators could 
-   * have changed.
-   * 
-   * @memberof oj.editableValue
-   * @instance
-   * @protected
-   */
-  _ResetAllValidators : function () 
-  {
-    if (this._allValidators)
-    {
-      this._allValidators.length = 0;
-    }
-    this._allValidators = null;
-    
-    if (this._IsCustomElement()) 
-    {
-      // This gets sync and async validator hints.
-      // nothing should be waiting on this, so no need to return a Promise.
-      this._updateValidatorMessagingHint();
-    } else 
-    {
-      // update messagingstrategy as hints associated with validators could have changed
-      this._getComponentMessaging().update(this._getMessagingContent(
-      this._MESSAGING_CONTENT_UPDATE_TYPE.VALIDATOR_HINTS));
-    }
-  },
-  /**
-   * First check if invalid messages are showing. If so, that means we need to run full validation.
-   * Next, if clearComponentMessagesAlways is true, this clears the component messages regardless
-   * of if we run full validation or not.
-   * Then run full validation if needed, clearing all component messages as the first step.
-   * We call this function on refresh and when certain properties change, like validators and
-   * converters.
-   * @param {Object} options name value properties used when validation is run.
-   * @param {Object} clearComponentMessagesAlways true if you want to clear component messages
-   * always, that is, regardless of if we run full validation or not.
-   * @returns {boolean} true if full validation was needed and was run; false otherwise.
-   * @memberof oj.editableValue
-   * @instance
-   * @private
-   * @ignore
-   */
-  _runFullValidationIfNeeded: function (options, clearCompMessagesAlways) {
-    var runFullValidation = false;
-    var normalizedAsyncValidators;
+      this._allValidators = null;
 
-    if (this._hasInvalidMessagesShowing()) {
-      runFullValidation = true;
-    }
+      if (this._IsCustomElement()) {
+        // This gets sync and async validator hints.
+        // nothing should be waiting on this, so no need to return a Promise.
+        this._updateValidatorMessagingHint();
+      } else {
+        // update messagingstrategy as hints associated with validators could have changed
+        this._getComponentMessaging().update(this._getMessagingContent(
+          this._MESSAGING_CONTENT_UPDATE_TYPE.VALIDATOR_HINTS));
+      }
+    },
+    /**
+     * First check if invalid messages are showing. If so, that means we need to run full validation.
+     * Next, if clearComponentMessagesAlways is true, this clears the component messages regardless
+     * of if we run full validation or not.
+     * Then run full validation if needed, clearing all component messages as the first step.
+     * We call this function on refresh and when certain properties change, like validators and
+     * converters.
+     * @param {Object} options name value properties used when validation is run.
+     * @param {Object} clearComponentMessagesAlways true if you want to clear component messages
+     * always, that is, regardless of if we run full validation or not.
+     * @returns {boolean} true if full validation was needed and was run; false otherwise.
+     * @memberof oj.editableValue
+     * @instance
+     * @private
+     * @ignore
+     */
+    _runFullValidationIfNeeded: function (options, clearCompMessagesAlways) {
+      var runFullValidation = false;
+      var normalizedAsyncValidators;
 
-    if (clearCompMessagesAlways) {
-      this._clearComponentMessages();
-    }
+      if (this._hasInvalidMessagesShowing()) {
+        runFullValidation = true;
+      }
 
-    if (runFullValidation) {
-      if (!clearCompMessagesAlways) {
+      if (clearCompMessagesAlways) {
         this._clearComponentMessages();
       }
-      normalizedAsyncValidators = this._getAllAsyncValidators();
-      if (!this._IsCustomElement() || normalizedAsyncValidators.length === 0) {
-        this._updateValueSyncOnly(options);
-      } else {
-        this._updateValueAsync(options);
-      }
-    }
-    return runFullValidation;
-  },
 
-  /**
-   * Returns an array of all async validators
-   *
-   * @return {Array} of async validators
-   *
-   * @memberof oj.editableValue
-   * @instance
-   * @private
-   */
-  _getAllAsyncValidators: function () {
-    if (!this._allAsyncValidators) {
-      this._allAsyncValidators = this._GetNormalizedAsyncValidatorsFromOption();
-    }
-
-    return this._allAsyncValidators;
-  },
-
-  /**
-   * Returns an array of all async validators that have hint property.
-   *
-   * @return {Array} of async validators that have hints, [] if none
-   *
-   * @memberof oj.editableValue
-   * @instance
-   * @private
-   */
-  _getAllAsyncValidatorsWithHint: function () {
-    var allAsyncValidators = this._getAllAsyncValidators();
-    var allAsyncValidatorsWithHints = [];
-    var hasOwnProperty;
-    var i;
-    var validator;
-
-    if (allAsyncValidators.length > 0) {
-      hasOwnProperty = Object.prototype.hasOwnProperty;
-      for (i = 0; i < allAsyncValidators.length; i++) {
-        validator = allAsyncValidators[i];
-        if (hasOwnProperty.call(validator, 'hint')) {
-          allAsyncValidatorsWithHints.push(validator);
+      if (runFullValidation) {
+        if (!clearCompMessagesAlways) {
+          this._clearComponentMessages();
+        }
+        normalizedAsyncValidators = this._getAllAsyncValidators();
+        if (!this._IsCustomElement() || normalizedAsyncValidators.length === 0) {
+          this._updateValueSyncOnly(options);
+        } else {
+          this._updateValueAsync(options);
         }
       }
-    }
-    return allAsyncValidatorsWithHints;
-  },
+      return runFullValidation;
+    },
+
+    /**
+     * Returns an array of all async validators
+     *
+     * @return {Array} of async validators
+     *
+     * @memberof oj.editableValue
+     * @instance
+     * @private
+     */
+    _getAllAsyncValidators: function () {
+      if (!this._allAsyncValidators) {
+        this._allAsyncValidators = this._GetNormalizedAsyncValidatorsFromOption();
+      }
+
+      return this._allAsyncValidators;
+    },
+
+    /**
+     * Returns an array of all async validators that have hint property.
+     *
+     * @return {Array} of async validators that have hints, [] if none
+     *
+     * @memberof oj.editableValue
+     * @instance
+     * @private
+     */
+    _getAllAsyncValidatorsWithHint: function () {
+      var allAsyncValidators = this._getAllAsyncValidators();
+      var allAsyncValidatorsWithHints = [];
+      var hasOwnProperty;
+      var i;
+      var validator;
+
+      if (allAsyncValidators.length > 0) {
+        hasOwnProperty = Object.prototype.hasOwnProperty;
+        for (i = 0; i < allAsyncValidators.length; i++) {
+          validator = allAsyncValidators[i];
+          if (hasOwnProperty.call(validator, 'hint')) {
+            allAsyncValidatorsWithHints.push(validator);
+          }
+        }
+      }
+      return allAsyncValidatorsWithHints;
+    },
 
    /**
      * Initialize async validator messaging hints, if any.
@@ -3390,333 +3266,323 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
      * @instance
      * @private
      */
-  _initAsyncValidatorMessagingHint: function () {
-    var allAsyncValidatorsWithHint = this._getAllAsyncValidatorsWithHint();
-    var currentCounter;
-    var syncValidatorHintMC;
-    var self = this;
+    _initAsyncValidatorMessagingHint: function () {
+      var allAsyncValidatorsWithHint = this._getAllAsyncValidatorsWithHint();
+      var currentCounter;
+      var syncValidatorHintMC;
+      var self = this;
 
-    this._asyncValidatorHintCounter = 0;
+      this._asyncValidatorHintCounter = 0;
 
-    if (allAsyncValidatorsWithHint.length > 0) {
-      // get the sync validators hints  we are already showing so we can show it with
-      // the async validators hints
-      syncValidatorHintMC = self._getMessagingContent(
-        self._MESSAGING_CONTENT_UPDATE_TYPE.VALIDATOR_HINTS);
-      // we use a counter to keep track of the busycontext.
-      currentCounter = this._asyncValidatorHintCounter;
-      this._setBusyStateAsyncValidatorHint(currentCounter);
-      // get the async validators hints and show them as well as they resolve
-      this._addAsyncValidatorsHintsMessagingContent(
-        allAsyncValidatorsWithHint, syncValidatorHintMC).then(function () {
-          self._clearBusyStateAsyncValidatorHint(currentCounter);
-        });
-    }
-  },
+      if (allAsyncValidatorsWithHint.length > 0) {
+        // get the sync validators hints  we are already showing so we can show it with
+        // the async validators hints
+        syncValidatorHintMC = self._getMessagingContent(
+          self._MESSAGING_CONTENT_UPDATE_TYPE.VALIDATOR_HINTS);
+        // we use a counter to keep track of the busycontext.
+        currentCounter = this._asyncValidatorHintCounter;
+        this._setBusyStateAsyncValidatorHint(currentCounter);
+        // get the async validators hints and show them as well as they resolve
+        this._addAsyncValidatorsHintsMessagingContent(
+          allAsyncValidatorsWithHint, syncValidatorHintMC).then(function () {
+            self._clearBusyStateAsyncValidatorHint(currentCounter);
+          });
+      }
+    },
 
-  /**
-   * This gets all asyncValidators that have hints,
-   * asynchronously updates the component messaging validator hints with BOTH
-   * synchronous and async validators' hints.
-   * If there are no asyncValidators with hints, it updates validator hints with sync hints.
-   * This is called when asyncValidators property changes or when validators property changes
-   *
-   * @memberof oj.editableValue
-   * @instance
-   * @private
-   */
-  _updateValidatorMessagingHint: function () {
-    var allAsyncValidatorsWithHint = this._getAllAsyncValidatorsWithHint();
-    var compMessagings = this._getComponentMessaging();
-    var currentCounter;
-    var self = this;
+    /**
+     * This gets all asyncValidators that have hints,
+     * asynchronously updates the component messaging validator hints with BOTH
+     * synchronous and async validators' hints.
+     * If there are no asyncValidators with hints, it updates validator hints with sync hints.
+     * This is called when asyncValidators property changes or when validators property changes
+     *
+     * @memberof oj.editableValue
+     * @instance
+     * @private
+     */
+    _updateValidatorMessagingHint: function () {
+      var allAsyncValidatorsWithHint = this._getAllAsyncValidatorsWithHint();
+      var compMessagings = this._getComponentMessaging();
+      var currentCounter;
+      var self = this;
 
-    // this gets all sync validators, and gets the hints from them
-    var syncValidatorHintMC = this._getMessagingContent(
-      this._MESSAGING_CONTENT_UPDATE_TYPE.VALIDATOR_HINTS);
+      // this gets all sync validators, and gets the hints from them
+      var syncValidatorHintMC = this._getMessagingContent(
+        this._MESSAGING_CONTENT_UPDATE_TYPE.VALIDATOR_HINTS);
 
-    if (allAsyncValidatorsWithHint.length > 0) {
-      // we use a counter to keep track of the busycontext.
-      this._asyncValidatorHintCounter += 1;
-      currentCounter = this._asyncValidatorHintCounter;
-      this._setBusyStateAsyncValidatorHint(currentCounter);
-      this._addAsyncValidatorsHintsMessagingContent(
-        allAsyncValidatorsWithHint, syncValidatorHintMC).then(function () {
-          self._clearBusyStateAsyncValidatorHint(currentCounter);
-        });
-    } else {
-      // if this is [], this causes the notewindow to close if it was open.
-      // and we don't want to close/reopen if possible, so don't do this before
-      // updating async validator hints. Do it in updating async validator hints.
-      compMessagings.update(syncValidatorHintMC);
-    }
-  },
+      if (allAsyncValidatorsWithHint.length > 0) {
+        // we use a counter to keep track of the busycontext.
+        this._asyncValidatorHintCounter += 1;
+        currentCounter = this._asyncValidatorHintCounter;
+        this._setBusyStateAsyncValidatorHint(currentCounter);
+        this._addAsyncValidatorsHintsMessagingContent(
+          allAsyncValidatorsWithHint, syncValidatorHintMC).then(function () {
+            self._clearBusyStateAsyncValidatorHint(currentCounter);
+          });
+      } else {
+        // if this is [], this causes the notewindow to close if it was open.
+        // and we don't want to close/reopen if possible, so don't do this before
+        // updating async validator hints. Do it in updating async validator hints.
+        compMessagings.update(syncValidatorHintMC);
+      }
+    },
 
-  /**
-   * This is called when we have async validators and we want to add
-   * their hints, if any, to the componentMessaging. It also adds
-   * the sync validator hints as well.
-   * This function will also return a Promise that will resolve when we have updated
-   * the componentMessaging with all the hints, async and sync.
-   *
-   * @param {Array} asyncValidatorsWithHints
-   *  Array of asyncValidators that are in the async-validators attribute and have hints
-   * @param {string} syncValidatorHintMC
-   *  hint messaging content from sync validators.
-   * @return {Promise} Promise that when resolves will have the hints
-   * @memberof oj.editableValue
-   * @instance
-   * @private
-   */
-  _addAsyncValidatorsHintsMessagingContent: function (asyncValidatorsWithHint,
-    syncValidatorHintMC) {
-    var i;
-    var asyncValidatorHintCounter = this._asyncValidatorHintCounter;
-    var compMessagings = this._getComponentMessaging();
-    var hintArray = [];
-    var self = this;
+    /**
+     * This is called when we have async validators and we want to add
+     * their hints, if any, to the componentMessaging. It also adds
+     * the sync validator hints as well.
+     * This function will also return a Promise that will resolve when we have updated
+     * the componentMessaging with all the hints, async and sync.
+     *
+     * @param {Array} asyncValidatorsWithHints
+     *  Array of asyncValidators that are in the async-validators attribute and have hints
+     * @param {string} syncValidatorHintMC
+     *  hint messaging content from sync validators.
+     * @return {Promise} Promise that when resolves will have the hints
+     * @memberof oj.editableValue
+     * @instance
+     * @private
+     */
+    _addAsyncValidatorsHintsMessagingContent: function (asyncValidatorsWithHint,
+      syncValidatorHintMC) {
+      var i;
+      var asyncValidatorHintCounter = this._asyncValidatorHintCounter;
+      var compMessagings = this._getComponentMessaging();
+      var hintArray = [];
+      var self = this;
 
-    // We kick off all the async validators.hint simultaneously. When they all resolve/reject,
-    // then we can move on.
-    var promiseArray = [];
-    for (i = 0; i < asyncValidatorsWithHint.length; i++) {
-      promiseArray.push(asyncValidatorsWithHint[i].hint);
-    }
+      // We kick off all the async validators.hint simultaneously. When they all resolve/reject,
+      // then we can move on.
+      var promiseArray = [];
+      for (i = 0; i < asyncValidatorsWithHint.length; i++) {
+        promiseArray.push(asyncValidatorsWithHint[i].hint);
+      }
 
-    function reflect(promise) {
-      return promise.then(function (v) {
-        var status;
+      function reflect(promise) {
+        return promise.then(function (v) {
+          var status;
 
-        var validatorHintMessagingContent = {};
+          var validatorHintMessagingContent = {};
 
-        // update hint as we get it
-        // use counter to ignore if we get a more recent update async validators hint requests
-        // i.e., asyncValidators property is changed.
-        if (self._asyncValidatorHintCounter === asyncValidatorHintCounter) {
-          hintArray.push(v);
-          validatorHintMessagingContent.validatorHint =
-            (syncValidatorHintMC.validatorHint).concat(hintArray);
-          compMessagings.update(validatorHintMessagingContent);
-          status = 'resolved';
-        } else {
-          status = 'ignore';
-        }
-        return { v: v, status: status };
-      },
-      function (e) {
-        // we don't update the hintArray when the hint Promise rejects.
-        // No need to checke the counter in this case because there is nothing
-        // to 'ignore'.
-        return { e: e, status: 'rejected' };
-      });
-    }
-    return new Promise(function (resolve) {
-      // Promise.all will end as soon as it gets its first rejection. We don't want that.
-      // We want to wait until all promises either resolve or reject. Then we can resolve this
-      // outer promise. We do this using the reflect function defined above.
-      Promise.all(promiseArray.map(reflect)).then(function () {
-        resolve(hintArray);
-      });
-    });
-  },
-  
-  /**
-   * Whether the component is required. EditableValue doesn't support the required option,
-   * so return false.  This allows us to keep some of the required code in EditableValue.
-   * 
-   * @return {boolean} true if required; false
-   * 
-   * @memberof oj.editableValue
-   * @instance
-   * @protected
-   */
-  _IsRequired : function () 
-  {
-    return false;
-  },
-  
-  /**
-   * Convenience handler for the DOM 'change' event. Subclasses are expected to wire up event 
-   * handlers for DOM events that they wish to handle.<br/>
-   * 
-   * The implementation retrieves the display value for the component by calling _GetDisplayValue() 
-   * and calls _SetValue(), with full validation.
-   * 
-   * @param {Event} event DOM event 
-   * 
-   * @memberof oj.editableValue
-   * @instance
-   * @protected
-   */
-  _HandleChangeEvent : function (event) 
-  {
-    var submittedValue = this._GetDisplayValue();
-    // run full validation
-    this._SetValue(submittedValue, event);
-  }, 
-  /**
-   * Convenience function to set the rawValue option. Called by subclasses
-   * 
-   * @param {String} val value to set rawValue to
-   * @param {Event} event DOM event 
-   * 
-   * @memberof oj.editableValue
-   * @instance
-   * @protected
-   */
-  _SetRawValue : function (val, event)
-  {
-    var flags = {};
-    flags['_context'] = {originalEvent: event, writeback: true, internalSet: true, readOnly: true};
-
-    if (!this._CompareOptionValues('rawValue', this.options['rawValue'], val))
-      this.option("rawValue", val, flags);
-  },
-
-  /**
-   * Called in response to a change in the options set for this component, this method refreshes the 
-   * component display value. Subclasses can override to provide custom refresh behavior.
-   * 
-   * @param {String=} name the name of the option that was changed
-   * @param {Object=} value the current value of the option
-   * @param {boolean=} forceDisplayValueRefresh
-   * 
-   * @memberof oj.editableValue
-   * @instance
-   * @protected
-   */
-  _Refresh : function (name, value, forceDisplayValueRefresh)
-  {
-    var helpDef;
-    var helpSource;
-    var id;
-
-    switch (name)
-    {
-      case "converter":
-        value = this.options['value'];
-        this._refreshComponentDisplayValue(value, forceDisplayValueRefresh);
-        break;
-        
-      case "disabled":
-        this._refreshTheming("disabled", this.options['disabled']);
-        break;
-        
-      case "help":
-        if (!this._IsCustomElement())
-        {
-          // refresh the help - need to keep the label in sync with the input.
-          if (this.$label)
-          {
-            helpDef = this.options.help["definition"];
-            helpSource = this.options.help["source"];
-            this.$label.ojLabel("option", "help", 
-                                 {"definition" : helpDef, "source" : helpSource});
-            this._refreshDescribedByForLabel();
-
+          // update hint as we get it
+          // use counter to ignore if we get a more recent update async validators hint requests
+          // i.e., asyncValidators property is changed.
+          if (self._asyncValidatorHintCounter === asyncValidatorHintCounter) {
+            hintArray.push(v);
+            validatorHintMessagingContent.validatorHint =
+              (syncValidatorHintMC.validatorHint).concat(hintArray);
+            compMessagings.update(validatorHintMessagingContent);
+            status = 'resolved';
+          } else {
+            status = 'ignore';
           }
-        }
-        break;
-     
-      case "value":
-        this._refreshComponentDisplayValue(value, forceDisplayValueRefresh); 
-        break;
-        
-    }
-  },
+          return { v: v, status: status };
+        },
+        function (e) {
+          // we don't update the hintArray when the hint Promise rejects.
+          // No need to checke the counter in this case because there is nothing
+          // to 'ignore'.
+          return { e: e, status: 'rejected' };
+        });
+      }
+      return new Promise(function (resolve) {
+        // Promise.all will end as soon as it gets its first rejection. We don't want that.
+        // We want to wait until all promises either resolve or reject. Then we can resolve this
+        // outer promise. We do this using the reflect function defined above.
+        Promise.all(promiseArray.map(reflect)).then(function () {
+          resolve(hintArray);
+        });
+      });
+    },
 
-  /**
-   * <p>Notifies the component that its subtree has been made hidden programmatically 
-   * after the component has been created.
-   *
-   * @memberof oj.editableValue
-   * @instance
-   * @protected
-   */
-  _NotifyHidden: function()
-  {
-    this._superApply(arguments);
-    this._getComponentMessaging().close();
-  },
-  /**
-   * <p>Notifies the component that its subtree has been removed from the 
-   * document programmatically after the component has
-   * been created.
-   *
-   * @memberof oj.baseComponent
-   * @instance
-   * @protected
-   */
-  _NotifyDetached: function()
-  {
-    this._superApply(arguments);
-    this._getComponentMessaging().close();
-  },
-  /**
-   * Called anytime the label DOM changes requiring a reset of any dependent feature that caches the 
-   * label, including all validators.
-   * 
-   * @memberof oj.editableValue
-   * @instance
-   * @protected   
-   */
-  _ResetComponentState : function ()
-  {
-    // the DOM for the label and its text could have changed. 
-    if (this.$label)
-    {
-      this.$label.ojLabel("refresh");
-    }
+    /**
+     * Whether the component is required. EditableValue doesn't support the required option,
+     * so return false.  This allows us to keep some of the required code in EditableValue.
+     *
+     * @return {boolean} true if required; false
+     *
+     * @memberof oj.editableValue
+     * @instance
+     * @protected
+     */
+    _IsRequired: function () {
+      return false;
+    },
 
-    // reset all validators when label changes
-    this._implicitReqValidator = null;
-    this._converter = null;
-    this._ResetAllValidators();
-  },  
-  
-  /**
-   * Called when the display value on the element needs to be updated. This method updates the 
-   * (content) element value. Widgets can override this method to update the element appropriately. 
-   * 
-   * @param {String} displayValue of the new string to be displayed
-   * 
-   * @memberof oj.editableValue
-   * @instance
-   * @protected
-  */  
-  _SetDisplayValue : function (displayValue) 
-  {
-    var contentElem = this._GetContentElement();
-    if (contentElem.val() !== displayValue)
-      contentElem.val(displayValue);
-  },
-  /**
-   * Sets the disabled option onto the dom. 
-   * Component subclasses can override this method to not do this in cases where it is invalid, 
-   * like on a div (e.g., radioset's root dom element is a div).
-   * @param {Object} node - dom node
-   * 
-   * @memberof oj.editableValue
-   * @instance
-   * @protected
-   * @since 1.0.0
-   */
+    /**
+     * Convenience handler for the DOM 'change' event. Subclasses are expected to wire up event
+     * handlers for DOM events that they wish to handle.<br/>
+     *
+     * The implementation retrieves the display value for the component by calling _GetDisplayValue()
+     * and calls _SetValue(), with full validation.
+     *
+     * @param {Event} event DOM event
+     *
+     * @memberof oj.editableValue
+     * @instance
+     * @protected
+     */
+    _HandleChangeEvent: function (event) {
+      var submittedValue = this._GetDisplayValue();
+      // run full validation
+      this._SetValue(submittedValue, event);
+    },
+    /**
+     * Convenience function to set the rawValue option. Called by subclasses
+     *
+     * @param {String} val value to set rawValue to
+     * @param {Event} event DOM event
+     *
+     * @memberof oj.editableValue
+     * @instance
+     * @protected
+     */
+    _SetRawValue: function (val, event) {
+      var flags = {};
+      flags._context = { originalEvent: event, writeback: true, internalSet: true, readOnly: true };
+
+      if (!this._CompareOptionValues('rawValue', this.options.rawValue, val)) {
+        this.option('rawValue', val, flags);
+      }
+    },
+
+    /**
+     * Called in response to a change in the options set for this component, this method refreshes the
+     * component display value. Subclasses can override to provide custom refresh behavior.
+     *
+     * @param {String=} name the name of the option that was changed
+     * @param {Object=} value the current value of the option
+     * @param {boolean=} forceDisplayValueRefresh
+     *
+     * @memberof oj.editableValue
+     * @instance
+     * @protected
+     */
+    _Refresh: function (name, value, forceDisplayValueRefresh) {
+      var helpDef;
+      var helpSource;
+
+      switch (name) {
+        case 'converter':
+          var _value = this.options.value;
+          this._refreshComponentDisplayValue(_value, forceDisplayValueRefresh);
+          break;
+
+        case 'disabled':
+          this._refreshTheming('disabled', this.options.disabled);
+          break;
+
+        case 'help':
+          if (!this._IsCustomElement()) {
+          // refresh the help - need to keep the label in sync with the input.
+            if (this.$label) {
+              helpDef = this.options.help.definition;
+              helpSource = this.options.help.source;
+              this.$label.ojLabel('option', 'help',
+                                 { definition: helpDef, source: helpSource });
+              this._refreshDescribedByForLabel();
+            }
+          }
+          break;
+
+        case 'value':
+          this._refreshComponentDisplayValue(value, forceDisplayValueRefresh);
+          break;
+
+        default:
+          break;
+      }
+    },
+
+    /**
+     * <p>Notifies the component that its subtree has been made hidden programmatically
+     * after the component has been created.
+     *
+     * @memberof oj.editableValue
+     * @instance
+     * @protected
+     */
+    _NotifyHidden: function () {
+      this._superApply(arguments);
+      this._getComponentMessaging().close();
+    },
+    /**
+     * <p>Notifies the component that its subtree has been removed from the
+     * document programmatically after the component has
+     * been created.
+     *
+     * @memberof oj.baseComponent
+     * @instance
+     * @protected
+     */
+    _NotifyDetached: function () {
+      this._superApply(arguments);
+      this._getComponentMessaging().close();
+    },
+    /**
+     * Called anytime the label DOM changes requiring a reset of any dependent feature that caches the
+     * label, including all validators.
+     *
+     * @memberof oj.editableValue
+     * @instance
+     * @protected
+     */
+    _ResetComponentState: function () {
+      // the DOM for the label and its text could have changed.
+      if (this.$label) {
+        this.$label.ojLabel('refresh');
+      }
+
+      // reset all validators when label changes
+      this._implicitReqValidator = null;
+      this._converter = null;
+      this._ResetAllValidators();
+    },
+
+    /**
+     * Called when the display value on the element needs to be updated. This method updates the
+     * (content) element value. Widgets can override this method to update the element appropriately.
+     *
+     * @param {String} displayValue of the new string to be displayed
+     *
+     * @memberof oj.editableValue
+     * @instance
+     * @protected
+     */
+    _SetDisplayValue: function (displayValue) {
+      var contentElem = this._GetContentElement();
+      if (contentElem.val() !== displayValue) {
+        contentElem.val(displayValue);
+      }
+    },
+    /**
+     * Sets the disabled option onto the dom.
+     * Component subclasses can override this method to not do this in cases where it is invalid,
+     * like on a div (e.g., radioset's root dom element is a div).
+     * @param {Object} node - dom node
+     *
+     * @memberof oj.editableValue
+     * @instance
+     * @protected
+     * @since 1.0.0
+     */
     _SetDisabledDom: function (node) {
       if (typeof this.options.disabled === 'boolean') {
         node[0].disabled = this.options.disabled; // eslint-disable-line no-param-reassign
-    }
-  },
-  
-  /**
-   * Sets the placeholder text on the content element by default. It sets the placeholder attribute
-   * on the element. Component subclasses can override this method to control where placeholder text
-   * gets set.
-   * @param {string} value
-   * 
-   * @memberof oj.editableValue
-   * @instance
-   * @protected
-   */
+      }
+    },
+
+    /**
+     * Sets the placeholder text on the content element by default. It sets the placeholder attribute
+     * on the element. Component subclasses can override this method to control where placeholder text
+     * gets set.
+     * @param {string} value
+     *
+     * @memberof oj.editableValue
+     * @instance
+     * @protected
+     */
     _SetPlaceholder: function (value) {
       var contentElem = this._GetContentElement()[0];
       if (contentElem) {
@@ -3726,2337 +3592,2215 @@ oj.__registerWidget('oj.editableValue', $['oj']['baseComponent'],
           contentElem.setAttribute('placeholder', value);
         }
       }
-  },
-  
-  /**
-   * Sets the placeholder option with the value. 
-   * 
-   * @param {string} value
-   * 
-   * @memberof oj.editableValue
-   * @instance
-   * @protected
-   */  
-  _SetPlaceholderOption : function (value)
-  {
-    this.options['placeholder'] = value;
-  },
-  
-  /**
-   * whether the placeholder option is set
-   * 
-   * @memberof oj.editableValue
-   * @instance
-   * @protected
-   */
-  _HasPlaceholderSet : function()
-  {
-    // - an empty placeholder shows up if data changed after first binding 
-    return this.options['placeholder'];
-  },  
-    
-  /**
-   * Clear the placeholder option
-   * 
-   * @memberof oj.editableValue
-   * @instance
-   * @protected
-   */
-  _ClearPlaceholder : function()
-  {
-    // - an empty placeholder shows up if data changed after first binding 
-    this._SetPlaceholderOption("");
-    this._SetPlaceholder("");
-  },
+    },
 
-  /**
-   * Decide to call _SetValueReturnBoolean or _SetValueReturnPromise.
-   * If widget code, call _SetValueReturnBoolean.
-   * If no async converters or validators, call _SetValueReturnBoolean
-   *
-   * Runs full validation on the newValue (usually the display value) and sets the parsed value on 
-   * the component if value passes basic checks and there are no validation errors. <br/>
-   * If the newValue is undefined or if it is the SAME as the last saved displayValue this method
-   * skips validation and does not set value (same as ADF).<br/>
-   * 
-   * @param {string|Object} newValue the ui value that needs to be parsed before it's set.
-   * @param {Object=} event an optional event if this was a result of ui interaction. For user 
-   * initiated actions that trigger a DOM event, passing this event is required. E.g., if user action 
-   * causes a 'blur' event.
-   * @param {Object=} options - an Object literal that callers pass in to determine how validation 
-   * gets run. 
-   * @param {boolean=} options.doValueChangeCheck - if set to true compare newValue with last 
-   * displayValue before running validation; if false, always run validation. E.g., set to false 
-   * when validate() is called.
-   * @param {boolean=} options.doNotClearMessages - if set method will not clear all messages. This 
-   * is provided for callers that may want to clear only some of the messages. E.g., when required 
-   * option changes, it clears only component messages, not custom.
-   * @param {number=} options.validationMode - accepted values (defined in _VALIDATION_MODE) are:
-   * <ul>
-   *   <li>FULL - the default and runs both the converter and all validators. </li>
-   *   <li>VALIDATORS_ONLY - runs all validators including the required validator is run.</li>
-   *   <li>REQUIRED_VALIDATOR_ONLY - runs just the required validator. </li>
-   * </ul>
-   * @return {boolean|Promise} false if value was not set due to validation error.
-   * @example  <caption>Widget subclasses can use this convention to run full validation</caption>
-   * this._SetValue(value, event);
-   * 
-   * @memberof oj.editableValue
-   * @instance
-   * @protected
-   * 
-   */
-  _SetValue: function (newValue, event, options) {
-    var returnSuccess;
-    // returns array of async-validators
-    var normalizedAsyncValidators = this._getAllAsyncValidators();
+    /**
+     * Sets the placeholder option with the value.
+     *
+     * @param {string} value
+     *
+     * @memberof oj.editableValue
+     * @instance
+     * @protected
+     */
+    _SetPlaceholderOption: function (value) {
+      this.options.placeholder = value;
+    },
 
-    if (!this._IsCustomElement() || normalizedAsyncValidators.length === 0) {
-      returnSuccess = this._SetValueReturnBoolean(newValue, event, options);
-    } else {
-      returnSuccess = this._SetValueReturnPromise(newValue, event, options);
-    }
-    return returnSuccess;
-  },
-  /**
-   * Runs full validation on the newValue (usually the display value) and sets the parsed value on
-   * the component if value passes basic checks and there are no validation errors. <br/>
-   * If the newValue is undefined or if it is the same as the last saved displayValue this method
-   * skips validation and does not set value (same as ADF).<br/>
-   * This is called for widget components or if the component
-   * doesn't have async converters or validators.
-   *
-   * @param {string|Object} newValue the ui value that needs to be parsed before it's set.
-   * @param {Object=} event an optional event if this was a result of ui interaction. For user
-   * initiated actions that trigger a DOM event, passing this event is required. E.g., if user action
-   * causes a 'blur' event.
-   * @param {Object=} options - an Object literal that callers pass in to determine how validation
-   * gets run.
-   * @param {boolean=} options.doValueChangeCheck - if set to true compare newValue with last
-   * displayValue before running validation; if false, always run validation. E.g., set to false
-   * when validate() is called.
-   * @param {boolean=} options.doNotClearMessages - if set method will not clear all messages. This
-   * is provided for callers that may want to clear only some of the messages. E.g., when required
-   * option changes, it clears only component messages, not custom.
-   * @param {number=} options.validationMode - accepted values (defined in _VALIDATION_MODE) are:
-   * <ul>
-   *   <li>FULL - the default and runs both the converter and all validators. </li>
-   *   <li>VALIDATORS_ONLY - runs all validators including the required validator is run.</li>
-   *   <li>REQUIRED_VALIDATOR_ONLY - runs just the required validator. </li>
-   * </ul>
-   * @return {boolean} false if value was not set due to validation error.
-   *
-   * @memberof oj.editableValue
-   * @instance
-   * @protected
-   */
-  _SetValueReturnBoolean: function (newValue, event, options) {
-    var doValueChangeCheck = (options && typeof options.doValueChangeCheck === 'boolean') ?
-      options.doValueChangeCheck : true;
-    var parsed;
-    var self = this;
-    
-    // disallow setting a value of undefined by widgets
-    if (newValue === undefined)
-    {
-      oj.Logger.warn("Attempt to set a value of undefined");
-      return false;
-    }
+    /**
+     * whether the placeholder option is set
+     *
+     * @memberof oj.editableValue
+     * @instance
+     * @protected
+     */
+    _HasPlaceholderSet: function () {
+      //  - an empty placeholder shows up if data changed after first binding
+      return this.options.placeholder;
+    },
 
-    if (!doValueChangeCheck || newValue !== this._getLastDisplayValue()) 
-    {
-      parsed = this._Validate(newValue, event, options);
-      // if validation passed
-      if (parsed !== undefined && this.isValid())
-      {
-        var updateContext;
-        if (options && options['_context'])
-        {
-          updateContext = options['_context'];
-        }
-        // update value option
-          self._updateValueOption(parsed, event, options && options.validationContext,
-            updateContext);
-        return true;
-      }
-      else if (oj.Logger.level > oj.Logger.LEVEL_WARN) 
-      {
-        oj.Logger.info("Validation skipped and value option not updated as submitted value '" + 
-                (newValue.toString) ? newValue.toString() : newValue + " same as previous.");
-      }
-    }
-    
-    return false;
-  },
-  /**
-   * Runs full validation on the newValue (usually the display value) and sets the parsed value on
-   * the component if value passes basic checks and there are no validation errors. <br/>
-   * If the newValue is undefined or if it is the same as the last saved displayValue this method
-   * skips validation and does not set value (same as ADF).<br/>
-   * This is called for custom elements that have async converters or validators.
-   *
-   * @param {string|Object} newValue the ui value that needs to be parsed before it's set.
-   * @param {Object=} event an optional event if this was a result of ui interaction. For user
-   * initiated actions that trigger a DOM event, passing this event is required. E.g., if user action
-   * causes a 'blur' event.
-   * @param {Object=} options - an Object literal that callers pass in to determine how validation
-   * gets run.
-   * @param {boolean=} options.doValueChangeCheck - if set to true compare newValue with last
-   * displayValue before running validation; if false, always run validation. E.g., set to false
-   * when validate() is called.
-   * @param {boolean=} options.doNotClearMessages - if set method will not clear all messages. This
-   * is provided for callers that may want to clear only some of the messages. E.g., when required
-   * option changes, it clears only component messages, not custom.
-   * @param {number=} options.validationMode - accepted values (defined in _VALIDATION_MODE) are:
-   * <ul>
-   *   <li>FULL - the default and runs both the converter and all validators. </li>
-   *   <li>VALIDATORS_ONLY - runs all validators including the required validator is run.</li>
-   *   <li>REQUIRED_VALIDATOR_ONLY - runs just the required validator. </li>
-   * </ul>
-   * @return {Promise} Promise that resolves to false if value was not set due to validation error.
-   * @example  <caption>Widget subclasses can use this convention to run full validation</caption>
-   * this._SetValue(value, event);
-   *
-   * @memberof oj.editableValue
-   * @instance
-   * @protected
-   *
-   */
-  _SetValueReturnPromise: function (newValue, event, options) {
-    var doValueChangeCheck = (options && typeof options.doValueChangeCheck === 'boolean') ?
-    options.doValueChangeCheck : true;
-    var self = this;
+    /**
+     * Clear the placeholder option
+     *
+     * @memberof oj.editableValue
+     * @instance
+     * @protected
+     */
+    _ClearPlaceholder: function () {
+      //  - an empty placeholder shows up if data changed after first binding
+      this._SetPlaceholderOption('');
+      this._SetPlaceholder('');
+    },
+    /**
+     * Decide to call _SetValueReturnBoolean or _SetValueReturnPromise.
+     * If widget code, call _SetValueReturnBoolean.
+     * If no async converters or validators, call _SetValueReturnBoolean
+     *
+     * Runs full validation on the newValue (usually the display value) and sets the parsed value on
+     * the component if value passes basic checks and there are no validation errors. <br/>
+     * If the newValue is undefined or if it is the SAME as the last saved displayValue this method
+     * skips validation and does not set value (same as ADF).<br/>
+     *
+     * @param {string|Object} newValue the ui value that needs to be parsed before it's set.
+     * @param {Object=} event an optional event if this was a result of ui interaction. For user
+     * initiated actions that trigger a DOM event, passing this event is required. E.g., if user action
+     * causes a 'blur' event.
+     * @param {Object=} options - an Object literal that callers pass in to determine how validation
+     * gets run.
+     * @param {boolean=} options.doValueChangeCheck - if set to true compare newValue with last
+     * displayValue before running validation; if false, always run validation. E.g., set to false
+     * when validate() is called.
+     * @param {boolean=} options.doNotClearMessages - if set method will not clear all messages. This
+     * is provided for callers that may want to clear only some of the messages. E.g., when required
+     * option changes, it clears only component messages, not custom.
+     * @param {number=} options.validationMode - accepted values (defined in _VALIDATION_MODE) are:
+     * <ul>
+     *   <li>FULL - the default and runs both the converter and all validators. </li>
+     *   <li>VALIDATORS_ONLY - runs all validators including the required validator is run.</li>
+     *   <li>REQUIRED_VALIDATOR_ONLY - runs just the required validator. </li>
+     * </ul>
+     * @return {boolean|Promise} false if value was not set due to validation error.
+     * @example  <caption>Widget subclasses can use this convention to run full validation</caption>
+     * this._SetValue(value, event);
+     *
+     * @memberof oj.editableValue
+     * @instance
+     * @protected
+     *
+     */
+    _SetValue: function (newValue, event, options) {
+      var returnSuccess;
+      // returns array of async-validators
+      var normalizedAsyncValidators = this._getAllAsyncValidators();
 
-    return new Promise(function (resolve) {
-      // disallow setting a value of undefined by widgets
-      if (newValue === undefined) {
-        oj.Logger.warn('Attempt to set a value of undefined');
-        resolve(oj.EditableValueUtils.VALIDATE_VALUES.INVALID);
-      }
-      if (!doValueChangeCheck || newValue !== self._getLastDisplayValue()) {
-        self._setBusyState(newValue);
-        self._AsyncValidate(newValue, event, options).then(function (fulfilledNewValue) {
-          // if validation passed
-          if (fulfilledNewValue !== undefined && self.isValid()) {
-            var updateContext;
-            if (options && options._context) {
-              updateContext = options._context;
-            }
-            // update value option
-            self._updateValueOption(
-              fulfilledNewValue, event, options && options.validationContext, updateContext);
-            self._clearBusyState(newValue);
-            resolve(oj.EditableValueUtils.VALIDATE_VALUES.VALID);
-          } else {
-            self._clearBusyState(newValue);
-            resolve(oj.EditableValueUtils.VALIDATE_VALUES.INVALID);
-          }
-        });
+      if (!this._IsCustomElement() || normalizedAsyncValidators.length === 0) {
+        returnSuccess = this._SetValueReturnBoolean(newValue, event, options);
       } else {
-        if (oj.Logger.level > oj.Logger.LEVEL_WARN) {
-          oj.Logger.info('Validation skipped and value option not updated as submitted value "' +
-            (newValue.toString) ? newValue.toString() : newValue + '" same as previous.');
-        }
-        resolve(oj.EditableValueUtils.VALIDATE_VALUES.INVALID);
+        returnSuccess = this._SetValueReturnPromise(newValue, event, options);
       }
-    });
-  },
-  
-  /**
-   * Runs full validation on the value. If value fails basic checks 
-   * (see <a href="#_CanSetValue">_CanSetValue</a>, or if value failed validation, this method 
-   * returns false. Otherwise it returns true.
-   * 
-   * <p>
-   * Components should call this method if they know UI value has changed and want to set the 
-   * new component value. 
-   * </p>
-   * 
-   * @param {string|Object} newValue the actual value to be set. Usually this is the string display value
-   * @param {Object=} event an optional event if this was a result of ui interaction. For user 
-   * initiated actions that trigger a DOM event, passing this event is required. E.g., if user action 
-   * causes a 'blur' event.
-   * @param {{doNotClearMessages:boolean,validationContext:number,validationMode:number}=} options 
-   * an Object literal that callers pass in to determine how validation gets run. 
-   * @param {boolean=} options.doNotClearMessages - if set method will not clear all messages. This 
-   * is provided for callers that may want to clear only some of the messages. E.g., when required 
-   * option changes, it clears only component messages, not custom.
-   * @param {number=} options.validationContext - the context this method was called. When not set it 
-   * defaults to _VALIDATION_CONTEXT.USER_ACTION.
-   * @param {number=} options.validationMode - accepted values defined in _VALIDATION_MODE
-   * 
-   * @return {Promise.<Object|string|undefined>} A promise that will be resolved when validation resolves.
-   * the parsed value or undefined if validation failed.
-   * 
-   * @memberof oj.editableValue
-   * @instance
-   * @protected
-   */
-  _AsyncValidate: function (newValue, event, options) {
-    var mode = options && options.validationMode ? options.validationMode : 
-                this._VALIDATION_MODE.FULL; 
-    var context = options && options.validationContext ? options.validationContext : 
-                this._VALIDATION_CONTEXT.USER_ACTION;
-    var doNotClearMessages = (options && options.doNotClearMessages) || false;
-    var newMsgs;
-    var successfullyParsedValue;
-    var self = this;
+      return returnSuccess;
+    },
+    /**
+     * Runs full validation on the newValue (usually the display value) and sets the parsed value on
+     * the component if value passes basic checks and there are no validation errors. <br/>
+     * If the newValue is undefined or if it is the same as the last saved displayValue this method
+     * skips validation and does not set value (same as ADF).<br/>
+     * This is called for widget components or if the component
+     * doesn't have async converters or validators.
+     *
+     * @param {string|Object} newValue the ui value that needs to be parsed before it's set.
+     * @param {Object=} event an optional event if this was a result of ui interaction. For user
+     * initiated actions that trigger a DOM event, passing this event is required. E.g., if user action
+     * causes a 'blur' event.
+     * @param {Object=} options - an Object literal that callers pass in to determine how validation
+     * gets run.
+     * @param {boolean=} options.doValueChangeCheck - if set to true compare newValue with last
+     * displayValue before running validation; if false, always run validation. E.g., set to false
+     * when validate() is called.
+     * @param {boolean=} options.doNotClearMessages - if set method will not clear all messages. This
+     * is provided for callers that may want to clear only some of the messages. E.g., when required
+     * option changes, it clears only component messages, not custom.
+     * @param {number=} options.validationMode - accepted values (defined in _VALIDATION_MODE) are:
+     * <ul>
+     *   <li>FULL - the default and runs both the converter and all validators. </li>
+     *   <li>VALIDATORS_ONLY - runs all validators including the required validator is run.</li>
+     *   <li>REQUIRED_VALIDATOR_ONLY - runs just the required validator. </li>
+     * </ul>
+     * @return {boolean} false if value was not set due to validation error.
+     *
+     * @memberof oj.editableValue
+     * @instance
+     * @protected
+     */
+    _SetValueReturnBoolean: function (newValue, event, options) {
+      var doValueChangeCheck = (options && typeof options.doValueChangeCheck === 'boolean') ?
+        options.doValueChangeCheck : true;
+      var parsed;
+      var self = this;
 
-    return new Promise(function (resolve) {
       // disallow setting a value of undefined by widgets
       if (newValue === undefined) {
-        oj.Logger.warn('Attempt to set a value of undefined');
-        resolve(undefined);
-      } else if (self._CanSetValue()) {
-        if (!doNotClearMessages) {
-          self._clearAllMessages(event);
+        Logger.warn('Attempt to set a value of undefined');
+        return false;
+      }
+
+      if (!doValueChangeCheck || newValue !== this._getLastDisplayValue()) {
+        parsed = this._Validate(newValue, event, options);
+        // if validation passed
+        if (parsed !== undefined && self.isValid()) {
+          var updateContext;
+          if (options && options._context) {
+            updateContext = options._context;
+          }
+          // update value option
+          self._updateValueOption(parsed, event, options && options.validationContext,
+                                  updateContext);
+          return true;
         }
-        self._setLastSubmittedValue(newValue);
+      } else if (Logger.level > Logger.LEVEL_WARN) {
+        Logger.info("Validation skipped and value option not updated as submitted value '" +
+                       (newValue.toString) ? newValue.toString() : newValue + ' same as previous.');
+      }
+
+      return false;
+    },
+    /**
+     * Runs full validation on the newValue (usually the display value) and sets the parsed value on
+     * the component if value passes basic checks and there are no validation errors. <br/>
+     * If the newValue is undefined or if it is the same as the last saved displayValue this method
+     * skips validation and does not set value (same as ADF).<br/>
+     * This is called for custom elements that have async converters or validators.
+     *
+     * @param {string|Object} newValue the ui value that needs to be parsed before it's set.
+     * @param {Object=} event an optional event if this was a result of ui interaction. For user
+     * initiated actions that trigger a DOM event, passing this event is required. E.g., if user action
+     * causes a 'blur' event.
+     * @param {Object=} options - an Object literal that callers pass in to determine how validation
+     * gets run.
+     * @param {boolean=} options.doValueChangeCheck - if set to true compare newValue with last
+     * displayValue before running validation; if false, always run validation. E.g., set to false
+     * when validate() is called.
+     * @param {boolean=} options.doNotClearMessages - if set method will not clear all messages. This
+     * is provided for callers that may want to clear only some of the messages. E.g., when required
+     * option changes, it clears only component messages, not custom.
+     * @param {number=} options.validationMode - accepted values (defined in _VALIDATION_MODE) are:
+     * <ul>
+     *   <li>FULL - the default and runs both the converter and all validators. </li>
+     *   <li>VALIDATORS_ONLY - runs all validators including the required validator is run.</li>
+     *   <li>REQUIRED_VALIDATOR_ONLY - runs just the required validator. </li>
+     * </ul>
+     * @return {Promise} Promise that resolves to false if value was not set due to validation error.
+     * @example  <caption>Widget subclasses can use this convention to run full validation</caption>
+     * this._SetValue(value, event);
+     *
+     * @memberof oj.editableValue
+     * @instance
+     * @protected
+     *
+     */
+    _SetValueReturnPromise: function (newValue, event, options) {
+      var doValueChangeCheck = (options && typeof options.doValueChangeCheck === 'boolean') ?
+      options.doValueChangeCheck : true;
+      var self = this;
+
+      return new Promise(function (resolve) {
+        // disallow setting a value of undefined by widgets
+        if (newValue === undefined) {
+          Logger.warn('Attempt to set a value of undefined');
+          resolve(oj.EditableValueUtils.VALIDATE_VALUES.INVALID);
+        }
+        if (!doValueChangeCheck || newValue !== self._getLastDisplayValue()) {
+          self._setBusyState(newValue);
+          self._AsyncValidate(newValue, event, options).then(function (fulfilledNewValue) {
+            // if validation passed
+            if (fulfilledNewValue !== undefined && self.isValid()) {
+              var updateContext;
+              if (options && options._context) {
+                updateContext = options._context;
+              }
+              // update value option
+              self._updateValueOption(
+                fulfilledNewValue, event, options && options.validationContext, updateContext);
+              self._clearBusyState(newValue);
+              resolve(oj.EditableValueUtils.VALIDATE_VALUES.VALID);
+            } else {
+              self._clearBusyState(newValue);
+              resolve(oj.EditableValueUtils.VALIDATE_VALUES.INVALID);
+            }
+          });
+        } else {
+          if (Logger.level > Logger.LEVEL_WARN) {
+            Logger.info('Validation skipped and value option not updated as submitted value "' +
+              (newValue.toString) ? newValue.toString() : newValue + '" same as previous.');
+          }
+          resolve(oj.EditableValueUtils.VALIDATE_VALUES.INVALID);
+        }
+      });
+    },
+
+    /**
+     * Runs full validation on the value. If value fails basic checks
+     * (see <a href="#_CanSetValue">_CanSetValue</a>, or if value failed validation, this method
+     * returns false. Otherwise it returns true.
+     *
+     * <p>
+     * Components should call this method if they know UI value has changed and want to set the
+     * new component value.
+     * </p>
+     *
+     * @param {string|Object} newValue the actual value to be set. Usually this is the string display value
+     * @param {Object=} event an optional event if this was a result of ui interaction. For user
+     * initiated actions that trigger a DOM event, passing this event is required. E.g., if user action
+     * causes a 'blur' event.
+     * @param {{doNotClearMessages:boolean,validationContext:number,validationMode:number}=} options
+     * an Object literal that callers pass in to determine how validation gets run.
+     * @param {boolean=} options.doNotClearMessages - if set method will not clear all messages. This
+     * is provided for callers that may want to clear only some of the messages. E.g., when required
+     * option changes, it clears only component messages, not custom.
+     * @param {number=} options.validationContext - the context this method was called. When not set it
+     * defaults to _VALIDATION_CONTEXT.USER_ACTION.
+     * @param {number=} options.validationMode - accepted values defined in _VALIDATION_MODE
+     *
+     * @return {Promise.<Object|string|undefined>} A promise that will be resolved when validation resolves.
+     * the parsed value or undefined if validation failed.
+     *
+     * @memberof oj.editableValue
+     * @instance
+     * @protected
+     */
+    _AsyncValidate: function (newValue, event, options) {
+      var mode = options && options.validationMode ? options.validationMode :
+          this._VALIDATION_MODE.FULL;
+      var context = options && options.validationContext ? options.validationContext :
+          this._VALIDATION_CONTEXT.USER_ACTION;
+      var doNotClearMessages = (options && options.doNotClearMessages) || false;
+      var newMsgs;
+      var successfullyParsedValue;
+      var self = this;
+
+
+      return new Promise(function (resolve) {
+        // disallow setting a value of undefined by widgets
+        if (newValue === undefined) {
+          Logger.warn('Attempt to set a value of undefined');
+          resolve(undefined);
+        } else if (self._CanSetValue()) {
+          if (!doNotClearMessages) {
+            self._clearAllMessages(event);
+          }
+          // Stores the newValue we are validating. This is consulted to decide whether or
+          // not to call Validate; e.g., we can skip validation
+          // if newValue !== self._getLastDisplayValue()
+          self._setLastDisplayValue(newValue);
+          try {
+            // START
+            self._asyncValidatorValidateCounter += 1;
+            // Step 1: only when "full" validation is requested converters get run
+            if (mode === self._VALIDATION_MODE.FULL) {
+              // Step1: Parse value using converter. set valid state to pending here.
+              successfullyParsedValue = self._parseValue(newValue, event, true);
+            } else {
+              successfullyParsedValue = newValue;
+            }
+
+            // Step 2: Run validators and set valid state
+            // This is the only place from which we call _asyncValidateValue.
+            self._asyncValidateValue(successfullyParsedValue,
+                                event,
+                                context)
+            .then(function (valid) {
+              if (valid === _VALID) {
+                resolve(successfullyParsedValue);
+              } else {
+                resolve(undefined);
+              }
+            });
+
+            // END
+          } catch (ve) {
+            // SYNCHRONOUS _parseValue failed
+            // turn this into Array of oj.ComponentMessage instances. This is what we set on 'messagesShown'
+            newMsgs = self._processValidationErrors(ve, context);
+            self._updateMessagesOption('messagesShown', newMsgs, event);
+            self._setValidOption(_INVALID_SHOWN, event);
+            resolve(undefined);
+          }
+        } else if (Logger.level > Logger.LEVEL_WARN) {
+          Logger.info('Validation skipped and value option not set as component state does not ' +
+                         ' allow setting value. For example if the component is readonly or disabled.');
+          resolve(undefined);
+        }
+        // do not put resolve(undefined) here.
+        // It will resolve before _asyncValidateValue does if I do that.
+      });
+    },
+    /**
+     * Runs full validation on the value when there are only synchronous validators.
+     * If value fails basic checks (see <a href="#_CanSetValue">_CanSetValue</a>,
+     * or if value failed validation, this method returns false. Otherwise it returns true.
+     *
+     * <p>
+     * Components should call this method if they know UI value has changed and want to set the
+     * new component value.
+     * </p>
+     *
+     * @param {string|Object} newValue the actual value to be set. Usually this is the string display value
+     * @param {Object=} event an optional event if this was a result of ui interaction. For user
+     * initiated actions that trigger a DOM event, passing this event is required. E.g., if user action
+     * causes a 'blur' event.
+     * @param {{doNotClearMessages:boolean,validationContext:number,validationMode:number}=} options
+     * an Object literal that callers pass in to determine how validation gets run.
+     * @param {boolean=} options.doNotClearMessages - if set method will not clear all messages. This
+     * is provided for callers that may want to clear only some of the messages. E.g., when required
+     * option changes, it clears only component messages, not custom.
+     * @param {number=} options.validationContext - the context this method was called. When not set it
+     * defaults to _VALIDATION_CONTEXT.USER_ACTION.
+     * @param {number=} options.validationMode - accepted values defined in _VALIDATION_MODE
+     *
+     * @return {Object|string|undefined} The parsed value or undefined if validation failed.
+     *
+     * @memberof oj.editableValue
+     * @instance
+     * @protected
+     */
+    _Validate: function (newValue, event, options) {
+      var mode = options && options.validationMode ? options.validationMode :
+          this._VALIDATION_MODE.FULL;
+      var context = options && options.validationContext ? options.validationContext :
+          this._VALIDATION_CONTEXT.USER_ACTION;
+      var doNotClearMessages = (options && options.doNotClearMessages) || false;
+      // an Array of oj.ComponentMessages
+      var newMsgs;
+      var validatePassed;
+      var successfullyParsedValue;
+
+      // disallow setting a value of undefined by widgets
+      if (newValue === undefined) {
+        Logger.warn('Attempt to set a value of undefined');
+      } else if (this._CanSetValue()) {
+        if (!doNotClearMessages) {
+          this._clearAllMessages(event);
+        }
+
+        // Stores the newValue we are validating. This is consulted to decide whether or
+        // not to call Validate; e.g., we can skip validation
+        // if newValue !== self._getLastDisplayValue()
+        this._setLastDisplayValue(newValue);
+
         try {
           // START
-          self._asyncValidatorValidateCounter += 1;
           // Step 1: only when "full" validation is requested converters get run
-          if (mode === self._VALIDATION_MODE.FULL) {
+          if (mode === this._VALIDATION_MODE.FULL) {
             // Step1: Parse value using converter. set valid state to pending here.
-            successfullyParsedValue = self._parseValue(newValue, event, true);
+            successfullyParsedValue = this._parseValue(newValue, event, true);
           } else {
             successfullyParsedValue = newValue;
           }
 
-          // Step 2: Run validators and set valid state
-          // This is the only place from which we call _asyncValidateValue.
-          self._asyncValidateValue(successfullyParsedValue,
-                              event,
-                              context)
-          .then(function (valid) {
-            if (valid === _VALID) {
-              resolve(successfullyParsedValue);
-            } else {
-              resolve(undefined);
-            }
-          });
+          // Step 2: Run synchronous validators, updates error messages as we get them,
+          // and set invalidShown valid state as soon as we know.
+          validatePassed = this._validateValue(successfullyParsedValue, event, context);
+
+          if (validatePassed) {
+            this._setValidOption(this._determineValidFromMessagesOptions(), event);
+          }
+
+          // if no error messages returned from validating the value, return newValue
+          return (validatePassed) ? successfullyParsedValue : undefined;
 
           // END
         } catch (ve) {
           // SYNCHRONOUS _parseValue failed
-          // turn this into Array of oj.ComponentMessage instances. This is what we set on 'messagesShown'
-          newMsgs = self._processValidationErrors(ve, context);
-          self._updateMessagesOption('messagesShown', newMsgs, event);
-          self._setValidOption(_INVALID_SHOWN, event);
-          resolve(undefined);
+          newMsgs = this._processValidationErrors(ve, context);
+          // turn this into Array of oj.ComponentMessage instances.
+          // This is what we set on 'messagesShown'
+          this._updateMessagesOption('messagesShown', newMsgs, event);
+          this._setValidOption(_INVALID_SHOWN, event);
         }
-      } else if (oj.Logger.level > oj.Logger.LEVEL_WARN) {
-        oj.Logger.info('Validation skipped and value option not set as component state does not ' +
-                       ' allow setting value. For example if the component is readonly or disabled.');
-        resolve(undefined);
+      } else if (Logger.level > Logger.LEVEL_WARN) {
+        Logger.info('Validation skipped and value option not set as component state does not ' +
+          ' allow setting value. For example if the component is readonly or disabled.');
       }
-      // do not put resolve(undefined) here.
-      // It will resolve before _asyncValidateValue does if I do that.
-    });
-  },
-  /**
-   * Runs full validation on the value when there are only synchronous validators.
-   * If value fails basic checks (see <a href="#_CanSetValue">_CanSetValue</a>,
-   * or if value failed validation, this method returns false. Otherwise it returns true.
-   *
-   * <p>
-   * Components should call this method if they know UI value has changed and want to set the
-   * new component value.
-   * </p>
-   *
-   * @param {string|Object} newValue the actual value to be set. Usually this is the string display value
-   * @param {Object=} event an optional event if this was a result of ui interaction. For user
-   * initiated actions that trigger a DOM event, passing this event is required. E.g., if user action
-   * causes a 'blur' event.
-   * @param {{doNotClearMessages:boolean,validationContext:number,validationMode:number}=} options
-   * an Object literal that callers pass in to determine how validation gets run.
-   * @param {boolean=} options.doNotClearMessages - if set method will not clear all messages. This
-   * is provided for callers that may want to clear only some of the messages. E.g., when required
-   * option changes, it clears only component messages, not custom.
-   * @param {number=} options.validationContext - the context this method was called. When not set it
-   * defaults to _VALIDATION_CONTEXT.USER_ACTION.
-   * @param {number=} options.validationMode - accepted values defined in _VALIDATION_MODE
-   *
-   * @return {Object|string|undefined} The parsed value or undefined if validation failed.
-   *
-   * @memberof oj.editableValue
-   * @instance
-   * @protected
-   */
-  _Validate: function (newValue, event, options) {
-    var mode = options && options.validationMode ? options.validationMode :
-        this._VALIDATION_MODE.FULL;
-    var context = options && options.validationContext ? options.validationContext :
-        this._VALIDATION_CONTEXT.USER_ACTION;
-    var doNotClearMessages = (options && options.doNotClearMessages) || false;
-    // an Array of oj.ComponentMessages
-    var newMsgs;
-    var validatePassed;
-    var successfullyParsedValue;
+      return undefined;
+    },
 
-    // disallow setting a value of undefined by widgets
-    if (newValue === undefined) {
-      oj.Logger.warn('Attempt to set a value of undefined');
-    } else if (this._CanSetValue()) {
-      if (!doNotClearMessages) {
-        this._clearAllMessages(event);
+    //* * @inheritdoc */
+    _CompareOptionValues: function (option, value1, value2) {
+      if (option === 'value' || option === 'rawValue') {
+        return oj.Object.compareValues(value1, value2);
+      } else if (option.indexOf('messages') === 0) {
+        return this._messagesEquals(value1, value2);
       }
 
-      this._setLastSubmittedValue(newValue);
+      return this._superApply(arguments);
+    },
 
-      try {
-        // START
-        // Step 1: only when "full" validation is requested converters get run
-        if (mode === this._VALIDATION_MODE.FULL) {
-          // Step1: Parse value using converter. set valid state to pending here.
-          successfullyParsedValue = this._parseValue(newValue, event, true);
-        } else {
-          successfullyParsedValue = newValue;
+    /**
+     * Returns the default styleclass for the component. All input components must override.
+     *
+     * @return {string}
+     *
+     * @memberof oj.editableValue
+     * @instance
+     * @protected
+     * @abstract
+     */
+    _GetDefaultStyleClass: function () {
+      oj.Assert.failedInAbstractFunction();
+      return '';
+    },
+
+
+    // I N T E R N A L   P R I V A T E   C O N S T A N T S    A N D   M E T H O D S
+    // Subclasses should not override or call these methods
+
+    /**
+     * Types of messaging content to update.
+     * <ul>
+     * <li>'ALL' - builds all messaging content</li>
+     * <li>'VALIDITY_STATE' - updates only validityState every time validation runs and there are
+     * new messages or when the messages option changes.</li>
+     * <li>'CONVERTER_HINT' - updates only converter hints, this is used when converter option
+     * changes</li>
+     * <li>'VALIDATOR_HINTS' - updates only validator hints, this is used when validators option
+     * changes</li>
+     * <li>'TITLE' - updates only title, when the title property changes</li>
+     * </ul>
+     * @private
+     * @memberof oj.editableValue
+     */
+    _MESSAGING_CONTENT_UPDATE_TYPE: {
+      ALL: 1,
+      VALIDITY_STATE: 2,
+      CONVERTER_HINT: 3,
+      VALIDATOR_HINTS: 4,
+      TITLE: 5 },
+
+    /**
+     * when below listed options are passed to the component, corresponding CSS will be toggled
+     * @private
+     * @const
+     * @type {Object}
+     * @memberof oj.editableValue
+     */
+    _OPTION_TO_CSS_MAPPING: {
+      disabled: 'oj-disabled',
+      required: 'oj-required'
+    },
+
+
+    /**
+     * Clears all messages for this component. Today this only happens when <br/>
+     *  - the component's value changes as a result of user interaction, <br/>
+     *  - the reset method is called, <br/>
+     *  - component is destroyed.<br/>
+     *
+     * @param {Event=} event the original event (for user initiated actions that trigger a DOM event,
+     * like blur) or undefined.
+     * @param {boolean=} doNotSetOption default value is false; a true value clears the option
+     * directly without using the public option method, causing no events to be fired.
+     * @private
+     * @memberof oj.editableValue
+     * @instance
+     */
+    _clearAllMessages: function (event, doNotSetOption) {
+      if (!doNotSetOption) {
+        this._clearMessages('messagesHidden', event);
+        this._clearMessages('messagesShown', event);
+        this._clearMessages('messagesCustom', event);
+      } else {
+        this.options.messagesHidden = [];
+        this.options.messagesShown = [];
+        this.options.messagesCustom = [];
+      }
+    },
+
+    /**
+     * Clears all messages that were added by component. These includes all messages in messagesHidden
+     * option and all messages except custom in messagesShown.
+     *
+     * Called when these options change - validators, disabled, readonly, required, and methods -
+     * refresh are called.
+     *
+     * @private
+     * @memberof oj.editableValue
+     * @instance
+     */
+    _clearComponentMessages: function () {
+      var beforeLen;
+      var msg;
+      var shownMsgs = this.options.messagesShown;
+
+      beforeLen = shownMsgs.length;
+      this._clearMessages('messagesHidden');
+
+      // remove component messages in messagesShown. Custom messges are kept intact.
+      for (var i = beforeLen - 1; i >= 0; i--) {
+        // NOTE: shownMsgs is this.options['messagesShown']
+        // so we are modifying this.options['messagesShown'] here.
+        msg = shownMsgs[i];
+        if (msg instanceof oj.ComponentMessage) {
+          shownMsgs.splice(i, 1);
+        }
+      }
+
+      if (shownMsgs.length !== beforeLen) {
+        // Setting 'changed' flag to true means that although we have already
+        // updated this.options['messagesShown'], we still want to fire a messagesShownChanged event.
+        this._setMessagesOption('messagesShown', shownMsgs, null, true);
+      }
+    },
+
+
+    /**
+     * Sets the messages option with the new value.
+     * Setting 'changed' flag to true means we want to fire a property changed event
+     * without checking that the option value to what you are setting it to. Useful
+     * if the option is an array or we have already updated the option directly.
+     *
+     * This method updates the option directly without invoking setOption() method. This is done by
+     * setting the following property in flags parameter of the option() method -
+     * <code class="prettyprint">{'_context': {internalSet: true}}</code>
+     *
+     * @param {string} key
+     * @param {Array} value
+     * @param {Event=} event the event like the user blurred to trigger a messages option change
+     * or undefined.
+     * @param {Boolean=} changed when this is true, then we set the 'changed' flag to true, and having
+     * the changed flag be true will guarantee that the property changed event is fired even if the
+     * the property value is equal to what you are setting it to.
+     * @private
+     * @memberof oj.editableValue
+     */
+    _setMessagesOption: function (key, value, event, changed) {
+      var flags = {};
+
+      // Optimize for the common 'clear' operation
+      var bothEmpty = value.length === 0 && this.options[key].length === 0;
+
+      if (changed || !bothEmpty) {
+        // 'messagesCustom' is not read-only, but 'messagesShown' and 'messagesHidden' are
+        flags._context = { originalEvent: event, writeback: true, internalSet: true };
+        if (key !== 'messagesCustom') {
+          flags._context.readOnly = true;
         }
 
-        // Step 2: Run synchronous validators, updates error messages as we get them,
-        // and set invalidShown valid state as soon as we know.
-        validatePassed = this._validateValue(successfullyParsedValue, event, context);
+        flags.changed = changed || !bothEmpty;
 
-        if (validatePassed) {
-          this._setValidOption(this._determineValidFromMessagesOptions(), event);
+        this._resetValid();
+
+        this.option(key, value, flags);
+
+        this._updateMessagingContent();
+      }
+    },
+
+    /**
+     * Sets the valid option with the new value.
+     *
+     * This method updates the option directly without invoking setOption() method. This is done by
+     * setting the following property in flags parameter of the option() method -
+     * <code class="prettyprint">{'_context': {internalSet: true}}</code>
+     *
+     * @param {string} newValidState The new valid state to set on the valid option
+     *   e.g., "pending", "valid", "invalidShown", "invalidHidden"
+     * @param {Event=} event the original event (for user initiated actions that trigger a DOM event,
+     * like blur) or undefined. The custom element bridge creates a CustomEvent out of this when
+     * it sends the property changed event.
+     * @private
+     * @memberof oj.editableValue
+     * @instance
+     */
+    _setValidOption: function (newValidState, event) {
+      var flags = {};
+
+      // We do not want to set valid state to PENDING if we are already showing messages, e.g., messages-custom.
+      if (!(newValidState === _PENDING && this._determineValidFromMessagesOptions() !== _VALID)) {
+        // 'valid' is read-only
+        flags._context =
+          { originalEvent: event, writeback: true, internalSet: true, readOnly: true };
+
+        this.option('valid', newValidState, flags);
+      }
+    },
+
+    /**
+     * Clears the messages and message options - <code class="prettyprint">messagesHidden</code>,
+     * <code class="prettyprint">messagesShown</code>, <code class="prettyprint">messagesCustom</code>.
+     *
+     * @param {String} option messages option that is being cleared.
+     * @param {Event=} event the original event (for user initiated actions that trigger a DOM event,
+     * like blur) or undefined.
+     *
+     * @private
+     * @memberof oj.editableValue
+     * @instance
+     */
+    _clearMessages: function (option, event) {
+      this._setMessagesOption(option, [], event);
+    },
+
+    /**
+     * Clones messages before it's set. <br/>
+     *
+     * @param {Array=} value
+     * @returns {Array} of cloned messages
+     *
+     * @private
+     * @memberof oj.editableValue
+     * @instance
+     */
+    _cloneMessagesBeforeSet: function (value) {
+      var i;
+      var msg;
+      var msgsClone = [];
+      var val;
+
+      // we want all messages to be an instance of oj.Message. So clone array
+      if (value && value.length > 0) {
+        for (i = 0; i < value.length; i++) {
+          val = value[i];
+          msg = new Message(val.summary, val.detail, val.severity);
+          msg = Object.freeze ? Object.freeze(msg) : msg;
+          msgsClone.push(msg);
         }
-
-        // if no error messages returned from validating the value, return newValue
-        return (validatePassed) ? successfullyParsedValue : undefined;
-
-        // END
-      } catch (ve) {
-        // SYNCHRONOUS _parseValue failed
-        newMsgs = this._processValidationErrors(ve, context);
-        // turn this into Array of oj.ComponentMessage instances.
-        // This is what we set on 'messagesShown'
-        this._updateMessagesOption('messagesShown', newMsgs, event);
-        this._setValidOption(_INVALID_SHOWN, event);
       }
-    } else if (oj.Logger.level > oj.Logger.LEVEL_WARN) {
-      oj.Logger.info('Validation skipped and value option not set as component state does not ' +
-        ' allow setting value. For example if the component is readonly or disabled.');
-    }
-    return undefined;
-  },  
-  
-  //** @inheritdoc */
-  _CompareOptionValues : function (option, value1, value2)
-  {
-    if (option === 'value' || option === 'rawValue')
-    {
-      return oj.Object.compareValues(value1, value2);
-    }
-    else if (option.indexOf('messages') === 0)
-    {
-      return this._messagesEquals(value1, value2);
-    }
-    
-    return this._superApply(arguments);
-  },
-  
-  /**
-   * Returns the default styleclass for the component. All input components must override.
-   * 
-   * @return {string}
-   * 
-   * @memberof oj.editableValue
-   * @instance
-   * @protected
-   * @abstract
-   */
-  _GetDefaultStyleClass : function ()
-  {
-    oj.Assert.failedInAbstractFunction();
-    return "";
-  },
-    
-  
-  // I N T E R N A L   P R I V A T E   C O N S T A N T S    A N D   M E T H O D S 
-  // Subclasses should not override or call these methods
-  
-  /**
-   * Types of messaging content to update.
-   * <ul>
-   * <li>'ALL' - builds all messaging content</li>
-   * <li>'VALIDITY_STATE' - updates only validityState every time validation runs and there are 
-   * new messages or when the messages option changes.</li>
-   * <li>'CONVERTER_HINT' - updates only converter hints, this is used when converter option 
-   * changes</li>
-   * <li>'VALIDATOR_HINTS' - updates only validator hints, this is used when validators option 
-   * changes</li>
-   * <li>'TITLE' - updates only title, when the title property changes</li>
-   * </ul>
-   * @private
-   * @memberof oj.editableValue
-   */
-  _MESSAGING_CONTENT_UPDATE_TYPE : {ALL : 1, 
-                                    VALIDITY_STATE : 2, 
-                                    CONVERTER_HINT : 3, 
-                                    VALIDATOR_HINTS : 4, 
-                                    TITLE : 5},
-                                   
-  /**
-   * when below listed options are passed to the component, corresponding CSS will be toggled
-   * @private
-   * @const
-   * @type {Object}
-   * @memberof oj.editableValue
-   */
-  _OPTION_TO_CSS_MAPPING: {
-    "disabled": "oj-disabled",
-    "required": "oj-required"
-  },
-  
-    
-  /**
-   * Clears all messages for this component. Today this only happens when <br/>
-   *  - the component's value changes as a result of user interaction, <br/>
-   *  - the reset method is called, <br/>
-   *  - component is destroyed.<br/>
-   * 
-   * @param {Event=} event the original event (for user initiated actions that trigger a DOM event,
-   * like blur) or undefined.
-   * @param {boolean=} doNotSetOption default value is false; a true value clears the option 
-   * directly without using the public option method, causing no events to be fired. 
-   * @private
-   * @memberof oj.editableValue
-   * @instance
-   */
-  _clearAllMessages : function(event, doNotSetOption)
-  {
-    doNotSetOption = doNotSetOption ? true : false;
-    if (!doNotSetOption)
-    {
-      this._clearMessages('messagesHidden', event);
-      this._clearMessages('messagesShown', event);
-      this._clearMessages('messagesCustom', event);
-    }
-    else
-    {
-      this.options['messagesHidden'] = [];
-      this.options['messagesShown'] = [];
-      this.options['messagesCustom'] = [];
-    }
-  },
-  
-  /**
-   * Clears all messages that were added by component. These includes all messages in messagesHidden 
-   * option and all messages except custom in messagesShown. 
-   * 
-   * Called when these options change - validators, disabled, readonly, required, and methods - 
-   * refresh are called. 
-   * 
-   * @private
-   * @memberof oj.editableValue
-   * @instance
-   */  
-  _clearComponentMessages : function ()
-  { 
-    var beforeLen;
-    var msg;
-    var shownMsgs = this.options['messagesShown'];
 
-    beforeLen = shownMsgs.length;
-    this._clearMessages('messagesHidden'); 
-    
-    // remove component messages in messagesShown. Custom messges are kept intact.
-    for (var i = beforeLen -1; i >= 0; i--)
-    {
-      // NOTE: shownMsgs is this.options['messagesShown'] 
-      // so we are modifying this.options['messagesShown'] here.
-      msg = shownMsgs[i];
-      if (msg instanceof oj.ComponentMessage)
-      {
-        shownMsgs.splice(i, 1);
+      return msgsClone;
+    },
+
+
+    /**
+     * Create the ojLabel component with help (required is done in the components that support
+     * required) see oj.EditableValueUtils._refreshRequired.
+     * This is not supported for custom elements. For pages with custom elements, the app dev
+     * uses the public &lt;oj-label> component.
+     * @private
+     * @memberof oj.editableValue
+     * @instance
+     *
+     */
+    _createOjLabel: function () {
+      var helpDef;
+      var helpSource;
+
+      if (this._IsCustomElement()) {
+        return;
       }
-    }
-    
-    if (shownMsgs.length !== beforeLen)
-    {
-      // Setting 'changed' flag to true means that although we have already 
-      // updated this.options['messagesShown'], we still want to fire a messagesShownChanged event.
-      this._setMessagesOption('messagesShown', shownMsgs, null, true);
-    }    
-  },
-  
-    
-  /**
-   * Sets the messages option with the new value.
-   * Setting 'changed' flag to true means we want to fire a property changed event
-   * without checking that the option value to what you are setting it to. Useful
-   * if the option is an array or we have already updated the option directly.
-   * 
-   * This method updates the option directly without invoking setOption() method. This is done by 
-   * setting the following property in flags parameter of the option() method - 
-   * <code class="prettyprint">{'_context': {internalSet: true}}</code>
-   * 
-   * @param {string} key
-   * @param {Array} value
-   * @param {Event=} event the event like the user blurred to trigger a messages option change
-   * or undefined.
-   * @param {Boolean=} changed when this is true, then we set the 'changed' flag to true, and having
-   * the changed flag be true will guarantee that the property changed event is fired even if the
-   * the property value is equal to what you are setting it to.
-   * @private
-   * @memberof oj.editableValue
-   */
-  _setMessagesOption : function (key, value, event, changed)
-  {
-    var flags = {};
-    
-    // Optimize for the common 'clear' operation
-    var bothEmpty = value.length === 0 && this.options[key].length === 0;
-    
-    if (changed || !bothEmpty)
-    {
-      // 'messagesCustom' is not read-only, but 'messagesShown' and 'messagesHidden' are
-      flags['_context'] = {originalEvent: event, writeback: true, internalSet: true};
-      if (key !== "messagesCustom")
-        flags['_context']['readOnly'] = true;
 
-      flags['changed'] = changed || !bothEmpty;
-      
-      this._resetValid();
-      
-      this.option(key, value, flags); 
-      
-      this._updateMessagingContent();
-    }
-  },  
-  
-  /**
-   * Sets the valid option with the new value.
-   * 
-   * This method updates the option directly without invoking setOption() method. This is done by 
-   * setting the following property in flags parameter of the option() method - 
-   * <code class="prettyprint">{'_context': {internalSet: true}}</code>
-   * 
-   * @param {string} newValidState The new valid state to set on the valid option
-   *   e.g., "pending", "valid", "invalidShown", "invalidHidden"
-   * @param {Event=} event the original event (for user initiated actions that trigger a DOM event,
-   * like blur) or undefined. The custom element bridge creates a CustomEvent out of this when 
-   * it sends the property changed event.
-   * @private
-   * @memberof oj.editableValue
-   * @instance
-   */
-  _setValidOption: function (newValidState, event) {
-    var flags = {};
+      this.$label = this._GetLabelElement();
+      if (this.$label) {
+        helpDef = this.options.help.definition;
+        helpSource = this.options.help.source;
 
-    // We do not want to set valid state to PENDING if we are already showing messages, e.g., messages-custom.
-    if (!(newValidState === _PENDING && this._determineValidFromMessagesOptions() !== _VALID)) {
-      // 'valid' is read-only
-      flags._context =
-        { originalEvent: event, writeback: true, internalSet: true, readOnly: true };
-
-      this.option('valid', newValidState, flags);
-    }
-  },  
-  
-  /**
-   * Clears the messages and message options - <code class="prettyprint">messagesHidden</code>,
-   * <code class="prettyprint">messagesShown</code>, <code class="prettyprint">messagesCustom</code>.
-   * 
-   * @param {String} option messages option that is being cleared.
-   * @param {Event=} event the original event (for user initiated actions that trigger a DOM event,
-   * like blur) or undefined.
-   * 
-   * @private
-   * @memberof oj.editableValue
-   * @instance
-   */
-  _clearMessages : function (option, event)
-  {
-    this._setMessagesOption(option, [], event);
-  },
-  
-  /**
-   * Clones messages before it's set. <br/>
-   * 
-   * @param {Array=} value
-   * @returns {Array} of cloned messages
-   * 
-   * @private
-   * @memberof oj.editableValue
-   * @instance
-   */    
-  _cloneMessagesBeforeSet : function (value)
-  {
-    var i;
-    var msg;
-    var msgsClone = [];
-    var val;
-    
-    // we want all messages to be an instance of oj.Message. So clone array
-    if (value && value.length > 0)
-    {
-      for (i = 0; i < value.length; i++)
-      {
-        val = value[i];
-        msg = new oj.Message(val['summary'], val['detail'], val['severity']);
-        msg =  Object.freeze ? Object.freeze(msg) : msg;
-        msgsClone.push(msg);
+        // create the ojLabel component
+        this.$label.ojLabel(
+          { rootAttributes: { class: this._GetDefaultStyleClass() + '-label' },
+            help: { definition: helpDef,
+              source: helpSource } });
+        this._createDescribedByForLabel();
       }
-    }
-    
-    return msgsClone;
-  },  
-  
- 
-  /** 
-   * Create the ojLabel component with help (required is done in the components that support
-   * required) see oj.EditableValueUtils._refreshRequired.
-   * This is not supported for custom elements. For pages with custom elements, the app dev
-   * uses the public &lt;oj-label> component.
-   * @private
-   * @memberof oj.editableValue
-   * @instance
-   * 
-   */
-  _createOjLabel : function ()
-  {
-    var helpDef;
-    var helpSource;
-    
-    if (this._IsCustomElement())
-      return;
-    
-    this.$label = this._GetLabelElement();
-    if (this.$label)
-    {
-      helpDef = this.options['help']['definition'];
-      helpSource = this.options['help']['source'];
+    },
+    /**
+     * Refreshes the aria-describedby for label element's helpIcon
+     * @protected
+     * @memberof oj.editableValue
+     * @instance
+     */
+    _createDescribedByForLabel: function () {
+      var helpDef = this.options.help.definition;
+      var helpSource = this.options.help.source;
+      var labelId;
 
-      // create the ojLabel component 
-      this.$label.ojLabel(
-        {rootAttributes:{'class': this._GetDefaultStyleClass()+"-label"},
-        help:{'definition': helpDef, 
-              'source': helpSource}});
-      this._createDescribedByForLabel();
-    }    
-  },
- /**
-   * Refreshes the aria-describedby for label element's helpIcon
-   * @protected
-   * @memberof oj.editableValue
-   * @instance
-   */
-  _createDescribedByForLabel : function ()
-  {
-    var helpDef = this.options['help']['definition'];
-    var helpSource = this.options['help']['source'];
-    var labelId;
-    
-    if ((helpSource != null) || (helpDef != null))
-    {
+      if ((helpSource != null) || (helpDef != null)) {
         var label = this.$label[0];
 
-      // get label's helpIconSpan get the id and add it here.
+        // get label's helpIconSpan get the id and add it here.
         if (label) {
           labelId = label.id;
         }
 
         if (labelId) {
-        this._addAriaDescribedBy(labelId + _HELP_ICON_ID);
-      }        
-    }
-  },
-    /**
-   * Refreshes the aria-describedby for label element's helpIcon
-   * @private
-   * @memberof oj.editableValue
-   * @instance
-   */
-  _refreshDescribedByForLabel : function ()
-  {
-    var helpDef = this.options['help']['definition'];
-    var helpSource = this.options['help']['source'];
-    // if aria-labelledby is set, 
-    // add/remove aria-describedby to the inputs pointing to
-    // the label+"_helpIcon".
-    var labelId;
-    var label = this.$label[0];
-
-    if (label) {
-      labelId = label.id;
-    }
-
-    if (labelId) {
-      if ((helpSource != null) || (helpDef != null)) {
-        this._addAriaDescribedBy(labelId + _HELP_ICON_ID);
-      } else {
-        this._removeAriaDescribedBy(labelId + _HELP_ICON_ID);
+          this._addAriaDescribedBy(labelId + _HELP_ICON_ID);
+        }
       }
-    }  
-  },
-  /**
-   * Refreshes the component to respond to DOM changes, in which case fullRefresh=true. 
-   * @param {boolean} fullRefresh true if a full refresh of the component is desired.
-   * @private
-   * @memberof oj.editableValue
-   * @instance
-   */
-  _doRefresh: function (fullRefresh) {
-    var runFullValidation = false;
-    
-    if (fullRefresh) {
-      // reset state and re-initialize component messaging, since refresh() can be called when 
-      // locale changes, requiring component to show messaging artifacts for current locale. 
+    },
+    /**
+     * Refreshes the aria-describedby for label element's helpIcon
+     * @private
+     * @memberof oj.editableValue
+     * @instance
+     */
+    _refreshDescribedByForLabel: function () {
+      var helpDef = this.options.help.definition;
+      var helpSource = this.options.help.source;
+      // if aria-labelledby is set,
+      // add/remove aria-describedby to the inputs pointing to
+      // the label+"_helpIcon".
+      var labelId;
+      var label = this.$label[0];
+
+      if (label) {
+        labelId = label.id;
+      }
+
+      if (labelId) {
+        if ((helpSource != null) || (helpDef != null)) {
+          this._addAriaDescribedBy(labelId + _HELP_ICON_ID);
+        } else {
+          this._removeAriaDescribedBy(labelId + _HELP_ICON_ID);
+        }
+      }
+    },
+    /**
+     * Refreshes the component to respond to DOM changes, in which case fullRefresh=true.
+     * @private
+     * @memberof oj.editableValue
+     * @instance
+     */
+    _doRefresh: function () {
+      var runFullValidation = false;
+
+      // reset state and re-initialize component messaging, since refresh() can be called when
+      // locale changes, requiring component to show messaging artifactsthis._ for current locale.
       this._ResetComponentState();
       this._initComponentMessaging();
       // clear component messages always
       var clearCompMessagesAlways = true;
-      
+
       runFullValidation = this._runFullValidationIfNeeded(
         oj.EditableValueUtils.refreshMethodOptions, clearCompMessagesAlways);
 
       if (!runFullValidation) {
-        // run deferred validation if comp is either showing a deferred error or has no errors. 
-        // But only when required is true. 
+        // run deferred validation if comp is either showing a deferred error or has no errors.
+        // But only when required is true.
         if (this._IsRequired()) {
           this._runDeferredValidation(
             oj.EditableValueUtils.refreshMethodOptions.validationContext);
         }
-        // refresh UI display value when there are no errors or where there are only deferred errors 
+        // refresh UI display value when there are no errors or where there are only deferred errors
         this._Refresh('value', this.options.value, true);
       }
-    } else {
-      this._Refresh('value', this.options.value);
-    }
-    // always refresh these
-    this._Refresh('disabled', this.options.disabled);
-  },
-  
-  /**
-   * Gets the last stored model value
-   * 
-   * @private
-   * @memberof oj.editableValue
-   * @instance
-   */
-  _getLastModelValue : function ()
-  {
-    return this._oj_lastModelValue;
-  },
-  
-  /**
-   * Gets the last display value
-   * 
-   * @private
-   * @memberof oj.editableValue
-   * @instance
-   */
-  _getLastDisplayValue : function () 
-  {
-    // initially, _oj_lastElementValue is undefined. But the browser returns "" for the 
-    // displayValue. 
-    if (this._oj_lastElementValue === undefined)
-      this._oj_lastElementValue = "";
-    return this._oj_lastElementValue;
-  },
-  /**
-   * Get the element whose id matches the elem's aria-labelledby value, if any.
-   * @param {Object} elem the dom element from which you want to get the 
-   * aria-labelledby property value
-   * @return {jQuery|null} if element does not have aria-labelledby defined, then
-   *    returns null. If it  does, then return a new jQuery object with the 
-   *    label with an id equal to the aria-labelledby value. If no match, then
-   *    the jQuery object will be empty.
-   *    
-   * @private
-   * @memberof oj.editableValue
-   * @instance
-   */
-  _getAriaLabelledByElement: function (elem)
-  {
-    // look for a label with an id equal to the value of aria-labelledby. 
-    // .prop does not work for aria-labelledby. Need to use .attr to find
-    // aria-labelledby.
-      var ariaId = elem[0].getAttribute('aria-labelledby');
-    var labelQuery;
+      this._Refresh('disabled', this.options.disabled);
+    },
 
-    if (ariaId !== undefined )
-    {
-      labelQuery = "label[id='" + ariaId + "']"; 
-      return $(labelQuery);
-    }    
-    else
+    /**
+     * Gets the last stored model value
+     *
+     * @private
+     * @memberof oj.editableValue
+     * @instance
+     */
+    _getLastModelValue: function () {
+      return this._oj_lastModelValue;
+    },
+
+    /**
+     * Gets the last display value
+     *
+     * @private
+     * @memberof oj.editableValue
+     * @instance
+     */
+    _getLastDisplayValue: function () {
+      // initially, _oj_lastElementValue is undefined. But the browser returns "" for the
+      // displayValue.
+      if (this._oj_lastElementValue === undefined) {
+        this._oj_lastElementValue = '';
+      }
+      return this._oj_lastElementValue;
+    },
+    /**
+     * Get the element whose id matches the elem's aria-labelledby value, if any.
+     * @param {Object} elem the dom element from which you want to get the
+     * aria-labelledby property value
+     * @return {jQuery|null} if element does not have aria-labelledby defined, then
+     *    returns null. If it  does, then return a new jQuery object with the
+     *    label with an id equal to the aria-labelledby value. If no match, then
+     *    the jQuery object will be empty.
+     *
+     * @private
+     * @memberof oj.editableValue
+     * @instance
+     */
+    _getAriaLabelledByElement: function (elem) {
+      // look for a label with an id equal to the value of aria-labelledby.
+      // .prop does not work for aria-labelledby. Need to use .attr to find
+      // aria-labelledby.
+      var ariaId = elem[0].getAttribute('aria-labelledby');
+      var labelQuery;
+
+      if (ariaId !== undefined) {
+        labelQuery = "label[id='" + ariaId + "']";
+        return $(labelQuery);
+      }
       return null;
-  },
-  /**
-   * Get the id of the element whose aria-labelledby is set
-   * @param {Object} elem the dom element from which you want to get the 
-   * aria-labelledby property value
-   * @return {string} id or null
-   *    
-   * @private
-   * @memberof oj.editableValue
-   * @instance
-   */
-  _getAriaLabelledById: function (elem)
-  {
-    var id = null;
-    
-    var ariaLabelledByElem = this._getAriaLabelledByElement(elem);
-    if (ariaLabelledByElem !== null && ariaLabelledByElem.length !== 0) {
-      id = ariaLabelledByElem[0].getAttribute('id');
-    }
-    return id;
-  },
-  /**  
-   * Add the aria-describedby on the content element(s) if it isn't already there.
-   * 
-   * @param {string} id the id for aria-describedby
-   * @private
-   * @memberof oj.editableValue
-   * @instance
-   * 
-   */
-  _addAriaDescribedBy : function (id)
-  {
-    var contentElements = this._GetContentElement();
-    var index;
+    },
+    /**
+     * Get the id of the element whose aria-labelledby is set
+     * @param {Object} elem the dom element from which you want to get the
+     * aria-labelledby property value
+     * @return {string} id or null
+     *
+     * @private
+     * @memberof oj.editableValue
+     * @instance
+     */
+    _getAriaLabelledById: function (elem) {
+      var id = null;
+
+      var ariaLabelledByElem = this._getAriaLabelledByElement(elem);
+      if (ariaLabelledByElem !== null && ariaLabelledByElem.length !== 0) {
+        id = ariaLabelledByElem[0].getAttribute('id');
+      }
+      return id;
+    },
+    /**
+     * Add the aria-describedby on the content element(s) if it isn't already there.
+     *
+     * @param {string} id the id for aria-describedby
+     * @private
+     * @memberof oj.editableValue
+     * @instance
+     *
+     */
+    _addAriaDescribedBy: function (id) {
+      var contentElements = this._GetContentElement();
+      var index;
 
       contentElements.each(function () {
         var describedby = this.getAttribute('aria-describedby');
-      var tokens;
+        var tokens;
 
-      tokens = describedby ? describedby.split(/\s+/) : [];
-      // Get index that id is in the tokens, if at all.
+        tokens = describedby ? describedby.split(/\s+/) : [];
+        // Get index that id is in the tokens, if at all.
         index = tokens.indexOf(id);
-      // add id if it isn't already there
-      if (index === -1) {
-        tokens.push(id);
-      }
-      describedby = tokens.join(' ').trim();
-
-      if (describedby == null) {
-        this.removeAttribute('aria-describedby');
-      } else {
-        this.setAttribute('aria-describedby', describedby);
-      }
-    });
-      
-  },
-  /**  
-   * Remove the aria-describedby from the content element(s).
-   * 
-   * @param {string} id the id for aria-describedby
-   * @private
-   * @memberof oj.editableValue
-   * @instance
-   * 
-   */
-  _removeAriaDescribedBy : function (id)
-  {
-
-    var contentElements = this._GetContentElement();        
-
-    contentElements.each(function() {
-
-      var describedby;
-      var index;
-      var tokens;
-      
-      // get aria-describedby that is on the content element(s)
-        describedby = this.getAttribute('aria-describedby');
-      // split into tokens
-      tokens = describedby ? describedby.split(/\s+/) : [];
-      // Get index that id is in the tokens, if at all.
-      index = tokens.indexOf(id);
-      // remove that from the tokens array
-      if (index !== -1)
-        tokens.splice(index, 1);
-      // join the tokens back together and trim whitespace
-      describedby = tokens.join(' ').trim();
-      if (describedby) {
-        this.setAttribute('aria-describedby', describedby);
-      } else {
-        this.removeAttribute('aria-describedby');
-      }
-    });
-
-  },
-
-  /**
-   * Returns a concat of messagesShown and messagesHidden.
-   * 
-   * @returns {Array}
-   * @private
-   * @memberof oj.editableValue
-   * @instance
-   */
-  _getMessages : function()
-  {
-    return this.options['messagesShown'].concat(this.options['messagesHidden']); // todo: revisit
-  }, 
-  /**
-   * Finds the oj-label element associated with this form component and returns it.
-   * @returns {Element|null}
-   * @private
-   * @memberof oj.editableValue
-   * @instance
-   */  
-  _getCustomOjLabelElement: function ()
-  {
-    var labelElement = null;
-      var labelElements;
-    var labelledBy = this.options['labelledBy'];
-    var widget = this.widget();
-    var widgetId;
-    
-    if (labelledBy)
-    {
-      // First, if 'labelledBy', look for the oj-label by its 'id' since that will be fastest.
-      labelElement = document.getElementById(labelledBy);
-    }
-      
-    // if there is no label element found and the "has no label flag" is not set, then look at the 'id'/'for' combination.
-    // if the "has no label flag" is set then we definitely have no label so we don't need to
-    // go through this logic to look for it. Otherwise, we might have a label so we need to look for it.
-    if (labelElement === null && !oj.EditableValueUtils.hasNoLabelFlag(widget))
-    {
-      // If 'id', look for the label by its 'for' attribute. (First look for sibling 
-      // since that is the most common way and attribute selector searches perform better than
-      // looking at the entire document.)  
-      // widget will be the JET form element, like oj-input-text, in jquery format.
-        var widgetElem = widget[0];
-        widgetId = widgetElem.id;
-      if (widgetId)
-      {
-        // labelElements[0] will be the <oj-label>.
-        labelElements = Array.prototype.filter.call(widgetElem.parentNode.children,
-          function (child) {
-            return child !== widgetElem && child.getAttribute('for') === widgetId;
-          });
-        if (labelElements.length === 0) {
-          // a sibling label is not found, so look for it from the document level.
-          labelElement = document.querySelector("[for='" + this.element.id + "']");
-        } else {
-          labelElement = labelElements[0]; // return the first match
-
+        // add id if it isn't already there
+        if (index === -1) {
+          tokens.push(id);
         }
-      }        
-    }
-    return labelElement;
-  },
-  /**
-   * Helper method to retrieve the label text. Needed for required translation. 
-   * Returns the form component's label or oj-label's textContent, if the label was found.
-   * 
-   * @return {string|null}
-   * @private
-   * @memberof oj.editableValue
-   * @instance
-   */
-  _getLabelText : function ()
-  {
+        describedby = tokens.join(' ').trim();
 
-    if (this.$label)
-    {
-        return this.$label[0].textContent;
-    }
-    else
-    {
-      if (this.customOjLabelElement === undefined)
-        this.customOjLabelElement = this._getCustomOjLabelElement();
-      return this.customOjLabelElement ? this.customOjLabelElement.textContent : null;
-    }
-  },
-
-  /**        
-   * @private
-   * @memberof oj.editableValue
-   * @instance
-   */
-  _getValidityState : function ()
-  {
-    if (this._validityState)
-    {
-      return this._validityState;
-    }
-    else
-    {
-      
-      this._validityState = new oj.ComponentValidity(this.isValid(), this._getMessages());
-    }
-    return this._validityState;
-  },
-
-  
-  /**        
-   * Whether component has invalid messages.
-   * 
-   * @return {boolean} true if invalid; false otherwise
-   * @private
-   * @memberof oj.editableValue
-   * @instance
-   */
-  _hasInvalidMessages : function ()
-  {
-    return !oj.Message.isValid(this._getMessages());
-  },
-  
-  /**        
-   * Whether there are invalid messages, that are currently showing.
-   * 
-   * @return {boolean} 
-   * @private
-   * @memberof oj.editableValue
-   * @instance
-   */  
-  _hasInvalidMessagesShowing : function ()
-  {
-    return (!this.isValid() && this.options['messagesShown'].length > 0);
-  },
-  
-  /**        
-   * Whether component has invalid messages added by component, that are currently showing.
-   * 
-   * @return {boolean} 
-   * @private
-   * @memberof oj.editableValue
-   * @instance
-   */  
-  _hasInvalidComponentMessagesShowing : function ()
-  {
-    var compMsgs;
-    var msg;
-    var shown = this.options['messagesShown'];
-    
-    for (var i = 0; i < shown.length; i++)
-    {
-      msg = shown[i];
-      if (msg instanceof oj.ComponentMessage && msg._isMessageAddedByComponent())
-      {
-        compMsgs = compMsgs || [];
-        compMsgs.push(msg);
-      }
-    }
-    
-    return (compMsgs === undefined) ? false : !oj.Message.isValid(compMsgs);
-  },  
-  
-  /**
-   * Initializes component messaging both when component is initialized or when displayOptions is 
-   * set/changed. 
-   * 
-   * @private
-   * @memberof oj.editableValue
-   * @instance
-   */
-  _initComponentMessaging : function()
-  {
-    var compMessaging = this._getComponentMessaging();
-    var messagingLauncher = this._GetMessagingLauncherElement();
-    var compContentElement = this._GetContentElement();
-    var messagingContent = this._getMessagingContent(this._MESSAGING_CONTENT_UPDATE_TYPE.ALL);
-    
-    // if default placeholder is currently set then it needs to be cleared here. This is needed for 
-    // the following reasons
-    // i. a component is reinitialized when the locale changed, requiring the converter hint for 
-    // new locale to be set as placeholder.
-    // ii. or a component's placeholder option or displayOptions option, could have changed 
-    // requiring the placeholder to be reset if it's currently set to the default.
-    // 
-    if (!this._customPlaceholderSet)
-    {
-      this._ClearPlaceholder();
-    }
-    
-    // this sets all messaging content other than async messaging content
-    // (like async validator messaging hints)
-    compMessaging.activate(messagingLauncher, compContentElement, messagingContent);
-
-    if (this._IsCustomElement()) {
-      // async validators hint property returns a Promise, so we purposely
-      // update async validators' hints after activating the component messaging above.
-      this._initAsyncValidatorMessagingHint();
-      this._asyncValidatorValidateCounter = 0;
-    }
-  },
-  
-  
-  /**
-   * Called after messagesCustom option changed. This method pushes custom messages to the 
-   * messagesShown option.
-   * 
-   * @param {Object} flags
-   * @returns {undefined}
-   * @private
+        if (describedby == null) {
+          this.removeAttribute('aria-describedby');
+        } else {
+          this.setAttribute('aria-describedby', describedby);
+        }
+      });
+    },
+    /**
+     * Remove the aria-describedby from the content element(s).
+     *
+     * @param {string} id the id for aria-describedby
+     * @private
      * @memberof oj.editableValue
      * @instance
-   */  
-  _messagesCustomOptionChanged : function (flags)
-  {
-    var context = flags ? flags['_context'] : null;
-    var customMsgs = this.options['messagesCustom'];
-    var i;
-    var msg;
-    var previousShown = this.options['messagesShown'];
-    var shownMsgs = [];
-    
-    // remove old custom messages from messagesShown array
-    for (i = 0; i < previousShown.length; i++)
-    {
-      msg = previousShown[i];
-      if (msg instanceof oj.ComponentMessage && msg._isMessageAddedByComponent())
-      {
-        shownMsgs.push(msg);
+     *
+     */
+    _removeAriaDescribedBy: function (id) {
+      var contentElements = this._GetContentElement();
+
+      contentElements.each(function () {
+        var describedby;
+        var index;
+        var tokens;
+
+        // get aria-describedby that is on the content element(s)
+        describedby = this.getAttribute('aria-describedby');
+        // split into tokens
+        tokens = describedby ? describedby.split(/\s+/) : [];
+        // Get index that id is in the tokens, if at all.
+        index = tokens.indexOf(id);
+        // remove that from the tokens array
+        if (index !== -1) {
+          tokens.splice(index, 1);
+        }
+        // join the tokens back together and trim whitespace
+        describedby = tokens.join(' ').trim();
+        if (describedby) {
+          this.setAttribute('aria-describedby', describedby);
+        } else {
+          this.removeAttribute('aria-describedby');
+        }
+      });
+    },
+
+    /**
+     * Returns a concat of messagesShown and messagesHidden.
+     *
+     * @returns {Array}
+     * @private
+     * @memberof oj.editableValue
+     * @instance
+     */
+    _getMessages: function () {
+      return this.options.messagesShown.concat(this.options.messagesHidden); // todo: revisit
+    },
+    /**
+     * Finds the oj-label element associated with this form component and returns it.
+     * @returns {Element|null}
+     * @private
+     * @memberof oj.editableValue
+     * @instance
+     */
+    _getCustomOjLabelElement: function () {
+      var labelElement = null;
+      var labelElements;
+      var labelledBy = this.options.labelledBy;
+      var widget = this.widget();
+      var widgetId;
+
+      if (labelledBy) {
+        // First, if 'labelledBy', look for the oj-label by its 'id' since that will be fastest.
+        labelElement = document.getElementById(labelledBy);
       }
-    }
-    
-    // add new customMsgs to messagesShown
-    for (i = 0; i < customMsgs.length; i++)
-    {
-      shownMsgs.push(customMsgs[i]);
-    }
-    
-    // set 'messagesShown' option as an internal set
-    this._setMessagesOption('messagesShown', shownMsgs, 
-                            context ? context.originalEvent : null,
-                            flags && flags['changed']);
-  },
-  /**        
-   * @private
-   * @memberof oj.editableValue
-   * @instance
-   */
-  _placeholderOptionChanged : function (flags)
-  {
-    var context = flags && flags['_context'] || {};
-    var refreshMessagingOptions = 
-        //  internalMessagingSet indicates whether the current change is from the messaging module.
-        // see ComponentMessaging for details
-        context.internalMessagingSet ? false : true;
-    var value = this.options['placeholder'];
 
-    this._SetPlaceholder(value);
-    if (refreshMessagingOptions)
-    {
-      // if placeholder was set and it's not from messaging code, then the messaging display options 
-      // may need to re-evaluated. E.g., the default display for 
-      // converterHint: ['placeholder', 'notewindow'] is 'placeholder', but if user were to set a 
-      // custom placeholder, this changes the default display for convererHint from 'placeholder'
-      // to 'notewindow'. 
-      this._customPlaceholderSet = true;
-      if (this._GetConverter())
-      {
-        this._initComponentMessaging();
+      // if there is no label element found and the "has no label flag" is not set, then look at the 'id'/'for' combination.
+      // if the "has no label flag" is set then we definitely have no label so we don't need to
+      // go through this logic to look for it. Otherwise, we might have a label so we need to look for it.
+      if (labelElement === null && !oj.EditableValueUtils.hasNoLabelFlag(widget)) {
+        // If 'id', look for the label by its 'for' attribute. (First look for sibling
+        // since that is the most common way and attribute selector searches perform better than
+        // looking at the entire document.)
+        // widget will be the JET form element, like oj-input-text, in jquery format.
+        var widgetElem = widget[0];
+        widgetId = widgetElem.id;
+        if (widgetId) {
+          // $labelElement will be the <oj-label>.
+          labelElements = Array.prototype.filter.call(widgetElem.parentNode.children,
+            function (child) {
+              return child !== widgetElem && child.getAttribute('for') === widgetId;
+            });
+          if (labelElements.length === 0) {
+            // a sibling label is not found, so look for it from the document level.
+            labelElement = document.querySelector("[for='" + this.element.id + "']");
+          } else {
+            labelElement = labelElements[0]; // return the first match
+          }
+        }
       }
-    }
-    else
-    {
-      this._customPlaceholderSet = false;
-    }
-  },
-  /**        
-   * @private
-   * @memberof oj.editableValue
-   * @instance
-   */  
-  _setLastModelValue : function (value)
-  {
-    this._oj_lastModelValue = value;
-  },
-  /**        
-   * @private
-   * @memberof oj.editableValue
-   * @instance
-   */
-  _setLastSubmittedValue : function (value) 
-  {
-    this._oj_lastElementValue = value;
-  },
-  /**        
-   * @private
-   * @memberof oj.editableValue
-   * @instance
-   */
-  _titleOptionChanged : function ()
-  {
-    // when title changes push new title to messaging
-    this._getComponentMessaging().update(
-            this._getMessagingContent(this._MESSAGING_CONTENT_UPDATE_TYPE.TITLE));
-  },
-  
-  /**
-   * Adds messages to the option specified - <code class="prettyprint">messagesShown</code> or 
-   * <code class="prettyprint">messagesHidden</code>. 
-   * 
-   * @param {String} option name of the option
-   * @param {Object|Array} newMsgs an Array of one or more oj.Message object. 
-   * @param {Event=} event - the event like the user blurred to trigger a messages option change
-   * or undefined.
-   * @private
-   * @memberof oj.editableValue
-   * @instance
-   */
-  _updateMessagesOption : function(option, newMsgs, event) 
-  {
-    var i;
-    var len;
-    var msgs;
-
-    if (typeof newMsgs === "object" && Array.isArray(newMsgs)) 
-    {
-      // update this.options[option] directly by pushing any new messages into it.
-      msgs = this.options[option];
-
-      len = newMsgs.length;
-      for (i = 0; i < len; i++)
-      {
-        msgs.push(newMsgs[i]);
+      return labelElement;
+    },
+    /**
+     * Helper method to retrieve the label text. Needed for required translation.
+     * Returns the form component's label or oj-label's textContent, if the label was found.
+     *
+     * @return {string|null}
+     * @private
+     * @memberof oj.editableValue
+     * @instance
+     */
+    _getLabelText: function () {
+      if (this.$label) {
+        return this.$label[0].textContent;
       }
-    }
-    // Setting 'changed' flag to true means that although we have already 
-    // updated this.options[option], we still want to fire a property changed event.
-    this._setMessagesOption(option, msgs, event, true);
-  },
-  
-  
-  /**
-   * Called after the messages option has changed to update internal valid property and messaging 
-   * display.
-   * 
-   * @private
-   * @memberof oj.editableValue
-   */
-  _updateMessagingContent : function() 
-  {
-    // update component messaging
-    this._getComponentMessaging().update(
-      this._getMessagingContent(this._MESSAGING_CONTENT_UPDATE_TYPE.VALIDITY_STATE));
-  },  
-  
-  /**
-   * Writes the value into the option by calling the option method.  
-   * 
-   * @param {Object|string} newValue the new value to be written to option
-   * @param {Object=} event the original event that triggered this
-   * @param {number=} validationContext the context in which validation was run that resulted in 
-   * value being updated.
-   * @param {Object=} updateContext the context for updating the value option.
-   * 
-   * @private
-   * @memberof oj.editableValue
-   * @instance
-   * @see #_setOption
-   * @see #_AfterSetOptionValue
-   */
-  _updateValueOption : function (newValue, event, validationContext, updateContext)
-  {
-    var context = updateContext || {};
-    
-    // set dom event
-    if (event)
-    {  
-      context.originalEvent = event;
-    }
-    
-    // set writeback flag that determines whether value is written back. 
-    switch (validationContext)
-    {
-      // value is written back outside of normal UI interaction in the following cases.
-      case this._VALIDATION_CONTEXT.CONVERTER_OPTION_CHANGE:
-      case this._VALIDATION_CONTEXT.DISABLED_OPTION_CHANGE:
-      case this._VALIDATION_CONTEXT.READONLY_OPTION_CHANGE:
-      case this._VALIDATION_CONTEXT.REFRESH_METHOD:
-      case this._VALIDATION_CONTEXT.REQUIRED_OPTION_CHANGE:
-      case this._VALIDATION_CONTEXT.VALIDATE_METHOD:
-      case this._VALIDATION_CONTEXT.VALIDATORS_OPTION_CHANGE:
-        
-        context.writeback = true;
-        
-        // when the above options change or methods are called, and full validation is run the 
-        // current display value is parsed, and set on the value option if all validations pass. 
-        // Typically when the value option changes - either programmatically or user changes it, we 
-        // end up clearing all 3 messages options.
-        // But when value changes indirectly as a result of the above cases, then we do not clear 
-        // custom messages. So a special flag is set so _AfterSetOptionValue can do the right 
-        // thing. Component messages are already cleared when this method is called.
-        context.doNotClearMessages = true;
-        break;
-    }
 
-    context.internalSet = true;
-    this.option({'value': newValue}, {'_context': context});
-    // When internalSet is true _setOption->_AfterSetOptionValue->_Refresh isn't called. 
-    // We still need the converter to run and the displayValue to be refreshed, so we
-    // call this._AfterSetOptionValue ourselves
-    this._AfterSetOptionValue('value', {'_context': context});
-    
+      if (this.customOjLabelElement === undefined) {
+        this.customOjLabelElement = this._getCustomOjLabelElement();
+      }
+      return this.customOjLabelElement ? this.customOjLabelElement.textContent : null;
+    },
 
-  },
-  
-  /**
-   * Resets the internal property so that the next call to this.isValid() re-evaluates the correct 
-   * value.
-   * 
-   * @private
-   * @memberof oj.editableValue
-   * @instance
-   */
-  _resetValid : function ()
-  {
-    this._valid = undefined;
-  },  
+    /**
+     * @private
+     * @memberof oj.editableValue
+     * @instance
+     */
+    _getValidityState: function () {
+      if (this._validityState) {
+        return this._validityState;
+      }
 
-  /**
-   * Determines the validity of component based on current value of the messages* options.
-   * This is what the 'valid' property should be set to.
-   * 
-   * Now when we start the lifecycle we clearAllMessages, then we continue with validation, etc.
-   * But we don't want to update the valid property on clearAllMessages and again when validation
-   * has failed. We want to update it only once.
-   * @return {string} "valid", "invalidShown", "invalidHidden"
-   * 
-   * @private
-   * @memberof oj.editableValue
-   * @instance
-   */
+
+      this._validityState = new oj.ComponentValidity(this.isValid(), this._getMessages());
+
+      return this._validityState;
+    },
+
+
+    /**
+     * Whether component has invalid messages.
+     *
+     * @return {boolean} true if invalid; false otherwise
+     * @private
+     * @memberof oj.editableValue
+     * @instance
+     */
+    _hasInvalidMessages: function () {
+      return !Message.isValid(this._getMessages());
+    },
+
+    /**
+     * Whether there are invalid messages, that are currently showing.
+     *
+     * @return {boolean}
+     * @private
+     * @memberof oj.editableValue
+     * @instance
+     */
+    _hasInvalidMessagesShowing: function () {
+      return (!this.isValid() && this.options.messagesShown.length > 0);
+    },
+
+    /**
+     * Whether component has invalid messages added by component, that are currently showing.
+     *
+     * @return {boolean}
+     * @private
+     * @memberof oj.editableValue
+     * @instance
+     */
+    _hasInvalidComponentMessagesShowing: function () {
+      var compMsgs;
+      var msg;
+      var shown = this.options.messagesShown;
+
+      for (var i = 0; i < shown.length; i++) {
+        msg = shown[i];
+        if (msg instanceof oj.ComponentMessage && msg._isMessageAddedByComponent()) {
+          compMsgs = compMsgs || [];
+          compMsgs.push(msg);
+        }
+      }
+
+      return (compMsgs === undefined) ? false : !Message.isValid(compMsgs);
+    },
+
+    /**
+     * Initializes component messaging both when component is initialized or when displayOptions is
+     * set/changed.
+     *
+     * @private
+     * @memberof oj.editableValue
+     * @instance
+     */
+    _initComponentMessaging: function () {
+      var compMessaging = this._getComponentMessaging();
+      var messagingLauncher = this._GetMessagingLauncherElement();
+      var compContentElement = this._GetContentElement();
+      var messagingContent = this._getMessagingContent(this._MESSAGING_CONTENT_UPDATE_TYPE.ALL);
+
+      // if default placeholder is currently set then it needs to be cleared here. This is needed for
+      // the following reasons
+      // i. a component is reinitialized when the locale changed, requiring the converter hint for
+      // new locale to be set as placeholder.
+      // ii. or a component's placeholder option or displayOptions option, could have changed
+      // requiring the placeholder to be reset if it's currently set to the default.
+      //
+      if (!this._customPlaceholderSet) {
+        this._ClearPlaceholder();
+      }
+
+      // this sets all messaging content other than async messaging content
+      // (like async validator messaging hints)
+      compMessaging.activate(messagingLauncher, compContentElement, messagingContent);
+
+      if (this._IsCustomElement()) {
+        // async validators hint property returns a Promise, so we purposely
+        // update async validators' hints after activating the component messaging above.
+        this._initAsyncValidatorMessagingHint();
+        this._asyncValidatorValidateCounter = 0;
+      }
+    },
+
+    /**
+     * Called after messagesCustom option changed. This method pushes custom messages to the
+     * messagesShown option.
+     *
+     * @param {Object} flags
+     * @returns {undefined}
+     * @private
+     * @memberof oj.editableValue
+     * @instance
+     */
+    _messagesCustomOptionChanged: function (flags) {
+      var context = flags ? flags._context : null;
+      var customMsgs = this.options.messagesCustom;
+      var i;
+      var msg;
+      var previousShown = this.options.messagesShown;
+      var shownMsgs = [];
+
+      // remove old custom messages from messagesShown array
+      for (i = 0; i < previousShown.length; i++) {
+        msg = previousShown[i];
+        if (msg instanceof oj.ComponentMessage && msg._isMessageAddedByComponent()) {
+          shownMsgs.push(msg);
+        }
+      }
+
+      // add new customMsgs to messagesShown
+      for (i = 0; i < customMsgs.length; i++) {
+        shownMsgs.push(customMsgs[i]);
+      }
+
+      // set 'messagesShown' option as an internal set
+      this._setMessagesOption('messagesShown', shownMsgs,
+                              context ? context.originalEvent : null,
+                              flags && flags.changed);
+    },
+    /**
+     * @private
+     * @memberof oj.editableValue
+     * @instance
+     */
+    _placeholderOptionChanged: function (flags) {
+      var context = (flags && flags._context) || {};
+      var refreshMessagingOptions =
+          //  internalMessagingSet indicates whether the current change is from the messaging module.
+          // see ComponentMessaging for details
+          !context.internalMessagingSet;
+      var value = this.options.placeholder;
+
+      this._SetPlaceholder(value);
+      if (refreshMessagingOptions) {
+        // if placeholder was set and it's not from messaging code, then the messaging display options
+        // may need to re-evaluated. E.g., the default display for
+        // converterHint: ['placeholder', 'notewindow'] is 'placeholder', but if user were to set a
+        // custom placeholder, this changes the default display for convererHint from 'placeholder'
+        // to 'notewindow'.
+        this._customPlaceholderSet = true;
+        if (this._GetConverter()) {
+          this._initComponentMessaging();
+        }
+      } else {
+        this._customPlaceholderSet = false;
+      }
+    },
+    /**
+     * @private
+     * @memberof oj.editableValue
+     * @instance
+     */
+    _setLastModelValue: function (value) {
+      this._oj_lastModelValue = value;
+    },
+    /**
+     * @private
+     * @memberof oj.editableValue
+     * @instance
+     */
+    _setLastDisplayValue: function (value) {
+      this._oj_lastElementValue = value;
+    },
+    /**
+     * @private
+     * @memberof oj.editableValue
+     * @instance
+     */
+    _titleOptionChanged: function () {
+      // when title changes push new title to messaging
+      this._getComponentMessaging().update(
+        this._getMessagingContent(this._MESSAGING_CONTENT_UPDATE_TYPE.TITLE));
+    },
+
+    /**
+     * Adds messages to the option specified - <code class="prettyprint">messagesShown</code> or
+     * <code class="prettyprint">messagesHidden</code>.
+     *
+     * @param {String} option name of the option
+     * @param {Object|Array} newMsgs an Array of one or more oj.Message object.
+     * @param {Event=} event - the event like the user blurred to trigger a messages option change
+     * or undefined.
+     * @private
+     * @memberof oj.editableValue
+     * @instance
+     */
+    _updateMessagesOption: function (option, newMsgs, event) {
+      var i;
+      var len;
+      var msgs;
+
+      if (typeof newMsgs === 'object' && Array.isArray(newMsgs)) {
+        // update this.options[option] directly by pushing any new messages into it.
+        msgs = this.options[option];
+
+        len = newMsgs.length;
+        for (i = 0; i < len; i++) {
+          msgs.push(newMsgs[i]);
+        }
+      }
+      // Setting 'changed' flag to true means that although we have already
+      // updated this.options[option], we still want to fire a property changed event.
+      this._setMessagesOption(option, msgs, event, true);
+    },
+
+
+    /**
+     * Called after the messages* option (messagesShown, etc)
+     * has changed to update messaging content
+     * display.
+     *
+     * @private
+     * @memberof oj.editableValue
+     * @instance
+     */
+    _updateMessagingContent: function () {
+      // update component messaging
+      this._getComponentMessaging().update(
+        this._getMessagingContent(this._MESSAGING_CONTENT_UPDATE_TYPE.VALIDITY_STATE));
+    },
+
+    /**
+     * Writes the value into the option by calling the option method.
+     *
+     * @param {Object|string} newValue the new value to be written to option
+     * @param {Object=} event the original event that triggered this
+     * @param {number=} validationContext the context in which validation was run that resulted in
+     * value being updated.
+     * @param {Object=} updateContext the context for updating the value option.
+     *
+     * @private
+     * @memberof oj.editableValue
+     * @instance
+     * @see #_setOption
+     * @see #_AfterSetOptionValue
+     */
+    _updateValueOption: function (newValue, event, validationContext, updateContext) {
+      var context = updateContext || {};
+
+      // set dom event
+      if (event) {
+        context.originalEvent = event;
+      }
+
+      // set writeback flag that determines whether value is written back.
+      switch (validationContext) {
+          // value is written back outside of normal UI interaction in the following cases.
+        case this._VALIDATION_CONTEXT.CONVERTER_OPTION_CHANGE:
+        case this._VALIDATION_CONTEXT.DISABLED_OPTION_CHANGE:
+        case this._VALIDATION_CONTEXT.READONLY_OPTION_CHANGE:
+        case this._VALIDATION_CONTEXT.REFRESH_METHOD:
+        case this._VALIDATION_CONTEXT.REQUIRED_OPTION_CHANGE:
+        case this._VALIDATION_CONTEXT.VALIDATE_METHOD:
+        case this._VALIDATION_CONTEXT.VALIDATORS_OPTION_CHANGE:
+
+          context.writeback = true;
+
+          // when the above options change or methods are called, and full validation is run the
+          // current display value is parsed, and set on the value option if all validations pass.
+          // Typically when the value option changes - either programmatically or user changes it, we
+          // end up clearing all 3 messages options.
+          // But when value changes indirectly as a result of the above cases, then we do not clear
+          // custom messages. So a special flag is set so _AfterSetOptionValue can do the right
+          // thing. Component messages are already cleared when this method is called.
+          context.doNotClearMessages = true;
+          break;
+
+        default:
+          break;
+      }
+
+      context.internalSet = true;
+      this.option({ value: newValue }, { _context: context });
+      // When internalSet is true _setOption->_AfterSetOptionValue->_Refresh isn't called.
+      // We still need the converter to run and the displayValue to be refreshed, so we
+      // call this._AfterSetOptionValue ourselves
+      this._AfterSetOptionValue('value', { _context: context });
+    },
+
+    /**
+     * Resets the internal property so that the next call to this.isValid() re-evaluates the correct
+     * value.
+     *
+     * @private
+     * @memberof oj.editableValue
+     * @instance
+     */
+    _resetValid: function () {
+      this._valid = undefined;
+    },
+
+    /**
+     * Determines the validity of component based on current value of the messages* options.
+     * This is what the 'valid' property should be set to.
+     *
+     * Now when we start the lifecycle we clearAllMessages, then we continue with validation, etc.
+     * But we don't want to update the valid property on clearAllMessages and again when validation
+     * has failed. We want to update it only once.
+     * @return {string} "valid", "invalidShown", "invalidHidden"
+     *
+     * @private
+     * @memberof oj.editableValue
+     * @instance
+     */
     _determineValidFromMessagesOptions: function () {
       var msgsHidden = this.options.messagesHidden;
       var msgsShown = this.options.messagesShown;
 
       var valid = _VALID;
-    
-    // When new messages are written update the valid property
-      if (msgsShown && msgsShown.length !== 0 && !oj.Message.isValid(msgsShown)) {
+
+      // When new messages are written update the valid property
+      if (msgsShown && msgsShown.length !== 0 && !Message.isValid(msgsShown)) {
         valid = _INVALID_SHOWN;
-      } else if (msgsHidden && msgsHidden.length !== 0 && !oj.Message.isValid(msgsHidden)) {
+      } else if (msgsHidden && msgsHidden.length !== 0 && !Message.isValid(msgsHidden)) {
         valid = _INVALID_HIDDEN;
-    }
-    
-    return valid;
-  },
-  
-  /**
-   * Formats the value for display, based on the converter options. If no converter is set then 
-   * returns the value as is.
-   * 
-   * @param {string} value value to be formatted
-   * 
-   * @return {string} formatted value
-   * @throws {Error} when an error occurs during formatting
-   * @protected
-   * @memberof oj.editableValue
-   * @instance
-   */
-  _formatValue : function (value)
-  {
-    var formattedValue = value;
-    var converter = this._GetConverter();
-    
-    // don't clear messages here because we clear messages only when direct user interaction with 
-    // component changes value. All other usecases we expect page authors to clear messages.
+      }
 
-    if (converter)
-    {
-      // TODO: We should support chaining converters but for now we use just the first converter 
-      // to parse.
+      return valid;
+    },
 
-      // Check if we have a converter instance
-      if (typeof converter === "object") 
-      {
-        if (converter['format'] && typeof converter['format'] === "function")
-        {
-          formattedValue = converter['format'](value);
-        }
-        else
-        {
-          if (oj.Logger.level > oj.Logger.LEVEL_WARN)
-          {
-            oj.Logger.info("converter does not support the format method.");
+    /**
+     * Formats the value for display, based on the converter options. If no converter is set then
+     * returns the value as is.
+     *
+     * @param {string} value value to be formatted
+     *
+     * @return {string} formatted value
+     * @throws {Error} when an error occurs during formatting
+     * @protected
+     * @memberof oj.editableValue
+     * @instance
+     */
+    _formatValue: function (value) {
+      var formattedValue = value;
+      var converter = this._GetConverter();
+
+      // don't clear messages here because we clear messages only when direct user interaction with
+      // component changes value. All other usecases we expect page authors to clear messages.
+
+      if (converter) {
+        // TODO: We should support chaining converters but for now we use just the first converter
+        // to parse.
+
+        // Check if we have a converter instance
+        if (typeof converter === 'object') {
+          if (converter.format && typeof converter.format === 'function') {
+            formattedValue = converter.format(value);
+          } else if (Logger.level > Logger.LEVEL_WARN) {
+            Logger.info('converter does not support the format method.');
           }
         }
       }
-    }
-    
-    return formattedValue;
-  },
-  
-  /**
-   * @private
-   * @memberof oj.editableValue
-   * @instance
-   */
-  _getComponentMessaging : function ()
-  {
-    if (!this._componentMessaging)
-    {
-      this._componentMessaging = new oj.ComponentMessaging(this);
-    }
-    
-    return this._componentMessaging;
-  },
-  
 
-  /**
-   * Returns an array of validator hints.
-   * @param {Array} allValidators
-   * @private
-   * @memberof oj.editableValue
-   * @instance
-   */        
-  _getHintsForAllValidators : function(allValidators)
-  {
-    var i;
-    var validator;
-    var validatorHints = [];
-    var vHint = "";
+      return formattedValue;
+    },
 
-    if (this._IsRequired())
-    {
-      // get the hint for the default required validator and push into array if it's not already 
-      // present in the validators array
-      validator = this._getImplicitRequiredValidator();
-      if (validator['getHint'] && typeof validator['getHint'] === "function")
-      {
-        vHint = validator['getHint']();
-        if (vHint)
-        {
-          validatorHints.push(vHint);
-        }
+    /**
+     * @private
+     * @memberof oj.editableValue
+     * @instance
+     */
+    _getComponentMessaging: function () {
+      if (!this._componentMessaging) {
+        this._componentMessaging = new oj.ComponentMessaging(this);
       }
-    }
 
-    // loop through all remaining validators to gather hints
-    for (i = 0; i < allValidators.length; i++)
-    {
-      validator = allValidators[i], vHint = "";
-      if (typeof validator === "object") 
-      {
-        if (validator['getHint'] && typeof validator['getHint'] === "function")
-        {
-          vHint = validator['getHint']();
-          if (vHint)
-          {
+      return this._componentMessaging;
+    },
+
+
+    /**
+     * Returns an array of validator hints.
+     * @param {Array} allValidators
+     * @private
+     * @memberof oj.editableValue
+     * @instance
+     */
+    _getHintsForAllValidators: function (allValidators) {
+      var i;
+      var validator;
+      var validatorHints = [];
+      var vHint = '';
+
+      if (this._IsRequired()) {
+        // get the hint for the default required validator and push into array if it's not already
+        // present in the validators array
+        validator = this._getImplicitRequiredValidator();
+        if (validator.getHint && typeof validator.getHint === 'function') {
+          vHint = validator.getHint();
+          if (vHint) {
             validatorHints.push(vHint);
           }
         }
       }
-    }
 
-    return validatorHints;
-  },
-  
-  /**
-   * Returns the required validator instance or creates it if needed and caches it.
-   * 
-   * @private
-   * @memberof oj.editableValue
-   * @instance
-   */
-  _getImplicitRequiredValidator : function ()
-  {
-    var vf;
-    var reqTrans = {};
-    var reqValOptions;
-    
-    if (this._implicitReqValidator == null) // falsey check
-    {
-      reqTrans = 
-            this.options['translations'] ? this.options['translations']['required'] || {} : {} ;
-
-      // TODO: cache required validator; purged when its options change, i.e., translations or label 
-      // DOM changes
-      reqValOptions = {
-        'hint': reqTrans['hint'] || null,
-        'label': this._getLabelText(), 
-        'messageSummary': reqTrans['messageSummary'] || null,
-        'messageDetail': reqTrans['messageDetail'] || null
-      };
-
-      vf = oj.Validation.validatorFactory(oj.ValidatorFactory.VALIDATOR_TYPE_REQUIRED);
-      this._implicitReqValidator = vf ? vf.createValidator(reqValOptions) : null;
-    }
-    
-    return this._implicitReqValidator;
-  },
-
-  
-  /**
-   * Returns content that will be used by messaging strategies.
-   * 
-   * @param {number} updateType of messaging content to update. Accepted values are defined by 
-   * this._MESSAGING_CONTENT_UPDATE_TYPE.
-   * 
-   * @private
-   * @memberof oj.editableValue
-   * @instance
-   */
-  _getMessagingContent : function (updateType)
-  {
-    var messagingContent = {};
-
-    var allValidators;
-    var converter;
-    var converterHint = "";
-    var messages;
-    var validatorHints = [];
-    
-    updateType = updateType || this._MESSAGING_CONTENT_UPDATE_TYPE.VALIDITY_STATE;
-
-    // Add validityState which includes messages, valid and severity
-    if (updateType === this._MESSAGING_CONTENT_UPDATE_TYPE.ALL || 
-        updateType === this._MESSAGING_CONTENT_UPDATE_TYPE.VALIDITY_STATE)
-    {
-      messages = this._getMessages();
-      
-      // update validityState before packaging it
-      this._getValidityState().update(this.isValid(), messages);
-      messagingContent.validityState = this._getValidityState();
-    }
-    
-    if (updateType === this._MESSAGING_CONTENT_UPDATE_TYPE.ALL || 
-        updateType === this._MESSAGING_CONTENT_UPDATE_TYPE.CONVERTER_HINT)
-    {
-      converter = this._GetConverter();
-      if (converter)
-      {
-        if (typeof converter === "object") 
-        {
-          if (converter['getHint'] && typeof converter['getHint'] === "function")
-          {
-            converterHint = converter['getHint']() || "";
+      // loop through all remaining validators to gather hints
+      for (i = 0; i < allValidators.length; i++) {
+        validator = allValidators[i];
+        vHint = '';
+        if (typeof validator === 'object') {
+          if (validator.getHint && typeof validator.getHint === 'function') {
+            vHint = validator.getHint();
+            if (vHint) {
+              validatorHints.push(vHint);
+            }
           }
         }
       }
-      messagingContent.converterHint = converterHint;
-    }
-    
-    if (updateType === this._MESSAGING_CONTENT_UPDATE_TYPE.ALL || 
-        updateType === this._MESSAGING_CONTENT_UPDATE_TYPE.VALIDATOR_HINTS)
-    {
-      allValidators = this._GetAllValidators();
-      validatorHints = this._getHintsForAllValidators(allValidators) || [];
-      messagingContent.validatorHint = validatorHints;
-    }
-    
-    if (updateType === this._MESSAGING_CONTENT_UPDATE_TYPE.ALL || 
-        updateType === this._MESSAGING_CONTENT_UPDATE_TYPE.TITLE)
-    {
-      messagingContent.title = this.options['title'] || "";
-    }
-    
-    return messagingContent;
-  },
-  
-  /**
-   * Compares the messages arrays for equality.
-   * 
-   * @param {Array} pm previous messages
-   * @param {Array} m new messages
-   * @returns {boolean} true if equal false otherwise
-   * @private
-   * @memberof oj.editableValue
-   * @instance
-   * 
-   */
-  _messagesEquals : function (pm, m)
-  {
-    var match = -1;
-    var pmo;
-    var passed = true;
-    // $.extend merges the contents of two or more objects together into the first object
-    var previousMsgs = $.extend([], pm);
-    var msgs = $.extend([], m);
-    
-    
-    if (previousMsgs.length !== msgs.length)
-    {
-      return false;
-    }
-    
-    // one way it gets here is if there is one messages-custom message on initialization and
-    // after the busyContext is complete meaning the page is rendered, we set a different
-    // messages-custom message.
-    previousMsgs.forEach(function (pMsg) {
-      if (!(pMsg instanceof oj.Message)) {
-        // freeze message instance once its created
-        pmo = new oj.Message(pMsg['summary'], pMsg['detail'], pMsg['severity']);
-        pmo = Object.freeze ? Object.freeze(pmo) : pmo;
-      } else {
-        pmo = pMsg;
+
+      return validatorHints;
+    },
+
+    /**
+     * Returns the required validator instance or creates it if needed and caches it.
+     *
+     * @private
+     * @memberof oj.editableValue
+     * @instance
+     */
+    _getImplicitRequiredValidator: function () {
+      var vf;
+      var reqTrans = {};
+      var reqValOptions;
+
+      if (this._implicitReqValidator == null) { // falsey check
+        reqTrans =
+          this.options.translations ? this.options.translations.required || {} : {};
+
+        // TODO: cache required validator; purged when its options change, i.e., translations or label
+        // DOM changes
+        reqValOptions = {
+          hint: reqTrans.hint || null,
+          label: this._getLabelText(),
+          messageSummary: reqTrans.messageSummary || null,
+          messageDetail: reqTrans.messageDetail || null
+        };
+
+        vf =
+        __ValidationBase.Validation.validatorFactory(oj.ValidatorFactory.VALIDATOR_TYPE_REQUIRED);
+        this._implicitReqValidator = vf ? vf.createValidator(reqValOptions) : null;
       }
-      
-      match = -1;
-      msgs.forEach(function (msg, j) {
-        if ((oj.Message.getSeverityLevel(pmo.severity) ===
-             oj.Message.getSeverityLevel(msg.severity)) &&
-             pmo.summary === msg.summary &&
-             pmo.detail === msg.detail) {
-           match = j;
-           return; // found a match, so break out of loop
+
+      return this._implicitReqValidator;
+    },
+
+
+    /**
+     * Returns content that will be used by messaging strategies.
+     *
+     * @param {number} updateType of messaging content to update. Accepted values are defined by
+     * this._MESSAGING_CONTENT_UPDATE_TYPE.
+     *
+     * @private
+     * @memberof oj.editableValue
+     * @instance
+     */
+    _getMessagingContent: function (updateType) {
+      var messagingContent = {};
+
+      var allValidators;
+      var converter;
+      var converterHint = '';
+      var messages;
+      var validatorHints = [];
+
+      // eslint-disable-next-line no-param-reassign
+      updateType = updateType || this._MESSAGING_CONTENT_UPDATE_TYPE.VALIDITY_STATE;
+
+      // Add validityState which includes messages, valid and severity
+      if (updateType === this._MESSAGING_CONTENT_UPDATE_TYPE.ALL ||
+          updateType === this._MESSAGING_CONTENT_UPDATE_TYPE.VALIDITY_STATE) {
+        // get messages from messagesShown and messagesHidden
+        messages = this._getMessages();
+
+        // update validityState before packaging it
+        this._getValidityState().update(this.isValid(), messages);
+        messagingContent.validityState = this._getValidityState();
+      }
+
+      if (updateType === this._MESSAGING_CONTENT_UPDATE_TYPE.ALL ||
+          updateType === this._MESSAGING_CONTENT_UPDATE_TYPE.CONVERTER_HINT) {
+        converter = this._GetConverter();
+        if (converter) {
+          if (typeof converter === 'object') {
+            if (converter.getHint && typeof converter.getHint === 'function') {
+              converterHint = converter.getHint() || '';
+            }
+          }
+        }
+        messagingContent.converterHint = converterHint;
+      }
+
+      if (updateType === this._MESSAGING_CONTENT_UPDATE_TYPE.ALL ||
+        updateType === this._MESSAGING_CONTENT_UPDATE_TYPE.VALIDATOR_HINTS) {
+        allValidators = this._GetAllValidators();
+        validatorHints = this._getHintsForAllValidators(allValidators) || [];
+        messagingContent.validatorHint = validatorHints;
+      }
+
+      if (updateType === this._MESSAGING_CONTENT_UPDATE_TYPE.ALL ||
+        updateType === this._MESSAGING_CONTENT_UPDATE_TYPE.TITLE) {
+        messagingContent.title = this.options.title || '';
+      }
+
+      return messagingContent;
+    },
+
+    /**
+     * Compares the messages arrays for equality.
+     *
+     * @param {Array} pm previous messages
+     * @param {Array} m new messages
+     * @returns {boolean} true if equal false otherwise
+     * @private
+     * @memberof oj.editableValue
+     * @instance
+     *
+     */
+    _messagesEquals: function (pm, m) {
+      var match = -1;
+      var pmo;
+      var passed = true;
+      // $.extend merges the contents of two or more objects together into the first object
+      var previousMsgs = $.extend([], pm);
+      var msgs = $.extend([], m);
+
+
+      if (previousMsgs.length !== msgs.length) {
+        return false;
+      }
+
+      // one way it gets here is if there is one messages-custom message on initialization and
+      // after the busyContext is complete meaning the page is rendered, we set a different
+      // messages-custom message.
+      previousMsgs.forEach(function (pMsg) {
+        if (!(pMsg instanceof Message)) {
+          // freeze message instance once its created
+          pmo = new Message(pMsg.summary, pMsg.detail, pMsg.severity);
+          pmo = Object.freeze ? Object.freeze(pmo) : pmo;
+        } else {
+          pmo = pMsg;
+        }
+
+        match = -1;
+        msgs.forEach(function (msg, j) {
+          if ((Message.getSeverityLevel(pmo.severity) ===
+               Message.getSeverityLevel(msg.severity)) &&
+              pmo.summary === msg.summary &&
+              pmo.detail === msg.detail) {
+            match = j;
+            // found a match, so break out of loop
+          }
+        });
+
+        // remove entry at 'match' index from msgs
+        if (match > -1) {
+          msgs.splice(match, 1);
+        } else {
+          // we found no match so no need to loop
+          passed = false;
         }
       });
-      
-      // remove entry at 'match' index from msgs
-      if (match > -1)
-      {
-        msgs.splice(match, 1);
-      }
-      else
-      {
-        // we found no match so no need to loop
-        passed = false;
-        return;
-      }
-    });
-    
-    return passed;
-  },
-  
-  /**
-   * Parses the value using the converter set and returns the parsed value. If parsing fails the 
-   * error is written into the element. This function sets the valid state to PENDING before it tries
-   * to parse.
-   * 
-   * @param {string=} submittedValue to parse
-   * @param {Object=} event an optional event if this was a result of ui interaction. For user
-   * initiated actions that trigger a DOM event, passing this event is required. E.g., if user action
-   * causes a 'blur' event.
-   * @param {boolean?} setValid true if you want to set the valid state to pending->invalid
-   * @return {Object} parsed value 
-   * @throws {Error} an Object with message
-   * @protected
-   * @memberof oj.editableValue
-   * @instance
-   */
-  _parseValue: function (submittedValue, event, setValid) {
-    var converter = this._GetConverter();
-    var parsedValue = submittedValue;
-    
-    if (converter) {
-      // TODO: We should support chaining converters but for now we use just the first converter 
-      // to parse.
-      if (typeof converter === 'object') {
-        if (converter.parse && typeof converter.parse === 'function') {
-          try {
-        // we are dealing with a converter instance
-            if (setValid) {
-              this._setValidOption(_PENDING, event);
+
+      return passed;
+    },
+
+    /**
+     * Parses the value using the converter set and returns the parsed value. If parsing fails the
+     * error is written into the element. This function sets the valid state to PENDING before it tries
+     * to parse.
+     *
+     * @param {string=} submittedValue to parse
+     * @param {Object=} event an optional event if this was a result of ui interaction. For user
+     * initiated actions that trigger a DOM event, passing this event is required. E.g., if user action
+     * causes a 'blur' event.
+     * @param {boolean?} setValid true if you want to set the valid state to pending->invalid
+     * @return {Object} parsed value
+     * @throws {Error} an Object with message
+     * @protected
+     * @memberof oj.editableValue
+     * @instance
+     */
+    _parseValue: function (submittedValue, event, setValid) {
+      var converter = this._GetConverter();
+      var parsedValue = submittedValue;
+
+      if (converter) {
+        // TODO: We should support chaining converters but for now we use just the first converter
+        // to parse.
+
+        if (typeof converter === 'object') {
+          if (converter.parse && typeof converter.parse === 'function') {
+            try {
+              // we are dealing with a converter instance
+              if (setValid) {
+                this._setValidOption(_PENDING, event);
+              }
+              parsedValue = converter.parse(submittedValue);
+              // caller will set valid option, since usually we go on to call validators after
+              // converters and don't want to set pending->valid->pending again.
+            } catch (error) {
+              throw error;
             }
-            parsedValue = converter.parse(submittedValue);
-            // caller will set valid option, since usually we go on to call validators after
-            // converters and don't want to set pending->valid->pending again.
-          } catch (error) {
-            throw error;
+          } else if (Logger.level > Logger.LEVEL_WARN) {
+            Logger.info('converter does not support the parse method.');
           }
-        } else if (oj.Logger.level > oj.Logger.LEVEL_WARN) {
-          oj.Logger.info('converter does not support the parse method.');
         }
       }
-    }
-    
-    return parsedValue;
-  },
-  /**
-   * @private
-   * @memberof oj.editableValue
-   */
-  _addValidationError : function(e, msgs)
-  {
-    var detail;
-    var severity;
-    var ojmessage;
-    var summary;
 
-    if (e instanceof oj.ConverterError || e instanceof oj.ValidatorError)
-    {
-      ojmessage = e.getMessage();
+      return parsedValue;
+    },
+    /**
+     * @private
+     * @memberof oj.editableValue
+     * @instance
+     */
+    _addValidationError: function (e, msgs) {
+      var detail;
+      var severity;
+      var ojmessage;
+      var summary;
 
-      severity = ojmessage['severity'] || oj.Message.SEVERITY_LEVEL['ERROR'];
-      summary = ojmessage['summary'] || oj.Translations.getTranslatedString("oj-message.error");;
-      detail = ojmessage['detail'] || oj.Translations.getTranslatedString("oj-converter.detail");
-    }
-    else if (e['summary'] || e['detail'])
-    {
-      severity = oj.Message.SEVERITY_LEVEL['ERROR'];
-      summary = e['summary'] || oj.Translations.getTranslatedString("oj-message.error");;
-      detail = e['detail'] || oj.Translations.getTranslatedString("oj-converter.detail");
-    }
-    else
-    {
-      // TODO: is this error message generic enough to use for both converter and validator errors?
-      severity = oj.Message.SEVERITY_LEVEL['ERROR'];
-      summary = oj.Translations.getTranslatedString("oj-message.error");
-      detail = e['message'] || oj.Translations.getTranslatedString("oj-converter.detail");
-    }
-    
-    msgs.push({summary: summary, detail: detail, severity: severity});
-  },
+      if (e instanceof oj.ConverterError || e instanceof oj.ValidatorError) {
+        ojmessage = e.getMessage();
 
-  /**
-   * Processes the error information for one or more errors and returns an Array of 
-   * oj.ComponentMessage instances.
-   * 
-   * @param {Error} e instance of Error
-   * @param {number=} context the context in which the validation error was thrown
-   * @param {String=} display whether message is shown or hidden
-   * @private
-   * @memberof oj.editableValue
-   * @instance
-   */
-  _processValidationErrors : function (e, context, display)
-  {
-    var componentMsgs = [];
-    var msg;
-    var msgs = e._messages || [];
-    var options = {};
-    
-    options['context'] = context || 0;
-    options['display'] = display || oj.ComponentMessage.DISPLAY.SHOWN;
-    
-    if (msgs.length === 0)
-    {
-      this._addValidationError(e, msgs);
-    }
-    
-    for (var i = 0; i < msgs.length; i++)
-    {
-      msg = msgs[i];
-      componentMsgs.push(this._createComponentMessage(msg.summary, msg.detail, msg.severity, options));
-    }
-    
-    return componentMsgs || null;
-  },
-  /**
-   * @private
-   * @memberof oj.editableValue
-   */
-  _createComponentMessage : function (summary, detail, severity, options)
-  {
-    var cMsg;
-    // new properties can't be added but existing properties can be changed
-    cMsg = new oj.ComponentMessage(summary, detail, severity, options);
-    cMsg = Object.seal ? Object.seal(cMsg) : cMsg;
-    return cMsg;
-  },
-          
-  /**
-   * Refreshes the component display value, only when the current value is different from the last 
-   * saved value, unless asked to always refresh the display value.
-   * 
-   * @param {Object|undefined} value the changed value that needs to be updated on UI
-   * @param {boolean=} fullRefresh false is the default; true means always refresh component 
-   * display value using the current option value. This overwrites any UI value, the user may have 
-   * entered.
-   * 
-   * @private
-   * @memberof oj.editableValue
-   * @instance
-   */        
-  _refreshComponentDisplayValue : function (value, fullRefresh)
-  {
-    if (fullRefresh || (value !== this._getLastModelValue()))
-    {
-      this._updateElementDisplayValue(value);
-    }
-  },
-
-
-  /**
-   * Toggles css selector on the widget. E.g., when required option changes, the oj-required 
-   * selector needs to be toggled.
-   * @param {string} option
-   * @param {Object|string} value 
-   * @private
-   * @memberof oj.editableValue
-   * @instance
-   */        
-  _refreshTheming : function (option, value)
-  {
-    if (Object.keys(this._OPTION_TO_CSS_MAPPING).indexOf(option) !== -1) 
-    {
-      if (value) {
-        this.widget()[0].classList.add(this._OPTION_TO_CSS_MAPPING[option]);
+        severity = ojmessage.severity || Message.SEVERITY_LEVEL.ERROR;
+        summary = ojmessage.summary || Translations.getTranslatedString('oj-message.error');
+        detail = ojmessage.detail || Translations.getTranslatedString('oj-converter.detail');
+      } else if (e.summary || e.detail) {
+        severity = Message.SEVERITY_LEVEL.ERROR;
+        summary = e.summary || Translations.getTranslatedString('oj-message.error');
+        detail = e.detail || Translations.getTranslatedString('oj-converter.detail');
       } else {
-        this.widget()[0].classList.remove(this._OPTION_TO_CSS_MAPPING[option]);
+        // TODO: is this error message generic enough to use for both converter and validator errors?
+        severity = Message.SEVERITY_LEVEL.ERROR;
+        summary = Translations.getTranslatedString('oj-message.error');
+        detail = e.message || Translations.getTranslatedString('oj-converter.detail');
       }
-    }
-  },
- 
-  /**
-   * Runs validators in deferred mode using the option value. Any validation error thrown is 
-   * deferred, or hidden by component, until explicitly asked to show them (see showMessages()). 
-   * Deferred error is pushed to <code class="prettyprint">messagesHidden</code> option.
-   * 
-   * @param {number} context in which validation was run. 
-   * 
-   * @see #showMessages
-   * @private 
-   * @memberof oj.editableValue
-   * @instance
-   */
+
+      msgs.push({ summary: summary, detail: detail, severity: severity });
+    },
+
+    /**
+     * Processes the error information for one or more errors and returns an Array of
+     * oj.ComponentMessage instances.
+     *
+     * @param {Error} e instance of Error
+     * @param {number=} context the context in which the validation error was thrown
+     * @param {String=} display whether message is shown or hidden
+     * @private
+     * @memberof oj.editableValue
+     * @instance
+     */
+    _processValidationErrors: function (e, context, display) {
+      var componentMsgs = [];
+      var msg;
+      var msgs = e._messages || [];
+      var options = {};
+
+      options.context = context || 0;
+      options.display = display || oj.ComponentMessage.DISPLAY.SHOWN;
+
+      if (msgs.length === 0) {
+        this._addValidationError(e, msgs);
+      }
+
+      for (var i = 0; i < msgs.length; i++) {
+        msg = msgs[i];
+        componentMsgs.push(this._createComponentMessage(msg.summary, msg.detail,
+                                                        msg.severity, options));
+      }
+
+      return componentMsgs || null;
+    },
+    /**
+     * @private
+     * @memberof oj.editableValue
+     * @instance
+     */
+    _createComponentMessage: function (summary, detail, severity, options) {
+      var cMsg;
+      // new properties can't be added but existing properties can be changed
+      cMsg = new oj.ComponentMessage(summary, detail, severity, options);
+      cMsg = Object.seal ? Object.seal(cMsg) : cMsg;
+      return cMsg;
+    },
+
+    /**
+     * Refreshes the component display value, only when the current value is different from the last
+     * saved value, unless asked to always refresh the display value.
+     *
+     * @param {Object|undefined} value the changed value that needs to be updated on UI
+     * @param {boolean=} fullRefresh false is the default; true means always refresh component
+     * display value using the current option value. This overwrites any UI value, the user may have
+     * entered.
+     *
+     * @private
+     * @memberof oj.editableValue
+     * @instance
+     */
+    _refreshComponentDisplayValue: function (value, fullRefresh) {
+      if (fullRefresh || (value !== this._getLastModelValue())) {
+        this._updateElementDisplayValue(value);
+      }
+    },
+
+
+    /**
+     * Toggles css selector on the widget. E.g., when required option changes, the oj-required
+     * selector needs to be toggled.
+     * @param {string} option
+     * @param {Object|string} value
+     * @private
+     * @memberof oj.editableValue
+     * @instance
+     */
+    _refreshTheming: function (option, value) {
+      if (Object.keys(this._OPTION_TO_CSS_MAPPING).indexOf(option) !== -1) {
+        if (value) {
+          this.widget()[0].classList.add(this._OPTION_TO_CSS_MAPPING[option]);
+        } else {
+          this.widget()[0].classList.remove(this._OPTION_TO_CSS_MAPPING[option]);
+        }
+      }
+    },
+
+    /**
+     * Runs validators in deferred mode using the option value. Any validation error thrown is
+     * deferred, or hidden by component, until explicitly asked to show them (see showMessages()).
+     * Deferred error is pushed to <code class="prettyprint">messagesHidden</code> option.
+     *
+     * @param {number} context in which validation was run.
+     *
+     * @see #showMessages
+     * @private
+     * @memberof oj.editableValue
+     * @instance
+     */
     _runDeferredValidation: function (context) {
       if (this._CanSetValue()) {
         this._validateValueForRequiredOnly(this.options.value, context);
-      } else if (oj.Logger.level > oj.Logger.LEVEL_WARN) {
-        oj.Logger.info('Deferred validation skipped as component is readonly or disabled.');
-    }
+      } else if (Logger.level > Logger.LEVEL_WARN) {
+        Logger.info('Deferred validation skipped as component is readonly or disabled.');
+      }
       this._setValidOption(this._determineValidFromMessagesOptions(), null);
-  },
-  
-  /**
-   * Runs either deferred or normal validation based on the state component is in. This method is 
-   * called when certain options change - required, disabled etc.
-   * 
-   * <p>
-   * - if component is invalid and has messgesShown -> required: false/true -> clear component errors; 
-   * run full validation with UI value (we don't know if the UI error is from a required validator 
-   * or something else);<br/>
-   * &nbsp;&nbsp;- if there are validation errors, then value not pushed to model; messagesShown is 
-   * updated<br/>
-   * &nbsp;&nbsp;- if no errors result from the validation, push value to model; author needs to 
-   * listen to valueChanged to clear custom errors.<br/>
-   * 
-   * - if component is invalid and has messagesHidden -> required: false -> clear component 
-   * errors; no deferred validation is run.<br/>
-   * - if component has no error -> required: true -> run deferred validation (we don't want to flag 
-   * errors unnecessarily)<br/>
-   * - messagesCustom is never cleared<br/>
-   * </p>
-   * 
-   * @param {Object} validationOptions
-   * 
-   * @private
-   * @memberof oj.editableValue
-   * @instance
-   */
-  _runMixedValidationAfterSetOption: function (validationOptions) {
-    var runFullValidation = false;
+    },
 
-    // clear component messages always
-    var clearCompMessagesAlways = true;
+    /**
+     * Runs either deferred or normal validation based on the state component is in. This method is
+     * called when certain options change - required, disabled etc.
+     *
+     * <p>
+     * - if component is invalid and has messgesShown -> required: false/true -> clear component errors;
+     * run full validation with UI value (we don't know if the UI error is from a required validator
+     * or something else);<br/>
+     * &nbsp;&nbsp;- if there are validation errors, then value not pushed to model; messagesShown is
+     * updated<br/>
+     * &nbsp;&nbsp;- if no errors result from the validation, push value to model; author needs to
+     * listen to valueChanged to clear custom errors.<br/>
+     *
+     * - if component is invalid and has messagesHidden -> required: false -> clear component
+     * errors; no deferred validation is run.<br/>
+     * - if component has no error -> required: true -> run deferred validation (we don't want to flag
+     * errors unnecessarily)<br/>
+     * - messagesCustom is never cleared<br/>
+     * </p>
+     *
+     * @param {Object} validationOptions
+     *
+     * @private
+     * @memberof oj.editableValue
+     * @instance
+     */
+    _runMixedValidationAfterSetOption: function (validationOptions) {
+      var runFullValidation = false;
 
-    runFullValidation =
-    this._runFullValidationIfNeeded(validationOptions, clearCompMessagesAlways);
+      // clear component messages always
+      var clearCompMessagesAlways = true;
 
-    if (!runFullValidation && this._IsRequired()) {
-      // run deferred validation if we didn't run full validation
-      // (e.g., comp is either showing a deferred error or has no errors.)
-      // But only when required is true do
-    // we update the valid option within _runDeferredValidation
-      this._runDeferredValidation(validationOptions.validationContext);
-    } else {
-      this._setValidOption(this._determineValidFromMessagesOptions(), null);
-    }
-  },
-    
-  /**
-   * @private
-   * @memberof oj.editableValue
-   */
-  _updateElementDisplayValue : function (modelValue, event)
-  {
-    var actualDisplayValue;
-    var displayValue;
-    var newMsgs;
-    
-    // cache the new model value on the element 
-    this._setLastModelValue(modelValue);
+      runFullValidation =
+      this._runFullValidationIfNeeded(validationOptions, clearCompMessagesAlways);
 
-    // Update element with the displayValue
-    displayValue = modelValue;
+      if (!runFullValidation && this._IsRequired()) {
+        // run deferred validation if we didn't run full validation
+        // (e.g., comp is either showing a deferred error or has no errors.)
+        // But only when required is true do
+        // we update the valid option within _runDeferredValidation
+        this._runDeferredValidation(validationOptions.validationContext);
+      } else {
+        this._setValidOption(this._determineValidFromMessagesOptions(), null);
+      }
+    },
 
-    try
-    {
-      displayValue = this._formatValue(modelValue);
-    }
-    catch (e)
-    {
-      newMsgs = this._processValidationErrors(e);
-      this._updateMessagesOption ('messagesShown', newMsgs, event);
-    }
-    
-    this._SetDisplayValue(displayValue); 
-    // getting the display value right after we set it is probably not necessary,  but just in
-    // case a subclass did something to it, we do.
-    actualDisplayValue = this._GetDisplayValue();
-    this._setLastSubmittedValue(actualDisplayValue);
-     // update rawValue option to keep it in sync with the display value
-    this._SetRawValue(actualDisplayValue, null);
-  },
-  
-    
-  /**
-   * Runs normal validation when certain options change - converter, required, validators etc. - and 
-   * updates (re-sets) the value if no new errors are found. This is different from _SetValue()
-   * which is called when end-user changes the value as a result of interacting with the component. 
-   * Additionally _SetValue() clears all messages always, whereas callers of this method determine 
-   * which messages they want cleared.
-   * 
-   * @param {Object} options - name value properties used when validation is run. 
-   * @private
-   * @memberof oj.editableValue
-   * @instance
-   */
-  _updateValueSyncOnly: function (options) {
-    var self = this;
-    // run full validation using the current display value; 
-    // show messages immediately if there are errors otherwise set value to option
-    var parsed = this._Validate(this._GetDisplayValue(), null, options);
+    /**
+     * @private
+     * @memberof oj.editableValue
+     * @instance
+     */
+    _updateElementDisplayValue: function (modelValue, event) {
+      var actualDisplayValue;
+      var displayValue;
+      var newMsgs;
 
-    // if validation was a success and component is valid, or it's invalid with no new component 
-    // messages then update value option. 
-    // NOTE: often custom msgs are not cleared when this method is called.
-    if (parsed !== undefined &&
-      (self.isValid() || !self._hasInvalidComponentMessagesShowing())) {
-        self._updateValueOption(parsed, null, options.validationContext);
-    }
-  }, 
-  /**
+      // cache the new model value on the element
+      this._setLastModelValue(modelValue);
+
+      // Update element with the displayValue
+      displayValue = modelValue;
+
+      try {
+        displayValue = this._formatValue(modelValue);
+      } catch (e) {
+        // turn this into Array of oj.ComponentMessage instances. This is what we set on 'messagesShown'
+        newMsgs = this._processValidationErrors(e);
+        this._updateMessagesOption('messagesShown', newMsgs, event);
+      }
+
+      this._SetDisplayValue(displayValue);
+      // getting the display value right after we set it is probably not necessary,  but just in
+      // case a subclass did something to it, we do.
+      actualDisplayValue = this._GetDisplayValue();
+      this._setLastDisplayValue(actualDisplayValue);
+      // update rawValue option to keep it in sync with the display value
+      this._SetRawValue(actualDisplayValue, null);
+    },
+
+    /**
      * Runs normal validation when certain options change - converter, required, validators etc. - and
      * updates (re-sets) the value if no new errors are found. This is different from _SetValue()
      * which is called when end-user changes the value as a result of interacting with the component.
      * Additionally _SetValue() clears all messages always, whereas callers of this method determine
      * which messages they want cleared.
-     * 
+     * Called for !customELement code
+     *
      * @param {Object} options - name value properties used when validation is run.
      * @private
      * @memberof oj.editableValue
      * @instance
      */
-  _updateValueAsync: function (options) {
-    var self = this;
-    var displayValue = this._GetDisplayValue();
-    // run full validation using the current display value;
-    // show messages immediately if there are errors otherwise set value to option
-    self._setBusyState(displayValue);
-    this._AsyncValidate(displayValue, null, options).then(
-      function (fulfilledNewValue) {
-        // if validation was a success and component is valid, or it's invalid with no new component
-        // messages then update value option.
-        // NOTE: often custom msgs are not cleared when this method is called.
-        if (fulfilledNewValue !== undefined &&
-        (self.isValid() || !self._hasInvalidComponentMessagesShowing())) {
-          self._updateValueOption(fulfilledNewValue, null, options.validationContext);
+    _updateValueSyncOnly: function (options) {
+      var self = this;
+      // run full validation using the current display value;
+      // show messages immediately if there are errors otherwise set value to option
+      var parsed = this._Validate(this._GetDisplayValue(), null, options);
+
+      // if validation was a success and component is valid, or it's invalid with no new component
+      // messages then update value option.
+      // NOTE: often custom msgs are not cleared when this method is called.
+      if (parsed !== undefined &&
+      (self.isValid() || !self._hasInvalidComponentMessagesShowing())) {
+        self._updateValueOption(parsed, null, options.validationContext);
+      }
+    },
+    /**
+     * Runs normal validation when certain options change - converter, required, validators etc. - and
+     * updates (re-sets) the value if no new errors are found. This is different from _SetValue()
+     * which is called when end-user changes the value as a result of interacting with the component.
+     * Additionally _SetValue() clears all messages always, whereas callers of this method determine
+     * which messages they want cleared.
+     *
+     * @param {Object} options - name value properties used when validation is run.
+     * @private
+     * @memberof oj.editableValue
+     * @instance
+     */
+    _updateValueAsync: function (options) {
+      var self = this;
+      var displayValue = this._GetDisplayValue();
+      // run full validation using the current display value;
+      // show messages immediately if there are errors otherwise set value to option
+      self._setBusyState(displayValue);
+      this._AsyncValidate(displayValue, null, options).then(
+        function (fulfilledNewValue) {
+          // if validation was a success and component is valid, or it's invalid with no new component
+          // messages then update value option.
+          // NOTE: often custom msgs are not cleared when this method is called.
+          if (fulfilledNewValue !== undefined &&
+          (self.isValid() || !self._hasInvalidComponentMessagesShowing())) {
+            self._updateValueOption(fulfilledNewValue, null, options.validationContext);
+          }
+          self._clearBusyState(displayValue);
         }
-        self._clearBusyState(displayValue);
-      }
-    );
-  },
-  /**
-   * @param {Object|undefined} value
-   * @param {number} context in which validation was run.
-   * @private
-   * @memberof oj.editableValue
-   * @instance
-   */
-  _validateValueForRequiredOnly: function (value, context) {
-    var newMsgs;
-    var validator;
+      );
+    },
+    /**
+     * @param {Object|undefined} value
+     * @param {number} context in which validation was run.
+     * @private
+     * @memberof oj.editableValue
+     * @instance
+     */
+    _validateValueForRequiredOnly: function (value, context) {
+      var newMsgs;
+      var validator;
 
-    // run required validation if component is required
-    // SYNCHRONOUS
-    if (this._IsRequired()) {
-      validator = this._getImplicitRequiredValidator();
-      try {
-        // check if trimmed value is empty. See AdfUIEditableValue.prototype.ValidateValue
-        this._setValidOption(_PENDING, null);
-        validator.validate(oj.StringUtils.trim(value));
-      } catch (e) {
-        // this is a messagesHidden message
-        // turn this into Array of oj.ComponentMessage instances. This is what we set on 'messagesHidden'
-        newMsgs = this._processValidationErrors(e, context, oj.ComponentMessage.DISPLAY.HIDDEN);
-        if (newMsgs) {
-          this._updateMessagesOption('messagesHidden', newMsgs);
+      // run required validation if component is required
+      // SYNCHRONOUS
+      if (this._IsRequired()) {
+        validator = this._getImplicitRequiredValidator();
+        try {
+          // check if trimmed value is empty. See AdfUIEditableValue.prototype.ValidateValue
+          this._setValidOption(_PENDING, null);
+          validator.validate(oj.StringUtils.trim(value));
+        } catch (e) {
+          // this is a messagesHidden message
+          // turn this into Array of oj.ComponentMessage instances. This is what we set on 'messagesHidden'
+          newMsgs = this._processValidationErrors(e, context, oj.ComponentMessage.DISPLAY.HIDDEN);
+          if (newMsgs) {
+            this._updateMessagesOption('messagesHidden', newMsgs);
+          }
         }
       }
-    }
-  },
+    },
 
-  /** This calls validators that are synchronous, not asynchronous.
-   * This is called from _asyncValidateValue and from _Validate.
-   * This updates messagesShown, but does not update the valid state.
-   * The caller of this function needs to update the valid state.
-   * @param {Object|undefined} value
-   * @param {Event?} event the original event (for user initiated actions that trigger a DOM event,
-   * like blur) or undefined. The custom element bridge creates a CustomEvent out of this when
-   * it sends the property changed event.
-   * @param {number} context in which validation was run.
-   * @return {boolean} return true if valid, false if not
-   * @private
-   * @memberof oj.editableValue
-   * @instance
-   */
-  _validateValue: function (value, event, context) {
-    var allValidators = this._GetAllValidators();
-    var i;
-    var isRequired = this._IsRequired();
-    var isInvalidShownSet = false;
-    // newMsgs: Array of oj.ComponentMessage
-    var newMsgs;
-    var validator;
-    var valMsgs = [];
-    var ve;
+    /** This calls validators that are synchronous, not asynchronous.
+     * This is called from _asyncValidateValue and from _Validate.
+     * This updates messagesShown, but does not update the valid state.
+     * The caller of this function needs to update the valid state.
+     * @param {Object|undefined} value
+     * @param {Event?} event the original event (for user initiated actions that trigger a DOM event,
+     * like blur) or undefined. The custom element bridge creates a CustomEvent out of this when
+     * it sends the property changed event.
+     * @param {number} context in which validation was run.
+     * @return {boolean} return true if valid, false if not
+     * @private
+     * @memberof oj.editableValue
+     * @instance
+     */
+    _validateValue: function (value, event, context) {
+      var allValidators = this._GetAllValidators();
+      var i;
+      var isRequired = this._IsRequired();
+      var isInvalidShownSet = false;
+      // newMsgs: Array of oj.ComponentMessage
+      var newMsgs;
+      var validator;
+      var valMsgs = [];
+      var ve;
 
-    if (isRequired || allValidators.length > 0) {
-      this._setValidOption(_PENDING, event);
-    }
-    // run required validation first; 
-    // SYNCHRONOUS
-    if (isRequired) {
-      validator = this._getImplicitRequiredValidator();
-      try {
-        // check if trimmed value is empty. See AdfUIEditableValue.prototype.ValidateValue
-        validator.validate(oj.StringUtils.trim(value));
-      } catch (e) {
-        // save all validation errors
-        this._addValidationError(e, valMsgs);
-        this._setValidOption(_INVALID_SHOWN, event);
-        isInvalidShownSet = true;
+      if (isRequired || allValidators.length > 0) {
+        this._setValidOption(_PENDING, event);
       }
-    }
-    // SYNCHRONOUS
-    // run other validators when requested. 
-    for (i = 0; i < allValidators.length; i++) {
-      validator = allValidators[i];
-      if (typeof validator === 'object') {
-        if (validator.validate && typeof validator.validate === 'function') {
-          try {
-            validator.validate(value);
-          } catch (e) {
-            // save all validation errors and update valid option if it is for the worse.
-            this._addValidationError(e, valMsgs);
-            if (!isInvalidShownSet) {
-              this._setValidOption(_INVALID_SHOWN, event);
-              isInvalidShownSet = true;
+      // run required validation first;
+      // SYNCHRONOUS
+      if (isRequired) {
+        validator = this._getImplicitRequiredValidator();
+        try {
+          // check if trimmed value is empty. See AdfUIEditableValue.prototype.ValidateValue
+          validator.validate(oj.StringUtils.trim(value));
+        } catch (e) {
+          // save all validation errors
+          this._addValidationError(e, valMsgs);
+          this._setValidOption(_INVALID_SHOWN, event);
+          isInvalidShownSet = true;
+        }
+      }
+      // SYNCHRONOUS
+      // run other validators when requested.
+      for (i = 0; i < allValidators.length; i++) {
+        validator = allValidators[i];
+        if (typeof validator === 'object') {
+          if (validator.validate && typeof validator.validate === 'function') {
+            try {
+              validator.validate(value);
+            } catch (e) {
+              // save all validation errors and update valid option if it is for the worse.
+              this._addValidationError(e, valMsgs);
+              if (!isInvalidShownSet) {
+                this._setValidOption(_INVALID_SHOWN, event);
+                isInvalidShownSet = true;
+              }
             }
+          } else if (Logger.level > Logger.LEVEL_WARN) {
+            Logger.info('validator does not support the validate method.');
           }
-        } else if (oj.Logger.level > oj.Logger.LEVEL_WARN) {
-          oj.Logger.info('validator does not support the validate method.');
-          }
-      }              
-    }
-    // SYNCHRONOUS. update messages
-    if (valMsgs.length > 0) {
-      ve = new Error();
-      ve._messages = valMsgs;
-      newMsgs = this._processValidationErrors(ve, context);
-      // turn this into Array of oj.ComponentMessage instances.
-      // This is what we set on 'messagesShown'
-      this._updateMessagesOption('messagesShown', newMsgs, event);
-    }
-    return (valMsgs.length === 0);
-  },
-
-  /**
-   * This is called when the component has async-validators on it. It's called
-   * from both _SetValue and when we need to re-validate due to
-   * property changes, like converters, required, etc.
-   * This validates the value by running through the list of all registered validators and
-   * async-validators. The algorithm is as follows -
-   * 1. if isRequired, run required validator.
-   * 2. get all the rest of the validators and validate in sequence.
-   * 3. get async-validators and kick them all off simultaneously, and show errors as we get them.
-   * 4. update valid state immediately if it turns for the worse.
-   * 5. will ignore validation results if we get a new call to this method with a different value
-   *  before we get back the async validate results from a previous value.
-   * results.
-   *
-   * Callers can rely on the 'valid' options property to determine the validity state of the
-   * component after calling this method
-   *
-   * @param {Object|string} value to be validated
-   * @param {Event?} event the original event (for user initiated actions that trigger a DOM event,
-   * like blur) or undefined. The custom element bridge creates a CustomEvent out of this when
-   * it sends the property changed event.
-   * @param {number=} context determines when validation is being run. Used when creating Messages
-   * @returns {Promise} resolves to 'valid' if all validators pass. Resolves to 'invalidShown'
-   * if any validator fails. Resolves to 'ignoreValidation' if we are to ignore validation results.
-   * @private
-   * @memberof oj.editableValue
-   * @instance
-   */
-  _asyncValidateValue: function (value, event, context) {
-    var normalizedValidators = this._getAllAsyncValidators();
-    var i;
-    var isInvalidShownSet = false;
-    var hasAsyncValidators = normalizedValidators.length > 0;
-    var finalValidState;
-    var newMsgs;
-    var self = this;
-    var validatePassed;
-
-    // this to be used to decide whether or not to ignore async validate resolutions.
-    // if we use the value to decide whether or not to ignore async validate resolutions, it
-    // would not work if the user types in an invalid value, then another value, then the
-    // invalid value again. He would see two identical error messages if the async validators
-    // are slow. We talked about using a queue, and decided a counter would work just as well.
-    var asyncValidatorValidateCounter = this._asyncValidatorValidateCounter;
-
-    // if there are any async validators to run, set PENDING.
-    if (hasAsyncValidators) {
-      this._setValidOption(_PENDING, event);
-    }
-
-    // First run the SYNCHRONOUS VALIDATORS
-    // This will set valid to PENDING (option change will be ignored if already PENDING).
-    // It runs each validator and updates the error messages, if any.
-    // It will update the valid option to invalidShown as soon as a validator
-    // throws an error. If no validator throws an error, then it does not
-    // set the valid state since we want to wait for async validators to complete to do that.
-    validatePassed = this._validateValue(value, event, context);
-    if (!hasAsyncValidators) {
-      if (validatePassed) {
-        // we could be showing messages, like 'messagesCustom'. If so, valid is invalidShown,
-        // even if all validators passed.
-        this._setValidOption(self._determineValidFromMessagesOptions(), event);
+        }
       }
-    }
+      // SYNCHRONOUS. update messages
+      if (valMsgs.length > 0) {
+        ve = new Error();
+        ve._messages = valMsgs;
+        newMsgs = this._processValidationErrors(ve, context);
+        // turn this into Array of oj.ComponentMessage instances.
+        // This is what we set on 'messagesShown'
+        this._updateMessagesOption('messagesShown', newMsgs, event);
+      }
+      return (valMsgs.length === 0);
+    },
 
-    // now run the ASYNCHRONOUS VALIDATORS
+    /**
+     * This is called when the component has async-validators on it. It's called
+     * from both _SetValue and when we need to re-validate due to
+     * property changes, like converters, required, etc.
+     * This validates the value by running through the list of all registered validators and
+     * async-validators. The algorithm is as follows -
+     * 1. if isRequired, run required validator.
+     * 2. get all the rest of the validators and validate in sequence.
+     * 3. get async-validators and kick them all off simultaneously, and show errors as we get them.
+     * 4. update valid state immediately if it turns for the worse.
+     * 5. will ignore validation results if we get a new call to this method with a different value
+     *  before we get back the async validate results from a previous value.
+     * results.
+     *
+     * Callers can rely on the 'valid' options property to determine the validity state of the
+     * component after calling this method
+     *
+     * @param {Object|string} value to be validated
+     * @param {Event?} event the original event (for user initiated actions that trigger a DOM event,
+     * like blur) or undefined. The custom element bridge creates a CustomEvent out of this when
+     * it sends the property changed event.
+     * @param {number=} context determines when validation is being run. Used when creating Messages
+     * @returns {Promise} resolves to 'valid' if all validators pass. Resolves to 'invalidShown'
+     * if any validator fails. Resolves to 'ignoreValidation' if we are to ignore validation results.
+     * @private
+     * @memberof oj.editableValue
+     * @instance
+     */
+    _asyncValidateValue: function (value, event, context) {
+      var normalizedValidators = this._getAllAsyncValidators();
+      var i;
+      var isInvalidShownSet = false;
+      var hasAsyncValidators = normalizedValidators.length > 0;
+      var finalValidState;
+      var newMsgs;
+      var self = this;
+      var validatePassed;
 
-    // We kick off all the async validators simultaneously. When they all complete,
-    // regardless of resolve/reject, then we can move on.
-    var promiseArray = [];
-    for (i = 0; i < normalizedValidators.length; i++) {
-      promiseArray.push(normalizedValidators[i].validate(oj.StringUtils.trim(value)));
-    }
+      // this to be used to decide whether or not to ignore async validate resolutions.
+      // if we use the value to decide whether or not to ignore async validate resolutions, it
+      // would not work if the user types in an invalid value, then another value, then the
+      // invalid value again. He would see two identical error messages if the async validators
+      // are slow. We talked about using a queue, and decided a counter would work just as well.
+      var asyncValidatorValidateCounter = this._asyncValidatorValidateCounter;
 
-    // when a promise resolves or errors out, we return an Object with the value or error state,
-    // and the status.
-    // We want to show error messages right away, as we get them.
-    // We also want to ignore any error messages or valid state changes if we get
-    // a new value to validate while the current async validate methods haven't returned yet.
-    // This could happen if we kick off a slow validator and the user types into the field
-    // and blurs to cause a new _SetValue->validation before this one returns.
-    function reflect(promise) {
-      return promise.then(function (v) {
-        var status;
+      // if there are any async validators to run, set PENDING.
+      if (hasAsyncValidators) {
+        this._setValidOption(_PENDING, event);
+      }
 
-        // Ignore validate Promise results if it is for a value that isn't the most current value
-        // we are validating. The only con is if they are in the process of typing in the field,
-        // errors might show up for value when they last pressed Enter|Blur.
-        // We decided this is fine, and we will show the value in the error message in our demos
-        // so the user won't get confused, and we'll doc that this is what the app dev should do.
-        if (self._asyncValidatorValidateCounter === asyncValidatorValidateCounter) {
-          status = 'resolved';
-        } else {
-          if (oj.Logger.level > oj.Logger.LEVEL_WARN) {
-            oj.Logger.info(
-              'Validate ignored because new value came in before async validator finished for '
-              + value);
-          }
-          status = 'ignore';
-        }
-        return { v: v, status: status };
-      },
-      function (e) {
-        var status;
-        if (self._asyncValidatorValidateCounter === asyncValidatorValidateCounter) {
-          // turn this into Array of oj.ComponentMessage instances.
-          // This is what we set on 'messagesShown'
-          newMsgs = self._processValidationErrors(e, context);
-          self._updateMessagesOption('messagesShown', newMsgs, event);
-          if (!isInvalidShownSet) {
-            self._setValidOption(_INVALID_SHOWN, event);
-            isInvalidShownSet = true;
-          }
-          status = 'rejected';
-        } else {
-          if (oj.Logger.level > oj.Logger.LEVEL_WARN) {
-            oj.Logger.info(
-              'Validate ignored because new value came in before async validator finished for '
-              + value);
-          }
-          status = 'ignore';
-        }
-        return { e: e, status: status };
-      });
-    }
-
-    // this will get called even when there are no async validators
-    return new Promise(function (resolve) {
-      // Promise.all will end as soon as it gets its first rejection. We don't want that.
-      // We want to wait until all promises either resolve or reject. Then we can resolve this
-      // outer promise. We do this using the reflect function defined above.
-      Promise.all(promiseArray.map(reflect)).then(function (results) {
-        var ignoreList = results.filter(function (x) { return x.status === 'ignore'; });
-        if (ignoreList.length > 0) {
-          finalValidState = 'ignoreValidation';
-        } else {
-          finalValidState = (!isInvalidShownSet) ? _VALID : _INVALID_SHOWN;
+      // First run the SYNCHRONOUS VALIDATORS
+      // This will set valid to PENDING (option change will be ignored if already PENDING).
+      // It runs each validator and updates the error messages, if any.
+      // It will update the valid option to invalidShown as soon as a validator
+      // throws an error. If no validator throws an error, then it does not
+      // set the valid state since we want to wait for async validators to complete to do that.
+      validatePassed = this._validateValue(value, event, context);
+      if (!hasAsyncValidators) {
+        if (validatePassed) {
           // we could be showing messages, like 'messagesCustom'. If so, valid is invalidShown,
           // even if all validators passed.
-          self._setValidOption(self._determineValidFromMessagesOptions(), event);
-        } 
-        resolve(finalValidState);
+          this._setValidOption(self._determineValidFromMessagesOptions(), event);
+        }
+      }
+
+      // now run the ASYNCHRONOUS VALIDATORS
+
+      // We kick off all the async validators simultaneously. When they all complete,
+      // regardless of resolve/reject, then we can move on.
+      var promiseArray = [];
+      for (i = 0; i < normalizedValidators.length; i++) {
+        promiseArray.push(normalizedValidators[i].validate(oj.StringUtils.trim(value)));
+      }
+
+      // when a promise resolves or errors out, we return an Object with the value or error state,
+      // and the status.
+      // We want to show error messages right away, as we get them.
+      // We also want to ignore any error messages or valid state changes if we get
+      // a new value to validate while the current async validate methods haven't returned yet.
+      // This could happen if we kick off a slow validator and the user types into the field
+      // and blurs to cause a new _SetValue->validation before this one returns.
+      function reflect(promise) {
+        return promise.then(function (v) {
+          var status;
+
+          // Ignore validate Promise results if it is for a value that isn't the most current value
+          // we are validating. The only con is if they are in the process of typing in the field,
+          // errors might show up for value when they last pressed Enter|Blur.
+          // We decided this is fine, and we will show the value in the error message in our demos
+          // so the user won't get confused, and we'll doc that this is what the app dev should do.
+          if (self._asyncValidatorValidateCounter === asyncValidatorValidateCounter) {
+            status = 'resolved';
+          } else {
+            if (Logger.level > Logger.LEVEL_WARN) {
+              Logger.info(
+                'Validate ignored because new value came in before async validator finished for '
+                + value);
+            }
+            status = 'ignore';
+          }
+          return { v: v, status: status };
+        },
+        function (e) {
+          var status;
+          if (self._asyncValidatorValidateCounter === asyncValidatorValidateCounter) {
+            // turn this into Array of oj.ComponentMessage instances.
+            // This is what we set on 'messagesShown'
+            newMsgs = self._processValidationErrors(e, context);
+            self._updateMessagesOption('messagesShown', newMsgs, event);
+            if (!isInvalidShownSet) {
+              self._setValidOption(_INVALID_SHOWN, event);
+              isInvalidShownSet = true;
+            }
+            status = 'rejected';
+          } else {
+            if (Logger.level > Logger.LEVEL_WARN) {
+              Logger.info(
+                'Validate ignored because new value came in before async validator finished for '
+                + value);
+            }
+            status = 'ignore';
+          }
+          return { e: e, status: status };
+        });
+      }
+
+      // this will get called even when there are no async validators
+      return new Promise(function (resolve) {
+        // Promise.all will end as soon as it gets its first rejection. We don't want that.
+        // We want to wait until all promises either resolve or reject. Then we can resolve this
+        // outer promise. We do this using the reflect function defined above.
+        Promise.all(promiseArray.map(reflect)).then(function (results) {
+          var ignoreList = results.filter(function (x) { return x.status === 'ignore'; });
+          if (ignoreList.length > 0) {
+            finalValidState = 'ignoreValidation';
+          } else {
+            finalValidState = (!isInvalidShownSet) ? _VALID : _INVALID_SHOWN;
+            // we could be showing messages, like 'messagesCustom'. If so, valid is invalidShown,
+            // even if all validators passed.
+            self._setValidOption(self._determineValidFromMessagesOptions(), event);
+          }
+          resolve(finalValidState);
+        });
       });
-    });
-  },
-  /**
-   * Set busy state for async validators
-   *
-   * @memberof oj.editableValue
-   * @instance
-   * @private
-   */
-  _setBusyState: oj.EditableValueUtils._SetBusyState,
-  /**
-   * Clear  busy state for async validators
-   *
-   * @memberof oj.editableValue
-   * @instance
-   * @private
-   */
-  _clearBusyState: oj.EditableValueUtils._ClearBusyState,
-  /**
-   * Set busy state for async validators hint
-   *
-   * @memberof oj.editableValue
-   * @instance
-   * @private
-   */
-  _setBusyStateAsyncValidatorHint: oj.EditableValueUtils._SetBusyStateAsyncValidatorHint,
-  /**
-   * Clear  busy state for async validators hint
-   *
-   * @memberof oj.editableValue
-   * @instance
-   * @private
-   */
-  _clearBusyStateAsyncValidatorHint: oj.EditableValueUtils._ClearBusyStateAsyncValidatorHint
+    },
+    /**
+     * Set busy state for async validators
+     *
+     * @memberof oj.editableValue
+     * @instance
+     * @private
+     */
+    _setBusyState: oj.EditableValueUtils._SetBusyState,
+    /**
+     * Clear  busy state for async validators
+     *
+     * @memberof oj.editableValue
+     * @instance
+     * @private
+     */
+    _clearBusyState: oj.EditableValueUtils._ClearBusyState,
+    /**
+     * Set busy state for async validators hint
+     *
+     * @memberof oj.editableValue
+     * @instance
+     * @private
+     */
+    _setBusyStateAsyncValidatorHint: oj.EditableValueUtils._SetBusyStateAsyncValidatorHint,
+    /**
+     * Clear  busy state for async validators hint
+     *
+     * @memberof oj.editableValue
+     * @instance
+     * @private
+     */
+    _clearBusyStateAsyncValidatorHint: oj.EditableValueUtils._ClearBusyStateAsyncValidatorHint
 
-}, true);
+  }, true);
 
-oj.Components.setDefaultOptions(
+Components.setDefaultOptions(
   {
 
-    'editableValue': // properties for all editableValue components 
+    editableValue: // properties for all editableValue components
     {
-      'displayOptions': oj.Components.createDynamicPropertyGetter(function(context){
+      displayOptions: Components.createDynamicPropertyGetter(function (context) {
         var displayOptions = {
-          'messages': context['containers'].indexOf('ojDataGrid') >= 0 || 
-                      context['containers'].indexOf('ojTable') >= 0 ? ['notewindow'] : ['inline'],
-          'converterHint': ['placeholder', 'notewindow'], 
-          'validatorHint': ['notewindow']
+          messages: context.containers.indexOf('ojDataGrid') >= 0 ||
+            context.containers.indexOf('ojTable') >= 0 ? ['notewindow'] : ['inline'],
+          converterHint: ['placeholder', 'notewindow'],
+          validatorHint: ['notewindow']
         };
-        displayOptions[context['isCustomElement'] ? 'helpInstruction' : 'title'] = ['notewindow'];
+        displayOptions[context.isCustomElement ? 'helpInstruction' : 'title'] = ['notewindow'];
         return displayOptions;
       }),
-      'help': oj.Components.createDynamicPropertyGetter(function(context) {
+      help: Components.createDynamicPropertyGetter(function (context) {
         // Conditionally set the defaults for custom element vs widget syntax since we expose different APIs
-        if (context['isCustomElement']) {
-          return {'instruction': ''};
-        } else {
-          return {'definition': null, 'source': null};
+        if (context.isCustomElement) {
+          return { instruction: '' };
         }
+        return { definition: null, source: null };
       }),
     }
   }
- 
+
 
 );
-//////////////////     SUB-IDS     //////////////////
+
+// ////////////////     SUB-IDS     //////////////////
 /**
  * <p>Sub-ID for the help icon element used by EditableValue components.</p>
- * 
+ *
  * @ojsubid oj-label-help-icon
  * @memberof oj.editableValue
  * @ignore
@@ -6065,90 +5809,90 @@ oj.Components.setDefaultOptions(
  * var node = myComp.getNodeBySubId("oj-label-help-icon");
  */
 
-//////////////// fragments /////////////////
+// ////////////// fragments /////////////////
 /**
  * <p>
  * <h3 id="validation-section">
  * Validation and Messaging
  * <a class="bookmarkable-link" title="Bookmarkable Link" href="#validation-section"></a>
  * </h3>
- * An editable component runs validation (normal or deferred) based on the action performed on it 
- * (either by end-user or page author), and the state it was in when the action occurred. Examples 
- * of actions are - creating a component, user changing the value of the component by interacting 
- * with it, the app setting a value programmatically, the app calling the validate() method etc. At 
- * the time the action occurs, the component could already be showing errors, or can have a deferred 
- * error or have no errors. 
+ * An editable component runs validation (normal or deferred) based on the action performed on it
+ * (either by end-user or page author), and the state it was in when the action occurred. Examples
+ * of actions are - creating a component, user changing the value of the component by interacting
+ * with it, the app setting a value programmatically, the app calling the validate() method etc. At
+ * the time the action occurs, the component could already be showing errors, or can have a deferred
+ * error or have no errors.
  * <p>
- * These factors also determine whether validation errors/messages get shown to the user immediately 
- * or get deferred. The following sections highlight the kinds of validation that are run and how 
+ * These factors also determine whether validation errors/messages get shown to the user immediately
+ * or get deferred. The following sections highlight the kinds of validation that are run and how
  * messages get handled.
  * </p>
- * <h4 id="normal-validation-section">Normal Validation 
+ * <h4 id="normal-validation-section">Normal Validation
  * <a class="bookmarkable-link" title="Bookmarkable Link" href="#normal-validation-section"></a></h4>
- * Normal validation is run in the following cases on the display value, using the converter and 
+ * Normal validation is run in the following cases on the display value, using the converter and
  * validators (this includes async-validators) set on the component,
  * and validation errors are reported to user immediately.
  * <ul>
- * <li>When value changes as a result of user interaction all messages are cleared, including custom 
- * messages added by the app, and full validation is run on the UI value. The steps performed are 
+ * <li>When value changes as a result of user interaction all messages are cleared, including custom
+ * messages added by the app, and full validation is run on the UI value. The steps performed are
  * outlined below.
- * <ol> 
+ * <ol>
  * <li>All messages are cleared and <code class="prettyprint">messagesCustom</code> property is cleared</li>
- * <li>If no converter is present then processing continues to next step. If a converter is 
- * present, the UI value is first converted (i.e., parsed). If there is a parse error then 
+ * <li>If no converter is present then processing continues to next step. If a converter is
+ * present, the UI value is first converted (i.e., parsed). If there is a parse error then
  * the messages are shown and processing returns.</li>
- * <li>If there are no validators setup for the component then the value is set on the component. 
- * Otherwise all validators are run in sequence using the parsed value from the previous step. The 
- * implicit required is run first if the component is marked required. When a validation error is 
- * encountered it is remembered and the next validator in the sequence is run. 
+ * <li>If there are no validators setup for the component then the value is set on the component.
+ * Otherwise all validators are run in sequence using the parsed value from the previous step. The
+ * implicit required is run first if the component is marked required. When a validation error is
+ * encountered it is remembered and the next validator in the sequence is run.
  * <ul><li>NOTE: The value is trimmed before required validation is run</li></ul>
  * </li>
  * <li>At the end of the validation run if there are errors, the messages are shown
  * and processing returns. If there are async-validators, those errors are shown as soon as they
  * come in, and not until all validators, sync and async validators, are complete, does processing
  * return, that is, value and valid are updated. If there are no errors, then the
- * <code class="prettyprint">value</code> property is updated and the formatted value displayed on the 
+ * <code class="prettyprint">value</code> property is updated and the formatted value displayed on the
  * UI.</li>
  * </ol>
  * </li>
- * <li>When the <code class="prettyprint">validate</code> method is called by app, all messages are 
+ * <li>When the <code class="prettyprint">validate</code> method is called by app, all messages are
  * cleared and full validation run using the display value. See <code class="prettyprint">validate</code>
  * method on the sub-classes for details. Note: JET validation is designed to catch user input errors, and not invalid
  * data passed from the server; this should be caught on the server.</li>
- * <li>When certain properties change through programmatic intervention by app, the component 
- * determines whether it needs to run normal validation based on the state the component is in. 
+ * <li>When certain properties change through programmatic intervention by app, the component
+ * determines whether it needs to run normal validation based on the state the component is in.
  * Refer to the <a href="#mixed-validation-section">Mixed Validation</a> section below for details. </li>
  * </ul>
- * 
+ *
  * <h4 id="deferred-validation-section">Deferred Validation
  * <a class="bookmarkable-link" title="Bookmarkable Link" href="#deferred-validation-section"></a>
  * </h4>
- * Deferred validation is run in the following cases on the component value using the implicit 
- * required validator if required is true, and validation errors are deferred, i.e., not shown to user immediately. 
- * Refer to the <a href="#deferred-messages-section">Showing Deferred Messages</a> section to 
+ * Deferred validation is run in the following cases on the component value using the implicit
+ * required validator if required is true, and validation errors are deferred, i.e., not shown to user immediately.
+ * Refer to the <a href="#deferred-messages-section">Showing Deferred Messages</a> section to
  * understand how deferred messages can be shown.
  * <ul>
- *  <li>When a component is created and it is required deferred validation is run and no messages are cleared 
- *  prior to running validation.  
- *  Refer to the <a href="#deferred-validators-section">Validators 
- *  Participating in Deferred Validation</a> section for details.</li> 
- *  <li>When the <code class="prettyprint">value</code> property changes due to programmatic 
- *  intervention deferred validation is run, after all messages and messagesCustom property are cleared.</li>  
- *  <li>When the <code class="prettyprint">reset</code> method is called, deferred validation is run 
- *   after all messages and messagesCustom property are cleared.</li>  
- *  <li>When certain properties change through programmatic intervention by app, the component 
- *  determines whether it needs to run deferred validation based on the state the component is in. 
+ *  <li>When a component is created and it is required deferred validation is run and no messages are cleared
+ *  prior to running validation.
+ *  Refer to the <a href="#deferred-validators-section">Validators
+ *  Participating in Deferred Validation</a> section for details.</li>
+ *  <li>When the <code class="prettyprint">value</code> property changes due to programmatic
+ *  intervention deferred validation is run, after all messages and messagesCustom property are cleared.</li>
+ *  <li>When the <code class="prettyprint">reset</code> method is called, deferred validation is run
+ *   after all messages and messagesCustom property are cleared.</li>
+ *  <li>When certain properties change through programmatic intervention by app, the component
+ *  determines whether it needs to run deferred validation based on the state the component is in.
  *  Refer to the <a href="#mixed-validation-section">Mixed Validation</a> section below for details.</li>
  * </ul>
- * 
+ *
  * <h4 id="mixed-validation-section">Mixed Validation
  * <a class="bookmarkable-link" title="Bookmarkable Link" href="#mixed-validation-section"></a>
  * </h4>
- * Either deferred or normal validation is run in the following cases based on the state the 
+ * Either deferred or normal validation is run in the following cases based on the state the
  * component is in and any validation errors encountered are either hidden or shown to user.
  * <ul>
  *  <li>when disabled property changes. See <a href="#disabled">disabled</a> property for details.</li>
- *  <li>when refresh method is called. See <a href="#refresh">refresh</a> method for details.</li> 
+ *  <li>when refresh method is called. See <a href="#refresh">refresh</a> method for details.</li>
  *  <li>when converter property changes. Not all EditableValue components have the converter property. See
  *  the sub-classes that have the converter property for details, e.g., {@link oj.inputBase#converter}.</li>
  *  <li>when required property changes. Not all EditableValue components have the required property. See
@@ -6157,22 +5901,22 @@ oj.Components.setDefaultOptions(
  *  the sub-classes that have the validators property for details, e.g., {@link oj.inputBase#validators}.</li>
  *  <li>when asyncValidators property changes. Not all EditableValue components have the asyncValidators property. See
  *  the sub-classes that have the asyncValidators property for details, e.g., {@link oj.inputBase#async-validators}.</li>
- *   
+ *
  * </ul>
  * </p>
- * 
+ *
  * <p>
  * <h3 id="deferred-messages-section">
  * Showing Deferred Messages
  * <a class="bookmarkable-link" title="Bookmarkable Link" href="#deferred-messages-section"></a>
  * </h3>
- * Deferred validation messages are displayed only when page author requests for it explicitly in 
- * one of the following ways: 
+ * Deferred validation messages are displayed only when page author requests for it explicitly in
+ * one of the following ways:
  * <ul>
  * <li>calls the <a href="#showMessages"><code class="prettyprint">showMessages</code></a> method on the component</li>
  * </ul>
  * </p>
- * 
+ *
  * <p>
  * <h3 id="deferred-validators-section">
  * Validators Participating in Deferred Validation
@@ -6180,17 +5924,38 @@ oj.Components.setDefaultOptions(
  * </h3>
  * The required validator is the only validator type that participates in deferred validation.
  * The required property needs to be set to true for the required validator to run.
- * </p> 
+ * </p>
  * @ojfragment validationAndMessagingDoc - Used in the general section of classdesc
  * @memberof oj.editableValue
+ */
+/**
+ * <p>Disabled content: JET supports an accessible luminosity contrast ratio,
+ * as specified in <a href="http://www.w3.org/TR/WCAG20/#visual-audio-contrast-contrast">WCAG 2.0 - Section 1.4.3 "Contrast"</a>,
+ * in the themes that are accessible.  (See the "Theming" chapter of the JET Developer Guide for more information on which
+ * themes are accessible.)  Note that Section 1.4.3 says that text or images of text that are part of an inactive user
+ * interface component have no contrast requirement.  Because disabled content may not meet the minimum contrast ratio
+ * required of enabled content, it cannot be used to convey meaningful information.<p>
+ *
+ * @ojfragment accessibilityDisabledEditableValue
+ * @memberof oj.editableValue
+ * @instance
+ */
+/**
+ * <p>The placeholder text is not read reliably by the screen reader. For accessibility reasons, you need to associate the text to its
+ * JET form component using aria-describedby.
+ * <p>
+ *
+ * @ojfragment accessibilityPlaceholderEditableValue
+ * @memberof oj.editableValue
+ * @instance
  */
 
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
  */
-
-/*jslint browser: true*/
+/* global ThemeUtils:false, Context:false */
+/* jslint browser: true*/
 
 /**
  * A messaging strategy that places the messaging content inline (underneath) the editableValue
@@ -6202,8 +5967,7 @@ oj.Components.setDefaultOptions(
  * @extends {oj.MessagingStrategy}
  * @private
  */
-oj.InlineMessagingStrategy = function (displayOptions)
-{
+oj.InlineMessagingStrategy = function (displayOptions) {
   this.Init(displayOptions);
 };
 
@@ -6217,7 +5981,7 @@ oj.ComponentMessaging.registerMessagingStrategy(oj.ComponentMessaging._DISPLAY_T
 
 // Subclass from oj.MessagingStrategy
 oj.Object.createSubclass(oj.InlineMessagingStrategy,
-  oj.MessagingStrategy, "oj.InlineMessagingStrategy");
+  oj.MessagingStrategy, 'oj.InlineMessagingStrategy');
 
 /**
  * Reinitializes with the new display options and updates component messaging using the new content.
@@ -6229,8 +5993,7 @@ oj.Object.createSubclass(oj.InlineMessagingStrategy,
  * @override
  *
  */
-oj.InlineMessagingStrategy.prototype.reactivate = function (newDisplayOptions)
-{
+oj.InlineMessagingStrategy.prototype.reactivate = function (newDisplayOptions) {
   oj.InlineMessagingStrategy.superclass.reactivate.call(this, newDisplayOptions);
   this._updateInlineMessage();
 };
@@ -6249,11 +6012,10 @@ oj.InlineMessagingStrategy.prototype.reactivate = function (newDisplayOptions)
  * @private
  * @override
  */
-oj.InlineMessagingStrategy.prototype.shouldUpdate = function (content)
-{
+oj.InlineMessagingStrategy.prototype.shouldUpdate = function (content) {
   // content is messaging content, and in EditableValue we add a validityState for
   // messages, valid, and severity, so if validityState is there, we know messages are there.
-  return content && content.validityState !== undefined ? true : false;
+  return !!(content && content.validityState !== undefined);
 };
 
 /**
@@ -6263,8 +6025,7 @@ oj.InlineMessagingStrategy.prototype.shouldUpdate = function (content)
  * @private
  * @override
  */
-oj.InlineMessagingStrategy.prototype.update = function ()
-{
+oj.InlineMessagingStrategy.prototype.update = function () {
   oj.InlineMessagingStrategy.superclass.update.call(this);
   this._updateInlineMessage();
 };
@@ -6277,8 +6038,7 @@ oj.InlineMessagingStrategy.prototype.update = function ()
  * @private
  * @override
  */
-oj.InlineMessagingStrategy.prototype.deactivate = function ()
-{
+oj.InlineMessagingStrategy.prototype.deactivate = function () {
   this._removeMessagingContentRootDom();
   oj.InlineMessagingStrategy.superclass.deactivate.call(this);
 };
@@ -6290,21 +6050,19 @@ oj.InlineMessagingStrategy.prototype.deactivate = function ()
  * @memberof oj.InlineMessagingStrategy
  * @instance
  */
-oj.InlineMessagingStrategy.prototype._getDefaultAnimation = function()
-{
+oj.InlineMessagingStrategy.prototype._getDefaultAnimation = function () {
   // Load the default animation once per page scope
-  if (!oj.InlineMessagingStrategy._defaultAnimation)
-  {
-    var animation = (oj.ThemeUtils.parseJSONFromFontFamily('oj-messaging-inline-option-defaults') || {})["animation"];
+  if (!oj.InlineMessagingStrategy._defaultAnimation) {
+    var animation = (ThemeUtils.parseJSONFromFontFamily('oj-messaging-inline-option-defaults') || {}).animation;
     animation = animation || {};
-    oj.InlineMessagingStrategy._defaultAnimation = animation; 
+    oj.InlineMessagingStrategy._defaultAnimation = animation;
   }
-  
+
   return oj.InlineMessagingStrategy._defaultAnimation;
 };
 
 /**
- * Replace animation options with runtime values, such as oldHeight and 
+ * Replace animation options with runtime values, such as oldHeight and
  * newHeight, which are specified as placeholders in the default animations
  * but their values are not known until runtime.
  *
@@ -6315,35 +6073,35 @@ oj.InlineMessagingStrategy.prototype._getDefaultAnimation = function()
  * @memberof oj.InlineMessagingStrategy
  * @instance
  */
-oj.InlineMessagingStrategy.prototype._replaceAnimationOptions = function (effects, map)
-{
+oj.InlineMessagingStrategy.prototype._replaceAnimationOptions = function (effects, map) {
   var effectsAsString;
   var isEffectsTypeofString;
 
-  if (!oj.StringUtils.isString(effects))
-  {
+  if (!oj.StringUtils.isString(effects)) {
     isEffectsTypeofString = false;
     effectsAsString = JSON.stringify(effects);
-  }
-  else
-  {
+  } else {
     isEffectsTypeofString = true;
-    effectsAsString = effects + ""; // append "" to get around a closure compiler warning
+    effectsAsString = effects + ''; // append "" to get around a closure compiler warning
   }
 
-  for (var key in map)
-  {
+  var keys = Object.keys(map);
+  for (var i = 0; i < keys.length; i++) {
+    var key = keys[i];
     effectsAsString = effectsAsString.replace(new RegExp(key, 'g'), map[key]);
   }
 
-  effects = isEffectsTypeofString ? effectsAsString :
+  var _effects = isEffectsTypeofString ? effectsAsString :
     /** @type {Object} */ (JSON.parse(effectsAsString));
 
-  return effects;
+  return _effects;
 };
 
 /**
  * Determine the animation for displaying new messaging content.
+ * returns 'open' if the inline message is getting bigger with the new content
+ * returns 'close' if the inline message is getting smaller with the new content
+ * else returns 'noanimation' if the inline message size is the same
  *
  * @param {jQuery} rootElem - The root element for inline message.
  * @param {string} newContent - The new content to display.
@@ -6351,35 +6109,41 @@ oj.InlineMessagingStrategy.prototype._replaceAnimationOptions = function (effect
  * @memberof oj.InlineMessagingStrategy
  * @instance
  */
-oj.InlineMessagingStrategy.prototype._determineAnimation = function(rootElem, newContent)
-{
+oj.InlineMessagingStrategy.prototype._determineAnimation = function (rootElem, newContent) {
   var action;
   var effect;
   var parsedEffect;
   var defaults = this._getDefaultAnimation();
-  if (defaults)
-  {
+  if (defaults) {
     var el = rootElem[0];
-    var oldContent = rootElem[0].innerHTML;// @HTMLUpdateOK
+    var oldContent = el.innerHTML;// @HTMLUpdateOK
     var oldHeight = el.offsetHeight;
     var newHeight;
-    
-    rootElem[0].innerHTML = newContent;// @HTMLUpdateOK
+
+    el.innerHTML = newContent;// @HTMLUpdateOK
     newHeight = el.offsetHeight;
-    rootElem[0].innerHTML = oldContent;// @HTMLUpdateOK
+    el.innerHTML = oldContent;// @HTMLUpdateOK
 
-    action = newHeight > oldHeight ? 'open' : 'close';
-    effect = defaults[action];
+    if (newHeight > oldHeight) {
+      action = 'open';
+    } else if (newHeight < oldHeight) {
+      action = 'close';
+    } else {
+      action = 'noanimation';
+    }
 
-    if (effect)
-    {
-      parsedEffect = this._replaceAnimationOptions(effect, {'#oldHeight': oldHeight + 'px',
-                                                            '#newHeight': newHeight + 'px'});
+    if (action !== 'noanimation') {
+      effect = defaults[action];
+
+      if (effect) {
+        parsedEffect = this._replaceAnimationOptions(effect, { '#oldHeight': oldHeight + 'px',
+          '#newHeight': newHeight + 'px' });
+      }
     }
   }
-  
-  return {action: action,
-          effect: parsedEffect};
+
+  return { action: action,
+    effect: parsedEffect };
 };
 
 /**
@@ -6389,25 +6153,22 @@ oj.InlineMessagingStrategy.prototype._determineAnimation = function(rootElem, ne
  * @memberof oj.InlineMessagingStrategy
  * @instance
  */
-oj.InlineMessagingStrategy.prototype._setBusyState = function()
-{
-  // Set a page-level busy state if not already set  
-  if (!this._resolveBusyState)
-  {
+oj.InlineMessagingStrategy.prototype._setBusyState = function () {
+  // Set a page-level busy state if not already set
+  if (!this._resolveBusyState) {
     var component = this.GetComponent();
     var jElem = component ? component.element : null;
     var domElem = jElem ? jElem[0] : null;
-    var busyContext = oj.Context.getContext(domElem).getBusyContext();
+    var busyContext = Context.getContext(domElem).getBusyContext();
     var description = 'The page is waiting for inline message ';
-    
-    if (domElem && domElem.id)
-    {
+
+    if (domElem && domElem.id) {
       description += 'for "' + domElem.id + '" ';
     }
     description += 'to open/close';
 
-    this._resolveBusyState = busyContext.addBusyState({'description': description});
-  }  
+    this._resolveBusyState = busyContext.addBusyState({ description: description });
+  }
 };
 
 /**
@@ -6417,10 +6178,8 @@ oj.InlineMessagingStrategy.prototype._setBusyState = function()
  * @memberof oj.InlineMessagingStrategy
  * @instance
  */
-oj.InlineMessagingStrategy.prototype._clearBusyState = function()
-{
-  if (this._resolveBusyState)
-  {
+oj.InlineMessagingStrategy.prototype._clearBusyState = function () {
+  if (this._resolveBusyState) {
     this._resolveBusyState();
     this._resolveBusyState = null;
   }
@@ -6435,77 +6194,99 @@ oj.InlineMessagingStrategy.prototype._clearBusyState = function()
  * @memberof oj.InlineMessagingStrategy
  * @instance
  */
-oj.InlineMessagingStrategy.prototype._queueAction = function(contentToShow)
-{
+oj.InlineMessagingStrategy.prototype._queueAction = function (contentToShow) {
   var self = this;
   var rootElem = this.$messagingContentRoot;
 
+  // Return if we are animating. This flag is set right before we
+  // start animating. When animation is done, it will call _queueAction
+  // again with this._currentContentToShow. That way we only show the latest content.
+  // Otherwise we may start a new animation or we may swap content
+  //  while we are still animating a previous contentToShow.
+  if (self._inInlineMessagingAnimation) {
+    this._currentContentToShow = contentToShow;
+    return;
+  }
+  this._currentContentToShow = null;
   this._setBusyState();
-  
+
   // If there is a pending timeout, clear it and set a new one so that only the
   // last animation queued within the same tick will be run.  Otherwise we will
   // end up with too many animation since the messaging framework keeps clearing
   // and updating the message display during validation, etc.
-  if (this._timeoutId)
-  {
+  if (this._timeoutId) {
     clearTimeout(this._timeoutId);
   }
 
-  this._timeoutId = setTimeout(function() {
+  this._timeoutId = setTimeout(function () {
     self._timeoutId = null;
-    
+
     // Make sure $messagingContentRoot is still there.  It could have been
     // removed by the time the timeout function is run.
-    if (rootElem && rootElem[0])
-    {
+    if (rootElem && rootElem[0]) {
       // Parse and substitute runtime values in animation options
       var actionEffect = self._determineAnimation(rootElem, contentToShow);
-      // action close means the message container is getting smaller
-      // (may be a new, smaller message), if it is open it is
-      // getting larger.
+      // action 'close' means the message container is getting smaller
+      // (may be a new, smaller message), if it is 'open' it is
+      // getting larger. If it is 'noanimation' the size hasn't changed and
+      // we don't animate in this case.
       var action = actionEffect.action;
       var effect = actionEffect.effect;
-      
-      // aria-live polite is needed so a screen reader will read the inline message without the
-      // user needing to set focus to the input field. aria-live: 'off' is needed before
-      // content animates otherwise JAWS will re-read the message.
-      // We think JAWS re-reads when the dom changes, even if that is with css.
-      // This still doesn't work in Chrome because Chrome or JAWS on Chrome
-      // seem to buffer the aria-live: polite and not read the aria-live: off.
-      // The accessibility team agrees that because it works in
-      // Firefox this is either a JAWS or Chrome bug, not a JET bug.
-      if (action === 'close') {
-        rootElem[0].setAttribute('aria-live', 'off');
-      } else {
-        rootElem[0].setAttribute('aria-live', 'polite');
-      }
 
-      // Set the new content first if we're opening. We don't animate in if 'open'.
-      if (action == 'open')
-      {
+      if (action === 'noanimation') {
         rootElem[0].innerHTML = contentToShow;// @HTMLUpdateOK
-      }
-
-      // Invoke animation
-      oj.AnimationUtils.startAnimation(rootElem[0], 'inline-' + action, effect,
-        self.GetComponent()).then(function () {
-          // Set the new content last if we're closing; in other words,
-          // if we are closing we are animating
-          // the old content before we switch in the new content, and to prevent a JAWS re-read,
-          // we set aria-live to 'off' above. Now that we are done animating set it to
-          // polite so JAWS will read the new message.
-        if (action === 'close')
-        {
+        self._clearBusyState();
+      } else {
+        // aria-live polite is needed so a screen reader will read the inline message without the
+        // user needing to set focus to the input field. aria-live: 'off' is needed before
+        // content animates otherwise JAWS will re-read the message.
+        // We think JAWS re-reads when the dom changes, even if that is with css.
+        // This still doesn't work in Chrome because Chrome or JAWS on Chrome
+        // seem to buffer the aria-live: polite and not read the aria-live: off.
+        // The accessibility team agrees that because it works in
+        // Firefox this is either a JAWS or Chrome bug, not a JET bug.
+        if (action === 'close') {
+          rootElem[0].setAttribute('aria-live', 'off');
+        } else {
           rootElem[0].setAttribute('aria-live', 'polite');
-          rootElem[0].innerHTML = contentToShow;// @HTMLUpdateOK
         }
 
-        // Clear busy state when animation end
-        self._clearBusyState();
-      });
-    }
-    else
-    {
+        // Set the new content first if we're opening. We don't animate in if 'open'.
+        if (action === 'open') {
+          rootElem[0].innerHTML = contentToShow;// @HTMLUpdateOK
+        }
+        // Invoke animation
+        self._inInlineMessagingAnimation = true;
+        // eslint-disable-next-line no-undef
+        AnimationUtils.startAnimation(rootElem[0], 'inline-' + action, effect,
+          self.GetComponent()).then(function () {
+            var afterAnimateContentToShow;
+            self._inInlineMessagingAnimation = false;
+
+            // Set the new content last if we're closing; in other words,
+            // if we are closing we are animating
+            // the old content before we switch in the new content, and to prevent a JAWS re-read,
+            // we set aria-live to 'off' above. Now that we are done animating set it to
+            // polite so JAWS will read the new message.
+            if (action === 'close') {
+              rootElem[0].setAttribute('aria-live', 'polite');
+              rootElem[0].innerHTML = contentToShow;// @HTMLUpdateOK
+            }
+            // Clear busy state when animation ends. If _queueAction was called
+            // while we were animating the previous _queueAction request,
+            // we saved the _currentContentToShow and returned. Now go
+            // ahead a call _queueAction with that new content now that the
+            // animation from the previous contentToShow has ended.
+            if (self._currentContentToShow !== null) {
+              afterAnimateContentToShow = self._currentContentToShow;
+              self._currentContentToShow = null;
+              self._queueAction(afterAnimateContentToShow);
+            } else {
+              self._clearBusyState();
+            }
+          });
+      }
+    } else {
       // Just clear the busy state if $messagingContentRoot no longer exists
       self._clearBusyState();
     }
@@ -6520,8 +6301,7 @@ oj.InlineMessagingStrategy.prototype._queueAction = function(contentToShow)
  * @memberof oj.InlineMessagingStrategy
  * @instance
  */
-oj.InlineMessagingStrategy.prototype._updateInlineMessage = function()
-{
+oj.InlineMessagingStrategy.prototype._updateInlineMessage = function () {
   var contentToShow;
   var domNode;
 
@@ -6529,55 +6309,43 @@ oj.InlineMessagingStrategy.prototype._updateInlineMessage = function()
   contentToShow = this._buildInlineHtml();
 
   // create the inline messaging dom if there is content to show and the dom hasn't been created.
-  if (contentToShow && this.$messagingContentRoot == null)
-  {
+  if (contentToShow && this.$messagingContentRoot == null) {
     this._createInlineMessage();
   }
 
-  if (this.$messagingContentRoot && this.$messagingContentRoot[0])
-  {
+  if (this.$messagingContentRoot && this.$messagingContentRoot[0]) {
     // Only enable default animation for custom elements so that automated tests
-    // for legacy components are not affected    
-    if (this.GetComponent()._IsCustomElement())
-    {
+    // for legacy components are not affected
+    if (this.GetComponent()._IsCustomElement()) {
       // This may be called multiple times within the same event cycle because the
       // old message is cleared before validation and the message is
-      // reconstructed.  Since we now have animation for inline message, we don't 
-      // want to update the DOM every single time.  Instead we queue up the 
-      // updates and will only show the last one within the same event cyle.    
+      // reconstructed.  Since we now have animation for inline message, we don't
+      // want to update the DOM every single time.  Instead we queue up the
+      // updates and will only show the last one within the same event cyle.
       this._queueAction(contentToShow);
-    }
-    else
-    {
+    } else if (contentToShow) {
       // Legacy components don't have animation so just update the DOM
-      if (contentToShow)
-      {
-        // push new content into inline message dom
-        domNode = this.$messagingContentRoot[0];
+      // push new content into inline message dom
+      domNode = this.$messagingContentRoot[0];
 
-        // contentToShow includes content that may come from app. It is scrubbed for illegal tags
-        // before setting to innerHTML
-        domNode.innerHTML = contentToShow;  // @HTMLUpdateOK
-
-      }
-      else
-      {
-        // if there is no content to show and inline message dom is currently there, remove the dom.
-          // NOTE: If you see that a button seems to be losing its click event
-          // after inline messaging validation or after a reset
-          // it may be because the button is moving as a result of the inline messaging appearing
-          // and/or disappearing. The workaround for the user is to use 'mousedown' event instead
-          // of the 'click' event.
-        this._removeMessagingContentRootDom();
-      }
+      // contentToShow includes content that may come from app. It is scrubbed for illegal tags
+      // before setting to innerHTML
+      domNode.innerHTML = contentToShow;  // @HTMLUpdateOK
+    } else {
+      // if there is no content to show and inline message dom is currently there, remove the dom.
+      // NOTE: If you see that a button seems to be losing its click event
+      // after inline messaging validation or after a reset
+      // it may be because the button is moving as a result of the inline messaging appearing
+      // and/or disappearing. The workaround for the user is to use 'mousedown' event instead
+      // of the 'click' event.
+      this._removeMessagingContentRootDom();
     }
   }
 };
 
-oj.InlineMessagingStrategy.prototype._createInlineMessage = function ()
-{
+oj.InlineMessagingStrategy.prototype._createInlineMessage = function () {
   var widget;
-  
+
   this.$messagingContentRoot = $(this._getInlineContentHtml());
   this._addAriaDescribedBy(this.$messagingContentRoot);
   this._addAriaLive(this.$messagingContentRoot);
@@ -6595,8 +6363,7 @@ oj.InlineMessagingStrategy.prototype._createInlineMessage = function ()
  * @memberof oj.InlineMessagingStrategy
  * @instance
  */
-oj.InlineMessagingStrategy.prototype._getInlineContentHtml = function ()
-{
+oj.InlineMessagingStrategy.prototype._getInlineContentHtml = function () {
   return "<div class='oj-messaging-inline-container'></div>";
 };
 
@@ -6608,10 +6375,8 @@ oj.InlineMessagingStrategy.prototype._getInlineContentHtml = function ()
  * @memberof oj.InlineMessagingStrategy
  * @instance
  */
-oj.InlineMessagingStrategy.prototype._removeMessagingContentRootDom = function ()
-{
-  if (this.$messagingContentRoot != null)
-  {
+oj.InlineMessagingStrategy.prototype._removeMessagingContentRootDom = function () {
+  if (this.$messagingContentRoot != null) {
     var messagingContentRoot = this.$messagingContentRoot[0];
     this._removeAriaDescribedBy(this.$messagingContentRoot);
     messagingContentRoot.parentNode.removeChild(messagingContentRoot);
@@ -6627,8 +6392,7 @@ oj.InlineMessagingStrategy.prototype._removeMessagingContentRootDom = function (
  * @instance
  * @private
  */
-oj.InlineMessagingStrategy.prototype._addAriaDescribedBy = function (messagingRoot)
-{
+oj.InlineMessagingStrategy.prototype._addAriaDescribedBy = function (messagingRoot) {
   var describedby;
   var $launcher;
   var messagingRootId;
@@ -6663,8 +6427,7 @@ oj.InlineMessagingStrategy.prototype._addAriaDescribedBy = function (messagingRo
  * @instance
  * @private
  */
-oj.InlineMessagingStrategy.prototype._addAriaLive = function (messagingRoot)
-{
+oj.InlineMessagingStrategy.prototype._addAriaLive = function (messagingRoot) {
   oj.Assert.assertPrototype(messagingRoot, $);
   messagingRoot[0].setAttribute('aria-live', 'polite');
 };
@@ -6676,8 +6439,7 @@ oj.InlineMessagingStrategy.prototype._addAriaLive = function (messagingRoot)
  * @instance
  * @private
  */
-oj.InlineMessagingStrategy.prototype._removeAriaDescribedBy = function(messagingRoot)
-{
+oj.InlineMessagingStrategy.prototype._removeAriaDescribedBy = function (messagingRoot) {
   var describedby;
   var index;
   var launcher;
@@ -6711,19 +6473,16 @@ oj.InlineMessagingStrategy.prototype._removeAriaDescribedBy = function(messaging
  * @memberof oj.InlineMessagingStrategy
  * @instance
  */
-oj.InlineMessagingStrategy.prototype._buildInlineHtml = function ()
-{
+oj.InlineMessagingStrategy.prototype._buildInlineHtml = function () {
   var document;
 
   // For now anyway, ShowMessages is always true since the inlineMessaging case is for messaging.
-  if (this.ShowMessages())
-  {
+  if (this.ShowMessages()) {
     document = this.GetComponent().document[0];
     // returns messages or "" if there are none
     return this._buildMessagesHtml(document);
   }
-  else
-    return "";
+  return '';
 };
 
 /**
@@ -6734,15 +6493,13 @@ oj.InlineMessagingStrategy.prototype._buildInlineHtml = function ()
  * @memberof oj.InlineMessagingStrategy
  * @instance
  */
-oj.InlineMessagingStrategy.prototype._buildMessagesHtml = function (document)
-{
-  var content = "";
+oj.InlineMessagingStrategy.prototype._buildMessagesHtml = function (document) {
+  var content = '';
   var maxSeverity;
   var messages;
   var renderSeveritySelectors = true;
 
-  if (this.HasMessages())
-  {
+  if (this.HasMessages()) {
     messages = this.GetMessages();
     maxSeverity = this.GetMaxSeverity();
     content =
@@ -6751,13 +6508,14 @@ oj.InlineMessagingStrategy.prototype._buildMessagesHtml = function (document)
   }
   return content;
 };
+
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
  */
 
-/*jslint browser: true*/
-
+/* jslint browser: true*/
+/* global Promise:false, Hammer:false, Components:false, Message:false, Context:false, ThemeUtils:false, Config:false, Translations:false */
 /**
  * A messaging strategy that uses an instance of ojPopup component to show and hide messaging content.
  *
@@ -6767,9 +6525,8 @@ oj.InlineMessagingStrategy.prototype._buildMessagesHtml = function (document)
  * @extends {oj.MessagingStrategy}
  * @private
  */
-oj.PopupMessagingStrategy = function (displayOptions)
-{
-  this.Init(displayOptions); 
+oj.PopupMessagingStrategy = function (displayOptions) {
+  this.Init(displayOptions);
 };
 
 /**
@@ -6781,7 +6538,7 @@ oj.ComponentMessaging.registerMessagingStrategy(oj.ComponentMessaging._DISPLAY_T
 oj.PopupMessagingStrategy);
 
 // Subclass from oj.MessagingStrategy
-oj.Object.createSubclass(oj.PopupMessagingStrategy, oj.MessagingStrategy, "oj.PopupMessagingStrategy");
+oj.Object.createSubclass(oj.PopupMessagingStrategy, oj.MessagingStrategy, 'oj.PopupMessagingStrategy');
 
 /**
  * Messaging popup defaults for components, by component type. A special 'default' type defines the
@@ -6802,61 +6559,61 @@ oj.PopupMessagingStrategy._DEFAULTS_BY_COMPONENT =
   //
   // on touch devices: the "press" event name maps to Hammer's press event, so a touch and hold
   // will open the popup.
-  "ojRadioset":
+  ojRadioset:
   {
     position: 'launcher',
     // when press opens popup, the user taps elsewhere to dismiss popup
-    events: {open: "focusin mouseenter press", close: "mouseleave"}
+    events: { open: 'focusin mouseenter press', close: 'mouseleave' }
   },
-  "ojCheckboxset":
+  ojCheckboxset:
   {
     position: 'launcher',
     // when press opens popup, the user taps elsewhere to dismiss popup
-    events: {open: "focusin mouseenter press", close: "mouseleave"}
+    events: { open: 'focusin mouseenter press', close: 'mouseleave' }
   },
   // Since we now add extra dom on the input components for inline messages, we don't want to
   // position on the tip of the component root. Instead we want to position on the main part of the
   // component, which is in a lot of cases the launcher. In the case of inputDate/Time/Number,
   // it's the launcher's parent (inputDate/Time/Number wrap input and buttons with a parent).
-  "ojInputText":
+  ojInputText:
   {
     position: 'launcher',
-    events: {open: "focusin"}
+    events: { open: 'focusin' }
   },
-  "ojTextArea":
+  ojTextArea:
   {
     position: 'launcher',
-    events: {open: "focusin"}
+    events: { open: 'focusin' }
   },
-  "ojInputPassword":
+  ojInputPassword:
   {
     position: 'launcher',
-    events: {open: "focusin"}
+    events: { open: 'focusin' }
   },
-  "ojSwitch":
+  ojSwitch:
   {
     position: 'launcher',
-    events: {open: "focusin mouseenter", close: "mouseleave"}
+    events: { open: 'focusin mouseenter', close: 'mouseleave' }
   },
-  "ojSlider":
+  ojSlider:
   {
     position: 'launcher',
-    events: {open: "focusin mouseenter", close: "mouseleave"}
+    events: { open: 'focusin mouseenter', close: 'mouseleave' }
   },
-  "ojColorSpectrum":
+  ojColorSpectrum:
   {
     position: 'launcher',
-    events: {open: "focusin mouseenter", close: "mouseleave"}
+    events: { open: 'focusin mouseenter', close: 'mouseleave' }
   },
-  "ojColorPalette":
+  ojColorPalette:
   {
     position: 'launcher',
-    events: {open: "focusin mouseenter", close: "mouseleave"}
+    events: { open: 'focusin mouseenter', close: 'mouseleave' }
   },
-  "default":
+  default:
   {
     position: 'launcher-wrapper',
-    events: {open: "focusin"}
+    events: { open: 'focusin' }
   }
 };
 
@@ -6865,42 +6622,42 @@ oj.PopupMessagingStrategy._DEFAULTS_BY_COMPONENT =
  * @const
  * @type {string}
  */
-oj.PopupMessagingStrategy._SELECTOR_FORMCONTROL_HINT = "oj-form-control-hint";
+oj.PopupMessagingStrategy._SELECTOR_FORMCONTROL_HINT = 'oj-form-control-hint';
 
 /**
  * @private
  * @const
  * @type {string}
  */
-oj.PopupMessagingStrategy._SELECTOR_FORMCONTROL_HINT_CONVERTER = "oj-form-control-hint-converter";
+oj.PopupMessagingStrategy._SELECTOR_FORMCONTROL_HINT_CONVERTER = 'oj-form-control-hint-converter';
 
 /**
  * @private
  * @const
  * @type {string}
  */
-oj.PopupMessagingStrategy._SELECTOR_FORMCONTROL_HINT_VALIDATOR = "oj-form-control-hint-validator";
+oj.PopupMessagingStrategy._SELECTOR_FORMCONTROL_HINT_VALIDATOR = 'oj-form-control-hint-validator';
 
 /**
  * @private
  * @const
  * @type {string}
  */
-oj.PopupMessagingStrategy._SELECTOR_FORMCONTROL_HINT_TITLE = "oj-form-control-hint-title";
+oj.PopupMessagingStrategy._SELECTOR_FORMCONTROL_HINT_TITLE = 'oj-form-control-hint-title';
 
 /**
  * @private
  * @const
  * @type {string}
  */
-oj.PopupMessagingStrategy._OPEN_NAMESPACE = ".ojPopupMessagingOpen";
+oj.PopupMessagingStrategy._OPEN_NAMESPACE = '.ojPopupMessagingOpen';
 
 /**
  * @private
  * @const
  * @type {string}
  */
-oj.PopupMessagingStrategy._CLOSE_NAMESPACE = ".ojPopupMessagingClose";
+oj.PopupMessagingStrategy._CLOSE_NAMESPACE = '.ojPopupMessagingClose';
 
 /**
  * Sets up a tooltip for the component instance using the messaging content provided.
@@ -6912,8 +6669,7 @@ oj.PopupMessagingStrategy._CLOSE_NAMESPACE = ".ojPopupMessagingClose";
  * @override
  * @instance
  */
-oj.PopupMessagingStrategy.prototype.activate = function (cm)
-{
+oj.PopupMessagingStrategy.prototype.activate = function (cm) {
   oj.PopupMessagingStrategy.superclass.activate.call(this, cm);
   this._initMessagingPopup();
 };
@@ -6927,14 +6683,12 @@ oj.PopupMessagingStrategy.prototype.activate = function (cm)
  * @instance
  * @override
  */
-oj.PopupMessagingStrategy.prototype.reactivate = function (newDisplayOptions)
-{
+oj.PopupMessagingStrategy.prototype.reactivate = function (newDisplayOptions) {
   oj.PopupMessagingStrategy.superclass.reactivate.call(this, newDisplayOptions);
   this._updatePopupIfOpen();
 };
 
-oj.PopupMessagingStrategy.prototype.update = function ()
-{
+oj.PopupMessagingStrategy.prototype.update = function () {
   oj.PopupMessagingStrategy.superclass.update.call(this);
   this._updatePopupIfOpen();
 };
@@ -6947,8 +6701,7 @@ oj.PopupMessagingStrategy.prototype.update = function ()
  * @instance
  * @override
  */
-oj.PopupMessagingStrategy.prototype.deactivate = function ()
-{
+oj.PopupMessagingStrategy.prototype.deactivate = function () {
   this._unregisterLauncherEvents();
   this._destroyTooltip();
   oj.PopupMessagingStrategy.superclass.deactivate.call(this);
@@ -6960,8 +6713,7 @@ oj.PopupMessagingStrategy.prototype.deactivate = function ()
  * @memberof oj.PopupMessagingStrategy
  * @instance
  */
-oj.PopupMessagingStrategy.prototype.close = function ()
-{
+oj.PopupMessagingStrategy.prototype.close = function () {
   this._closePopup();
 };
 /**
@@ -6970,32 +6722,27 @@ oj.PopupMessagingStrategy.prototype.close = function ()
  * @memberof oj.PopupMessagingStrategy
  * @instance
  */
-oj.PopupMessagingStrategy.prototype._closePopup = function ()
-{
-  function doClose(resolve)
-  {
-    if (this._isPopupInitialized())
-    {
-      if (resolve)
-      {
+oj.PopupMessagingStrategy.prototype._closePopup = function () {
+  function doClose(resolve) {
+    if (this._isPopupInitialized()) {
+      if (resolve) {
         // Add an event listener to resolve the promise
-        this._setActionResolver(this.$messagingContentRoot, "close", resolve);
+        this._setActionResolver(this.$messagingContentRoot, 'close', resolve);
       }
-          
-      this.$messagingContentRoot.ojPopup("close");
+
+      this.$messagingContentRoot.ojPopup('close');
 
       // Just return if we call ojPopup close.  The promise will be resolved
       // by the ojclose event listener.
       return;
     }
-    
-    if (resolve)
-    {
+
+    if (resolve) {
       // Resolve the promise immediately if we didn't call ojPopup close
       resolve(true);
     }
   }
-  
+
   this._queueAction(doClose.bind(this));
 };
 
@@ -7004,37 +6751,34 @@ oj.PopupMessagingStrategy.prototype._closePopup = function ()
  * @memberof oj.PopupMessagingStrategy
  * @instance
  */
-oj.PopupMessagingStrategy.prototype._initMessagingPopup = function ()
-{
-  if (!this._openPopupCallback)
+oj.PopupMessagingStrategy.prototype._initMessagingPopup = function () {
+  if (!this._openPopupCallback) {
     this._registerLauncherEvents();
+  }
 };
 
 /**
  * Add listeners for animation events.
  * We use this to delegate animation events to the editableValue component since
- * the original events are triggered on the popup, which is created internally 
- * and the application cannot bind listeners to it.  By delegating the events, 
+ * the original events are triggered on the popup, which is created internally
+ * and the application cannot bind listeners to it.  By delegating the events,
  * application can bind the listeners to the component.
- * 
+ *
  * @param {jQuery} messagingContentRoot - The jQuery object for the messaging root node
  * @private
  * @memberof oj.PopupMessagingStrategy
  * @instance
  */
-oj.PopupMessagingStrategy.prototype._addAnimateEventListeners = function(messagingContentRoot)
-{
-  var delegateEvent = function(newEventType, event, ui) {
+oj.PopupMessagingStrategy.prototype._addAnimateEventListeners = function (messagingContentRoot) {
+  var delegateEvent = function (newEventType, event, ui) {
     var component = this.GetComponent();
-    if (component && component._trigger)
-    {
+    if (component && component._trigger) {
       // always stop propagation if we have a component to delegate to
       event.stopPropagation();
 
       // prevent default only if the component handler says so, as indicated by
       // a return value of false.
-      if (!component._trigger(newEventType, null, ui))
-      {
+      if (!component._trigger(newEventType, null, ui)) {
         event.preventDefault();
       }
     }
@@ -7047,60 +6791,57 @@ oj.PopupMessagingStrategy.prototype._addAnimateEventListeners = function(messagi
 
 /**
  * Remove listeners for animation events.
- * 
+ *
  * @private
  * @memberof oj.PopupMessagingStrategy
  * @instance
  */
-oj.PopupMessagingStrategy.prototype._removeAnimateEventListeners = function(messagingContentRoot)
-{
+oj.PopupMessagingStrategy.prototype._removeAnimateEventListeners = function (messagingContentRoot) {
   messagingContentRoot.off('ojanimatestart.notewindow');
   messagingContentRoot.off('ojanimateend.notewindow');
 };
 
 /**
  * Set busy state on the component that invokes the notewindow.
- * 
+ *
  * @private
  * @memberof oj.PopupMessagingStrategy
  * @instance
  */
-oj.PopupMessagingStrategy.prototype._setBusyState = function(eventType)
-{
+oj.PopupMessagingStrategy.prototype._setBusyState = function (eventType) {
   var component = this.GetComponent();
   var jElem = component ? component.element : null;
   var domElem = jElem ? jElem[0] : null;
-  var busyContext = oj.Context.getContext(domElem).getBusyContext();
+  var busyContext = Context.getContext(domElem).getBusyContext();
   var description = 'The page is waiting for note window ';
-  
-  if (domElem && domElem.id)
-  {
+
+  if (domElem && domElem.id) {
     description += 'for "' + domElem.id + '" ';
   }
   description += 'to ' + eventType;
 
-  return busyContext.addBusyState({'description': description});
+  return busyContext.addBusyState({ description: description });
 };
 
 /**
  * Set an event listener to resolve promise when popup open/close action ends.
- * 
+ *
  * @private
  * @memberof oj.PopupMessagingStrategy
  * @instance
  */
-oj.PopupMessagingStrategy.prototype._setActionResolver = function(messagingContentRoot, eventType, resolvePromise)
-{
+oj.PopupMessagingStrategy.prototype._setActionResolver = function (
+  messagingContentRoot, eventType, resolvePromise
+) {
   var animationOption;
 
   // Disable animation if there are other queued actions.  Otherwise we will end
   // up with too many animation since the messaging framework keeps clearing and
   // updating the message display during validation, etc.
-  if (this._actionCount > 1)
-  {
+  if (this._actionCount > 1) {
     // Remember the original animation so that we can restore it later
-    animationOption = messagingContentRoot.ojPopup("option", "animation");
-    messagingContentRoot.ojPopup("option", "animation", null);
+    animationOption = messagingContentRoot.ojPopup('option', 'animation');
+    messagingContentRoot.ojPopup('option', 'animation', null);
   }
 
   // Add a busy state for the component.  Even though ojpopup add busy state,
@@ -7108,13 +6849,12 @@ oj.PopupMessagingStrategy.prototype._setActionResolver = function(messagingConte
   var resolveBusyState = this._setBusyState(eventType);
 
   // Add an one-time listener to resolve the promise
-  messagingContentRoot.one('oj' + eventType, function() {
+  messagingContentRoot.one('oj' + eventType, function () {
     // Restore any saved animation option
-    if (animationOption)
-    {
-      messagingContentRoot.ojPopup("option", "animation", animationOption);
+    if (animationOption) {
+      messagingContentRoot.ojPopup('option', 'animation', animationOption);
     }
-    
+
     resolveBusyState();
     resolvePromise(true);
   });
@@ -7128,39 +6868,31 @@ oj.PopupMessagingStrategy.prototype._setActionResolver = function(messagingConte
  * @memberof oj.PopupMessagingStrategy
  * @instance
  */
-oj.PopupMessagingStrategy.prototype._queueAction = function(task)
-{
-  if (this.GetComponent()._IsCustomElement())
-  {
+oj.PopupMessagingStrategy.prototype._queueAction = function (task) {
+  if (this.GetComponent()._IsCustomElement()) {
     // Queue up the action for custom elements to avoid animation overlapping each other
     var self = this;
 
-    var createActionPromise = function(task)
-    {
-      var promise = new Promise(task);
-      promise.then(function() {
-        --self._actionCount;
+    var createActionPromise = function (_task) {
+      var promise = new Promise(_task);
+      promise.then(function () {
+        self._actionCount -= 1;
       });
       return promise;
     };
-    
-    if (!this._actionCount)
-    {
+
+    if (!this._actionCount) {
       // If there is no action in progress, create a new promise directly instead
       // of chaining to any resolved promise to avoid an extra wait state.
       this._actionCount = 1;
       this._actionPromise = createActionPromise(task);
-    }
-    else
-    {
-      ++this._actionCount;
-      this._actionPromise = this._actionPromise.then(function() {
+    } else {
+      this._actionCount += 1;
+      this._actionPromise = this._actionPromise.then(function () {
         return createActionPromise(task);
       });
     }
-  }
-  else
-  {
+  } else {
     // Invoke the action immediately for legacy components since there is no animation
     task(null);
   }
@@ -7174,66 +6906,55 @@ oj.PopupMessagingStrategy.prototype._queueAction = function(task)
  * @memberof oj.PopupMessagingStrategy
  * @instance
  */
-oj.PopupMessagingStrategy.prototype._openPopup = function (event)
-{
-  function doOpen(resolve)
-  {
+oj.PopupMessagingStrategy.prototype._openPopup = function (event) {
+  function doOpen(resolve) {
     var domNode;
     var latestContent;
     var $launcher;
 
-    
-    if (this._canOpenPopup())
-    {
 
+    if (this._canOpenPopup()) {
       latestContent = this._buildPopupHtml();
-      if (!oj.StringUtils.isEmptyOrUndefined(latestContent))
-      {
+      if (!oj.StringUtils.isEmptyOrUndefined(latestContent)) {
         var messagingContentRoot = this._getPopupElement();
-        var isPopupOpen = messagingContentRoot.ojPopup("isOpen");
+        var isPopupOpen = messagingContentRoot.ojPopup('isOpen');
 
         // replace popup messaging content with new content
         domNode = oj.PopupMessagingStrategyPoolUtils.getPopupContentNode(messagingContentRoot);
 
         // latestContent is includes content that may come from app. It is scrubbed for illegal tags
         // before setting to innerHTML
-        domNode.innerHTML = ""; // @HTMLUpdateOK
+        domNode.innerHTML = ''; // @HTMLUpdateOK
         domNode.innerHTML = latestContent; // @HTMLUpdateOK
 
-        if (!isPopupOpen)
-        {
+        if (!isPopupOpen) {
           $launcher = this.GetLauncher();
-          if (event.type === "press")
-          {
+          if (event.type === 'press') {
             this._openPopupOnPressEvent($launcher);
           }
 
-          if (resolve)
-          {
+          if (resolve) {
             // Add an event listener to resolve the promise
-            this._setActionResolver(messagingContentRoot, "open", resolve);
+            this._setActionResolver(messagingContentRoot, 'open', resolve);
           }
-          
-          messagingContentRoot.ojPopup("open", $launcher);
-          
+
+          messagingContentRoot.ojPopup('open', $launcher);
+
           // Just return if we call ojPopup open.  The promise will be resolved
           // by the ojopen event listener.
           return;
-        }
-        else if (isPopupOpen)
-        {
-          messagingContentRoot.ojPopup("refresh");
+        } else if (isPopupOpen) {
+          messagingContentRoot.ojPopup('refresh');
         }
       }
     }
-    
-    if (resolve)
-    {
+
+    if (resolve) {
       // Resolve the promise immediately if we didn't call ojPopup open
       resolve(true);
     }
   }
-  
+
   this._queueAction(doOpen.bind(this));
 };
 
@@ -7242,30 +6963,27 @@ oj.PopupMessagingStrategy.prototype._openPopup = function (event)
  * use press to open the popup.
  * @param {Object|null} jqLauncher
  */
-oj.PopupMessagingStrategy.prototype._openPopupOnPressEvent = function (jqLauncher)
-{
+oj.PopupMessagingStrategy.prototype._openPopupOnPressEvent = function (jqLauncher) {
   this._inPressEvent = true;
 
   // We add these event listeners when we open the popup as a result of the 'press' event
   // and we are going to remove them when we close the popup, as well as when we unregister
   // launcher events to make doubly sure they aren't lying around.
-  /// Use capture phase to make sure we cancel it before any regular bubble listeners hear it.
-  jqLauncher[0].addEventListener("click", this._eatChangeAndClickOnPress, true);
+  // / Use capture phase to make sure we cancel it before any regular bubble listeners hear it.
+  jqLauncher[0].addEventListener('click', this._eatChangeAndClickOnPress, true);
   // need to eat 'change' as well. Otherwise the dialog will close on press up, and the input
   // stays unchecked.
   // This is because when the input  gets the 'change' event, it calls validate,
   // which then updates messages, and if there is no message,
   // then calls _updatePopupIfOpen, contentToShow = "", then it closes the popup.
-  jqLauncher[0].addEventListener("change", this._eatChangeAndClickOnPress, true);
+  jqLauncher[0].addEventListener('change', this._eatChangeAndClickOnPress, true);
 
   // touchend/mousedown/change/click happen in fast succession on tap or press.
   // Android never fires a click event on press up, so after 50ms we clear the inPressEvent flag
   // since the _eatChangeAndClickOnPress callback never gets called for Android.
-  jqLauncher.one("touchend", function (event)
-  {
+  jqLauncher.one('touchend', function () {
     // 50ms.  Make as small as possible to prevent unwanted side effects.
-    setTimeout(function ()
-    {
+    setTimeout(function () {
       this._inPressEvent = false;
     }, 50);
   });
@@ -7275,8 +6993,7 @@ oj.PopupMessagingStrategy.prototype._openPopupOnPressEvent = function (jqLaunche
  * The pressHold gesture fires a click and change event on ios after touchend.  Prevent that here.
  * @private
  */
-oj.PopupMessagingStrategy.prototype._eatChangeAndClickOnPress = function (event)
-{
+oj.PopupMessagingStrategy.prototype._eatChangeAndClickOnPress = function (event) {
       // on ios:
       // if I tap quickly on an input, I get on div: touchstart/touchend/mousedown/change/click
       // if I tap and hold on an input, I get: touchstart
@@ -7288,19 +7005,19 @@ oj.PopupMessagingStrategy.prototype._eatChangeAndClickOnPress = function (event)
 
       // After 'press' release of a radio or checkbox if we do not eat the the click and change events,
       // the dialog closes.
-      if (this._inPressEvent)
-      {
+  if (this._inPressEvent) {
         // For Mobile Safari capture phase at least,
         // returning false doesn't work; must use pD() and sP() explicitly.
-        event.preventDefault();
-        event.stopPropagation();
+    event.preventDefault();
+    event.stopPropagation();
         // the event order is first change, then click.
         // so when we get the click, clear the inPressEvent flag.
-        if (event.type === "click")
-          this._inPressEvent = false;
-      }
+    if (event.type === 'click') {
+      this._inPressEvent = false;
+    }
+  }
 };
-    
+
 /**
  * Determines whether the messaging popup can be opened.
  * @return {boolean}
@@ -7308,11 +7025,10 @@ oj.PopupMessagingStrategy.prototype._eatChangeAndClickOnPress = function (event)
  * @memberof oj.PopupMessagingStrategy
  * @instance
  */
-oj.PopupMessagingStrategy.prototype._canOpenPopup = function ()
-{
+oj.PopupMessagingStrategy.prototype._canOpenPopup = function () {
   var options = this.GetComponent().options;
-  var isDisabled = options['disabled'] || false;
-  var isReadOnly = options['readOnly'] || false;
+  var isDisabled = options.disabled || false;
+  var isReadOnly = options.readOnly || false;
 
   return !(isDisabled || isReadOnly);
 };
@@ -7323,8 +7039,7 @@ oj.PopupMessagingStrategy.prototype._canOpenPopup = function ()
  * @memberof oj.PopupMessagingStrategy
  * @instance
  */
-oj.PopupMessagingStrategy.prototype._updatePopupIfOpen = function ()
-{
+oj.PopupMessagingStrategy.prototype._updatePopupIfOpen = function () {
   var contentToShow;
   var domNode;
   var isLauncherActiveElement;
@@ -7332,36 +7047,30 @@ oj.PopupMessagingStrategy.prototype._updatePopupIfOpen = function ()
   var launcher;
   var messagingContentRoot;
 
-  if (this._isPopupInitialized())
-  {
+  if (this._isPopupInitialized()) {
     messagingContentRoot = this._getPopupElement();
-    isPopupOpen = messagingContentRoot.ojPopup("isOpen");
+    isPopupOpen = messagingContentRoot.ojPopup('isOpen');
     contentToShow = this._buildPopupHtml();
     launcher = this.GetLauncher();
-    if (launcher == null)
+    if (launcher == null) {
       return;
-    isLauncherActiveElement = document.activeElement === this.GetLauncher()[0] ? true : false;
-    if (isPopupOpen)
-    {
-      if (contentToShow)
-      {
+    }
+    isLauncherActiveElement = document.activeElement === this.GetLauncher()[0];
+    if (isPopupOpen) {
+      if (contentToShow) {
         // push new content into popup
         domNode = oj.PopupMessagingStrategyPoolUtils.getPopupContentNode(messagingContentRoot);
 
         // contentToShow is includes content that may come from app. It is scrubbed for illegal tags
         // before setting to innerHTML
-        domNode.innerHTML = ""; // @HTMLUpdateOK
+        domNode.innerHTML = ''; // @HTMLUpdateOK
         domNode.innerHTML = contentToShow; // @HTMLUpdateOK
-        messagingContentRoot.ojPopup("refresh");
-      }
-      else
-      {
+        messagingContentRoot.ojPopup('refresh');
+      } else {
         // if there is no content to show and popup is currently open, close it.
-        messagingContentRoot.ojPopup("close");
+        messagingContentRoot.ojPopup('close');
       }
-    }
-    else if (isLauncherActiveElement && contentToShow)
-    {
+    } else if (isLauncherActiveElement && contentToShow) {
       // if popup is closed but focus is on activeElement re-open it
       this._openPopup(undefined);
     }
@@ -7373,27 +7082,19 @@ oj.PopupMessagingStrategy.prototype._updatePopupIfOpen = function ()
  * @memberof oj.PopupMessagingStrategy
  * @instance
  */
-oj.PopupMessagingStrategy.prototype._unregisterLauncherEvents = function ()
-{
-  var compDefaults;
-  var events;
+oj.PopupMessagingStrategy.prototype._unregisterLauncherEvents = function () {
   var jqLauncher = this.GetLauncher();
-
-  compDefaults = oj.PopupMessagingStrategy._DEFAULTS_BY_COMPONENT[this.GetComponent().widgetName];
-  events = compDefaults ?
-  compDefaults.events : oj.PopupMessagingStrategy._DEFAULTS_BY_COMPONENT["default"].events;
 
   // Remove event handlers setup on launcher
   jqLauncher.off(oj.PopupMessagingStrategy._OPEN_NAMESPACE);
   jqLauncher.off(oj.PopupMessagingStrategy._CLOSE_NAMESPACE);
-  jqLauncher[0].removeEventListener("click", this._eatChangeAndClickOnPress, true);
-  jqLauncher[0].removeEventListener("change", this._eatChangeAndClickOnPress, true);
+  jqLauncher[0].removeEventListener('click', this._eatChangeAndClickOnPress, true);
+  jqLauncher[0].removeEventListener('change', this._eatChangeAndClickOnPress, true);
 
-  if (oj.DomUtils.isTouchSupported())
-  {
-    jqLauncher.ojHammer().off("press");
-    jqLauncher.ojHammer("destroy");
-    jqLauncher.off("contextmenu", this._eatContextMenuOnOpenPopupListener);
+  if (oj.DomUtils.isTouchSupported()) {
+    jqLauncher.ojHammer().off('press');
+    jqLauncher.ojHammer('destroy');
+    jqLauncher.off('contextmenu', this._eatContextMenuOnOpenPopupListener);
     this._eatContextMenuOnOpenPopupListener = null;
     this._inPressEvent = null;
   }
@@ -7406,8 +7107,7 @@ oj.PopupMessagingStrategy.prototype._unregisterLauncherEvents = function ()
  * @memberof oj.PopupMessagingStrategy
  * @instance
  */
-oj.PopupMessagingStrategy.prototype._registerLauncherEvents = function ()
-{
+oj.PopupMessagingStrategy.prototype._registerLauncherEvents = function () {
   var closeEvents;
   var closePopupCallback;
   var compDefaults;
@@ -7420,57 +7120,56 @@ oj.PopupMessagingStrategy.prototype._registerLauncherEvents = function ()
 
   compDefaults = oj.PopupMessagingStrategy._DEFAULTS_BY_COMPONENT[this.GetComponent().widgetName];
   events = compDefaults ? compDefaults.events :
-           oj.PopupMessagingStrategy._DEFAULTS_BY_COMPONENT["default"].events;
+           oj.PopupMessagingStrategy._DEFAULTS_BY_COMPONENT.default.events;
 
   // 1. associate the ojPopup component to wrapper <div> for popup content
   // 2. wire up on() event handlers for registered events that open and close popup. E.g., focusin.
   // 3. autoDismissal happens automatically when focus leaves component. For other events like
   // mouseover it's required to call off()
-  if (events['open'])
-  {
+  if (events.open) {
     openPopupCallback = this._openPopupCallback;
-    if (!openPopupCallback)
-      openPopupCallback = this._openPopupCallback = this._openPopup.bind(this);
-    
+    if (!openPopupCallback) {
+      openPopupCallback = this._openPopup.bind(this);
+      this._openPopupCallback = openPopupCallback;
+    }
+
     // separate out press event, namespace the events string, and attach event handler
-    pressEventIndex = events['open'].indexOf("press");
-    nonPressOpenEvents = 
-    this._getNamespacedEvents(events['open'].replace("press", ''), 
+    pressEventIndex = events.open.indexOf('press');
+    nonPressOpenEvents =
+    this._getNamespacedEvents(events.open.replace('press', ''),
                               oj.PopupMessagingStrategy._OPEN_NAMESPACE);
     jqLauncher.on(nonPressOpenEvents, openPopupCallback);
-    
-    // The pressHold gesture also fires a contextmenu event on Windows 10 touch.  
+
+    // The pressHold gesture also fires a contextmenu event on Windows 10 touch.
     // Prevent that here.
-    if (oj.DomUtils.isTouchSupported())
-    {
-      this._eatContextMenuOnOpenPopupListener = function (event)
-      {
+    if (oj.DomUtils.isTouchSupported()) {
+      this._eatContextMenuOnOpenPopupListener = function () {
         return false;
       };
 
-      jqLauncher.on("contextmenu", this._eatContextMenuOnOpenPopupListener);
+      jqLauncher.on('contextmenu', this._eatContextMenuOnOpenPopupListener);
 
       // for radios and checkboxes, on ios, press hold brings up popup, but release closes it
       // and checks it, so in this case we have to eat the click/change events. this happens
       // in the openPopupCallback
-      if (pressEventIndex !== -1)
-      {
+      if (pressEventIndex !== -1) {
         hammerOptions = {
-          "recognizers": [
-            [Hammer.Press, {time: 750}]
-          ]};
-        jqLauncher.ojHammer(hammerOptions).on("press", openPopupCallback);
+          recognizers: [
+            [Hammer.Press, { time: 750 }]
+          ] };
+        jqLauncher.ojHammer(hammerOptions).on('press', openPopupCallback);
       }
     }
   }
 
-  if (events['close'])
-  {
+  if (events.close) {
     closePopupCallback = this._closePopupCallback;
-    if (!closePopupCallback)
-      closePopupCallback = this._closePopupCallback = this._closePopup.bind(this);
+    if (!closePopupCallback) {
+      closePopupCallback = this._closePopup.bind(this);
+      this._closePopupCallback = closePopupCallback;
+    }
 
-    closeEvents = this._getNamespacedEvents(events['close'], 
+    closeEvents = this._getNamespacedEvents(events.close,
       oj.PopupMessagingStrategy._CLOSE_NAMESPACE);
     jqLauncher.on(closeEvents, closePopupCallback);
   }
@@ -7480,31 +7179,31 @@ oj.PopupMessagingStrategy.prototype._registerLauncherEvents = function ()
  * Turn the events string into an array, add namespace, and turn it back into a string.
  * @param {string} events e.g., "focusin mousedown"
  * @param {string} namespace the namespace that starts with a dot
- * @return {string|null} the events string that is namespaced. 
+ * @return {string|null} the events string that is namespaced.
  * e.g., "focusin.ojPopupMessagingOpen mousedown.ojPopupMessagingOpen"
  * @private
  */
-oj.PopupMessagingStrategy.prototype._getNamespacedEvents = function(events, namespace)
-{
+oj.PopupMessagingStrategy.prototype._getNamespacedEvents = function (events, namespace) {
   var eventsArray;
   var namespacedEventsArray;
   var length;
-      
-  if (events === "" || namespace === "")
-    return events;
 
-  eventsArray = events.split(" ");
+  if (events === '' || namespace === '') {
+    return events;
+  }
+
+  eventsArray = events.split(' ');
   length = eventsArray.length;
   namespacedEventsArray = [];
-  
-  for (var i=0; i < length; i++)
-  {
+
+  for (var i = 0; i < length; i++) {
     // ignore ""
-    if (eventsArray[i])
+    if (eventsArray[i]) {
       namespacedEventsArray.push(eventsArray[i] + namespace);
+    }
   }
-  
-  return namespacedEventsArray.join(" ");
+
+  return namespacedEventsArray.join(' ');
 };
 
 /**
@@ -7518,8 +7217,7 @@ oj.PopupMessagingStrategy.prototype._getNamespacedEvents = function(events, name
  * @memberof oj.PopupMessagingStrategy
  * @instance
  */
-oj.PopupMessagingStrategy.prototype._getPopupPosition = function ()
-{
+oj.PopupMessagingStrategy.prototype._getPopupPosition = function () {
   var compDefaultPosition;
   var compDefaults;
   var launcher;
@@ -7528,31 +7226,27 @@ oj.PopupMessagingStrategy.prototype._getPopupPosition = function ()
   compDefaults =
   oj.PopupMessagingStrategy._DEFAULTS_BY_COMPONENT[this.GetComponent().widgetName];
   compDefaultPosition = compDefaults ? compDefaults.position :
-  oj.PopupMessagingStrategy._DEFAULTS_BY_COMPONENT["default"].position;
+  oj.PopupMessagingStrategy._DEFAULTS_BY_COMPONENT.default.position;
 
-  if (compDefaultPosition)
-  {
-    if (compDefaultPosition === "launcher")
-    {
+  if (compDefaultPosition) {
+    if (compDefaultPosition === 'launcher') {
       launcher = this.GetLauncher();
-    }
-    else if (compDefaultPosition === "launcher-wrapper")
-    {
+    } else if (compDefaultPosition === 'launcher-wrapper') {
       launcher = this.GetLauncher().parent();
     }
   }
   // should never get here since the _DEFAULTS_BY_COMPONENTS["default"] should cover it.
-  if (!launcher)
+  if (!launcher) {
     launcher = this.GetComponent().widget();
+  }
 
   popupPositionOptions = {
-    'my': 'start bottom',
-    'at': 'end top',
-    'collision': 'flipcenter',
-    'of': launcher
+    my: 'start bottom',
+    at: 'end top',
+    collision: 'flipcenter',
+    of: launcher
   };
   return popupPositionOptions;
-
 };
 
 /**
@@ -7563,34 +7257,31 @@ oj.PopupMessagingStrategy.prototype._getPopupPosition = function ()
  * @memberof oj.PopupMessagingStrategy
  * @instance
  */
-oj.PopupMessagingStrategy.prototype._getPopupElement = function ()
-{
+oj.PopupMessagingStrategy.prototype._getPopupElement = function () {
   var popup;
   var position;
 
-  if (this.$messagingContentRoot)
+  if (this.$messagingContentRoot) {
     return this.$messagingContentRoot;
+  }
 
   popup = oj.PopupMessagingStrategyPoolUtils.getNextFreePopup();
   position = this._getPopupPosition();
-  popup.ojPopup("option", "position", position);
-  popup.ojPopup("option", "beforeClose", this._popupBeforeCloseCallback.bind(this));
-  popup.ojPopup("option", "close", this._popupCloseCallback.bind(this));
-  popup.ojPopup("option", "open", this._popupOpenCallback.bind(this));
-  
+  popup.ojPopup('option', 'position', position);
+  popup.ojPopup('option', 'beforeClose', this._popupBeforeCloseCallback.bind(this));
+  popup.ojPopup('option', 'close', this._popupCloseCallback.bind(this));
+  popup.ojPopup('option', 'open', this._popupOpenCallback.bind(this));
+
   // Use default animation only for custom elements
-  if (this.GetComponent()._IsCustomElement())
-  {
+  if (this.GetComponent()._IsCustomElement()) {
     // Get the default animation
-    var defaultAnimations = (oj.ThemeUtils.parseJSONFromFontFamily('oj-messaging-popup-option-defaults') || {})["animation"];
-    defaultAnimations["actionPrefix"] = "notewindow";
-    popup.ojPopup("option", "animation", defaultAnimations);
-  
+    var defaultAnimations = (ThemeUtils.parseJSONFromFontFamily('oj-messaging-popup-option-defaults') || {}).animation;
+    defaultAnimations.actionPrefix = 'notewindow';
+    popup.ojPopup('option', 'animation', defaultAnimations);
+
     this._addAnimateEventListeners(popup);
-  }
-  else
-  {
-    popup.ojPopup("option", "animation", null);
+  } else {
+    popup.ojPopup('option', 'animation', null);
   }
 
   this.$messagingContentRoot = popup;
@@ -7607,16 +7298,15 @@ oj.PopupMessagingStrategy.prototype._getPopupElement = function ()
  * @memberof! oj.PopupMessagingStrategy
  * @private
  */
-oj.PopupMessagingStrategy.prototype._popupOpenCallback = function (event)
-{
+oj.PopupMessagingStrategy.prototype._popupOpenCallback = function (event) {
   var target = $(event.target);
   var self = this;
-  window.setTimeout(function ()
-  {
-    if (oj.Components.isComponentInitialized(target, "ojPopup"))
-      target.ojPopup("option", "autoDismiss", "focusLoss");
-    else
+  window.setTimeout(function () {
+    if (Components.isComponentInitialized(target, 'ojPopup')) {
+      target.ojPopup('option', 'autoDismiss', 'focusLoss');
+    } else {
       delete self.$messagingContentRoot;
+    }
   }, 10);
 };
 
@@ -7626,8 +7316,7 @@ oj.PopupMessagingStrategy.prototype._popupOpenCallback = function (event)
  * @memberof! oj.PopupMessagingStrategy
  * @private
  */
-oj.PopupMessagingStrategy.prototype._popupBeforeCloseCallback = function (event)
-{
+oj.PopupMessagingStrategy.prototype._popupBeforeCloseCallback = function () {
   this._resolveBusyState = this._setBusyState('close');
 };
 
@@ -7638,38 +7327,32 @@ oj.PopupMessagingStrategy.prototype._popupBeforeCloseCallback = function (event)
  * @memberof! oj.PopupMessagingStrategy
  * @private
  */
-oj.PopupMessagingStrategy.prototype._popupCloseCallback = function (event)
-{
-  var jqLauncher, popupContent, target;
-  jqLauncher = this.GetLauncher();
+oj.PopupMessagingStrategy.prototype._popupCloseCallback = function (event) {
+  var jqLauncher = this.GetLauncher();
+  var target = $(event.target);
 
-  target = $(event.target);
-  
   this._removeAnimateEventListeners(target);
 
-  if (oj.Components.isComponentInitialized(target, "ojPopup"))
-  {
-    target.ojPopup("option", "autoDismiss", "none");
-    target.ojPopup("option", "open", null);
-    target.ojPopup("option", "close", null);
-    target.ojPopup("option", "beforeClose", null);
+  if (Components.isComponentInitialized(target, 'ojPopup')) {
+    target.ojPopup('option', 'autoDismiss', 'none');
+    target.ojPopup('option', 'open', null);
+    target.ojPopup('option', 'close', null);
+    target.ojPopup('option', 'beforeClose', null);
   }
 
-  // Check that the launcher is still there when removing listeners  
-  if (jqLauncher && jqLauncher[0])
-  {
-    jqLauncher[0].removeEventListener("click", this._eatChangeAndClickOnPress, true);
-    jqLauncher[0].removeEventListener("change", this._eatChangeAndClickOnPress, true);
+  // Check that the launcher is still there when removing listeners
+  if (jqLauncher && jqLauncher[0]) {
+    jqLauncher[0].removeEventListener('click', this._eatChangeAndClickOnPress, true);
+    jqLauncher[0].removeEventListener('change', this._eatChangeAndClickOnPress, true);
   }
-    
+
   this.$messagingContentRoot = null;
   this._inPressEvent = null;
 
   var popupContent = oj.PopupMessagingStrategyPoolUtils.getPopupContentNode(target);
   popupContent.innerHTML = '';
-  
-  if (this._resolveBusyState)
-  {
+
+  if (this._resolveBusyState) {
     this._resolveBusyState();
     this._resolveBusyState = null;
   }
@@ -7680,8 +7363,7 @@ oj.PopupMessagingStrategy.prototype._popupCloseCallback = function (event)
  * @private
  * @instance
  */
-oj.PopupMessagingStrategy.prototype._destroyTooltip = function ()
-{
+oj.PopupMessagingStrategy.prototype._destroyTooltip = function () {
   this._closePopup();
   oj.PopupMessagingStrategyPoolUtils.destroyFreePopup();
 };
@@ -7693,20 +7375,17 @@ oj.PopupMessagingStrategy.prototype._destroyTooltip = function ()
  * @memberof oj.PopupMessagingStrategy
  * @instance
  */
-oj.PopupMessagingStrategy.prototype._buildPopupHtml = function ()
-{
+oj.PopupMessagingStrategy.prototype._buildPopupHtml = function () {
   var addSeparator = false;
   var document = this.GetComponent().document[0];
   var nwContent = [];
-  var nwHtml = "";
+  var nwHtml = '';
 
-  if (this.ShowMessages())
-  {
+  if (this.ShowMessages()) {
     nwContent.push(this._buildMessagesHtml(document));
   }
 
-  if (this.ShowConverterHint() || this.ShowValidatorHint() || this.ShowTitle())
-  {
+  if (this.ShowConverterHint() || this.ShowValidatorHint() || this.ShowTitle()) {
     nwContent.push(this._buildHintsHtml(document));
   }
 
@@ -7733,15 +7412,13 @@ oj.PopupMessagingStrategy.prototype._buildPopupHtml = function ()
  * @memberof oj.PopupMessagingStrategy
  * @instance
  */
-oj.PopupMessagingStrategy.prototype._buildMessagesHtml = function (document)
-{
-  var content = "";
+oj.PopupMessagingStrategy.prototype._buildMessagesHtml = function (document) {
+  var content = '';
   var maxSeverity = this.GetMaxSeverity();
   var messages;
   var renderSeveritySelectors = false;
 
-  if (this.HasMessages())
-  {
+  if (this.HasMessages()) {
     messages = this.GetMessages();
     content =
     oj.PopupMessagingStrategyUtils.buildMessagesHtml(
@@ -7758,42 +7435,37 @@ oj.PopupMessagingStrategy.prototype._buildMessagesHtml = function (document)
  * @memberof oj.PopupMessagingStrategy
  * @instance
  */
-oj.PopupMessagingStrategy.prototype._buildHintsHtml = function (document)
-{
+oj.PopupMessagingStrategy.prototype._buildHintsHtml = function (document) {
   var hint;
   var hints = [];
-  var hintsHtml = "";
+  var hintsHtml = '';
   var i;
 
-  if (this.ShowConverterHint())
-  {
+  if (this.ShowConverterHint()) {
     hints = this.GetConverterHint();
-    hint = hints.length ? hints[0] : "";
+    hint = hints.length ? hints[0] : '';
     hintsHtml += oj.PopupMessagingStrategyUtils.buildHintHtml(document,
     oj.PopupMessagingStrategy._SELECTOR_FORMCONTROL_HINT_CONVERTER,
     hint, false,
     oj.PopupMessagingStrategy._SELECTOR_FORMCONTROL_HINT);
   }
 
-  if (this.ShowValidatorHint())
-  {
+  if (this.ShowValidatorHint()) {
     hints = this.GetValidatorHints();
-    for (i = 0; i < hints.length; i++)
-    {
+    for (i = 0; i < hints.length; i++) {
       hintsHtml += oj.PopupMessagingStrategyUtils.buildHintHtml(document,
       oj.PopupMessagingStrategy._SELECTOR_FORMCONTROL_HINT_VALIDATOR,
       hints[i], false, oj.PopupMessagingStrategy._SELECTOR_FORMCONTROL_HINT);
     }
   }
 
-  if (this.ShowTitle())
-  {
+  if (this.ShowTitle()) {
     hintsHtml += oj.PopupMessagingStrategyUtils.buildHintHtml(document,
     oj.PopupMessagingStrategy._SELECTOR_FORMCONTROL_HINT_TITLE,
     this.GetTitle(), true, oj.PopupMessagingStrategy._SELECTOR_FORMCONTROL_HINT);
   }
 
-  return hintsHtml ? "<div class='oj-form-control-hints'>" + hintsHtml + "</div>" : "";
+  return hintsHtml ? "<div class='oj-form-control-hints'>" + hintsHtml + '</div>' : '';
 };
 
 /**
@@ -7804,11 +7476,10 @@ oj.PopupMessagingStrategy.prototype._buildHintsHtml = function (document)
  * @memberof oj.PopupMessagingStrategy
  * @instance
  */
-oj.PopupMessagingStrategy.prototype._isPopupInitialized = function ()
-{
+oj.PopupMessagingStrategy.prototype._isPopupInitialized = function () {
   // is(":oj-popup") finds the popup component if it exists
   return (this.$messagingContentRoot) ?
-  oj.Components.isComponentInitialized(this.$messagingContentRoot, "ojPopup") : false;
+  Components.isComponentInitialized(this.$messagingContentRoot, 'ojPopup') : false;
 };
 
 /**
@@ -7827,8 +7498,9 @@ oj.PopupMessagingStrategyUtils = {};
  * @return {string} html content for a single hint.
  * @public
  */
-oj.PopupMessagingStrategyUtils.buildHintHtml = function (document, selector, hintText, htmlAllowed, formControlSelectors)
-{
+oj.PopupMessagingStrategyUtils.buildHintHtml = function (
+  document, selector, hintText, htmlAllowed, formControlSelectors
+) {
   var titleDom;
 
   if (hintText) {
@@ -7838,6 +7510,7 @@ oj.PopupMessagingStrategyUtils.buildHintHtml = function (document, selector, hin
     for (var i = 0, len = selectors.length; i < len; ++i) {
       titleDom.classList.add(selectors[i]);
     }
+
     titleDom.classList.add(selector);
     oj.PopupMessagingStrategyUtils._appendTextDom(titleDom,
       oj.PopupMessagingStrategyUtils._getTextDom(document, hintText, htmlAllowed)); // @HTMLUpdateOK
@@ -7851,26 +7524,26 @@ oj.PopupMessagingStrategyUtils.buildHintHtml = function (document, selector, hin
  * @returns (string} translated string for the severity
  * @public
  */
-oj.PopupMessagingStrategyUtils.getSeverityTranslatedString = function (severity)
-{
+oj.PopupMessagingStrategyUtils.getSeverityTranslatedString = function (severity) {
   var sevTypeStr;
   // get the translated string for the severity
-  switch (severity)
-  {
-    case oj.Message.SEVERITY_LEVEL['FATAL']:
-      sevTypeStr = oj.Translations.getTranslatedString('oj-message.fatal');
+  switch (severity) {
+    case Message.SEVERITY_LEVEL.FATAL:
+      sevTypeStr = Translations.getTranslatedString('oj-message.fatal');
       break;
-    case oj.Message.SEVERITY_LEVEL['ERROR']:
-      sevTypeStr = oj.Translations.getTranslatedString('oj-message.error');
+    case Message.SEVERITY_LEVEL.ERROR:
+      sevTypeStr = Translations.getTranslatedString('oj-message.error');
       break;
-    case oj.Message.SEVERITY_LEVEL['WARNING']:
-      sevTypeStr = oj.Translations.getTranslatedString('oj-message.warning');
+    case Message.SEVERITY_LEVEL.WARNING:
+      sevTypeStr = Translations.getTranslatedString('oj-message.warning');
       break;
-    case oj.Message.SEVERITY_LEVEL['INFO']:
-      sevTypeStr = oj.Translations.getTranslatedString('oj-message.info');
+    case Message.SEVERITY_LEVEL.INFO:
+      sevTypeStr = Translations.getTranslatedString('oj-message.info');
       break;
-    case oj.Message.SEVERITY_LEVEL['CONFIRMATION']:
-      sevTypeStr = oj.Translations.getTranslatedString('oj-message.confirmation');
+    case Message.SEVERITY_LEVEL.CONFIRMATION:
+      sevTypeStr = Translations.getTranslatedString('oj-message.confirmation');
+      break;
+    default:
       break;
   }
 
@@ -7882,12 +7555,11 @@ oj.PopupMessagingStrategyUtils.getSeverityTranslatedString = function (severity)
  * @returns {string}
  * @public
  */
-oj.PopupMessagingStrategyUtils.getSeparatorHtml = function (document)
-{
+oj.PopupMessagingStrategyUtils.getSeparatorHtml = function (document) {
   var jSeparatorDom;
-  jSeparatorDom = $(document.createElement("hr"));
+  jSeparatorDom = $(document.createElement('hr'));
 
-  return jSeparatorDom ? jSeparatorDom.get(0).outerHTML : "";// @HTMLUpdateOK
+  return jSeparatorDom ? jSeparatorDom.get(0).outerHTML : '';// @HTMLUpdateOK
 };
 
 /**
@@ -7902,9 +7574,8 @@ oj.PopupMessagingStrategyUtils.getSeparatorHtml = function (document)
  * @instance
  */
 oj.PopupMessagingStrategyUtils.buildMessagesHtml =
-function (document, messages, maxSeverity, renderSeveritySelectors)
-{
-  var content = "";
+function (document, messages, maxSeverity, renderSeveritySelectors) {
+  var content = '';
   var detail;
   var i;
   var j;
@@ -7918,22 +7589,17 @@ function (document, messages, maxSeverity, renderSeveritySelectors)
 
 
   // Step1: build an indexed array of messages by severity level.
-  for (i = 0; i < messages.length; i++)
-  {
+  for (i = 0; i < messages.length; i++) {
     message = messages[i];
 
-    if (!(message instanceof oj.Message))
-    {
-      messageObj = new oj.Message(message['summary'], message['detail'], message['severity']);
-    }
-    else
-    {
+    if (!(message instanceof Message)) {
+      messageObj = new Message(message.summary, message.detail, message.severity);
+    } else {
       messageObj = message;
     }
 
-    severityLevel = oj.Message.getSeverityLevel(messageObj['severity']);
-    if (!messagesByTypes[severityLevel])
-    {
+    severityLevel = Message.getSeverityLevel(messageObj.severity);
+    if (!messagesByTypes[severityLevel]) {
       messagesByTypes[severityLevel] = [];
     }
 
@@ -7941,28 +7607,25 @@ function (document, messages, maxSeverity, renderSeveritySelectors)
   }
 
   // Step 2: starting with maxSeverity level build messages with decreasing severity
-  for (i = maxSeverity; i >= oj.Message.SEVERITY_LEVEL['CONFIRMATION']; i--)
-  {
+  for (i = maxSeverity; i >= Message.SEVERITY_LEVEL.CONFIRMATION; i--) {
     messagesByType = messagesByTypes[i] || [];
 
-    for (j = 0; j < messagesByType.length; j++)
-    {
+    for (j = 0; j < messagesByType.length; j++) {
       message = messagesByType[j];
 
-      severityLevel = oj.Message.getSeverityLevel(message['severity']);
+      severityLevel = Message.getSeverityLevel(message.severity);
       severityStr = oj.PopupMessagingStrategyUtils.getSeverityTranslatedString(severityLevel);
-      summary = message['summary'] || severityStr;
+      summary = message.summary || severityStr;
 
       // if detail is empty we don't care to duplicate summary. also detail if present can be
       // formatted html content (ADF feature)
-      detail = message['detail'] || "";
+      detail = message.detail || '';
       content = content.concat(
       oj.PopupMessagingStrategyUtils.buildMessageHtml(
       document, summary, detail, severityLevel, renderSeveritySelectors));
     }
   }
   return content;
-
 };
 
 /**
@@ -7975,8 +7638,7 @@ function (document, messages, maxSeverity, renderSeveritySelectors)
  * @public
  */
 oj.PopupMessagingStrategyUtils.buildMessageHtml =
-function (document, summary, detail, severityLevel, addSeverityClass)
-{
+function (document, summary, detail, severityLevel, addSeverityClass) {
   var msgContent;
   var msgDetail;
   var msgDom;
@@ -8026,8 +7688,7 @@ function (document, summary, detail, severityLevel, addSeverityClass)
 
   msgContent.appendChild(msgSummary); // @HTMLUpdateOK
 
-  if (detail)
-  {
+  if (detail) {
     // detail text allows html content. So scrub it before setting it.
     var detailDom = oj.PopupMessagingStrategyUtils._getTextDom(document, detail, true);
     msgDetail = document.createElement('div');
@@ -8047,26 +7708,26 @@ function (document, summary, detail, severityLevel, addSeverityClass)
  * @return {string} the icon selector for the severity
  * @private
  */
-oj.PopupMessagingStrategyUtils._getSeverityIconSelector = function (severity)
-{
+oj.PopupMessagingStrategyUtils._getSeverityIconSelector = function (severity) {
   var sevIconStr;
   // get the icon selector for the severity
-  switch (severity)
-  {
-    case oj.Message.SEVERITY_LEVEL['FATAL']:
+  switch (severity) {
+    case Message.SEVERITY_LEVEL.FATAL:
       sevIconStr = oj.PopupMessagingStrategyUtils._SELECTOR_MESSAGE_ERROR_ICON;
       break;
-    case oj.Message.SEVERITY_LEVEL['ERROR']:
+    case Message.SEVERITY_LEVEL.ERROR:
       sevIconStr = oj.PopupMessagingStrategyUtils._SELECTOR_MESSAGE_ERROR_ICON;
       break;
-    case oj.Message.SEVERITY_LEVEL['WARNING']:
+    case Message.SEVERITY_LEVEL.WARNING:
       sevIconStr = oj.PopupMessagingStrategyUtils._SELECTOR_MESSAGE_WARNING_ICON;
       break;
-    case oj.Message.SEVERITY_LEVEL['INFO']:
+    case Message.SEVERITY_LEVEL.INFO:
       sevIconStr = oj.PopupMessagingStrategyUtils._SELECTOR_MESSAGE_INFO_ICON;
       break;
-    case oj.Message.SEVERITY_LEVEL['CONFIRMATION']:
+    case Message.SEVERITY_LEVEL.CONFIRMATION:
       sevIconStr = oj.PopupMessagingStrategyUtils._SELECTOR_MESSAGE_CONFIRMATION_ICON;
+      break;
+    default:
       break;
   }
 
@@ -8078,25 +7739,23 @@ oj.PopupMessagingStrategyUtils._getSeverityIconSelector = function (severity)
  * @return {string} the style selector for the severity
  * @private
  */
-oj.PopupMessagingStrategyUtils._getSeveritySelector = function (severity)
-{
+oj.PopupMessagingStrategyUtils._getSeveritySelector = function (severity) {
   var sevSelectorStr;
   // get the icon selector for the severity
-  switch (severity)
-  {
-    case oj.Message.SEVERITY_LEVEL['FATAL']:
+  switch (severity) {
+    case Message.SEVERITY_LEVEL.FATAL:
       sevSelectorStr = oj.PopupMessagingStrategyUtils._SELECTOR_MESSAGE_ERROR;
       break;
-    case oj.Message.SEVERITY_LEVEL['ERROR']:
+    case Message.SEVERITY_LEVEL.ERROR:
       sevSelectorStr = oj.PopupMessagingStrategyUtils._SELECTOR_MESSAGE_ERROR;
       break;
-    case oj.Message.SEVERITY_LEVEL['WARNING']:
+    case Message.SEVERITY_LEVEL.WARNING:
       sevSelectorStr = oj.PopupMessagingStrategyUtils._SELECTOR_MESSAGE_WARNING;
       break;
-    case oj.Message.SEVERITY_LEVEL['INFO']:
+    case Message.SEVERITY_LEVEL.INFO:
       sevSelectorStr = oj.PopupMessagingStrategyUtils._SELECTOR_MESSAGE_INFO;
       break;
-    case oj.Message.SEVERITY_LEVEL['CONFIRMATION']:
+    case Message.SEVERITY_LEVEL.CONFIRMATION:
     default:
       sevSelectorStr = oj.PopupMessagingStrategyUtils._SELECTOR_MESSAGE_CONFIRMATION;
       break;
@@ -8117,20 +7776,15 @@ oj.PopupMessagingStrategyUtils._getSeveritySelector = function (severity)
  * @return {Element} dom node containing the scrubbed hint
  * @private
  */
-oj.PopupMessagingStrategyUtils._getTextDom = function (document, value, htmlAllowed)
-{
+oj.PopupMessagingStrategyUtils._getTextDom = function (document, value, htmlAllowed) {
   var textDom = null;
 
-  if (oj.StringUtils.isString(value))
-  {
-    if (htmlAllowed && oj.DomUtils.isHTMLContent(value))
-    {
+  if (oj.StringUtils.isString(value)) {
+    if (htmlAllowed && oj.DomUtils.isHTMLContent(value)) {
       // strip out html start/end tags
       textDom = oj.DomUtils.cleanHtml(value.substring(6, value.length - 7));
-    }
-    else
-    {
-      textDom = document.createElement("span");
+    } else {
+      textDom = document.createElement('span');
       textDom.textContent = value;
     }
   }
@@ -8158,63 +7812,63 @@ oj.PopupMessagingStrategyUtils._appendTextDom = function (parentElement, textDom
  * @const
  * @type {string}
  */
-oj.PopupMessagingStrategyUtils._DEFAULT_STATUS_ICON_SELECTORS = "oj-component-icon oj-message-status-icon ";
+oj.PopupMessagingStrategyUtils._DEFAULT_STATUS_ICON_SELECTORS = 'oj-component-icon oj-message-status-icon ';
 
 /**
  * @private
  * @const
  * @type {string}
  */
-oj.PopupMessagingStrategyUtils._SELECTOR_MESSAGE = "oj-message";
+oj.PopupMessagingStrategyUtils._SELECTOR_MESSAGE = 'oj-message';
 
 /**
  * @private
  * @const
  * @type {string}
  */
-oj.PopupMessagingStrategyUtils._SELECTOR_MESSAGE_SUMMARY = "oj-message-summary";
+oj.PopupMessagingStrategyUtils._SELECTOR_MESSAGE_SUMMARY = 'oj-message-summary';
 
 /**
  * @private
  * @const
  * @type {string}
  */
-oj.PopupMessagingStrategyUtils._SELECTOR_MESSAGE_DETAIL = "oj-message-detail";
+oj.PopupMessagingStrategyUtils._SELECTOR_MESSAGE_DETAIL = 'oj-message-detail';
 
 /**
  * @private
  * @const
  * @type {string}
  */
-oj.PopupMessagingStrategyUtils._SELECTOR_MESSAGE_CONTENT = "oj-message-content";
+oj.PopupMessagingStrategyUtils._SELECTOR_MESSAGE_CONTENT = 'oj-message-content';
 
 /**
  * @private
  * @const
  * @type {string}
  */
-oj.PopupMessagingStrategyUtils._SELECTOR_MESSAGE_ERROR_ICON = "oj-message-error-icon";
+oj.PopupMessagingStrategyUtils._SELECTOR_MESSAGE_ERROR_ICON = 'oj-message-error-icon';
 
 /**
  * @private
  * @const
  * @type {string}
  */
-oj.PopupMessagingStrategyUtils._SELECTOR_MESSAGE_WARNING_ICON = "oj-message-warning-icon";
+oj.PopupMessagingStrategyUtils._SELECTOR_MESSAGE_WARNING_ICON = 'oj-message-warning-icon';
 
 /**
  * @private
  * @const
  * @type {string}
  */
-oj.PopupMessagingStrategyUtils._SELECTOR_MESSAGE_INFO_ICON = "oj-message-info-icon";
+oj.PopupMessagingStrategyUtils._SELECTOR_MESSAGE_INFO_ICON = 'oj-message-info-icon';
 
 /**
  * @private
  * @const
  * @type {string}
  */
-oj.PopupMessagingStrategyUtils._SELECTOR_MESSAGE_CONFIRMATION_ICON = "oj-message-confirmation-icon";
+oj.PopupMessagingStrategyUtils._SELECTOR_MESSAGE_CONFIRMATION_ICON = 'oj-message-confirmation-icon';
 
 // new theming keys so that we can style the different types of messages differently. Like,
 // the background-color can be light red for error. This style will go on the same dom node
@@ -8224,28 +7878,28 @@ oj.PopupMessagingStrategyUtils._SELECTOR_MESSAGE_CONFIRMATION_ICON = "oj-message
  * @const
  * @type {string}
  */
-oj.PopupMessagingStrategyUtils._SELECTOR_MESSAGE_ERROR = "oj-message-error";
+oj.PopupMessagingStrategyUtils._SELECTOR_MESSAGE_ERROR = 'oj-message-error';
 
 /**
  * @private
  * @const
  * @type {string}
  */
-oj.PopupMessagingStrategyUtils._SELECTOR_MESSAGE_WARNING = "oj-message-warning";
+oj.PopupMessagingStrategyUtils._SELECTOR_MESSAGE_WARNING = 'oj-message-warning';
 
 /**
  * @private
  * @const
  * @type {string}
  */
-oj.PopupMessagingStrategyUtils._SELECTOR_MESSAGE_INFO = "oj-message-info";
+oj.PopupMessagingStrategyUtils._SELECTOR_MESSAGE_INFO = 'oj-message-info';
 
 /**
  * @private
  * @const
  * @type {string}
  */
-oj.PopupMessagingStrategyUtils._SELECTOR_MESSAGE_CONFIRMATION = "oj-message-confirmation";
+oj.PopupMessagingStrategyUtils._SELECTOR_MESSAGE_CONFIRMATION = 'oj-message-confirmation';
 
 /**
  * @ignore
@@ -8256,30 +7910,28 @@ oj.PopupMessagingStrategyPoolUtils = {};
  * @public
  * @returns {jQuery} popup taken or created from the free pool
  */
-oj.PopupMessagingStrategyPoolUtils.getNextFreePopup = function ()
-{
+oj.PopupMessagingStrategyPoolUtils.getNextFreePopup = function () {
   var pool = oj.PopupMessagingStrategyPoolUtils._getPool();
-  var popups = pool.find("." + oj.PopupMessagingStrategyPoolUtils._SELECTOR_MESSAGING);
+  var popups = pool.find('.' + oj.PopupMessagingStrategyPoolUtils._SELECTOR_MESSAGING);
   var popup;
 
-  if (popups.length === 0)
-  {
+  if (popups.length === 0) {
     popup = $(oj.PopupMessagingStrategyPoolUtils._getPopupContentHtml());
     popup[0].style.display = 'none';
     // popup is an empty div
-    popup.appendTo(pool); // @HTMLUpdateOk    
+    popup.appendTo(pool); // @HTMLUpdateOk
     var popupOptions =
-    {
-      'initialFocus': 'none',
-      'tail': 'simple',
-      'autoDismiss': 'none',
-      'modality': 'modeless',
-      'animation': {'open': null, 'close': null}
-    };
+      {
+        initialFocus: 'none',
+        tail: 'simple',
+        autoDismiss: 'none',
+        modality: 'modeless',
+        animation: { open: null, close: null }
+      };
     popup.ojPopup(popupOptions);
-  }
-  else
+  } else {
     popup = $(popups[0]);
+  }
 
   return popup;
 };
@@ -8290,19 +7942,16 @@ oj.PopupMessagingStrategyPoolUtils.getNextFreePopup = function ()
  * @param {jQuery} popup root element
  * @returns {Element} content element of message popup
  */
-oj.PopupMessagingStrategyPoolUtils.getPopupContentNode = function (popup)
-{
-  return popup.find("." + oj.PopupMessagingStrategyPoolUtils._SELECTOR_MESSAGING_CONTAINER)[0];
+oj.PopupMessagingStrategyPoolUtils.getPopupContentNode = function (popup) {
+  return popup.find('.' + oj.PopupMessagingStrategyPoolUtils._SELECTOR_MESSAGING_CONTAINER)[0];
 };
 
 /**
  * @public
  */
-oj.PopupMessagingStrategyPoolUtils.destroyFreePopup = function ()
-{
+oj.PopupMessagingStrategyPoolUtils.destroyFreePopup = function () {
   var popup;
-  if (oj.PopupMessagingStrategyPoolUtils._getFreePoolCount() > 0)
-  {
+  if (oj.PopupMessagingStrategyPoolUtils._getFreePoolCount() > 0) {
     // if the message popup is open, remove it.
     // if there is at least one popup in the pool, remove it.
     popup = oj.PopupMessagingStrategyPoolUtils.getNextFreePopup();
@@ -8319,12 +7968,12 @@ oj.PopupMessagingStrategyPoolUtils.destroyFreePopup = function ()
  * @return {jQuery!} messaging popup pool container
  * @private
  */
-oj.PopupMessagingStrategyPoolUtils._getPool = function ()
-{
+oj.PopupMessagingStrategyPoolUtils._getPool = function () {
   /** @type {jQuery!} */
-  var pool = $("#" + oj.PopupMessagingStrategyPoolUtils._MESSAGING_POPUP_POOL_ID);
-  if (pool.length > 0)
+  var pool = $('#' + oj.PopupMessagingStrategyPoolUtils._MESSAGING_POPUP_POOL_ID);
+  if (pool.length > 0) {
     return pool;
+  }
 
   pool = $('<div>');
   var poolElem = pool[0];
@@ -8339,10 +7988,9 @@ oj.PopupMessagingStrategyPoolUtils._getPool = function ()
  * @return {number} number of unused popup in the pool
  * @private
  */
-oj.PopupMessagingStrategyPoolUtils._getFreePoolCount = function ()
-{
+oj.PopupMessagingStrategyPoolUtils._getFreePoolCount = function () {
   var pool = oj.PopupMessagingStrategyPoolUtils._getPool();
-  var popups = pool.find("." + oj.PopupMessagingStrategyPoolUtils._SELECTOR_MESSAGING);
+  var popups = pool.find('.' + oj.PopupMessagingStrategyPoolUtils._SELECTOR_MESSAGING);
   return popups.length;
 };
 
@@ -8350,8 +7998,7 @@ oj.PopupMessagingStrategyPoolUtils._getFreePoolCount = function ()
  * @return {string} messaging popup html
  * @private
  */
-oj.PopupMessagingStrategyPoolUtils._getPopupContentHtml = function ()
-{
+oj.PopupMessagingStrategyPoolUtils._getPopupContentHtml = function () {
   return '<div class="' + oj.PopupMessagingStrategyPoolUtils._SELECTOR_MESSAGING + '">' +
     '<div class="' + oj.PopupMessagingStrategyPoolUtils._SELECTOR_MESSAGING_CONTAINER + '"></div>' +
     '</div>';
@@ -8362,30 +8009,20 @@ oj.PopupMessagingStrategyPoolUtils._getPopupContentHtml = function ()
  * @private
  * @type {string}
  */
-oj.PopupMessagingStrategyPoolUtils._SELECTOR_MESSAGING_CONTAINER = "oj-messaging-popup-container";
+oj.PopupMessagingStrategyPoolUtils._SELECTOR_MESSAGING_CONTAINER = 'oj-messaging-popup-container';
 
 /**
  * @const
  * @private
  * @type {string}
  */
-oj.PopupMessagingStrategyPoolUtils._SELECTOR_MESSAGING = "oj-messaging-popup";
+oj.PopupMessagingStrategyPoolUtils._SELECTOR_MESSAGING = 'oj-messaging-popup';
 
 /**
  * @const
  * @private
  * @type {string}
  */
-oj.PopupMessagingStrategyPoolUtils._MESSAGING_POPUP_POOL_ID = "__oj_messaging_popup_pool";
-
-
-(function () {
-  var editableValueMeta = {
-    extension: {
-      _WIDGET_NAME: 'editableValue'
-    }
-  };
-  oj.CustomElementBridge.registerMetadata('editableValue', 'baseComponent', editableValueMeta);
-})();
+oj.PopupMessagingStrategyPoolUtils._MESSAGING_POPUP_POOL_ID = '__oj_messaging_popup_pool';
 
 });

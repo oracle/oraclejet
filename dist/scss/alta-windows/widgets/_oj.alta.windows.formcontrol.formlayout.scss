@@ -10,8 +10,14 @@
   @include module-include-once("alta.windows.formlayout.element") {
 
     .oj-form > .oj-flex {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+        padding-left: var(--oj-form-layout-label-inline-gutter-padding);
+        padding-right: var(--oj-form-layout-label-inline-gutter-padding);
+      }
+      @else {
         padding-left: $formControlLabelInlineGutter;
         padding-right: $formControlLabelInlineGutter;
+      }
     }
   }
 }

@@ -1,27 +1,31 @@
 {
   "name": "oj-option",
-  "version": "5.2.0",
-  "jetVersion": "5.2.0",
+  "version": "6.0.0",
+  "jetVersion": "6.0.0",
   "displayName": "Option",
   "type": "core",
   "description": "Declare values for JET elements that display a list of values.",
+  "help": "https://docs.oracle.com/en/middleware/jet/6/reference-api/oj.ojOption.html",
   "properties": {
     "disabled": {
       "description": "Disables the option if set to true.",
       "type": "boolean",
       "displayName": "Disabled",
-      "value": false
+      "value": false,
+      "help": "disabled"
     },
     "value": {
       "description": "The value of the option.",
       "type": "any",
       "displayName": "Value",
-      "required": true
+      "required": true,
+      "help": "value"
     }
   },
   "methods": {
     "setProperty": {
       "description": "Sets a property or a single subproperty for complex properties and notifies the component of the change, triggering a [property]Changed event.",
+      "help": "setProperty",
       "params": [
         {
           "name": "property",
@@ -38,6 +42,7 @@
     },
     "getProperty": {
       "description": "Retrieves a value for a property or a single subproperty for complex properties.",
+      "help": "getProperty",
       "params": [
         {
           "name": "property",
@@ -49,10 +54,12 @@
     },
     "refresh": {
       "description": "Refreshes the visual state of the component.",
+      "help": "refresh",
       "return": "void"
     },
     "setProperties": {
       "description": "Performs a batch set of properties.",
+      "help": "setProperties",
       "params": [
         {
           "name": "properties",
@@ -66,13 +73,16 @@
   "slots": {
     "": {
       "description": "The default slot for the option's content.",
-      "displayName": "default"
+      "displayName": "default",
+      "help": "Default"
     },
     "endIcon": {
-      "description": "The slot for the option's end icon."
+      "description": "The slot for the option's end icon.",
+      "help": "endIcon"
     },
     "startIcon": {
-      "description": "The slot for the option's start icon."
+      "description": "The slot for the option's start icon.",
+      "help": "startIcon"
     }
   }
 }

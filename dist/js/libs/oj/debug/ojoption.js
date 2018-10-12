@@ -38,27 +38,27 @@ var __oj_option_metadata =
  * @constructor
  * @private
  */
+// eslint-disable-next-line no-unused-vars
 function ojOption(context) {
-
   /**
    * Append each node to the element.
    * @private
    */
   function _appendNodes(elem, nodes) {
-    $.each(nodes, function(i, node) {
+    $.each(nodes, function (i, node) {
       elem.appendChild(node);
-    })
-  };
+    });
+  }
 
   /**
    * Remove node from the element.
    * @private
    */
   function _removeNodes(elem, nodes) {
-    $.each(nodes, function(i, node) {
+    $.each(nodes, function (i, node) {
       elem.removeChild(node);
-    })
-  };
+    });
+  }
 
   /**
    * Rearrange slots in the right order and remove unwanted slots.
@@ -67,34 +67,35 @@ function ojOption(context) {
   function _arrangeSlots(elem) {
     // get the slotMap
     var slots = oj.BaseCustomElementBridge.getSlotMap(elem);
-    var supportedSlots = ["startIcon", "", "endIcon"];
-    
+    var supportedSlots = ['startIcon', '', 'endIcon'];
+
     // remove unwanted slots
-    $.each(slots, function(slotName, nodes) {
-      if (supportedSlots.indexOf(slotName) == -1) {
+    $.each(slots, function (slotName, nodes) {
+      if (supportedSlots.indexOf(slotName) === -1) {
         _removeNodes(elem, nodes);
       }
-    })
-    
-    // rearrange slots
-    $.each(supportedSlots, function(i, slotName) {
-      if (slots[slotName])
-        _appendNodes(elem, slots[slotName]);
-    })
-  };
+    });
 
-  this.updateDOM = function() {
-    var customRenderer = context.element["customOptionRenderer"];
+    // rearrange slots
+    $.each(supportedSlots, function (i, slotName) {
+      if (slots[slotName]) {
+        _appendNodes(elem, slots[slotName]);
+      }
+    });
+  }
+
+  this.updateDOM = function () {
+    var customRenderer = context.element.customOptionRenderer;
 
     // reorder the slots and remove unwanted slots
     _arrangeSlots(context.element);
 
-    if (customRenderer && typeof customRenderer === "function")
-      customRenderer(context.element);    
+    if (customRenderer && typeof customRenderer === 'function') {
+      customRenderer(context.element);
+    }
   };
 }
 
- 
 /**
  * Copyright (c) 2017, Oracle and/or its affiliates.
  * All rights reserved.
@@ -125,6 +126,7 @@ function ojOption(context) {
  * <li>oj-radioset</li>
  * <li>oj-select-one</li>
  * <li>oj-select-many</li>
+ * <li>oj-menu-select-many</li>
  * <li>oj-swipe-actions</li>
  * </ul>
  * </p>
@@ -136,10 +138,10 @@ function ojOption(context) {
  *   &lt;oj-option value="option 2">option 2&lt;/oj-option>
  *   &lt;oj-option value="option 3">option 3&lt;/oj-option>
  *   &lt;oj-option value="option 4">option 4&lt;/oj-option>
- * &lt;/oj-select-one> 
+ * &lt;/oj-select-one>
  * </code></pre>
  */
- 
+
 /**
  * <p>Disables the oj-option if set to <code class="prettyprint">true</code>.
  *
@@ -161,7 +163,7 @@ function ojOption(context) {
  * // setter
  * myOption.disabled = true;
  */
- 
+
 /**
  * <p>Specifies the oj-option's value. The value is associated with the oj-option element whose display value may be different.
  *
@@ -196,7 +198,7 @@ function ojOption(context) {
  *   Option label
  * &lt;/oj-option>
  */
- 
+
 /**
  * <p>Named slot for the oj-option's start icon.</p>
  *
@@ -209,7 +211,7 @@ function ojOption(context) {
  *   &lt;span slot='startIcon'>&lt;img src='start.png' alt='Start'>&lt;/span>
  * &lt;/oj-option>
  */
- 
+
 /**
  * <p>Named slot for the oj-option's end icon.</p>
  *
@@ -226,54 +228,55 @@ function ojOption(context) {
 /**
  * Sets a property or a single subproperty for complex properties and notifies the component
  * of the change, triggering a [property]Changed event.
- * 
+ *
  * @function setProperty
  * @param {string} property - The property name to set. Supports dot notation for subproperty access.
  * @param {any} value - The new value to set the property to.
  * @return {void}
- * 
+ *
  * @expose
  * @memberof oj.ojOption
  * @instance
- * 
+ *
  * @example <caption>Set a single subproperty of a complex property:</caption>
  * myComponent.setProperty('complexProperty.subProperty1.subProperty2', "someValue");
- */ 
+ */
 /**
  * Retrieves a value for a property or a single subproperty for complex properties.
  * @function getProperty
  * @param {string} property - The property name to get. Supports dot notation for subproperty access.
  * @return {any}
- * 
+ *
  * @expose
  * @memberof oj.ojOption
  * @instance
- * 
+ *
  * @example <caption>Get a single subproperty of a complex property:</caption>
  * var subpropValue = myComponent.getProperty('complexProperty.subProperty1.subProperty2');
- */ 
+ */
 /**
  * Refreshes the visual state of the component.
- * 
+ *
  * @function refresh
  * @return {void}
  * @expose
  * @memberof oj.ojOption
  * @instance
- */ 
+ */
 /**
  * Performs a batch set of properties.
  * @function setProperties
  * @param {Object} properties - An object containing the property and value pairs to set.
  * @return {void}
- * 
+ *
  * @expose
  * @memberof oj.ojOption
  * @instance
- * 
+ *
  * @example <caption>Set a batch of properties:</caption>
  * myComponent.setProperties({"prop1": "value1", "prop2.subprop": "value2", "prop3": "value3"});
- */ 
+ */
+
 /* global __oj_option_metadata */
 /* global ojOption:false */
 
@@ -285,8 +288,7 @@ function ojOption(context) {
   // not documented
   __oj_option_metadata.properties.customOptionRenderer = {};
   __oj_option_metadata.extension._CONSTRUCTOR = ojOption;
-  oj.CustomElementBridge.registerMetadata('oj-option', null, __oj_option_metadata);
-  oj.CustomElementBridge.register('oj-option', { metadata: oj.CustomElementBridge.getMetadata('oj-option') });
+  oj.CustomElementBridge.register('oj-option', { metadata: __oj_option_metadata });
 }());
 
 });

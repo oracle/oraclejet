@@ -51,20 +51,5 @@
     .oj-inputnumber .oj-inputnumber-up-icon {
       font-size: 12px;
     }
-    
-     @if ($inputNumberInputToButtonMargin == null or $inputNumberInputToButtonMargin == 0) {
-       // use the buttonset borders, not the input borders for the border between the input
-       // and the buttonset, but only for alta web theme.
-      .oj-inputnumber-input {
-           @include oj-ltr() {
-            border-right-width: 0;
-          }
-          @include oj-rtl() {
-            border-left-width: 0;
-          }       
-        }
-     }
-      
-    
   }
 }

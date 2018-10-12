@@ -18,34 +18,10 @@
 
 
 // import classes defined in the common directory
-@import "../../common/widgets/oj.common.button"; 
-
-@mixin oj-button-alt-alta($altColor) {
-  
-        @include oj-button-state-flat (
-          $altButtonTextColor:            $buttonContrastTextColor,
-          $altButtonBgColor:              $altColor)
-}
+@import "../../common/widgets/oj.common.button";
 
 @if $includeButtonClasses != false {
   @include module-include-once("alta.button") {
 
-
-      // alternate button colors
-      //----------------------------------
-
-      .oj-button-primary {
-        @if $buttonPrimaryColor != null {
-          @include oj-button-alt-alta($altColor: $buttonPrimaryColor);
-        }
-      }
-      .oj-button-confirm {
-        @if $buttonConfirmColor != null {
-          @include oj-button-alt-alta($altColor: $buttonConfirmColor);
-        }
-      }
-
-
-    
   }
 }

@@ -4699,7 +4699,7 @@ DvtChartDataCursorHandler.prototype.processOut = function(pos, bSuppressEvent) {
  * @private
  */
 DvtChartDataCursorHandler.prototype._showDataCursor = function(plotRect, x, y, bSuppressEvent) {
-  if (this._context.isOffscreen()) {
+  if (this._context.isOffscreen(true)) {
     this._removeDataCursor(bSuppressEvent);
     return;
   }
@@ -5944,6 +5944,7 @@ DvtChartBar.prototype._setBarCoords = function(baselineCoord, endCoord, x1, x2, 
   this._origX1 = this._x1;
   this._origX2 = this._x2;
   this._origBaselineCoord = this._baselineCoord;
+  this._origSize = this._x2 - this._x1;
 
   // If data item gaps enabled, add gaps between bars.
   if (this._dataItemGaps > 0 && bAdjustForGaps && !this.isSelected()) {
@@ -5984,6 +5985,8 @@ DvtChartBar.prototype._setBarCoords = function(baselineCoord, endCoord, x1, x2, 
         this._x1 += gapSize / 2;
         this._x2 -= gapSize / 2;
       }
+
+      this._origSize -= gapSize;
     }
   }
 
@@ -6060,6 +6063,13 @@ DvtChartBar.prototype.getBoundingBox = function() {
     return new dvt.Rectangle(x, y, w, h);
 };
 
+/**
+ * Returns the non rounded width(horizontal) or height(vertical) of the bar
+ * @return {number}
+ */
+DvtChartBar.prototype.getOriginalBarSize = function() {
+  return this._origSize;
+};
 
 /**
  * Returns the bounds of the displayable relative to the target coordinate space.  If the target
@@ -7923,6 +7933,14 @@ DvtChartPolarBar.prototype.getBoundingBox = function() {
 };
 
 /**
+ * Returns the non rounded width of the bar
+ * @return {number}
+ */
+DvtChartPolarBar.prototype.getOriginalBarSize = function() {
+  return this._bbox.w;
+};
+
+/**
  * A marker for range area chart.
  * @class DvtChartRangeMarker
  * @extends {dvt.Path}
@@ -9300,7 +9318,8 @@ DvtChartPie.prototype._createSlices = function() {
     slice = new DvtChartPieSlice(this, seriesIndex);
 
     // Do not render if the value is not positive
-    if (slice.getValue() <= 0)
+    var sliceValue = slice.getValue();
+    if ((sliceValue==null) || (sliceValue <= 0))
       continue;
 
     slices.push(slice);
@@ -10148,11 +10167,11 @@ DvtChartPieSlice.prototype.Init = function(pieChart, seriesIndex) {
     this._fillPattern = DvtChartStyleUtils.getPattern(this._chart, seriesIndex, 0);
     this._strokeColor = DvtChartStyleUtils.getBorderColor(this._chart, seriesIndex);
     this._borderWidth = DvtChartStyleUtils.getBorderWidth(this._chart, seriesIndex);
-    this._customLabel = dataItem['label'];
+    this._customLabel = dataItem ? dataItem['label'] : null;
     this._seriesLabel = DvtChartDataUtils.getSeries(this._chart, seriesIndex);
-    this._action = dataItem['action'];
+    this._action = dataItem ? dataItem['action'] : null;
     this._drillable = DvtChartEventUtils.isDataItemDrillable(this._chart, seriesIndex, 0);
-    this._showPopupBehaviors = this._chart.getShowPopupBehaviors(dataItem['_id']);
+    this._showPopupBehaviors = dataItem ? this._chart.getShowPopupBehaviors(dataItem['_id']) : null;
     this._id = DvtChartPieUtils.getSliceId(this._chart, seriesIndex);
     this._seriesIndex = seriesIndex;
     this._categories = DvtChartDataUtils.getCategories(this._chart, seriesIndex, 0);
@@ -10999,10 +11018,11 @@ DvtChartPieSlice.prototype.isSelected = function() {
  */
 DvtChartPieSlice.prototype.setSelected = function(bSelected, isInitial) {
   this._selected = bSelected;
-  if (this._selected) {
+  if (!this.getTopSurface()) { // Skip slices not rendered for performance optimization
+    return;
+  } else if (this._selected) {
     this._pieChart.bringToFrontOfSelection(this);
-  }
-  else if (!this._selecting) {
+  } else if (!this._selecting) {
     this._pieChart.pushToBackOfSelection(this);
   }
 
@@ -11106,7 +11126,7 @@ DvtChartPieSlice.prototype.getCategories = function() {
 /**
  * @override
  */
-DvtChartPieSlice.prototype.getNextNavigable = function(event) 
+DvtChartPieSlice.prototype.getNextNavigable = function(event)
 {
   var keyCode = event.keyCode;
   if (event.type == dvt.MouseEvent.CLICK)
@@ -11164,7 +11184,7 @@ DvtChartPieSlice.prototype.getTargetElem = function() {
 /**
  * @override
  */
-DvtChartPieSlice.prototype.showKeyboardFocusEffect = function() 
+DvtChartPieSlice.prototype.showKeyboardFocusEffect = function()
 {
   this._isShowingKeyboardFocusEffect = true;
   this.showHoverEffect();
@@ -11175,7 +11195,7 @@ DvtChartPieSlice.prototype.showKeyboardFocusEffect = function()
 /**
  * @override
  */
-DvtChartPieSlice.prototype.hideKeyboardFocusEffect = function() 
+DvtChartPieSlice.prototype.hideKeyboardFocusEffect = function()
 {
   this._isShowingKeyboardFocusEffect = false;
   this.hideHoverEffect();
@@ -13950,17 +13970,9 @@ DvtChartDataUtils._processTimeAxis = function(chart) {
  * @return {boolean}
  */
 DvtChartDataUtils.isEqualId = function(a, b, context) {
-  // TODO: Refactor to share comparison code with oj.KeySetImpl
-  var ojCompareValues =  context.oj ? context.oj.Object.compareValues : null;
-  if (ojCompareValues)
-    return ojCompareValues(a, b);
   if (a == null || b == null) // don't consider undefined ids as equal
     return false;
-  if (a == b)
-    return true;
-  if (dvt.ArrayUtils.isArray(a) && dvt.ArrayUtils.isArray(b) && dvt.ArrayUtils.equals(a, b))
-    return true;
-  return false;
+  return dvt.Obj.compareValues(context, a, b);
 };
 
 /**
@@ -14192,7 +14204,7 @@ DvtChartDataUtils.getNestedDataItemIndex = function(chart, seriesIndex, groupInd
   var numItems = DvtChartDataUtils.getNestedDataItemCount(chart, seriesIndex, groupIndex);
   for (var itemIndex = 0; itemIndex < numItems; itemIndex++) {
     var itemId = DvtChartDataUtils.getNestedDataItemId(chart, seriesIndex, groupIndex, itemIndex);
-    if (DvtChartDataUtils.isEqualId(itemId, id))
+    if (DvtChartDataUtils.isEqualId(itemId, id, chart.getCtx()))
       return itemIndex;
   }
 
@@ -16160,7 +16172,7 @@ DvtChartEventUtils.setInitialSelection = function(chart, selection) {
       selectionIds.push(DvtChartDataUtils.createDataItemId(selection[i]['series'], selection[i]['group']));
   }
   var ctx = chart.getCtx();
-  var selectionSet = new ctx.oj.KeySetImpl(selectionIds);
+  var selectionSet = new ctx.KeySetImpl(selectionIds);
 
   // Now go through the peers and add the peers that can be found inside the selectionSet to the selectedIds array.
   var peers = chart.getChartObjPeers();
@@ -17936,7 +17948,8 @@ DvtChartStyleUtils.getDataLabelPosition = function(chart, seriesIndex, groupInde
         position = 'insideBarEdge';
     }
     if (position == 'insideBarEdge' && !isStacked) {
-      var style = chart.getOptions()['styleDefaults']['dataLabelStyle'];
+      var styleDefaultsDataLabel = chart.getOptions()['styleDefaults']['dataLabelStyle'];
+      var style = data["labelStyle"] ? dvt.CSSStyle.mergeStyles([styleDefaultsDataLabel, new dvt.CSSStyle(data["labelStyle"])]) : styleDefaultsDataLabel;
       var textDim;
 
       if (bHorizontal) {
@@ -24226,9 +24239,10 @@ DvtChartPlotAreaRenderer._renderForegroundObjects = function(chart, container, a
  * @param {Color} dataColor The color of the data item this label is associated with.
  * @param {number} type (optional) Data label type: low, high, or value.
  * @param {boolean} isStackLabel true if label for stack cummulative, false otherwise
+ * @param {number=} originalBarSize The non rounded width(horizontal) or height(vertical) of the bar
  * @private
  */
-DvtChartPlotAreaRenderer._renderDataLabel = function(chart, container, dataItemBounds, seriesIndex, groupIndex, itemIndex, dataColor, type, isStackLabel) {
+DvtChartPlotAreaRenderer._renderDataLabel = function(chart, container, dataItemBounds, seriesIndex, groupIndex, itemIndex, dataColor, type, isStackLabel, originalBarSize) {
   if (DvtChartTypeUtils.isOverview(chart)) // no data label in overview
     return;
 
@@ -24267,7 +24281,10 @@ DvtChartPlotAreaRenderer._renderDataLabel = function(chart, container, dataItemB
   }
   else { // inside label
     if (DvtChartStyleUtils.getSeriesType(chart, seriesIndex) == 'bar') {
-      if (textDim.w > dataItemBounds.w || textDim.h > dataItemBounds.h)
+      var bHoriz = DvtChartTypeUtils.isHorizontal(chart);
+      var fitDataItemWidth = bHoriz ? dataItemBounds.w : originalBarSize;
+      var fitDataItemHeight = bHoriz ? originalBarSize : dataItemBounds.h;
+      if (textDim.w > fitDataItemWidth || textDim.h > fitDataItemHeight)
         return; //dropping text if doesn't fit.
 
       if (position == 'inLeft') {
@@ -24994,11 +25011,11 @@ DvtChartPlotAreaRenderer._renderBars = function(chart, container, availSpace) {
 
       // Rendering data labels for this bar
       if (DvtChartStyleUtils.isRangeSeries(chart, seriesIndex)) {
-        DvtChartPlotAreaRenderer._renderDataLabel(chart, container, shape.getBoundingBox(), seriesIndex, groupIndex, null, dataColor, 'low');
-        DvtChartPlotAreaRenderer._renderDataLabel(chart, container, shape.getBoundingBox(), seriesIndex, groupIndex, null, dataColor, 'high');
+        DvtChartPlotAreaRenderer._renderDataLabel(chart, container, shape.getBoundingBox(), seriesIndex, groupIndex, null, dataColor, 'low', false, shape.getOriginalBarSize());
+        DvtChartPlotAreaRenderer._renderDataLabel(chart, container, shape.getBoundingBox(), seriesIndex, groupIndex, null, dataColor, 'high', false, shape.getOriginalBarSize());
       }
       else
-        DvtChartPlotAreaRenderer._renderDataLabel(chart, container, shape.getBoundingBox(), seriesIndex, groupIndex, null, dataColor);
+        DvtChartPlotAreaRenderer._renderDataLabel(chart, container, shape.getBoundingBox(), seriesIndex, groupIndex, null, dataColor, null, false, shape.getOriginalBarSize());
 
       var markers = new Array();
       markers.push(shape);
@@ -25010,7 +25027,7 @@ DvtChartPlotAreaRenderer._renderBars = function(chart, container, availSpace) {
 
       // Render stack cumulative labels
       if (hasStackLabel && DvtChartDataUtils.isOutermostBar(chart, seriesIndex, groupIndex)) {
-        DvtChartPlotAreaRenderer._renderDataLabel(chart, container, shape.getBoundingBox(), seriesIndex, groupIndex, null, null, null, true);
+        DvtChartPlotAreaRenderer._renderDataLabel(chart, container, shape.getBoundingBox(), seriesIndex, groupIndex, null, null, null, true, shape.getOriginalBarSize());
       }
     }
 

@@ -1,7 +1,7 @@
 {
   "name": "oj-train",
-  "version": "5.2.0",
-  "jetVersion": "5.2.0",
+  "version": "6.0.0",
+  "jetVersion": "6.0.0",
   "displayName": "Train",
   "type": "core",
   "styleClasses": [
@@ -13,18 +13,21 @@
     }
   ],
   "description": "Displays a navigation visual element that allows an application user to go between different steps of a process.",
+  "help": "https://docs.oracle.com/en/middleware/jet/6/reference-api/oj.ojTrain.html",
   "properties": {
     "selectedStep": {
       "description": "Indicates the id of the current selected step.",
       "type": "string",
       "displayName": "Selected Step",
-      "writeback": true
+      "writeback": true,
+      "help": "selectedStep"
     },
     "steps": {
       "description": "The array of step objects.",
       "type": "Array<Object>",
       "displayName": "Steps",
       "required": true,
+      "help": "steps",
       "extension": {
         "vbcs": {
           "itemProperties": {
@@ -57,12 +60,14 @@
       "type": "object|null",
       "displayName": "Translations",
       "value": {},
-      "translatable": true
+      "translatable": true,
+      "help": "translations"
     }
   },
   "methods": {
     "getStep": {
       "description": "Returns the step based on the id passed in.",
+      "help": "getStep",
       "params": [
         {
           "name": "id",
@@ -74,14 +79,17 @@
     },
     "getNextSelectableStep": {
       "description": "Returns the id of the next selectable step based on the current selectedStep.",
+      "help": "getNextSelectableStep",
       "return": "string|null"
     },
     "getPreviousSelectableStep": {
       "description": "Returns the id of the previous selectable step based on the current selectedStep.",
+      "help": "getPreviousSelectableStep",
       "return": "string|null"
     },
     "updateStep": {
       "description": "Update the step with the specified id with the provided property bag.",
+      "help": "updateStep",
       "params": [
         {
           "name": "id",
@@ -130,10 +138,12 @@
     },
     "refresh": {
       "description": "Refreshes the train.",
+      "help": "refresh",
       "return": "void"
     },
     "setProperty": {
-      "description": "Sets a property or a single subproperty for complex properties and notifies the component\nof the change, triggering a [property]Changed event.",
+      "description": "Sets a property or a single subproperty for complex properties and notifies the component of the change, triggering a [property]Changed event.",
+      "help": "setProperty",
       "params": [
         {
           "name": "property",
@@ -150,6 +160,7 @@
     },
     "getProperty": {
       "description": "Retrieves a value for a property or a single subproperty for complex properties.",
+      "help": "getProperty",
       "params": [
         {
           "name": "property",
@@ -161,6 +172,7 @@
     },
     "setProperties": {
       "description": "Performs a batch set of properties.",
+      "help": "setProperties",
       "params": [
         {
           "name": "properties",
@@ -175,6 +187,7 @@
     "ojBeforeDeselect": {
       "description": "Triggered immediately before a step is deselected.",
       "cancelable": true,
+      "help": "beforeDeselect",
       "detail": {
         "toStep": {
           "description": "The step that is about to be deselected.",
@@ -188,6 +201,7 @@
     },
     "ojDeselect": {
       "description": "Triggered after a step has been deselected.",
+      "help": "deselect",
       "detail": {
         "toStep": {
           "description": "The step that is about to be deselected.",
@@ -202,6 +216,7 @@
     "ojBeforeSelect": {
       "description": "Triggered immediately before a Step is selected.",
       "cancelable": true,
+      "help": "beforeSelect",
       "detail": {
         "toStep": {
           "description": "The step that is about to be deselected.",
@@ -215,6 +230,7 @@
     },
     "ojSelect": {
       "description": "Triggered after a step has been selected.",
+      "help": "select",
       "detail": {
         "toStep": {
           "description": "The step that is about to be deselected.",
@@ -229,7 +245,9 @@
   },
   "slots": {
     "contextMenu": {
-      "description": "The contextMenu slot is set on the oj-menu within this element. \nThis is used to designate the JET Menu that this component should launch as a context menu on right-click, Shift-F10, Press & Hold, or component-specific gesture. \nIf specified, the browser's native context menu will be replaced by the JET Menu specified in this slot.\n\nThe application can register a listener for the Menu's ojBeforeOpen event. The listener can cancel the launch via event.preventDefault(), \nor it can customize the menu contents by editing the menu DOM directly, and then calling refresh() on the Menu.\n\nTo help determine whether it's appropriate to cancel the launch or customize the menu, the ojBeforeOpen listener can use component API's to determine which \ntable cell, chart item, etc., is the target of the context menu. See the JSDoc and demos of the individual components for details. \n\nKeep in mind that any such logic must work whether the context menu was launched via right-click, Shift-F10, Press & Hold, or component-specific touch gesture."
+      "description": "The contextMenu slot is set on the <oj-menu> instance within this element. It designates the JET Menu that this component should launch as a context menu.",
+      "maxItems": 1,
+      "help": "contextMenu"
     }
   }
 }

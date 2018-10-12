@@ -221,7 +221,7 @@ $includeAvatarClasses:           $includeAllClasses !default;
 $includeButtonClasses:           $includeAllClasses !default;
 $includeButtonsetClasses:        $includeAllClasses !default;
 $includeCollapsibleClasses:      $includeAllClasses !default;
-$includeConveyerBeltClasses:     $includeAllClasses !default;
+$includeConveyorBeltClasses:     $includeAllClasses !default;
 $includeDataGridClasses:         $includeAllClasses !default;
 $includeDialogClasses:           $includeAllClasses !default;
 $includeFilePickerClasses:       $includeAllClasses !default;
@@ -237,6 +237,7 @@ $includeIndexerClasses:          $includeAllClasses !default;
 $includeListViewClasses:         $includeAllClasses !default;
 $includeMasonryLayoutClasses:    $includeAllClasses !default;
 $includeMenuClasses:             $includeAllClasses !default;
+$includeMenuSelectManyClasses:   $includeAllClasses !default;
 $includeMessagingClasses:        $includeAllClasses !default;
 $includeModuleClasses:           $includeAllClasses !default;
 $includeNavigationListClasses:   $includeAllClasses !default;
@@ -245,10 +246,10 @@ $includeOffcanvasClasses:        $includeAllClasses !default;
 $includePagingControlClasses:    $includeAllClasses !default;
 $includePanelClasses:            $includeAllClasses !default;
 $includePopupClasses:            $includeAllClasses !default;
-$includePullToRefreshClasses:    $includeAllClasses !default;
 $includeProgressClasses:         $includeAllClasses !default;
 $includeProgressListClasses:     $includeAllClasses !default;
 $includeResponsiveHelperClasses: $includeAllClasses !default;
+$includeRefresherClasses:        $includeAllClasses !default;
 $includeRowExpanderClasses:      $includeAllClasses !default;
 $includeSwipeActionsClasses:     $includeAllClasses !default;
 $includeSwipeToRevealClasses:    $includeAllClasses !default;
@@ -356,6 +357,7 @@ $accentColorDvt11:         null !default;
 $accentColorDvt12:         null !default;
 
 // Text colors
+$textColorBase: null !default;
 $textColor1: null !default;
 $textColor2: null !default;
 $textColor3: null !default;
@@ -466,7 +468,7 @@ $formControlLabelColor: null !default;
 $headerTextColor:       null !default;
 
 $linkTextColor:         null !default;
-$linkTextColorActive:   null !default;
+$linkTextColorActive:   $linkTextColor !default;
 $linkTextColorVisited:  $linkTextColor !default;
 // note that $opacityDisabled is
 // used for a disabled link in addition to color
@@ -518,16 +520,17 @@ $largeBorderRadius:  3px !default;
 
 // shadow
 //----------------------------------
-$boxShadowColor:                      $neutralColor17 !default;
-$smallBoxShadow:                      1px 1px 3px 0 transparentize($boxShadowColor, .65) !default;
-$mediumBoxShadow:                     1px 1px 5px 0 transparentize($boxShadowColor, .60) !default;
-$largeBoxShadow:                      1px 1px 10px 0 transparentize($boxShadowColor, .55) !default;
+$boxShadowHsl:      0,0%,0% !default;
+$smallBoxShadow:    1px 1px 3px 0 unquote('hsla(#{$boxShadowHsl},0.35)') !default;
+$mediumBoxShadow:   1px 1px 5px 0 unquote('hsla(#{$boxShadowHsl},0.4)') !default;
+$largeBoxShadow:    1px 1px 10px 0 unquote('hsla(#{$boxShadowHsl},0.45)') !default;
 
 // // overlay
 // //----------------------------------
 // // this is used for something like a modal dialog to overlay the
 // // rest of the screen, indicating it's not reachable
-$overlayBgColor:                      $boxShadowColor !default;
+$overlayBgColor:    unquote('hsl(#{$boxShadowHsl})') !default;
+$overlayOpacity: 0.5 !default;
 
 // z-index hierarchy
 //----------------------------------
@@ -550,7 +553,7 @@ $dialogZindex:          1050 !default;
 $messagesZindex:        2000 !default;
 
 // ojPopup option tail=simple
-$noteWindowZindex:      1030 !default;
+$popupTailZindex:      1030 !default;
 
 // wrappable
 //----------------------------------
@@ -576,7 +579,7 @@ $spacingLarge:   20px !default;
 // disabled
 //----------------------------------
 // opacity is often used to indicate something is disabled
-$opacityDisabled: null !default;
+$opacityDisabled: 1 !default;
 
 
 // animation
@@ -753,7 +756,7 @@ $responsiveGenerateFloatEnd:              true !default;
 // BODY
 //-----------------------------------------------------------------------------
 // to override an existing background image use $bodyBgImage: none;
-$bodyBgImage:   null !default;
+$bodyBgImage:   none !default;
 $bodyBgColor:   $neutralColor1 !default;
 $bodyTextColor: $textColor !default;
 
@@ -775,7 +778,7 @@ $bodyTouchAction: manipulation !default;
 $linkTextDecoration:      none !default;
 $linkTextDecorationHover: underline !default;
 $linkFontWeightActive:    normal !default;
-$linkBgColorActive:        null !default;
+$linkBgColorActive:       transparent !default;
 
 
 // PANEL
@@ -835,11 +838,11 @@ $headerFontWeight:      normal !default;
 // $header[1|2|3|4|5]FontWeight vars can be used
 // to override the default font weight, they are
 // applied to h[1|2|3|4|5] tags
-$header1FontWeight:     null   !default;
-$header2FontWeight:     null   !default;
-$header3FontWeight:     null   !default;
-$header4FontWeight:     null   !default;
-$header5FontWeight:     null   !default;
+$header1FontWeight:     $headerFontWeight   !default;
+$header2FontWeight:     $headerFontWeight   !default;
+$header3FontWeight:     $headerFontWeight   !default;
+$header4FontWeight:     $headerFontWeight   !default;
+$header5FontWeight:     $headerFontWeight   !default;
 
 
 // $header[1|2|3|4|5]FontSize vars are
@@ -854,7 +857,7 @@ $header5FontSize:       $smallFontSize     !default;
 // like the title bar of a dialog or an accordion header
 $headerBgColor:         $neutralColor5 !default;
 $headerBgColorDisabled: $neutralColor3 !default;
-$headerBgImage:         null;
+$headerBgImage:         none           !default;
 
 
 
@@ -866,18 +869,18 @@ $windowBgColor:     $neutralColor1 !default;
 
 // NOTE WINDOW
 //-----------------------------------------------------------------------------
-$noteWindowBorderColor:      $windowBorderColor !default;
-$noteWindowBorderWidth:      $windowBorderWidth !default;
-$noteWindowBgColor:          $windowBgColor !default;
-$noteWindowBoxShadow:        $mediumBoxShadow !default;
+$popupTailBorderColor:      $windowBorderColor !default;
+$popupTailBorderWidth:      $windowBorderWidth !default;
+$popupTailBgcolor:          $windowBgColor !default;
+$popupTailBoxShadow:        $mediumBoxShadow !default;
 
 // tail width and height
-$noteWindowTailSimpleWidth:  14px !default;
-$noteWindowTailSimpleHeight: 14px !default;
+$popupTailSimpleWidth:  14px !default;
+$popupTailSimpleHeight: 14px !default;
 
 // animation theme defaults
-$noteWindowOpenAnimation: (effect: "zoomIn", transformOrigin: "#myPosition") !default;
-$noteWindowCloseAnimation: (effect: "none") !default;
+$popupTailOpenAnimation: (effect: "zoomIn", transformOrigin: "#myPosition") !default;
+$popupTailCloseAnimation: (effect: "none") !default;
 
 // POPUP
 //-----------------------------------------------------------------------------
@@ -907,11 +910,11 @@ $popupCloseAnimation: ((effect: "zoomOut", persist: "all", transformOrigin: "#my
 $messagesGeneralOverlayWidth:                           60vw !default;
 $messagesGeneralOverlayMinWidth:                        $messagesGeneralOverlayWidth !default;
 $messagesGeneralOverlayMaxWidth:                        $messagesGeneralOverlayWidth !default;
-$messagesGeneralOverlayBorderStyle:                     null !default;
-$messagesGeneralOverlayBorderWidth:                     null !default;
-$messagesGeneralOverlayBorderColor:                     null !default;
-$messagesGeneralOverlayBorderRadius:                    null !default;
-$messagesGeneralOverlayBoxShadow:                       null !default;
+$messagesGeneralOverlayBorderStyle:                     solid !default;
+$messagesGeneralOverlayBorderWidth:                     0 !default;
+$messagesGeneralOverlayBorderColor:                     initial !default;
+$messagesGeneralOverlayBorderRadius:                    initial !default;
+$messagesGeneralOverlayBoxShadow:                       initial !default;
 
 // Variable to override the default position of oj-messages container
 $messagesGeneralOverlayPositionOptionDefault:           (my:(horizontal: "center", vertical: "top"), at:(horizontal: "center", vertical: "top"), of: "window", collision: "none") !default;
@@ -921,9 +924,9 @@ $messagesGeneralOverlayPositionOptionDefault:           (my:(horizontal: "center
 
 // Specifies margin used for separating / spacing between two successive message boxes
 $messageGeneralOverlaySeparatorMargin:                  8px !default;
-$messageGeneralOverlayBorderStyle:                      null !default;
-$messageGeneralOverlayBorderWidth:                      null !default;
-$messageGeneralOverlayBorderColor:                      null !default;
+$messageGeneralOverlayBorderStyle:                      solid !default;
+$messageGeneralOverlayBorderWidth:                      0 !default;
+$messageGeneralOverlayBorderColor:                      initial !default;
 $messageGeneralOverlayBorderRadius:                     $smallBorderRadius !default;
 $messageGeneralOverlayBoxShadow:                        $smallBoxShadow !default;
 $messageGeneralOverlayHeaderBgColor:                    $neutralColor1 !default;
@@ -939,11 +942,11 @@ $messageGeneralOverlayCloseAnimation:                   (effect: "collapse", dur
 $messagesNotificationOverlayWidth:                      30vw !default;
 $messagesNotificationOverlayMinWidth:                   $messagesNotificationOverlayWidth !default;
 $messagesNotificationOverlayMaxWidth:                   $messagesNotificationOverlayWidth !default;
-$messagesNotificationOverlayBorderStyle:                null !default;
-$messagesNotificationOverlayBorderWidth:                null !default;
-$messagesNotificationOverlayBorderColor:                null !default;
-$messagesNotificationOverlayBorderRadius:               null !default;
-$messagesNotificationOverlayBoxShadow:                  null !default;
+$messagesNotificationOverlayBorderStyle:                solid !default;
+$messagesNotificationOverlayBorderWidth:                0 !default;
+$messagesNotificationOverlayBorderColor:                initial !default;
+$messagesNotificationOverlayBorderRadius:               initial !default;
+$messagesNotificationOverlayBoxShadow:                  initial !default;
 $messagesNotificationOverlayPositionOptionDefault:      (my:(horizontal: "end", vertical: "top"), at:(horizontal: "end", vertical: "top"), of: "window", collision: "none") !default;
 
 // The following variables apply on individual oj-message when its oj-messages parent has display
@@ -951,9 +954,9 @@ $messagesNotificationOverlayPositionOptionDefault:      (my:(horizontal: "end", 
 
 // Specifies margin used for separating / spacing between two successive message boxes
 $messageNotificationOverlaySeparatorMargin:             8px !default;
-$messageNotificationOverlayBorderStyle:                 null !default;
-$messageNotificationOverlayBorderWidth:                 null !default;
-$messageNotificationOverlayBorderColor:                 null !default;
+$messageNotificationOverlayBorderStyle:                 solid !default;
+$messageNotificationOverlayBorderWidth:                 0 !default;
+$messageNotificationOverlayBorderColor:                 initial !default;
 $messageNotificationOverlayBorderRadius:                $smallBorderRadius !default;
 $messageNotificationOverlayBoxShadow:                   $smallBoxShadow !default;
 $messageNotificationOverlayHeaderBgColor:               $neutralColor1 !default;
@@ -965,7 +968,7 @@ $messageNotificationOverlayCloseAnimation:              (effect: "slideOut", dur
 //  position specified (general inline layout).
 
 $messageGeneralInlineBorderStyle:                       solid !default;
-$messageGeneralInlineBorderWidth:                       0px 0px $windowBorderWidth 0px !default;
+$messageGeneralInlineBorderWidth:                       0 0 $windowBorderWidth 0 !default;
 $messageGeneralInlineBorderColor:                       $neutralColor9 !default;
 
 // The following variables apply on styles for the messages displayed inline to form components.
@@ -974,6 +977,9 @@ $messageGeneralInlineBorderColor:                       $neutralColor9 !default;
 // derive them from border colors since bg colors need to pass high contrast
 // mode - that is, the bg color needs to be light enough
 // so the text on them can be read easily.
+$messageComponentInlineBorderRadius:                    0 !default;
+$messageComponentInlineMarginTop:                       0 !default;
+$messageComponentInlineBorderTopWidth:                  0 !default;
 $messageComponentInlineBorderColorLightnessAdjustment:  4% !default;
 $messageComponentInlineBgColorError:                    $accentColorDanger1 !default;
 $messageComponentInlineBorderColorError:                $accentColorDanger2 !default;
@@ -989,17 +995,18 @@ $messageComponentInlineCloseAnimation:                  (effect: "collapse", end
 // The following variables apply to individual oj-message regardless of the display type and
 //  position of its oj-message parent
 $messageHeaderHeight:                                   auto !default;
+// valid values for messageCloseIconDisplay are none and block
 $messageCloseIconDisplay:                               none !default;
 $messageCategoryTextColor:                              $secondaryTextColor !default;
-$messageCategoryFontSize:                               null !default;
+$messageCategoryFontSize:                               inherit !default;
 $messageTimeTextColor:                                  $secondaryTextColor !default;
-$messageTimeFontSize:                                   null !default;
+$messageTimeFontSize:                                   inherit !default;
 $messageSummaryTextColor:                               $primaryTextColor !default;
-$messageSummaryFontSize:                                null !default;
+$messageSummaryFontSize:                                inherit !default;
 $messageSummaryFontWeight:                              500 !default;
 $messageSummaryLineHeight:                              1.3 !default;
 $messageDetailTextColor:                                $secondaryTextColor !default;
-$messageDetailFontSize:                                 null !default;
+$messageDetailFontSize:                                 inherit !default;
 $messageDetailLineHeight:                               1.3 !default;
 
 // Variable to override the default auto-timeout attribute of individual message
@@ -1030,8 +1037,10 @@ $appLayoutWebPadding: 20px !default;
 // Header
 $appLayoutWebHeaderBgColor: $headerBgColor !default;
 $appLayoutWebHeaderBorderColor: $neutralColor7 !default;
+$appLayoutWebHeaderTitleFontSize: $mediumFontSize !default;
+$appLayoutWebHeaderTitleFontWeight: $headerFontWeight !default;
 $appLayoutWebHeaderTextColor: $secondaryTextColor !default;
-$appLayoutWebHeaderBoxShadow: 0 3px 3px transparentize($boxShadowColor, .9) !default;
+$appLayoutWebHeaderBoxShadow: 0 3px 3px unquote('hsla(#{$boxShadowHsl},0.1)') !default;
 $appLayoutWebHeaderMinHeight: 3.143rem !default; // 44px when root 14px
 
 // Footer
@@ -1049,7 +1058,8 @@ $appLayoutHybridPadding: null !default;
 
 // Header
 $appLayoutHybridHeaderTextColor: $textColor !default;
-$appLayoutHybridHeaderBorderColor: null !default;
+$appLayoutHybridHeaderBorderColor: transparent !default;
+$appLayoutHybridHeaderBorderBottomWidth: 1px !default;
 $appLayoutHybridHeaderBgColor: $neutralColor5 !default;
 // We don't want header height to be relative to root font size so using a fixed px
 $appLayoutHybridHeaderMinHeight: 44px !default;
@@ -1058,7 +1068,8 @@ $appLayoutHybridHeaderTitleFontSize: null !default;
 $appLayoutHybridHeaderTitleFontWeight: $headerFontWeight !default;
 
 // Footer
-$appLayoutHybridFooterBorderColor: null !default;
+$appLayoutHybridFooterBorderTopWidth: 1px !default;
+$appLayoutHybridFooterBorderColor: transparent !default;
 $appLayoutHybridFooterBgColor: $appLayoutHybridHeaderBgColor !default;
 // We don't want footer height to be relative to root font size so using a fixed px
 $appLayoutHybridFooterMinHeight: 48px !default;
@@ -1127,27 +1138,29 @@ $menuSubmenuIconPadding:               0 !default; // end-aligned per Alta spec
 // menus (.oj-menu), whether top-level or submenu
 $menuBorderWidth:                      1px !default;
 $menuBorderColor:                      $popupBorderColor !default;
-$menuBorderRadius:                     null !default;
+$menuBorderRadius:                     0 !default;
 $menuBgColor:                          $popupBgColor !default;
-$menuPadding:                          null !default; // top/bottom padding
+$menuPadding:                          0 !default; // top/bottom padding
 
 // top-level menus (.oj-menu.oj-component)
-$menuBoxShadow:                        0 2px 5px transparentize($boxShadowColor,0.75) !default;
+$menuBoxShadow:                        0 2px 5px unquote('hsla(#{$boxShadowHsl},0.25)') !default;
 
 // submenus (.oj-menu.oj-menu-submenu)
-$menuSubmenuBoxShadow:                 0 3px 7px transparentize($boxShadowColor,0.75) !default;
+$menuSubmenuBoxShadow:                 0 3px 7px unquote('hsla(#{$boxShadowHsl},0.25)') !default;
 
 // menu items (.oj-menu-item) and their anchors
-$menuItemBorderColor:                  null !default;
+$menuItemBorderColor:                  transparent !default;
 $menuItemTextColor:                    $primaryTextColor !default;
-$menuItemLineHeight:                   2.5 !default; // 30px @12px font, per Alta spec, 35px @14px font.
+$menuItemLineHeight:                   2.5rem !default; // 30px @12px font, per Alta spec, 35px @14px font.
+$menuItemTopBorderWidth:               1px !default;
+$menuItemBottomBorderWidth:            1px !default;
 
 // disabled menu items and their anchors
 $menuItemTextColorDisabled:            $textColorDisabled !default;
 
 // focused menu items (.oj-focus) and their ancestor menu items (.oj-focus-ancestor)
 $menuItemBgColorFocus:                 $neutralColor6 !default;
-$menuItemBorderColorFocus:             null !default;
+$menuItemBorderColorFocus:             transparent !default;
 
 // menu icons (.oj-menu-item-icon), not submenu icons
 $menuIconColor:                        $iconColorDefault !default;
@@ -1157,7 +1170,7 @@ $menuIconColorDisabled:                null !default;
 $menuIconOpacityDisabled:              $opacityDisabled !default;
 
 // submenu icons
-$menuSubmenuIconColor:                 null !default;
+$menuSubmenuIconColor:                 inherit !default;
 
 // menu group dividers (.oj-menu-divider, different than the border that iOS puts between every menu item)
 $menuDividerMargin:                    0 !default;
@@ -1172,15 +1185,16 @@ $menuDividerBorderColor:               $menuBorderColor !default;
 $menuSheetFontSize:                    $fontSize !default;
 $menuSheetBorderRadius:                $menuBorderRadius !default;
 $menuSheetBgColor:                     $menuBgColor !default;
-$menuSheetMarginHorizontal:            0 !default;
+$menuSheetMarginHorizontal:            0px !default;
 // $menuSheetMarginBottom value must be 0, px, or %, e.g. 0, 10px, 5%
 $menuSheetMarginBottom:                0 !default;
 
 // sheet menu items (.oj-menu-item) and their anchors
 $menuSheetItemBorderColor:             $menuItemBorderColor !default;
-$menuSheetItemBgColor:                 null !default;
+$menuSheetItemBgColor:                 transparent !default;
 $menuSheetItemTextColor:               $menuItemTextColor !default;
 $menuSheetItemLineHeight:              $menuItemLineHeight !default;
+$menuSheetItemTopBorderWidth:          1px !default;
 
 // disabled sheet menu items and their anchors
 $menuSheetItemTextColorDisabled:       $menuItemTextColorDisabled !default;
@@ -1190,10 +1204,10 @@ $menuSheetItemBgColorFocus:            $menuItemBgColorFocus !default;
 $menuSheetItemBorderColorFocus:        $menuItemBorderColorFocus !default;
 
 // cancel menu item (.oj-menu-item-cancel) and its anchor
-$menuSheetItemCancelFontWeight:        null !default;
+$menuSheetItemCancelFontWeight:        normal !default;
 
 // groups of sheet menu items separated by group dividers
-$menuSheetItemGroupBorderRadius:       null !default;
+$menuSheetItemGroupBorderRadius:       0 !default;
 
 // sheet menu group dividers (.oj-menu-divider, different than the border that iOS puts between every menu item)
 $menuSheetDividerBorderWidth:          $menuDividerBorderWidth !default;
@@ -1224,9 +1238,9 @@ $buttonBorderRadius: $mediumBorderRadius !default;
 $buttonCursor:       default !default;
 
 $buttonHeight:       oj-px-to-rem(32px, $baseFontSize: 14px) !default;
-$buttonSmallHeight:  $buttonHeight * .875 !default;
-$buttonLargeHeight:  $buttonHeight * 1.3125 !default;
-$buttonXlargeHeight: $buttonHeight * 1.5 !default;
+$buttonSmallHeight:  2rem !default;
+$buttonLargeHeight:  3rem !default;
+$buttonXlargeHeight: 3.42857rem !default;
 
 $buttonFontSize:       $fontSize !default;
 $buttonSmallFontSize:  null !default;
@@ -1271,16 +1285,16 @@ $buttonIconColor:                 $iconColorDefault !default;
 $buttonBorderColor:               $neutralColor9 !default;
 $buttonInternalBorderColor:       $neutralColor9 !default;
 $buttonBgImage:                   linear-gradient(to bottom, #ffffff 0%, #f1f3f4 3.64%, #e8ebed 50%, $buttonBgColor 100%) !default;
-$buttonTextShadow:                null !default;
-$buttonBoxShadow:                 null !default;
+$buttonTextShadow:                none !default;
+$buttonBoxShadow:                 none !default;
 
 // hover
 $buttonBgColorHover:              $neutralColor4 !default;
 $buttonTextColorHover:            $brandColor !default;
 $buttonIconColorHover:            $iconColorHover !default;
 $buttonBorderColorHover:          $buttonBorderColor !default;
-$buttonBgImageHover:              null !default;
-$buttonTextShadowHover:           null !default;
+$buttonBgImageHover:              none !default;
+$buttonTextShadowHover:           none !default;
 $buttonBoxShadowHover:            $buttonBoxShadow !default;
 
 // active
@@ -1289,10 +1303,10 @@ $buttonTextColorActive:           $contrastTextColor !default;
 $buttonIconColorActive:           $buttonTextColorActive !default;
 $buttonBorderColorActive:         $buttonBgColorActive !default;
 $buttonInternalBorderColorActive: $buttonInternalBorderColor !default;
-$buttonBgImageActive:             null !default;
-$buttonTextShadowActive:          null !default;
+$buttonBgImageActive:             none !default;
+$buttonTextShadowActive:          none !default;
 $buttonBoxShadowActive:           $buttonBoxShadow !default;
-$buttonOpacityActive:             null !default;
+$buttonOpacityActive:             1 !default;
 
 // selected - default to use active values
 $buttonBgColorSelected:           $buttonBgColorActive !default;
@@ -1307,8 +1321,8 @@ $buttonBoxShadowSelected:         $buttonBoxShadowActive !default;
 // selected and hovered
 $buttonTextColorSelectedHover:    $contrastTextColor !default;
 $buttonIconColorSelectedHover:    $buttonIconColorHover !default;
-$buttonBgColorSelectedHover:      null !default;
-$buttonBorderColorSelectedHover:  null !default;
+$buttonBgColorSelectedHover:      $buttonBgColorActive !default;
+$buttonBorderColorSelectedHover:  $buttonBorderColorActive !default;
 
 // disabled
 $buttonBgColorDisabled:           $neutralColor6 !default;
@@ -1366,8 +1380,8 @@ $buttonHalfChromeBorderColorSelected:     $buttonHalfChromeBgColorSelected !defa
 // half chrome selected and hovered
 $buttonHalfChromeTextColorSelectedHover:  $buttonTextColorSelectedHover !default;
 $buttonHalfChromeIconColorSelectedHover:  $buttonHalfChromeTextColorSelectedHover !default;
-$buttonHalfChromeBgColorSelectedHover:    null !default;
-$buttonHalfChromeBorderColorSelectedHover:  null !default;
+$buttonHalfChromeBgColorSelectedHover:    $buttonBgColorSelectedHover !default;
+$buttonHalfChromeBorderColorSelectedHover:  $buttonBorderColorSelectedHover !default;
 
 // half chrome disabled
 $buttonHalfChromeTextColorDisabled:       $buttonHalfChromeTextColor !default;
@@ -1413,8 +1427,8 @@ $buttonOutlinedChromeInternalBorderColorSelected:  $buttonInternalBorderColor !d
 // outlined selected and hovered
 $buttonOutlinedChromeTextColorSelectedHover:  $buttonHalfChromeTextColorSelectedHover !default;
 $buttonOutlinedChromeIconColorSelectedHover:  $buttonHalfChromeIconColorSelectedHover !default;
-$buttonOutlinedChromeBgColorSelectedHover:    null !default;
-$buttonOutlinedChromeBorderColorSelectedHover:  null !default;
+$buttonOutlinedChromeBgColorSelectedHover:    $buttonBgColorSelectedHover !default;
+$buttonOutlinedChromeBorderColorSelectedHover:  $buttonBorderColorSelectedHover !default;
 
 // outlined disabled
 $buttonOutlinedChromeTextColorDisabled:       $buttonBgColorDisabled !default;
@@ -1468,12 +1482,12 @@ $dialogCancelBehaviorOptionDefault: none !default;
 $dialogDragAffordanceOptionDefault: none !default;
 
 $dialogBoxShadow:           $smallBoxShadow !default;
-$dialogBorderRadius:        null !default;
+$dialogBorderRadius:        0 !default;
 $dialogBorderWidth:         $windowBorderWidth !default;
 $dialogBorderColor:         $windowBorderColor !default;
 $dialogBgColor:             $windowBgColor !default;
 
-$dialogHeaderPadding:       $panelPadding !default;
+$dialogHeaderPadding:       $panelPadding $panelPadding $panelPadding !default;
 $dialogBodyPadding:         $panelPadding !default;
 $dialogFooterPadding:       $panelPadding !default;
 
@@ -1490,12 +1504,12 @@ $dialogHeaderTextAlign:     start !default;
 // Possible values are 'top' and 'center'
 // (the close icon is always on the right in ltr)
 $dialogCloseIconPosition:  top !default;
-$dialogCloseIconButtonMargin:  null !default;
+$dialogCloseIconButtonMargin:  0 $buttonIconOnlyPadding !default;
 
 $dialogBodyTextAlign:       start !default;
 
 $dialogFooterButtonHeight:  $buttonHeight !default;
-$dialogFooterButtonFontWeight: null !default;
+$dialogFooterButtonFontWeight: $buttonFontWeight !default;
 
 // Integrated layout for footer buttons.
 // Possible values are 'true' or 'false'.
@@ -1510,7 +1524,7 @@ $dialogFooterDividerColor:      $dialogBorderColor !default;
 //-----------------------------------------------------------------------------
 
 $toolbarBorderColor:  $panelBorderColor !default;
-$toolbarBgColor:      null !default;
+$toolbarBgColor:      transparent !default;
 $toolbarBorderWidth:  0 !default;
 
 // chroming
@@ -1532,9 +1546,9 @@ $formLayoutDividerColor: null !default;
 // These classes use css multi column layout, see:
 // http://dev.w3.org/csswg/css-multicol/
 $formLayoutColumnWidth:             18.45rem !default;
-$formLayoutColumnGap:               null !default;
+$formLayoutColumnGap:               normal !default;
 $formLayoutLabelsInlineColumnWidth: 22rem !default;
-$formLayoutLabelsInlineColumnGap:   null !default;
+$formLayoutLabelsInlineColumnGap:   normal !default;
 
 
 // In a form layout this is the space expected between
@@ -1547,7 +1561,7 @@ $formLayoutLabelInlineMarginTop: .4em !default;
 
 // in a form layout when the labels are inline what is the
 // default label alignment, legal values are start and end
-$formLayoutLabelInlineAlign: null !default;
+$formLayoutLabelInlineAlign: start !default;
 
 
 // in a form layout when the labels are inline what is the
@@ -1564,9 +1578,9 @@ $formLayoutFieldInlineAlign: null !default;
 
 // label required content character.
 // If it is not needed (like you want to use pure css instead), set to ''.
-$formControlLabelRequiredChar: '*' !default;
+$formControlLabelRequiredChar: "*" !default;
 $formControlLabelFontWeight: normal !default;
-$formControlLabelFontSize:   null !default;
+$formControlLabelFontSize:   $fontSize !default;
 
 // top aligned labels
 //----------------------------------
@@ -1614,13 +1628,13 @@ $formControlMinWidth:       8em !default;
 // form control common
 //----------------------------------
 $formControlBorderRadius:  $mediumBorderRadius !default;
-$formControlBorderWidth:   1px !default;
+$formControlBorderWidth:   1px 1px 1px 1px !default;
 
 // controls the horizontal padding inside an input
 $formControlPaddingHorizontal: 5px !default;
 
 // messaging border
-$formControlMessagingBorderWidth: 2px !default;
+$formControlMessagingBorderWidth: 2px 2px 2px 2px !default;
 $formControlTextAlign: null !default;
 
 
@@ -1650,17 +1664,17 @@ $formControlTriggerFontSize:  $fontSize !default;
 
 
 // *****active*****
-$formControlTriggerBgColorActive: null !default;
+$formControlTriggerBgColorActive: $formControlBgColor !default;
 
 
 // *****focus*****
-$formControlInputBorderColorFocus:               null !default;
-$formControlInputBorderWidthFocus:               null !default;
+$formControlInputBorderColorFocus: $formControlBorderColor !default;
+$formControlInputBorderWidthFocus: $formControlBorderWidth !default;
 
 // *****readonly*****
 $formControlValueColorReadOnly:  $textColor !default;
 $formControlFontSizeReadOnly:    $formControlInputFontSize !default;
-$formControlFontWeightReadOnly:  null !default;
+$formControlFontWeightReadOnly:  normal !default;
 
 // *****disabled*****
 $formControlBgColorDisabled:     $formControlBgColor !default;
@@ -1670,13 +1684,14 @@ $formControlOpacityDisabled:     $opacityDisabled   !default;
 
 // *****placeholder*****
 $formControlPlaceholderColor: $tertiaryTextColor !default;
-$formControlPlaceholderFontStyle: null !default;
+$formControlPlaceholderFontStyle: normal !default;
 
 // INPUT NUMBER
 // the spacing between the input and the buttonset
 $inputNumberInputToButtonMargin: 0 !default;
+
 //inputnumber up and down button width
-$inputNumberButtonWidth: null !default;
+$inputNumberButtonWidth: auto !default;
 
 // RADIO and CHECKBOX
 // The input html element can be hidden the radio/checkbox rendered as an image instead
@@ -1694,6 +1709,9 @@ $radioCheckboxImageHeightWidth: 20px !default;
 // spacing between edge and the label text
 $radioCheckboxLabelToEdgePadding: 10px !default;
 
+// spacing between two checkbox/radio when direction is row (inline)
+$radioCheckboxDirectionRowInlinePadding: 1.5rem !default;
+
 // spacing between edge and the input (html input or input image)
 $radioCheckboxInputToEdgePadding: $radioCheckboxLabelToEdgePadding !default;
 // spacing on the input (html input or input image) to give spacing between the input and the text
@@ -1707,7 +1725,7 @@ $radioCheckboxImageDir: null !default;
 //----------------------------------
 //default
 $radioCheckboxSetBorderColor: null !default;
-$radioCheckboxSetBgColor: null !default;
+$radioCheckboxSetBgColor: transparent !default;
 $radioCheckboxItemDividerColor: transparent !default;
 $radioCheckboxLabelColor: $textColor !default;
 
@@ -1716,7 +1734,7 @@ $radioCheckboxItemBgColorActive: $brandColorLight5 !default;
 $radioCheckboxItemDividerColorActive: $radioCheckboxItemDividerColor !default;
 
 // selected
-$radioCheckboxLabelColorSelected: null !default;
+$radioCheckboxLabelColorSelected: $radioCheckboxLabelColor !default;
 
 // SELECT
 //----------------------------------------
@@ -1728,7 +1746,7 @@ $selectRenderModeOptionDefault: jet !default;
 // the right and left borders of the next two properties will be flipped in rtl languages
 $selectArrowPadding: 0 5px !default;
 $selectMultipleArrowPadding: 0 1px !default;
-$selectArrowColor: null !default;
+$selectArrowColor: $iconColorDefault !default;
 
 // picker
 $selectPickerBgColor: null !default;
@@ -1736,9 +1754,9 @@ $selectPickerBgColor: null !default;
 
 // INPUT TEXT, INPUT PASSWORD, TEXT AREA
 //-----------------------------------------------------------------------------
-$inputTextBorderStyleDisabled:   null !default;
+$inputTextBorderStyleDisabled:   solid !default;
 $inputTextTextAlign: null !default;
-$textAreaLineHeight:                      null !default;
+$textAreaLineHeight: inherit !default;
 
 //INPUT SEARCH
 //--------------------------------------------------------------
@@ -1751,12 +1769,6 @@ $inputSearchIconPadding: 0 $formControlPaddingHorizontal 0 0 !default;
 // SLIDER
 //-----------------------------------------------------------------------------
 
-//
-// Default Slider:
-//   - Circular thumbs
-//   - Normal sized Active thumbs (same size as enabled thumbs).
-//   - Thumbs with borders
-
 // Thumb dimensions used in horizontal sliders.
 $sliderThumbWidth:      24px !default;
 $sliderThumbHeight:     $sliderThumbWidth !default;
@@ -1767,7 +1779,7 @@ $sliderThumbHeightActive:     $sliderThumbWidthActive !default;
 
 $sliderThumbBorderWidth:          2px !default;
 $sliderThumbBorderRadius:         50% !default;
-$sliderThumbBoxShadow:            null !default;
+$sliderThumbBoxShadow:            none !default;
 
 // Hit areas
 $sliderThumbHitArea:    28px !default;
@@ -1800,7 +1812,7 @@ $sliderColorPickerBarThickness:         10px !default;
 $sliderColorPickerThumbBorderWidth:     3px !default;
 $sliderColorPickerThumbBorderRadius:    17px !default;
 $sliderColorPickerThumbBorderStyle:     solid !default;
-$sliderColorPickerThumbBorderColor:     white !default;
+$sliderColorPickerThumbBorderColor:     $neutralColor1 !default;
 $sliderColorPickerThumbWidth:           24px !default;
 $sliderColorPickerThumbHeight:          $sliderColorPickerThumbWidth !default;
 $sliderColorPickerThumbWidthActive:     $sliderColorPickerThumbWidth !default;
@@ -1862,7 +1874,7 @@ $switchThumbBorderWidthReadonly: $switchTrackBorderWidthReadonly !default;
 // ENABLED OFF
 $switchThumbHeight: $switchContainerHeight * 0.9375 !default; // 30px
 $switchThumbWidth: $switchThumbHeight !default;
-$switchThumbShadow: 0 2px 2px -2px transparentize($boxShadowColor, .1) !default;
+$switchThumbShadow: 0 2px 2px -2px unquote('hsla(#{$boxShadowHsl},0.9)') !default;
 // ----- COLORS -----
 $switchTrackBgColor:                     $buttonBgColorHover !default;
 $switchTrackBorderColor:                 $neutralColor7 !default;
@@ -1872,7 +1884,7 @@ $switchThumbBorderColor:                 $neutralColor10 !default;
 // ENABLED ON
 $switchThumbHeightSelected: $switchContainerHeight * 0.875 !default; // 28px
 $switchThumbWidthSelected: $switchThumbHeightSelected !default;
-$switchThumbShadowSelected: 0 2px 2px -2px $boxShadowColor !default;
+$switchThumbShadowSelected: 0 2px 2px -2px unquote('hsl(#{$boxShadowHsl})') !default;
 // ----- COLORS -----
 $switchTrackBgColorSelected:             $brandColor !default;
 $switchTrackBorderColorSelected:         $switchTrackBgColorSelected !default;
@@ -2064,8 +2076,11 @@ $progressBarBorderStyle:                 none !default;
 
 $progressBarIndeterminateOverlayImage:   $imageDir + "animated-overlay.gif" !default;
 $progressBarIndeterminateOverlayOpacity: 1 !default;
+$progressBarIndeterminateAnimationDuration: 1s !default;
 
 $progressCircleIndeterminateOverlayImage: $imageDir + "spinner_full.gif" !default;
+$progressCircleIndeterminateOverlaySize: auto !default;
+$progressCircleIndeterminateAnimationDuration: 1s !default;
 
 $progressCircleSize:                     32px !default;
 $progressCircleBgColor:                  $progressBarBgColor !default;
@@ -2084,6 +2099,8 @@ $trainBgColorVisited:                     $brandColor !default;
 $trainBorderColorVisited:                 $trainBgColorVisited !default;
 $trainLabelColorVisited:                  $secondaryTextColor !default;
 $trainButtonTextColorVisited:             $contrastTextColor !default;
+$trainVisitedIconDisplay:                 inherit !default;
+$trainButtonTextVisitedDisplay:           inherit !default;
 
 // selected state
 $trainBgColorSelected:                    $brandColor !default;
@@ -2104,7 +2121,7 @@ $trainBorderColorHover:                   $trainBgColorHover !default;
 $trainButtonTextColorHover:               $contrastTextColor !default;
 
 // active state
-$trainBgColorActive :                     $neutralColor7 !default;
+$trainBgColorActive:                     $neutralColor7 !default;
 $trainBorderColorActive:                  $brandColor !default;
 $trainLabelTextDecorationActive:          none !default;
 $trainLabelFontWeightActive:              bold !default;
@@ -2112,10 +2129,8 @@ $trainButtonTextColorActive:              $trainBgColorVisited !default;
 
 // button label
 $trainButtonFontSize:                     12px !default;
-// valid values are 'none' and 'numeric'
-$trainButtonStyleType:                    numeric !default;
 
-// the default width of a stepr
+// the default width of a step
 $trainStepWidth:                          7rem !default;
 
 $trainLabelPaddingTop:                    13px !default;
@@ -2136,15 +2151,17 @@ $trainConfirmationBgColor:                $accentColorConfirmation4 !default;
 $trainErrorBgColor:                       $accentColorDanger4 !default;
 $trainWarningBgColor:                     $accentColorAttention4 !default;
 $trainInfoBgColor:                        $accentColorInfo4 !default;
+$trainIconFontSize:                       unset !default;//Don't override icon font size
 // connector variables
 // step connector type. Valid values are 'individual' or 'continuous. A 'continuous'
 // connector is a single shape behind all of the step buttons while the 'individual'
 // connector renders seperate shapes between each step.
-$trainConnectorType:                      individual !default;
 $trainConnectorBgColor:                   $neutralColor9 !default;
 $trainConnectorHeight:                    1px !default;
+$trainConnectorHasFill:                   0 !default;
 $trainContinuousConnectorBgColorSelected: transparent !default;
-$trainIndividualConnectorBgColorSelected: null !default;
+$trainIndividualConnectorBgColorSelected: $trainConnectorBgColor !default;
+$trainConnectorContinuousBgColor:         $trainConnectorBgColor !default;
 
 // padding for individual connector
 $trainIndividualConnectorPadding:         10px !default;
@@ -2153,6 +2170,8 @@ $trainIndividualConnectorPaddingSelected: $trainIndividualConnectorPadding !defa
 // the diameter of the connector circle around the button in the continuous
 // connector design
 $trainButtonContinuousConnectorDiameter:  $trainButtonDiameter !default;
+$trainButtonTextIsNumeric:                1 !default;
+$trainButtonTextDisplay:                  inherit !default;
 
 //TREE
 //-----------------------------------------------------------------------------
@@ -2187,7 +2206,7 @@ $collectionBgColor:                           $neutralColor2 !default;
 $collectionCellPadding:                       0.375em !default;
 $collectionHeaderFontWeight:                  $headerFontWeight !default;
 $collectionHeaderTextColor:                   $headerTextColor !default;
-$collectionHeaderFontSize:                    null !default;
+$collectionHeaderFontSize:                    inherit !default;
 // Headers content alignment
 $collectionColumnHeaderJustifyContent:        center !default;
 $collectionColumnHeaderAlignItems:            center !default;
@@ -2210,7 +2229,7 @@ $collectionHeaderDragImageBorderColor:        $brandColor !default;
 
 // Cells
 $collectionCellTextColor:                     $textColor !default;
-$collectionCellFontSize:                      null !default;
+$collectionCellFontSize:                      inherit !default;
 // Cells content alignment
 $collectionCellJustifyContent:                flex-end !default;
 $collectionCellAlignItems:                    center !default;
@@ -2305,18 +2324,21 @@ $rowExpanderSpacerWidth:  1.5rem !default;
 // PAGING CONTROL
 //-----------------------------------------------------------------------------
 // padding between various elements of the paging control
-$pagingControlPadding:    5px !default;
+$pagingPadding:           5px !default;
 $pagingDotSize:           7px !default;
 $pagingDotPadding:        8px !default;
+$pagingBorderColor:       $neutralColor8 !default;
 
 // LISTVIEW
 //-----------------------------------------------------------------------------
 
 $listViewAnimationDuration:    $animationDurationMedium !default;
 $listViewHeaderBorderWidth:    0 0 1px !default;
+$listViewHeaderBorderWidthCollapsed: $listViewHeaderBorderWidth !default;
 $listViewHeaderFontSize:       $header4FontSize !default;
 $listViewHeaderOpacity:        1 !default;
 $listViewHeaderFontWeight:     $headerFontWeight !default;
+$listViewItemBorderPosition:   0 !default;
 // the right and left margins will be flipped in rtl languanges
 $listViewCardMargin:           $spacingMedium $spacingMedium 0 0 !default;
 $listViewCardWidth:            240px !default;
@@ -2356,7 +2378,7 @@ $swipeActionsAttentionBgColor:       $accentColorAttention5 !default;
 $swipeActionsDangerBgColor:      $accentColorDanger5 !default;
 
 // width of action item
-$swipeActionsItemWidth:            75px !default;
+$swipeActionsItemWidth:		    75px !default;
 // padding between icon and text in action item
 $swipeActionsIconToTextPadding: oj-px-to-rem(10px, $baseFontSize: 16px) !default;
 
@@ -2371,7 +2393,7 @@ $indexerAbbrItemHeight:      14px !default;
 // text color of the prefix in the indexer
 $indexerTextColor:           $secondaryTextColor !default;
 // text color of the prefix in the indexer in disabled state
-$indexerTextColorDisabled:   null !default;
+$indexerTextColorDisabled:   $secondaryTextColor !default;
 // text decoration of the prefix in the indexer
 $indexerTextDecoration:      none !default;
 // text decoration of the prefix in the indexer when hover
@@ -2407,6 +2429,8 @@ $masonryLayoutReorderAnimation: (effect: "addTransition", duration: $masonryLayo
 $filmStripArrowOpacity: 1 !default;
 // border radius of arrows
 $filmStripArrowBorderRadius: $buttonBorderRadius !default;
+//hover
+$filmStripOverflowIndicatorHeight: $buttonHeight !default;
 
 
 // CONVEYOR BELT
@@ -2459,10 +2483,10 @@ $navigationListItemBorderWidth:                            0 0 0 $navigationList
 //----------Common icon only variables
 
 //Hover
-$navigationListItemIconOnlyBgColorHover:                   null !default;
+$navigationListItemIconOnlyBgColorHover:                   $neutralColor6 !default;
 
 //Selected
-$navigationListItemIconOnlyBgColorSelected:                null !default;
+$navigationListItemIconOnlyBgColorSelected:                $brandColor !default;
 $navigationListIconOnlyIconColorSelected:                  $brandColor !default;
 
 //----------NavigationList(vertical) icon only variables
@@ -2470,7 +2494,7 @@ $navigationListIconOnlyIconColorSelected:                  $brandColor !default;
 // values could be "circle"(alta default) or "none"(for android/windows/ios)
 $navigationListIconOnlyStyle:                              none !default;
 //Padding between items
-$navigationListIconOnlyItemPadding:                        null !default;
+$navigationListIconOnlyItemPadding:                        0 !default;
 //Only applicable when icon only style is "none".
 $navigationListIconOnlyIconStartEndPadding:                16px !default;
 
@@ -2504,7 +2528,7 @@ $navigationListHierarchyMenuThresholdOptionDefault: -1 !default;
 //------Horizontal list variables----
 
 // Default
-$navigationListHorizontalItemBorderColor:                  transparent !default;
+//$navigationListHorizontalItemBorderColor:                  transparent !default;
 $navigationListHorizontalItemLabelColorDefault:            $navigationListItemLabelColorDefault !default;
 $navigationListHorizontalItemIconColorDefault:             $navigationListItemIconColorDefault !default;
 
@@ -2512,8 +2536,7 @@ $navigationListHorizontalItemIconColorDefault:             $navigationListItemIc
 $navigationListHorizontalItemDividerColor:                 $neutralColor7 !default;
 
 // Selected
-$navigationListHorizontalItemBgColorSelected:              null !default;
-$navigationListHorizontalItemBorderColorSelected:          $brandColor !default;
+$navigationListHorizontalItemBgColorSelected:              transparent !default;
 $navigationListHorizontalItemLabelColorSelected:           $navigationListItemLabelColorSelected !default;
 $navigationListHorizontalItemIconColorSelected:            $navigationListItemIconColorSelected !default;
 
@@ -2539,7 +2562,7 @@ $navigationListHorizontalIconOnlyStyle:                    none !default;
 $navigationListHorizontalIconOnlyItemMargin:               4px !default;
 
 //----------------Horizontal navigationlist contrast variables
-$navigationListHorizontalItemContrastBgColorSelected:      null !default;
+$navigationListHorizontalItemContrastBgColorSelected:      transparent !default;
 $navigationListHorizontalItemContrastLabelColorSelected:   $navigationListItemContrastLabelColorSelected !default;
 
 //---------------Animations-------------------
@@ -2559,7 +2582,7 @@ $navigationListPointerUpAnimation:                         (effect: "none") !def
 //TabBar
 //----------------------------------------------------------------------
 //Default
-$tabBarItemBorderColor:                             null !default;
+$tabBarItemBorderColor:                             transparent !default;
 $tabBarItemLabelColorDefault:                       $secondaryTextColor !default;
 $tabBarItemIconColorDefault:                        $tabBarItemLabelColorDefault !default;
 
@@ -2567,19 +2590,19 @@ $tabBarItemIconColorDefault:                        $tabBarItemLabelColorDefault
 $tabBarItemBorderColorHover:                        $iconColorHover !default;
 $tabBarItemBgColorHover:                            $neutralColor6 !default;
 $tabBarItemIconColorHover:                          $iconColorHover !default;
-$tabBarItemIconOnlyBgColorHover:                    null !default;
-
+$tabBarItemIconOnlyBgColorHover:                    $neutralColor6 !default;
+$tabBarItemLabelColorHover:                         $tabBarItemLabelColorDefault !default;
 //selected
-$tabBarItemLabelColorSelected:                      null !default;
+$tabBarItemLabelColorSelected:                      $tabBarItemLabelColorDefault !default;
 $tabBarItemIconColorSelected:                       $brandColor !default;
 $tabBarItemBorderColorSelected:                     $brandColor !default;
-$tabBarItemBgColorSelected:                         null !default;
-$tabBarItemIconOnlyBgColorSelected:                 null !default;
+$tabBarItemBgColorSelected:                         transparent !default;
+$tabBarItemIconOnlyBgColorSelected:                 $brandColor !default;
 $tabBarIconOnlyIconColorSelected:                   $brandColor !default;
 
 //active
-$tabBarItemBgColorActive:                           null !default;
-$tabBarItemBorderColorActive:                       null !default;
+$tabBarItemBgColorActive:                           $tabBarItemBgColorHover !default;
+$tabBarItemBorderColorActive:                       $tabBarItemBorderColorHover !default;
 
 //Focus
 $tabBarItemOutlineColorFocus:                       $neutralColor14 !default;
@@ -2602,22 +2625,22 @@ $tabBarItemLabelTextWrap:                           nowrap !default;
 // values could be "circle"(alta default) or "none"(for android/windows/ios)
 $tabBarIconOnlyStyle:                               none !default;
 $tabBarItemFontWeightSelected:                      normal !default;
-$tabBarItemBorderRadius:                            null !default;
+$tabBarItemBorderRadius:                            0 !default;
 
 //---------------Vertical tab bar variables-----------------
 //Padding between items
-$tabBarVerticalIconOnlyItemPadding:                         null !default;
+$tabBarVerticalIconOnlyItemPadding:                         0 !default;
 //Only applicable when icon only style is "none".
 $tabBarVerticalIconOnlyIconStartEndPadding:                 16px !default;
 //This value will be ignored when $tabBarIconOnlyStyle is set to 'circle'.
 $tabBarVerticalIconOnlyItemBorderWidth:                     0 0 0 3px !default;// the right and left borders will be flipped in rtl languanges
 $tabBarVerticalItemBorderWidth:                             0 0 0 3px !default;// the right and left borders will be flipped in rtl languanges
 $tabBarVerticalItemMinHeight:                               oj-px-to-rem(43px, $baseFontSize: 16px) !default;
-$tabBarVerticalItemFontSize:                                null !default;
+$tabBarVerticalItemFontSize:                                $fontSize !default;
 //Align label of vertical tab bar, support either null or center
 $tabBarVerticalItemLabelTextAlign:                          null !default;
 //Separator color used in vertical tabbar
-$tabBarVerticalItemSeparatorColor:                          null !default;
+$tabBarVerticalItemSeparatorColor:                          transparent !default;
 
 //------Horizontal Tab Bar variables----
 
@@ -2634,6 +2657,7 @@ $tabBarHorizontalItemBgColorSelected:               $tabBarItemBgColorSelected !
 $tabBarHorizontalItemBorderColorSelected:           $brandColor !default;
 
 // Hover
+$tabBarHorizontalItemLabelColorHover:               $tabBarItemIconColorHover !default;
 $tabBarHorizontalItemBorderColorHover:              $tabBarItemBorderColorHover !default;
 //Sizing
 $tabBarHorizontalItemBorderWidth:                   0 0 3px 0 !default;//horizontal
@@ -2648,7 +2672,7 @@ $tabBarHorizontalIconOnlyStyle:                     none !default;
 $tabBarHorizontalIconOnlyItemMargin:                4px !default;
 
 $tabBarHorizontalIconOnlyItemBorderWidth:           $tabBarHorizontalItemBorderWidth !default;
-$tabBarHorizontalItemFontSize:                      null !default;
+$tabBarHorizontalItemFontSize:                      $fontSize !default;
 $tabBarHorizontalItemMinHeight:                     oj-px-to-rem(38px, $baseFontSize: 16px) !default;
 $tabBarHorizontalItemStackedIconMinHeight:          oj-px-to-rem(54px, $baseFontSize: 16px) !default;
 $tabBarHorizontalStackedItemPadding:                $tabBarHorizontalItemPadding !default;
@@ -2662,11 +2686,14 @@ $tabBarItemContrastLabelColorDefault:               $neutralColor10 !default;
 $tabBarItemContrastLabelColorHover:                 $brandColorLight1 !default;
 $tabBarItemContrastBgColorHover:                    $neutralColor16 !default;
 
+//Active
+$tabBarItemContrastBgColorActive:                    $neutralColor16 !default;
+
 //Selected
 $tabBarItemContrastLabelColorSelected:              $brandColorLight1 !default;
-$tabBarItemContrastBgColorSelected:                 null !default;
+$tabBarItemContrastBgColorSelected:                 transparent !default;
 //Horizontal Navigation Tabs  contrast variables
-$tabBarHorizontalItemContrastBgColorSelected:       null !default;
+$tabBarHorizontalItemContrastBgColorSelected:       transparent !default;
 $tabBarHorizontalItemContrastLabelColorSelected:    $tabBarItemContrastLabelColorSelected !default;
 
 //Disabled
@@ -2699,11 +2726,12 @@ $filePickerTextFontSize:          oj-px-to-rem(18px, $baseFontSize: 14px) !defau
 $filePickerBgColorActive:         $brandColorLight2 !default;
 $filePickerBorderWidthActive:     1px !default;
 
-
 // DVT
 //-----------------------------------------------------------------------------
 $dvtAnimationDuration: $animationDurationLong !default;
 $dvtAxisTitleTextColor: $tertiaryTextColor !default;
+$dvtIconBgColorActive: $buttonBgColorActive !default;
+$dvtIconBorderColorActive: $buttonBorderColorActive !default;
 
 // attribute group colors
 //----------------------------------
@@ -2832,14 +2860,16 @@ $dvtTimeAxisSeparatorColor: $neutralColor7 !default;
 $dvtGanttBgColor:                 $collectionBgColor !default;
 $dvtGanttBorderColor:             $collectionBorderColor !default;
 $dvtGanttHorizontalGridlineColor: $collectionCellBorderColor !default;
-$dvtGanttVerticalGridlineColor:   $dvtTimelineMajorAxisSeparatorColor !default;
+$dvtGanttVerticalGridlineColor:   $neutralColor10 !default;
 $dvtGanttEmptyTextColor:          $textColor !default;
+$dvtGanttDependencyLineColor:     $neutralColor14 !default;
 
 $dvtGanttRowBgColor:              $collectionCellBgColor !default;
 $dvtGanttTaskBgColor:             $accentColorDvt1 !default;
-$dvtGanttMilestoneBgColor:        $tertiaryTextColor !default;
+$dvtGanttMilestoneBgColor:        $neutralColor13 !default;
 $dvtGanttSummaryBgColor:          $iconColorDefault !default;
 $dvtGanttTaskBorderColorSelected: $dvtBorderColor !default;
+$dvtGanttTaskDragImageBorderColor: $neutralColor15 !default;
 
 $dvtGanttMajorAxisBgColor:        $collectionHeaderBgColor !default;
 $dvtGanttMajorAxisBorderColor:    $collectionHeaderBorderColor !default;
@@ -2850,10 +2880,6 @@ $dvtGanttMinorAxisBgColor:        $dvtGanttMajorAxisBgColor !default;
 $dvtGanttMinorAxisBorderColor:    $dvtGanttMajorAxisBorderColor !default;
 $dvtGanttMinorAxisLabelColor:     $collectionCellTextColor !default;
 $dvtGanttMinorAxisSeparatorColor: $dvtGanttMajorAxisSeparatorColor !default;
-
-$dvtGanttDependencyLineColor:     $formControlLabelColor !default;
-
-$dvtGanttTaskDragImageBorderColor: $textColor3 !default;
 
 //icon
 //----------------------------------
@@ -2946,9 +2972,9 @@ $avatarLgPlaceholderScale:  3.25 !default;
 $avatarXlPlaceholderScale:  6   !default;
 $avatarXxlPlaceholderScale: 8   !default;
 
-//Alpha level of the black filter put on the background/border to meet contrast
+//Color of the black filter put on the background/border to meet contrast
 //ratio requirements for smaller text sizes
-$avatarInitialsShadeOpacity:          0 !default;
+$avatarInitialsShadeColor:          transparent !default;
 
 //-----------------------------------------------------------------------------
 // OPTIMIZATION VARIABLES
@@ -3070,7 +3096,8 @@ $oj-css-var-map: (
   '--oj-icon-color-selected':         $iconColorSelected,
   '--oj-icon-color-disabled':         $iconColorDisabled,
   '--oj-drop-target-1-color':         $dropTarget1Color,
-  '--oj-drop-target-2-color':         $dropTarget2Color
+  '--oj-drop-target-2-color':         $dropTarget2Color,
+  '--oj-color-required':              $brandColorDark1
 );
 
 // check for vars that have been renamed but the old var name is defined,

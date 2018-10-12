@@ -1,0 +1,125 @@
+// Copyright (c) 2014, 2018, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+
+
+
+
+//*****************************************************************************
+// return json from the value passed in
+// json types: http://www.json.org/
+// sass types: http://sass-lang.com/documentation/file.SASS_REFERENCE.html#data_types
+// 
+// $value:  can be any sass data type, but
+//          types that don't map to a json type will be sent down as a string, 
+//          for example sass colors will be sent down as a string
+//
+// example usage:
+// font-family: oj-json($mylist);
+//*****************************************************************************
+@function oj-json($value) {
+
+  @if type-of($value) == map {
+    @return oj-json-from-map($value);
+  }
+  @else if type-of($value) == list {
+    @return oj-json-from-list($value);
+  }
+  @else if type-of($value) == bool or (type-of($value) == number and unitless($value)) {
+    @return #{$value};
+  }
+  @else {
+    @return '"#{$value}"';
+  }
+}
+
+
+
+//*****************************************************************************
+// return json from a list. 
+//
+// example:
+//
+//  $mylist: #{$var1}, #{$var2}, #{$var3};
+//
+//  font-family: oj-json-from-list($mylist);
+//*****************************************************************************
+@function oj-json-from-list($list) {
+  $length: length($list);
+
+  // open json array
+  $json: '[';
+  
+  @if ($length > 0)
+  {
+    @for $i from 1 through $length {
+
+      $value: nth($list, $i);
+      $value: oj-json($value);
+
+      // add the value
+      $json: '#{$json}#{$value}';
+
+      @if $i < $length {
+        $json: '#{$json},';
+      }
+    }
+  }
+  
+  // close json array
+  $json: '#{$json}]';
+
+  //@debug $json;
+  @return $json;
+}
+
+
+//*****************************************************************************
+// return json from a map. 
+// 
+// This function will add quotes to the keys 
+// and to values where $type-of($value) == string
+//
+// example of adding a submap 
+//  $submap2: ();
+//  $submap2: map-merge($submap2, (foo: fooValue));
+//  $submap2: map-merge($submap2, (disabled: true));
+//  
+//  $mainmap2: ();
+//  $mainmap2: map-merge($mainmap2, (display: $submap2));
+//  $mainmap2: map-merge($mainmap2, (binky: 6));
+//
+//  font-family: oj-json-from-map($mainmap2);
+//*****************************************************************************
+@function oj-json-from-map($map) {
+  $mapKeys: map-keys($map);
+  $length: length($mapKeys);
+
+  // open json map
+  $json: '{';
+  
+  @if ($length > 0)
+  {
+    @for $i from 1 through $length {
+
+      //get the key and value
+      $key: nth($mapKeys, $i);
+      $value: map-get($map, $key);
+
+      // quote the key and add it
+      $json: '#{$json}"#{$key}":';
+      $value: oj-json($value);
+
+      // add the value to the map
+      $json: '#{$json}#{$value}';
+
+      @if $i < $length {
+        $json: '#{$json},';
+      }
+    }
+  }
+  
+  // close json map
+  $json: '#{$json}}';
+
+  //@debug $json;
+  @return $json;
+}

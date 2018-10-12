@@ -7,9 +7,9 @@
  * Available via the MIT or new BSD license.
  * see: http://github.com/requirejs/i18n for details
  */
-/*jslint regexp: true */
-/*jslint browser: true*/
-/*global require: false, navigator: false, define: false */
+/* jslint regexp: true */
+/* jslint browser: true*/
+/* global require: false, navigator: false, define: false */
 
 /**
  * This plugin handles i18n! prefixed modules. It does the following:
@@ -40,307 +40,322 @@
  * for the nls/fr-fr/colors bundle to be that mixed in locale.
  */
 (function () {
-    'use strict';
+  'use strict';
 
-    //regexp for reconstructing the master bundle name from parts of the regexp match
-    //nlsRegExp.exec("foo/bar/baz/nls/en-ca/foo") gives:
-    //["foo/bar/baz/nls/en-ca/foo", "foo/bar/baz/nls/", "/", "/", "en-ca", "foo"]
-    //nlsRegExp.exec("foo/bar/baz/nls/foo") gives:
-    //["foo/bar/baz/nls/foo", "foo/bar/baz/nls/", "/", "/", "foo", ""]
-    //so, if match[5] is blank, it means this is the top bundle definition.
-    var nlsRegExp = /(^.*(^|\/)nls(\/|$))([^\/]*)\/?([^\/]*)/;
-    
-    //Helper function to avoid repeating code. Lots of arguments in the
-    //desire to stay functional and support RequireJS contexts without having
-    //to know about the RequireJS contexts.
-    function _addPart(locale, master, needed, toLoad, prefix, suffix, locale_prefix) {
-        
-        if (!master[locale]) {
-            // Try the same language/region without script for zh
-            // We are removing a Hans or Hant between the two dashes
-            locale = locale.replace(/^zh-(Hans|Hant)-([^-]+)$/, "zh-$2");
-        }
-        
-        if (master[locale]) {
-            needed.push(locale);
-            if (master[locale] === true || master[locale] === 1) {
-                var loc = locale_prefix ? (locale_prefix + locale): locale;
-                toLoad.push(prefix + loc + '/' + suffix);
-            }
-            return true;
-        }
-        return false;
+  // regexp for reconstructing the master bundle name from parts of the regexp match
+  // nlsRegExp.exec("foo/bar/baz/nls/en-ca/foo") gives:
+  // ["foo/bar/baz/nls/en-ca/foo", "foo/bar/baz/nls/", "/", "/", "en-ca", "foo"]
+  // nlsRegExp.exec("foo/bar/baz/nls/foo") gives:
+  // ["foo/bar/baz/nls/foo", "foo/bar/baz/nls/", "/", "/", "foo", ""]
+  // so, if match[5] is blank, it means this is the top bundle definition.
+  var nlsRegExp = /(^.*(^|\/)nls(\/|$))([^/]*)\/?([^/]*)/;
+
+  // Helper function to avoid repeating code. Lots of arguments in the
+  // desire to stay functional and support RequireJS contexts without having
+  // to know about the RequireJS contexts.
+  function _addPart(locale, master, needed, toLoad, prefix, suffix, localePrefix) {
+    if (!master[locale]) {
+      // Try the same language/region without script for zh
+      // We are removing a Hans or Hant between the two dashes
+      // eslint-disable-next-line no-param-reassign
+      locale = locale.replace(/^zh-(Hans|Hant)-([^-]+)$/, 'zh-$2');
     }
 
-    
-    function _isObject(val) {
-        return (typeof val === 'object');
+    if (master[locale]) {
+      needed.push(locale);
+      if (master[locale] === true || master[locale] === 1) {
+        var loc = localePrefix ? (localePrefix + locale) : locale;
+        toLoad.push(prefix + loc + '/' + suffix);
+      }
+      return true;
     }
-    
-    /**
-     * Fixes up locale to comply with BCP47 spec and returns parts that should be used for mathching the bundles 
-     */
-    function _getLocaleParts(locale) {
-        var tokens = locale.toLowerCase().split(/-|_/), 
-                parts = [tokens[0]], phase = 1, i; // script
-        
-        for(i=1; i < tokens.length; i++) {
-          var t = tokens[i], len = t.length;
-          
-          if (len == 1) //extension
-          {
+    return false;
+  }
+
+
+  function _isObject(val) {
+    return (typeof val === 'object');
+  }
+
+  /**
+   * Fixes up locale to comply with BCP47 spec and returns parts that should be used for mathching the bundles
+   */
+  function _getLocaleParts(locale) {
+    var tokens = locale.toLowerCase().split(/-|_/);
+    var parts = [tokens[0]];
+    var phase = 1;
+    var i; // script
+
+    for (i = 1; i < tokens.length; i++) {
+      var t = tokens[i];
+      var len = t.length;
+
+      if (len === 1) { // extension
+        break;
+      }
+
+      switch (phase) {
+        case 1:
+          phase = 2;
+          if (len === 4) { // this is a script tag
+            // capitalize the first letter
+            parts.push(t.charAt(0).toUpperCase() + t.slice(1));
             break;
           }
-          
-          switch(phase) {
-            case 1:
-              phase = 2;
-              if (len == 4) {// this is a script tag
-                // capitalize the first letter
-                parts.push(t.charAt(0).toUpperCase() + t.slice(1));
-                break;
+          // fall through to the next case
+        case 2: // region
+          phase = 3;
+          parts.push(t.toUpperCase());
+          break;
+        default: // variant
+          parts.push(t);
+      }
+    }
+
+    _normalizeLocaleParts(parts);
+
+    return parts;
+  }
+
+  /**
+   * 'Normalizes' locale by inserting script tag according to the following rules:
+   *  zh -> zh-Hans,
+   *  zh-TW -> zh-Hant-TW,
+   *  zh-MO -> zh-Hant-MO,
+   *  zh-HK -> zh-Hant-HK,
+   *  zh-XX (except above) -> zh-Hans-XX
+   */
+  function _normalizeLocaleParts(parts) {
+    // do nothing if the language is not 'zh' or a script tag is already
+    // present
+    if (parts[0] !== 'zh' || (parts.length > 1 && parts[1].length === 4)) {
+      return;
+    }
+
+    var scriptTag = 'Hans';
+
+    var region = parts.length > 1 ? parts[1] : null;
+
+    if (region === 'TW' || region === 'MO' || region === 'HK') {
+      scriptTag = 'Hant';
+    }
+
+    parts.splice(1, 0, scriptTag);
+  }
+
+
+  /**
+   * Simple function to mix in properties from source into target,
+   * but only if target does not already have a property of the same name.
+   * This is not robust in IE for transferring methods that match
+   * Object.prototype names, but the uses of mixin here seem unlikely to
+   * trigger a problem related to that.
+   */
+  function _mixin(target, source) {
+    var props = Object.keys(source);
+    for (var i = 0; i < props.length; i++) {
+      var prop = props[i];
+      if (target[prop] == null) {
+        // eslint-disable-next-line no-param-reassign
+        target[prop] = source[prop];
+      } else if (_isObject(source[prop]) && _isObject(target[prop])) {
+        _mixin(target[prop], source[prop]);
+      }
+    }
+  }
+
+
+  define(['module'], function (module) {
+    var masterConfig = module.config ? module.config() : {};
+
+    return {
+      version: '2.0.1+',
+      /**
+       * Called when a dependency needs to be loaded.
+       * @private
+       */
+      load: function (name, req, onLoad, config) {
+        // eslint-disable-next-line no-param-reassign
+        config = config || {};
+
+        if (config.locale) {
+          masterConfig.locale = config.locale;
+        }
+
+        var masterName;
+        var match = nlsRegExp.exec(name);
+        var prefix = match[1];
+        var locale;
+        var suffix = match[5];
+        var parts;
+        var toLoad = [];
+        var value = {};
+        var i;
+        var part;
+        var current = '';
+        var noOverlay;
+        var backup;
+        var extraBundle;
+        var ebPrefix;
+        var ebSuffix;
+        var merge;
+        var locales;
+        var roots;
+
+        // If match[5] is blank, it means this is the top bundle definition,
+        // so it does not have to be handled. Locale-specific requests
+        // will have a match[4] value but no match[5]
+        if (match[5]) {
+          // locale-specific bundle
+          prefix = match[1];
+          masterName = prefix + suffix;
+          locale = match[4];
+        } else {
+          // Top-level bundle.
+          masterName = name;
+          suffix = match[4];
+          locale = masterConfig.locale;
+
+          //  - check if the document object is available
+          // Note that the 'typeof' check  is required
+          if (typeof document !== 'undefined') {
+            if (!locale) {
+              locale = config.isBuild ? 'root' : document.documentElement.lang;
+              if (!locale) {
+                // navigator may be undefined in web workers
+                locale = navigator === undefined ? 'root' :
+                  // E11 reports incorrect navigator.language, so we are checking OS language first
+                  // as a lame susbstitute for the server-side inspection of accept-language headers.
+                  // This should not affect other browsers because that navigator.systemLanguage
+                  // should be present in IE11 only
+                  navigator.systemLanguage ||
+                  navigator.language || navigator.userLanguage || 'root';
               }
-              // fall through to the next case
-            case 2: //region
-              phase = 3;
-              parts.push(t.toUpperCase());
-              break;
-            default: //variant
-              parts.push(t);
+            }
+            masterConfig.locale = locale;
+          } else {
+            locale = 'root';
           }
         }
-        
-        _normalizeLocaleParts(parts);
-        
-        return parts;
-    }
-    
-    /**
-     * 'Normalizes' locale by inserting script tag according to the following rules:
-     *  zh -> zh-Hans,
-     *  zh-TW -> zh-Hant-TW,
-     *  zh-MO -> zh-Hant-MO,
-     *  zh-HK -> zh-Hant-HK,
-     *  zh-XX (except above) -> zh-Hans-XX
-     */
-    function _normalizeLocaleParts(parts) {
-        // do nothing if the language is not 'zh' or a script tag is already
-        // present
-        if (parts[0] != 'zh' || (parts.length > 1 && parts[1].length == 4)) {
-            return;
+
+        parts = _getLocaleParts(locale);
+
+        noOverlay = masterConfig.noOverlay;
+        backup = masterConfig.defaultNoOverlayLocale;
+
+        var localePrefix = masterConfig.localePrefix;
+
+        // Optional name of the bundle that should be merged with the requested bundle
+
+        merge = masterConfig.merge;
+        if (merge) {
+          extraBundle = merge[prefix + suffix];
+          if (extraBundle) {
+            match = nlsRegExp.exec(extraBundle);
+            // assume top-level bundle for the merged extra bundle
+            ebPrefix = match[1];
+            ebSuffix = match[4];
+          }
         }
-        
-        var scriptTag = "Hans";
-        
-        var region = parts.length > 1 ? parts[1] : null;
-        
-        if (region === "TW" || region === "MO" || region === "HK") {
-          scriptTag = "Hant";  
+
+        locales = [];
+
+        for (i = 0; i < parts.length; i++) {
+          part = parts[i];
+          current += (current ? '-' : '') + part;
+          locales.push(current);
         }
-        
-        parts.splice(1, 0, scriptTag);
-    }
-    
 
-    /**
-     * Simple function to mix in properties from source into target,
-     * but only if target does not already have a property of the same name.
-     * This is not robust in IE for transferring methods that match
-     * Object.prototype names, but the uses of mixin here seem unlikely to
-     * trigger a problem related to that.
-     */
-    function _mixin(target, source) {
-        var prop;
-        for (prop in source) {
-            if (source.hasOwnProperty(prop)) {
-                if (target[prop] == null) {
-                    target[prop] = source[prop];
-                } 
-                else if (_isObject(source[prop]) && _isObject(target[prop])) {
-                    _mixin(target[prop], source[prop]);
-                }
-            }
-        }
-    }
+        if (config.isBuild) {
+          // Assume that  only the root bundle should be added at build time, as the user locale
+          // normally cannot be predicted
 
-    
-    define(['module'], function (module) {
-        var masterConfig = module.config ? module.config() : {};
+          toLoad.push(masterName);
 
-        return {
-            version: '2.0.1+',
-            /**
-             * Called when a dependency needs to be loaded.
-             * @private
-             */
-            load: function (name, req, onLoad, config) {
-                config = config || {};
+          if (extraBundle) {
+            toLoad.push(extraBundle);
+          }
 
-                if (config.locale) {
-                    masterConfig.locale = config.locale;
-                }
-
-                var masterName,
-                    match = nlsRegExp.exec(name),
-                    prefix = match[1],
-                    locale,
-                    suffix = match[5],
-                    parts,
-                    toLoad = [],
-                    value = {},
-                    i, part, current = "", noOverlay, backup, extraBundle, ebPrefix, ebSuffix, merge, locales, roots;
-
-                //If match[5] is blank, it means this is the top bundle definition,
-                //so it does not have to be handled. Locale-specific requests
-                //will have a match[4] value but no match[5]
-                if (match[5]) {
-                    //locale-specific bundle
-                    prefix = match[1];
-                    masterName = prefix + suffix;
-                    locale = match[4];
-                } else {
-                    //Top-level bundle.
-                    masterName = name;
-                    suffix = match[4];
-                    locale = masterConfig.locale;
-                    
-                    //  - check if the document object is available
-                    // Note that the 'typeof' check  is required
-                    if (typeof document !== 'undefined') {
-                      if (!locale) {
-                          locale = config.isBuild ? "root" : document.documentElement.lang;
-                          if (!locale) {
-                              locale = navigator === undefined ? "root" :
-                              navigator.language || navigator.userLanguage || "root";
-                          }
-                      }
-                      masterConfig.locale = locale;
-                    }
-                    else {
-                      locale = "root";
-                    }
-                }
-                
-                parts = _getLocaleParts(locale);
-                
-                noOverlay = masterConfig['noOverlay'];
-                backup = masterConfig['defaultNoOverlayLocale'];
-                
-                var locale_prefix = masterConfig['localePrefix'];
-                
-                // Optional name of the bundle that should be merged with the requested bundle
-                
-                merge = masterConfig['merge'];
-                if (merge) {
-                  extraBundle = merge[prefix + suffix];
-                  if (extraBundle) {
-                    match = nlsRegExp.exec(extraBundle);
-                    // assume top-level bundle for the merged extra bundle
-                    ebPrefix = match[1];
-                    ebSuffix = match[4];
-                  }
-                }
-                
-                locales = [];
-                
-                for (i = 0; i < parts.length; i++) {
-                    part = parts[i];
-                    current += (current ? "-" : "") + part;
-                    locales.push(current);
-                }
-
-                if (config.isBuild) {
-                    // Assume that  only the root bundle should be added at build time, as the user locale
-                    // normally cannot be predicted
-                    
-                    toLoad.push(masterName);
-                    
-                    if (extraBundle) {
-                        toLoad.push(extraBundle);
-                    }
-
-                    req(toLoad, function () {
-                        onLoad();
-                    });
-                } else {
-                
-                    if (masterConfig['includeLocale'] == 'query') {
-                      masterName = req.toUrl(masterName + '.js');
-                      masterName += ((masterName.indexOf('?') === -1 ? '?' : '&') + 'loc=' + 
+          req(toLoad, function () {
+            onLoad();
+          });
+        } else {
+          if (masterConfig.includeLocale === 'query') {
+            masterName = req.toUrl(masterName + '.js');
+            masterName += ((masterName.indexOf('?') === -1 ? '?' : '&') + 'loc=' +
                                          locale);
-                    }
-                    
-                    roots = [masterName];
-                    if (extraBundle) {
-                        roots.push(extraBundle);
-                    }
-                
-                    //First, fetch the master bundle, it knows what locales are available.
-                    req(roots, function (master, extra) {
-                    
-                        var needed = [];
-                        
-                        var _addParts = function(masterBundle, pref, suff) {
-                            var noMerge = noOverlay || (masterBundle['__noOverlay'] === true);
-                            var backupBundle = backup || masterBundle['__defaultNoOverlayLocale'];
-                            
-                            var matched = false;
-                                            
-                            for (var lo = locales.length-1; lo >= 0 && !(matched && noMerge); lo--) {
-                                matched = _addPart(locales[lo], masterBundle, needed, toLoad, pref, suff, locale_prefix);
-                            }
-                            
-                            var rootOnly = (locales.length === 1 && "root" === locales[0]);
-                            
-                            if (noMerge && (rootOnly || !matched) && backupBundle) {
-                                _addPart(backupBundle, masterBundle, needed, toLoad, pref, suff, locale_prefix);
-                            }
-                            
-                            if (!rootOnly) {
-                                _addPart("root", masterBundle, needed, toLoad, pref, suff, locale_prefix);
-                            }
-                        };
-                        
-                        _addParts(master, prefix, suffix);
-                        
-                        var mainBundleCount = needed.length;
-                        
-                        if (extra) {
-                            _addParts(extra, ebPrefix, ebSuffix);
-                        }
+          }
 
-                        //Load all the parts missing.
-                        req(toLoad, function () {
-                            
-                            var _mixinBundle = function(bundle, start, end/*exclusive*/, pref, suff) {
-                                for (var i = start; i < end && needed[i]; i++) {
-                                    var part = needed[i];
-                                    var prefixed_loc = locale_prefix ? (locale_prefix + part): part;
-                                    var partBundle = bundle[part];
-                                    if (partBundle === true || partBundle === 1) {
-                                        partBundle = req(pref + prefixed_loc + '/' + suff);
-                                    }
-                                    _mixin(value, partBundle);
-                                }
-                            };
-                            
-                            // Start with the 'extra', as it is supposed to be overriding the entire main bundle
-                            _mixinBundle(extra, mainBundleCount, needed.length, ebPrefix, ebSuffix);
-                            
-                            _mixinBundle(master, 0, mainBundleCount, prefix, suffix);
-                            
-                            
-                            // Stash away the locale on the bundle itself to make the framework aware of the locale used
-                            // by Require.js
-                            
-                            value['_ojLocale_'] = parts.join("-");
+          roots = [masterName];
+          if (extraBundle) {
+            roots.push(extraBundle);
+          }
 
-                            //All done, notify the loader.
-                            onLoad(value);
-                        });
-                    });
-                }
+          // First, fetch the master bundle, it knows what locales are available.
+          req(roots, function (master, extra) {
+            var needed = [];
+
+            var _addParts = function (masterBundle, pref, suff) {
+              var noMerge = noOverlay || (masterBundle.__noOverlay === true);
+              var backupBundle = backup || masterBundle.__defaultNoOverlayLocale;
+
+              var matched = false;
+
+              for (var lo = locales.length - 1; lo >= 0 && !(matched && noMerge); lo--) {
+                matched = _addPart(locales[lo], masterBundle, needed,
+                                   toLoad, pref, suff, localePrefix);
+              }
+
+              var rootOnly = (locales.length === 1 && locales[0] === 'root');
+
+              if (noMerge && (rootOnly || !matched) && backupBundle) {
+                _addPart(backupBundle, masterBundle, needed, toLoad, pref, suff, localePrefix);
+              }
+
+              if (!rootOnly) {
+                _addPart('root', masterBundle, needed, toLoad, pref, suff, localePrefix);
+              }
+            };
+
+            _addParts(master, prefix, suffix);
+
+            var mainBundleCount = needed.length;
+
+            if (extra) {
+              _addParts(extra, ebPrefix, ebSuffix);
             }
-        };
-    });
+
+            // Load all the parts missing.
+            req(toLoad, function () {
+              var _mixinBundle = function (bundle, start, end/* exclusive*/, pref, suff) {
+                for (var j = start; j < end && needed[j]; j++) {
+                  var _part = needed[j];
+                  var prefixedLoc = localePrefix ? (localePrefix + _part) : _part;
+                  var partBundle = bundle[_part];
+                  if (partBundle === true || partBundle === 1) {
+                    partBundle = req(pref + prefixedLoc + '/' + suff);
+                  }
+                  _mixin(value, partBundle);
+                }
+              };
+
+              // Start with the 'extra', as it is supposed to be overriding the entire main bundle
+              _mixinBundle(extra, mainBundleCount, needed.length, ebPrefix, ebSuffix);
+
+              _mixinBundle(master, 0, mainBundleCount, prefix, suffix);
+
+
+              // Stash away the locale on the bundle itself to make the framework aware of the locale used
+              // by Require.js
+
+              value._ojLocale_ = parts.join('-');
+
+              // All done, notify the loader.
+              onLoad(value);
+            });
+          });
+        }
+      }
+    };
+  });
 }());

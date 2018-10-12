@@ -43,7 +43,7 @@
 @mixin oj-masonrylayout-tile-size($colSpan, $rowSpan, $baseTileWidth, $baseTileHeight, $margin) {
   .oj-masonrylayout-tile-#{$colSpan}x#{$rowSpan} {
     margin: $margin;
-    width: ($colSpan * $baseTileWidth + ($colSpan - 1) * 2 * $margin);
-    height: ($rowSpan * $baseTileHeight + ($rowSpan - 1) * 2 * $margin);
+    width: calc(#{$colSpan} * #{$baseTileWidth} + (#{$colSpan} - 1) * 2 * #{$margin});
+    height: calc(#{$rowSpan} * #{$baseTileHeight} + (#{$rowSpan} - 1) * 2 * #{$margin});
   }
 }

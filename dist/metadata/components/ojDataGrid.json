@@ -1,7 +1,7 @@
 {
   "name": "oj-data-grid",
-  "version": "5.2.0",
-  "jetVersion": "5.2.0",
+  "version": "6.0.0",
+  "jetVersion": "6.0.0",
   "displayName": "Data Grid",
   "type": "core",
   "styleClasses": [
@@ -43,23 +43,29 @@
     }
   ],
   "description": "Displays data in a cell oriented grid.",
+  "help": "https://docs.oracle.com/en/middleware/jet/6/reference-api/oj.ojDataGrid.html",
   "properties": {
     "bandingInterval": {
       "description": "Specifies the data body row and column banding intervals.",
       "type": "object",
       "displayName": "Banding Interval",
+      "help": "bandingInterval",
       "properties": {
         "column": {
           "description": "Specifies the data body column banding intervals.",
           "type": "number",
           "displayName": "Column",
-          "value": 0
+          "value": 0,
+          "minimum": 0,
+          "help": "bandingInterval.column"
         },
         "row": {
           "description": "Specifies the data body row banding intervals.",
           "type": "number",
           "displayName": "Row",
-          "value": 0
+          "value": 0,
+          "minimum": 0,
+          "help": "bandingInterval.row"
         }
       }
     },
@@ -67,24 +73,96 @@
       "description": "Specifies attributes on the cells.",
       "type": "object",
       "displayName": "Cell",
+      "help": "cell",
       "properties": {
         "className": {
           "description": "CSS class names to apply to cells.",
           "type": "function|string|null",
           "displayName": "Class Name",
-          "value": null
+          "value": null,
+          "help": "cell.className"
         },
         "renderer": {
           "description": "Specifies what renders is the cell.",
           "type": "function|null",
           "displayName": "Renderer",
-          "value": null
+          "value": null,
+          "help": "cell.renderer",
+          "properties": {
+            "componentElement": {
+              "description": "a reference to the DataGrid root Element",
+              "type": "Element"
+            },
+            "parentElement": {
+              "description": "empty rendered cell element",
+              "type": "Element"
+            },
+            "cell": {
+              "description": "the container data object for the header",
+              "type": "D"
+            },
+            "data": {
+              "description": "the data object for the header",
+              "type": "D"
+            },
+            "datasource": {
+              "description": "a reference to the data source object",
+              "type": "oj.DataProvider<K, D>|null"
+            },
+            "indexes": {
+              "description": "the object that contains both the zero based row index and column index in which the cell is bound to",
+              "type": "object",
+              "properties": {
+                "row": {
+                  "description": "the zero based absolute row index",
+                  "type": "number"
+                },
+                "column": {
+                  "description": "the zero based absolute column index",
+                  "type": "number"
+                }
+              }
+            },
+            "keys": {
+              "description": "the object that contains both the row key and column key which identifies the cell",
+              "type": "object",
+              "properties": {
+                "row": {
+                  "description": "the row key",
+                  "type": "K"
+                },
+                "column": {
+                  "description": "the column key",
+                  "type": "K"
+                }
+              }
+            },
+            "extents": {
+              "description": "the object that contains both the row extent and column extent of the cell",
+              "type": "object",
+              "properties": {
+                "row": {
+                  "description": "the row extent",
+                  "type": "number"
+                },
+                "column": {
+                  "description": "the column extent",
+                  "type": "number"
+                }
+              }
+            },
+            "mode": {
+              "description": "the mode the cell is rendered in",
+              "type": "\"edit\"|\"navigation\""
+            }
+          }
         },
         "style": {
           "description": "Inline style to add to the cells.",
           "type": "function|string|null",
           "displayName": "Style",
-          "value": null
+          "value": null,
+          "help": "cell.style"
         }
       }
     },
@@ -94,78 +172,33 @@
       "displayName": "Current Cell",
       "value": null,
       "writeback": true,
-      "properties": {
-        "type": {
-          "description": "designates whether a header or databody cell is the current cell, valid values are: 'cell', 'header', 'label'",
-          "type": "string"
-        },
-        "axis": {
-          "description": "header axis, available if type is header or label, valid values are: 'row', 'column', 'rowEnd', 'columnEnd'",
-          "type": "string"
-        },
-        "index": {
-          "description": "header index, available if type is header",
-          "type": "number"
-        },
-        "level": {
-          "description": "header level, available if type is header or label",
-          "type": "number"
-        },
-        "key": {
-          "description": "header key, available if type is header",
-          "type": "number"
-        },
-        "indexes": {
-          "description": "cell indexes, available if type is cell",
-          "type": "object",
-          "properties": {
-            "row": {
-              "description": "cell row index",
-              "type": "number"
-            },
-            "column": {
-              "description": "cell column index",
-              "type": "number"
-            }
-          }
-        },
-        "keys": {
-          "description": "cell keys, available if type is cell",
-          "type": "object",
-          "properties": {
-            "row": {
-              "description": "cell row key",
-              "type": "string"
-            },
-            "column": {
-              "description": "cell column key",
-              "type": "string"
-            }
-          }
-        }
-      }
+      "help": "currentCell"
     },
     "data": {
       "description": "Specifies the grid data source.",
-      "type": "oj.DataGridDataSource",
+      "type": "oj.DataGridDataSource|oj.DataProvider|null",
       "displayName": "Data",
-      "value": null
+      "value": null,
+      "help": "data"
     },
     "dnd": {
       "description": "Specifies the drag and drop features.",
       "type": "object",
       "displayName": "Dnd",
+      "help": "dnd",
       "properties": {
         "reorder": {
           "description": "Specifies the drag and drop reordering.",
           "type": "object",
           "displayName": "Reorder",
+          "help": "dnd.reorder",
           "properties": {
             "row": {
               "description": "Specifies the drag and drop row reordering.",
               "type": "string",
               "displayName": "Row",
               "value": "disable",
+              "help": "dnd.reorder.row",
               "enumValues": [
                 "disable",
                 "enable"
@@ -191,6 +224,7 @@
       "displayName": "Edit Mode",
       "value": "none",
       "writeback": true,
+      "help": "editMode",
       "enumValues": [
         "cellEdit",
         "cellNavigation",
@@ -215,12 +249,14 @@
       "description": "Specifies the visibility of the grid body vertical and horizontal gridlines.",
       "type": "object",
       "displayName": "Gridlines",
+      "help": "gridlines",
       "properties": {
         "horizontal": {
           "description": "Specifies the visibility of the grid body vertical and horizontal gridlines.",
           "type": "string",
           "displayName": "Horizontal",
           "value": "visible",
+          "help": "gridlines.horizontal",
           "enumValues": [
             "hidden",
             "visible"
@@ -241,6 +277,7 @@
           "type": "string",
           "displayName": "Vertical",
           "value": "visible",
+          "help": "gridlines.vertical",
           "enumValues": [
             "hidden",
             "visible"
@@ -262,40 +299,73 @@
       "description": "Specifies attributes on the headers.",
       "type": "object",
       "displayName": "Header",
+      "help": "header",
       "properties": {
         "column": {
           "description": "Specifies attributes on the column headers.",
           "type": "object",
           "displayName": "Column",
+          "help": "header.column",
           "properties": {
             "className": {
               "description": "CSS class names to apply to column headers.",
               "type": "function|string|null",
               "displayName": "Class Name",
-              "value": null
+              "value": null,
+              "help": "header.column.className"
             },
             "label": {
               "description": "Specifies attributes on the column header labels.",
               "type": "object",
               "displayName": "Label",
+              "help": "header.column.label",
               "properties": {
                 "className": {
                   "description": "CSS class names to apply to column header labels.",
                   "type": "function|string|null",
                   "displayName": "Class Name",
-                  "value": null
+                  "value": null,
+                  "help": "header.column.label.className"
                 },
                 "renderer": {
                   "description": "Specifies what renders is the column header labels.",
                   "type": "function|null",
                   "displayName": "Renderer",
-                  "value": null
+                  "value": null,
+                  "help": "header.column.label.renderer",
+                  "properties": {
+                    "componentElement": {
+                      "description": "a reference to the DataGrid root Element",
+                      "type": "Element"
+                    },
+                    "parentElement": {
+                      "description": "empty rendered label element",
+                      "type": "Element"
+                    },
+                    "datasource": {
+                      "description": "a reference to the data source object",
+                      "type": "oj.DataProvider<K, D>|null"
+                    },
+                    "axis": {
+                      "description": "the axis of the label",
+                      "type": "\"column\"|\"columnEnd\"|\"row\"|\"rowEnd\""
+                    },
+                    "key": {
+                      "description": "the key of the label",
+                      "type": "K"
+                    },
+                    "level": {
+                      "description": "the level of the label",
+                      "type": "number"
+                    }
+                  }
                 },
                 "style": {
                   "description": "Inline style to apply to column header labels.",
                   "type": "function|string|null",
                   "displayName": "Style",
-                  "value": null
+                  "value": null,
+                  "help": "header.column.label.style"
                 }
               }
             },
@@ -303,18 +373,63 @@
               "description": "Specifies what renders is the column headers.",
               "type": "function|null",
               "displayName": "Renderer",
-              "value": null
+              "value": null,
+              "help": "header.column.renderer",
+              "properties": {
+                "componentElement": {
+                  "description": "a reference to the DataGrid root Element",
+                  "type": "Element"
+                },
+                "parentElement": {
+                  "description": "empty rendered header element",
+                  "type": "Element"
+                },
+                "data": {
+                  "description": "the data object for the header",
+                  "type": "D"
+                },
+                "datasource": {
+                  "description": "a reference to the data source object",
+                  "type": "oj.DataProvider<K, D>|null"
+                },
+                "axis": {
+                  "description": "the axis of the header",
+                  "type": "\"column\"|\"columnEnd\"|\"row\"|\"rowEnd\""
+                },
+                "index": {
+                  "description": "the index of the header, where 0 is the index of the first header",
+                  "type": "number"
+                },
+                "key": {
+                  "description": "the key of the header",
+                  "type": "K"
+                },
+                "level": {
+                  "description": "the level of the header. The outermost header is level zero",
+                  "type": "number"
+                },
+                "extent": {
+                  "description": "the number of indexes the header spans",
+                  "type": "number"
+                },
+                "depth": {
+                  "description": "the number of levels the header spans",
+                  "type": "number"
+                }
+              }
             },
             "resizable": {
               "description": "Specifies resizing width or height on the column headers.",
               "type": "object",
               "displayName": "Resizable",
+              "help": "header.column.resizable",
               "properties": {
                 "height": {
                   "description": "Specifies resizing height on the column headers.",
                   "type": "string",
                   "displayName": "Height",
                   "value": "disable",
+                  "help": "header.column.resizable.height",
                   "enumValues": [
                     "disable",
                     "enable"
@@ -335,6 +450,7 @@
                   "type": "string|function",
                   "displayName": "Width",
                   "value": "disable",
+                  "help": "header.column.resizable.width",
                   "enumValues": [
                     "disable",
                     "enable"
@@ -357,6 +473,7 @@
               "type": "function|string",
               "displayName": "Sortable",
               "value": "auto",
+              "help": "header.column.sortable",
               "enumValues": [
                 "auto",
                 "disable",
@@ -381,7 +498,8 @@
               "description": "Inline style to add to the column headers.",
               "type": "function|string|null",
               "displayName": "Style",
-              "value": null
+              "value": null,
+              "help": "header.column.style"
             }
           }
         },
@@ -389,35 +507,67 @@
           "description": "Specifies attributes on the column end headers.",
           "type": "object",
           "displayName": "Column End",
+          "help": "header.columnEnd",
           "properties": {
             "className": {
               "description": "CSS class names to apply to column end headers.",
               "type": "function|string|null",
               "displayName": "Class Name",
-              "value": null
+              "value": null,
+              "help": "header.columnEnd.className"
             },
             "label": {
               "description": "Specifies attributes on the columnEnd header labels.",
               "type": "object",
               "displayName": "Label",
+              "help": "header.columnEnd.label",
               "properties": {
                 "className": {
                   "description": "CSS class names to apply to columnEnd header labels.",
                   "type": "function|string|null",
                   "displayName": "Class Name",
-                  "value": null
+                  "value": null,
+                  "help": "header.columnEnd.label.className"
                 },
                 "renderer": {
                   "description": "Specifies what renders is the columnEnd header labels.",
                   "type": "function|null",
                   "displayName": "Renderer",
-                  "value": null
+                  "value": null,
+                  "help": "header.columnEnd.label.renderer",
+                  "properties": {
+                    "componentElement": {
+                      "description": "a reference to the DataGrid root Element",
+                      "type": "Element"
+                    },
+                    "parentElement": {
+                      "description": "empty rendered label element",
+                      "type": "Element"
+                    },
+                    "datasource": {
+                      "description": "a reference to the data source object",
+                      "type": "oj.DataProvider<K, D>|null"
+                    },
+                    "axis": {
+                      "description": "the axis of the label",
+                      "type": "\"column\"|\"columnEnd\"|\"row\"|\"rowEnd\""
+                    },
+                    "key": {
+                      "description": "the key of the label",
+                      "type": "K"
+                    },
+                    "level": {
+                      "description": "the level of the label",
+                      "type": "number"
+                    }
+                  }
                 },
                 "style": {
                   "description": "Inline style to apply to columnEnd header labels.",
                   "type": "function|string|null",
                   "displayName": "Style",
-                  "value": null
+                  "value": null,
+                  "help": "header.columnEnd.label.style"
                 }
               }
             },
@@ -425,18 +575,63 @@
               "description": "Specifies what renders is the column end headers.",
               "type": "function|null",
               "displayName": "Renderer",
-              "value": null
+              "value": null,
+              "help": "header.columnEnd.renderer",
+              "properties": {
+                "componentElement": {
+                  "description": "a reference to the DataGrid root Element",
+                  "type": "Element"
+                },
+                "parentElement": {
+                  "description": "empty rendered header element",
+                  "type": "Element"
+                },
+                "data": {
+                  "description": "the data object for the header",
+                  "type": "D"
+                },
+                "datasource": {
+                  "description": "a reference to the data source object",
+                  "type": "oj.DataProvider<K, D>|null"
+                },
+                "axis": {
+                  "description": "the axis of the header",
+                  "type": "\"column\"|\"columnEnd\"|\"row\"|\"rowEnd\""
+                },
+                "index": {
+                  "description": "the index of the header, where 0 is the index of the first header",
+                  "type": "number"
+                },
+                "key": {
+                  "description": "the key of the header",
+                  "type": "K"
+                },
+                "level": {
+                  "description": "the level of the header. The outermost header is level zero",
+                  "type": "number"
+                },
+                "extent": {
+                  "description": "the number of indexes the header spans",
+                  "type": "number"
+                },
+                "depth": {
+                  "description": "the number of levels the header spans",
+                  "type": "number"
+                }
+              }
             },
             "resizable": {
               "description": "Specifies resizing width or height on the column end headers.",
               "type": "object",
               "displayName": "Resizable",
+              "help": "header.columnEnd.resizable",
               "properties": {
                 "height": {
                   "description": "Specifies resizing height on the columnEnd headers.",
                   "type": "string",
                   "displayName": "Height",
                   "value": "disable",
+                  "help": "header.columnEnd.resizable.height",
                   "enumValues": [
                     "disable",
                     "enable"
@@ -457,6 +652,7 @@
                   "type": "string|function",
                   "displayName": "Width",
                   "value": "disable",
+                  "help": "header.columnEnd.resizable.width",
                   "enumValues": [
                     "disable",
                     "enable"
@@ -478,7 +674,8 @@
               "description": "Inline style to add to the column end headers.",
               "type": "function|string|null",
               "displayName": "Style",
-              "value": null
+              "value": null,
+              "help": "header.columnEnd.style"
             }
           }
         },
@@ -486,35 +683,67 @@
           "description": "Specifies attributes on the row headers.",
           "type": "object",
           "displayName": "Row",
+          "help": "header.row",
           "properties": {
             "className": {
               "description": "CSS class names to apply to row headers.",
               "type": "function|string|null",
               "displayName": "Class Name",
-              "value": null
+              "value": null,
+              "help": "header.row.className"
             },
             "label": {
               "description": "Specifies attributes on the row header labels.",
               "type": "object",
               "displayName": "Label",
+              "help": "header.row.label",
               "properties": {
                 "className": {
                   "description": "CSS class names to apply to row header labels.",
                   "type": "function|string|null",
                   "displayName": "Class Name",
-                  "value": null
+                  "value": null,
+                  "help": "header.row.label.className"
                 },
                 "renderer": {
                   "description": "Specifies what renders is the row header labels.",
                   "type": "function|null",
                   "displayName": "Renderer",
-                  "value": null
+                  "value": null,
+                  "help": "header.row.label.renderer",
+                  "properties": {
+                    "componentElement": {
+                      "description": "a reference to the DataGrid root Element",
+                      "type": "Element"
+                    },
+                    "parentElement": {
+                      "description": "empty rendered label element",
+                      "type": "Element"
+                    },
+                    "datasource": {
+                      "description": "a reference to the data source object",
+                      "type": "oj.DataProvider<K, D>|null"
+                    },
+                    "axis": {
+                      "description": "the axis of the label",
+                      "type": "\"column\"|\"columnEnd\"|\"row\"|\"rowEnd\""
+                    },
+                    "key": {
+                      "description": "the key of the label",
+                      "type": "K"
+                    },
+                    "level": {
+                      "description": "the level of the label",
+                      "type": "number"
+                    }
+                  }
                 },
                 "style": {
                   "description": "Inline style to apply to row header labels.",
                   "type": "function|string|null",
                   "displayName": "Style",
-                  "value": null
+                  "value": null,
+                  "help": "header.row.label.style"
                 }
               }
             },
@@ -522,18 +751,63 @@
               "description": "Specifies what renders is the row headers.",
               "type": "function|null",
               "displayName": "Renderer",
-              "value": null
+              "value": null,
+              "help": "header.row.renderer",
+              "properties": {
+                "componentElement": {
+                  "description": "a reference to the DataGrid root Element",
+                  "type": "Element"
+                },
+                "parentElement": {
+                  "description": "empty rendered header element",
+                  "type": "Element"
+                },
+                "data": {
+                  "description": "the data object for the header",
+                  "type": "D"
+                },
+                "datasource": {
+                  "description": "a reference to the data source object",
+                  "type": "oj.DataProvider<K, D>|null"
+                },
+                "axis": {
+                  "description": "the axis of the header",
+                  "type": "\"column\"|\"columnEnd\"|\"row\"|\"rowEnd\""
+                },
+                "index": {
+                  "description": "the index of the header, where 0 is the index of the first header",
+                  "type": "number"
+                },
+                "key": {
+                  "description": "the key of the header",
+                  "type": "K"
+                },
+                "level": {
+                  "description": "the level of the header. The outermost header is level zero",
+                  "type": "number"
+                },
+                "extent": {
+                  "description": "the number of indexes the header spans",
+                  "type": "number"
+                },
+                "depth": {
+                  "description": "the number of levels the header spans",
+                  "type": "number"
+                }
+              }
             },
             "resizable": {
               "description": "Specifies resizing width or height on the row headers.",
               "type": "object",
               "displayName": "Resizable",
+              "help": "header.row.resizable",
               "properties": {
                 "height": {
                   "description": "Specifies resizing height on the row headers.",
                   "type": "string|function",
                   "displayName": "Height",
                   "value": "disable",
+                  "help": "header.row.resizable.height",
                   "enumValues": [
                     "disable",
                     "enable"
@@ -554,6 +828,7 @@
                   "type": "string",
                   "displayName": "Width",
                   "value": "disable",
+                  "help": "header.row.resizable.width",
                   "enumValues": [
                     "disable",
                     "enable"
@@ -576,6 +851,7 @@
               "type": "function|string",
               "displayName": "Sortable",
               "value": "auto",
+              "help": "header.row.sortable",
               "enumValues": [
                 "auto",
                 "disable",
@@ -600,7 +876,8 @@
               "description": "Inline style to add to the row headers.",
               "type": "function|string|null",
               "displayName": "Style",
-              "value": null
+              "value": null,
+              "help": "header.row.style"
             }
           }
         },
@@ -608,35 +885,67 @@
           "description": "Specifies attributes on the row end headers.",
           "type": "object",
           "displayName": "Row End",
+          "help": "header.rowEnd",
           "properties": {
             "className": {
               "description": "CSS class names to apply to row end headers.",
               "type": "function|string|null",
               "displayName": "Class Name",
-              "value": null
+              "value": null,
+              "help": "header.rowEnd.className"
             },
             "label": {
               "description": "Specifies attributes on the rowEnd header labels.",
               "type": "object",
               "displayName": "Label",
+              "help": "header.rowEnd.label",
               "properties": {
                 "className": {
                   "description": "CSS class names to apply to rowEnd header labels.",
                   "type": "function|string|null",
                   "displayName": "Class Name",
-                  "value": null
+                  "value": null,
+                  "help": "header.rowEnd.label.className"
                 },
                 "renderer": {
                   "description": "Specifies what renders is the rowEnd header labels.",
                   "type": "function|null",
                   "displayName": "Renderer",
-                  "value": null
+                  "value": null,
+                  "help": "header.rowEnd.label.renderer",
+                  "properties": {
+                    "componentElement": {
+                      "description": "a reference to the DataGrid root Element",
+                      "type": "Element"
+                    },
+                    "parentElement": {
+                      "description": "empty rendered label element",
+                      "type": "Element"
+                    },
+                    "datasource": {
+                      "description": "a reference to the data source object",
+                      "type": "oj.DataProvider<K, D>|null"
+                    },
+                    "axis": {
+                      "description": "the axis of the label",
+                      "type": "\"column\"|\"columnEnd\"|\"row\"|\"rowEnd\""
+                    },
+                    "key": {
+                      "description": "the key of the label",
+                      "type": "K"
+                    },
+                    "level": {
+                      "description": "the level of the label",
+                      "type": "number"
+                    }
+                  }
                 },
                 "style": {
                   "description": "Inline style to apply to rowEnd header labels.",
                   "type": "function|string|null",
                   "displayName": "Style",
-                  "value": null
+                  "value": null,
+                  "help": "header.rowEnd.label.style"
                 }
               }
             },
@@ -644,18 +953,63 @@
               "description": "Specifies what renders is the row end headers.",
               "type": "function|null",
               "displayName": "Renderer",
-              "value": null
+              "value": null,
+              "help": "header.rowEnd.renderer",
+              "properties": {
+                "componentElement": {
+                  "description": "a reference to the DataGrid root Element",
+                  "type": "Element"
+                },
+                "parentElement": {
+                  "description": "empty rendered header element",
+                  "type": "Element"
+                },
+                "data": {
+                  "description": "the data object for the header",
+                  "type": "D"
+                },
+                "datasource": {
+                  "description": "a reference to the data source object",
+                  "type": "oj.DataProvider<K, D>|null"
+                },
+                "axis": {
+                  "description": "the axis of the header",
+                  "type": "\"column\"|\"columnEnd\"|\"row\"|\"rowEnd\""
+                },
+                "index": {
+                  "description": "the index of the header, where 0 is the index of the first header",
+                  "type": "number"
+                },
+                "key": {
+                  "description": "the key of the header",
+                  "type": "K"
+                },
+                "level": {
+                  "description": "the level of the header. The outermost header is level zero",
+                  "type": "number"
+                },
+                "extent": {
+                  "description": "the number of indexes the header spans",
+                  "type": "number"
+                },
+                "depth": {
+                  "description": "the number of levels the header spans",
+                  "type": "number"
+                }
+              }
             },
             "resizable": {
               "description": "Specifies resizing width or height on the row end headers.",
               "type": "object",
               "displayName": "Resizable",
+              "help": "header.rowEnd.resizable",
               "properties": {
                 "height": {
                   "description": "Specifies resizing height on the rowEnd headers.",
                   "type": "string|function",
                   "displayName": "Height",
                   "value": "disable",
+                  "help": "header.rowEnd.resizable.height",
                   "enumValues": [
                     "disable",
                     "enable"
@@ -676,6 +1030,7 @@
                   "type": "string",
                   "displayName": "Width",
                   "value": "disable",
+                  "help": "header.rowEnd.resizable.width",
                   "enumValues": [
                     "disable",
                     "enable"
@@ -697,7 +1052,8 @@
               "description": "Inline style to add to the row end headers.",
               "type": "function|string|null",
               "displayName": "Style",
-              "value": null
+              "value": null,
+              "help": "header.rowEnd.style"
             }
           }
         }
@@ -708,6 +1064,7 @@
       "type": "string|null",
       "displayName": "Scroll Policy",
       "value": "auto",
+      "help": "scrollPolicy",
       "enumValues": [
         "auto",
         "loadMoreOnScroll",
@@ -732,14 +1089,23 @@
       "description": "Gets and sets the fetch options for scrolling behaviors that triggers data fetches.",
       "type": "object|null",
       "displayName": "Scroll Policy Options",
+      "help": "scrollPolicyOptions",
       "properties": {
-        "maxRowCount": {
-          "description": "The maximum total number of rows to fetch, -1 is unbounded",
-          "type": "number"
-        },
         "maxColumnCount": {
-          "description": "The maximum total number of columns to fetch, -1 is unbounded",
-          "type": "number"
+          "description": "The maximum number of columns which will be displayed before fetching more rows will be stopped. See the scroll-policy-options attribute for usage examples.",
+          "type": "number",
+          "displayName": "Max Column Count",
+          "value": 500,
+          "minimum": -1,
+          "help": "scrollPolicyOptions.maxColumnCount"
+        },
+        "maxRowCount": {
+          "description": "The maximum number of rows which will be displayed before fetching more rows will be stopped. See the scroll-policy-options attribute for usage examples.",
+          "type": "number",
+          "displayName": "Max Row Count",
+          "value": 500,
+          "minimum": -1,
+          "help": "scrollPolicyOptions.maxRowCount"
         }
       }
     },
@@ -752,6 +1118,7 @@
         "y": 0
       },
       "writeback": true,
+      "help": "scrollPosition",
       "properties": {
         "x": {
           "description": "the horizontal position in pixel",
@@ -792,18 +1159,21 @@
       "type": "Array<Object>",
       "displayName": "Selection",
       "value": [],
-      "writeback": true
+      "writeback": true,
+      "help": "selection"
     },
     "selectionMode": {
       "description": "Specifies row or cell selection.",
       "type": "object",
       "displayName": "Selection Mode",
+      "help": "selectionMode",
       "properties": {
         "cell": {
           "description": "Specifies cell selection.",
           "type": "string",
           "displayName": "Cell",
           "value": "none",
+          "help": "selectionMode.cell",
           "enumValues": [
             "multiple",
             "none",
@@ -829,6 +1199,7 @@
           "type": "string",
           "displayName": "Row",
           "value": "none",
+          "help": "selectionMode.row",
           "enumValues": [
             "multiple",
             "none",
@@ -857,246 +1228,296 @@
       "displayName": "Translations",
       "value": {},
       "translatable": true,
+      "help": "translations",
       "properties": {
         "accessibleActionableMode": {
           "description": "Provides properties to customize the accesible context to enter actionable mode.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "Accessible Actionable Mode"
+          "displayName": "Accessible Actionable Mode",
+          "help": "translations.accessibleActionableMode"
         },
         "accessibleColumnContext": {
           "description": "Provides properties to customize the accesible context for the column index.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "Accessible Column Context"
+          "displayName": "Accessible Column Context",
+          "help": "translations.accessibleColumnContext"
         },
         "accessibleColumnEndHeaderContext": {
           "description": "Provides properties to customize the accesible context for the column end header index.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "Accessible Column End Header Context"
+          "displayName": "Accessible Column End Header Context",
+          "help": "translations.accessibleColumnEndHeaderContext"
         },
         "accessibleColumnHeaderContext": {
           "description": "Provides properties to customize the accesible context for the column header index.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "Accessible Column Header Context"
+          "displayName": "Accessible Column Header Context",
+          "help": "translations.accessibleColumnHeaderContext"
         },
         "accessibleColumnSelected": {
           "description": "Provides properties to customize the accesible context when a column is selected.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "Accessible Column Selected"
+          "displayName": "Accessible Column Selected",
+          "help": "translations.accessibleColumnSelected"
         },
         "accessibleColumnSpanContext": {
           "description": "Provides properties to customize the accesible context for the cell column extent/span.\n\nSee the translations option for usage examples.",
           "type": "string",
-          "displayName": "Accessible Column Span Context"
+          "displayName": "Accessible Column Span Context",
+          "help": "translations.accessibleColumnSpanContext"
         },
         "accessibleFirstColumn": {
           "description": "Provides properties to customize the accesible context when the first column is reached.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "Accessible First Column"
+          "displayName": "Accessible First Column",
+          "help": "translations.accessibleFirstColumn"
         },
         "accessibleFirstRow": {
           "description": "Provides properties to customize the accesible context when the first row is reached.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "Accessible First Row"
+          "displayName": "Accessible First Row",
+          "help": "translations.accessibleFirstRow"
         },
         "accessibleLastColumn": {
           "description": "Provides properties to customize the accesible context when the last column is reached.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "Accessible Last Column"
+          "displayName": "Accessible Last Column",
+          "help": "translations.accessibleLastColumn"
         },
         "accessibleLastRow": {
           "description": "Provides properties to customize the accesible context when the last row is reached.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "Accessible Last Row"
+          "displayName": "Accessible Last Row",
+          "help": "translations.accessibleLastRow"
         },
         "accessibleLevelContext": {
           "description": "Provides properties to customize the accesible context for the header level.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "Accessible Level Context"
+          "displayName": "Accessible Level Context",
+          "help": "translations.accessibleLevelContext"
         },
         "accessibleMultiCellSelected": {
           "description": "Provides properties to customize the accesible context when mulitple cells are selected.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "Accessible Multi Cell Selected"
+          "displayName": "Accessible Multi Cell Selected",
+          "help": "translations.accessibleMultiCellSelected"
         },
         "accessibleNavigationMode": {
           "description": "Provides properties to customize the accesible context to enter navigation mode.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "Accessible Navigation Mode"
+          "displayName": "Accessible Navigation Mode",
+          "help": "translations.accessibleNavigationMode"
         },
         "accessibleRangeSelectModeOff": {
           "description": "Provides properties to customize the accesible context for discontinuous selection off.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "Accessible Range Select Mode Off"
+          "displayName": "Accessible Range Select Mode Off",
+          "help": "translations.accessibleRangeSelectModeOff"
         },
         "accessibleRangeSelectModeOn": {
           "description": "Provides properties to customize the accesible context for discontinuous selection on.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "Accessible Range Select Mode On"
+          "displayName": "Accessible Range Select Mode On",
+          "help": "translations.accessibleRangeSelectModeOn"
         },
         "accessibleRowCollapsed": {
           "description": "Provides properties to customize the accesible context when a row is collapsed.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "Accessible Row Collapsed"
+          "displayName": "Accessible Row Collapsed",
+          "help": "translations.accessibleRowCollapsed"
         },
         "accessibleRowContext": {
           "description": "Provides properties to customize the accesible context for the row index.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "Accessible Row Context"
+          "displayName": "Accessible Row Context",
+          "help": "translations.accessibleRowContext"
         },
         "accessibleRowEndHeaderContext": {
           "description": "Provides properties to customize the accesible context for the row end header index.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "Accessible Row End Header Context"
+          "displayName": "Accessible Row End Header Context",
+          "help": "translations.accessibleRowEndHeaderContext"
         },
         "accessibleRowExpanded": {
           "description": "Provides properties to customize the accesible context when a row is expanded.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "Accessible Row Expanded"
+          "displayName": "Accessible Row Expanded",
+          "help": "translations.accessibleRowExpanded"
         },
         "accessibleRowHeaderContext": {
           "description": "Provides properties to customize the accesible context for the row header index.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "Accessible Row Header Context"
+          "displayName": "Accessible Row Header Context",
+          "help": "translations.accessibleRowHeaderContext"
         },
         "accessibleRowSelected": {
           "description": "Provides properties to customize the accesible context when a row is selected.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "Accessible Row Selected"
+          "displayName": "Accessible Row Selected",
+          "help": "translations.accessibleRowSelected"
         },
         "accessibleRowSpanContext": {
           "description": "Provides properties to customize the accesible context for the cell extent/span.\n\nSee the translations option for usage examples.",
           "type": "string",
-          "displayName": "Accessible Row Span Context"
+          "displayName": "Accessible Row Span Context",
+          "help": "translations.accessibleRowSpanContext"
         },
         "accessibleSelectionAffordanceBottom": {
           "description": "Provides properties to customize the accesible context for the bottom selection affordance on touch device.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "Accessible Selection Affordance Bottom"
+          "displayName": "Accessible Selection Affordance Bottom",
+          "help": "translations.accessibleSelectionAffordanceBottom"
         },
         "accessibleSelectionAffordanceTop": {
           "description": "Provides properties to customize the accesible context for the top selection affordance on touch devices.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "Accessible Selection Affordance Top"
+          "displayName": "Accessible Selection Affordance Top",
+          "help": "translations.accessibleSelectionAffordanceTop"
         },
         "accessibleSortAscending": {
           "description": "Provides properties to customize the accesible text when a header is sorted ascending.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "Accessible Sort Ascending"
+          "displayName": "Accessible Sort Ascending",
+          "help": "translations.accessibleSortAscending"
         },
         "accessibleSortDescending": {
           "description": "Provides properties to customize the accesible text when a header is sorted descending.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "Accessible Sort Descending"
+          "displayName": "Accessible Sort Descending",
+          "help": "translations.accessibleSortDescending"
         },
         "accessibleStateSelected": {
           "description": "Provides properties to customize the accesible context when an item has been selected.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "Accessible State Selected"
+          "displayName": "Accessible State Selected",
+          "help": "translations.accessibleStateSelected"
         },
         "accessibleSummaryEstimate": {
           "description": "Provides properties to customize the accesible context read when the exact row and column count are unknown.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "Accessible Summary Estimate"
+          "displayName": "Accessible Summary Estimate",
+          "help": "translations.accessibleSummaryEstimate"
         },
         "accessibleSummaryExact": {
           "description": "Provides properties to customize the accesible context read when the exact row and column count are known.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "Accessible Summary Exact"
+          "displayName": "Accessible Summary Exact",
+          "help": "translations.accessibleSummaryExact"
         },
         "accessibleSummaryExpanded": {
           "description": "Provides properties to customize the accesible context reading out the total number\nof rows expanded inside the data grid.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "Accessible Summary Expanded"
+          "displayName": "Accessible Summary Expanded",
+          "help": "translations.accessibleSummaryExpanded"
         },
         "labelCut": {
           "description": "Provides properties to customize the context menu cut label for row reordering.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "Label Cut"
+          "displayName": "Label Cut",
+          "help": "translations.labelCut"
         },
         "labelDisableNonContiguous": {
           "description": "Provides properties to customize the context menu label for exiting non-contigous selection.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "Label Disable Non Contiguous"
+          "displayName": "Label Disable Non Contiguous",
+          "help": "translations.labelDisableNonContiguous"
         },
         "labelEnableNonContiguous": {
           "description": "Provides properties to customize the context menu label for entering non-contigous selection.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "Label Enable Non Contiguous"
+          "displayName": "Label Enable Non Contiguous",
+          "help": "translations.labelEnableNonContiguous"
         },
         "labelPaste": {
           "description": "Provides properties to customize the context menu paste label for row reordering.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "Label Paste"
+          "displayName": "Label Paste",
+          "help": "translations.labelPaste"
         },
         "labelResize": {
           "description": "Provides properties to customize the context menu resize label.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "Label Resize"
+          "displayName": "Label Resize",
+          "help": "translations.labelResize"
         },
         "labelResizeDialogSubmit": {
           "description": "Provides properties to customize the resize dialog submit button.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "Label Resize Dialog Submit"
+          "displayName": "Label Resize Dialog Submit",
+          "help": "translations.labelResizeDialogSubmit"
         },
         "labelResizeHeight": {
           "description": "Provides properties to customize the context menu resize height label.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "Label Resize Height"
+          "displayName": "Label Resize Height",
+          "help": "translations.labelResizeHeight"
         },
         "labelResizeWidth": {
           "description": "Provides properties to customize the context menu resize width label.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "Label Resize Width"
+          "displayName": "Label Resize Width",
+          "help": "translations.labelResizeWidth"
         },
         "labelSortCol": {
           "description": "Provides properties to customize the context menu sort column label.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "Label Sort Col"
+          "displayName": "Label Sort Col",
+          "help": "translations.labelSortCol"
         },
         "labelSortColAsc": {
           "description": "Provides properties to customize the context menu sort column ascending label.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "Label Sort Col Asc"
+          "displayName": "Label Sort Col Asc",
+          "help": "translations.labelSortColAsc"
         },
         "labelSortColDsc": {
           "description": "Provides properties to customize the context menu sort column descending label.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "Label Sort Col Dsc"
+          "displayName": "Label Sort Col Dsc",
+          "help": "translations.labelSortColDsc"
         },
         "labelSortRow": {
           "description": "Provides properties to customize the context menu sort row label.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "Label Sort Row"
+          "displayName": "Label Sort Row",
+          "help": "translations.labelSortRow"
         },
         "labelSortRowAsc": {
           "description": "Provides properties to customize the context menu sort row ascending label.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "Label Sort Row Asc"
+          "displayName": "Label Sort Row Asc",
+          "help": "translations.labelSortRowAsc"
         },
         "labelSortRowDsc": {
           "description": "Provides properties to customize the context menu sort row descending label.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "Label Sort Row Dsc"
+          "displayName": "Label Sort Row Dsc",
+          "help": "translations.labelSortRowDsc"
         },
         "msgFetchingData": {
           "description": "Provides properties to customize the text when fetching data.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "Msg Fetching Data"
+          "displayName": "Msg Fetching Data",
+          "help": "translations.msgFetchingData"
         },
         "msgNoData": {
           "description": "Provides properties to customize the empty data grid text.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "Msg No Data"
+          "displayName": "Msg No Data",
+          "help": "translations.msgNoData"
         }
       }
     }
   },
   "methods": {
     "refresh": {
-      "description": "Redraw the entire data grid after having made some external modifications."
+      "description": "Redraw the entire data grid after having made some external modifications.",
+      "help": "refresh",
+      "return": "void"
     },
     "getContextByNode": {
       "description": "Returns an object with context for the given child DOM node. This will always contain the subid for the node, defined as the 'subId' property on the context object. Additional element specific information may also be included. For more details on returned objects, see context objects.",
+      "help": "getContextByNode",
       "params": [
         {
           "name": "node",
@@ -1107,7 +1528,8 @@
       "return": "object|null"
     },
     "setProperty": {
-      "description": "Sets a property or a single subproperty for complex properties and notifies the component\nof the change, triggering a [property]Changed event.",
+      "description": "Sets a property or a single subproperty for complex properties and notifies the component of the change, triggering a [property]Changed event.",
+      "help": "setProperty",
       "params": [
         {
           "name": "property",
@@ -1124,6 +1546,7 @@
     },
     "getProperty": {
       "description": "Retrieves a value for a property or a single subproperty for complex properties.",
+      "help": "getProperty",
       "params": [
         {
           "name": "property",
@@ -1135,6 +1558,7 @@
     },
     "setProperties": {
       "description": "Performs a batch set of properties.",
+      "help": "setProperties",
       "params": [
         {
           "name": "properties",
@@ -1148,6 +1572,7 @@
   "events": {
     "ojResize": {
       "description": "Triggered when a portion of the DataGrid is resized",
+      "help": "resize",
       "detail": {
         "header": {
           "description": "the key of the header which was resized",
@@ -1185,19 +1610,21 @@
     },
     "ojSort": {
       "description": "Triggered when a sort is performed on the DataGrid",
+      "help": "sort",
       "detail": {
         "header": {
           "description": "the key of the header which was sorted on",
-          "type": "string|number"
+          "type": "any"
         },
         "direction": {
           "description": "the direction of the sort ascending/descending",
-          "type": "string"
+          "type": "'ascending'|'descending'"
         }
       }
     },
     "ojScroll": {
       "description": "Triggered after the DataGrid has been scrolled via the UI or the scrollTo method.",
+      "help": "scroll",
       "detail": {
         "scrollX": {
           "description": "the x position in pixels of the scrollable region calculated from the origin of the DataGrid. In RTL this would be the right of the grid.",
@@ -1211,32 +1638,35 @@
     },
     "ojBeforeCurrentCell": {
       "description": "Triggered before the current cell is changed via the currentCell attribute or via the UI.",
+      "help": "beforeCurrentCell",
       "detail": {
         "currentCell": {
           "description": "the new current cell, see currentCell for the object information",
-          "type": "object"
+          "type": "oj.ojDataGrid.CurrentCell<K>"
         },
         "previousCurrentCell": {
           "description": "the previous current cell, see currentCell for the object information",
-          "type": "object"
+          "type": "oj.ojDataGrid.CurrentCell<K>"
         }
       }
     },
     "ojBeforeEdit": {
       "description": "Triggered before the DataGrid is going to enter edit mode. To prevent editing the cell prevent default on the event.",
+      "help": "beforeEdit",
       "detail": {
         "cellContext": {
           "description": "the cellContext of the cell that editing is going to be performed on",
-          "type": "object"
+          "type": "oj.ojDataGrid.CellContext<K, D>"
         }
       }
     },
     "ojBeforeEditEnd": {
       "description": "Triggered before the DataGrid is going to exit edit mode. To prevent exit editing the prevent default on the event. There is a provided beforeEditEnd function, oj.DataCollectionEditUtils.basicHandleEditEnd, which can be specified. This function will handle canceling edits as well as invoking validation on input elements.",
+      "help": "beforeEditEnd",
       "detail": {
         "cellContext": {
           "description": "the cellContext of the cell that editing is going to be performed on",
-          "type": "object"
+          "type": "oj.ojDataGrid.CellContext<K, D>"
         },
         "cancelEdit": {
           "description": "true if the edit should be negated based on actions (i.e. escape key)",
@@ -1247,7 +1677,9 @@
   },
   "slots": {
     "contextMenu": {
-      "description": "The contextMenu slot is set on the oj-menu within this element. \nThis is used to designate the JET Menu that this component should launch as a context menu on right-click, Shift-F10, Press & Hold, or component-specific gesture. \nIf specified, the browser's native context menu will be replaced by the JET Menu specified in this slot.\n\nThe application can register a listener for the Menu's ojBeforeOpen event. The listener can cancel the launch via event.preventDefault(), \nor it can customize the menu contents by editing the menu DOM directly, and then calling refresh() on the Menu.\n\nTo help determine whether it's appropriate to cancel the launch or customize the menu, the ojBeforeOpen listener can use component API's to determine which \ntable cell, chart item, etc., is the target of the context menu. See the JSDoc and demos of the individual components for details. \n\nKeep in mind that any such logic must work whether the context menu was launched via right-click, Shift-F10, Press & Hold, or component-specific touch gesture."
+      "description": "The contextMenu slot is set on the <oj-menu> instance within this element. It designates the JET Menu that this component should launch as a context menu.",
+      "maxItems": 1,
+      "help": "contextMenu"
     }
   }
 }

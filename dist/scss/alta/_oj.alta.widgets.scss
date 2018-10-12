@@ -32,7 +32,7 @@
 // behavior
 @import "widgets/oj.alta.animation";
 @import "widgets/oj.alta.progress";
-@import "widgets/oj.alta.pulltorefresh";
+@import "widgets/oj.alta.refresher";
 @import "widgets/oj.alta.swipeactions";
 @import "widgets/oj.alta.swipetoreveal";
 @import "widgets/oj.alta.switcher";
@@ -43,6 +43,7 @@
 
 // button and menu
 @import "widgets/oj.alta.menu";
+@import "widgets/oj.alta.menuselectmany";
 @import "widgets/oj.alta.button";
 @import "widgets/oj.alta.buttonset";
 @import "widgets/oj.alta.toolbar";

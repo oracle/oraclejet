@@ -1,40 +1,46 @@
 {
   "name": "oj-led-gauge",
-  "version": "5.2.0",
-  "jetVersion": "5.2.0",
+  "version": "6.0.0",
+  "jetVersion": "6.0.0",
   "displayName": "Led Gauge",
   "type": "core",
   "description": "Displays information graphically, highlighting a specific metric value in relation to its thresholds.",
+  "help": "https://docs.oracle.com/en/middleware/jet/6/reference-api/oj.ojLedGauge.html",
   "properties": {
     "borderColor": {
       "description": "The border color of the gauge. Only applies when thresholds are not defined. The default value varies based on theme.",
       "type": "string",
       "displayName": "Border Color",
-      "format": "color"
+      "format": "color",
+      "help": "borderColor"
     },
     "color": {
       "description": "The color of the gauge. Only applies when thresholds are not defined. The default value varies based on theme.",
       "type": "string",
       "displayName": "Color",
-      "format": "color"
+      "format": "color",
+      "help": "color"
     },
     "label": {
       "description": "An object defining the label.",
       "type": "object",
       "displayName": "Label",
+      "help": "label",
       "properties": {
         "style": {
           "description": "The CSS style object defining the style of the label.",
           "type": "object",
           "displayName": "Style",
-          "value": {}
+          "value": {},
+          "help": "label.style"
         },
         "text": {
           "description": "The text for the label.",
           "type": "string",
           "displayName": "Text",
           "value": "",
-          "translatable": true
+          "translatable": true,
+          "help": "label.text"
         }
       }
     },
@@ -42,24 +48,28 @@
       "description": "The maximum value of the gauge.",
       "type": "number",
       "displayName": "Max",
-      "value": 100
+      "value": 100,
+      "help": "max"
     },
     "metricLabel": {
       "description": "An object defining the value label.",
       "type": "object",
       "displayName": "Metric Label",
+      "help": "metricLabel",
       "properties": {
         "converter": {
           "description": "The converter used to format the labels. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.",
           "type": "object",
           "displayName": "Converter",
-          "value": null
+          "value": null,
+          "help": "metricLabel.converter"
         },
         "rendered": {
           "description": "Defines if the label is rendered.",
           "type": "string",
           "displayName": "Rendered",
           "value": "off",
+          "help": "metricLabel.rendered",
           "enumValues": [
             "off",
             "on"
@@ -78,6 +88,7 @@
           "type": "string",
           "displayName": "Scaling",
           "value": "auto",
+          "help": "metricLabel.scaling",
           "enumValues": [
             "auto",
             "billion",
@@ -115,20 +126,23 @@
           "description": "The CSS style object defining the style of the label.",
           "type": "object",
           "displayName": "Style",
-          "value": {}
+          "value": {},
+          "help": "metricLabel.style"
         },
         "text": {
           "description": "The text for the label. If specified, text will overwrite the numeric value that is displayed by default. The converter, scaling, and textType attributes are ignored when text is specified.",
           "type": "string",
           "displayName": "Text",
           "value": "",
-          "translatable": true
+          "translatable": true,
+          "help": "metricLabel.text"
         },
         "textType": {
           "description": "Defines whether the label is a number or a percentage of the total value.",
           "type": "string",
           "displayName": "Text Type",
           "value": "number",
+          "help": "metricLabel.textType",
           "enumValues": [
             "number",
             "percent"
@@ -148,7 +162,8 @@
       "description": "The minimum value of the gauge.",
       "type": "number",
       "displayName": "Min",
-      "value": 0
+      "value": 0,
+      "help": "min"
     },
     "rotation": {
       "description": "The rotation angle for the gauge. Useful for changing the direction of triangle or arrow gauges.",
@@ -156,6 +171,7 @@
       "displayName": "Rotation",
       "value": 0,
       "units": "degrees",
+      "help": "rotation",
       "enumValues": [
         "0",
         "180",
@@ -183,25 +199,29 @@
       "displayName": "Size",
       "value": 1,
       "maximum": 1,
-      "minimum": 0
+      "minimum": 0,
+      "help": "size"
     },
     "svgClassName": {
       "description": "The CSS style class to apply to the gauge. The style class and inline style will override any other styling specified through the properties. For tooltip interactivity, it's recommended to also pass a representative color to the color attribute.",
       "type": "string",
       "displayName": "Svg Class Name",
-      "value": ""
+      "value": "",
+      "help": "svgClassName"
     },
     "svgStyle": {
       "description": "The inline style to apply to the gauge. The style class and inline style will override any other styling specified through the properties. For tooltip interactivity, it's recommended to also pass a representative color to the color attribute.",
       "type": "object",
       "displayName": "Svg Style",
-      "value": {}
+      "value": {},
+      "help": "svgStyle"
     },
     "thresholds": {
       "description": "An array of objects with the following properties defining the thresholds for the gauge.",
       "type": "Array<Object>",
       "displayName": "Thresholds",
       "value": [],
+      "help": "thresholds",
       "extension": {
         "vbcs": {
           "itemProperties": {
@@ -229,12 +249,14 @@
       "description": "An object containing an optional callback function for tooltip customization.",
       "type": "object",
       "displayName": "Tooltip",
+      "help": "tooltip",
       "properties": {
         "renderer": {
           "description": "A function that returns a custom tooltip. The function takes a tooltip context argument,\nprovided by the gauge, and should return an object that contains only one of the two properties: insert: HTMLElement | string - An HTML element, which will be appended to the tooltip, or a tooltip string. preventDefault: true - Indicates that the tooltip should not be displayed. It is not necessary to return {preventDefault:false} to display tooltip, since this is a default behavior. ",
           "type": "function",
           "displayName": "Renderer",
           "value": null,
+          "help": "tooltip.renderer",
           "properties": {
             "color": {
               "description": "The indicator color of the gauge.",
@@ -261,6 +283,7 @@
       "type": "string",
       "displayName": "Track Resize",
       "value": "on",
+      "help": "trackResize",
       "enumValues": [
         "off",
         "on"
@@ -280,91 +303,109 @@
       "displayName": "Translations",
       "value": {},
       "translatable": true,
+      "help": "translations",
       "properties": {
         "componentName": {
           "description": "Used to describe the data visualization type for accessibility.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "Component Name"
+          "displayName": "Component Name",
+          "help": "translations.componentName"
         },
         "labelAndValue": {
           "description": "Used to display a label and its value.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "Label And Value"
+          "displayName": "Label And Value",
+          "help": "translations.labelAndValue"
         },
         "labelClearSelection": {
           "description": "Text shown for clearing multiple selection on touch devices.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "Label Clear Selection"
+          "displayName": "Label Clear Selection",
+          "help": "translations.labelClearSelection"
         },
         "labelCountWithTotal": {
           "description": "Used to display a count out of a total.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "Label Count With Total"
+          "displayName": "Label Count With Total",
+          "help": "translations.labelCountWithTotal"
         },
         "labelDataVisualization": {
           "description": "Label for data visualizations used for accessibility.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "Label Data Visualization"
+          "displayName": "Label Data Visualization",
+          "help": "translations.labelDataVisualization"
         },
         "labelInvalidData": {
           "description": "Text shown when the component receives invalid data.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "Label Invalid Data"
+          "displayName": "Label Invalid Data",
+          "help": "translations.labelInvalidData"
         },
         "labelNoData": {
           "description": "Text shown when the component receives no data.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "Label No Data"
+          "displayName": "Label No Data",
+          "help": "translations.labelNoData"
         },
         "stateCollapsed": {
           "description": "Used to describe the collapsed state for accessibility.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "State Collapsed"
+          "displayName": "State Collapsed",
+          "help": "translations.stateCollapsed"
         },
         "stateDrillable": {
           "description": "Used to describe a drillable object for accessibility.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "State Drillable"
+          "displayName": "State Drillable",
+          "help": "translations.stateDrillable"
         },
         "stateExpanded": {
           "description": "Used to describe the expanded state for accessibility.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "State Expanded"
+          "displayName": "State Expanded",
+          "help": "translations.stateExpanded"
         },
         "stateHidden": {
           "description": "Used to describe the hidden state for accessibility.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "State Hidden"
+          "displayName": "State Hidden",
+          "help": "translations.stateHidden"
         },
         "stateIsolated": {
           "description": "Used to describe the isolated state for accessibility.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "State Isolated"
+          "displayName": "State Isolated",
+          "help": "translations.stateIsolated"
         },
         "stateMaximized": {
           "description": "Used to describe the maximized state for accessibility.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "State Maximized"
+          "displayName": "State Maximized",
+          "help": "translations.stateMaximized"
         },
         "stateMinimized": {
           "description": "Used to describe the minimized state for accessibility.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "State Minimized"
+          "displayName": "State Minimized",
+          "help": "translations.stateMinimized"
         },
         "stateSelected": {
           "description": "Used to describe the selected state for accessibility.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "State Selected"
+          "displayName": "State Selected",
+          "help": "translations.stateSelected"
         },
         "stateUnselected": {
           "description": "Used to describe the unselected state for accessibility.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "State Unselected"
+          "displayName": "State Unselected",
+          "help": "translations.stateUnselected"
         },
         "stateVisible": {
           "description": "Used to describe the visible state for accessibility.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "State Visible"
+          "displayName": "State Visible",
+          "help": "translations.stateVisible"
         }
       }
     },
@@ -373,6 +414,7 @@
       "type": "string",
       "displayName": "Type",
       "value": "circle",
+      "help": "type",
       "enumValues": [
         "arrow",
         "circle",
@@ -414,13 +456,15 @@
       "description": "The metric value.",
       "type": "number|null",
       "displayName": "Value",
-      "writeback": true
+      "writeback": true,
+      "help": "value"
     },
     "visualEffects": {
       "description": "Defines whether visual effects such as overlays are applied to the gauge.",
       "type": "string",
       "displayName": "Visual Effects",
       "value": "auto",
+      "help": "visualEffects",
       "enumValues": [
         "auto",
         "none"
@@ -438,14 +482,17 @@
   "methods": {
     "getMetricLabel": {
       "description": "Returns the gauge's formatted metric label.",
+      "help": "getMetricLabel",
       "return": "string"
     },
     "refresh": {
       "description": "Refreshes the component.",
+      "help": "refresh",
       "return": "void"
     },
     "setProperty": {
-      "description": "Sets a property or a single subproperty for complex properties and notifies the component\nof the change, triggering a [property]Changed event.",
+      "description": "Sets a property or a single subproperty for complex properties and notifies the component of the change, triggering a [property]Changed event.",
+      "help": "setProperty",
       "params": [
         {
           "name": "property",
@@ -462,6 +509,7 @@
     },
     "getProperty": {
       "description": "Retrieves a value for a property or a single subproperty for complex properties.",
+      "help": "getProperty",
       "params": [
         {
           "name": "property",
@@ -473,6 +521,7 @@
     },
     "setProperties": {
       "description": "Performs a batch set of properties.",
+      "help": "setProperties",
       "params": [
         {
           "name": "properties",
@@ -485,7 +534,9 @@
   },
   "slots": {
     "contextMenu": {
-      "description": "The contextMenu slot is set on the oj-menu within this element. \nThis is used to designate the JET Menu that this component should launch as a context menu on right-click, Shift-F10, Press & Hold, or component-specific gesture. \nIf specified, the browser's native context menu will be replaced by the JET Menu specified in this slot.\n\nThe application can register a listener for the Menu's ojBeforeOpen event. The listener can cancel the launch via event.preventDefault(), \nor it can customize the menu contents by editing the menu DOM directly, and then calling refresh() on the Menu.\n\nTo help determine whether it's appropriate to cancel the launch or customize the menu, the ojBeforeOpen listener can use component API's to determine which \ntable cell, chart item, etc., is the target of the context menu. See the JSDoc and demos of the individual components for details. \n\nKeep in mind that any such logic must work whether the context menu was launched via right-click, Shift-F10, Press & Hold, or component-specific touch gesture."
+      "description": "The contextMenu slot is set on the <oj-menu> instance within this element. It designates the JET Menu that this component should launch as a context menu.",
+      "maxItems": 1,
+      "help": "contextMenu"
     }
   }
 }

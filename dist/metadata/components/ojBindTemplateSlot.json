@@ -1,25 +1,29 @@
 {
   "name": "oj-bind-template-slot",
-  "version": "5.2.0",
-  "jetVersion": "5.2.0",
+  "version": "6.0.0",
+  "jetVersion": "6.0.0",
   "displayName": "Bind Template Slot",
   "type": "core",
   "description": "A placeholder for stamped child DOM to appear in a specified slot.",
+  "help": "https://docs.oracle.com/en/middleware/jet/6/reference-api/oj.ojBindTemplateSlot.html",
   "properties": {
     "as": {
-      "description": "An alias for $current that can be referenced inside application provided template DOM.",
+      "description": "An optional alias for $current that can be referenced inside the default template DOM. Note\nthat application $current aliasing should be done with the\ndata-oj-as attribute on the\ntemplate element.",
       "type": "string",
-      "displayName": "As"
+      "displayName": "As",
+      "help": "as"
     },
     "data": {
-      "description": "The object containing additional context variables to extend the stamped template nodes' \nbinding context. These variables will be exposed as variables on $current and the alias if\nprovided by the 'as' attribute.",
+      "description": "The object containing additional context variables to extend the stamped template nodes'\nbinding context. These variables will be exposed as variables on $current and aliases.",
       "type": "object",
-      "displayName": "Data"
+      "displayName": "Data",
+      "help": "data"
     },
     "name": {
       "description": "The name of the slot.",
       "type": "string",
-      "displayName": "Name"
+      "displayName": "Name",
+      "help": "name"
     }
   }
 }

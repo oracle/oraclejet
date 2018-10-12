@@ -193,15 +193,15 @@ var __oj_slider_metadata =
    * @augments oj.editableValue
    * @ojsignature [{
    *                target: "Type",
-   *                value: "class ojSlider extends editableValue<number, ojSliderSettableProperties>"
+   *                value: "class ojSlider extends editableValue<number|null, ojSliderSettableProperties>"
    *               },
    *               {
    *                target: "Type",
-   *                value: "ojSliderSettableProperties extends editableValueSettableProperties<number>",
+   *                value: "ojSliderSettableProperties extends editableValueSettableProperties<number|null>",
    *                for: "SettableProperties"
    *               }
    *              ]
-   * 
+   *
    * @ojrole slider
    * @since 0.7
    * @ojshortdesc Displays an interactive slider element.
@@ -215,12 +215,12 @@ var __oj_slider_metadata =
    * <p>Description: The oj-slider component enhances an HTML
    * <code class="prettyprint">input</code> element into an interactive slider.
    * </p>
-   * The numerical <code class="prettyprint">value</code> attribute determines the 
+   * The numerical <code class="prettyprint">value</code> attribute determines the
    * current value of the slider, and thus affects the position of the slider thumb.
    * The value should be between the <code class="prettyprint">min</code> and
    * <code class="prettyprint">max</code> attribute values.
    * </p>
-   * The <code class="prettyprint">step</code> attribute of the slider specifies the 
+   * The <code class="prettyprint">step</code> attribute of the slider specifies the
    * interval between thumb stops. For example,
    * if <code class="prettyprint">min</code>  is set to 0 and
    * <code class="prettyprint">max</code>
@@ -245,8 +245,8 @@ var __oj_slider_metadata =
    * <code class="prettyprint">true</code> to display a slider that displays a value but does
    * not allow interaction.
    * </p>
-   * Use <code class="prettyprint">style </code> attributes on the 
-   * <code class="prettyprint">oj-slider </code> element to set a horizontal slider's 
+   * Use <code class="prettyprint">style </code> attributes on the
+   * <code class="prettyprint">oj-slider </code> element to set a horizontal slider's
    * width or a vertical slider's height.
    * </p>
    * Use the <code class="prettyprint">transient-value</code> attribute to access
@@ -254,7 +254,7 @@ var __oj_slider_metadata =
    * </p>
    * Note that the <code class="prettyprint">range</code> value for the
    * <code class="prettyprint">type</code> attribute
-   * is not part of the initial (4.0) release of the custom element slider. 
+   * is not part of the initial (4.0) release of the custom element slider.
    * </p>
    * <h3 id="touch-section">
    *   Touch End User Information
@@ -280,16 +280,16 @@ var __oj_slider_metadata =
    * <code class="prettyprint">aria-valuemax</code>,
    * <code class="prettyprint">aria-valuemin</code>
    * and <code class="prettyprint">aria-orientation</code>.
- * <h3 id="label-section">
- *   Label and Slider
- *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#label-section"></a>
- * </h3>
- * <p>
- * It is up to the application developer to associate the oj-label to the oj-slider element.
- * For accessibility, you should associate a oj-label element with the oj-slider element
- * by putting an <code class="prettyprint">id</code> on the oj-slider element, and then setting the
- * <code class="prettyprint">for</code> attribute on the oj-label to be the slider element's id.
- * </p>
+   * <h3 id="label-section">
+   *   Label and Slider
+   *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#label-section"></a>
+   * </h3>
+   * <p>
+   * It is up to the application developer to associate the oj-label to the oj-slider element.
+   * For accessibility, you should associate a oj-label element with the oj-slider element
+   * by putting an <code class="prettyprint">id</code> on the oj-slider element, and then setting the
+   * <code class="prettyprint">for</code> attribute on the oj-label to be the slider element's id.
+   * </p>
    * </p>
    * In addition, the slider thumb element can be accessed programmatically.
    * This approach may be necessary to ensure accessibility conformance.
@@ -312,6 +312,7 @@ var __oj_slider_metadata =
    *     var thumb0 = myComponent.querySelectorAll('.oj-slider-thumb')[0];
    *     thumb0.setAttribute(aria-controls, "idOfRemoteElement");
    * </code></pre>
+   * {@ojinclude "name":"accessibilityDisabledEditableValue"}
    *
    * <p>See also the <a href="#styling-section">oj-focus-highlight</a> discussion.
    *
@@ -330,7 +331,7 @@ var __oj_slider_metadata =
    * @example <caption>Initialize a component attribute via component binding:</caption>
    * &lt;oj-slider value="{{currentValue}}">&lt;/oj-slider>
    */
-  oj.__registerWidget('oj.ojSlider', $['oj']['editableValue'], {
+  oj.__registerWidget('oj.ojSlider', $.oj.editableValue, {
     defaultElement: '<input>',
     version: '1.0.1',
     widgetEventPrefix: 'oj',
@@ -353,7 +354,7 @@ var __oj_slider_metadata =
        * @example <caption>Get or set the <code class="prettyprint">max</code> property after initialization:</caption>
        * // Getter
        * var max = myComponent.max;
-       * 
+       *
        * // Setter
        * myComponent.max = 100;
        */
@@ -376,10 +377,10 @@ var __oj_slider_metadata =
        * @example <caption>Get or set the <code class="prettyprint">min</code> property after initialization:</caption>
        * // Getter
        * var min = myComponent.min;
-       * 
+       *
        * // Setter
        * myComponent.min = 0;
-       * 
+       *
        */
       min: 0,
 
@@ -403,10 +404,10 @@ var __oj_slider_metadata =
        * property after initialization:</caption>
        * // Getter
        * var orientation = myComponent.orientation;
-       * 
+       *
        * // Setter
        * myComponent.orientation = "vertical";
-       * 
+       *
        */
       orientation: 'horizontal',
 
@@ -425,10 +426,10 @@ var __oj_slider_metadata =
        * @example <caption>Get or set the <code class="prettyprint">readOnly</code> property after initialization:</caption>
        * // Getter
        * var readOnly = myComponent.readOnly;
-       * 
+       *
        * // Setter
        * myComponent.readOnly = true;
-       * 
+       *
        *
        * @private
        * @type {?boolean}
@@ -439,7 +440,7 @@ var __oj_slider_metadata =
       readOnly: false,
 
       /**
-       * Whether the component is disabled. The 
+       * Whether the component is disabled. The
        * <code class="prettyprint">disabled</code> attribute is used as its initial
        * value if it exists, when the attribute is not explicitly set. When neither is set,
        * <code class="prettyprint">disabled </code>
@@ -451,12 +452,12 @@ var __oj_slider_metadata =
        * @example <caption>Get or set the <code class="prettyprint">disabled</code> property after initialization:</caption>
        * // Getter
        * var disabled = myComponent.disabled;
-       * 
+       *
        * // Setter
        * myComponent.disabled = true;
        *
        * @expose
-       * @type {?boolean}
+       * @type {boolean}
        * @default false
        * @since 0.7
        * @instance
@@ -481,10 +482,10 @@ var __oj_slider_metadata =
        * @example <caption>Get or set the <code class="prettyprint">step</code> property after initialization:</caption>
        * // Getter
        * var step = myComponent.step;
-       * 
+       *
        * // Setter
        * myComponent.step = 10;
-       * 
+       *
        **/
       step: 1,
 
@@ -510,7 +511,7 @@ var __oj_slider_metadata =
        * @example <caption>Get or set the <code class="prettyprint">type</code> property after initialization:</caption>
        * // Getter
        * var type = myComponent.type;
-       * 
+       *
        * // Setter
        * myComponent.type = "fromMax";
        *
@@ -531,10 +532,10 @@ var __oj_slider_metadata =
        * after initialization:</caption>
        * // Getter
        * var value = myComponent.value;
-       * 
+       *
        * // Setter
        * myComponent.value = 10;
-       * 
+       *
        * @expose
        * @access public
        * @instance
@@ -614,27 +615,27 @@ var __oj_slider_metadata =
 
       // use 'transientValue' for custom elements,
       // and use 'rawValue' for widget syntax.
-      this._transientValueName = this._IsCustomElement() ? "transientValue" : "rawValue";
+      this._transientValueName = this._IsCustomElement() ? 'transientValue' : 'rawValue';
       this._componentSetup();
     },
 
      /**
       * Convenience function to set the rawValue option. Overrides EditableValue _SetRawValue.
       * @param {String} val value to set rawValue to
-      * @param {Event} event DOM event 
+      * @param {Event} event DOM event
       * @return {void}
       * @memberof oj.ojSlider
       * @instance
       * @override
       * @private
       */
-     _SetRawValue : function (val, event) {
-       var flags = {};
-       flags['_context'] = {originalEvent: event, writeback: true, internalSet: true, readOnly: true};
-       if (!oj.Object.compareValues(this.options[this._transientValueName], val)) {
-         this.option(this._transientValueName, val, flags);
-       }
-     },
+    _SetRawValue: function (val, event) {
+      var flags = {};
+      flags._context = { originalEvent: event, writeback: true, internalSet: true, readOnly: true };
+      if (!oj.Object.compareValues(this.options[this._transientValueName], val)) {
+        this.option(this._transientValueName, val, flags);
+      }
+    },
 
     //
     // Setup the component based on the current options.
@@ -678,15 +679,14 @@ var __oj_slider_metadata =
       this._setupEvents();
     },
 
-    _copyLabelledbyToThumb: function(labelId) {
+    _copyLabelledbyToThumb: function (labelId) {
+      var thumb = this._elementWrapped.find('.oj-slider-thumb');
+      thumb.attr('aria-labelledby', labelId);
 
-        var thumb = this._elementWrapped.find('.oj-slider-thumb');
-        thumb.attr('aria-labelledby', labelId);
-
-        if (thumb.length > 1) {
-          var thumb2 = thumb[1];
-           $(thumb2).attr('aria-labelledby', String(labelId));
-        }
+      if (thumb.length > 1) {
+        var thumb2 = thumb[1];
+        $(thumb2).attr('aria-labelledby', String(labelId));
+      }
     },
 
     _AfterCreate: function () {
@@ -697,16 +697,17 @@ var __oj_slider_metadata =
 
       // For custom elements, set the aria-labelledby on the input element
       // (provided the oj-label is part of the form)
-      if (this.OuterWrapper)  {
-          var defaultLabelId = this["uuid"] + "_Label";
-          var LId = oj.EditableValueUtils.getOjLabelId(this.widget(), defaultLabelId);
-          if (LId)
-              this.element.attr("aria-labelledby", LId);
+      if (this.OuterWrapper) {
+        var defaultLabelId = this.uuid + '_Label';
+        var LId = oj.EditableValueUtils.getOjLabelId(this.widget(), defaultLabelId);
+        if (LId) {
+          this.element.attr('aria-labelledby', LId);
+        }
       }
 
       //
       // For custom elements, if the input has an aria-labelledby, then just
-      // copy it to the thumb (since EditableValue has already determined that 
+      // copy it to the thumb (since EditableValue has already determined that
       // the slider control is using aria-labelledby)
       //
       if (this.OuterWrapper) {
@@ -736,14 +737,13 @@ var __oj_slider_metadata =
         if (labelId.length > 0) {
           this._copyLabelledbyToThumb(labelId);
         }
-
       } else {
         //
         // Check if the <input> has aria-label=""
         //
 
         var ariaLabelString;
-          
+
         if (this.OuterWrapper) {
           ariaLabelString = this._elementWrapped.attr('aria-label');
         } else {
@@ -751,7 +751,6 @@ var __oj_slider_metadata =
         }
 
         if (ariaLabelString) {
-
           thumb = this._elementWrapped.find('.oj-slider-thumb');
 
           // Set the aria-labelledby attribute of the thumb to the returned id
@@ -761,7 +760,6 @@ var __oj_slider_metadata =
     },
 
     _GetLabelElementLocal: function () {
-
       // If <input> has aria-labelledby set, then look for label it is referring to.
       var queryResult = this._getAriaLabelledByElementLocal();
       if (queryResult !== null && queryResult.length !== 0) {
@@ -777,7 +775,6 @@ var __oj_slider_metadata =
     },
 
     _getAriaLabelForElementLocal: function () {
-
       var id;
       id = this.element.prop('id');
 
@@ -807,12 +804,12 @@ var __oj_slider_metadata =
       // (this is not the common case, but still is supported)
       if (ariaId === undefined && this.OuterWrapper) {
           // ariaId = this._elementWrapped.attr('aria-labelledby');
-          var ariaIdDirect = this._elementWrapped.attr('aria-labelledby');
-          if (ariaIdDirect) {
-              if (document.getElementById(ariaIdDirect) !== null) {
-                  return $(document.getElementById(ariaIdDirect));
-              }
+        var ariaIdDirect = this._elementWrapped.attr('aria-labelledby');
+        if (ariaIdDirect) {
+          if (document.getElementById(ariaIdDirect) !== null) {
+            return $(document.getElementById(ariaIdDirect));
           }
+        }
       }
 
       if (ariaId !== undefined) {
@@ -860,17 +857,17 @@ var __oj_slider_metadata =
     },
 
     _getElementId: function () {
-
       if (this.OuterWrapper) {
-        if (!this._elementWrapped[0].id)
-          this._elementWrapped.uniqueId()
+        if (!this._elementWrapped[0].id) {
+          this._elementWrapped.uniqueId();
+        }
         return (this._elementWrapped[0].id);
       }
-      else {
-        if (!this.element[0].id)
-          this.element.uniqueId();
-        return (this.element[0].id);
+
+      if (!this.element[0].id) {
+        this.element.uniqueId();
       }
+      return (this.element[0].id);
     },
 
     //
@@ -941,9 +938,9 @@ var __oj_slider_metadata =
       this._refreshThumbOptions();
     },
 
-    // 
+    //
     // reapply disabled properties to each slider thumb.
-    // 
+    //
     _refreshThumbOptions: function () {
       var that = this;
       var i = 0;
@@ -960,6 +957,7 @@ var __oj_slider_metadata =
           $(this).removeAttr('tabindex');
         } else {
           $(this).removeAttr('aria-disabled');
+          $(this).attr('tabindex', '0');
         }
         // To support read only, we place set title = "read only" on the thumb.
         if (that.options.readOnly) {
@@ -968,7 +966,6 @@ var __oj_slider_metadata =
         } else {
           $(this).removeAttr('title');
         }
-
       });
     },
 
@@ -1049,7 +1046,7 @@ var __oj_slider_metadata =
 
           this.option('value',
                       this.options.value,
-                      { '_context': { writeback: true, internalSet: true } });
+                      { _context: { writeback: true, internalSet: true } });
         } else if (this._multipleThumbs) {
           if (this.options.value.length !== 2) {
             //
@@ -1063,7 +1060,7 @@ var __oj_slider_metadata =
             this.options.value = [firstValue, this._valueMax()];
             this.option('value',
                         this.options.value,
-                        { '_context': { writeback: true, internalSet: true } });
+                        { _context: { writeback: true, internalSet: true } });
           }
         }
       }
@@ -1147,8 +1144,8 @@ var __oj_slider_metadata =
 
           // Each thumb can be focusable.
           this._focusable({
-            'element': thumb,
-            'applyHighlight': true
+            element: thumb,
+            applyHighlight: true
           });
 
           // We should double-check the need for hoverable on thumbs
@@ -1180,7 +1177,7 @@ var __oj_slider_metadata =
     _GetContentElement: function () {
       return this._getActiveThumb();
     },
- 
+
     //
     // Destroy the slider DOM.
     // This is called both by _destroy and during an option change.
@@ -1203,9 +1200,9 @@ var __oj_slider_metadata =
       if (this._sliderContainer) this._sliderContainer.remove();
 
       if (this.OuterWrapper) {
-        this._elementWrapped.removeUniqueId()
+        this._elementWrapped.removeUniqueId();
         this._RemoveHoverable(this._elementWrapped);
-      } else  {
+      } else {
         this.element.removeUniqueId();
         this._RemoveHoverable(this.element);
       }
@@ -1262,7 +1259,7 @@ var __oj_slider_metadata =
       position = { x: event.pageX, y: event.pageY };
       normValue = this._getNormValueFromMouse(position);
 
-      distance = this._valueMax() - this._valueMin() + 1;
+      distance = (this._valueMax() - this._valueMin()) + 1;
 
       if (this._multipleThumbs) {
         this._thumbs.each(function (i) {
@@ -1325,8 +1322,11 @@ var __oj_slider_metadata =
 
       var pct = this._getFracFromThumb(thumb) * 100;
 
-      if (this._multipleThumbs) this._setRangeMultiThumb(pct, this._thumbIndex);
-      else this._setRange(pct);
+      if (this._multipleThumbs) {
+        this._setRangeMultiThumb(pct, this._thumbIndex);
+      } else {
+        this._setRange(pct);
+      }
 
       return false;
     },
@@ -1382,7 +1382,7 @@ var __oj_slider_metadata =
         fracMouse = 1 - fracMouse;
       }
 
-      valueMouse = this._valueMin() + fracMouse * valueTotal;
+      valueMouse = this._valueMin() + (fracMouse * valueTotal);
 
       return this._trimAlignValue(valueMouse);
     },
@@ -1450,7 +1450,9 @@ var __oj_slider_metadata =
         pixelMouse = pos - this._barback.offset().top;
       }
 
-      if (pixelTotal === 0) return 1;
+      if (pixelTotal === 0) {
+        return 1;
+      }
 
       fracThumb = (pixelMouse / pixelTotal);
 
@@ -1472,7 +1474,7 @@ var __oj_slider_metadata =
         fracThumb = 1 - fracThumb;
       }
 
-      valueMouse = this._valueMin() + fracThumb * valueTotal;
+      valueMouse = this._valueMin() + (fracThumb * valueTotal);
 
       var trimmedValue = this._trimAlignValue(valueMouse);
 
@@ -1498,7 +1500,6 @@ var __oj_slider_metadata =
     },
 
     _slide: function (event, index, newValParam, rawOnly) {
-
       var otherVal;
 
       if (this._multipleThumbs) {
@@ -1508,16 +1509,14 @@ var __oj_slider_metadata =
         if (newVal !== this._getMultiValues(index)) {
           this._setMultiValue(event, index, newVal, rawOnly);
         }
-      } else {
-        // This case handles a single value
-        if (newValParam !== this._getSingleValue()) {
-          // sets slider thumb value
-          this._setSingleValue(event, newValParam, rawOnly);
+      } else if (newValParam !== this._getSingleValue()) {
+         // This case handles a single value
+         // sets slider thumb value
+        this._setSingleValue(event, newValParam, rawOnly);
 
-          if (!rawOnly) {
-            if (this._inputtag) {
-              this.element.val(newValParam);
-            }
+        if (!rawOnly) {
+          if (this._inputtag) {
+            this.element.val(newValParam);
           }
         }
       }
@@ -1531,16 +1530,13 @@ var __oj_slider_metadata =
         this._SetValueReturnBoolean(this._newValue, event);
         this._updateUI();
       }
-
-      return;
     },
 
     _change: function (event, index, rawOnly) {
-
       if (this._multipleThumbs) {
         // store the last change values for creating draggable containment
         this._lastChangedValues = this._getNewValues(index, this._newMultiValue[index]);
-          this._SetRawValue(this._lastChangedValues, event);
+        this._SetRawValue(this._lastChangedValues, event);
         if (!rawOnly) {
           this._SetValueReturnBoolean(this._lastChangedValues, event);
         }
@@ -1565,7 +1561,7 @@ var __oj_slider_metadata =
 
       vals = this.options.value.slice();
 
-      for (i = 0; i < vals.length; i += 1) {
+      for (i = 0; i < vals.length; i++) {
         vals[i] = this._trimAlignValue(vals[i]);
       }
 
@@ -1606,7 +1602,6 @@ var __oj_slider_metadata =
       this._newMultiValue[index] = this._trimAlignValue(newValue);
       this._change(event, index, rawOnly);
       if (!rawOnly) this._updateUI();
-      return;
     },
 
     _setOption: function (key, value, flags) {
@@ -1618,7 +1613,7 @@ var __oj_slider_metadata =
             this._multipleThumbs = true;
             coercedValue = value;
             // verify that the array values are all within range.
-            for (var index = 0; index < coercedValue.length; index += 1) {
+            for (var index = 0; index < coercedValue.length; index++) {
               this._checkValueBounds(coercedValue[index], this._valueMin(), this._valueMax());
             }
           } else {
@@ -1645,7 +1640,6 @@ var __oj_slider_metadata =
       }
 
       if (key === 'max' || key === 'min') {
-
         // Only coerce values for widget syntax,
         // since the framework handles this for custom elements.
         if (!this._IsCustomElement()) {
@@ -1655,7 +1649,7 @@ var __oj_slider_metadata =
         }
 
         //
-        // Note that coerce the value to be within the 
+        // Note that coerce the value to be within the
         // min and max when we option change the min or max.
         //
         if (key === 'min') {
@@ -1709,38 +1703,38 @@ var __oj_slider_metadata =
 
       switch (key) {
 
-      case 'disabled':
-        this._refreshThumbOptions();
+        case 'disabled':
+          this._refreshThumbOptions();
         // disable the dragging if disabled is true.
-        if (this.options.disabled) {
-          this._disableDraggable();
-        } else {
+          if (this.options.disabled) {
+            this._disableDraggable();
+          } else {
+            this._makeDraggable();
+          }
+          break;
+
+        case 'value':
+          this._updateUI();
           this._makeDraggable();
-        }
-        break;
+          break;
 
-      case 'value':
-        this._updateUI();
-        this._makeDraggable();
-        break;
+        case 'min':
+        case 'max':
 
-      case 'min':
-      case 'max':
+          this._calculateNewMax();
+          this._updateUI();
+          this._makeDraggable();
+          break;
 
-        this._calculateNewMax();
-        this._updateUI();
-        this._makeDraggable();
-        break;
+        case 'orientation':
+        case 'readonly':
+        case 'step':
+        case 'type':
+          this._reCreate();
+          break;
 
-      case 'orientation':
-      case 'readonly':
-      case 'step':
-      case 'type':
-        this._reCreate();
-        break;
-
-      default:
-        break;
+        default:
+          break;
       }
     },
 
@@ -1806,8 +1800,8 @@ var __oj_slider_metadata =
     _calculateNewMax: function () {
       var min = this._valueMin();
       if ((((this.options.max - min) / this.options.step) % 1) !== 0) {
-          var remainder = (this.options.max - min) % this.options.step;
-          this.max = (this.options.max - remainder) + this.options.step;
+        var remainder = (this.options.max - min) % this.options.step;
+        this.max = (this.options.max - remainder) + this.options.step;
       } else {
         this.max = this.options.max;
       }
@@ -1881,12 +1875,14 @@ var __oj_slider_metadata =
             var thumb = $(current);
             valPercent = this._getThumbsValueFrac(i) * 100;
 
-            if (this._isRTL() && !this._isVertical()) valPercent = 100 - valPercent;
+            if (this._isRTL() && !this._isVertical()) {
+              valPercent = 100 - valPercent;
+            }
 
             if (!this._isVertical()) {
-              thumb['css']({ left: valPercent + '%' });
+              thumb.css({ left: valPercent + '%' });
             } else {
-              thumb['css']({ top: (100 - valPercent) + '%' });
+              thumb.css({ top: (100 - valPercent) + '%' });
             }
 
             if (!thumb.hasClass('oj-active')) {
@@ -1909,14 +1905,14 @@ var __oj_slider_metadata =
         valueMin = this._valueMin();
         valueMax = this._valueMax();
         valPercent = (valueMax !== valueMin) ?
-          (value - valueMin) / (valueMax - valueMin) * 100 : 0;
+          ((value - valueMin) / (valueMax - valueMin)) * 100 : 0;
 
         if (this._isRTL() && !this._isVertical()) valPercent = 100 - valPercent;
 
         if (!this._isVertical()) {
-          this._thumb['css']({ left: valPercent + '%' });
+          this._thumb.css({ left: valPercent + '%' });
         } else {
-          this._thumb['css']({ top: (100 - valPercent) + '%' });
+          this._thumb.css({ top: (100 - valPercent) + '%' });
         }
 
         //
@@ -1935,31 +1931,30 @@ var __oj_slider_metadata =
 
     // Set the range (bar value)
     _setRange: function (val) {
-
       var oRange = this.options.type;
 
       if (!this._isVertical()) {
         if (!this._isRTL()) {
           if (oRange === 'fromMin') {
-            this._range['css']({ width: val + '%' });
+            this._range.css({ width: val + '%' });
           }
           if (oRange === 'fromMax') {
-            this._range['css']({ width: (100 - val) + '%' });
+            this._range.css({ width: (100 - val) + '%' });
           }
         } else {
           if (oRange === 'fromMin') {
-            this._range['css']({ width: (100 - val) + '%' });
+            this._range.css({ width: (100 - val) + '%' });
           }
           if (oRange === 'fromMax') {
-            this._range['css']({ width: val + '%' });
+            this._range.css({ width: val + '%' });
           }
         }
       } else {
         if (oRange === 'fromMin') {
-          this._range['css']({ height: val + '%' });
+          this._range.css({ height: val + '%' });
         }
         if (oRange === 'fromMax') {
-          this._range['css']({ height: (100 - val) + '%' });
+          this._range.css({ height: (100 - val) + '%' });
         }
       }
     },
@@ -1978,9 +1973,9 @@ var __oj_slider_metadata =
           case 'fromMin':
 
             if (!this._isVertical()) {
-              this._range['css']({ width: val + '%' });
+              this._range.css({ width: val + '%' });
             } else {
-              this._range['css']({ height: val + '%' });
+              this._range.css({ height: val + '%' });
             }
             break;
 
@@ -1988,15 +1983,15 @@ var __oj_slider_metadata =
 
             if (!this._isVertical()) {
               if (!this._isRTL()) {
-                this._range['css']({ left: val + '%' });
-                this._range['css']({ width: (thumb1Pct - val) + '%' });
+                this._range.css({ left: val + '%' });
+                this._range.css({ width: (thumb1Pct - val) + '%' });
               } else {
-                this._range['css']({ left: (100 - thumb1Pct) + '%' });
-                this._range['css']({ width: (thumb1Pct - (100 - val)) + '%' });
+                this._range.css({ left: (100 - thumb1Pct) + '%' });
+                this._range.css({ width: (thumb1Pct - (100 - val)) + '%' });
               }
             } else {
-              this._range['css']({ top: (100 - thumb1Pct) + '%' });
-              this._range['css']({ height: (thumb1Pct - val) + '%' });
+              this._range.css({ top: (100 - thumb1Pct) + '%' });
+              this._range.css({ height: (thumb1Pct - val) + '%' });
             }
             break;
 
@@ -2010,9 +2005,9 @@ var __oj_slider_metadata =
 
           case 'fromMax':
             if (!this._isVertical()) {
-              this._range['css']({ width: (100 - val) + '%' });
+              this._range.css({ width: (100 - val) + '%' });
             } else {
-              this._range['css']({ height: (100 - val) + '%' });
+              this._range.css({ height: (100 - val) + '%' });
             }
             break;
 
@@ -2022,19 +2017,15 @@ var __oj_slider_metadata =
               if (!this._isRTL()) {
                 if (document.getElementById(id)) {
                   var barLeft = parseInt(document.getElementById(id).style.left, 10);
-                  this._range['css']({ width: (val - barLeft) + '%' });
+                  this._range.css({ width: (val - barLeft) + '%' });
                 }
-              } else {
-                if (document.getElementById(id)) {
-                  this._range['css']({ left: val + '%' });
-                  this._range['css']({ width: (- val + 100 - thumb0Pct) + '%' });
-                }
+              } else if (document.getElementById(id)) {
+                this._range.css({ left: val + '%' });
+                this._range.css({ width: ((-val + 100) - thumb0Pct) + '%' });
               }
-            } else {
-              if (document.getElementById(id)) {
-                this._range['css']({ top: (100 - val) + '%' });
-                this._range['css']({ height: (val - thumb0Pct) + '%' });
-              }
+            } else if (document.getElementById(id)) {
+              this._range.css({ top: (100 - val) + '%' });
+              this._range.css({ height: (val - thumb0Pct) + '%' });
             }
 
             break;
@@ -2080,10 +2071,11 @@ var __oj_slider_metadata =
         step = this.options.step;
 
         if (this._multipleThumbs) {
-          curVal = newVal = this._getMultiValues(index);
+          newVal = this._getMultiValues(index);
         } else {
-          curVal = newVal = this._getSingleValue();
+          newVal = this._getSingleValue();
         }
+        curVal = newVal;
 
         switch (event.keyCode) {
           case $.ui.keyCode.HOME:
@@ -2203,25 +2195,26 @@ var __oj_slider_metadata =
 
       this._superApply(arguments);
       var props =
-          [{ attribute: 'disabled', validateOption: true },
-           //                 {attribute: "placeholder"},
-           { attribute: 'value' },
+        [{ attribute: 'disabled', validateOption: true },
+         //                 {attribute: "placeholder"},
+         { attribute: 'value' },
 
-           //
-           // Once slider supports read-only, uncomment the following line.
-           // {attribute: "readonly", option: "readOnly", validateOption: true},
-           //
+         //
+         // Once slider supports read-only, uncomment the following line.
+         // {attribute: "readonly", option: "readOnly", validateOption: true},
+         //
 
-           { attribute: 'title' },
-           { attribute: 'min' },
-           { attribute: 'max' },
-           { attribute: 'step' }];
+         { attribute: 'title' },
+         { attribute: 'min' },
+         { attribute: 'max' },
+         { attribute: 'step' }];
 
 
       oj.EditableValueUtils.initializeOptionsFromDom(
         props, constructorOptions, this,
         // post-process callback
-        function (initializedOptions) {
+        function (_initializedOptions) {
+          var initializedOptions = _initializedOptions;
           // coerce regardless of where the option value came from - dom/constructor
           var toParse = ['value', 'step', 'min', 'max'];
 
@@ -2247,25 +2240,25 @@ var __oj_slider_metadata =
       );
 
       if (!this._IsCustomElement()) {
-        if (opts['value'] === undefined) {
+        if (opts.value === undefined) {
           throw new Error(this.getTranslatedString('noValue'));
         }
       }
 
-      this._checkMinMax(opts['min'], opts['max']);
+      this._checkMinMax(opts.min, opts.max);
 
       // Make sure value is within min and max
-      if (Array.isArray(opts['value'])) {
-        for (var index = 0; index < opts['value'].length; index += 1) {
-          this._checkValueBounds(opts['value'][index], opts['min'], opts['max']);
+      if (Array.isArray(opts.value)) {
+        for (var index = 0; index < opts.value.length; index += 1) {
+          this._checkValueBounds(opts.value[index], opts.min, opts.max);
         }
       } else {
-        this._checkValueBounds(opts['value'], opts['min'], opts['max']);
+        this._checkValueBounds(opts.value, opts.min, opts.max);
       }
     },
 
     // function that will throw an error if the value is not between min and max
-    _checkValueBounds: function(value, min, max) {
+    _checkValueBounds: function (value, min, max) {
       if (min != null) {
         if (value < min) {
           throw new Error(this.getTranslatedString('valueRange'));
@@ -2279,7 +2272,7 @@ var __oj_slider_metadata =
     },
 
     // throw an error if min >= max
-    _checkMinMax: function(min, max) {
+    _checkMinMax: function (min, max) {
       if (min != null && max != null) {
         if (min >= max) {
           throw new Error(this.getTranslatedString('maxMin'));
@@ -2288,12 +2281,12 @@ var __oj_slider_metadata =
     },
 
     // @inheritdoc
-    getNodeBySubId: function(locator) {
+    getNodeBySubId: function (locator) {
       if (locator == null) {
         return this.element ? this.element[0] : null;
       }
 
-      var subId = locator['subId'];
+      var subId = locator.subId;
 
       if (subId === 'oj-slider-thumb-0') {
         return this.widget().find('.oj-slider-thumb')[0];
@@ -2313,13 +2306,13 @@ var __oj_slider_metadata =
     getSubIdByNode: function (node) {
       if (node != null) {
         if (node.id === this._getThumbId(0) && $(node).hasClass('oj-slider-thumb')) {
-          return { 'subId': 'oj-slider-thumb-0' };
+          return { subId: 'oj-slider-thumb-0' };
         } else if (node.id === this._getThumbId(1) && $(node).hasClass('oj-slider-thumb')) {
-          return { 'subId': 'oj-slider-thumb-1' };
+          return { subId: 'oj-slider-thumb-1' };
         } else if ($(node).hasClass('oj-slider-bar')) {
-          return { 'subId': 'oj-slider-bar' };
+          return { subId: 'oj-slider-bar' };
         } else if ($(node).hasClass('oj-slider-bar-value')) {
-          return { 'subId': 'oj-slider-bar-value' };
+          return { subId: 'oj-slider-bar-value' };
         }
       }
 
@@ -2357,7 +2350,7 @@ var __oj_slider_metadata =
       }
 
       if (isNaN(returnValue)) {
-        throw new Error(this.getTranslatedString('optionNum', { 'option': option }));
+        throw new Error(this.getTranslatedString('optionNum', { option: option }));
       }
 
       return returnValue;
@@ -2388,7 +2381,7 @@ var __oj_slider_metadata =
       return parsedStep;
     },
 
-    /////////////////////////////////////////////////////////////////////////////////////////
+    // ///////////////////////////////////////////////////////////////////////////////////////
     //
     // Draggable - used to implement slider thumb dragging
     //
@@ -2407,7 +2400,7 @@ var __oj_slider_metadata =
     //   The granularity of movement is constrained to the step size using the grid
     //   option.
     //
-    /////////////////////////////////////////////////////////////////////////////////////////
+    // ///////////////////////////////////////////////////////////////////////////////////////
 
     // return the endpoint of the bar
     _getEndInterval: function () {
@@ -2453,7 +2446,7 @@ var __oj_slider_metadata =
           that._initDragging(event, thumbParam);
         },
 
-        'drag': function (event, ui) {
+        drag: function (event, ui) {
           //
           // Compensate for a draggable bug.
           // The bug causes the thumb to drift off axis (for some .css thumb sizes).
@@ -2515,35 +2508,25 @@ var __oj_slider_metadata =
               var halfThumbWidth = thumbParam.outerWidth() / 2;
               var parentLeft = that._barback.offsetParent().offset().left;
               // pos1 = thumbParam.offset().left + halfThumbWidth - parentLeft;
-              pos2 = otherThumb.offset().left + halfThumbWidth - parentLeft;
+              pos2 = (otherThumb.offset().left + halfThumbWidth) - parentLeft;
             } else {
               var halfThumbHeight = thumbParam.outerHeight() / 2;
               var parentTop = that._barback.offsetParent().offset().top;
               // pos1 = thumbParam.offset().top + halfThumbHeight - parentTop;
-              pos2 = otherThumb.offset().top + halfThumbHeight - parentTop;
+              pos2 = (otherThumb.offset().top + halfThumbHeight) - parentTop;
             }
 
             if (that._thumbIndex === 0) {
               if (!that._isVertical()) {
                 if (!that._isRTL()) {
                   if (pos.left > pos2) pos.left = pos2;
-                } else {
-                  if (pos.left < pos2) pos.left = pos2;
-                }
-              } else {
-                if (pos.top < pos2) pos.top = pos2;
-              }
-            } else {
-              if (!that._isVertical()) {
-                if (!that._isRTL()) {
-                  if (pos.left < pos2) pos.left = pos2;
-                } else {
-                  if (pos.left > pos2) pos.left = pos2;
-                }
-              } else {
-                if (pos.top > pos2) pos.top = pos2;
-              }
-            }
+                } else if (pos.left < pos2) pos.left = pos2;
+              } else if (pos.top < pos2) pos.top = pos2;
+            } else if (!that._isVertical()) {
+              if (!that._isRTL()) {
+                if (pos.left < pos2) pos.left = pos2;
+              } else if (pos.left > pos2) pos.left = pos2;
+            } else if (pos.top > pos2) pos.top = pos2;
           }
         },
 
@@ -2591,21 +2574,19 @@ var __oj_slider_metadata =
           function (current) {
             var thumb = $(current);
             if (thumb.is('.ui-draggable')) {
-              thumb['draggable']('disable');
+              thumb.draggable('disable');
             }
           },
           this
         );
-      } else {
-        if (this._thumb.is('.ui-draggable')) {
-          this._thumb.draggable('disable');
-        }
+      } else if (this._thumb.is('.ui-draggable')) {
+        this._thumb.draggable('disable');
       }
     },
 
-    // 
+    //
     // Destroy the draggable that was instantiated on each slider thumb.
-    // 
+    //
     _destroyDraggable: function () {
       if (this._multipleThumbs) {
         this._thumbs.toArray().forEach(
@@ -2613,21 +2594,19 @@ var __oj_slider_metadata =
           function (current) {
             var thumb = $(current);
             if (thumb.is('.ui-draggable')) {
-              thumb['draggable']('destroy');
+              thumb.draggable('destroy');
             }
           },
           this
         );
-      } else {
-        if (this._thumb.is('.ui-draggable')) {
-          this._thumb.draggable('destroy');
-        }
+      } else if (this._thumb.is('.ui-draggable')) {
+        this._thumb.draggable('destroy');
       }
     }
 
-    /////////////////////////////////////////////////////////////////////////////////////////
+    // ///////////////////////////////////////////////////////////////////////////////////////
     // Draggable - end
-    /////////////////////////////////////////////////////////////////////////////////////////
+    // ///////////////////////////////////////////////////////////////////////////////////////
 
     /**
      * <table class="keyboard-table">
@@ -2761,7 +2740,7 @@ var __oj_slider_metadata =
      * @memberof oj.ojSlider
      */
 
-    /// ///////////////     SUB-IDS     //////////////////
+    // / ///////////////     SUB-IDS     //////////////////
 
     /**
      * <p>Sub-ID for the slider thumb. Use this id to access the thumb of the  slider. </p>
@@ -2801,8 +2780,7 @@ var __oj_slider_metadata =
 (function () {
   __oj_slider_metadata.extension._WIDGET_NAME = 'ojSlider';
   __oj_slider_metadata.extension._INNER_ELEM = 'input';
-  oj.CustomElementBridge.registerMetadata('oj-slider', 'editableValue', __oj_slider_metadata);
-  oj.CustomElementBridge.register('oj-slider', { metadata: oj.CustomElementBridge.getMetadata('oj-slider') });
+  oj.CustomElementBridge.register('oj-slider', { metadata: __oj_slider_metadata });
 }());
 
 });

@@ -1,0 +1,27 @@
+// Copyright (c) 2014, 2018, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the
+//          version in your base theme's directory,
+//          for example alta/widgets/_oj.alta.option.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@import "../../utilities/oj.utilities";
+
+@if $includeOptionClasses != false {
+  @include module-include-once("common.option") {
+
+    /* option and optgroup */
+    /* --------------------------------------------------------------- */
+
+    // This is to prevent the flash of unstyled content before the html becomes JET components.
+    @if $initialVisibility == hidden {
+      oj-option:not(.oj-complete) {
+        visibility: hidden;
+      }      
+      
+      oj-optgroup:not(.oj-complete) {
+        visibility: hidden;
+      }
+    }
+  }
+}

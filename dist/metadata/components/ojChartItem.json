@@ -1,102 +1,104 @@
 {
   "name": "oj-chart-item",
-  "version": "5.2.0",
-  "jetVersion": "5.2.0",
+  "version": "6.0.0",
+  "jetVersion": "6.0.0",
   "displayName": "Chart Item",
   "type": "core",
   "description": "ojChartItem",
+  "help": "https://docs.oracle.com/en/middleware/jet/6/reference-api/oj.ojChartItem.html",
   "properties": {
     "borderColor": {
       "description": "The border color of the data item. For funnel and pyramid charts, it is used for the slice border.",
       "type": "string",
       "displayName": "Border Color",
-      "value": null,
-      "format": "color"
+      "format": "color",
+      "help": "borderColor"
     },
     "borderWidth": {
       "description": "The border width of the data item. For funnel and pyramid charts, it is used for the slice border.",
       "type": "number",
       "displayName": "Border Width",
-      "value": null,
-      "units": "pixels"
+      "units": "pixels",
+      "help": "borderWidth"
     },
     "boxPlot": {
       "description": "An object containing the style properties of the box plot item.",
       "type": "object",
       "displayName": "Box Plot",
+      "help": "boxPlot",
       "properties": {
         "medianSvgClassName": {
           "description": "The CSS style class to apply to the median line.",
           "type": "string",
           "displayName": "Median Svg Class Name",
-          "value": null
+          "help": "boxPlot.medianSvgClassName"
         },
         "medianSvgStyle": {
           "description": "The CSS inline style to apply to the median line.",
           "type": "object",
           "displayName": "Median Svg Style",
-          "value": null
+          "help": "boxPlot.medianSvgStyle"
         },
         "q2Color": {
           "description": "The color of the Q2 segment of the box.",
           "type": "string",
           "displayName": "Q2 Color",
-          "value": null,
-          "format": "color"
+          "format": "color",
+          "help": "boxPlot.q2Color"
         },
         "q2SvgClassName": {
           "description": "The CSS style class to apply to the Q2 segment of the box. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the q2Color attribute.",
           "type": "string",
           "displayName": "Q2 Svg Class Name",
-          "value": null
+          "help": "boxPlot.q2SvgClassName"
         },
         "q2SvgStyle": {
           "description": "The CSS inline style to apply to the Q2 segment of the box. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the q2Color attribute.",
           "type": "object",
           "displayName": "Q2 Svg Style",
-          "value": null
+          "help": "boxPlot.q2SvgStyle"
         },
         "q3SvgClassName": {
           "description": "The CSS style class to apply to the Q3 segment of the box. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the q3Color attribute.",
           "type": "string",
           "displayName": "Q3 Svg Class Name",
-          "value": null
+          "help": "boxPlot.q3SvgClassName"
         },
         "q3SvgStyle": {
           "description": "The CSS inline style to apply to the Q3 segment of the box. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the q3Color attribute.",
           "type": "object",
           "displayName": "Q3 Svg Style",
-          "value": null
+          "help": "boxPlot.q3SvgStyle"
         },
         "whiskerEndLength": {
           "description": "Specifies the length of the whisker ends in pixels (e.g. '9px') or as a percentage of the box width (e.g. '50%'). The specified length will be rounded down to an odd number of pixels to ensure symmetry.",
           "type": "string",
           "displayName": "Whisker End Length",
-          "value": null
+          "help": "boxPlot.whiskerEndLength"
         },
         "whiskerEndSvgClassName": {
           "description": "The CSS style class to apply to the whisker ends.",
           "type": "string",
           "displayName": "Whisker End Svg Class Name",
-          "value": null
+          "help": "boxPlot.whiskerEndSvgClassName"
         },
         "whiskerEndSvgStyle": {
           "description": "The CSS inline style to apply to the whisker ends.",
           "type": "object",
           "displayName": "Whisker End Svg Style",
-          "value": null
+          "help": "boxPlot.whiskerEndSvgStyle"
         },
         "whiskerSvgClassName": {
           "description": "The CSS style class to apply to the whisker stems.",
           "type": "string",
           "displayName": "Whisker Svg Class Name",
-          "value": null
+          "help": "boxPlot.whiskerSvgClassName"
         },
         "whiskerSvgStyle": {
           "description": "The CSS inline style to apply to the whisker stems.",
           "type": "object",
           "displayName": "Whisker Svg Style",
-          "value": null
+          "help": "boxPlot.whiskerSvgStyle"
         }
       }
     },
@@ -104,26 +106,27 @@
       "description": "An optional array of category strings corresponding to this data item. This enables highlighting and filtering of individual data items through interactions with the legend or other visualization elements. If not defined, series categories are used.",
       "type": "Array<string>",
       "displayName": "Categories",
-      "value": null
+      "help": "categories"
     },
     "close": {
       "description": "The close value for stock candlestick. When bar, line, or area series type are used on a stock chart, this value is displayed.",
       "type": "number",
       "displayName": "Close",
-      "value": null
+      "help": "close"
     },
     "color": {
       "description": "The color of the data item.",
       "type": "string",
       "displayName": "Color",
-      "value": null,
-      "format": "color"
+      "format": "color",
+      "help": "color"
     },
     "drilling": {
       "description": "Whether drilling is enabled for the data item. Drillable objects will show a pointer cursor on hover and fire an ojDrill event on click (double click if selection is enabled). To enable drilling for all data items at once, use the drilling attribute in the top level.",
       "type": "string",
       "displayName": "Drilling",
       "value": "inherit",
+      "help": "drilling",
       "enumValues": [
         "inherit",
         "off",
@@ -145,33 +148,34 @@
       "description": "The array of id(s) for the group(s) the item belongs to. For hierarchical groups, it will be an array of outermost to innermost group ids.",
       "type": "Array<string>",
       "displayName": "Group Id",
-      "value": null,
-      "required": true
+      "required": true,
+      "help": "groupId"
     },
     "high": {
       "description": "The high value for range bar/area, stock candlestick, or box plot item. Define 'low' and 'high' instead of 'value' or 'y' to create a range bar/area chart.",
       "type": "number",
       "displayName": "High",
-      "value": null
+      "help": "high"
     },
     "items": {
       "description": "An array of nested data items to be used for defining the markers for outliers or additional data items of a box plot.",
       "type": "Array<Object>|Array<number>",
       "displayName": "Items",
-      "value": null
+      "help": "items"
     },
     "label": {
       "description": "The label for the data item. For range series, if an array of two values are provided, the first and second value will apply to the low and high point respectively. Not supported for box plot or candlestick.",
       "type": "string|Array<string>",
       "displayName": "Label",
-      "value": null,
-      "translatable": true
+      "translatable": true,
+      "help": "label"
     },
     "labelPosition": {
       "description": "The position of the data label. For range series, if an array of two values are provided, the first and second value will apply to the low and high point respectively. The 'outsideSlice' value only applies to pie charts. The 'aboveMarker', 'belowMarker', 'beforeMarker', and 'afterMarker' values only apply to line, area, scatter, and bubble series. The 'insideBarEdge' and 'outsideBarEdge' values only apply to non-polar bar series. Stacked bars do not support 'outsideBarEdge'. The chart does not currently adjust layout to fit labels within the plot area or deal with any overlaps between labels.",
       "type": "string|Array<string>",
       "displayName": "Label Position",
       "value": "auto",
+      "help": "labelPosition",
       "enumValues": [
         "aboveMarker",
         "afterMarker",
@@ -221,19 +225,20 @@
       "description": "The CSS style object defining the style of the data label. For range series, if an array of two values are provided, the first and second value will apply to the low and high point respectively.",
       "type": "object|Array<Object>",
       "displayName": "Label Style",
-      "value": null
+      "help": "labelStyle"
     },
     "low": {
       "description": "The low value for range bar/area, stock candlestick, or box plot item. Define 'low' and 'high' instead of 'value' or 'y' to create a range bar/area chart.",
       "type": "number",
       "displayName": "Low",
-      "value": null
+      "help": "low"
     },
     "markerDisplayed": {
       "description": "Defines whether the data marker is displayed. Only applies to line, area, scatter, and bubble series. If auto, the markers will be displayed whenever the data points are not connected by a line.",
       "type": "string",
       "displayName": "Marker Displayed",
       "value": "auto",
+      "help": "markerDisplayed",
       "enumValues": [
         "auto",
         "off",
@@ -253,68 +258,30 @@
     },
     "markerShape": {
       "description": "The shape of the data markers. In addition to the built-in shapes, it may also take SVG path commands to specify a custom shape. The chart will style the custom shapes the same way as built-in shapes, supporting properties like color and borderColor and applying hover and selection effects. Only 'auto' is supported for range series.",
-      "type": "string",
+      "type": "\"circle\"|\"diamond\"|\"human\"|\"plus\"|\"square\"|\"star\"|\"triangleDown\"|\"triangleUp\"|\"auto\"|string",
       "displayName": "Marker Shape",
       "value": "auto",
-      "enumValues": [
-        "auto",
-        "circle",
-        "diamond",
-        "human",
-        "plus",
-        "square",
-        "star",
-        "triangleDown",
-        "triangleUp"
-      ],
-      "propertyEditorValues": {
-        "auto": {
-          "displayName": "Auto"
-        },
-        "circle": {
-          "displayName": "Circle"
-        },
-        "diamond": {
-          "displayName": "Diamond"
-        },
-        "human": {
-          "displayName": "Human"
-        },
-        "plus": {
-          "displayName": "Plus"
-        },
-        "square": {
-          "displayName": "Square"
-        },
-        "star": {
-          "displayName": "Star"
-        },
-        "triangleDown": {
-          "displayName": "Triangle Down"
-        },
-        "triangleUp": {
-          "displayName": "Triangle Up"
-        }
-      }
+      "help": "markerShape"
     },
     "markerSize": {
       "description": "The size of the data markers. Does not apply to bubble charts, which calculate marker size based on the z values.",
       "type": "number",
       "displayName": "Marker Size",
-      "value": null,
-      "units": "pixels"
+      "units": "pixels",
+      "help": "markerSize"
     },
     "open": {
       "description": "The open value for stock candlestick.",
       "type": "number",
       "displayName": "Open",
-      "value": null
+      "help": "open"
     },
     "pattern": {
       "description": "The pattern used to fill the data item. A solid fill is used by default, unless the seriesEffect is 'pattern'.",
       "type": "string",
       "displayName": "Pattern",
       "value": "auto",
+      "help": "pattern",
       "enumValues": [
         "auto",
         "largeChecker",
@@ -376,105 +343,105 @@
       "description": "The first quartile value for box plot.",
       "type": "number",
       "displayName": "Q1",
-      "value": null
+      "help": "q1"
     },
     "q2": {
       "description": "The second quartile (median) value for box plot.",
       "type": "number",
       "displayName": "Q2",
-      "value": null
+      "help": "q2"
     },
     "q3": {
       "description": "The third quartile value for box plot.",
       "type": "number",
       "displayName": "Q3",
-      "value": null
+      "help": "q3"
     },
     "seriesId": {
       "description": "The id for the series the item belongs to.",
       "type": "string",
       "displayName": "Series Id",
-      "value": null,
-      "required": true
+      "required": true,
+      "help": "seriesId"
     },
     "shortDesc": {
       "description": "The description of this object. This is used for accessibility and also for customizing the tooltip text.",
       "type": "string",
       "displayName": "Short Desc",
-      "value": null,
-      "translatable": true
+      "translatable": true,
+      "help": "shortDesc"
     },
     "source": {
       "description": "The URI of the custom image. If specified, it takes precedence over shape.",
       "type": "string",
       "displayName": "Source",
-      "value": null
+      "help": "source"
     },
     "sourceHover": {
       "description": "The optional URI for the hover state. If not specified, the source image will be used.",
       "type": "string",
       "displayName": "Source Hover",
-      "value": null
+      "help": "sourceHover"
     },
     "sourceHoverSelected": {
       "description": "The optional URI for the hover selected state. If not specified, the source image will be used.",
       "type": "string",
       "displayName": "Source Hover Selected",
-      "value": null
+      "help": "sourceHoverSelected"
     },
     "sourceSelected": {
       "description": "The optional URI for the selected state. If not specified, the source image will be used.",
       "type": "string",
       "displayName": "Source Selected",
-      "value": null
+      "help": "sourceSelected"
     },
     "svgClassName": {
       "description": "The CSS style class to apply to the data item. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the item color attribute.",
       "type": "string",
       "displayName": "Svg Class Name",
-      "value": null
+      "help": "svgClassName"
     },
     "svgStyle": {
       "description": "The inline style to apply to the data item. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the item color attribute.",
       "type": "object",
       "displayName": "Svg Style",
-      "value": null
+      "help": "svgStyle"
     },
     "targetValue": {
       "description": "The target value for a funnel chart. When this is set, the value attribute defines the filled area within the slice and this represents the value of the whole slice.",
       "type": "number",
       "displayName": "Target Value",
-      "value": null
+      "help": "targetValue"
     },
     "value": {
       "description": "The value for this data item. Corresponding to the y value for bar, line, area, and combo charts and the slice values for pie, funnel and pyramid charts. Null can be specified to skip a data point.",
       "type": "number",
       "displayName": "Value",
-      "value": null
+      "help": "value"
     },
     "volume": {
       "description": "The value for stock volume bar. When this value is provided, the volume bar is displayed on the y2 axis.",
       "type": "number",
       "displayName": "Volume",
-      "value": null
+      "help": "volume"
     },
     "x": {
       "description": "The x value. Mainly used for scatter and bubble chart and to specify the date for mixed-frequency time axis. For categorical axis, if the x value is not specified, it will default to the item index. For regular time axis, if the x value is not specified, it will default to the group name of the item.",
       "type": "number|string",
       "displayName": "X",
-      "value": null
+      "help": "x"
     },
     "y": {
       "description": "The y value. Also the primary value for charts without a y-Axis, such as pie charts.",
       "type": "number",
       "displayName": "Y",
-      "value": null
+      "help": "y"
     },
     "z": {
       "description": "The z value. Defines the bubble radius for a bubble chart, as well as the width of a bar or a box plot item.",
       "type": "number",
       "displayName": "Z",
-      "value": null
+      "help": "z"
     }
   }
 }

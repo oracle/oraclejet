@@ -1,15 +1,18 @@
 {
   "name": "oj-bind-text",
-  "version": "5.2.0",
-  "jetVersion": "5.2.0",
+  "version": "6.0.0",
+  "jetVersion": "6.0.0",
   "displayName": "Bind Text",
   "type": "core",
   "description": "Binds a text node to an expression.",
+  "help": "https://docs.oracle.com/en/middleware/jet/6/reference-api/oj.ojBindText.html",
   "properties": {
     "value": {
       "description": "The value of the text node.",
       "type": "string",
-      "displayName": "Value"
+      "displayName": "Value",
+      "translatable": true,
+      "help": "value"
     }
   }
 }

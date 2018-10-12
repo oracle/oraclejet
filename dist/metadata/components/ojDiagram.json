@@ -1,16 +1,18 @@
 {
   "name": "oj-diagram",
-  "version": "5.2.0",
-  "jetVersion": "5.2.0",
+  "version": "6.0.0",
+  "jetVersion": "6.0.0",
   "displayName": "Diagram",
   "type": "core",
   "description": "Displays a set of nodes and the links between them. The node positions and link paths are specified by an application-provided layout function.",
+  "help": "https://docs.oracle.com/en/middleware/jet/6/reference-api/oj.ojDiagram.html",
   "properties": {
     "animationOnDataChange": {
       "description": "Specifies the animation that is applied on data changes.",
       "type": "string",
       "displayName": "Animation On Data Change",
       "value": "none",
+      "help": "animationOnDataChange",
       "enumValues": [
         "auto",
         "none"
@@ -29,6 +31,7 @@
       "type": "string",
       "displayName": "Animation On Display",
       "value": "none",
+      "help": "animationOnDisplay",
       "enumValues": [
         "auto",
         "none"
@@ -42,50 +45,65 @@
         }
       }
     },
+    "as": {
+      "description": "An alias for the $current context variable when referenced inside nodeTemplate or linkTemplate when using a DataProvider.",
+      "type": "string",
+      "displayName": "As",
+      "value": "",
+      "help": "as"
+    },
     "data": {
       "description": "Specifies data source for the component.",
       "type": "object",
       "displayName": "Data",
-      "value": null
+      "value": null,
+      "help": "data"
     },
     "dnd": {
       "description": "Used to customize the drag and drop features.",
       "type": "object",
       "displayName": "Dnd",
+      "help": "dnd",
       "properties": {
         "drag": {
           "description": "Used to customize drag functionality.",
           "type": "object",
           "displayName": "Drag",
+          "help": "dnd.drag",
           "properties": {
             "nodes": {
               "description": "Used to customize the drag features for nodes.",
               "type": "object",
               "displayName": "Nodes",
+              "help": "dnd.drag.nodes",
               "properties": {
                 "dataTypes": {
                   "description": "Specifies MIME type for dragged data.",
                   "type": "string|Array<string>",
                   "displayName": "Data Types",
-                  "value": null
+                  "value": null,
+                  "help": "dnd.drag.nodes.dataTypes"
                 },
                 "drag": {
                   "description": "Optional handler for drag event.",
                   "type": "function",
                   "displayName": "Drag",
-                  "value": null
+                  "value": null,
+                  "help": "dnd.drag.nodes.drag"
                 },
                 "dragEnd": {
                   "description": "Optional handler for dragend event.",
                   "type": "function",
                   "displayName": "Drag End",
-                  "value": null
+                  "value": null,
+                  "help": "dnd.drag.nodes.dragEnd"
                 },
                 "dragStart": {
                   "description": "Optional handler for dragstart event.",
                   "type": "function",
                   "displayName": "Drag Start",
-                  "value": null
+                  "value": null,
+                  "help": "dnd.drag.nodes.dragStart"
                 }
               }
             },
@@ -93,42 +111,49 @@
               "description": "Defines link creation functionality.",
               "type": "object",
               "displayName": "Ports",
+              "help": "dnd.drag.ports",
               "properties": {
                 "dataTypes": {
                   "description": "Specifies MIME type for dragged data.",
                   "type": "string|Array<string>",
                   "displayName": "Data Types",
-                  "value": null
+                  "value": null,
+                  "help": "dnd.drag.ports.dataTypes"
                 },
                 "drag": {
                   "description": "Optional handler for drag event.",
                   "type": "function",
                   "displayName": "Drag",
-                  "value": null
+                  "value": null,
+                  "help": "dnd.drag.ports.drag"
                 },
                 "dragEnd": {
                   "description": "Optional handler for dragend event.",
                   "type": "function",
                   "displayName": "Drag End",
-                  "value": null
+                  "value": null,
+                  "help": "dnd.drag.ports.dragEnd"
                 },
                 "dragStart": {
                   "description": "Optional handler for dragstart event.",
                   "type": "function",
                   "displayName": "Drag Start",
-                  "value": null
+                  "value": null,
+                  "help": "dnd.drag.ports.dragStart"
                 },
                 "linkStyle": {
                   "description": "Specifies link creation feedback.",
                   "type": "function",
                   "displayName": "Link Style",
-                  "value": null
+                  "value": null,
+                  "help": "dnd.drag.ports.linkStyle"
                 },
                 "selector": {
                   "description": "Specifies DOM element selector used to start link creation.",
                   "type": "string",
                   "displayName": "Selector",
-                  "value": null
+                  "value": null,
+                  "help": "dnd.drag.ports.selector"
                 }
               }
             }
@@ -138,41 +163,48 @@
           "description": "An object that describes drop functionality.",
           "type": "object",
           "displayName": "Drop",
+          "help": "dnd.drop",
           "properties": {
             "background": {
               "description": "Allows dropping on the diagram background.",
               "type": "object",
               "displayName": "Background",
+              "help": "dnd.drop.background",
               "properties": {
                 "dataTypes": {
                   "description": "Specifies MIME types of objects that can be dropped on the Diagram background.",
                   "type": "string|Array<string>",
                   "displayName": "Data Types",
-                  "value": null
+                  "value": null,
+                  "help": "dnd.drop.background.dataTypes"
                 },
                 "dragEnter": {
                   "description": "Optional handler for dragenter event.",
                   "type": "function",
                   "displayName": "Drag Enter",
-                  "value": null
+                  "value": null,
+                  "help": "dnd.drop.background.dragEnter"
                 },
                 "dragLeave": {
                   "description": "Optional handler for dragleave event.",
                   "type": "function",
                   "displayName": "Drag Leave",
-                  "value": null
+                  "value": null,
+                  "help": "dnd.drop.background.dragLeave"
                 },
                 "dragOver": {
                   "description": "Optional handler for dragover event.",
                   "type": "function",
                   "displayName": "Drag Over",
-                  "value": null
+                  "value": null,
+                  "help": "dnd.drop.background.dragOver"
                 },
                 "drop": {
                   "description": "Handler for drop event.",
                   "type": "function",
                   "displayName": "Drop",
-                  "value": null
+                  "value": null,
+                  "help": "dnd.drop.background.drop"
                 }
               }
             },
@@ -180,36 +212,42 @@
               "description": "Allows dropping on diagram links.",
               "type": "object",
               "displayName": "Links",
+              "help": "dnd.drop.links",
               "properties": {
                 "dataTypes": {
                   "description": "Specifies MIME types of objects that can be dropped on the Diagram links.",
                   "type": "string|Array<string>",
                   "displayName": "Data Types",
-                  "value": null
+                  "value": null,
+                  "help": "dnd.drop.links.dataTypes"
                 },
                 "dragEnter": {
                   "description": "Optional handler for dragenter event.",
                   "type": "function",
                   "displayName": "Drag Enter",
-                  "value": null
+                  "value": null,
+                  "help": "dnd.drop.links.dragEnter"
                 },
                 "dragLeave": {
                   "description": "Optional handler for dragleave event.",
                   "type": "function",
                   "displayName": "Drag Leave",
-                  "value": null
+                  "value": null,
+                  "help": "dnd.drop.links.dragLeave"
                 },
                 "dragOver": {
                   "description": "Optional handler for dragover event.",
                   "type": "function",
                   "displayName": "Drag Over",
-                  "value": null
+                  "value": null,
+                  "help": "dnd.drop.links.dragOver"
                 },
                 "drop": {
                   "description": "Handler for drop event.",
                   "type": "function",
                   "displayName": "Drop",
-                  "value": null
+                  "value": null,
+                  "help": "dnd.drop.links.drop"
                 }
               }
             },
@@ -217,36 +255,42 @@
               "description": "Allows dropping on diagram nodes.",
               "type": "object",
               "displayName": "Nodes",
+              "help": "dnd.drop.nodes",
               "properties": {
                 "dataTypes": {
                   "description": "Specifies MIME types of objects that can be dropped on the Diagram nodes.",
                   "type": "string|Array<string>",
                   "displayName": "Data Types",
-                  "value": null
+                  "value": null,
+                  "help": "dnd.drop.nodes.dataTypes"
                 },
                 "dragEnter": {
                   "description": "Optional handler for dragenter event.",
                   "type": "function",
                   "displayName": "Drag Enter",
-                  "value": null
+                  "value": null,
+                  "help": "dnd.drop.nodes.dragEnter"
                 },
                 "dragLeave": {
                   "description": "Optional handler for dragleave event.",
                   "type": "function",
                   "displayName": "Drag Leave",
-                  "value": null
+                  "value": null,
+                  "help": "dnd.drop.nodes.dragLeave"
                 },
                 "dragOver": {
                   "description": "Optional handler for dragover event.",
                   "type": "function",
                   "displayName": "Drag Over",
-                  "value": null
+                  "value": null,
+                  "help": "dnd.drop.nodes.dragOver"
                 },
                 "drop": {
                   "description": "Handler for drop event.",
                   "type": "function",
                   "displayName": "Drop",
-                  "value": null
+                  "value": null,
+                  "help": "dnd.drop.nodes.drop"
                 }
               }
             },
@@ -254,42 +298,49 @@
               "description": "Allows dropping a link end on a port.",
               "type": "object",
               "displayName": "Ports",
+              "help": "dnd.drop.ports",
               "properties": {
                 "dataTypes": {
                   "description": "Specifies MIME types of objects that can be dropped on the Diagram ports.",
                   "type": "string|Array<string>",
                   "displayName": "Data Types",
-                  "value": null
+                  "value": null,
+                  "help": "dnd.drop.ports.dataTypes"
                 },
                 "dragEnter": {
                   "description": "Optional handler for dragenter event.",
                   "type": "function",
                   "displayName": "Drag Enter",
-                  "value": null
+                  "value": null,
+                  "help": "dnd.drop.ports.dragEnter"
                 },
                 "dragLeave": {
                   "description": "Optional handler for dragleave event.",
                   "type": "function",
                   "displayName": "Drag Leave",
-                  "value": null
+                  "value": null,
+                  "help": "dnd.drop.ports.dragLeave"
                 },
                 "dragOver": {
                   "description": "Optional handler for dragover event.",
                   "type": "function",
                   "displayName": "Drag Over",
-                  "value": null
+                  "value": null,
+                  "help": "dnd.drop.ports.dragOver"
                 },
                 "drop": {
                   "description": "Handler for drop event.",
                   "type": "function",
                   "displayName": "Drop",
-                  "value": null
+                  "value": null,
+                  "help": "dnd.drop.ports.drop"
                 },
                 "selector": {
                   "description": "Specifies DOM element selector used for link creation end.",
                   "type": "string",
                   "displayName": "Selector",
-                  "value": null
+                  "value": null,
+                  "help": "dnd.drop.ports.selector"
                 }
               }
             }
@@ -302,26 +353,138 @@
       "type": "KeySet",
       "displayName": "Expanded",
       "value": "new ExpandedKeySet()",
-      "writeback": true
+      "writeback": true,
+      "help": "expanded"
     },
     "focusRenderer": {
       "description": "Specifies custom renderer for the diagram nodes used for focus updates.",
-      "type": "null|function",
+      "type": "function|null",
       "displayName": "Focus Renderer",
-      "value": null
+      "value": null,
+      "help": "focusRenderer",
+      "properties": {
+        "parentElement": {
+          "description": "A parent group element that takes a custom SVG fragment as the node content. Modifications of the parentElement are not supported.",
+          "type": "Element"
+        },
+        "componentElement": {
+          "description": "The diagram element.",
+          "type": "Element"
+        },
+        "data": {
+          "description": "The data object for the node. If oj.DataProvider is being used, this property contains template processed data.",
+          "type": "object"
+        },
+        "itemData": {
+          "description": "The row data object for the node. This will only be set if an oj.DataProvider is being used.",
+          "type": "object|null"
+        },
+        "content": {
+          "description": "An object that describes child content. The object has the following properties",
+          "type": "object",
+          "properties": {
+            "element": {
+              "description": "SVG group element that contains child nodes for the container.",
+              "type": "Element"
+            },
+            "width": {
+              "description": "Width of the child content.",
+              "type": "number"
+            },
+            "height": {
+              "description": "Height of the child content.",
+              "type": "number"
+            }
+          }
+        },
+        "state": {
+          "description": "An object that reflects the current state of the data item.",
+          "type": "object",
+          "properties": {
+            "hovered": {
+              "description": "True if the node is currently hovered.",
+              "type": "boolean"
+            },
+            "selected": {
+              "description": "True if the node is currently selected.",
+              "type": "boolean"
+            },
+            "focused": {
+              "description": "True if the node is currently selected.",
+              "type": "boolean"
+            },
+            "expanded": {
+              "description": "True if the node is expanded.",
+              "type": "boolean"
+            },
+            "zoom": {
+              "description": "Current zoom state.",
+              "type": "number"
+            }
+          }
+        },
+        "previousState": {
+          "description": "An object that reflects the current state of the data item.",
+          "type": "object",
+          "properties": {
+            "hovered": {
+              "description": "True if the node was previously hovered.",
+              "type": "boolean"
+            },
+            "selected": {
+              "description": "True if the node was previously selected.",
+              "type": "boolean"
+            },
+            "focused": {
+              "description": "True if the node was previously selected.",
+              "type": "boolean"
+            },
+            "expanded": {
+              "description": "True if the node was previously expanded.",
+              "type": "boolean"
+            },
+            "zoom": {
+              "description": "Previous zoom state.",
+              "type": "number"
+            }
+          }
+        },
+        "id": {
+          "description": "Node id.",
+          "type": "any"
+        },
+        "type": {
+          "description": "Object type = node.",
+          "type": "string"
+        },
+        "renderDefaultFocus": {
+          "description": "Function for rendering default focus effect for the node",
+          "type": "function"
+        },
+        "renderDefaultHover": {
+          "description": "Function for rendering default hover effect for the node",
+          "type": "function"
+        },
+        "renderDefaultSelection": {
+          "description": "Function for rendering default selection effect for the node",
+          "type": "function"
+        }
+      }
     },
     "hiddenCategories": {
       "description": "Specifies categories used for filtering.",
       "type": "Array<string>",
       "displayName": "Hidden Categories",
       "value": [],
-      "writeback": true
+      "writeback": true,
+      "help": "hiddenCategories"
     },
     "highlightMatch": {
       "description": "Specifies matching condition used for category highlighting.",
       "type": "string",
       "displayName": "Highlight Match",
       "value": "all",
+      "help": "highlightMatch",
       "enumValues": [
         "all",
         "any"
@@ -340,13 +503,15 @@
       "type": "Array<string>",
       "displayName": "Highlighted Categories",
       "value": [],
-      "writeback": true
+      "writeback": true,
+      "help": "highlightedCategories"
     },
     "hoverBehavior": {
       "description": "Defines the behavior applied when hovering over diagram nodes and links.",
       "type": "string",
       "displayName": "Hover Behavior",
       "value": "none",
+      "help": "hoverBehavior",
       "enumValues": [
         "dim",
         "none"
@@ -362,20 +527,138 @@
     },
     "hoverRenderer": {
       "description": "Specifies custom renderer for the diagram nodes used for hover updates.",
-      "type": "null|function",
+      "type": "function|null",
       "displayName": "Hover Renderer",
-      "value": null
+      "value": null,
+      "help": "hoverRenderer",
+      "properties": {
+        "parentElement": {
+          "description": "A parent group element that takes a custom SVG fragment as the node content. Modifications of the parentElement are not supported.",
+          "type": "Element"
+        },
+        "componentElement": {
+          "description": "The diagram element.",
+          "type": "Element"
+        },
+        "data": {
+          "description": "The data object for the node. If oj.DataProvider is being used, this property contains template processed data.",
+          "type": "object"
+        },
+        "itemData": {
+          "description": "The row data object for the node. This will only be set if an oj.DataProvider is being used.",
+          "type": "object|null"
+        },
+        "content": {
+          "description": "An object that describes child content. The object has the following properties",
+          "type": "object",
+          "properties": {
+            "element": {
+              "description": "SVG group element that contains child nodes for the container.",
+              "type": "Element"
+            },
+            "width": {
+              "description": "Width of the child content.",
+              "type": "number"
+            },
+            "height": {
+              "description": "Height of the child content.",
+              "type": "number"
+            }
+          }
+        },
+        "state": {
+          "description": "An object that reflects the current state of the data item.",
+          "type": "object",
+          "properties": {
+            "hovered": {
+              "description": "True if the node is currently hovered.",
+              "type": "boolean"
+            },
+            "selected": {
+              "description": "True if the node is currently selected.",
+              "type": "boolean"
+            },
+            "focused": {
+              "description": "True if the node is currently selected.",
+              "type": "boolean"
+            },
+            "expanded": {
+              "description": "True if the node is expanded.",
+              "type": "boolean"
+            },
+            "zoom": {
+              "description": "Current zoom state.",
+              "type": "number"
+            }
+          }
+        },
+        "previousState": {
+          "description": "An object that reflects the current state of the data item.",
+          "type": "object",
+          "properties": {
+            "hovered": {
+              "description": "True if the node was previously hovered.",
+              "type": "boolean"
+            },
+            "selected": {
+              "description": "True if the node was previously selected.",
+              "type": "boolean"
+            },
+            "focused": {
+              "description": "True if the node was previously selected.",
+              "type": "boolean"
+            },
+            "expanded": {
+              "description": "True if the node was previously expanded.",
+              "type": "boolean"
+            },
+            "zoom": {
+              "description": "Previous zoom state.",
+              "type": "number"
+            }
+          }
+        },
+        "id": {
+          "description": "Node id.",
+          "type": "any"
+        },
+        "type": {
+          "description": "Object type = node.",
+          "type": "string"
+        },
+        "renderDefaultFocus": {
+          "description": "Function for rendering default focus effect for the node",
+          "type": "function"
+        },
+        "renderDefaultHover": {
+          "description": "Function for rendering default hover effect for the node",
+          "type": "function"
+        },
+        "renderDefaultSelection": {
+          "description": "Function for rendering default selection effect for the node",
+          "type": "function"
+        }
+      }
     },
     "layout": {
       "description": "Specifies layout callback used to position nodes and links.",
       "type": "function",
-      "displayName": "Layout"
+      "displayName": "Layout",
+      "help": "layout"
+    },
+    "linkData": {
+      "description": "The oj.DataProvider for the diagram links. It should provide rows where each row corresponds to a single diagram link. The row key will be used as the id for diagram links. Note that when using this attribute, a template for the linkTemplate slot should be provided.",
+      "type": "oj.DataProvider|null",
+      "displayName": "Link Data",
+      "value": null,
+      "help": "linkData"
     },
     "linkHighlightMode": {
       "description": "Defines link highlighting mode.",
       "type": "string",
       "displayName": "Link Highlight Mode",
       "value": "link",
+      "help": "linkHighlightMode",
       "enumValues": [
         "link",
         "linkAndNodes"
@@ -394,6 +677,7 @@
       "type": "null|function",
       "displayName": "Link Properties",
       "value": null,
+      "help": "linkProperties",
       "properties": {
         "labelStyle": {
           "description": "The CSS style object defining the style of the link label. The CSS max-width property can be used to truncate labels.",
@@ -429,19 +713,29 @@
       "description": "Specifies the maximum zoom level for this diagram.",
       "type": "number",
       "displayName": "Max Zoom",
-      "value": 1
+      "value": 1,
+      "help": "maxZoom"
     },
     "minZoom": {
       "description": "Specifies the minimum zoom level for this diagram.",
       "type": "number",
       "displayName": "Min Zoom",
-      "value": 0
+      "value": 0,
+      "help": "minZoom"
+    },
+    "nodeData": {
+      "description": "The oj.DataProvider for the diagram nodes. It should provide rows where each row corresponds to a single diagram node. The row key will be used as the id for diagram nodes. Note that when using this attribute, a template for the nodeTemplate slot should be provided.",
+      "type": "oj.DataProvider|null",
+      "displayName": "Node Data",
+      "value": null,
+      "help": "nodeData"
     },
     "nodeHighlightMode": {
       "description": "Defines node highlighting mode.",
       "type": "string",
       "displayName": "Node Highlight Mode",
       "value": "node",
+      "help": "nodeHighlightMode",
       "enumValues": [
         "node",
         "nodeAndIncomingLinks",
@@ -468,6 +762,7 @@
       "type": "null|function",
       "displayName": "Node Properties",
       "value": null,
+      "help": "nodeProperties",
       "properties": {
         "showDisclosure": {
           "description": "Determines when to display the expand/collapse button.Supported values are \"on\", \"off\". Default value is \"on\".",
@@ -539,7 +834,7 @@
             },
             "svgClassName": {
               "description": "The CSS style class defining the style of the icon. The style class and style object will be applied directly on the icon and override any other styling specified through the properties.",
-              "type": "object"
+              "type": "string"
             }
           }
         },
@@ -573,12 +868,14 @@
       "description": "An object, used to define a diagram overview. If not specified, no overview will be shown.",
       "type": "object",
       "displayName": "Overview",
+      "help": "overview",
       "properties": {
         "halign": {
           "description": "Horizontal alignment for diagram overview window",
           "type": "string",
           "displayName": "Halign",
           "value": "end",
+          "help": "overview.halign",
           "enumValues": [
             "center",
             "end",
@@ -600,13 +897,15 @@
           "description": "Overview window height.",
           "type": "number",
           "displayName": "Height",
-          "value": 100
+          "value": 100,
+          "help": "overview.height"
         },
         "rendered": {
           "description": "Specifies whether the overview scrollbar is rendered. See the overview attribute for usage examples.",
           "type": "string",
           "displayName": "Rendered",
           "value": "off",
+          "help": "overview.rendered",
           "enumValues": [
             "off",
             "on"
@@ -625,6 +924,7 @@
           "type": "string",
           "displayName": "Valign",
           "value": "bottom",
+          "help": "overview.valign",
           "enumValues": [
             "bottom",
             "middle",
@@ -646,7 +946,8 @@
           "description": "Overview window width.",
           "type": "number",
           "displayName": "Width",
-          "value": 200
+          "value": 200,
+          "help": "overview.width"
         }
       }
     },
@@ -655,6 +956,7 @@
       "type": "string",
       "displayName": "Pan Direction",
       "value": "auto",
+      "help": "panDirection",
       "enumValues": [
         "auto",
         "x",
@@ -677,6 +979,7 @@
       "type": "string",
       "displayName": "Panning",
       "value": "none",
+      "help": "panning",
       "enumValues": [
         "auto",
         "none"
@@ -695,6 +998,7 @@
       "type": "string",
       "displayName": "Promoted Link Behavior",
       "value": "lazy",
+      "help": "promotedLinkBehavior",
       "enumValues": [
         "full",
         "lazy",
@@ -714,22 +1018,133 @@
     },
     "renderer": {
       "description": "Specifies custom renderer for the diagram nodes used for initial rendering.",
-      "type": "null|function",
+      "type": "function",
       "displayName": "Renderer",
-      "value": null
+      "value": null,
+      "help": "renderer",
+      "properties": {
+        "parentElement": {
+          "description": "A parent group element that takes a custom SVG fragment as the node content. Modifications of the parentElement are not supported.",
+          "type": "Element"
+        },
+        "componentElement": {
+          "description": "The diagram element.",
+          "type": "Element"
+        },
+        "data": {
+          "description": "The data object for the node. If oj.DataProvider is being used, this property contains template processed data.",
+          "type": "object"
+        },
+        "itemData": {
+          "description": "The row data object for the node. This will only be set if an oj.DataProvider is being used.",
+          "type": "object|null"
+        },
+        "content": {
+          "description": "An object that describes child content. The object has the following properties",
+          "type": "object",
+          "properties": {
+            "element": {
+              "description": "SVG group element that contains child nodes for the container.",
+              "type": "Element"
+            },
+            "width": {
+              "description": "Width of the child content.",
+              "type": "number"
+            },
+            "height": {
+              "description": "Height of the child content.",
+              "type": "number"
+            }
+          }
+        },
+        "state": {
+          "description": "An object that reflects the current state of the data item.",
+          "type": "object",
+          "properties": {
+            "hovered": {
+              "description": "True if the node is currently hovered.",
+              "type": "boolean"
+            },
+            "selected": {
+              "description": "True if the node is currently selected.",
+              "type": "boolean"
+            },
+            "focused": {
+              "description": "True if the node is currently selected.",
+              "type": "boolean"
+            },
+            "expanded": {
+              "description": "True if the node is expanded.",
+              "type": "boolean"
+            },
+            "zoom": {
+              "description": "Current zoom state.",
+              "type": "number"
+            }
+          }
+        },
+        "previousState": {
+          "description": "An object that reflects the current state of the data item.",
+          "type": "object",
+          "properties": {
+            "hovered": {
+              "description": "True if the node was previously hovered.",
+              "type": "boolean"
+            },
+            "selected": {
+              "description": "True if the node was previously selected.",
+              "type": "boolean"
+            },
+            "focused": {
+              "description": "True if the node was previously selected.",
+              "type": "boolean"
+            },
+            "expanded": {
+              "description": "True if the node was previously expanded.",
+              "type": "boolean"
+            },
+            "zoom": {
+              "description": "Previous zoom state.",
+              "type": "number"
+            }
+          }
+        },
+        "id": {
+          "description": "Node id.",
+          "type": "any"
+        },
+        "type": {
+          "description": "Object type = node.",
+          "type": "string"
+        },
+        "renderDefaultFocus": {
+          "description": "Function for rendering default focus effect for the node",
+          "type": "function"
+        },
+        "renderDefaultHover": {
+          "description": "Function for rendering default hover effect for the node",
+          "type": "function"
+        },
+        "renderDefaultSelection": {
+          "description": "Function for rendering default selection effect for the node",
+          "type": "function"
+        }
+      }
     },
     "selection": {
       "description": "An array containing the ids of the selected nodes and links.",
-      "type": "Array<string>",
+      "type": "Array<any>",
       "displayName": "Selection",
-      "value": null,
-      "writeback": true
+      "value": [],
+      "writeback": true,
+      "help": "selection"
     },
     "selectionMode": {
       "description": "Specifies the selection mode.",
       "type": "string",
       "displayName": "Selection Mode",
       "value": "none",
+      "help": "selectionMode",
       "enumValues": [
         "multiple",
         "none",
@@ -749,44 +1164,159 @@
     },
     "selectionRenderer": {
       "description": "Specifies custom renderer for the diagram nodes used for selection updates.",
-      "type": "null|function",
+      "type": "function|null",
       "displayName": "Selection Renderer",
-      "value": null
+      "value": null,
+      "help": "selectionRenderer",
+      "properties": {
+        "parentElement": {
+          "description": "A parent group element that takes a custom SVG fragment as the node content. Modifications of the parentElement are not supported.",
+          "type": "Element"
+        },
+        "componentElement": {
+          "description": "The diagram element.",
+          "type": "Element"
+        },
+        "data": {
+          "description": "The data object for the node. If oj.DataProvider is being used, this property contains template processed data.",
+          "type": "object"
+        },
+        "itemData": {
+          "description": "The row data object for the node. This will only be set if an oj.DataProvider is being used.",
+          "type": "object|null"
+        },
+        "content": {
+          "description": "An object that describes child content. The object has the following properties",
+          "type": "object",
+          "properties": {
+            "element": {
+              "description": "SVG group element that contains child nodes for the container.",
+              "type": "Element"
+            },
+            "width": {
+              "description": "Width of the child content.",
+              "type": "number"
+            },
+            "height": {
+              "description": "Height of the child content.",
+              "type": "number"
+            }
+          }
+        },
+        "state": {
+          "description": "An object that reflects the current state of the data item.",
+          "type": "object",
+          "properties": {
+            "hovered": {
+              "description": "True if the node is currently hovered.",
+              "type": "boolean"
+            },
+            "selected": {
+              "description": "True if the node is currently selected.",
+              "type": "boolean"
+            },
+            "focused": {
+              "description": "True if the node is currently selected.",
+              "type": "boolean"
+            },
+            "expanded": {
+              "description": "True if the node is expanded.",
+              "type": "boolean"
+            },
+            "zoom": {
+              "description": "Current zoom state.",
+              "type": "number"
+            }
+          }
+        },
+        "previousState": {
+          "description": "An object that reflects the current state of the data item.",
+          "type": "object",
+          "properties": {
+            "hovered": {
+              "description": "True if the node was previously hovered.",
+              "type": "boolean"
+            },
+            "selected": {
+              "description": "True if the node was previously selected.",
+              "type": "boolean"
+            },
+            "focused": {
+              "description": "True if the node was previously selected.",
+              "type": "boolean"
+            },
+            "expanded": {
+              "description": "True if the node was previously expanded.",
+              "type": "boolean"
+            },
+            "zoom": {
+              "description": "Previous zoom state.",
+              "type": "number"
+            }
+          }
+        },
+        "id": {
+          "description": "Node id.",
+          "type": "any"
+        },
+        "type": {
+          "description": "Object type = node.",
+          "type": "string"
+        },
+        "renderDefaultFocus": {
+          "description": "Function for rendering default focus effect for the node",
+          "type": "function"
+        },
+        "renderDefaultHover": {
+          "description": "Function for rendering default hover effect for the node",
+          "type": "function"
+        },
+        "renderDefaultSelection": {
+          "description": "Function for rendering default selection effect for the node",
+          "type": "function"
+        }
+      }
     },
     "styleDefaults": {
       "description": "An object defining the style defaults for this diagram.",
       "type": "object",
       "displayName": "Style Defaults",
+      "help": "styleDefaults",
       "properties": {
         "animationDuration": {
           "description": "Defines animation duration in milliseconds.",
           "type": "number",
           "displayName": "Animation Duration",
-          "units": "milliseconds"
+          "units": "milliseconds",
+          "help": "styleDefaults.animationDuration"
         },
         "hoverBehaviorDelay": {
           "description": "Specifies initial hover delay in ms for highlighting data items.",
           "type": "number",
           "displayName": "Hover Behavior Delay",
           "value": 200,
-          "units": "milliseconds"
+          "units": "milliseconds",
+          "help": "styleDefaults.hoverBehaviorDelay"
         },
         "linkDefaults": {
           "description": "Default link styles",
           "type": "object",
           "displayName": "Link Defaults",
+          "help": "styleDefaults.linkDefaults",
           "properties": {
             "color": {
               "description": "Default link color. The default value comes from the CSS and varies based on theme.",
               "type": "string",
               "displayName": "Color",
-              "format": "color"
+              "format": "color",
+              "help": "styleDefaults.linkDefaults.color"
             },
             "endConnectorType": {
               "description": "Specifies the type of end connector on the link.",
               "type": "string",
               "displayName": "End Connector Type",
               "value": "none",
+              "help": "styleDefaults.linkDefaults.endConnectorType",
               "enumValues": [
                 "arrow",
                 "arrowConcave",
@@ -824,13 +1354,14 @@
               "description": "Specifies CSS styles for the link label.",
               "type": "object",
               "displayName": "Label Style",
-              "value": {}
+              "help": "styleDefaults.linkDefaults.labelStyle"
             },
             "startConnectorType": {
               "description": "Specifies the type of start connector on the link.",
               "type": "string",
               "displayName": "Start Connector Type",
               "value": "none",
+              "help": "styleDefaults.linkDefaults.startConnectorType",
               "enumValues": [
                 "arrow",
                 "arrowConcave",
@@ -866,22 +1397,25 @@
             },
             "svgClassName": {
               "description": "The default SVG CSS style class to apply to the link.",
-              "type": "object",
+              "type": "string",
               "displayName": "Svg Class Name",
-              "value": "\"\""
+              "value": "",
+              "help": "styleDefaults.linkDefaults.svgClassName"
             },
             "svgStyle": {
               "description": "Specifies SVG CSS styles for the link.",
               "type": "object",
               "displayName": "Svg Style",
-              "value": {}
+              "value": {},
+              "help": "styleDefaults.linkDefaults.svgStyle"
             },
             "width": {
               "description": "Default link width in pixels.",
               "type": "number",
               "displayName": "Width",
               "value": 1,
-              "units": "pixels"
+              "units": "pixels",
+              "help": "styleDefaults.linkDefaults.width"
             }
           }
         },
@@ -889,47 +1423,55 @@
           "description": "Default node styles",
           "type": "object",
           "displayName": "Node Defaults",
+          "help": "styleDefaults.nodeDefaults",
           "properties": {
             "icon": {
               "description": "Default style for the node icon.",
               "type": "object",
               "displayName": "Icon",
+              "help": "styleDefaults.nodeDefaults.icon",
               "properties": {
                 "borderColor": {
                   "description": "Default border color of the icon.",
                   "type": "string",
                   "displayName": "Border Color",
-                  "format": "color"
+                  "format": "color",
+                  "help": "styleDefaults.nodeDefaults.icon.borderColor"
                 },
                 "borderRadius": {
                   "description": "Specifies default border radius of the icon.",
                   "type": "string",
-                  "displayName": "Border Radius"
+                  "displayName": "Border Radius",
+                  "help": "styleDefaults.nodeDefaults.icon.borderRadius"
                 },
                 "borderWidth": {
                   "description": "Default border width of the icon in pixels.",
                   "type": "number",
                   "displayName": "Border Width",
-                  "units": "pixels"
+                  "units": "pixels",
+                  "help": "styleDefaults.nodeDefaults.icon.borderWidth"
                 },
                 "color": {
                   "description": "Default color of the icon.",
                   "type": "string",
                   "displayName": "Color",
-                  "format": "color"
+                  "format": "color",
+                  "help": "styleDefaults.nodeDefaults.icon.color"
                 },
                 "height": {
                   "description": "Default icon height.",
                   "type": "number",
                   "displayName": "Height",
                   "value": 10,
-                  "units": "pixels"
+                  "units": "pixels",
+                  "help": "styleDefaults.nodeDefaults.icon.height"
                 },
                 "pattern": {
                   "description": "Default fill pattern of the icon.",
                   "type": "string",
                   "displayName": "Pattern",
                   "value": "none",
+                  "help": "styleDefaults.nodeDefaults.icon.pattern",
                   "enumValues": [
                     "largeChecker",
                     "largeCrosshatch",
@@ -989,92 +1531,56 @@
                 },
                 "shape": {
                   "description": "Specifies default shape of the icon.",
-                  "type": "string",
+                  "type": "\"circle\"|\"diamond\"|\"ellipse\"|\"human\"|\"plus\"|\"rectangle\"|\"square\"|\"star\"|\"triangleDown\"|\"triangleUp\"|string",
                   "displayName": "Shape",
                   "value": "circle",
-                  "enumValues": [
-                    "circle",
-                    "diamond",
-                    "ellipse",
-                    "human",
-                    "plus",
-                    "rectangle",
-                    "square",
-                    "star",
-                    "triangleDown",
-                    "triangleUp"
-                  ],
-                  "propertyEditorValues": {
-                    "circle": {
-                      "displayName": "Circle"
-                    },
-                    "diamond": {
-                      "displayName": "Diamond"
-                    },
-                    "ellipse": {
-                      "displayName": "Ellipse"
-                    },
-                    "human": {
-                      "displayName": "Human"
-                    },
-                    "plus": {
-                      "displayName": "Plus"
-                    },
-                    "rectangle": {
-                      "displayName": "Rectangle"
-                    },
-                    "square": {
-                      "displayName": "Square"
-                    },
-                    "star": {
-                      "displayName": "Star"
-                    },
-                    "triangleDown": {
-                      "displayName": "Triangle Down"
-                    },
-                    "triangleUp": {
-                      "displayName": "Triangle Up"
-                    }
-                  }
+                  "help": "styleDefaults.nodeDefaults.icon.shape"
                 },
                 "source": {
                   "description": "The URI of the node image",
                   "type": "string",
-                  "displayName": "Source"
+                  "displayName": "Source",
+                  "help": "styleDefaults.nodeDefaults.icon.source"
                 },
                 "sourceHover": {
                   "description": "The optional URI of the node hover image.",
                   "type": "string",
-                  "displayName": "Source Hover"
+                  "displayName": "Source Hover",
+                  "help": "styleDefaults.nodeDefaults.icon.sourceHover"
                 },
                 "sourceHoverSelected": {
                   "description": "The optional URI of the selected image on hover.",
                   "type": "string",
-                  "displayName": "Source Hover Selected"
+                  "displayName": "Source Hover Selected",
+                  "help": "styleDefaults.nodeDefaults.icon.sourceHoverSelected"
                 },
                 "sourceSelected": {
                   "description": "The optional URI of the selected image.",
                   "type": "string",
-                  "displayName": "Source Selected"
+                  "displayName": "Source Selected",
+                  "help": "styleDefaults.nodeDefaults.icon.sourceSelected"
                 },
                 "svgClassName": {
                   "description": "The SVG CSS style class to apply to the node icon.",
                   "type": "string",
                   "displayName": "Svg Class Name",
-                  "value": ""
+                  "value": "",
+                  "help": "styleDefaults.nodeDefaults.icon.svgClassName"
                 },
                 "svgStyle": {
                   "description": "The default SVG CSS style object defining the style of the icon.",
                   "type": "object",
                   "displayName": "Svg Style",
-                  "value": {}
+                  "value": {},
+                  "help": "styleDefaults.nodeDefaults.icon.svgStyle"
                 },
                 "width": {
                   "description": "Default icon width.",
                   "type": "number",
                   "displayName": "Width",
                   "value": 10,
-                  "units": "pixels"
+                  "units": "pixels",
+                  "help": "styleDefaults.nodeDefaults.icon.width"
                 }
               }
             },
@@ -1082,13 +1588,15 @@
               "description": "Specifies CSS styles for the node label.",
               "type": "object",
               "displayName": "Label Style",
-              "value": {}
+              "value": {},
+              "help": "styleDefaults.nodeDefaults.labelStyle"
             },
             "showDisclosure": {
               "description": "Determines when to display the expand/collapse button.",
               "type": "string",
               "displayName": "Show Disclosure",
               "value": "on",
+              "help": "styleDefaults.nodeDefaults.showDisclosure",
               "enumValues": [
                 "off",
                 "on"
@@ -1108,18 +1616,21 @@
           "description": "Promoted link styles",
           "type": "object",
           "displayName": "Promoted Link",
+          "help": "styleDefaults.promotedLink",
           "properties": {
             "color": {
               "description": "Default promoted link color. The default value varies based on theme.",
               "type": "string",
               "displayName": "Color",
-              "format": "color"
+              "format": "color",
+              "help": "styleDefaults.promotedLink.color"
             },
             "endConnectorType": {
               "description": "Specifies the type of end connector on the promoted link.",
               "type": "string",
               "displayName": "End Connector Type",
               "value": "none",
+              "help": "styleDefaults.promotedLink.endConnectorType",
               "enumValues": [
                 "arrow",
                 "arrowConcave",
@@ -1158,6 +1669,7 @@
               "type": "string",
               "displayName": "Start Connector Type",
               "value": "none",
+              "help": "styleDefaults.promotedLink.startConnectorType",
               "enumValues": [
                 "arrow",
                 "arrowConcave",
@@ -1193,22 +1705,25 @@
             },
             "svgClassName": {
               "description": "The SVG CSS style class to apply to the promoted link.",
-              "type": "object",
+              "type": "string",
               "displayName": "Svg Class Name",
-              "value": "\"\""
+              "value": "",
+              "help": "styleDefaults.promotedLink.svgClassName"
             },
             "svgStyle": {
               "description": "The promoted style object represents the CSS style of the link. User defined custom CSS Styles will be applied directly on the link.",
               "type": "object",
               "displayName": "Svg Style",
-              "value": {}
+              "value": {},
+              "help": "styleDefaults.promotedLink.svgStyle"
             },
             "width": {
               "description": "Default link width in pixels.",
               "type": "number",
               "displayName": "Width",
               "value": 1,
-              "units": "pixels"
+              "units": "pixels",
+              "help": "styleDefaults.promotedLink.width"
             }
           }
         }
@@ -1218,12 +1733,44 @@
       "description": "An object containing an optional callback function for tooltip customization.",
       "type": "object",
       "displayName": "Tooltip",
+      "help": "tooltip",
       "properties": {
         "renderer": {
           "description": "Specifies a function for a custom tooltip.",
           "type": "function",
           "displayName": "Renderer",
-          "value": null
+          "value": null,
+          "help": "tooltip.renderer",
+          "properties": {
+            "parentElement": {
+              "description": "The tooltip element. The function can directly modify or append content to this element.",
+              "type": "Element"
+            },
+            "componentElement": {
+              "description": "The diagram element.",
+              "type": "Element"
+            },
+            "id": {
+              "description": "The id of the diagram object - node or link",
+              "type": "any"
+            },
+            "type": {
+              "description": "The type of the diagram object - \"link\", \"promotedLink\" or \"node\".",
+              "type": "string"
+            },
+            "label": {
+              "description": "The label of the diagram object.",
+              "type": "string"
+            },
+            "data": {
+              "description": "Relevant data for the object. 1) data object for the node, if the object type is \"node\", 2) data object for the link, if the object type is \"link\" 3) an array of data objects that correspond to links represented by the promoted link If oj.DataProvider is being used, this property contains template processed data.",
+              "type": "object|Array<Object>"
+            },
+            "itemData": {
+              "description": "The row data object for the object. This will only be set if an oj.DataProvider is being used.",
+              "type": "object|Array<Object>"
+            }
+          }
         }
       }
     },
@@ -1232,6 +1779,7 @@
       "type": "string",
       "displayName": "Touch Response",
       "value": "auto",
+      "help": "touchResponse",
       "enumValues": [
         "auto",
         "touchStart"
@@ -1250,6 +1798,7 @@
       "type": "string",
       "displayName": "Track Resize",
       "value": "on",
+      "help": "trackResize",
       "enumValues": [
         "off",
         "on"
@@ -1269,120 +1818,251 @@
       "displayName": "Translations",
       "value": {},
       "translatable": true,
+      "help": "translations",
       "properties": {
         "componentName": {
           "description": "Used to describe the data visualization type for accessibility.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "Component Name"
+          "displayName": "Component Name",
+          "help": "translations.componentName"
         },
         "labelAndValue": {
           "description": "Used to display a label and its value.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "Label And Value"
+          "displayName": "Label And Value",
+          "help": "translations.labelAndValue"
         },
         "labelClearSelection": {
           "description": "Text shown for clearing multiple selection on touch devices.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "Label Clear Selection"
+          "displayName": "Label Clear Selection",
+          "help": "translations.labelClearSelection"
         },
         "labelCountWithTotal": {
           "description": "Used to display a count out of a total.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "Label Count With Total"
+          "displayName": "Label Count With Total",
+          "help": "translations.labelCountWithTotal"
         },
         "labelDataVisualization": {
           "description": "Label for data visualizations used for accessibility.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "Label Data Visualization"
+          "displayName": "Label Data Visualization",
+          "help": "translations.labelDataVisualization"
         },
         "labelInvalidData": {
           "description": "Text shown when the component receives invalid data.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "Label Invalid Data"
+          "displayName": "Label Invalid Data",
+          "help": "translations.labelInvalidData"
         },
         "labelNoData": {
           "description": "Text shown when the component receives no data.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "Label No Data"
+          "displayName": "Label No Data",
+          "help": "translations.labelNoData"
         },
         "promotedLink": {
           "description": "Used for the promoted link tooltip - promoted link consists a single link.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "Promoted Link"
+          "displayName": "Promoted Link",
+          "help": "translations.promotedLink"
         },
         "promotedLinkAriaDesc": {
           "description": "Used to describe promoted link type for accessibility.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "Promoted Link Aria Desc"
+          "displayName": "Promoted Link Aria Desc",
+          "help": "translations.promotedLinkAriaDesc"
         },
         "promotedLinks": {
           "description": "Used for the promoted link tooltip - promoted link consists multiple links.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "Promoted Links"
+          "displayName": "Promoted Links",
+          "help": "translations.promotedLinks"
         },
         "stateCollapsed": {
           "description": "Used to describe the collapsed state for accessibility.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "State Collapsed"
+          "displayName": "State Collapsed",
+          "help": "translations.stateCollapsed"
         },
         "stateDrillable": {
           "description": "Used to describe a drillable object for accessibility.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "State Drillable"
+          "displayName": "State Drillable",
+          "help": "translations.stateDrillable"
         },
         "stateExpanded": {
           "description": "Used to describe the expanded state for accessibility.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "State Expanded"
+          "displayName": "State Expanded",
+          "help": "translations.stateExpanded"
         },
         "stateHidden": {
           "description": "Used to describe the hidden state for accessibility.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "State Hidden"
+          "displayName": "State Hidden",
+          "help": "translations.stateHidden"
         },
         "stateIsolated": {
           "description": "Used to describe the isolated state for accessibility.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "State Isolated"
+          "displayName": "State Isolated",
+          "help": "translations.stateIsolated"
         },
         "stateMaximized": {
           "description": "Used to describe the maximized state for accessibility.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "State Maximized"
+          "displayName": "State Maximized",
+          "help": "translations.stateMaximized"
         },
         "stateMinimized": {
           "description": "Used to describe the minimized state for accessibility.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "State Minimized"
+          "displayName": "State Minimized",
+          "help": "translations.stateMinimized"
         },
         "stateSelected": {
           "description": "Used to describe the selected state for accessibility.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "State Selected"
+          "displayName": "State Selected",
+          "help": "translations.stateSelected"
         },
         "stateUnselected": {
           "description": "Used to describe the unselected state for accessibility.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "State Unselected"
+          "displayName": "State Unselected",
+          "help": "translations.stateUnselected"
         },
         "stateVisible": {
           "description": "Used to describe the visible state for accessibility.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "State Visible"
+          "displayName": "State Visible",
+          "help": "translations.stateVisible"
         }
       }
     },
     "zoomRenderer": {
       "description": "Specifies custom renderer for the diagram nodes used for zoom updates.",
-      "type": "null|function",
+      "type": "function|null",
       "displayName": "Zoom Renderer",
-      "value": null
+      "value": null,
+      "help": "zoomRenderer",
+      "properties": {
+        "parentElement": {
+          "description": "A parent group element that takes a custom SVG fragment as the node content. Modifications of the parentElement are not supported.",
+          "type": "Element"
+        },
+        "componentElement": {
+          "description": "The diagram element.",
+          "type": "Element"
+        },
+        "data": {
+          "description": "The data object for the node. If oj.DataProvider is being used, this property contains template processed data.",
+          "type": "object"
+        },
+        "itemData": {
+          "description": "The row data object for the node. This will only be set if an oj.DataProvider is being used.",
+          "type": "object|null"
+        },
+        "content": {
+          "description": "An object that describes child content. The object has the following properties",
+          "type": "object",
+          "properties": {
+            "element": {
+              "description": "SVG group element that contains child nodes for the container.",
+              "type": "Element"
+            },
+            "width": {
+              "description": "Width of the child content.",
+              "type": "number"
+            },
+            "height": {
+              "description": "Height of the child content.",
+              "type": "number"
+            }
+          }
+        },
+        "state": {
+          "description": "An object that reflects the current state of the data item.",
+          "type": "object",
+          "properties": {
+            "hovered": {
+              "description": "True if the node is currently hovered.",
+              "type": "boolean"
+            },
+            "selected": {
+              "description": "True if the node is currently selected.",
+              "type": "boolean"
+            },
+            "focused": {
+              "description": "True if the node is currently selected.",
+              "type": "boolean"
+            },
+            "expanded": {
+              "description": "True if the node is expanded.",
+              "type": "boolean"
+            },
+            "zoom": {
+              "description": "Current zoom state.",
+              "type": "number"
+            }
+          }
+        },
+        "previousState": {
+          "description": "An object that reflects the current state of the data item.",
+          "type": "object",
+          "properties": {
+            "hovered": {
+              "description": "True if the node was previously hovered.",
+              "type": "boolean"
+            },
+            "selected": {
+              "description": "True if the node was previously selected.",
+              "type": "boolean"
+            },
+            "focused": {
+              "description": "True if the node was previously selected.",
+              "type": "boolean"
+            },
+            "expanded": {
+              "description": "True if the node was previously expanded.",
+              "type": "boolean"
+            },
+            "zoom": {
+              "description": "Previous zoom state.",
+              "type": "number"
+            }
+          }
+        },
+        "id": {
+          "description": "Node id.",
+          "type": "any"
+        },
+        "type": {
+          "description": "Object type = node.",
+          "type": "string"
+        },
+        "renderDefaultFocus": {
+          "description": "Function for rendering default focus effect for the node",
+          "type": "function"
+        },
+        "renderDefaultHover": {
+          "description": "Function for rendering default hover effect for the node",
+          "type": "function"
+        },
+        "renderDefaultSelection": {
+          "description": "Function for rendering default selection effect for the node",
+          "type": "function"
+        }
+      }
     },
     "zooming": {
       "description": "Specifies whether zooming is allowed in Diagram.",
       "type": "string",
       "displayName": "Zooming",
       "value": "none",
+      "help": "zooming",
       "enumValues": [
         "auto",
         "none"
@@ -1400,25 +2080,29 @@
   "methods": {
     "getNodeCount": {
       "description": "Returns number of diagram nodes",
-      "return": "Number"
+      "help": "getNodeCount",
+      "return": "number"
     },
     "getNode": {
       "description": "Returns an object with the following properties for automation testing verification of the diagram node at the specified index.",
+      "help": "getNode",
       "params": [
         {
           "name": "nodeIndex",
           "description": "Node index",
-          "type": "String"
+          "type": "number"
         }
       ],
       "return": "object|null"
     },
     "getLinkCount": {
       "description": "Returns number of diagram links",
-      "return": "Number"
+      "help": "getLinkCount",
+      "return": "number"
     },
     "getLink": {
       "description": "Returns an object with the following properties for automation testing verification of the diagram link at the specified index.",
+      "help": "getLink",
       "params": [
         {
           "name": "linkIndex",
@@ -1430,6 +2114,7 @@
     },
     "getPromotedLink": {
       "description": "Returns an object with the following properties for automation testing verification of the promoted link between specified nodes.",
+      "help": "getPromotedLink",
       "params": [
         {
           "name": "startNodeIndex",
@@ -1445,7 +2130,8 @@
       "return": "object|null"
     },
     "getContextByNode": {
-      "description": "Returns an object with context for the given child DOM node. This will always contain the subid for the node,\ndefined as the 'subId' property on the context object. Additional component specific information may also be included.\n\nFor more details on returned objects, see context objects.",
+      "description": "Returns an object with context for the given child DOM node. This will always contain the subid for the node, defined as the 'subId' property on the context object. Additional component specific information may also be included. For more details on returned objects, see context objects.",
+      "help": "getContextByNode",
       "params": [
         {
           "name": "node",
@@ -1457,10 +2143,12 @@
     },
     "refresh": {
       "description": "Refreshes the component.",
+      "help": "refresh",
       "return": "void"
     },
     "setProperty": {
-      "description": "Sets a property or a single subproperty for complex properties and notifies the component\nof the change, triggering a [property]Changed event.",
+      "description": "Sets a property or a single subproperty for complex properties and notifies the component of the change, triggering a [property]Changed event.",
+      "help": "setProperty",
       "params": [
         {
           "name": "property",
@@ -1477,6 +2165,7 @@
     },
     "getProperty": {
       "description": "Retrieves a value for a property or a single subproperty for complex properties.",
+      "help": "getProperty",
       "params": [
         {
           "name": "property",
@@ -1488,6 +2177,7 @@
     },
     "setProperties": {
       "description": "Performs a batch set of properties.",
+      "help": "setProperties",
       "params": [
         {
           "name": "properties",
@@ -1502,53 +2192,113 @@
     "ojBeforeExpand": {
       "description": "Event handler for when a node is about to expand.",
       "cancelable": true,
+      "help": "beforeExpand",
       "detail": {
         "nodeId": {
           "description": "the id of the expanding object",
-          "type": "string"
+          "type": "any"
         }
       }
     },
     "ojExpand": {
       "description": "Event handler for after a node has expanded.",
+      "help": "expand",
       "detail": {
         "nodeId": {
           "description": "the id of the expanded object",
-          "type": "string"
+          "type": "any"
         }
       }
     },
     "ojBeforeCollapse": {
       "description": "Event handler for when a node is about to collapse.",
       "cancelable": true,
+      "help": "beforeCollapse",
       "detail": {
         "data": {
           "description": "the id of the collapsing object",
-          "type": "string"
+          "type": "any"
         },
         "nodeId": {
           "description": "the id of the collapsing object",
-          "type": "string"
+          "type": "any"
         }
       }
     },
     "ojCollapse": {
       "description": "Event handler for after a node has collapsed.",
+      "help": "collapse",
       "detail": {
         "data": {
           "description": "the id of the collapsed object",
-          "type": "string"
+          "type": "any"
         },
         "nodeId": {
           "description": "the id of the collapsed object",
-          "type": "string"
+          "type": "any"
         }
       }
     }
   },
   "slots": {
     "contextMenu": {
-      "description": "The contextMenu slot is set on the oj-menu within this element. \nThis is used to designate the JET Menu that this component should launch as a context menu on right-click, Shift-F10, Press & Hold, or component-specific gesture. \nIf specified, the browser's native context menu will be replaced by the JET Menu specified in this slot.\n\nThe application can register a listener for the Menu's ojBeforeOpen event. The listener can cancel the launch via event.preventDefault(), \nor it can customize the menu contents by editing the menu DOM directly, and then calling refresh() on the Menu.\n\nTo help determine whether it's appropriate to cancel the launch or customize the menu, the ojBeforeOpen listener can use component API's to determine which \ntable cell, chart item, etc., is the target of the context menu. See the JSDoc and demos of the individual components for details. \n\nKeep in mind that any such logic must work whether the context menu was launched via right-click, Shift-F10, Press & Hold, or component-specific touch gesture."
+      "description": "The contextMenu slot is set on the <oj-menu> instance within this element. It designates the JET Menu that this component should launch as a context menu.",
+      "maxItems": 1,
+      "help": "contextMenu"
+    },
+    "linkTemplate": {
+      "description": " The linkTemplate slot is used to specify the template for creating each diagram link. The slot must be a <template> element. When the template is executed for each item, it will have access to the diagram's binding context and the following properties: $current - an object that contains information for the current item alias - if as attribute was specified, the value will be used to provide an application-named alias for $current. The content of the template should only be one <oj-diagram-link> element. See the [oj-diagram-link]ojDiagram doc for more details.",
+      "maxItems": 1,
+      "help": "linkTemplate",
+      "data": {
+        "componentElement": {
+          "description": "The <oj-diagram> custom element.",
+          "type": "Element"
+        },
+        "data": {
+          "description": "The data object for the current link.",
+          "type": "object"
+        },
+        "index": {
+          "description": "The zero-based index of the current link.",
+          "type": "number"
+        },
+        "key": {
+          "description": "The key of the current link.",
+          "type": "any"
+        }
+      }
+    },
+    "nodeTemplate": {
+      "description": " The nodeTemplate slot is used to specify the template for creating each diagram node. The slot must be a <template> element. When the template is executed for each item, it will have access to the diagram's binding context and the following properties: $current - an object that contains information for the current item alias - if as attribute was specified, the value will be used to provide an application-named alias for $current. The content of the template should only be one <oj-diagram-node> element. See the [oj-diagram-node]ojDiagram doc for more details.",
+      "maxItems": 1,
+      "help": "nodeTemplate",
+      "data": {
+        "componentElement": {
+          "description": "The <oj-diagram> custom element.",
+          "type": "Element"
+        },
+        "data": {
+          "description": "The data object for the current node.",
+          "type": "object"
+        },
+        "index": {
+          "description": "The zero-based index of the current node.",
+          "type": "number"
+        },
+        "key": {
+          "description": "The key of the current node.",
+          "type": "any"
+        },
+        "parentData": {
+          "description": "An array of data for the leaf and its parents. Eg: parentData[0] is the outermost parent and parentData[1] is the second outermost parent of the leaf.",
+          "type": "array"
+        },
+        "parentKey": {
+          "description": "The key of the parent item. The parent key is null for root nodes.",
+          "type": "any"
+        }
+      }
     }
   }
 }

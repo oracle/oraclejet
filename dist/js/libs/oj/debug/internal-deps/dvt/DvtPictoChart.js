@@ -55,6 +55,11 @@ dvt.PictoChart.prototype.Init = function(context, callback, callbackObj) {
 
   // Create array of logical objects for pictoChart items
   this._items = [];
+
+  // PictoChart sets the width and height of its svg so no need for fix for 
+  if (dvt.Agent.isBrowserChrome() || dvt.Agent.isBrowserSafari()) {
+  	this.getCtx().removeSizingSvg();
+  }
 };
 
 /**

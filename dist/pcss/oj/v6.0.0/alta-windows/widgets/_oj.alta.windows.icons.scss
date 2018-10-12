@@ -1,0 +1,61 @@
+// Copyright (c) 2014, 2018, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+$includeIconClasses: $includeAllClasses !default;
+
+
+// icon font vars
+
+// NOTE: do not put a slash in the string, meaning 
+// the stings should look like "e600", not "\e600".
+// Search for
+// @function oj-prepend-slash
+// for more info
+$oj-fwk-icon-arrow-e: "e600" !default;
+$oj-fwk-icon-arrow-se: "e601" !default;
+$oj-fwk-icon-arrow02-s: "e602" !default;
+$oj-fwk-icon-arrow03-e: "e603" !default;
+$oj-fwk-icon-arrow03-se: "e604" !default;
+$oj-fwk-icon-calendar: "e609" !default;
+$oj-fwk-icon-calendarclock: "e616" !default;
+$oj-fwk-icon-caret-e: "e605" !default;
+$oj-fwk-icon-caret02-e: "e606" !default;
+$oj-fwk-icon-caret02end-e: "e607" !default;
+$oj-fwk-icon-caret03-e: "e612" !default;
+$oj-fwk-icon-clock: "e60a" !default;
+$oj-fwk-icon-cross02: "e60c" !default;
+$oj-fwk-icon-cross03: "e60e" !default;
+$oj-fwk-icon-cross: "e608" !default;
+$oj-fwk-icon-drag: "e610" !default;
+$oj-fwk-icon-folderhierarchy: "e611" !default;
+$oj-fwk-icon-grid: "e900" !default;
+$oj-fwk-icon-list: "e901" !default;
+$oj-fwk-icon-arrowbox-n: "e902" !default;
+$oj-fwk-icon-info: "e904" !default;
+$oj-fwk-icon-warning: "e905" !default;
+$oj-fwk-icon-hamburger: "e60f" !default;
+$oj-fwk-icon-help: "e60b" !default;
+$oj-fwk-icon-magnifier: "e60d" !default;
+$oj-fwk-icon-arrowtail-w: "e613" !default;
+$oj-fwk-icon-minimize: "e614" !default;
+$oj-fwk-icon-maximize: "e615" !default;
+$oj-fwk-icon-checkmark: "e903" !default;
+$oj-fwk-icon-dots-vertical: "e618" !default;
+$oj-fwk-icon-corner-drag: "e619" !default;
+
+
+@import "../../common/widgets/oj.common.icons";
+@import "oj.alta.windows.sprite";
+
+@if $includeIconClasses != false {
+  @include module-include-once("alta.windows.icons") {
+
+    .oj-fwk-icon-back {
+        @extend .oj-fwk-icon-arrowtail-start;
+    }
+
+    .oj-fwk-icon-next {
+        @extend .oj-fwk-icon-arrowtail-end;
+    }
+  }
+}

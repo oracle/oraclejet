@@ -21,6 +21,7 @@ var TableDataSourceAdapter = /** @class */ (function () {
         this._KEY = 'key';
         this._KEYS = 'keys';
         this._AFTERKEYS = 'afterKeys';
+        this._ADDBEFOREKEYS = 'addBeforeKeys';
         this._DIRECTION = 'direction';
         this._STARTINDEX = 'startIndex';
         this._ATTRIBUTE = 'attribute';
@@ -186,15 +187,17 @@ var TableDataSourceAdapter = /** @class */ (function () {
             return class_13;
         }());
         this.DataProviderAddOperationEventDetail = /** @class */ (function () {
-            function class_14(_parent, keys, afterKeys, metadata, data, indexes) {
+            function class_14(_parent, keys, afterKeys, addBeforeKeys, metadata, data, indexes) {
                 this._parent = _parent;
                 this.keys = keys;
                 this.afterKeys = afterKeys;
+                this.addBeforeKeys = addBeforeKeys;
                 this.metadata = metadata;
                 this.data = data;
                 this.indexes = indexes;
                 this[_parent._KEYS] = keys;
                 this[_parent._AFTERKEYS] = afterKeys;
+                this[_parent._ADDBEFOREKEYS] = addBeforeKeys;
                 this[_parent._METADATA] = metadata;
                 this[_parent._DATA] = data;
                 this[_parent._INDEXES] = indexes;
@@ -270,6 +273,12 @@ var TableDataSourceAdapter = /** @class */ (function () {
         if (capabilityName == this._SORT &&
             this.tableDataSource.getCapability(capabilityName) == 'full') {
             return { attributes: 'multiple' };
+        }
+        else if (capabilityName == 'fetchByKeys') {
+            return { implementation: 'lookup' };
+        }
+        else if (capabilityName == 'fetchByOffset') {
+            return { implementation: 'lookup' };
         }
         return null;
     };
@@ -464,7 +473,7 @@ var TableDataSourceAdapter = /** @class */ (function () {
         event[self._KEYS].map(function (key) {
             keySet.add(key);
         });
-        var operationEventDetail = new self.DataProviderAddOperationEventDetail(self, keySet, null, metadataArray, event[self._DATA], event[self._INDEXES]);
+        var operationEventDetail = new self.DataProviderAddOperationEventDetail(self, keySet, null, null, metadataArray, event[self._DATA], event[self._INDEXES]);
         var mutationEventDetail = new self.DataProviderMutationEventDetail(self, operationEventDetail, null, null);
         self.dispatchEvent(new oj.DataProviderMutationEvent(mutationEventDetail));
     };
@@ -529,6 +538,7 @@ var TableDataSourceAdapter = /** @class */ (function () {
     };
     TableDataSourceAdapter.prototype._handleRequest = function (event) {
         var self = this;
+        // to test backward compatibility we still need to be able to access Model from the oj namespace
         if (typeof oj.Model !== "undefined" &&
             event instanceof oj.Model) {
             // ignore request events by oj.Model. Those will be followed by row

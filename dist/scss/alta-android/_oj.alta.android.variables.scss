@@ -76,10 +76,10 @@ $largeBorderRadius:  3px !default;
 
 // shadow
 //----------------------------------
-$boxShadowColor:  $neutralColor17 !default;
-$smallBoxShadow:  0 0 5px 0 transparentize($boxShadowColor, .80) !default;
-$mediumBoxShadow: 1px 1px 5px 0 transparentize($boxShadowColor, .60) !default;
-$largeBoxShadow:  1px 1px 10px 0 transparentize($boxShadowColor, .55) !default;
+$boxShadowHsl:      0,0%,0% !default;
+$smallBoxShadow:    0 0 5px 0 unquote('hsla(#{$boxShadowHsl},0.2)') !default;
+$mediumBoxShadow:   1px 1px 5px 0 unquote('hsla(#{$boxShadowHsl},0.4)') !default;
+$largeBoxShadow:    1px 1px 10px 0 unquote('hsla(#{$boxShadowHsl},0.45)') !default;
 
 // disabled
 //----------------------------------
@@ -128,9 +128,8 @@ $messagesGeneralOverlayMaxWidth:          1536px !default;
 $messagesGeneralOverlayBorderRadius:      $smallBorderRadius !default;
 $messagesGeneralOverlayBoxShadow:         $smallBoxShadow !default;
 
-$messageGeneralOverlaySeparatorMargin:    0px !default;
-$messageGeneralOverlayBorderStyle:        solid !default;
-$messageGeneralOverlayBorderWidth:        0px 0px $windowBorderWidth 0px !default;
+$messageGeneralOverlaySeparatorMargin:    0 !default;
+$messageGeneralOverlayBorderWidth:        0 0 $windowBorderWidth 0 !default;
 $messageGeneralOverlayBorderColor:        $neutralColor9 !default;
 $messageGeneralOverlayBorderRadius:       null !default;
 $messageGeneralOverlayBoxShadow:          null !default;
@@ -143,7 +142,7 @@ $messagesNotificationOverlayMaxWidth:     768px !default;
 $messageNotificationOverlayHeaderBgColor: $neutralColor4 !default;
 $messageNotificationOverlayBodyBgColor:   $neutralColor4 !default;
 
-$messageCategoryFontSize:                 oj-px-to-rem(12px, $baseFontSize: 16px) !default;
+$messageCategoryFontSize:                 0.75rem;
 $messageTimeFontSize:                     oj-px-to-rem(12px, $baseFontSize: 16px) !default;
 $messageSummaryFontSize:                  oj-px-to-rem(14px, $baseFontSize: 16px) !default;
 $messageSummaryFontWeight:                400 !default;
@@ -154,7 +153,7 @@ $messageDetailLineHeight:                 1.1 !default;
 
 // NOTEWINDOW
 //----------------------------------------------------------------
-$noteWindowBoxShadow: $smallBoxShadow !default;
+$popupTailBoxShadow: $smallBoxShadow !default;
 
 
 
@@ -208,7 +207,7 @@ $menuPadding:                         oj-px-to-rem(8px, $baseFontSize: 16px) !de
 // menu items (.oj-menu-item) and their anchors
 $menuItemBorderColor:                 transparent !default;
 $menuItemTextColor:                   $primaryTextColor !default;
-$menuItemLineHeight:                  48/16 !default; // 48px @16px font
+$menuItemLineHeight:                  48/16+unquote('rem') !default; // 48px @16px font
 
 // disabled menu items and their anchors
 $menuItemTextColorDisabled:           $textColorDisabled !default;
@@ -222,6 +221,9 @@ $menuIconColor:                       $brandColor !default;
 // submenu icons
 $menuSubmenuIconColor:                $iconColorDefault !default;
 
+// disabled menu icons, not submenu icons
+$menuIconColorDisabled:               $brandColor !default;
+
 // sheet menus
 //----------------------------------
 
@@ -231,7 +233,7 @@ $menuSheetMarginHorizontal:           oj-px-to-rem(16px, $baseFontSize: 16px) !d
 
 // sheet menu items (.oj-menu-item) and their anchors
 $menuSheetItemTextColor:              $secondaryTextColor !default;
-$menuSheetItemLineHeight:             48/17 !default; // 48px @17px font
+$menuSheetItemLineHeight:             48/17+unquote('rem') !default; // 48px @17px font
 
 // focused sheet menu items (.oj-focus)
 $menuSheetItemBorderColorFocus:       transparent !default;
@@ -246,14 +248,14 @@ $buttonBorderRadius: $mediumBorderRadius !default; // 2px
 
 // we set button and form control heights to the same value so they will line up nicely
 $buttonHeight:       oj-px-to-rem(36px, $baseFontSize: 16px) !default;
-$buttonSmallHeight:  $buttonHeight * (24px/36px) !default;
-$buttonLargeHeight:  $buttonHeight * (46px/36px) !default;
-$buttonXlargeHeight: $buttonHeight * (52px/36px) !default;
+$buttonSmallHeight:  1.5rem !default;
+$buttonLargeHeight:  2.875rem !default;
+$buttonXlargeHeight: 3.25rem !default;
 
-$buttonFontSize:       oj-px-to-rem(18px, $baseFontSize: 16px) !default;
+$buttonFontSize:       1.125rem !default;
 $buttonSmallFontSize:  $buttonFontSize !default; // 14px when root 16px
-$buttonLargeFontSize:  oj-px-to-rem(20px, $baseFontSize: 16px) !default;
-$buttonXlargeFontSize: oj-px-to-rem(22px, $baseFontSize: 16px) !default; // not spec'd.  In AltaWeb is 2px bigger than large, so go with 22px since Android large is 20px.
+$buttonLargeFontSize:  1.25rem !default;
+$buttonXlargeFontSize: 1.375rem !default; // not spec'd.  In AltaWeb is 2px bigger than large, so go with 22px since Android large is 20px.
 
 
 // button padding
@@ -295,7 +297,7 @@ $buttonIconColor:                 $buttonTextColor !default;
 $buttonBorderColor:               $buttonBgColor!default;
 $buttonBgImage:                   none !default;
 $buttonTextShadow:                none !default;
-$buttonBoxShadow:                 0 1px 3px rgba(0,0,0,.4) !default;
+$buttonBoxShadow:                 0 1px 3px unquote('hsla(#{$boxShadowHsl},0.4)') !default;
 
 // hover
 $buttonBgColorHover:              $brandColorLight1  !default;
@@ -373,6 +375,7 @@ $buttonHalfChromeIconColorDisabled:       $buttonHalfChromeTextColorDisabled !de
 // half chrome disabled and selected
 
 // outlined
+$buttonOutlinedChromeInternalBorderColor:          $neutralColor9 !default;
 
 // outlined default
 
@@ -381,6 +384,7 @@ $buttonOutlinedChromeBgColorHover:        $buttonHalfChromeBgColorHover !default
 $buttonOutlinedChromeBorderColorHover:    $brandColorLight1 !default;
 
 // outlined active
+$buttonOutlinedChromeInternalBorderColorActive:    $brandColorDark1 !default;
 
 // outlined selected
 
@@ -434,7 +438,7 @@ $formControlMediumMaxWidth: 100% !default;
 // form control common
 //----------------------------------
 $formControlBorderRadius:    0 !default;
-$formControlBorderWidth: 0 0 1px !default;
+$formControlBorderWidth: 0 0 1px 0 !default;
 
 // controls the horizontal padding inside an input
 $formControlPaddingHorizontal: 0 !default;
@@ -462,7 +466,7 @@ $formControlBgColorDisabled:            transparent !default;
 //----------------------------------
 // label text color defined above, look for "text colors"
 $formControlLabelFontSize:   $smallestFontSize !default;
-$formControlLabelRequiredChar: '' !default;
+$formControlLabelRequiredChar: "" !default;
 
 // inline labels
 //----------------------------------
@@ -499,7 +503,7 @@ $textAreaLineHeight:                  oj-px-to-rem(24px, $baseFontSize: 16px) !d
 
 
 // disabled
-$inputTextBorderStyleDisabled:        none none dotted none !default;
+$inputTextBorderStyleDisabled:        dotted !default;
 
 //INPUT SEARCH
 //--------------------------------------------------------------
@@ -511,7 +515,6 @@ $inputSearchIconPadding: 0 8px 0 0 !default;
 $inputNumberInputToButtonMargin: 16px !default;
 //up and down button width
 $inputNumberButtonWidth: 50px;
-
 
 // RADIOSET AND CHECKBOXSET
 // Android has input rendered as a background image and label comes before the image
@@ -530,6 +533,7 @@ $radioCheckboxInputToEdgePadding: 0 !default;
 // spacing between input image and label text.
 // this is zero because 16px margin is built into the image itself.
 $radioCheckboxInputToLabelPadding: 0 !default;
+$radioCheckboxMessagePadding: 0 !default; //settings: ignore
 
 // states
 //
@@ -602,7 +606,7 @@ $switchThumbBorderWidthReadonly: $switchTrackBorderWidthReadonly !default;
 // ENABLED OFF
 $switchThumbHeight: $switchContainerHeight* 0.625 !default; // 20px
 $switchThumbWidth: $switchThumbHeight !default;
-$switchThumbShadow: 0 3px 1px transparentize($boxShadowColor, .8), 0 0 8px transparentize($boxShadowColor, .8) !default;
+$switchThumbShadow: 0 3px 1px unquote('hsla(#{$boxShadowHsl},0.2)'), 0 0 8px unquote('hsla(#{$boxShadowHsl},0.2)') !default;
 
 // ----- COLORS -----
 $switchTrackBgColor:                     $neutralColor12  !default;
@@ -615,7 +619,7 @@ $switchThumbHeightSelected: $switchThumbHeight !default;
 $switchThumbWidthSelected: $switchThumbHeight !default;
 $switchThumbShadowSelected: $switchThumbShadow !default;
 // ----- COLORS -----
-$switchTrackBgColorSelected:             $brandColor !default; // #0572ce
+$switchTrackBgColorSelected:             $brandColorLight1 !default; // #0572ce
 $switchTrackBorderColorSelected:         $switchTrackBgColorSelected !default; // #0572ce
 $switchThumbBgColorSelected:             $switchTrackBgColorSelected !default; // #0572ce
 $switchThumbBorderColorSelected:         $switchTrackBgColorSelected !default; // #0572ce
@@ -628,7 +632,7 @@ $switchThumbBorderWidthHover: $switchContainerHeight * 0.4375 !default; // 14px
 $switchTrackBgColorHover:                $switchTrackBgColor !default; // #939393
 $switchTrackBorderColorHover:            $switchTrackBgColorHover !default; // #939393
 $switchThumbBgColorHover:                $switchThumbBgColor !default; // #f1f1f1
-$switchThumbBorderColorHover:            $neutralColor10  !default;
+$switchThumbBorderColorHover:            $neutralColor8  !default;
 
 // HOVER ON
 $switchThumbHeightSelectedHover: $switchThumbHeightHover !default;
@@ -638,7 +642,7 @@ $switchThumbBorderWidthSelectedHover: $switchThumbBorderWidthHover !default;
 $switchTrackBgColorSelectedHover:        $brandColor !default; // #0572ce
 $switchTrackBorderColorSelectedHover:    $switchTrackBgColorSelectedHover !default; // #0572ce
 $switchThumbBgColorSelectedHover:        $switchTrackBgColorSelectedHover !default; // #0572ce
-$switchThumbBorderColorSelectedHover:    $brandColorLight2  !default; // #c4e4ff
+$switchThumbBorderColorSelectedHover:    $brandColorLight3  !default; // #c4e4ff
 
 // ACTIVE OFF
 $switchThumbHeightActive: $switchThumbHeightHover !default;
@@ -732,7 +736,7 @@ $tabBarItemBgColorActive:                             $neutralColor4 !default;
 $tabBarItemBorderColorActive:                         $iconColorHover !default;
 
 //sizing
-$tabBarItemAccentBorderWidth:                         3px !default;
+$tabBarItemAccentBorderWidth:                         3px !default; //settings: ignore
 $tabBarItemStartEndPadding:                           oj-px-to-rem(10px, $baseFontSize: 16px) !default;
 
 $tabBarVerticalItemBorderWidth:                       0 0 1px 2px !default;
@@ -741,7 +745,7 @@ $tabBarVerticalItemFontSize:                          oj-px-to-rem(14px, $baseFo
 $tabBarVerticalItemSeparatorColor:                    $neutralColor7 !default;
 $tabBarVerticalItemLabelTextAlign:                    center !default;
 
-$tabBarHorizontalItemPadding:                         2px $navigationListItemStartEndPadding 6px !default;
+$tabBarHorizontalItemPadding:                         2px $tabBarItemStartEndPadding 6px !default;
 $tabBarHorizontalStackedItemPadding:                  1px $tabBarItemStartEndPadding 0 !default;
 
 $tabBarHorizontalItemBorderWidth:                     0 0 2px 0 !default;
@@ -761,6 +765,8 @@ $progressCircleIndeterminateOverlayImage: $imageDir + "spinner_full_default.gif"
 
 // LISTVIEW
 //----------------------------------------------------------------
+$listViewHeaderBorderWidth:          0 !default;
+$listViewHeaderBorderWidthCollapsed: 0 0 1px !default;
 // the right and left margins will be flipped in rtl languanges
 $listViewCardMargin:         8px 8px 0 0 !default;
 $listViewHeaderFontSize:     $header5FontSize !default;
@@ -815,18 +821,22 @@ $rowExpanderSpacerWidth:  1.25rem !default;
 $appLayoutHybridPadding: 1rem !default;
 // Header
 $appLayoutHybridHeaderMinHeight: 56px !default;
-$appLayoutHybridHeaderBoxShadow: 0 1px 3px rgba(0,0,0,.3) !default;
+$appLayoutHybridHeaderBoxShadow: 0 1px 3px unquote('hsla(#{$boxShadowHsl},0.3)') !default;
 $appLayoutHybridHeaderTitleFontSize: oj-px-to-rem(20px, $baseFontSize: 16px) !default;
 $appLayoutHybridHeaderBorderColor: $neutralColor8 !default;
 // Footer
 $appLayoutHybridFooterBorderColor: $appLayoutHybridHeaderBorderColor !default;
 // Nav Bar
-$appLayoutHybridNavBarBoxShadow: 0 -10px 10px rgba(0,0,0,.05) !default;
+$appLayoutHybridNavBarBoxShadow: 0 -10px 10px unquote('hsla(#{$boxShadowHsl},0.05)') !default;
 
 // OFFCANVAS
 //----------------------------------------
 // options
 $offcanvasDisplayModeOptionDefault: overlay !default;
+
+// Train
+//----------------------------------
+$trainStepWidth:                          112px !default;
 
 
 //=================================================================
@@ -842,7 +852,7 @@ $buttonTextColorSelectedDisabled:   $neutralColor3 !default;
 $buttonBgColorSelectedDisabled:     $neutralColor10  !default;
 $filePickerBgColorActive:           $brandColorLight5 !default;
 //$headerBgColor: $neutralColor6 !default;
-$listViewHeaderBgColor:             $neutralColor6 !default;
+$listViewHeaderBgColor:             $neutralColor6 !default; //settings: ignore
 // nav list
 $navigationListItemContrastLabelColorDefault:     $neutralColor10 !default;
 $navigationListItemContrastLabelColorHover:       $neutralColor3 !default;

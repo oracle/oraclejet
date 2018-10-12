@@ -1,7 +1,7 @@
 {
   "name": "oj-radioset",
-  "version": "5.2.0",
-  "jetVersion": "5.2.0",
+  "version": "6.0.0",
+  "jetVersion": "6.0.0",
   "displayName": "Radioset",
   "type": "core",
   "styleClasses": [
@@ -37,22 +37,26 @@
     }
   ],
   "description": "A grouping of related radio buttons.",
+  "help": "https://docs.oracle.com/en/middleware/jet/6/reference-api/oj.ojRadioset.html",
   "properties": {
     "describedBy": {
       "description": "described the relationship between this component and another element.",
       "type": "string",
-      "displayName": "Described By"
+      "displayName": "Described By",
+      "help": "describedBy"
     },
     "disabled": {
       "description": " Disabled true disables the component and disables all the inputs/labels. Disabled false enables the component, and leaves the inputs' disabled property as it is in the dom. ",
-      "type": "boolean|null",
+      "type": "boolean",
       "displayName": "Disabled",
-      "value": false
+      "value": false,
+      "help": "disabled"
     },
     "displayOptions": {
       "description": "Customize how to display to the user the form field's messages, converter and validator hints and help instruction text.",
       "type": "object",
       "displayName": "Display Options",
+      "help": "displayOptions",
       "properties": {
         "converterHint": {
           "description": "Display options for auxilliary converter hint text that determines where it should be displayed in relation to the component.",
@@ -61,7 +65,8 @@
           "value": [
             "placeholder",
             "notewindow"
-          ]
+          ],
+          "help": "displayOptions.converterHint"
         },
         "helpInstruction": {
           "description": "Display options for auxilliary help instruction text that determines where it should be displayed\nin relation to the component.",
@@ -69,7 +74,8 @@
           "displayName": "Help Instruction",
           "value": [
             "notewindow"
-          ]
+          ],
+          "help": "displayOptions.helpInstruction"
         },
         "messages": {
           "description": "Display options for auxilliary message text that determines where it should be displayed\nin relation to the component.",
@@ -77,7 +83,8 @@
           "displayName": "Messages",
           "value": [
             "inline"
-          ]
+          ],
+          "help": "displayOptions.messages"
         },
         "validatorHint": {
           "description": "Display options for auxilliary validator hint text that determines where it should be displayed\nin relation to the component.",
@@ -85,7 +92,8 @@
           "displayName": "Validator Hint",
           "value": [
             "notewindow"
-          ]
+          ],
+          "help": "displayOptions.validatorHint"
         }
       }
     },
@@ -93,30 +101,34 @@
       "description": "Form component help information.\n\nThe properties supported on the help option are:",
       "type": "object",
       "displayName": "Help",
+      "help": "help",
       "properties": {
         "instruction": {
-          "description": "this represents advisory information for the component\nThe default value is null.",
+          "description": "this represents advisory information for the component\nThe default value is \"\".",
           "type": "string"
         }
       }
     },
     "helpHints": {
-      "description": "Represents hints for oj-form-layout element to \nrender help information on the label of the editable component.",
+      "description": "Represents hints for an oj-form-layout element to render help information on the label of the editable component.",
       "type": "object",
       "displayName": "Help Hints",
       "translatable": true,
+      "help": "helpHints",
       "properties": {
         "definition": {
-          "description": "Hint for help definition text associated with the label. \nIt is what shows up when the user hovers over the help icon, or tabs into the help icon, or press and holds the help icon on a mobile device. No formatted text is available for help definition attribute.\n\nSee the help-hints attribute for usage examples.",
+          "description": "Hint for help definition text associated with the label.",
           "type": "string",
           "displayName": "Definition",
-          "value": ""
+          "value": "",
+          "help": "helpHints.definition"
         },
         "source": {
-          "description": "Hint for help source URL associated with the label. \nIf present, a help icon will render next to the label. For security reasons we only support urls with protocol http: or https:. If the url doesn't comply we ignore it and throw an error. \nPass in an encoded URL since we do not encode the URL.\n\nSee the help-hints attribute for usage examples.",
+          "description": "Hint for help source URL associated with the label.",
           "type": "string",
           "displayName": "Source",
-          "value": ""
+          "value": "",
+          "help": "helpHints.source"
         }
       }
     },
@@ -125,25 +137,29 @@
       "type": "string",
       "displayName": "Label Hint",
       "value": "",
-      "translatable": true
+      "translatable": true,
+      "help": "labelHint"
     },
     "labelledBy": {
       "description": "It is used to establish a relationship between this component and another element. A common use is to tie the oj-label and the oj-radioset together. The oj-label custom element has an id, and you use the labelled-by attribute to tie the two components together.",
       "type": "string|null",
-      "displayName": "Labelled By"
+      "displayName": "Labelled By",
+      "help": "labelledBy"
     },
     "messagesCustom": {
       "description": "List of messages an app would add to the component",
       "type": "Array<Object>",
       "displayName": "Messages Custom",
       "value": [],
-      "writeback": true
+      "writeback": true,
+      "help": "messagesCustom"
     },
     "required": {
       "description": "Whether the component is required or optional. When required is set to true, an implicit required validator is created using the validator factory - oj.Validation.validatorFactory(oj.ValidatorFactory.VALIDATOR_TYPE_REQUIRED).createValidator(). Translations specified using the translations.required option and the label associated with the component, are passed through to the options parameter of the createValidator method. When required option changes due to programmatic intervention, the component may clears message and run validation, based on the current state it's in. Running Validation if component is valid when required is set to true, then it runs deferred validation on the property value. This is to ensure errors are not flagged unnecessarily. if component is invalid and has deferred messages when required is set to false, then component messages are cleared but no deferred validation is run. if component is invalid and currently showing invalid messages when required is set, then component messages are cleared and normal validation is run using the current display value. if there are validation errors, then value property is not updated and the error is shown. if no errors result from the validation, the value property is updated; page author can listen to the optionChange event to clear custom errors. Clearing Messages Only messages created by the component are cleared. messagesCustom option is not cleared. This property set to false implies that a value is not required to be provided by the user. This is the default. This property set to true implies that a value is required to be provided by user and the input's label will render a required icon. Additionally a required validator - RequiredValidator - is implicitly used if no explicit required validator is set. An explicit required validator can be set by page authors using the validators option. When the option is not set, the element's required property is used as its initial value if it exists.",
       "type": "boolean",
       "displayName": "Required",
-      "value": false
+      "value": false,
+      "help": "required"
     },
     "translations": {
       "description": "A collection of translated resources from the translation bundle, or null if this component has no resources.",
@@ -151,26 +167,31 @@
       "displayName": "Translations",
       "value": {},
       "translatable": true,
+      "help": "translations",
       "properties": {
         "required": {
           "description": "Provides properties to customize the summary, detail and hint text used by the\nimplicit required validator associated to any editable component that supports the\nrequired option.\n\nSee the translations attribute and\nrequired option for usage examples.",
           "type": "object",
           "displayName": "Required",
+          "help": "translations.required",
           "properties": {
             "hint": {
               "description": "Hint text used by required validation error.\n\nSee the translations attribute for usage examples.",
               "type": "string",
-              "displayName": "Hint"
+              "displayName": "Hint",
+              "help": "translations.required.hint"
             },
             "messageDetail": {
               "description": "Message text that describes the details of the required validation error.\n\nSee the translations attribute for usage examples.",
               "type": "string",
-              "displayName": "Message Detail"
+              "displayName": "Message Detail",
+              "help": "translations.required.messageDetail"
             },
             "messageSummary": {
               "description": "Message text for summarizing a required validation error.\n\nSee the translations attribute for usage examples.",
               "type": "string",
-              "displayName": "Message Summary"
+              "displayName": "Message Summary",
+              "help": "translations.required.messageSummary"
             }
           }
         }
@@ -182,6 +203,7 @@
       "displayName": "Valid",
       "writeback": true,
       "readOnly": true,
+      "help": "valid",
       "enumValues": [
         "invalidHidden",
         "invalidShown",
@@ -212,28 +234,34 @@
       "type": "any",
       "displayName": "Value",
       "value": null,
-      "writeback": true
+      "writeback": true,
+      "help": "value"
     }
   },
   "methods": {
     "refresh": {
       "description": "Refreshes the radioset A refresh() is required when a radioset is programatically changed, like in the following circumstances: After radios are added or removed or modified (without using ojRadioset) in the DOM. ",
+      "help": "refresh",
       "return": "void"
     },
     "validate": {
       "description": "Validates the component's display value using all validators registered on the component and updates the value option by performing the following steps. All messages are cleared, including custom messages added by the app. The implicit required validator is run if the component is marked required. At the end of validation if there are errors, the messages are shown. If there were no errors, then the value property is updated. ",
+      "help": "validate",
       "return": "Promise<string>"
     },
     "reset": {
-      "description": "Resets the component by clearing all messages and messages attributes - \nmessagesCustom -\nand updates the component's display value using the attribute value. User entered values will be \nerased when this method is called.",
+      "description": "Resets the component by clearing all messages and messages attributes -\nmessagesCustom -\nand updates the component's display value using the attribute value. User entered values will be\nerased when this method is called.",
+      "help": "reset",
       "return": "void"
     },
     "showMessages": {
-      "description": "Takes all deferred messages and shows them. \nIt then updates the valid property; e.g.,\nif the valid state was \"invalidHidden\"\nbefore showMessages(), the valid state will become \"invalidShown\" after showMessages(). \n\nIf there were no deferred messages this method simply returns. \n",
+      "description": "Takes all deferred messages and shows them.\nIt then updates the valid property; e.g.,\nif the valid state was \"invalidHidden\"\nbefore showMessages(), the valid state will become \"invalidShown\" after showMessages().\n\nIf there were no deferred messages this method simply returns.\n",
+      "help": "showMessages",
       "return": "void"
     },
     "setProperty": {
-      "description": "Sets a property or a single subproperty for complex properties and notifies the component\nof the change, triggering a [property]Changed event.",
+      "description": "Sets a property or a single subproperty for complex properties and notifies the component of the change, triggering a [property]Changed event.",
+      "help": "setProperty",
       "params": [
         {
           "name": "property",
@@ -250,6 +278,7 @@
     },
     "getProperty": {
       "description": "Retrieves a value for a property or a single subproperty for complex properties.",
+      "help": "getProperty",
       "params": [
         {
           "name": "property",
@@ -261,6 +290,7 @@
     },
     "setProperties": {
       "description": "Performs a batch set of properties.",
+      "help": "setProperties",
       "params": [
         {
           "name": "properties",
@@ -276,6 +306,7 @@
       "description": "Triggered when a default animation is about to start, such as when the component is\nbeing opened/closed or a child item is being added/removed. The default animation can\nbe cancelled by calling event.preventDefault.",
       "bubbles": true,
       "cancelable": true,
+      "help": "animateStart",
       "detail": {
         "action": {
           "description": "The action that triggers the animation. Supported values are: \"inline-open\" - when an inline message container opens or increases in size \"inline-close\" - when an inline message container closes or decreases in size \"notewindow-open\" - when a note window opens \"notewindow-close\" - when a note window closes ",
@@ -295,6 +326,7 @@
       "description": "Triggered when a default animation has ended.",
       "bubbles": true,
       "cancelable": true,
+      "help": "animateEnd",
       "detail": {
         "action": {
           "description": "The action that triggers the animation. Supported values are: \"inline-open\" - when an inline message container opens or increases in size \"inline-close\" - when an inline message container closes or decreases in size \"notewindow-open\" - when a note window opens \"notewindow-close\" - when a note window closes ",
@@ -308,8 +340,15 @@
     }
   },
   "slots": {
+    "": {
+      "description": "The oj-radioset element accepts oj-option elements as children.",
+      "displayName": "default",
+      "help": "Default"
+    },
     "contextMenu": {
-      "description": "The contextMenu slot is set on the oj-menu within this element. \nThis is used to designate the JET Menu that this component should launch as a context menu on right-click, Shift-F10, Press & Hold, or component-specific gesture. \nIf specified, the browser's native context menu will be replaced by the JET Menu specified in this slot.\n\nThe application can register a listener for the Menu's ojBeforeOpen event. The listener can cancel the launch via event.preventDefault(), \nor it can customize the menu contents by editing the menu DOM directly, and then calling refresh() on the Menu.\n\nTo help determine whether it's appropriate to cancel the launch or customize the menu, the ojBeforeOpen listener can use component API's to determine which \ntable cell, chart item, etc., is the target of the context menu. See the JSDoc and demos of the individual components for details. \n\nKeep in mind that any such logic must work whether the context menu was launched via right-click, Shift-F10, Press & Hold, or component-specific touch gesture."
+      "description": "The contextMenu slot is set on the <oj-menu> instance within this element. It designates the JET Menu that this component should launch as a context menu.",
+      "maxItems": 1,
+      "help": "contextMenu"
     }
   }
 }

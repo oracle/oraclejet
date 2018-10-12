@@ -9,7 +9,7 @@
  * Copyright (c) 2014, 2015 Oracle and/or its affiliates.
  * All rights reserved.
  */
-define(['ojs/ojcore', 'jquery', 'promise'], function(oj, $)
+define(['ojs/ojcore', 'jquery', 'ojs/ojconfig', 'ojs/ojlogger', 'promise'], function(oj, $, Config, Logger)
 {
 /**
  * Copyright (c) 2014, 2015 Oracle and/or its affiliates.
@@ -35,6 +35,7 @@ oj.Events = oj.Events = // eslint-disable-line no-multi-assign
      * eventType and model or collection object as parameters--the context will be the model or collection unless specified by context, below).
      * @param {Object=} context A context for the event
      * @return {undefined}
+     * @ojsignature {target: "Type", for: "callback", value: "(eventType: string, data: object)=> void"}
      * @since 1.0.0
      * @memberof oj.Events
      */
@@ -51,6 +52,7 @@ oj.Events = oj.Events = // eslint-disable-line no-multi-assign
      * @param {Object=} context If provided, remove handlers only for eventType events with the given callback
      * function and context object.
      * @return {undefined}
+     * @ojsignature {target: "Type", for: "callback", value: "(eventType: string, data: object)=> void"}
      * @since 1.0.0
      * @memberof oj.Events
     */
@@ -84,6 +86,7 @@ oj.Events = oj.Events = // eslint-disable-line no-multi-assign
      * specified by context, below).
      * @param {Object=} context A context for the event
      * @return {undefined}
+     * @ojsignature {target: "Type", for: "callback", value: "(eventType: string, data: object)=> void"}
      * @since 1.0.0
      * @memberof oj.Events
      */
@@ -101,6 +104,7 @@ oj.Events = oj.Events = // eslint-disable-line no-multi-assign
      * eventType and model or collection object as parameters--the context will be the model or collection
      * unless specified by context, below).
      * @return {undefined}
+     * @ojsignature {target: "Type", for: "callback", value: "(eventType: string, data: object)=> void"}
      * @since 1.0.0
      * @memberof oj.Events
      */
@@ -153,6 +157,7 @@ oj.Events = oj.Events = // eslint-disable-line no-multi-assign
      * @param {function(string, Object)} callback User's event handler callback function (called with the
      * eventType and model or collection object as parameters--the context will be the model or collection unless
      * specified by context, below).
+     * @ojsignature {target: "Type", for: "callback", value: "(eventType: string, data: object)=> void"}
      * @return {undefined}
      * @since 1.0.0
      * @memberof oj.Events
@@ -207,6 +212,7 @@ oj.Events = oj.Events = // eslint-disable-line no-multi-assign
      * @param {function(string, Object)=} callback If specified, remove event handlers that call the given user
      * callback function from this model or collection
      * @return {undefined}
+     * @ojsignature {target: "Type", for: "callback", value: "(eventType: string, data: object)=> void"}
      * @since 1.0.0
      * @memberof oj.Events
      */
@@ -651,7 +657,7 @@ oj.Events._offInternal = function (eventType, callback, context, listen) {
   var cxt = context;
   var prop;
 
-  if (arguments === null || arguments.length === 0) {
+  if (arguments == null || arguments.length === 0) {
          // Remove everything
     this.eventHandlers = {};
     return this;
@@ -852,7 +858,7 @@ oj.Events._getHandlers = function (handlers, eventType, original) {
  * All rights reserved.
  */
 /* jslint browser: true*/
-/* global Promise:false */
+/* global Promise:false, Logger:false */
 
 /**
  * @export
@@ -1202,7 +1208,7 @@ oj.Collection.prototype.Init = function () {
  *                value: "any",
  *                for: "returns"},
  * {target: "Type", value:"{parse?: (data: any)=> any, model?: oj.Model, url?: string,
- * initialize?: (models: Array<oj.Model>, options: Object)=> void,
+ * initialize?: (models: Array<oj.Model>, options: object)=> void,
  * comparator?: null|string|((model1: oj.Model, model2?: oj.Model)=> number),
  * fetchSize?: number, modelLimit?: number, [propName: string]: any}", for: "properties"}]
  * @memberof oj.Collection
@@ -1714,7 +1720,7 @@ oj.Collection.prototype._cloneInternal = function (withProperties) {
   var model;
   if (this.IsVirtual()) {
     c = this._copyFetchProperties(c);
-    c._resetModelsToFullLength();
+    c._resetModelsToFullLength(this.totalResults);
   }
 
   c = this._copyProperties(c);
@@ -2010,7 +2016,7 @@ oj.Collection.prototype._addInternal = function (m, options, fillIn, deferred) {
                     // We're filling in a virtual collection: we should *not* be finding the new model already in
                     // the collection if we're not merging and not forcing: this indicates duplicate ids
                     // throw new Error("Duplicate IDs fetched or added without merging");
-          oj.Logger.warn('Duplicate ID fetched or added without merging, the id = ' +
+          Logger.warn('Duplicate ID fetched or added without merging, the id = ' +
                                    existingModel.GetId());
         }
       }
@@ -2616,8 +2622,8 @@ oj.Collection.prototype._calculateNextStart = function () {
  * custom implementation.
  * @memberof oj.Collection
  * @since 1.0.0
- * @ojsignature {target: "Type", value:"{success?: (collection: oj.Collection, response: Object, options: Object)=> void,
- *                                                  error?: (collection: oj.Collection, xhr: Object, options: Object)=> void, [propName: string]: any}", for: "options"}
+ * @ojsignature {target: "Type", value:"{success?: (collection: oj.Collection, response: any, options: object)=> void,
+ *                                                  error?: (collection: oj.Collection, xhr: any, options: object)=> void, [propName: string]: any}", for: "options"}
  * @export
  */
 oj.Collection.prototype.next = function (n, options) {
@@ -2671,8 +2677,8 @@ oj.Collection.prototype._calculatePrevStart = function (n) {
  * implementation.
  * @memberof oj.Collection
  * @since 1.0.0
- * @ojsignature {target: "Type", value:"{success?: (collection: oj.Collection, response: Object, options: Object)=> void,
- *                                                  error?: (collection: oj.Collection, xhr: Object, options: Object)=> void, [propName: string]: any}", for: "options"}
+ * @ojsignature {target: "Type", value:"{success?: (collection: oj.Collection, response: any, options: object)=> void,
+ *                                                  error?: (collection: oj.Collection, xhr: any, options: object)=> void, [propName: string]: any}", for: "options"}
  * @export
  */
 oj.Collection.prototype.previous = function (n, options) {
@@ -2920,7 +2926,7 @@ oj.Collection.prototype.refresh = function (options) {
           opt.error = function (xhr, status, error) {
             reject(oj.Collection._createRejectionError(xhr, status, error, self, optCopy, false));
           };
-          self.fetch(opt);
+          self._fetchInternal(opt, -1, false);
           return;
         } catch (e) {
                     // This is OK if it's a URLError: just fire the event: local collection without custom sync
@@ -3546,6 +3552,7 @@ oj.Collection.prototype.setRangeLocal = function (start, count) {
  * @property {number} start starting index of fetched models
  * @property {number} count number of models fetched
  * @property {Array.<oj.Model>} models array of models fetched
+ * @ojsignature  [{target: "Type", value: "Model[]", for: "models"}]
  */
 
 /**
@@ -3555,7 +3562,7 @@ oj.Collection.prototype._setRangeLocalInternal = function (start, count) {
   if (this.IsVirtual()) {
         // make sure we reconcile the length to what we think the totalresults are--if there have been any non
         // fetched changes in length we don't want to be placing things wrong
-    this._resetModelsToFullLength();
+    this._resetModelsToFullLength(this.totalResults);
   }
   var actual = this._getLocalRange(start, count);
   var self = this;
@@ -3810,10 +3817,10 @@ oj.Collection.prototype._getFirstMissingModel = function (start, limit) {
  * would be the value returned by the custom implementation.
  * @memberof oj.Collection
  * @since 1.0.0
- * @ojsignature {target: "Type", value:"{success?: (collection: oj.Collection, response: Object, options: Object)=> void,
- *                                                  error?: (collection: oj.Collection, xhr: Object, options: Object)=> void,
- *                                                  add?: boolean, set?: boolean, startIndex?: number, startID?: Object, since?: Object,
- *                                                  until?: Object, fetchSize?: number, [propName: string]: any}", for: "options"}
+ * @ojsignature {target: "Type", value:"{success?: (collection: oj.Collection, response: any, options: object)=> void,
+ *                                                  error?: (collection: oj.Collection, xhr: any, options: object)=> void,
+ *                                                  add?: boolean, set?: boolean, startIndex?: number, startID?: any, since?: any,
+ *                                                  until?: any, fetchSize?: number, [propName: string]: any}", for: "options"}
  * @export
  */
 oj.Collection.prototype.fetch = function (options) {
@@ -3829,7 +3836,7 @@ oj.Collection.prototype.fetch = function (options) {
  * @private
  */
 oj.Collection.prototype._fetchInternal = function (options, placement, fillIn) {
-  function doReset(collection, opt, fill) {
+  function doReset(collection, opt, fill, totalResults) {
     if (!collection.IsVirtual()) {
       // If we're not doing a "fetch add", delete all the current models
       if (!opt.add && !opt.useset) {
@@ -3838,7 +3845,7 @@ oj.Collection.prototype._fetchInternal = function (options, placement, fillIn) {
       }
     } else if (!fill) {
       // If we're not infilling based on an at, get, etc., delete all the current local models
-      collection._resetModelsToFullLength();
+      collection._resetModelsToFullLength(totalResults);
     }
   }
 
@@ -3875,7 +3882,11 @@ oj.Collection.prototype._fetchInternal = function (options, placement, fillIn) {
     }
 
     // Pull any virtualization properties out of the response
-    self._setPagingReturnValues(response, options, data, fillIn);
+    var resetTotalResults;
+    if (!self._setPagingReturnValues(response, options, data, fillIn)) {
+      // totalResults was not calculated: tell the reset
+      resetTotalResults = self.totalResults;
+    }
 
     var dataList = null;
 
@@ -3887,7 +3898,7 @@ oj.Collection.prototype._fetchInternal = function (options, placement, fillIn) {
         if (self.IsVirtual()) {
           // Virtual case only
           // Clean out the collection
-          doReset(self, opt, fillIn);
+          doReset(self, opt, fillIn, resetTotalResults);
 
           // Check for passed in offset
           if (placement === -1) {
@@ -3907,7 +3918,7 @@ oj.Collection.prototype._fetchInternal = function (options, placement, fillIn) {
     } else {
       // We have a model and/or we're doing a "fetch add"
       // Clean out the old models if we're not "adding" or infilling for virtual
-      doReset(self, opt, fillIn);
+      doReset(self, opt, fillIn, resetTotalResults);
 
       // Parse each returned model (if appropriate), and put it into the collection, either from the
       // zeroth offset if non-virtual or using the appropriate offset if virtual
@@ -4046,7 +4057,7 @@ oj.Collection.prototype._fillInCollectionWithParsedData = function (data, placem
  * @private
  */
 oj.Collection._reportError = function (collection, e, errorFunc, options) {
-  oj.Logger.error(e.toString());
+  Logger.error(e.toString());
   if (errorFunc) {
     errorFunc.call(oj.Model.GetContext(options, collection), collection, e, options);
   }
@@ -4130,8 +4141,8 @@ oj.Collection.prototype._fetchCall = function (opt) {
 /**
  * @private
  */
-oj.Collection.prototype._resetModelsToFullLength = function () {
-  var totalResults = this.totalResults;
+oj.Collection.prototype._resetModelsToFullLength = function (totalResults) {
+  // var totalResults = this.totalResults;
   if (totalResults !== undefined && this._getModelsLength() !== totalResults) {
         // Make sure to set up the array if the length changes (i.e., from 0 to totalResults--need to preallocate)
     this._setModels(new Array(totalResults), true);
@@ -4184,6 +4195,7 @@ oj.Collection.prototype._cleanTotalResults = function (totalResults) {
 
 /**
  * Parse out some of the paging return values we might expect in a virtual response
+ * Return true if totalResults was calculated on a rest call that has none
  * @private
  */
 oj.Collection.prototype._setPagingReturnValues = function (response, options, data, fillIn) {
@@ -4217,6 +4229,7 @@ oj.Collection.prototype._setPagingReturnValues = function (response, options, da
 
   // Adjust total results to account for the case where the server tells us there's no more data, and
   // totalResults wasn't set by the server...but don't do it for simple gets/adds
+  var retVal = false;
   if (!fillIn) {
         // We want to know if the server *actually* returned values for these things, not if they defaulted above
     var totalResultsReturned = this._cleanTotalResults(parseInt(oj.Collection._getProp(customObj,
@@ -4225,6 +4238,8 @@ oj.Collection.prototype._setPagingReturnValues = function (response, options, da
       10);
     this.totalResults = this._adjustTotalResults(totalResultsReturned, this.hasMore,
       this.offset, lastFetchCountReturned, data && Array.isArray(data) ? data.length : 0);
+    retVal = (totalResultsReturned === undefined || isNaN(totalResultsReturned) ||
+              totalResultsReturned === null);
   }
 
   // Was fetchSize set?  If not, set it to limit
@@ -4232,6 +4247,7 @@ oj.Collection.prototype._setPagingReturnValues = function (response, options, da
         this.lastFetchSize) {
     this.setFetchSize(this.lastFetchSize);
   }
+  return retVal;
 };
 
 /**
@@ -4911,6 +4927,7 @@ oj.Collection.prototype.without = function (var_args) { // eslint-disable-line
  * Return an array of models in the collection but not passed in the array arguments
  * @param {...Array.<oj.Model>} var_args models arrays of models to check against the collection
  * @returns {Array.<oj.Model>} array of models from the collection not passed in as arguments
+ * @ojsignature {target: "Type", for: "var_args", value: "oj.Model[][]"}
  *
  * @throws {Error} when called on a virtual Collection
  * @memberof oj.Collection
@@ -5728,8 +5745,8 @@ oj.Collection.prototype._getSortDirStr = function () {
  * @return {Object} xhr response from ajax by default
  * @memberof oj.Collection
  * @since 1.0.0
- * @ojsignature {target: "Type", value:"{success?: (json?: Array<Object>)=> void,
- *                                                  error?: (xhr: Object, status: Object, error: Object)=> void, [propName: string]: any}", for: "options"}
+ * @ojsignature {target: "Type", value:"{success?: (json?: Array<any>)=> void,
+ *                                                  error?: (xhr: any, status: any, error: any)=> void, [propName: string]: any}", for: "options"}
  * @alias oj.Collection.prototype.sync
  */
 oj.Collection.prototype.sync = function (method, collection, options) {
@@ -6013,8 +6030,8 @@ oj.Model._init = function (model, attributes, opt, properties) {
  *                value: "any",
  *                for: "returns"},
  *               {target: "Type", value:"{parse?: (data: any)=> any, parseSave?: (data: any)=> any, urlRoot?: string,
- *                                        initialize?: (models: Array<oj.Model>, options: Object)=> void,
- *                                        validate?: null|object|string|((attributes: Object, options?: oj.Model)=> number), [propName: string]: any}", for: "properties"}]
+ *                                        initialize?: (models: Array<oj.Model>, options: object)=> void,
+ *                                        validate?: null|object|string|((attributes: object, options?: oj.Model)=> number), [propName: string]: any}", for: "properties"}]
  * @memberof oj.Model
  * @this {oj.Model}
  * @since 1.0.0
@@ -6651,8 +6668,8 @@ oj.Model.prototype.has = function (property) {
  * the value returned by the custom implementation.
  * @memberof oj.Model
  * @since 1.0.0
- * @ojsignature {target: "Type", value:"{success?: (model: oj.Model, response: Object, options: Object)=> void,
- *                                                  error?: (model: oj.Model, xhr: Object, options: Object)=> void,
+ * @ojsignature {target: "Type", value:"{success?: (model: oj.Model, response: any, options: object)=> void,
+ *                                                  error?: (model: oj.Model, xhr: any, options: object)=> void,
  *                                                  [propName: string]: any}", for: "options"}
  * @export
  */
@@ -7084,9 +7101,9 @@ oj.Model._triggerError = function (self, silent, opt, status, err, xhr) {
  * @return {Object|boolean} returns false if validation failed, or the xhr object
  * @memberof oj.Model
  * @since 1.0.0
- * @ojsignature {target: "Type", value:"{success?: (model: oj.Model, response: Object, options: Object)=> void,
- *                                                  error?: (model: oj.Model, xhr: Object, options: Object)=> void,
- *                                                  contentType?: string, valdiate?: boolean, wait?: boolean, patch?: boolean, attrs?: Object,
+ * @ojsignature {target: "Type", value:"{success?: (model: oj.Model, response: any, options: object)=> void,
+ *                                                  error?: (model: oj.Model, xhr: any, options: object)=> void,
+ *                                                  contentType?: string, valdiate?: boolean, wait?: boolean, patch?: boolean, attrs?: object,
  *                                                  [propName: string]: any}", for: "options"}
  * @export
  */
@@ -7476,8 +7493,8 @@ oj.Model.prototype.hasChanged = function (attribute) {
  * @return {boolean}
  * @memberof oj.Model
  * @since 1.0.0
- * @ojsignature {target: "Type", value:"{success?: (model: oj.Model, response: Object, options: Object)=> void,
- *                                                  error?: (model: oj.Model, xhr: Object, options: Object)=> void,
+ * @ojsignature {target: "Type", value:"{success?: (model: oj.Model, response: any, options: object)=> void,
+ *                                                  error?: (model: oj.Model, xhr: any, options: object)=> void,
  *                                                  wait?: boolean, [propName: string]: any}", for: "options"}
  * @export
  */
@@ -8072,7 +8089,7 @@ oj.OAuth._base64_encode = function (a) {
  */
 
 /* jslint browser: true*/
-/* global jQuery:false*/
+/* global jQuery:false, Config:false*/
 /**
  * @private
  * @constructor
@@ -8353,7 +8370,7 @@ oj.RestImpl.prototype._getContentType = function (options) {
 };
 
 oj.RestImpl.prototype.getLocale = function () {
-  return oj.Config.getLocale();
+  return Config.getLocale();
 };
 
 oj.RestImpl.prototype.ajax = function (settings, collection) {
@@ -8391,4 +8408,15 @@ oj.URLError = function () {
 oj.URLError.prototype = new Error();
 oj.URLError.constructor = oj.URLError;
 
+/* global Collection:false, Event:false, Model:false, OAuth:false, URLError:false */
+// Define a mapping variable that maps the return value of the module to the name used in the callback function of a require call.
+
+var Model = {};
+Model.Collection = oj.Collection;
+Model.Events = oj.Events;
+Model.Model = oj.Model;
+Model.OAuth = oj.OAuth;
+Model.URLError = oj.URLError;
+
+  ;return Model;
 });

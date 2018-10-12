@@ -4,9 +4,9 @@
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
-define(['ojs/ojcore', 'jquery', 'knockout', 'ojs/ojknockout', 'ojs/ojcomposite',
-        'promise', 'ojs/ojpopupcore', 'ojs/ojanimation', 'ojs/ojmessage', 'ojs/ojdataprovider'], 
-       function(oj, $, ko)
+define(['ojs/ojcore', 'jquery', 'ojs/ojthemeutils', 'ojs/ojtranslation', 'knockout', 'ojs/ojcomposite', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojs/ojlogger', 'ojs/ojknockout', 
+        'promise', 'ojs/ojpopupcore', 'ojs/ojmessage', 'ojs/ojdataprovider'], 
+       function(oj, $, ThemeUtils, Translations, ko, Composite, Components, AnimationUtils, Logger)
 {
  
 
@@ -141,6 +141,7 @@ var __oj_messages_metadata =
  ** Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
  */
 
+/* global ko:false, Components:false, Logger:false, Translations:false, ThemeUtils:false */
 /**
  * @ojcomponent oj.ojMessages
  * @since 5.0.0
@@ -148,8 +149,8 @@ var __oj_messages_metadata =
  * @ojshortdesc Manages layout and display of messages.
  * @ojstatus preview
  * @ojsignature {target: "Type", value:"class ojMessages extends JetElement<ojMessagesSettableProperties>"}
- * @ojtsimport ojmessage
- * @ojtsimport ojdataprovider
+ * @ojtsimport {module: "ojmessage", type: "AMD", imported: ["ojMessage"]}
+ * @ojtsimport {module: "ojdataprovider", type: "AMD", imported: ["DataProvider"]}
  *
  * @classdesc
  * <h3 id="messageOverview-section">
@@ -328,7 +329,7 @@ var __oj_messages_metadata =
  */
 
 // Attributes
-/////////////
+// ///////////
 
 /**
  *<p> Specifies the collection of structured message data used to display the individual messages.
@@ -447,7 +448,6 @@ var __oj_messages_metadata =
  * @memberof! oj.ojMessages
  * @instance
  * @type {Object|null}
- * @default null
  * @name position
  * @ojsignature { target: "Type",
  *                value: "oj.ojMessages.Position|null",
@@ -645,7 +645,7 @@ var __oj_messages_metadata =
 
 
 // Methods
-//////////
+// ////////
 
 /**
  * Closes the specified message regardless of the {@link oj.ojMessage#message.autoTimeout} or
@@ -761,7 +761,7 @@ var __oj_messages_metadata =
 
 
 // Type Defs
-////////////
+// //////////
 
 /**
  * @typedef {Object} oj.ojMessages.PositionAlign
@@ -968,7 +968,7 @@ MessagesViewModel.prototype._handleOpen = function (event) {
       detail:string, autoTimeout:number, closeAffordance: string, sound: string}} */
   var message = event.detail.message;
 
-  var translations = oj.Translations.getComponentTranslations('oj-ojMessage').categories;
+  var translations = Translations.getComponentTranslations('oj-ojMessage').categories;
 
   // oj.Message has 'fatal' severity which is no different from 'error', oj-message does not support
   //  'fatal' for this reason. Map 'fatal' to 'error' just to be compatible with cases where the
@@ -994,10 +994,10 @@ MessagesViewModel.prototype._getTranslationsDefault = function (key, options) {
   }
 
   if (oj.StringUtils.isEmptyOrUndefined(val)) {
-    val = oj.Translations.getTranslatedString(['oj-ojMessages', key].join('.'), options);
+    val = Translations.getTranslatedString(['oj-ojMessages', key].join('.'), options);
   } else if (options) {
     // if app dev specified and we have params, insert those for tokens possible in the val
-    val = oj.Translations.applyParameters(val, options);
+    val = Translations.applyParameters(val, options);
   }
 
   return val;
@@ -1080,7 +1080,8 @@ MessagesViewModel.prototype._handleAnimateStart = function (event) {
   // the event to bubble.
   //
   // oj.AnimationUtils.startAnimation(messageElement, action, options, component).then(endCallback);
-  oj.AnimationUtils[options.effect](messageElement, options).then(endCallback);
+  // eslint-disable-next-line no-undef
+  AnimationUtils[options.effect](messageElement, options).then(endCallback);
 };
 
 MessagesViewModel._DEFAULTS = {
@@ -1111,7 +1112,7 @@ MessagesViewModel._DEFAULTS = {
 };
 
 MessagesViewModel.prototype._getThemedAnimateOptions = function (display, action) {
-  var themedDefaults = oj.ThemeUtils.parseJSONFromFontFamily('oj-messages-option-defaults');
+  var themedDefaults = ThemeUtils.parseJSONFromFontFamily('oj-messages-option-defaults');
   if (themedDefaults && themedDefaults[display] && themedDefaults[display].animation &&
       themedDefaults[display].animation[action]) {
     return themedDefaults[display].animation[action];
@@ -1148,7 +1149,7 @@ MessagesViewModel.prototype._computeContainerSelectors = function () {
 
 MessagesViewModel.prototype._getThemedPosition = function () {
   var display = this._computeDisplay();
-  var themedDefaults = oj.ThemeUtils.parseJSONFromFontFamily('oj-messages-option-defaults');
+  var themedDefaults = ThemeUtils.parseJSONFromFontFamily('oj-messages-option-defaults');
   if (themedDefaults[display] && themedDefaults[display].position) {
     return themedDefaults[display].position;
   }
@@ -1201,7 +1202,7 @@ MessagesViewModel.prototype._getDefaultSlotMessageElements = function () {
     if (body[i].nodeName !== 'OJ-MESSAGE') {
       // we included oj-bind-if in our view def, so make an exception
       if (body[i].nodeName !== 'OJ-BIND-IF') {
-        oj.Logger.error(["JET oj-messages id='", toSelector(this._composite),
+        Logger.error(["JET oj-messages id='", toSelector(this._composite),
           "': can contain only oj-message children in its default slot. ",
           "Found a child element id='", toSelector(body[i]), "'."].join(''));
       }
@@ -1221,7 +1222,7 @@ MessagesViewModel.prototype._showMessages = function () {
   if (!this._isMessagesShown()) {
     // unhide the oj-messages root and notify
     $(this._composite).show();
-    oj.Components.subtreeShown($(this._composite));
+    Components.subtreeShown($(this._composite));
   }
 
   // When messages are shown in popup, popup.open() will call popup_elem.show(), which is a deep
@@ -1237,7 +1238,7 @@ MessagesViewModel.prototype._hideMessages = function () {
   if (this._isMessagesShown()) {
     // hide the oj-messages node root and notify
     $(this._composite).hide();
-    oj.Components.subtreeHidden(this._composite);
+    Components.subtreeHidden(this._composite);
 
     MessagesViewModel.NAVIGATION_TRACKER.remove(this._messagesContainerId);
     if (this._liveRegion) {
@@ -1404,7 +1405,7 @@ MessagesViewModel.prototype._createObservables = function () {
 
 MessagesViewModel.prototype._computeLabelLandmark = function () {
   var properties = this._properties;
-  
+
   if (oj.StringUtils.isEmptyOrUndefined(properties.translations.labelLandmark)) {
     return this._getTranslationsDefault('labelLandmark');
   }
@@ -1587,7 +1588,7 @@ MessagesViewModel.NAVIGATION_TRACKER = {
       s = messagesContainerIds.length - 1;
 
       // target the most recently disclosed
-      for (var i = s; i > -1; i++) {
+      for (var i = s; i > -1; i--) {
         var messagesContainerDiv = document.getElementById(messagesContainerIds[i]);
 
         // if the container doesn't exist or is not visible continue to the next most recently used
@@ -1732,11 +1733,13 @@ LiveRegion._getLiveRegion = function () {
 LiveRegion._LIVE_REGION_ID = '__oj_messages_arialiveregion';
 
 /* global __oj_messages_metadata */
-oj.Composite.register('oj-messages',
+// eslint-disable-next-line no-undef
+Composite.register('oj-messages',
   {
     view: _MESSAGES_VIEW,
     viewModel: MessagesViewModel,
     metadata: __oj_messages_metadata
   });
+
 
 });

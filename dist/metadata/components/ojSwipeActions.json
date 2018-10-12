@@ -1,7 +1,7 @@
 {
   "name": "oj-swipe-actions",
-  "version": "5.2.0",
-  "jetVersion": "5.2.0",
+  "version": "6.0.0",
+  "jetVersion": "6.0.0",
   "displayName": "Swipe Actions",
   "type": "core",
   "styleClasses": [
@@ -37,6 +37,7 @@
     }
   ],
   "description": "Adds swipe-to-reveal functionality to elements such as items in ListView.",
+  "help": "https://docs.oracle.com/en/middleware/jet/6/reference-api/oj.ojSwipeActions.html",
   "properties": {
     "translations": {
       "description": "A collection of translated resources from the translation bundle, or null if this component has no resources.",
@@ -44,21 +45,25 @@
       "displayName": "Translations",
       "value": {},
       "translatable": true,
+      "help": "translations",
       "properties": {
         "ariaHideActionsDescription": {
           "description": "Label assigned to an anchor tag used for hidding start/end swipe actions using keyboard or accessibility agents such as VoiceOver.",
           "type": "string",
-          "displayName": "Aria Hide Actions Description"
+          "displayName": "Aria Hide Actions Description",
+          "help": "translations.ariaHideActionsDescription"
         },
         "ariaShowEndActionsDescription": {
           "description": "Label assigned to an anchor tag used for showing end swipe actions using keyboard or accessibility agents such as VoiceOver.",
           "type": "string",
-          "displayName": "Aria Show End Actions Description"
+          "displayName": "Aria Show End Actions Description",
+          "help": "translations.ariaShowEndActionsDescription"
         },
         "ariaShowStartActionsDescription": {
           "description": "Label assigned to an anchor tag used for showing start swipe actions using keyboard or accessibility agents such as VoiceOver.",
           "type": "string",
-          "displayName": "Aria Show Start Actions Description"
+          "displayName": "Aria Show Start Actions Description",
+          "help": "translations.ariaShowStartActionsDescription"
         }
       }
     }
@@ -66,10 +71,12 @@
   "methods": {
     "refresh": {
       "description": "Re-initialize the swipe actions.",
+      "help": "refresh",
       "return": "void"
     },
     "setProperty": {
-      "description": "Sets a property or a single subproperty for complex properties and notifies the component\nof the change, triggering a [property]Changed event.",
+      "description": "Sets a property or a single subproperty for complex properties and notifies the component of the change, triggering a [property]Changed event.",
+      "help": "setProperty",
       "params": [
         {
           "name": "property",
@@ -86,6 +93,7 @@
     },
     "getProperty": {
       "description": "Retrieves a value for a property or a single subproperty for complex properties.",
+      "help": "getProperty",
       "params": [
         {
           "name": "property",
@@ -97,6 +105,7 @@
     },
     "setProperties": {
       "description": "Performs a batch set of properties.",
+      "help": "setProperties",
       "params": [
         {
           "name": "properties",
@@ -109,22 +118,28 @@
   },
   "events": {
     "ojAction": {
-      "description": "Triggered when an action item is selected or when the default action is triggered."
+      "description": "Triggered when an action item is selected or when the default action is triggered.",
+      "help": "action"
     }
   },
   "slots": {
     "": {
       "description": "When using SwipeActions within ListView, any content for the item in ListView should be added as child element in SwipeActions.",
-      "displayName": "default"
+      "displayName": "default",
+      "help": "Default"
     },
     "contextMenu": {
-      "description": "The contextMenu slot is set on the oj-menu within this element. \nThis is used to designate the JET Menu that this component should launch as a context menu on right-click, Shift-F10, Press & Hold, or component-specific gesture. \nIf specified, the browser's native context menu will be replaced by the JET Menu specified in this slot.\n\nThe application can register a listener for the Menu's ojBeforeOpen event. The listener can cancel the launch via event.preventDefault(), \nor it can customize the menu contents by editing the menu DOM directly, and then calling refresh() on the Menu.\n\nTo help determine whether it's appropriate to cancel the launch or customize the menu, the ojBeforeOpen listener can use component API's to determine which \ntable cell, chart item, etc., is the target of the context menu. See the JSDoc and demos of the individual components for details. \n\nKeep in mind that any such logic must work whether the context menu was launched via right-click, Shift-F10, Press & Hold, or component-specific touch gesture."
+      "description": "The contextMenu slot is set on the <oj-menu> instance within this element. It designates the JET Menu that this component should launch as a context menu.",
+      "maxItems": 1,
+      "help": "contextMenu"
     },
     "end": {
-      "description": "The end slot is used to specify the action bar that appears when user swipes from end to start on its container. The slot must be a <template> element. \n\nWhen the template is executed, it will have access to the parent binding context. For example, in the case of ListView, $current should return the data of the row containing the swipe actions."
+      "description": "The end slot is used to specify the action bar that appears when user swipes from end to start on its container. The slot must be a <template> element.\n\nWhen the template is executed, it will have access to the parent binding context. For example, in the case of ListView, $current should return the data of the row containing the swipe actions.",
+      "help": "end"
     },
     "start": {
-      "description": "The start slot is used to specify the options to appears when user swipes from start to end on its container. The slot must be a <template> element. \n\nWhen the template is executed, it will have access to the parent binding context. For example, in the case of ListView, $current should return the data of the row containing the swipe actions."
+      "description": "The start slot is used to specify the options to appears when user swipes from start to end on its container. The slot must be a <template> element.\n\nWhen the template is executed, it will have access to the parent binding context. For example, in the case of ListView, $current should return the data of the row containing the swipe actions.",
+      "help": "start"
     }
   }
 }

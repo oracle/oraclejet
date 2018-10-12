@@ -47,20 +47,32 @@
     
     .oj-inputdatetime-date-only .oj-inputdatetime-input
     {
-      //need to include end border radius because we dont show any trigger icon
-      @include oj-ltr()
-      { 
-        @include oj-border-radius($formControlBorderRadius $formControlBorderRadius $formControlBorderRadius $formControlBorderRadius,
-                                  $slowOverride: false);
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        html:not([dir="rtl"]) & {
+           border-radius: var(--oj-form-control-border-radius) var(--oj-form-control-border-radius) var(--oj-form-control-border-radius) var(--oj-form-control-border-radius);
+        }
+        
+        html[dir="rtl"] & {
+           border-radius: var(--oj-form-control-border-radius) var(--oj-form-control-border-radius) var(--oj-form-control-border-radius) var(--oj-form-control-border-radius);          
+        }
+        //todo:
       }
+      @else {
+        //need to include end border radius because we dont show any trigger icon
+        @include oj-ltr()
+        { 
+          @include oj-border-radius($formControlBorderRadius $formControlBorderRadius $formControlBorderRadius $formControlBorderRadius,
+                                    $slowOverride: false);
+        }
 
-      @include oj-rtl()
-      { 
-        @include oj-border-radius($formControlBorderRadius $formControlBorderRadius $formControlBorderRadius $formControlBorderRadius,
-                                  $slowOverride: false); 
+        @include oj-rtl()
+        { 
+          @include oj-border-radius($formControlBorderRadius $formControlBorderRadius $formControlBorderRadius $formControlBorderRadius,
+                                    $slowOverride: false); 
+        }
+        
+        @include oj-border-radius-slowoverride();
       }
-      
-      @include oj-border-radius-slowoverride();
     }
   }
 }

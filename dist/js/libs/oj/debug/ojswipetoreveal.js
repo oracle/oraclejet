@@ -4,13 +4,13 @@
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
-define(['ojs/ojcore', 'jquery', 'hammerjs', 'promise', 'ojs/ojoffcanvas'],
+define(['ojs/ojcore', 'jquery', 'ojs/ojcontext', 'hammerjs', 'ojs/ojoffcanvas', 'promise', 'touchr'],
        /*
         * @param {Object} oj 
         * @param {jQuery} $
         * @param {Object} Hammer
         */
-       function(oj, $, Hammer)
+       function(oj, $, Context, Hammer, OffcanvasUtils)
  
 {
 
@@ -18,9 +18,10 @@ define(['ojs/ojcore', 'jquery', 'hammerjs', 'promise', 'ojs/ojoffcanvas'],
  * Copyright (c) 2015, Oracle and/or its affiliates.
  * All rights reserved.
  */
-
+/* global OffcanvasUtils:false, Context:false */
 /**
- * @class oj.SwipeToRevealUtils
+ * @namespace oj.SwipeToRevealUtils
+ * @ojtsmodule
  * @since 1.2.0
  * @export
  * @hideconstructor
@@ -51,18 +52,21 @@ define(['ojs/ojcore', 'jquery', 'hammerjs', 'promise', 'ojs/ojoffcanvas'],
  * </h3>
  *
  * <p>Application must ensure that the context menu is available and setup with the
- * equivalent menu items so that keyboard-only users can perform all the swipe actions 
- * just by using the keyboard.  
+ * equivalent menu items so that keyboard-only users can perform all the swipe actions
+ * just by using the keyboard.
  */
 oj.SwipeToRevealUtils = {};
+// mapping variable definition, used in a no-require environment. Maps the oj.SwipeToRevealUtils object to the name used in the require callback.
+// eslint-disable-next-line no-unused-vars
+var SwipeToRevealUtils = oj.SwipeToRevealUtils;
 
 /**
- * Setup listeners needed for swipe actions capability.  
+ * Setup listeners needed for swipe actions capability.
  *
  * @export
  * @param {Element} elem the DOM element (of the offcanvas) that hosts the swipe actions
  * @param {Object=} options the options to set for swipe actions
- * @param {number=} options.threshold the threshold that triggers default action.  If no default action is found (no item with style  
+ * @param {number=} options.threshold the threshold that triggers default action.  If no default action is found (no item with style
  *                 "oj-swipetoreveal-default") then this value is ignored.  If percentage value is specified it will be calculated
  *                 based on the width of the element with class "oj-offcanvas-outer-wrapper".  A default value is determined if not specified.
  *                 An "ojdefaultaction" event will be fired when threshold is exceed upon release.
@@ -71,159 +75,142 @@ oj.SwipeToRevealUtils = {};
  * @see #tearDownSwipeActions
  * @see oj.OffcanvasUtils.html#setupPanToReveal
  */
-oj.SwipeToRevealUtils.setupSwipeActions = function(elem, options)
-{
-    var drawer, direction, offcanvas, outerWrapper, threshold, minimum, drawerShown, busyContext, evt, checkpoint, defaultAction, distance;
+oj.SwipeToRevealUtils.setupSwipeActions = function (elem, options) {
+  var drawer;
+  var direction;
+  var offcanvas;
+  var outerWrapper;
+  var threshold;
+  var minimum;
+  var drawerShown;
+  var busyContext;
+  var evt;
+  var checkpoint;
+  var defaultAction;
+  var distance;
 
-    drawer = $(elem);
-    // checks if it's already registered
-    if (drawer.hasClass("oj-swipetoreveal"))
-    {
-        return;
+  drawer = $(elem);
+  // checks if it's already registered
+  if (drawer.hasClass('oj-swipetoreveal')) {
+    return;
+  }
+
+  drawer.addClass('oj-swipetoreveal');
+
+  direction = drawer.hasClass('oj-offcanvas-start') ? 'end' : 'start';
+
+  offcanvas = {};
+  offcanvas.selector = drawer;
+  offcanvas._animateWrapperSelector = 'oj-offcanvas-inner-wrapper';
+  OffcanvasUtils.setupPanToReveal(offcanvas);
+
+  outerWrapper = OffcanvasUtils._getOuterWrapper(drawer);
+
+  // the panning triggers a click event at the end (since we are doing translation on move, the relative position has not changed)
+  // this is to prevent the click event from bubbling (to list item for example, see )
+  drawerShown = false;
+  outerWrapper.on('click.swipetoreveal', function (event) {
+    if (drawerShown) {
+      event.stopImmediatePropagation();
+      drawerShown = false;
     }
+  });
 
-    drawer.addClass("oj-swipetoreveal");
-
-    direction = drawer.hasClass("oj-offcanvas-start") ? "end" : "start";
-
-    offcanvas = {};
-    offcanvas["selector"] = drawer;
-    offcanvas._animateWrapperSelector = 'oj-offcanvas-inner-wrapper';
-    oj.OffcanvasUtils.setupPanToReveal(offcanvas);
-
-    outerWrapper = oj.OffcanvasUtils._getOuterWrapper(drawer);
-
-    // the panning triggers a click event at the end (since we are doing translation on move, the relative position has not changed)
-    // this is to prevent the click event from bubbling (to list item for example, see )
+  // However, this does not get trigger in hybrid app, see .
+  // this change ensures that it always get reset
+  outerWrapper.on('touchstart.swipetoreveal', function () {
     drawerShown = false;
-    outerWrapper.on("click.swipetoreveal", function(event)
-    {
-        if (drawerShown)
-        {
-            event.stopImmediatePropagation();   
-            drawerShown = false;
-        }
-    });
 
-    // However, this does not get trigger in hybrid app, see .  
-    // this change ensures that it always get reset
-    outerWrapper.on("touchstart.swipetoreveal", function(event)
-    {
-        drawerShown = false;
+    // prevent click event from firing when tapping on outer wrapper (like list item) while offcanvas is still open
+    if (drawer.hasClass('oj-offcanvas-open') && drawer[0].offsetWidth > 0 && !drawer[0].contains(event.target)) {
+      event.preventDefault();
+    }
+  });
 
-        // prevent click event from firing when tapping on outer wrapper (like list item) while offcanvas is still open
-        if (drawer.hasClass('oj-offcanvas-open') && drawer[0].offsetWidth > 0 && !drawer[0].contains(event.target)) 
-        {
-            event.preventDefault();
-        }
-    });
+  drawer
+    .on('ojpanstart', function (event, ui) {
+      // if the swipe direction does not match the offcanvas's edge, veto it
+      if (ui.direction !== direction) {
+        event.preventDefault();
+      } else {
+        busyContext = Context.getContext(outerWrapper.get(0)).getBusyContext();
+        busyContext.whenReady().then(function () {
+          // setup default style class, must be done before outerWidth is calculated
+          drawer.children().addClass('oj-swipetoreveal-action')
+                           .css('min-width', '');
 
-    drawer
-    .on("ojpanstart", function(event, ui) 
-    {
-        // if the swipe direction does not match the offcanvas's edge, veto it
-        if (ui['direction'] != direction)
-        {
-            event.preventDefault();
-        }
-        else
-        {
-            busyContext = oj.Context.getContext(outerWrapper.get(0)).getBusyContext();
-            busyContext.whenReady().then(function() 
-            {
-                // setup default style class, must be done before outerWidth is calculated
-                drawer.children().addClass("oj-swipetoreveal-action")
-                                 .css('min-width', '');
+          // find if there's any default action item specified
+          defaultAction = drawer.children('.oj-swipetoreveal-default').get(0);
 
-                // find if there's any default action item specified
-                defaultAction = drawer.children(".oj-swipetoreveal-default").get(0);
+          // figure out the threshold for default action and the minimum distance
+          // to keep the offcanvas open
+          if (minimum == null) {
+            if (options != null) {
+              threshold = options.threshold;
+            }
 
-                // figure out the threshold for default action and the minimum distance
-                // to keep the offcanvas open
-                if (minimum == null)
-                {
-                    if (options != null)
-                    {
-                        threshold = options['threshold'];
-                    }
+            if (threshold != null) {
+              threshold = parseInt(threshold, 10);
 
-                    if (threshold != null)
-                    {
-                        threshold = parseInt(threshold, 10);
+              // check if it's percentage value
+              if (/%$/.test(options.threshold)) {
+                threshold = (threshold / 100) * outerWrapper.outerWidth();
+              }
+            } else {
+              // by default it will be 55% of the outer wrapper
+              threshold = outerWrapper.outerWidth() * 0.55;
+            }
+            // by default the minimum will be the lesser of the width of the offcanvas and half of the outer wrapper
+            minimum = Math.min(outerWrapper.outerWidth() * 0.3, drawer.outerWidth());
+          }
+        });
 
-                        // check if it's percentage value
-                        if (/%$/.test(options['threshold']))
-                        {
-                            threshold = (threshold / 100) * outerWrapper.outerWidth();
-                        }
-                    }
-                    else
-                    {
-                        // by default it will be 55% of the outer wrapper
-                        threshold = outerWrapper.outerWidth() * 0.55;
-                    }
-                    // by default the minimum will be the lesser of the width of the offcanvas and half of the outer wrapper
-                    minimum = Math.min(outerWrapper.outerWidth() * 0.3, drawer.outerWidth());
-                }
-            });
-
-            // used to determine if it's a quick swipe
-            checkpoint = (new Date()).getTime();
-        }
+        // used to determine if it's a quick swipe
+        checkpoint = (new Date()).getTime();
+      }
     })
-    .on("ojpanmove", function(event, ui)
-    {
-        if (!drawerShown) 
-        {
-            drawer.children().css('min-width', 0);
-        }
+    .on('ojpanmove', function (event, ui) {
+      if (!drawerShown) {
+        drawer.children().css('min-width', 0);
+      }
 
-        drawerShown = true;
+      drawerShown = true;
 
-        // check if pan pass the threshold position, the default action item gets entire space.
-        if (defaultAction != null)
-        {
-            if (ui['distance'] > threshold)
-            {
-                drawer.children().each(function() {
-                    if (this != defaultAction)
-                    {
-                        $(this).addClass("oj-swipetoreveal-hide-when-full");
-                    }                  
-                });
+      // check if pan pass the threshold position, the default action item gets entire space.
+      if (defaultAction != null) {
+        if (ui.distance > threshold) {
+          drawer.children().each(function () {
+            if (this !== defaultAction) {
+              $(this).addClass('oj-swipetoreveal-hide-when-full');
             }
-            else
-            {
-                drawer.children().removeClass("oj-swipetoreveal-hide-when-full");
-            }
+          });
+        } else {
+          drawer.children().removeClass('oj-swipetoreveal-hide-when-full');
         }
+      }
     })
-    .on("ojpanend", function(event, ui) 
-    {
-        distance = ui['distance'];
-        if (defaultAction != null && distance > threshold)
-        {
-            // default action
-            evt = $.Event("ojdefaultaction");
-            drawer.trigger(evt, offcanvas);
-            event.preventDefault();
-        }
+    .on('ojpanend', function (event, ui) {
+      distance = ui.distance;
+      if (defaultAction != null && distance > threshold) {
+        // default action
+        evt = $.Event('ojdefaultaction');
+        drawer.trigger(evt, offcanvas);
+        event.preventDefault();
+      }
 
-        // if pan pass the minimum threshold position, keep the toolbar open
-        if (distance < minimum)
-        {
-            // check if this is a swipe, the time should be < 200ms and the distance must be > 10px
-            if ((new Date()).getTime() - checkpoint > 200 || distance < 10)
-            {
-                event.preventDefault();
-            }
+      // if pan pass the minimum threshold position, keep the toolbar open
+      if (distance < minimum) {
+        // check if this is a swipe, the time should be < 200ms and the distance must be > 10px
+        if ((new Date()).getTime() - checkpoint > 200 || distance < 10) {
+          event.preventDefault();
         }
+      }
     });
 };
 
 /**
  * Removes the listener that was added in setupSwipeActions.  Page authors should call tearDownSwipeActions when the content container is no longer needed.
- * 
+ *
  * @export
  * @param {Element} elem the DOM element (of the offcanvas) that hosts the swipe actions
  * @return {void}
@@ -231,24 +218,24 @@ oj.SwipeToRevealUtils.setupSwipeActions = function(elem, options)
  * @see #setupSwipeActions
  * @see oj.OffcanvasUtils.html#tearDownPanToReveal
  */
-oj.SwipeToRevealUtils.tearDownSwipeActions = function(elem)
-{
-    var drawer, offcanvas, outerWrapper;
+oj.SwipeToRevealUtils.tearDownSwipeActions = function (elem) {
+  var drawer;
+  var offcanvas;
+  var outerWrapper;
 
-    drawer = $(elem);
+  drawer = $(elem);
 
-    drawer.removeClass("oj-swipetoreveal");
+  drawer.removeClass('oj-swipetoreveal');
 
-    offcanvas = {};
-    offcanvas["selector"] = drawer;
+  offcanvas = {};
+  offcanvas.selector = drawer;
 
-    outerWrapper = oj.OffcanvasUtils._getOuterWrapper(drawer);
-    if (outerWrapper != null)
-    {
-        outerWrapper.off(".swipetoreveal");
-    }
+  outerWrapper = OffcanvasUtils._getOuterWrapper(drawer);
+  if (outerWrapper != null) {
+    outerWrapper.off('.swipetoreveal');
+  }
 
-    oj.OffcanvasUtils.tearDownPanToReveal(offcanvas);
+  OffcanvasUtils.tearDownPanToReveal(offcanvas);
 };
 
 /**
@@ -315,4 +302,6 @@ oj.SwipeToRevealUtils.tearDownSwipeActions = function(elem)
  * @ojfragment touchDoc - Used in touch gesture section of classdesc, and standalone gesture doc
  * @memberof oj.SwipeToRevealUtils
  */
+
+  ;return oj.SwipeToRevealUtils;
 });

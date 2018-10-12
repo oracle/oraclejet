@@ -1,0 +1,45 @@
+// Copyright (c) 2014, 2018, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+// ----- start dependencies ---------
+
+// set up include variables before importing dependencies
+@if $includeMessageClasses != false {
+  $includeIconClasses: true !global;
+}
+
+// import dependencies
+@import "oj.alta.android.icons";
+
+// ----- end dependencies ---------
+
+// import classes defined in the common directory
+@import "../../common/widgets/oj.common.message";
+
+@if $includeMessageClasses != false {
+  @include module-include-once("alta.android.message") {
+    
+    .oj-message-summary {
+      padding-bottom: 4px;
+    }
+    
+    .oj-message-category {
+      @include oj-ltr() {
+        padding: 0px 0px 0px 10px;
+      }
+      @include oj-rtl() {
+        padding: 0px 10px 0px 0px;
+      }
+    }
+    
+    .oj-message-header {
+      justify-content: flex-start;
+    }
+    
+    .oj-message-timestamp:before {
+      content: "\25CF";
+      padding: 0px 4px;
+    }
+  }
+}
+

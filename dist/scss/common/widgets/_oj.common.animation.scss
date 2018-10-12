@@ -126,7 +126,11 @@
     }
 
     .oj-animation-effect-ripple {
-      background-color: $animationEffectRippleBgColor;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        background-color: var(--oj-animation-effect-ripple-bg-color);
+      } @else {
+        background-color: $animationEffectRippleBgColor;        
+      }
       opacity: 0.6;
       border-radius: 50%;
       position: absolute;

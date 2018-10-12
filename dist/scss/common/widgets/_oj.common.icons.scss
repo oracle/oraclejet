@@ -31,7 +31,7 @@ $iconFontFileName: 'JetFW_iconfont.woff' !default;
 
     /* Icons
     --------------------------------------------------------------------*/
-
+    
     @if  $iconFontFileName and $iconFontFileName != '' {
 
       @font-face {
@@ -52,14 +52,22 @@ $iconFontFileName: 'JetFW_iconfont.woff' !default;
     --------------------------------------------------------------------*/
     .oj-fwk-icon,
     %oj-component-icon-placeholder {
-
-      @if  $iconFontFileName and $iconFontFileName != '' {
-
+      
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
         @include oj-icon-font-base(
              // the alta icon font was designed to look best at 16px
              $fontSize:   16px,
              $fontFamily: 'Alta Icon Font',
-             $color:      $iconColor);
+             $color:      var(--oj-icon-color));
+      } @else {
+        @if  $iconFontFileName and $iconFontFileName != '' {
+  
+          @include oj-icon-font-base(
+               // the alta icon font was designed to look best at 16px
+               $fontSize:   16px,
+               $fontFamily: 'Alta Icon Font',
+               $color:      $iconColor);
+        }
       }
     }
 
@@ -127,7 +135,11 @@ $iconFontFileName: 'JetFW_iconfont.woff' !default;
     .oj-default .oj-clickable-icon,
     .oj-default.oj-clickable-icon,
     .oj-default.oj-clickable-icon-nocontext {
-      color: $iconColorDefault;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+        color: var(--oj-icon-color-default);
+      } @else {
+        color: $iconColorDefault;        
+      }
     }
 
     a:hover .oj-clickable-icon,
@@ -136,7 +148,11 @@ $iconFontFileName: 'JetFW_iconfont.woff' !default;
     .oj-hover .oj-clickable-icon,
     .oj-hover.oj-clickable-icon,
     .oj-hover.oj-clickable-icon-nocontext {
-      color: $iconColorHover;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+        color: var(--oj-icon-color-hover);
+      } @else {
+        color: $iconColorHover;
+      }
     }
 
     a:active .oj-clickable-icon,
@@ -145,7 +161,11 @@ $iconFontFileName: 'JetFW_iconfont.woff' !default;
     .oj-active .oj-clickable-icon,
     .oj-active.oj-clickable-icon,
     .oj-active.oj-clickable-icon-nocontext {
-      color: $iconColorActive;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+        color: var(--oj-icon-color-active);
+      } @else {
+        color: $iconColorActive;
+      }
     }
 
     a.oj-selected .oj-clickable-icon,
@@ -154,7 +174,11 @@ $iconFontFileName: 'JetFW_iconfont.woff' !default;
     .oj-selected .oj-clickable-icon,
     .oj-selected.oj-clickable-icon,
     .oj-selected.oj-clickable-icon-nocontext {
-      color: $iconColorSelected;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+        color: var(--oj-icon-color-selected);
+      } @else {
+        color: $iconColorSelected;
+      }
     }
 
     a.oj-disabled .oj-clickable-icon,
@@ -164,8 +188,14 @@ $iconFontFileName: 'JetFW_iconfont.woff' !default;
     .oj-disabled a .oj-clickable-icon,
     .oj-disabled.oj-clickable-icon,
     .oj-disabled.oj-clickable-icon-nocontext {
-      color: $iconColorDisabled;
-      opacity: $opacityDisabled;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+        color: var(--oj-icon-color-disabled);
+        opacity: var(--oj-opacity-disabled);
+      } @else {
+        color: $iconColorDisabled;
+        opacity: $opacityDisabled;
+      }
+
     }
 
 
@@ -294,7 +324,7 @@ $iconFontFileName: 'JetFW_iconfont.woff' !default;
       }
       .oj-fwk-icon-dots-horizontal:before{
         content: oj-prepend-slash($oj-fwk-icon-dots-vertical);
-        @include oj-transform-property(rotate(-90deg));
+        transform: rotate(-90deg);
       }
     }
 
@@ -302,7 +332,7 @@ $iconFontFileName: 'JetFW_iconfont.woff' !default;
       .oj-fwk-icon-minimize:before {
         content: oj-prepend-slash($oj-fwk-icon-minimize);
         @include oj-rtl() {
-          @include oj-transform-property(scale(-1, 1));
+          transform: scale(-1, 1);
         }
       }
     }
@@ -312,7 +342,7 @@ $iconFontFileName: 'JetFW_iconfont.woff' !default;
       .oj-fwk-icon-maximize:before {
         content: oj-prepend-slash($oj-fwk-icon-maximize);
         @include oj-rtl() {
-          @include oj-transform-property(scale(-1, 1));
+          transform: scale(-1, 1);
         }
       }
     }
@@ -329,15 +359,15 @@ $iconFontFileName: 'JetFW_iconfont.woff' !default;
       // rotation
       .oj-fwk-icon-arrowtail-e:before {
         @extend .oj-fwk-icon-arrowtail-w;
-        @include oj-transform-property(scale(-1, 1));
+        transform: scale(-1, 1);
       }
       .oj-fwk-icon-arrowtail-n:before {
         @extend .oj-fwk-icon-arrowtail-w;
-        @include oj-transform-property(rotate(90deg));
+        transform: rotate(90deg);
       }
       .oj-fwk-icon-arrowtail-s:before {
         @extend .oj-fwk-icon-arrowtail-w;
-        @include oj-transform-property(scale(-1, 1) rotate(-90deg));
+        transform: scale(-1, 1) rotate(-90deg);
       }
 
       // bidi
@@ -368,15 +398,15 @@ $iconFontFileName: 'JetFW_iconfont.woff' !default;
       // rotation
       .oj-fwk-icon-arrow-w:before {
         @extend .oj-fwk-icon-arrow-e;
-        @include oj-transform-property(scale(-1, 1));
+        transform: scale(-1, 1);
       }
       .oj-fwk-icon-arrow-n:before {
         @extend .oj-fwk-icon-arrow-e;
-        @include oj-transform-property(rotate(-90deg));
+        transform: rotate(-90deg);
       }
       .oj-fwk-icon-arrow-s:before {
         @extend .oj-fwk-icon-arrow-e;
-        @include oj-transform-property(scale(-1, 1) rotate(90deg));
+        transform: scale(-1, 1) rotate(90deg);
       }
 
       // bidi
@@ -408,15 +438,15 @@ $iconFontFileName: 'JetFW_iconfont.woff' !default;
       // rotation
       .oj-fwk-icon-arrow-sw:before {
         @extend .oj-fwk-icon-arrow-se;
-        @include oj-transform-property(scale(-1, 1));
+        transform: scale(-1, 1);
       }
       .oj-fwk-icon-arrow-nw:before {
         @extend .oj-fwk-icon-arrow-se;
-        @include oj-transform-property(scale(-1, -1));
+        transform: scale(-1, -1);
       }
       .oj-fwk-icon-arrow-ne:before {
         @extend .oj-fwk-icon-arrow-se;
-        @include oj-transform-property(scale(1, -1));
+        transform: scale(1, -1);
       }
       .oj-fwk-icon-arrow-n-start:before {
         @include oj-ltr() {
@@ -465,15 +495,15 @@ $iconFontFileName: 'JetFW_iconfont.woff' !default;
       // rotation
       .oj-fwk-icon-arrow02-w:before {
         @extend .oj-fwk-icon-arrow02-s;
-        @include oj-transform-property(scale(1, -1) rotate(90deg));
+        transform: scale(1, -1) rotate(90deg);
       }
       .oj-fwk-icon-arrow02-n:before {
         @extend .oj-fwk-icon-arrow02-s;
-        @include oj-transform-property(scale(1, -1));
+        transform: scale(1, -1);
       }
       .oj-fwk-icon-arrow02-e:before {
         @extend .oj-fwk-icon-arrow02-s;
-       @include oj-transform-property(rotate(-90deg));
+       transform: rotate(-90deg);
       }
 
       // bidi
@@ -506,15 +536,15 @@ $iconFontFileName: 'JetFW_iconfont.woff' !default;
       // rotation
       .oj-fwk-icon-arrow03-w:before {
         @extend .oj-fwk-icon-arrow03-e;
-        @include oj-transform-property(scale(-1, 1));
+        transform: scale(-1, 1);
       }
       .oj-fwk-icon-arrow03-n:before {
         @extend .oj-fwk-icon-arrow03-e;
-        @include oj-transform-property(rotate(-90deg));
+        transform: rotate(-90deg);
       }
       .oj-fwk-icon-arrow03-s:before {
         @extend .oj-fwk-icon-arrow03-e;
-        @include oj-transform-property(scale(-1, 1) rotate(90deg));
+        transform: scale(-1, 1) rotate(90deg);
       }
 
       //bidi
@@ -547,15 +577,15 @@ $iconFontFileName: 'JetFW_iconfont.woff' !default;
       // rotatoin
       .oj-fwk-icon-arrow03-sw:before {
         @extend .oj-fwk-icon-arrow03-se;
-        @include oj-transform-property(scale(-1, 1));
+        transform: scale(-1, 1);
       }
       .oj-fwk-icon-arrow03-nw:before {
         @extend .oj-fwk-icon-arrow03-se;
-        @include oj-transform-property(scale(-1, -1));
+        transform: scale(-1, -1);
       }
       .oj-fwk-icon-arrow03-ne:before {
         @extend .oj-fwk-icon-arrow03-se;
-        @include oj-transform-property(scale(1, -1));
+        transform: scale(1, -1);
       }
 
       // bidi
@@ -610,15 +640,15 @@ $iconFontFileName: 'JetFW_iconfont.woff' !default;
       // rotation
       .oj-fwk-icon-caret-s:before {
         @extend .oj-fwk-icon-caret-e;
-        @include oj-transform-property(scale(-1, 1) rotate(90deg));
+        transform: scale(-1, 1) rotate(90deg);
       }
       .oj-fwk-icon-caret-w:before {
         @extend .oj-fwk-icon-caret-e;
-        @include oj-transform-property(scale(-1, 1));
+        transform: scale(-1, 1);
       }
       .oj-fwk-icon-caret-n:before {
         @extend .oj-fwk-icon-caret-e;
-        @include oj-transform-property(rotate(-90deg));
+        transform: rotate(-90deg);
       }
 
       // bidi
@@ -652,15 +682,15 @@ $iconFontFileName: 'JetFW_iconfont.woff' !default;
       // rotation
       .oj-fwk-icon-caret02-s:before {
         @extend .oj-fwk-icon-caret02-e;
-        @include oj-transform-property(scale(-1, 1) rotate(90deg));
+        transform: scale(-1, 1) rotate(90deg);
       }
       .oj-fwk-icon-caret02-w:before {
         @extend .oj-fwk-icon-caret02-e;
-        @include oj-transform-property(scale(-1, 1));
+        transform: scale(-1, 1);
       }
       .oj-fwk-icon-caret02-n:before {
         @extend .oj-fwk-icon-caret02-e;
-        @include oj-transform-property(rotate(-90deg));
+        transform: rotate(-90deg);
       }
 
       // bidi
@@ -692,15 +722,15 @@ $iconFontFileName: 'JetFW_iconfont.woff' !default;
       // rotation
       .oj-fwk-icon-caret02end-s:before {
         @extend .oj-fwk-icon-caret02end-e;
-        @include oj-transform-property(scale(-1, 1) rotate(90deg));
+        transform: scale(-1, 1) rotate(90deg);
       }
       .oj-fwk-icon-caret02end-w:before {
         @extend .oj-fwk-icon-caret02end-e;
-        @include oj-transform-property(scale(-1, 1));
+        transform: scale(-1, 1);
       }
       .oj-fwk-icon-caret02end-n:before {
         @extend .oj-fwk-icon-caret02end-e;
-        @include oj-transform-property(rotate(-90deg));
+        transform: rotate(-90deg);
       }
 
 
@@ -733,15 +763,15 @@ $iconFontFileName: 'JetFW_iconfont.woff' !default;
       // rotation
       .oj-fwk-icon-caret03-s:before {
         @extend .oj-fwk-icon-caret03-e;
-        @include oj-transform-property(scale(-1, 1) rotate(90deg));
+        transform: scale(-1, 1) rotate(90deg);
       }
       .oj-fwk-icon-caret03-w:before {
         @extend .oj-fwk-icon-caret03-e;
-        @include oj-transform-property(scale(-1, 1));
+        transform: scale(-1, 1);
       }
       .oj-fwk-icon-caret03-n:before {
         @extend .oj-fwk-icon-caret03-e;
-        @include oj-transform-property(rotate(-90deg));
+        transform: rotate(-90deg);
       }
 
       // bidi

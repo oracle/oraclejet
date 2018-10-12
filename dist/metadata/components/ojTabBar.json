@@ -1,7 +1,7 @@
 {
   "name": "oj-tab-bar",
-  "version": "5.2.0",
-  "jetVersion": "5.2.0",
+  "version": "6.0.0",
+  "jetVersion": "6.0.0",
   "displayName": "Tab Bar",
   "type": "core",
   "styleClasses": [
@@ -91,25 +91,36 @@
     }
   ],
   "description": "Displays tab bar with advanced interactive features.",
+  "help": "https://docs.oracle.com/en/middleware/jet/6/reference-api/oj.ojTabBar.html",
   "properties": {
+    "as": {
+      "description": "Gets and sets the alias for the current item when referenced inside the item template.",
+      "type": "string",
+      "displayName": "As",
+      "value": "",
+      "help": "as"
+    },
     "currentItem": {
       "description": "Gets and sets the key of the item that should have keyboard focus.",
       "type": "any",
       "displayName": "Current Item",
       "value": null,
-      "writeback": true
+      "writeback": true,
+      "help": "currentItem"
     },
     "data": {
       "description": "Gets and sets the data provider for tabbar.",
       "type": "oj.TableDataSource|oj.DataProvider|null",
       "displayName": "Data",
-      "value": null
+      "value": null,
+      "help": "data"
     },
     "display": {
       "description": "Gets and sets whether all or only icons need to be displayed.",
       "type": "string",
       "displayName": "Display",
       "value": "all",
+      "help": "display",
       "enumValues": [
         "all",
         "icons"
@@ -130,6 +141,7 @@
       "type": "string",
       "displayName": "Edge",
       "value": "start",
+      "help": "edge",
       "enumValues": [
         "bottom",
         "end",
@@ -159,12 +171,14 @@
       "description": "Customize the functionalities of each tab on Tab bar.",
       "type": "object",
       "displayName": "Item",
+      "help": "item",
       "properties": {
         "renderer": {
           "description": "Gets and sets the renderer for the tab item.",
           "type": "function|null",
           "displayName": "Renderer",
           "value": null,
+          "help": "item.renderer",
           "properties": {
             "componentElement": {
               "description": "oj-tab-bar element",
@@ -197,6 +211,7 @@
           "type": "function|boolean",
           "displayName": "Selectable",
           "value": true,
+          "help": "item.selectable",
           "properties": {
             "componentElement": {
               "description": "oj-tab-bar element",
@@ -231,6 +246,7 @@
       "type": "string",
       "displayName": "Overflow",
       "value": "hidden",
+      "help": "overflow",
       "enumValues": [
         "hidden",
         "popup"
@@ -251,6 +267,7 @@
       "type": "string",
       "displayName": "Reorderable",
       "value": "disabled",
+      "help": "reorderable",
       "enumValues": [
         "disabled",
         "enabled"
@@ -271,7 +288,8 @@
       "type": "any",
       "displayName": "Selection",
       "value": null,
-      "writeback": true
+      "writeback": true,
+      "help": "selection"
     },
     "translations": {
       "description": "A collection of translated resources from the translation bundle, or null if this component has no resources.",
@@ -279,66 +297,79 @@
       "displayName": "Translations",
       "value": {},
       "translatable": true,
+      "help": "translations",
       "properties": {
         "accessibleReorderAfterItem": {
           "description": "Provides properties to customize the screen reader text when the tentative drop target is after a certain item.",
           "type": "string",
-          "displayName": "Accessible Reorder After Item"
+          "displayName": "Accessible Reorder After Item",
+          "help": "translations.accessibleReorderAfterItem"
         },
         "accessibleReorderBeforeItem": {
           "description": "Provides properties to customize the screen reader text when the tentative drop target is before a certain item.",
           "type": "string",
-          "displayName": "Accessible Reorder Before Item"
+          "displayName": "Accessible Reorder Before Item",
+          "help": "translations.accessibleReorderBeforeItem"
         },
         "accessibleReorderTouchInstructionText": {
           "description": "Provides properties to customize the screen reader touch instructional text for reordering items.",
           "type": "string",
-          "displayName": "Accessible Reorder Touch Instruction Text"
+          "displayName": "Accessible Reorder Touch Instruction Text",
+          "help": "translations.accessibleReorderTouchInstructionText"
         },
         "labelCut": {
           "description": "Provides properties to customize the context menu cut label.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "Label Cut"
+          "displayName": "Label Cut",
+          "help": "translations.labelCut"
         },
         "labelPasteAfter": {
           "description": "Provides properties to customize the context menu paste after label.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "Label Paste After"
+          "displayName": "Label Paste After",
+          "help": "translations.labelPasteAfter"
         },
         "labelPasteBefore": {
           "description": "Provides properties to customize the context menu paste before label.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "Label Paste Before"
+          "displayName": "Label Paste Before",
+          "help": "translations.labelPasteBefore"
         },
         "labelRemove": {
           "description": "Provides properties to customize the context menu remove label.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "Label Remove"
+          "displayName": "Label Remove",
+          "help": "translations.labelRemove"
         },
         "msgFetchingData": {
           "description": "Provides properties to customize the message text used by Tab Bar when waiting for data.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "Msg Fetching Data"
+          "displayName": "Msg Fetching Data",
+          "help": "translations.msgFetchingData"
         },
         "msgNoData": {
           "description": "Provides properties to customize the message text used by Tab Bar when there are no items.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "Msg No Data"
+          "displayName": "Msg No Data",
+          "help": "translations.msgNoData"
         },
         "overflowItemLabel": {
           "description": "Label for overflow menu button.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "Overflow Item Label"
+          "displayName": "Overflow Item Label",
+          "help": "translations.overflowItemLabel"
         },
         "removeCueText": {
           "description": "Text cue for the removable tab, used as the aria-label for the close icon.",
           "type": "string",
-          "displayName": "Remove Cue Text"
+          "displayName": "Remove Cue Text",
+          "help": "translations.removeCueText"
         },
         "selectedLabel": {
           "description": "Provides text to read to screen reader when an item is selected.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "Selected Label"
+          "displayName": "Selected Label",
+          "help": "translations.selectedLabel"
         }
       }
     },
@@ -347,6 +378,7 @@
       "type": "string",
       "displayName": "Truncation",
       "value": "none",
+      "help": "truncation",
       "enumValues": [
         "none",
         "progressive"
@@ -365,7 +397,8 @@
   },
   "methods": {
     "getContextByNode": {
-      "description": "Returns an object with context for the given child DOM node. This will always contain the subid for the node,\ndefined as the 'subId' property on the context object. Additional component specific information may also be included.\n\nFor more details on returned objects, see context objects.",
+      "description": "Returns an object with context for the given child DOM node. This will always contain the subid for the node, defined as the 'subId' property on the context object. Additional component specific information may also be included. For more details on returned objects, see context objects.",
+      "help": "getContextByNode",
       "params": [
         {
           "name": "node",
@@ -377,10 +410,12 @@
     },
     "refresh": {
       "description": "Refreshes the visual state of the Tab Bar.",
+      "help": "refresh",
       "return": "void"
     },
     "setProperty": {
-      "description": "Sets a property or a single subproperty for complex properties and notifies the component\nof the change, triggering a [property]Changed event.",
+      "description": "Sets a property or a single subproperty for complex properties and notifies the component of the change, triggering a [property]Changed event.",
+      "help": "setProperty",
       "params": [
         {
           "name": "property",
@@ -397,6 +432,7 @@
     },
     "getProperty": {
       "description": "Retrieves a value for a property or a single subproperty for complex properties.",
+      "help": "getProperty",
       "params": [
         {
           "name": "property",
@@ -408,6 +444,7 @@
     },
     "setProperties": {
       "description": "Performs a batch set of properties.",
+      "help": "setProperties",
       "params": [
         {
           "name": "properties",
@@ -421,6 +458,7 @@
   "events": {
     "ojAnimateStart": {
       "description": "Event handler for when the default animation of a particular action is about to start.",
+      "help": "animateStart",
       "detail": {
         "action": {
           "description": "the action that starts the animation. See animation section for a list of actions.",
@@ -438,6 +476,7 @@
     },
     "ojAnimateEnd": {
       "description": "Event handler for when the default animation of a particular action has ended.",
+      "help": "animateEnd",
       "detail": {
         "action": {
           "description": "the action that started the animation. See animation section for a list of actions.",
@@ -452,6 +491,7 @@
     "ojBeforeSelect": {
       "description": "Event handler for when before the selection is changed.",
       "cancelable": true,
+      "help": "beforeSelect",
       "detail": {
         "key": {
           "description": "Selected list item Key.",
@@ -466,6 +506,7 @@
     "ojBeforeCurrentItem": {
       "description": "Event handler for when before the current item is changed.",
       "cancelable": true,
+      "help": "beforeCurrentItem",
       "detail": {
         "previousKey": {
           "description": "the Key of the previous item",
@@ -488,6 +529,7 @@
     "ojBeforeDeselect": {
       "description": "Event handler for when before tab is deselected.",
       "cancelable": true,
+      "help": "beforeDeselect",
       "detail": {
         "fromKey": {
           "description": "the Key of the tab item being navigated from",
@@ -509,6 +551,7 @@
     },
     "ojDeselect": {
       "description": "Event handler for when a tab is deselected.",
+      "help": "deselect",
       "detail": {
         "fromKey": {
           "description": "the Key of the tab item being navigated from",
@@ -531,6 +574,7 @@
     "ojBeforeRemove": {
       "description": "Event handler for when a tab is about to be removed.",
       "cancelable": true,
+      "help": "beforeRemove",
       "detail": {
         "item": {
           "description": "Item being removed",
@@ -544,6 +588,7 @@
     },
     "ojRemove": {
       "description": "Event handler for when a tab is removed.",
+      "help": "remove",
       "detail": {
         "item": {
           "description": "Item removed",
@@ -557,6 +602,7 @@
     },
     "ojReorder": {
       "description": "Event handler for when a tab is reordered.",
+      "help": "reorder",
       "detail": {
         "item": {
           "description": "Item to be moved",
@@ -575,7 +621,32 @@
   },
   "slots": {
     "contextMenu": {
-      "description": "The contextMenu slot is set on the oj-menu within this element. \nThis is used to designate the JET Menu that this component should launch as a context menu on right-click, Shift-F10, Press & Hold, or component-specific gesture. \nIf specified, the browser's native context menu will be replaced by the JET Menu specified in this slot.\n\nThe application can register a listener for the Menu's ojBeforeOpen event. The listener can cancel the launch via event.preventDefault(), \nor it can customize the menu contents by editing the menu DOM directly, and then calling refresh() on the Menu.\n\nTo help determine whether it's appropriate to cancel the launch or customize the menu, the ojBeforeOpen listener can use component API's to determine which \ntable cell, chart item, etc., is the target of the context menu. See the JSDoc and demos of the individual components for details. \n\nKeep in mind that any such logic must work whether the context menu was launched via right-click, Shift-F10, Press & Hold, or component-specific touch gesture."
+      "description": "The contextMenu slot is set on the <oj-menu> instance within this element. It designates the JET Menu that this component should launch as a context menu.",
+      "maxItems": 1,
+      "help": "contextMenu"
+    },
+    "itemTemplate": {
+      "description": "The itemTemplate slot is used to specify the template for rendering each item in the list. The slot must be a <template> element.\nThe content of the template could either include the <li> element, in which case that will be used as\nthe root of the item. Or it can be just the content which excludes the <li> element.\nWhen the template is executed for each item, it will have access to the binding context containing the following properties: $current - an object that contains information for the current item. (See the table below for a list of properties available on $current) alias - if as attribute was specified, the value will be used to provide an application-named alias for $current.\n",
+      "maxItems": 1,
+      "help": "itemTemplate",
+      "data": {
+        "componentElement": {
+          "description": "The <oj-navigation-list> custom element",
+          "type": "Element"
+        },
+        "data": {
+          "description": "The data for the current item being rendered",
+          "type": "object"
+        },
+        "index": {
+          "description": "The zero-based index of the curent item",
+          "type": "number"
+        },
+        "key": {
+          "description": "The key of the current item being rendered",
+          "type": "any"
+        }
+      }
     }
   }
 }

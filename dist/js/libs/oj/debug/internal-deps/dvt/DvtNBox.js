@@ -8782,11 +8782,12 @@ DvtNBoxDataUtils.processDataObject = function(nbox) {
     }
   }
   options[dvt.NBoxConstants.CELLS] = newCells;
-  var nodeMap = {};
+  var ctx = nbox.getCtx();
+  var nodeMap = new ctx.ojMap();
   var grouping = false;
   for (var n = 0; n < DvtNBoxDataUtils.getNodeCount(nbox); n++) {
     var nodeObj = DvtNBoxDataUtils.getNode(nbox, n);
-    nodeMap[nodeObj[dvt.NBoxConstants.ID]] = n;
+    nodeMap.set(nodeObj[dvt.NBoxConstants.ID], n);
     if (!grouping &&
         (nodeObj[dvt.NBoxConstants.GROUP_CATEGORY] ||
          nodeObj['_groupCategories'] ||
@@ -9063,7 +9064,7 @@ DvtNBoxDataUtils.getNode = function(nbox, nodeIndex) {
  */
 DvtNBoxDataUtils.getNodeIndex = function(nbox, id) {
   var nodeMap = nbox.getOptions()['__nodeMap'];
-  return nodeMap ? nodeMap[id] : -1;
+  return nodeMap ? nodeMap.get(id) : -1;
 };
 
 

@@ -31,7 +31,13 @@
     }
 
     .oj-progresslist-error-message {
-      color: $textColorError;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        color: var(--oj-progress-list-text-color-error);
+      }
+      @else {
+        color: $textColorError;
+      }
     }
 
     .oj-progressstatus-done-icon {

@@ -4,10 +4,10 @@
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
-define(['ojs/ojcore', 'ojL10n!ojtranslations/nls/timezoneData', 'ojs/ojvalidation-base'], function(oj, ojtd)
+define(['ojs/ojcore', 'ojL10n!ojtranslations/nls/timezoneData', 'ojs/ojlocaledata', 'ojs/ojvalidation-base'], function(oj, ojtd, LocaleData)
 {
 
-/*global ojtd:true*/
+/* global ojtd:true, LocaleData:false*/
 
 
 /**
@@ -21,30 +21,27 @@ oj.TimezoneData = {};
  * @param {Object} timezoneBundle bundle to merge into the LocaleElements bundle
  * @ignore
  */
-oj.TimezoneData.__mergeIntoLocaleElements = function(timezoneBundle)
-{
-  var localeElements = oj.LocaleData.__getBundle();
+oj.TimezoneData.__mergeIntoLocaleElements = function (timezoneBundle) {
+  var localeElements = LocaleData.__getBundle();
   oj.CollectionUtils.copyInto(localeElements, timezoneBundle, undefined, true);
-}
+};
 
 
 /**
  * @return {Array.<string>} names of the timezone bundles
  * @ignore
  */
-oj.TimezoneData.__getBundleNames = function()
-{
+oj.TimezoneData.__getBundleNames = function () {
   return oj.TimezoneData._bundleNames;
-}
+};
 
 /**
  * @param {string} name bundle name
  * @ignore
  */
-oj.TimezoneData.__registerBundleName = function(name)
-{
+oj.TimezoneData.__registerBundleName = function (name) {
   oj.TimezoneData._bundleNames.push(name);
-}
+};
 
 /**
  * @ignore
@@ -52,9 +49,9 @@ oj.TimezoneData.__registerBundleName = function(name)
 oj.TimezoneData._bundleNames = [];
 
 
-(function()
-{
+(function () {
   oj.TimezoneData.__registerBundleName('/timezoneData');
-  oj.TimezoneData.__mergeIntoLocaleElements(typeof ojtd === 'undefined' ? {}: ojtd);
-})();
+  oj.TimezoneData.__mergeIntoLocaleElements(typeof ojtd === 'undefined' ? {} : ojtd);
+}());
+
 });

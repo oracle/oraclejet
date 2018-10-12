@@ -25,7 +25,9 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojdatasource-common'],
  * http://jquery.org/license
  */
 
-/*jslint browser: true,devel:true*/
+/* global Promise:false */
+
+/* jslint browser: true,devel:true*/
 /**
  * @export
  * @class oj.FlattenedTreeTableDataSource
@@ -43,15 +45,13 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojdatasource-common'],
  * @constructor
  * @since 1.0
  */
-oj.FlattenedTreeTableDataSource = function(data, options)
-{
+oj.FlattenedTreeTableDataSource = function (data, options) {
   // Initialize
-  options = options || {};
+  var _options = options || {};
 
-  if (!(data instanceof oj.FlattenedTreeDataSource))
-  {
-    var errSummary = oj.TableDataSource._LOGGER_MSG['_ERR_DATA_INVALID_TYPE_SUMMARY'];
-    var errDetail = oj.TableDataSource._LOGGER_MSG['_ERR_DATA_INVALID_TYPE_DETAIL'];
+  if (!(data instanceof oj.FlattenedTreeDataSource)) {
+    var errSummary = oj.TableDataSource._LOGGER_MSG._ERR_DATA_INVALID_TYPE_SUMMARY;
+    var errDetail = oj.TableDataSource._LOGGER_MSG._ERR_DATA_INVALID_TYPE_DETAIL;
     throw new Error(errSummary + '\n' + errDetail);
   }
 
@@ -60,70 +60,62 @@ oj.FlattenedTreeTableDataSource = function(data, options)
   this._startIndex = 0;
   this._nodeSetList = [];
   this._hasMore = true;
-  
+
   // override the fetchSize with -1 if not already specified.
-  if (this._data.getOption('fetchSize') == null)
-  {
-    this._data.getFetchSize = function()
-    {
+  if (this._data.getOption('fetchSize') == null) {
+    this._data.getFetchSize = function () {
       return -1;
     };
   }
   var self = this;
   // override the insert/removeRows function
-  this._data.insertRows = function(insertAtIndex, insertAtKey, nodeSet)
-  {
-    var i, j, row, rowIdx, rowKey;
+  this._data.insertRows = function (insertAtIndex, insertAtKey, nodeSet) {
     var rowArray = [];
     var keyArray = [];
     var indexArray = [];
-    for (i = 0; i < nodeSet.getCount(); i++)
-    {
-      row = nodeSet.getData(i);
-      rowKey = nodeSet.getMetadata(i)['key'];
-      rowIdx = insertAtIndex + i;
+    for (var i = 0; i < nodeSet.getCount(); i++) {
+      var row = nodeSet.getData(i);
+      var rowKey = nodeSet.getMetadata(i).key;
+      var rowIdx = insertAtIndex + i;
       self._nodeSetList.splice(rowIdx, 0, {});
-      self._nodeSetList[rowIdx]['nodeSet'] = nodeSet;
-      self._nodeSetList[rowIdx]['startIndex'] = insertAtIndex;
-      
+      self._nodeSetList[rowIdx].nodeSet = nodeSet;
+      self._nodeSetList[rowIdx].startIndex = insertAtIndex;
+
       // update the startIndex of the shifted rows
-      for (j = rowIdx + 1; j < self._nodeSetList.length; j++)
-      {
-        self._nodeSetList[j]['startIndex'] = self._nodeSetList[j]['startIndex'] + 1;
+      for (var j = rowIdx + 1; j < self._nodeSetList.length; j++) {
+        self._nodeSetList[j].startIndex += 1;
       }
       rowArray.push(self._wrapWritableValue(row));
       keyArray.push(rowKey);
       indexArray.push(rowIdx);
-      self._rows['data'].splice(rowIdx, 0, row);
-      self._rows['keys'].splice(rowIdx, 0, rowKey);
-      self._rows['indexes'].splice(rowIdx, 0, rowIdx);
+      self._rows.data.splice(rowIdx, 0, row);
+      self._rows.keys.splice(rowIdx, 0, rowKey);
+      self._rows.indexes.splice(rowIdx, 0, rowIdx);
     }
     self._realignRowIndices();
     self._hasMore = true;
-    oj.TableDataSource.superclass.handleEvent.call(self, oj.TableDataSource.EventType['ADD'], {'data': rowArray, 'keys': keyArray, 'indexes': indexArray});
+    oj.TableDataSource.superclass.handleEvent
+      .call(self, oj.TableDataSource.EventType.ADD,
+            { data: rowArray, keys: keyArray, indexes: indexArray });
   };
-  this._data.removeRows = function(rowKeys)
-  {
-    var i, j, row, rowIdx;
+  this._data.removeRows = function (rowKeys) {
     var rowArray = [];
     var keyArray = [];
     var indexArray = [];
-    for (i = rowKeys.length - 1; i >= 0; i--)
-    {
-      rowIdx = rowKeys[i]['index'];
+    for (var i = rowKeys.length - 1; i >= 0; i--) {
+      var rowIdx = rowKeys[i].index;
       // just create a dummy row for deletion
       rowArray.push('');
-      keyArray.push(rowKeys[i]['key']);
+      keyArray.push(rowKeys[i].key);
       indexArray.push(rowIdx);
       self._nodeSetList.splice(rowIdx, 1);
       // update the startIndex of the shifted rows
-      for (j = rowIdx; j < self._nodeSetList.length; j++)
-      {
-        self._nodeSetList[j]['startIndex'] = self._nodeSetList[j]['startIndex'] - 1;
+      for (var j = rowIdx; j < self._nodeSetList.length; j++) {
+        self._nodeSetList[j].startIndex -= 1;
       }
-      self._rows['data'].splice(rowIdx, 1);
-      self._rows['keys'].splice(rowIdx, 1);
-      self._rows['indexes'].splice(rowIdx, 1);
+      self._rows.data.splice(rowIdx, 1);
+      self._rows.keys.splice(rowIdx, 1);
+      self._rows.indexes.splice(rowIdx, 1);
     }
     // The index array must be sorted ascending
     function sortNumber(a, b) {
@@ -132,20 +124,23 @@ oj.FlattenedTreeTableDataSource = function(data, options)
     indexArray = indexArray.sort(sortNumber);
     self._realignRowIndices();
     self._hasMore = true;
-    oj.TableDataSource.superclass.handleEvent.call(self, oj.TableDataSource.EventType['REMOVE'], {'data': rowArray, 'keys': keyArray, 'indexes': indexArray});
+    oj.TableDataSource.superclass.handleEvent
+      .call(self, oj.TableDataSource.EventType.REMOVE,
+            { data: rowArray, keys: keyArray, indexes: indexArray });
   };
-  
+
   this.Init();
-  
-  if ((options != null && (options['startFetch'] == 'enabled' || options['startFetch'] == null))
-    || options == null)
-  {
+
+  if ((_options != null && (_options.startFetch === 'enabled' || _options.startFetch == null))
+    || _options == null) {
     this._startFetchEnabled = true;
   }
 };
 
-// Subclass from oj.DataSource 
-oj.Object.createSubclass(oj.FlattenedTreeTableDataSource, oj.TableDataSource, "oj.FlattenedTreeTableDataSource");
+// Subclass from oj.DataSource
+oj.Object.createSubclass(oj.FlattenedTreeTableDataSource,
+                         oj.TableDataSource,
+                         'oj.FlattenedTreeTableDataSource');
 
 /**
  * Initializes the instance.
@@ -154,24 +149,23 @@ oj.Object.createSubclass(oj.FlattenedTreeTableDataSource, oj.TableDataSource, "o
  * @override
  * @protected
  */
-oj.FlattenedTreeTableDataSource.prototype.Init = function()
-{
+oj.FlattenedTreeTableDataSource.prototype.Init = function () {
   oj.FlattenedTreeTableDataSource.superclass.Init.call(this);
 };
 
 /**
  * Determines whether this FlattenedTreeTableDataSource supports certain feature.
  * @param {string} feature the feature in which its capabilities is inquired.  Currently the only valid feature is "sort".
- * @return {string|null} the name of the feature.  For "sort", the valid return values are: "full", "none".  
+ * @return {string|null} the name of the feature.  For "sort", the valid return values are: "full", "none".
  *         Returns null if the feature is not recognized.
  * @export
  * @expose
  * @memberof oj.FlattenedTreeTableDataSource
  * @instance
  */
-oj.FlattenedTreeTableDataSource.prototype.getCapability = function(feature)
-{
-    return 'full';
+// eslint-disable-next-line no-unused-vars
+oj.FlattenedTreeTableDataSource.prototype.getCapability = function (feature) {
+  return 'full';
 };
 
 /**
@@ -182,9 +176,8 @@ oj.FlattenedTreeTableDataSource.prototype.getCapability = function(feature)
  * @memberof oj.FlattenedTreeTableDataSource
  * @instance
  */
-oj.FlattenedTreeTableDataSource.prototype.getWrappedDataSource = function()
-{
-    return this._data;
+oj.FlattenedTreeTableDataSource.prototype.getWrappedDataSource = function () {
+  return this._data;
 };
 
 /**
@@ -200,35 +193,31 @@ oj.FlattenedTreeTableDataSource.prototype.getWrappedDataSource = function()
  * <tr><td><b>keys</b></td><td>An array of key values for the rows</td></tr>
  * <tr><td><b>startIndex</b></td><td>The startIndex for the returned set of rows</td></tr>
  * </tbody>
- * </table>  
+ * </table>
  * @export
  * @expose
  * @memberof oj.FlattenedTreeTableDataSource
  * @instance
  */
-oj.FlattenedTreeTableDataSource.prototype.fetch = function(options)
-{
-  options = options || {};
+oj.FlattenedTreeTableDataSource.prototype.fetch = function (options) {
+  var _options = options || {};
   var self = this;
-  var fetchType = options['fetchType'];
-  
-  if (fetchType == 'init' && !this._startFetchEnabled)
-  {
-      return Promise.resolve();
+  var fetchType = _options.fetchType;
+
+  if (fetchType === 'init' && !this._startFetchEnabled) {
+    return Promise.resolve();
   }
 
-  return self._fetchInternal(options);
+  return self._fetchInternal(_options);
 };
 
 
-
-
-/**** start delegated functions ****/
+/** ** start delegated functions ****/
 
 /**
  * Return the row data found at the given index.
- * 
- * @param {number} index Index for which to return the row data. 
+ *
+ * @param {number} index Index for which to return the row data.
  * @param {Object=} options Options to control the at.
  * @return {Promise} Promise resolves to a compound object which has the structure below. If the index is out of range, Promise resolves to null.<p>
  * <table>
@@ -243,20 +232,17 @@ oj.FlattenedTreeTableDataSource.prototype.fetch = function(options)
  * @memberof oj.FlattenedTreeTableDataSource
  * @instance
  */
-oj.FlattenedTreeTableDataSource.prototype.at = function(index, options)
-{
+// eslint-disable-next-line no-unused-vars
+oj.FlattenedTreeTableDataSource.prototype.at = function (index, options) {
   var row;
 
-  if (index < 0 || index >= this._rows['data'].length)
-  {
+  if (index < 0 || index >= this._rows.data.length) {
     row = null;
-  }
-  else
-  {
-    row = {'data': this._rows['data'][index], 'index': index, 'key': this._rows['keys'][index]};
+  } else {
+    row = { data: this._rows.data[index], index: index, key: this._rows.keys[index] };
   }
 
-  return new Promise(function(resolve, reject) {
+  return new Promise(function (resolve) {
     resolve(row);
   });
 };
@@ -269,8 +255,7 @@ oj.FlattenedTreeTableDataSource.prototype.at = function(index, options)
  * @memberof oj.FlattenedTreeTableDataSource
  * @instance
  */
-oj.FlattenedTreeTableDataSource.prototype.collapse = function(rowKey)
-{
+oj.FlattenedTreeTableDataSource.prototype.collapse = function (rowKey) {
   this._data.collapse(rowKey);
 };
 
@@ -283,14 +268,13 @@ oj.FlattenedTreeTableDataSource.prototype.collapse = function(rowKey)
  * @memberof oj.FlattenedTreeTableDataSource
  * @instance
  */
-oj.FlattenedTreeTableDataSource.prototype.expand = function(rowKey)
-{
+oj.FlattenedTreeTableDataSource.prototype.expand = function (rowKey) {
   this._data.expand(rowKey);
 };
 
 /**
  * Return the first row data whose id value is the given id
- * @param {string} id ID for which to return the row data, if found. 
+ * @param {string} id ID for which to return the row data, if found.
  * @param {Object=} options Options to control the get.
  * @return {Promise} Promise which resolves to a compound object which has the structure below where the id matches the given id. If none are found, resolves to null.<p>
  * <table>
@@ -305,20 +289,20 @@ oj.FlattenedTreeTableDataSource.prototype.expand = function(rowKey)
  * @memberof oj.FlattenedTreeTableDataSource
  * @instance
  */
-oj.FlattenedTreeTableDataSource.prototype.get = function(id, options)
-{
+// eslint-disable-next-line no-unused-vars
+oj.FlattenedTreeTableDataSource.prototype.get = function (id, options) {
   // only works for expanded keys
   var rowIdx = this._data.getIndex(id);
-  var row = this._rows['data'][rowIdx];
+  var row = this._rows.data[rowIdx];
   var wrappedRow = this._wrapWritableValue(row);
-  var result = {'data': wrappedRow, 'key': id, 'index': rowIdx};
-  
+  var result = { data: wrappedRow, key: id, index: rowIdx };
+
   return Promise.resolve(result);
 };
 
 /**
  * Attach an event handler to the datasource
- * 
+ *
  * @param {string} eventType eventType supported by the datasource
  * @param {function(Object)} eventHandler event handler function
  * @export
@@ -326,23 +310,19 @@ oj.FlattenedTreeTableDataSource.prototype.get = function(id, options)
  * @memberof oj.FlattenedTreeTableDataSource
  * @instance
  */
-oj.FlattenedTreeTableDataSource.prototype.on = function(eventType, eventHandler)
-{
-  if (eventType == 'expand' ||
-      eventType == 'collapse')
-  {
+oj.FlattenedTreeTableDataSource.prototype.on = function (eventType, eventHandler) {
+  if (eventType === 'expand' ||
+      eventType === 'collapse') {
     // expand/collapse listeners should be passed through to the FlattenedTreeDatasource
     this._data.on(eventType, eventHandler);
-  }
-  else
-  {
+  } else {
     oj.FlattenedTreeTableDataSource.superclass.on.call(this, eventType, eventHandler);
   }
 };
 
 /**
  * Detach an event handler from the datasource
- * 
+ *
  * @param {string} eventType eventType supported by the datasource
  * @param {function(Object)} eventHandler event handler function
  * @export
@@ -350,16 +330,12 @@ oj.FlattenedTreeTableDataSource.prototype.on = function(eventType, eventHandler)
  * @memberof oj.FlattenedTreeTableDataSource
  * @instance
  */
-oj.FlattenedTreeTableDataSource.prototype.off = function(eventType, eventHandler)
-{
-  if (eventType == 'expand' ||
-      eventType == 'collapse')
-  {
+oj.FlattenedTreeTableDataSource.prototype.off = function (eventType, eventHandler) {
+  if (eventType === 'expand' ||
+      eventType === 'collapse') {
     // expand/collapse listeners should be passed through to the FlattenedTreeDatasource
     this._data.off(eventType, eventHandler);
-  }
-  else
-  {
+  } else {
     oj.FlattenedTreeTableDataSource.superclass.off.call(this, eventType, eventHandler);
   }
 };
@@ -375,40 +351,36 @@ oj.FlattenedTreeTableDataSource.prototype.off = function(eventType, eventHandler
  * @memberof oj.FlattenedTreeTableDataSource
  * @instance
  */
-oj.FlattenedTreeTableDataSource.prototype.sort = function(criteria)
-{
-  if (criteria == null)
-  {
-    criteria = this['sortCriteria'];
+oj.FlattenedTreeTableDataSource.prototype.sort = function (criteria) {
+  if (criteria == null) {
+    // eslint-disable-next-line no-param-reassign
+    criteria = this.sortCriteria;
+  } else {
+    this.sortCriteria = criteria;
   }
-  else
-  {
-    this['sortCriteria'] = criteria;
-  }
-  
+
   var self = this;
-  criteria['axis'] = 'column';
-  return new Promise(function(resolve, reject) 
-  {
+  // eslint-disable-next-line no-param-reassign
+  criteria.axis = 'column';
+  return new Promise(function (resolve, reject) {
     self._data.getWrappedDataSource().sort(criteria,
-      {"success": function(nodeSet)
-        {
-          setTimeout(function()
-          {
-            self._data.refresh();
-            self._rows = null;
-            var result = {'header': criteria['key'], 'direction': criteria['direction']};
-            // We need to dispatch a RESET event because after a sort the data needs to be completely
-            // refetched and we need to start from page 1 again if paging.
-            oj.TableDataSource.superclass.handleEvent.call(self, oj.TableDataSource.EventType['RESET'], null);
-            resolve(result);
-          }, 0);
-        }.bind(this),
-        "error": function(status)
-        {
-          //this._handleFetchRowsError(status, {'start': rowStart, 'count': rowCount}, callbacks, callbackObjects);
+      { success: function () {
+        setTimeout(function () {
+          self._data.refresh();
+          self._rows = null;
+          var result = { header: criteria.key, direction: criteria.direction };
+          // We need to dispatch a RESET event because after a sort the data needs to be completely
+          // refetched and we need to start from page 1 again if paging.
+          oj.TableDataSource.superclass.handleEvent.call(self,
+                                                         oj.TableDataSource.EventType.RESET,
+                                                         null);
+          resolve(result);
+        }, 0);
+      },
+        error: function (status) {
+          // this._handleFetchRowsError(status, {'start': rowStart, 'count': rowCount}, callbacks, callbackObjects);
           reject(status);
-        }.bind(this)
+        }
       });
   });
 };
@@ -421,169 +393,145 @@ oj.FlattenedTreeTableDataSource.prototype.sort = function(criteria)
  * @memberof oj.FlattenedTreeTableDataSource
  * @instance
  */
-oj.FlattenedTreeTableDataSource.prototype.totalSize = function()
-{
-  if (!this._hasMore)
-  {
-    return this._rows['data'].length;
+oj.FlattenedTreeTableDataSource.prototype.totalSize = function () {
+  if (!this._hasMore) {
+    return this._rows.data.length;
   }
   return -1;
 };
 
 /**
- * Returns the confidence for the totalSize value. 
- * @return {string} "actual" if the totalSize is the time of the fetch is an exact number 
- *                  "estimate" if the totalSize is an estimate 
- *                  "atLeast" if the totalSize is at least a certain number 
+ * Returns the confidence for the totalSize value.
+ * @return {string} "actual" if the totalSize is the time of the fetch is an exact number
+ *                  "estimate" if the totalSize is an estimate
+ *                  "atLeast" if the totalSize is at least a certain number
  *                  "unknown" if the totalSize is unknown
  * @export
  * @expose
  * @memberof oj.FlattenedTreeTableDataSource
- * @instance 
+ * @instance
  */
-oj.FlattenedTreeTableDataSource.prototype.totalSizeConfidence = function()
-{ 
-  if (!this._hasMore)
-  {
+oj.FlattenedTreeTableDataSource.prototype.totalSizeConfidence = function () {
+  if (!this._hasMore) {
     return 'actual';
   }
-  return "unknown";
+  return 'unknown';
 };
 
-/**** end delegated functions ****/
+/** ** end delegated functions ****/
 
-oj.FlattenedTreeTableDataSource.prototype._getMetadata = function(index)
-{
-  var nodeSetStart = this._nodeSetList[index]['nodeSet'].getStart();
-  return this._nodeSetList[index]['nodeSet'].getMetadata(nodeSetStart + index - this._nodeSetList[index]['startIndex']);
-}
+oj.FlattenedTreeTableDataSource.prototype._getMetadata = function (index) {
+  var nodeSetStart = this._nodeSetList[index].nodeSet.getStart();
+  return this._nodeSetList[index].nodeSet.getMetadata((nodeSetStart + index) -
+                                                      this._nodeSetList[index].startIndex);
+};
 
-oj.FlattenedTreeTableDataSource.prototype._fetchInternal = function(options)
-{
-  options = options || {};
+oj.FlattenedTreeTableDataSource.prototype._fetchInternal = function (_options) {
+  var options = _options || {};
   this._startFetch(options);
-  this._startIndex = options['startIndex'] == null ? this._startIndex : options['startIndex'];
-  
+  this._startIndex = options.startIndex == null ? this._startIndex : options.startIndex;
+
   // if pageSize is not specified then fetch everything
   var rangeCount = Number.MAX_VALUE;
-  
-  this._pageSize = options['pageSize'] == null ? this._pageSize : options['pageSize'];
-  if (this._pageSize != null)
-  {
+
+  this._pageSize = options.pageSize == null ? this._pageSize : options.pageSize;
+  if (this._pageSize != null) {
     rangeCount = this._pageSize;
   }
-  
-  var startIndex = this._startIndex;
-  if (this._rows != null)
-  {
-    if (this._pageSize != null)
-    {
-      var endIndex = this._rows['data'].length - 1;
 
-      if (this._startIndex + this._pageSize - 1 <= endIndex)
-      {
-        endIndex = oj.FlattenedTreeTableDataSource._getEndIndex(this._rows, this._startIndex, this._pageSize);
+  var startIndex = this._startIndex;
+  if (this._rows != null) {
+    if (this._pageSize != null) {
+      var endIndex = this._rows.data.length - 1;
+
+      if (this._startIndex + (this._pageSize - 1) <= endIndex) {
+        endIndex = oj.FlattenedTreeTableDataSource._getEndIndex(this._rows,
+                                                                this._startIndex,
+                                                                this._pageSize);
         var rowArray = [];
         var keyArray = [];
-        var i, key;
-        for (i = this._startIndex; i <= endIndex; i++)
-        {
-          key = this._rows['keys'][i];
-          rowArray[i - this._startIndex] = this._wrapWritableValue(this._rows['data'][i]);
+
+        for (var i = this._startIndex; i <= endIndex; i++) {
+          var key = this._rows.keys[i];
+          rowArray[i - this._startIndex] = this._wrapWritableValue(this._rows.data[i]);
           keyArray[i - this._startIndex] = key;
         }
-        var result = {'data': rowArray, 'keys': keyArray, 'startIndex': this._startIndex};
+        var result = { data: rowArray, keys: keyArray, startIndex: this._startIndex };
         this._endFetch(options, result, null);
         return Promise.resolve(result);
-      }
-      else if (this._startIndex <= endIndex)
-      {
+      } else if (this._startIndex <= endIndex) {
         startIndex = endIndex + 1;
       }
-    }
-    else
-    {
+    } else {
       // we are fetching everything again so clear out the existing cached rows
       this._data.refresh();
       this._rows = null;
     }
-  }
-  else
-  {
+  } else {
     // if we don't have any cached rows then we always need to fetch from the start
     startIndex = 0;
   }
-  
-  var rangeOption = {'start': startIndex, 'count':  rangeCount};
+
+  var rangeOption = { start: startIndex, count: rangeCount };
   var self = this;
-  return new Promise(function(resolve, reject) 
-  {
+  return new Promise(function (resolve, reject) {
     self._data.fetchRows(rangeOption,
-    {
-      "success": function(nodeSet)
       {
-        self._handleFetchRowsSuccess(nodeSet);
-        options['refresh'] = true;
-        var endIndex = oj.FlattenedTreeTableDataSource._getEndIndex(self._rows, self._startIndex, self._pageSize);
-        var rowArray = [];
-        var keyArray = [];
-        var i, key;
-        for (i = self._startIndex; i <= endIndex; i++)
-        {
-          key = self._rows['keys'][i];
-          rowArray[i - self._startIndex] = self._wrapWritableValue(self._rows['data'][i]);
-          keyArray[i - self._startIndex] = key;
-        }
-        // if there are results then we potentially have more
-        if (rowArray.length > 0)
-        {
-          if (self._pageSize != null &&
-              rowArray.length < self._pageSize)
-          {
-            // if we are paged and we return less than the page size
-            // then we don't have any more rows
+        success: function (nodeSet) {
+          self._handleFetchRowsSuccess(nodeSet);
+          // eslint-disable-next-line no-param-reassign
+          options.refresh = true;
+          var _endIndex = oj.FlattenedTreeTableDataSource._getEndIndex(self._rows,
+                                                                       self._startIndex,
+                                                                       self._pageSize);
+          var _rowArray = [];
+          var _keyArray = [];
+
+          for (var j = self._startIndex; j <= _endIndex; j++) {
+            var _key = self._rows.keys[j];
+            _rowArray[j - self._startIndex] = self._wrapWritableValue(self._rows.data[j]);
+            _keyArray[j - self._startIndex] = _key;
+          }
+          // if there are results then we potentially have more
+          if (_rowArray.length > 0) {
+            if (self._pageSize != null &&
+                _rowArray.length < self._pageSize) {
+              // if we are paged and we return less than the page size
+              // then we don't have any more rows
+              self._hasMore = false;
+            } else {
+              self._hasMore = true;
+            }
+          } else {
             self._hasMore = false;
           }
-          else
-          {
-            self._hasMore = true;
-          }
+          var _result = { data: _rowArray, keys: _keyArray, startIndex: self._startIndex };
+          self._endFetch(options, _result, null);
+          resolve(_result);
+        },
+        error: function (error) {
+          self._endFetch(options, null, error);
+          reject(error);
         }
-        else
-        {
-          self._hasMore = false;
-        }
-        var result = {'data': rowArray, 'keys': keyArray, 'startIndex': self._startIndex};
-        self._endFetch(options, result, null);
-        resolve(result);
-      }.bind(this),
-      "error": function(error)
-      {
-        self._endFetch(options, null, error);
-        reject(error);
-      }.bind(this)
-    });
+      });
   });
 };
 
-oj.FlattenedTreeTableDataSource.prototype._handleFetchRowsSuccess = function(nodeSet)
-{
+oj.FlattenedTreeTableDataSource.prototype._handleFetchRowsSuccess = function (nodeSet) {
   var startIndex = nodeSet.getStart();
-  var i, rowIdx;
-  for (i = 0; i < nodeSet.getCount(); i++)
-  {
-    rowIdx = startIndex + i;
+
+  for (var i = 0; i < nodeSet.getCount(); i++) {
+    var rowIdx = startIndex + i;
     this._nodeSetList[rowIdx] = {};
-    this._nodeSetList[rowIdx]['nodeSet'] = nodeSet;
-    this._nodeSetList[rowIdx]['startIndex'] = startIndex;
+    this._nodeSetList[rowIdx].nodeSet = nodeSet;
+    this._nodeSetList[rowIdx].startIndex = startIndex;
   }
 
-  if (!this._rows)
-  {
+  if (!this._rows) {
     this._rows = {};
-    this._rows['data'] = [];
-    this._rows['keys'] = [];
-    this._rows['indexes'] = [];
+    this._rows.data = [];
+    this._rows.keys = [];
+    this._rows.indexes = [];
   }
   oj.FlattenedTreeTableDataSource._getRowArray(nodeSet, this, this._rows, startIndex);
 };
@@ -593,11 +541,11 @@ oj.FlattenedTreeTableDataSource.prototype._handleFetchRowsSuccess = function(nod
  * @param {Object} options
  * @private
  */
-oj.FlattenedTreeTableDataSource.prototype._startFetch = function(options)
-{
-  if (!options['silent'])
-  {
-    oj.TableDataSource.superclass.handleEvent.call(this, oj.TableDataSource.EventType['REQUEST'], {'startIndex' : options['startIndex']});
+oj.FlattenedTreeTableDataSource.prototype._startFetch = function (options) {
+  if (!options.silent) {
+    oj.TableDataSource.superclass.handleEvent.call(this,
+                                                   oj.TableDataSource.EventType.REQUEST,
+                                                   { startIndex: options.startIndex });
   }
 };
 
@@ -608,81 +556,67 @@ oj.FlattenedTreeTableDataSource.prototype._startFetch = function(options)
  * @param {Object} error Error
  * @private
  */
-oj.FlattenedTreeTableDataSource.prototype._endFetch = function(options, result, error)
-{
-  if (error != null)
-  {
-    oj.TableDataSource.superclass.handleEvent.call(this, oj.TableDataSource.EventType['ERROR'], error);
-  }
-  else
-  {
-    if (!options['silent'])
-    {
-      oj.TableDataSource.superclass.handleEvent.call(this, oj.TableDataSource.EventType['SYNC'],  result);
-    }
+oj.FlattenedTreeTableDataSource.prototype._endFetch = function (options, result, error) {
+  if (error != null) {
+    oj.TableDataSource.superclass.handleEvent.call(this, oj.TableDataSource.EventType.ERROR, error);
+  } else if (!options.silent) {
+    oj.TableDataSource.superclass.handleEvent.call(this, oj.TableDataSource.EventType.SYNC, result);
   }
 };
 
-oj.FlattenedTreeTableDataSource._getEndIndex = function(rows, startIndex, pageSize)
-{
-  var endIndex = rows['data'].length - 1;
-  
-  if (pageSize > 0)
-  {
-    endIndex = startIndex + pageSize - 1;
-    endIndex = endIndex > rows['data'].length - 1 ? rows['data'].length - 1 : endIndex;
+oj.FlattenedTreeTableDataSource._getEndIndex = function (rows, startIndex, pageSize) {
+  var endIndex = rows.data.length - 1;
+
+  if (pageSize > 0) {
+    endIndex = startIndex + (pageSize - 1);
+    endIndex = endIndex > rows.data.length - 1 ? rows.data.length - 1 : endIndex;
   }
-  
+
   return endIndex;
 };
 
-oj.FlattenedTreeTableDataSource._getRowArray = function(nodeSet, rowSet, rows, startIndex)
-{
-  var i;
-  for (i = 0; i < nodeSet.getCount(); i++)
-  {
+oj.FlattenedTreeTableDataSource._getRowArray = function (nodeSet, rowSet, rows, startIndex) {
+  for (var i = 0; i < nodeSet.getCount(); i++) {
     var row = nodeSet.getData(nodeSet.getStart() + i);
-    rows['data'][startIndex + i] = row;
-    rows['keys'][startIndex + i] = nodeSet.getMetadata(nodeSet.getStart() + i)['key'];
-    rows['indexes'][startIndex + i] = startIndex + i;
+    // eslint-disable-next-line no-param-reassign
+    rows.data[startIndex + i] = row;
+    // eslint-disable-next-line no-param-reassign
+    rows.keys[startIndex + i] = nodeSet.getMetadata(nodeSet.getStart() + i).key;
+    // eslint-disable-next-line no-param-reassign
+    rows.indexes[startIndex + i] = startIndex + i;
   }
 };
 
 // Realign all the indices of the rows (after sort for example)
-oj.FlattenedTreeTableDataSource.prototype._realignRowIndices = function()
-{
-  for (var i = 0; i < this._rows['data'].length; i++)
-  {
-    this._rows['indexes'][i] = i;
+oj.FlattenedTreeTableDataSource.prototype._realignRowIndices = function () {
+  for (var i = 0; i < this._rows.data.length; i++) {
+    this._rows.indexes[i] = i;
   }
 };
 
-oj.FlattenedTreeTableDataSource.prototype._wrapWritableValue = function(m)
-{
+oj.FlattenedTreeTableDataSource.prototype._wrapWritableValue = function (m) {
   var clonedRow = $.extend(true, {}, m);
-  var i, props = Object.keys(m);
-  
-  for (i = 0; i < props.length; i++)
-  {
+  var props = Object.keys(m);
+
+  for (var i = 0; i < props.length; i++) {
     oj.FlattenedTreeTableDataSource._defineProperty(clonedRow, m, props[i]);
   }
-  
+
   return clonedRow;
 };
 
-oj.FlattenedTreeTableDataSource._defineProperty = function(row, m, prop)
-{
+oj.FlattenedTreeTableDataSource._defineProperty = function (row, m, prop) {
   Object.defineProperty(row, prop,
     {
-      get: function()
-      {
+      get: function () {
         return m[prop];
       },
-      set: function(newValue)
-      {
+      set: function (newValue) {
+        // eslint-disable-next-line no-param-reassign
         m[prop] = newValue;
       },
       enumerable: true
     });
 };
+
 });

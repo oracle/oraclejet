@@ -197,6 +197,7 @@ var __oj_switch_metadata =
    * For Switch, you should put an <code class="prettyprint">id</code> on the input element, and
    * then set the <code class="prettyprint">for</code> attribute on the label to be the
    * input's id.
+   * {@ojinclude "name":"accessibilityDisabledEditableValue"}
    * </p>
    *
    * <p>See also the <a href="#styling-section">oj-focus-highlight</a> discussion.
@@ -230,7 +231,7 @@ var __oj_switch_metadata =
    * @example <caption>Initialize the switch with some attributes specified:</caption>
    * &lt;oj-switch value=true disabled=false>&lt;/oj-switch>
    */
-  oj.__registerWidget('oj.ojSwitch', $['oj']['editableValue'], {
+  oj.__registerWidget('oj.ojSwitch', $.oj.editableValue, {
     version: '1.1.0',
     defaultElement: '<input>',
     widgetEventPrefix: 'oj',
@@ -252,10 +253,10 @@ var __oj_switch_metadata =
        * @example <caption>Get or set the <code class="prettyprint">disabled</code> property after initialization:</caption>
        * // Getter
        * var disabled = myComponent.disabled;
-       * 
+       *
        * // Setter
        * myComponent.disabled = true;
-       * 
+       *
        * @expose
        * @type {boolean}
        * @default false
@@ -279,10 +280,10 @@ var __oj_switch_metadata =
        * @example <caption>Get or set the <code class="prettyprint">readonly</code> property after initialization:</caption>
        * // Getter
        * var readonly = myComponent.readonly;
-       * 
+       *
        * // Setter
        * myComponent.readonly = true;
-       * 
+       *
        *
        * @expose
        * @type {boolean}
@@ -302,10 +303,10 @@ var __oj_switch_metadata =
        * @example <caption>Get or set the <code class="prettyprint">value</code> property after initialization:</caption>
        * // Getter
        * var value = myComponent.value;
-       * 
+       *
        * // Setter
        * myComponent.value = true;
-       * 
+       *
        * @expose
        * @type {boolean}
        * @default false
@@ -340,17 +341,16 @@ var __oj_switch_metadata =
       var subId;
       var rootElement = this.widget();
 
-      if (!node)
-      {
-        node = (locator == null || locator['subId'] == null) ? rootElement : null;
+      if (!node) {
+        node = (locator == null || locator.subId == null) ? rootElement : null;
         if (!node) {
-          subId = locator['subId'];
+          subId = locator.subId;
           if (subId === 'oj-switch-thumb' || subId === 'oj-switch-track') {
             return rootElement.find('.' + subId)[0];
           }
         }
       }
-      
+
       return node || null;
     },
 
@@ -382,9 +382,9 @@ var __oj_switch_metadata =
             .find('input.oj-component-initnode')
             .attr('id');
           if (originalId === nodeId && $(node).hasClass('oj-switch-track')) {
-            result = { 'subId': 'oj-switch-track' };
+            result = { subId: 'oj-switch-track' };
           } else if (originalId === nodeId && $(node).hasClass('oj-switch-thumb')) {
-            result = { 'subId': 'oj-switch-thumb' };
+            result = { subId: 'oj-switch-thumb' };
           }
         }
       }
@@ -420,21 +420,23 @@ var __oj_switch_metadata =
       props = [
         { attribute: 'disabled', validateOption: true },
         { attribute: 'readonly', option: 'readOnly', validateOption: true },
-        { attribute: 'checked', option: 'value', validateOption: false,
-         coerceDomValue: function (domValue) {
-           return domValue ? true : false;
-         } },
+        { attribute: 'checked',
+          option: 'value',
+          validateOption: false,
+          coerceDomValue: function (domValue) {
+            return !!domValue;
+          } },
         { attribute: 'title' }
       ];
 
       this._super(originalDefaults, constructorOptions);
-      
+
       // Only needed for non new element style
       if (!this._IsCustomElement()) {
         oj.EditableValueUtils.initializeOptionsFromDom(props, constructorOptions, this);
         val = this.option('value');
         this.option({ value: !!val },
-                    { '_context': { writeback: true, internalSet: true } });
+                    { _context: { writeback: true, internalSet: true } });
       }
     },
 
@@ -477,36 +479,36 @@ var __oj_switch_metadata =
 
     _AfterCreate: function () {
       this._super();
-    
+
       // Get aria-label and aria-labelledby attribute values from the component and move them to the thumb which is the dom that gets focus
       var target = this.switchThumb;
       this._SetAriaInfo(target);
+
+      this._setup();
     },
-		
+
     /**
      * Set aria label information for the switch.  It will come from either aria-labelledby or aria-label
      * @protected
      * @memberof oj.ojSwitch
      * @ignore
      */
-    _SetAriaInfo: function(target) {
+    _SetAriaInfo: function (target) {
       var component;
-      
+
       // Grab the right component
       if (this.OuterWrapper) {
-    	component =  this._element2[0]; 
-      }	  
-      else {
-        component = this._element2[0].querySelector("input");
+        component = this._element2[0];
+      } else {
+        component = this._element2[0].querySelector('input');
       }
-            
+
       var labelElementId;
       if (this._IsCustomElement()) {
         // Custom element case
-          var defaultLabelId = this["uuid"] + "_Label";
-          labelElementId = oj.EditableValueUtils.getOjLabelId(this.widget(), defaultLabelId);
-      }
-      else {
+        var defaultLabelId = this.uuid + '_Label';
+        labelElementId = oj.EditableValueUtils.getOjLabelId(this.widget(), defaultLabelId);
+      } else {
         // Non custom element case
         var label = this._GetLabelElement();
         if (label) {
@@ -515,17 +517,13 @@ var __oj_switch_metadata =
       }
 
       // Apply the label to the target
-      if (labelElementId)
-      {
+      if (labelElementId) {
         // Set the aria-labelledby attribute of the thumb to the returned id
         target.attr('aria-labelledby', labelElementId);
-      }
-      else
-      {
+      } else {
         // Check if the element has aria-label
         var ariaLabelString = component.getAttribute('aria-label');
-        if (ariaLabelString)
-        {
+        if (ariaLabelString) {
           // Set the aria-label of the thumb to the returned string
           target.attr('aria-label', ariaLabelString);
           // And remove it from the component
@@ -607,8 +605,8 @@ var __oj_switch_metadata =
         this._AddHoverable(this._element2);
       }
       this._focusable({
-        'element': this.switchThumb,
-        'applyHighlight': true
+        element: this.switchThumb,
+        applyHighlight: true
       });
     },
 
@@ -654,11 +652,11 @@ var __oj_switch_metadata =
           $(event.currentTarget).addClass('oj-active');
         }
       },
-      "touchstart": function (event) {
-		$(event.currentTarget).addClass('oj-active');  
-          event.preventDefault();
+      touchstart: function (event) {
+        $(event.currentTarget).addClass('oj-active');
+        event.preventDefault();
       },
-      "touchend": function (event) {
+      touchend: function (event) {
         this._SetValueReturnBoolean(!this.option('value'), event);
       }
     },
@@ -682,25 +680,25 @@ var __oj_switch_metadata =
       return 'oj-switch';
     },
   /**
-   * Whether the a value can be set on the component. For example, if the component is 
-   * disabled or readOnly then setting value on component is a no-op. 
-   * 
+   * Whether the a value can be set on the component. For example, if the component is
+   * disabled or readOnly then setting value on component is a no-op.
+   *
    * @see #_SetValue
    * @return {boolean}
    * @memberof oj.ojSwitch
    * @override
    * @protected
    */
-    _CanSetValue: function ()
-    {
+    _CanSetValue: function () {
       var readOnly;
       var superCanSetValue = this._super();
 
-      if (!superCanSetValue)
+      if (!superCanSetValue) {
         return false;
+      }
 
-      readOnly = this.options['readOnly'] || false;
-      return (readOnly) ? false : true;
+      readOnly = this.options.readOnly || false;
+      return !(readOnly);
     },
     /**
      * Returns switch role for ARIA
@@ -750,62 +748,59 @@ var __oj_switch_metadata =
       return this.switchThumb;
     },
     /**
-   * Performs post processing after _SetOption() is called. Different options when changed perform
-   * different tasks. See _AfterSetOption[OptionName] method for details.
-   *
-   * @param {string} option
-   * @param {Object|string=} previous
-   * @param {Object=} flags
-   * @protected
-   * @override
-   * @memberof oj.ojSwitch
-   * @instance
-   */
-  _AfterSetOption : function (option, previous, flags)
-  {
-    this._superApply(arguments);
-    switch (option)
-    {        
-      case "readOnly":
-        this._AfterSetOptionDisabledReadOnly(option, oj.EditableValueUtils.readOnlyOptionOptions);
-        break;
-      default:
-        break;
+     * Performs post processing after _SetOption() is called. Different options when changed perform
+     * different tasks. See _AfterSetOption[OptionName] method for details.
+     *
+     * @param {string} option
+     * @param {Object|string=} previous
+     * @param {Object=} flags
+     * @protected
+     * @override
+     * @memberof oj.ojSwitch
+     * @instance
+     */
+    // eslint-disable-next-line no-unused-vars
+    _AfterSetOption: function (option, previous, flags) {
+      this._superApply(arguments);
+      switch (option) {
+        case 'readOnly':
+          this._AfterSetOptionDisabledReadOnly(option, oj.EditableValueUtils.readOnlyOptionOptions);
+          break;
+        default:
+          break;
+      }
+    },
+
+    /**
+     * @override
+     * @private
+     */
+    _setOption: function (key, value, flags) {
+      var coercedValue;
+      switch (key) {
+        case 'disabled':
+        case 'readOnly':
+        case 'value':
+          coercedValue = !!value;
+          break;
+        default:
+          coercedValue = value;
+      }
+      this._super(key, coercedValue, flags);
+    },
+
+    /**
+     * Used for explicit cases where the component needs to be refreshed
+     * (e.g., when the value option changes or other UI gestures).
+     * @override
+     * @protected
+     * @memberof oj.ojSwitch
+     */
+    // eslint-disable-next-line no-unused-vars
+    _Refresh: function (name, value, forceDisplayValueRefresh) {
+      this._superApply(arguments);
+      this._setup();
     }
-
-  },
-
-  /**
-   * @override
-   * @private
-   */
-  _setOption: function (key, value, flags) {
-    var coercedValue;
-    switch (key) {
-      case 'disabled':
-      case 'readOnly':
-      case 'value':
-        coercedValue = !!value;
-        break;
-      default:
-        coercedValue = value;
-    }
-    this._super(key, coercedValue, flags);
-  },
-
-  /**
-   * Used for explicit cases where the component needs to be refreshed
-   * (e.g., when the value option changes or other UI gestures).
-   * @override
-   * @protected
-   * @memberof oj.ojSwitch
-   */
-  _Refresh : function (name, value, forceDisplayValueRefresh)
-  {
-    this._superApply(arguments);
-    this._setup();
-  }
-
 
     // Fragments:
 
@@ -891,7 +886,7 @@ var __oj_switch_metadata =
   });
 }());
 
-/// ///////////////     SUB-IDS     //////////////////
+// / ///////////////     SUB-IDS     //////////////////
 
 /**
  * <p>Sub-ID for the switch's track.</p>
@@ -918,8 +913,7 @@ var __oj_switch_metadata =
   __oj_switch_metadata.extension._WIDGET_NAME = 'ojSwitch';
   __oj_switch_metadata.extension._INNER_ELEM = 'input';
   __oj_switch_metadata.extension._ALIASED_PROPS = { readonly: 'readOnly' };
-  oj.CustomElementBridge.registerMetadata('oj-switch', 'editableValue', __oj_switch_metadata);
-  oj.CustomElementBridge.register('oj-switch', { metadata: oj.CustomElementBridge.getMetadata('oj-switch') });
+  oj.CustomElementBridge.register('oj-switch', { metadata: __oj_switch_metadata });
 }());
 
 });

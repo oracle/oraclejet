@@ -9,9 +9,9 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdatasource-common'
         * @param {Object} oj 
         * @param {jQuery} $
         */
-       function(oj, $, compCore)
+       function(oj, $, Components)
 {
-//%COMPONENT_METADATA%
+
 var __oj_row_expander_metadata = 
 {
   "properties": {
@@ -65,7 +65,7 @@ var __oj_row_expander_metadata =
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
  */
- 
+
 /**
  * Convenient class that represents an empty node set
  * @param {any} parent the parent key
@@ -75,10 +75,9 @@ var __oj_row_expander_metadata =
  * @ojtsignore
  * @export
  */
-oj.EmptyNodeSet = function(parent, start)
-{
-    this.m_parent = parent;
-    this.m_start = start;
+oj.EmptyNodeSet = function (parent, start) {
+  this.m_parent = parent;
+  this.m_start = start;
 };
 
 /**
@@ -86,63 +85,61 @@ oj.EmptyNodeSet = function(parent, start)
  * @return {any} the key of the parent.
  * @export
  */
-oj.EmptyNodeSet.prototype.getParent = function()
-{
-    return this.m_parent;
+oj.EmptyNodeSet.prototype.getParent = function () {
+  return this.m_parent;
 };
 
 /**
- * Gets the start index of the result set.  
- * @return {number} the start index of the result set.  
+ * Gets the start index of the result set.
+ * @return {number} the start index of the result set.
  * @export
  */
-oj.EmptyNodeSet.prototype.getStart = function()
-{
-    return this.m_start;
+oj.EmptyNodeSet.prototype.getStart = function () {
+  return this.m_start;
 };
 
 /**
- * Gets the actual count of the result set.  
- * @return {number} the actual count of the result set.  
+ * Gets the actual count of the result set.
+ * @return {number} the actual count of the result set.
  * @export
  */
-oj.EmptyNodeSet.prototype.getCount = function()
-{
-    return 0;
+oj.EmptyNodeSet.prototype.getCount = function () {
+  return 0;
 };
 
 /**
  * Gets the data of the specified index.  An error is throw when 1) the range is not yet available and
- * 2) the index specified is out of bounds. 
- * @param {number} index the index of the node/row in which we want to retrieve the data from.  
+ * 2) the index specified is out of bounds.
+ * @param {number} index the index of the node/row in which we want to retrieve the data from.
  * @return {null} the data for the specified index.
  * @export
  */
-oj.EmptyNodeSet.prototype.getData = function(index)
-{
-    return null;
+// eslint-disable-next-line no-unused-vars
+oj.EmptyNodeSet.prototype.getData = function (index) {
+  return null;
 };
 
 /**
- * Gets the metadata of the specified index.  An error is throw when 1) the range is not yet available and 
- * 2) the index specified is out of bounds. 
+ * Gets the metadata of the specified index.  An error is throw when 1) the range is not yet available and
+ * 2) the index specified is out of bounds.
  * The metadata that the data source must return are:
  *  1) key - Object, the key of the node/row.
- *  2) state - state of the node, valid values are 'expanded', 'collapsed', 'leaf'. 
- *  3) depth - number, the depth of the node/row. 
- * @param {number} index the index of the node/row in which we want to retrieve the metadata from.  
+ *  2) state - state of the node, valid values are 'expanded', 'collapsed', 'leaf'.
+ *  3) depth - number, the depth of the node/row.
+ * @param {number} index the index of the node/row in which we want to retrieve the metadata from.
  * @return {null} the metadata object for the specific index.
  * @export
  */
-oj.EmptyNodeSet.prototype.getMetadata = function(index)
-{
-    return null;
+// eslint-disable-next-line no-unused-vars
+oj.EmptyNodeSet.prototype.getMetadata = function (index) {
+  return null;
 };
+
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
  */
- 
+
 /**
  * Flattens a hierarchical node set, which can happen in node set returned from
  * fetchDescendants call.
@@ -155,10 +152,9 @@ oj.EmptyNodeSet.prototype.getMetadata = function(index)
  * @ojtsignore
  * @export
  */
-oj.FlattenedNodeSet = function(nodeSet, actualStart)
-{
-    this.m_nodeSet = nodeSet;
-    this.m_start = actualStart;
+oj.FlattenedNodeSet = function (nodeSet, actualStart) {
+  this.m_nodeSet = nodeSet;
+  this.m_start = actualStart;
 };
 
 /**
@@ -166,108 +162,99 @@ oj.FlattenedNodeSet = function(nodeSet, actualStart)
  * @return {Object} the key of the parent.
  * @export
  */
-oj.FlattenedNodeSet.prototype.getParent = function()
-{
-    return this.m_nodeSet.getParent();
+oj.FlattenedNodeSet.prototype.getParent = function () {
+  return this.m_nodeSet.getParent();
 };
 
 /**
- * Gets the start index of the result set.  
- * @return {number} the start index of the result set.  
+ * Gets the start index of the result set.
+ * @return {number} the start index of the result set.
  * @export
  */
-oj.FlattenedNodeSet.prototype.getStart = function()
-{
-    // if explicit start index is specified, use it, otherwise
-    // delegate to wrapped node set
-    if (this.m_start != undefined)
-    {
-        return this.m_start;
-    }
-    else
-    {
-        return this.m_nodeSet.getStart();
-    }
+oj.FlattenedNodeSet.prototype.getStart = function () {
+  // if explicit start index is specified, use it, otherwise
+  // delegate to wrapped node set
+  if (this.m_start != null) {
+    return this.m_start;
+  }
+
+  return this.m_nodeSet.getStart();
 };
 
 /**
- * Gets the actual count of the result set.  
- * @return {number} the actual count of the result set.  
+ * Gets the actual count of the result set.
+ * @return {number} the actual count of the result set.
  * @export
  */
-oj.FlattenedNodeSet.prototype.getCount = function()
-{
-    // see if it's calculated already
-    if (this.m_count === undefined)
-    {
-        this.m_count = this._getCount(this.m_nodeSet, 0);
+oj.FlattenedNodeSet.prototype.getCount = function () {
+  // see if it's calculated already
+  if (this.m_count === undefined) {
+    this.m_count = this._getCount(this.m_nodeSet, 0);
 
-        // if explicit start is specified (subset), need to take that into
-        // account when calculating total count
-        if (this.m_start != undefined)
-        {
-            this.m_count = this.m_count - this.m_start;
-        }
+    // if explicit start is specified (subset), need to take that into
+    // account when calculating total count
+    if (this.m_start != null) {
+      this.m_count = this.m_count - this.m_start;
     }
+  }
 
-    return this.m_count;
+  return this.m_count;
 };
 
 /**
  * Recursive function to calculate the total number of nodes in the node set.
  * @param {Object} nodeSet the node set to calculate count
- * @param {number} total the total number of nodes so far 
+ * @param {number} total the total number of nodes so far
  * @return {number} the total number of nodes
  * @private
  */
-oj.FlattenedNodeSet.prototype._getCount = function(nodeSet, total)
-{
-    var start, count, i, child;
+oj.FlattenedNodeSet.prototype._getCount = function (nodeSet, total) {
+  var resultTotal = total;
+  var start = nodeSet.getStart();
+  var count = nodeSet.getCount();
+  resultTotal += count;
 
-    start = nodeSet.getStart();
-    count = nodeSet.getCount();
-    total = total + count;
-
-    // if there's child node set
-    if (nodeSet.getChildNodeSet)
-    {
-        for (i=0; i<count; i++)
-        {
-            child = nodeSet.getChildNodeSet(i+start);
-            if (child != null)
-                total = this._getCount(child, total); 
-        }
+  // if there's child node set
+  if (nodeSet.getChildNodeSet) {
+    for (var i = 0; i < count; i++) {
+      var child = nodeSet.getChildNodeSet(i + start);
+      if (child != null) {
+        resultTotal = this._getCount(child, resultTotal);
+      }
     }
+  }
 
-    return total;
+  return resultTotal;
 };
 
 /**
  * Gets the data of the specified index.  An error is throw when 1) the range is not yet available and
- * 2) the index specified is out of bounds. 
- * @param {number} index the index of the node/row in which we want to retrieve the data from.  
+ * 2) the index specified is out of bounds.
+ * @param {number} index the index of the node/row in which we want to retrieve the data from.
  * @return {Object} the data for the specified index.
  * @export
  */
-oj.FlattenedNodeSet.prototype.getData = function(index)
-{
-    return this._getDataOrMetadata(this.m_nodeSet, index, {'index': this.m_nodeSet.getStart()}, this._getData);
+oj.FlattenedNodeSet.prototype.getData = function (index) {
+  return this._getDataOrMetadata(this.m_nodeSet, index,
+                                 { index: this.m_nodeSet.getStart() },
+                                 this._getData);
 };
 
 /**
- * Gets the metadata of the specified index.  An error is throw when 1) the range is not yet available and 
- * 2) the index specified is out of bounds. 
+ * Gets the metadata of the specified index.  An error is throw when 1) the range is not yet available and
+ * 2) the index specified is out of bounds.
  * The metadata that the data source must return are:
  *  1) key - Object, the key of the node/row.
- *  2) state - state of the node, valid values are 'expanded', 'collapsed', 'leaf'. 
- *  3) depth - number, the depth of the node/row. 
- * @param {number} index the index of the node/row in which we want to retrieve the metadata from.  
+ *  2) state - state of the node, valid values are 'expanded', 'collapsed', 'leaf'.
+ *  3) depth - number, the depth of the node/row.
+ * @param {number} index the index of the node/row in which we want to retrieve the metadata from.
  * @return {Object} the metadata object for the specific index.
  * @export
  */
-oj.FlattenedNodeSet.prototype.getMetadata = function(index)
-{
-    return this._getDataOrMetadata(this.m_nodeSet, index, {'index': this.m_nodeSet.getStart()}, this._getMetadata);
+oj.FlattenedNodeSet.prototype.getMetadata = function (index) {
+  return this._getDataOrMetadata(this.m_nodeSet, index,
+                                 { index: this.m_nodeSet.getStart() },
+                                 this._getMetadata);
 };
 
 /**
@@ -277,9 +264,8 @@ oj.FlattenedNodeSet.prototype.getMetadata = function(index)
  * @return {Object} the metadata
  * @private
  */
-oj.FlattenedNodeSet.prototype._getMetadata = function(nodeSet, index)
-{
-    return nodeSet.getMetadata(index);
+oj.FlattenedNodeSet.prototype._getMetadata = function (nodeSet, index) {
+  return nodeSet.getMetadata(index);
 };
 
 /**
@@ -289,9 +275,8 @@ oj.FlattenedNodeSet.prototype._getMetadata = function(nodeSet, index)
  * @return {Object} the data
  * @private
  */
-oj.FlattenedNodeSet.prototype._getData = function(nodeSet, index)
-{
-    return nodeSet.getData(index);
+oj.FlattenedNodeSet.prototype._getData = function (nodeSet, index) {
+  return nodeSet.getData(index);
 };
 
 /**
@@ -303,57 +288,53 @@ oj.FlattenedNodeSet.prototype._getData = function(nodeSet, index)
  * @return {Object} the data or metadata
  * @private
  */
-oj.FlattenedNodeSet.prototype._getDataOrMetadata = function(nodeSet, index, current, func)
-{
-    var start, count, i, currIndex, child, result;
+oj.FlattenedNodeSet.prototype._getDataOrMetadata = function (nodeSet, index, current, func) {
+  // walk the node set recursively until we found the index
+  var start = nodeSet.getStart();
+  var count = nodeSet.getCount();
+  for (var i = 0; i < count; i++) {
+    var currIndex = current.index;
+    // found the index
+    if (currIndex === index) {
+      return func.call(this, nodeSet, i + start);
+    }
 
-    // walk the node set recursively until we found the index
-    start = nodeSet.getStart();
-    count = nodeSet.getCount();
-    for (i=0; i<count; i++)
-    {
-        currIndex = current['index'];
-        // found the index
-        if (currIndex === index)
-            return func.call(this, nodeSet, i+start);
-
-        current['index'] = currIndex+1;
-        // if there's child node set
-        if (nodeSet.getChildNodeSet)
-        {
-            child = nodeSet.getChildNodeSet(i+start);
-            if (child != null)
-            {
-                result = this._getDataOrMetadata(child, index, current, func); 
-                if (result != null)
-                    return result;
-            }
+    // eslint-disable-next-line no-param-reassign
+    current.index = currIndex + 1;
+    // if there's child node set
+    if (nodeSet.getChildNodeSet) {
+      var child = nodeSet.getChildNodeSet(i + start);
+      if (child != null) {
+        var result = this._getDataOrMetadata(child, index, current, func);
+        if (result != null) {
+          return result;
         }
-    }       
+      }
+    }
+  }
 
-    return null;
+  return null;
 };
 
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
  */
- 
+
 /**
  * Combines two NodeSets together into one.
  * @param {Object} nodeSet1 the first node set
  * @param {Object} nodeSet2 the second node set
- * @param {any} mergeAt the row key on the first node set where the second node set is merge to 
+ * @param {any} mergeAt the row key on the first node set where the second node set is merge to
  * @constructor
  * @since 1.0
  * @ojtsignore
  * @export
  */
-oj.MergedNodeSet = function(nodeSet1, nodeSet2, mergeAt)
-{
-    this.m_nodeSet1 = nodeSet1;
-    this.m_nodeSet2 = nodeSet2;
-    this.m_mergeAt = this._findIndex(mergeAt);
+oj.MergedNodeSet = function (nodeSet1, nodeSet2, mergeAt) {
+  this.m_nodeSet1 = nodeSet1;
+  this.m_nodeSet2 = nodeSet2;
+  this.m_mergeAt = this._findIndex(mergeAt);
 };
 
 /**
@@ -363,23 +344,18 @@ oj.MergedNodeSet = function(nodeSet1, nodeSet2, mergeAt)
  * @return {number} the index of the key within the first node set, if index is not found, then the last index of the first node set is returned.
  * @private
  */
-oj.MergedNodeSet.prototype._findIndex = function(key)
-{
-    var start, end, i, rowKey;
-
-    start = this.m_nodeSet1.getStart();
-    end = start + this.m_nodeSet1.getCount();
-    for (i=start; i<end; i++)
-    {
-        rowKey = this.m_nodeSet1.getMetadata(i)['key'];
-        if (key === rowKey)
-        {
-            return i;
-        }
+oj.MergedNodeSet.prototype._findIndex = function (key) {
+  var start = this.m_nodeSet1.getStart();
+  var end = start + this.m_nodeSet1.getCount();
+  for (var i = start; i < end; i++) {
+    var rowKey = this.m_nodeSet1.getMetadata(i).key;
+    if (key === rowKey) {
+      return i;
     }
+  }
 
-    // if the point cannot be found, the merge happens at the end
-    return (end-1);
+  // if the point cannot be found, the merge happens at the end
+  return (end - 1);
 };
 
 /**
@@ -387,72 +363,63 @@ oj.MergedNodeSet.prototype._findIndex = function(key)
  * @return {any} the key of the parent.
  * @export
  */
-oj.MergedNodeSet.prototype.getParent = function()
-{
-    // returns the parent of the top node set
-    return this.m_nodeSet1.getParent();
+oj.MergedNodeSet.prototype.getParent = function () {
+  // returns the parent of the top node set
+  return this.m_nodeSet1.getParent();
 };
 
 /**
- * Gets the start index of the result set.  
- * @return {number} the start index of the result set.  
+ * Gets the start index of the result set.
+ * @return {number} the start index of the result set.
  * @export
  */
-oj.MergedNodeSet.prototype.getStart = function()
-{
-    // returns the start of the top node set
-    return this.m_nodeSet1.getStart();
+oj.MergedNodeSet.prototype.getStart = function () {
+  // returns the start of the top node set
+  return this.m_nodeSet1.getStart();
 };
 
 /**
- * Gets the actual count of the result set.  
- * @return {number} the actual count of the result set.  
+ * Gets the actual count of the result set.
+ * @return {number} the actual count of the result set.
  * @export
  */
-oj.MergedNodeSet.prototype.getCount = function()
-{
-    // return the total count of both node sets
-    return this.m_nodeSet1.getCount() + this.m_nodeSet2.getCount();
+oj.MergedNodeSet.prototype.getCount = function () {
+  // return the total count of both node sets
+  return this.m_nodeSet1.getCount() + this.m_nodeSet2.getCount();
 };
 
 /**
  * Gets the data of the specified index.  An error is throw when 1) the range is not yet available and
- * 2) the index specified is out of bounds. 
- * @param {number} index the index of the node/row in which we want to retrieve the data from.  
+ * 2) the index specified is out of bounds.
+ * @param {number} index the index of the node/row in which we want to retrieve the data from.
  * @return {Object} the data for the specified index.
  * @export
  */
-oj.MergedNodeSet.prototype.getData = function(index)
-{
-    var result, set, relIndex;
+oj.MergedNodeSet.prototype.getData = function (index) {
+  var result = this._getRelativeIndex(index);
+  var set = result.set;
+  var relIndex = result.index;
 
-    result = this._getRelativeIndex(index);
-    set = result['set'];
-    relIndex = result['index'];
-
-    return set.getData(relIndex);
+  return set.getData(relIndex);
 };
 
 /**
- * Gets the metadata of the specified index.  An error is throw when 1) the range is not yet available and 
- * 2) the index specified is out of bounds. 
+ * Gets the metadata of the specified index.  An error is throw when 1) the range is not yet available and
+ * 2) the index specified is out of bounds.
  * The metadata that the data source must return are:
  *  1) key - Object, the key of the node/row.
- *  2) state - state of the node, valid values are 'expanded', 'collapsed', 'leaf'. 
- *  3) depth - number, the depth of the node/row. 
- * @param {number} index the index of the node/row in which we want to retrieve the metadata from.  
+ *  2) state - state of the node, valid values are 'expanded', 'collapsed', 'leaf'.
+ *  3) depth - number, the depth of the node/row.
+ * @param {number} index the index of the node/row in which we want to retrieve the metadata from.
  * @return {Object} the metadata object for the specific index.
  * @export
  */
-oj.MergedNodeSet.prototype.getMetadata = function(index)
-{
-    var result, set, relIndex;
+oj.MergedNodeSet.prototype.getMetadata = function (index) {
+  var result = this._getRelativeIndex(index);
+  var set = result.set;
+  var relIndex = result.index;
 
-    result = this._getRelativeIndex(index);
-    set = result['set'];
-    relIndex = result['index'];
-
-    return set.getMetadata(relIndex);
+  return set.getMetadata(relIndex);
 };
 
 /**
@@ -460,33 +427,30 @@ oj.MergedNodeSet.prototype.getMetadata = function(index)
  * merge point is.
  * @private
  */
-oj.MergedNodeSet.prototype._getRelativeIndex = function(index)
-{
-    if (index <= this.m_mergeAt)
-    {
-        return {'set': this.m_nodeSet1, 'index': index};
-    }
-    else
-    {
-        var count = this.m_nodeSet2.getCount();
-        var end = this.m_mergeAt + count;
-        if (index > end)
-        {
-            // first set
-            return {'set': this.m_nodeSet1, 'index': index - count};
-        }   
-        else
-        {
-            // second set, do not assume the second node set is zero indexed
-            return {'set': this.m_nodeSet2, 'index': index - this.m_mergeAt - 1 + this.m_nodeSet2.getStart()};
-        }
-    }
+oj.MergedNodeSet.prototype._getRelativeIndex = function (index) {
+  if (index <= this.m_mergeAt) {
+    return { set: this.m_nodeSet1, index: index };
+  }
+
+  var count = this.m_nodeSet2.getCount();
+  var end = this.m_mergeAt + count;
+  if (index > end) {
+    // first set
+    return { set: this.m_nodeSet1, index: index - count };
+  }
+
+  // second set, do not assume the second node set is zero indexed
+  return {
+    set: this.m_nodeSet2,
+    index: (index - this.m_mergeAt - 1) + this.m_nodeSet2.getStart()
+  };
 };
+
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
  */
- 
+
 /**
  * Wraps around the NodeSet to provide additional metadata
  * @param {Object} nodeSet the node set to wrap
@@ -496,14 +460,14 @@ oj.MergedNodeSet.prototype._getRelativeIndex = function(index)
  * @constructor
  * @since 1.0
  * @ojtsignore
+ * @ignore
  * @export
  */
-oj.NodeSetWrapper = function(nodeSet, metadataCallback, range, collapsedKeys)
-{
-    this.m_nodeSet = nodeSet;
-    this.m_callback = metadataCallback;
-    this.m_range = range;
-    this.m_collapsedKeys = collapsedKeys;    
+oj.NodeSetWrapper = function (nodeSet, metadataCallback, range, collapsedKeys) {
+  this.m_nodeSet = nodeSet;
+  this.m_callback = metadataCallback;
+  this.m_range = range;
+  this.m_collapsedKeys = collapsedKeys;
 };
 
 /**
@@ -511,94 +475,80 @@ oj.NodeSetWrapper = function(nodeSet, metadataCallback, range, collapsedKeys)
  * @return {Object} the key of the parent.
  * @export
  */
-oj.NodeSetWrapper.prototype.getParent = function()
-{
-    return this.m_nodeSet.getParent();
+oj.NodeSetWrapper.prototype.getParent = function () {
+  return this.m_nodeSet.getParent();
 };
 
 /**
- * Gets the start index of the result set.  
- * @return {number} the start index of the result set.  
+ * Gets the start index of the result set.
+ * @return {number} the start index of the result set.
  * @export
  */
-oj.NodeSetWrapper.prototype.getStart = function()
-{
-    // if the requested start is a subset of the result set, adjust
-    // accordingly
-    if (this.m_range != null)
-    {
-        return this.m_range['start'];
-    }
-    else
-    {
-        return this.m_nodeSet.getStart();
-    }
+oj.NodeSetWrapper.prototype.getStart = function () {
+  // if the requested start is a subset of the result set, adjust
+  // accordingly
+  if (this.m_range != null) {
+    return this.m_range.start;
+  }
+
+  return this.m_nodeSet.getStart();
 };
 
 /**
- * Gets the actual count of the result set.  
- * @return {number} the actual count of the result set.  
+ * Gets the actual count of the result set.
+ * @return {number} the actual count of the result set.
  * @export
  */
-oj.NodeSetWrapper.prototype.getCount = function()
-{
-    var nodeStart, nodeCount;
+oj.NodeSetWrapper.prototype.getCount = function () {
+  var nodeStart = this.m_nodeSet.getStart();
+  var nodeCount = this.m_nodeSet.getCount();
 
-    nodeStart = this.m_nodeSet.getStart();
-    nodeCount = this.m_nodeSet.getCount();
-
-    // if the requested start is a subset of the NodeSet, adjust
-    // accordingly
-    if (this.m_range != null)
-    {
-        // if the count was provided it is to limit what may be beneath it
-        nodeCount = Math.min(this.m_range['count'], nodeCount);
-        if (this.m_range['start'] < nodeStart)
-        {
-            // this is an invalid NodeSet, so just return 0
-            nodeCount = 0;
-        }
+  // if the requested start is a subset of the NodeSet, adjust
+  // accordingly
+  if (this.m_range != null) {
+    // if the count was provided it is to limit what may be beneath it
+    nodeCount = Math.min(this.m_range.count, nodeCount);
+    if (this.m_range.start < nodeStart) {
+      // this is an invalid NodeSet, so just return 0
+      nodeCount = 0;
     }
+  }
 
-    return nodeCount;
+  return nodeCount;
 };
 
 /**
  * Gets the data of the specified index.  An error is throw when 1) the range is not yet available and
- * 2) the index specified is out of bounds. 
- * @param {number} index the index of the node/row in which we want to retrieve the data from.  
+ * 2) the index specified is out of bounds.
+ * @param {number} index the index of the node/row in which we want to retrieve the data from.
  * @return {Object} the data for the specified index.
  * @export
  */
-oj.NodeSetWrapper.prototype.getData = function(index)
-{
-    return this.m_nodeSet.getData(this._getRelativeIndex(index));
+oj.NodeSetWrapper.prototype.getData = function (index) {
+  return this.m_nodeSet.getData(this._getRelativeIndex(index));
 };
 
 /**
- * Gets the metadata of the specified index.  An error is throw when 1) the range is not yet available and 
- * 2) the index specified is out of bounds. 
+ * Gets the metadata of the specified index.  An error is throw when 1) the range is not yet available and
+ * 2) the index specified is out of bounds.
  * The metadata that the data source must return are:
  *  1) key - Object, the key of the node/row.
- *  2) state - state of the node, valid values are 'expanded', 'collapsed', 'leaf'. 
- *  3) depth - number, the depth of the node/row. 
- * @param {number} index the index of the node/row in which we want to retrieve the metadata from.  
+ *  2) state - state of the node, valid values are 'expanded', 'collapsed', 'leaf'.
+ *  3) depth - number, the depth of the node/row.
+ * @param {number} index the index of the node/row in which we want to retrieve the metadata from.
  * @return {Object} the metadata object for the specific index.
  * @export
  */
-oj.NodeSetWrapper.prototype.getMetadata = function(index)
-{
-    var metadata, rowKey;
+oj.NodeSetWrapper.prototype.getMetadata = function (index) {
+  var metadata = this.m_nodeSet.getMetadata(this._getRelativeIndex(index));
+  metadata.index = index;
+  metadata.parentKey = this.getParent();
+  var rowKey = metadata.key;
 
-    metadata = this.m_nodeSet.getMetadata(this._getRelativeIndex(index));
-    metadata['index'] = index;
-    metadata['parentKey'] = this.getParent();
-    rowKey = metadata['key'];
+  // inject additional metadata
+  this.m_callback.call(null, rowKey, metadata);
 
-    // inject additional metadata
-    this.m_callback.call(null, rowKey, metadata);
-
-    return metadata;
+  return metadata;
 };
 
 /**
@@ -607,22 +557,18 @@ oj.NodeSetWrapper.prototype.getMetadata = function(index)
  * @return {Object|null} the child node set representing the child tree data.
  * @export
  */
-oj.NodeSetWrapper.prototype.getChildNodeSet = function(index) 
-{
-    var result;
-    if (this.m_collapsedKeys == null || this.m_collapsedKeys.indexOf(this.m_nodeSet.getMetadata(index)['key']) == -1)
-    {
-        if (this.m_nodeSet.getChildNodeSet)
-        {
-            result = this.m_nodeSet.getChildNodeSet(index);
-            if (result != null)
-            {
-                // wraps the child nodeset too
-                return new oj.NodeSetWrapper(result, this.m_callback, null, this.m_collapsedKeys);
-            }
-        }
+oj.NodeSetWrapper.prototype.getChildNodeSet = function (index) {
+  if (this.m_collapsedKeys == null ||
+      this.m_collapsedKeys.indexOf(this.m_nodeSet.getMetadata(index).key) === -1) {
+    if (this.m_nodeSet.getChildNodeSet) {
+      var result = this.m_nodeSet.getChildNodeSet(index);
+      if (result != null) {
+        // wraps the child nodeset too
+        return new oj.NodeSetWrapper(result, this.m_callback, null, this.m_collapsedKeys);
+      }
     }
-    return null;
+  }
+  return null;
 };
 
 /**
@@ -632,21 +578,19 @@ oj.NodeSetWrapper.prototype.getChildNodeSet = function(index)
  * @return {number} the index of the node in the wrapped node set
  * @private
  */
-oj.NodeSetWrapper.prototype._getRelativeIndex = function(index) 
-{
-    if (this.m_range == null)
-    {
-        return index;
-    }
-    return index - this.m_range['start'] + this.m_nodeSet.getStart();
+oj.NodeSetWrapper.prototype._getRelativeIndex = function (index) {
+  if (this.m_range == null) {
+    return index;
+  }
+  return (index - this.m_range.start) + this.m_nodeSet.getStart();
 };
 
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
  */
- 
- /**
+
+/**
  * Base class for FlattenedTreeDataGridDataSource and FlattenedTreeTableDataSource
  * @param {Object} treeDataSource the instance of TreeDataSource to flattened
  * @param {Object=} options the options set on the FlattenedDataSource
@@ -656,73 +600,63 @@ oj.NodeSetWrapper.prototype._getRelativeIndex = function(index)
  * @ojtsignore
  * @extends oj.DataSource
  */
-oj.FlattenedTreeDataSource = function(treeDataSource, options)
-{
-    this.m_wrapped = treeDataSource;
-    this.m_options = options || {};
-    oj.FlattenedTreeDataSource.superclass.constructor.call(this);
+oj.FlattenedTreeDataSource = function (treeDataSource, options) {
+  this.m_wrapped = treeDataSource;
+  this.m_options = options || {};
+  oj.FlattenedTreeDataSource.superclass.constructor.call(this);
 };
 
 /**
  * Subclass FlattenedTreeDataSource to TreeDataSource
  * @private
  */
-oj.Object.createSubclass(oj.FlattenedTreeDataSource, oj.DataSource, "oj.FlattenedTreeDataSource");
+oj.Object.createSubclass(oj.FlattenedTreeDataSource, oj.DataSource, 'oj.FlattenedTreeDataSource');
 
 /**
  * Initializes the data source.
  * @return {undefined}
  * @protected
  */
-oj.FlattenedTreeDataSource.prototype.Init = function()
-{
-    var expanded;
+oj.FlattenedTreeDataSource.prototype.Init = function () {
+  // super
+  oj.FlattenedTreeDataSource.superclass.Init.call(this);
 
-    // super
-    oj.FlattenedTreeDataSource.superclass.Init.call(this);
+  // we have to react if the underlying TreeDataSource has changed
+  this.m_wrapped.on('change', this._handleModelEvent.bind(this));
 
-    // we have to react if the underlying TreeDataSource has changed
-    this.m_wrapped.on('change', this._handleModelEvent.bind(this));
+  this.m_busy = false;
 
-    this.m_busy = false;
+  // retrieves the fetch size against the underlying data source
+  this.m_fetchSize = parseInt(this.m_options.fetchSize, 10);
+  if (isNaN(this.m_fetchSize)) {
+    this.m_fetchSize = 25;
+  }
+  // retrieves the maximum number of rows to fetch from the underlying data source
+  // once the maximum count has been reached, this data source should stop fetching
+  // until either a collapse occurs or a delete model change event.
+  this.m_maxCount = parseInt(this.m_options.maxCount, 10);
+  if (isNaN(this.m_maxCount)) {
+    this.m_maxCount = 500;
+  }
 
-    // retrieves the fetch size against the underlying data source
-    this.m_fetchSize = parseInt(this.m_options['fetchSize'], 10);
-    if (isNaN(this.m_fetchSize))
-    {
-        this.m_fetchSize = 25;
+  // retrieves the initial expanded row keys.  If the expanded is specified to 'all',
+  // then mark that all rows should be expanded initially.
+  var expanded = this.m_options.expanded;
+  if (Array.isArray(expanded)) {
+    this.m_expandedKeys = expanded;
+  } else {
+    if (expanded === 'all') {
+      // if expand all, we'll need to keep track of collapsed keys instead
+      this.m_collapsedKeys = [];
     }
-    // retrieves the maximum number of rows to fetch from the underlying data source
-    // once the maximum count has been reached, this data source should stop fetching
-    // until either a collapse occurs or a delete model change event.
-    this.m_maxCount = parseInt(this.m_options['maxCount'], 10);
-    if (isNaN(this.m_maxCount))
-    {
-        this.m_maxCount = 500;
-    }
+    // keep track of expanded row keys
+    this.m_expandedKeys = [];
+  }
 
-    // retrieves the initial expanded row keys.  If the expanded is specified to 'all',
-    // then mark that all rows should be expanded initially.
-    expanded = this.m_options['expanded'];
-    if (Array.isArray(expanded))
-    {
-        this.m_expandedKeys = expanded;
-    }
-    else
-    {
-        if (expanded === 'all')
-        {
-            // if expand all, we'll need to keep track of collapsed keys instead
-            this.m_collapsedKeys = [];
-        }
-        // keep track of expanded row keys
-        this.m_expandedKeys = [];
-    }
-
-    // cache to keep track of indexes
-    // PRIVATE.  Subclass should never need to access this directly.
-    // and implementation might change to use different form of caching strategy.
-    this.m_cache = [];
+  // cache to keep track of indexes
+  // PRIVATE.  Subclass should never need to access this directly.
+  // and implementation might change to use different form of caching strategy.
+  this.m_cache = [];
 };
 
 /**
@@ -732,9 +666,8 @@ oj.FlattenedTreeDataSource.prototype.Init = function()
  * @return {boolean} Returns false if event is canceled
  * @export
  */
-oj.FlattenedTreeDataSource.prototype.handleEvent = function(eventType, event)
-{
-    return oj.FlattenedTreeDataSource.superclass.handleEvent.call(this, eventType, event);
+oj.FlattenedTreeDataSource.prototype.handleEvent = function (eventType, event) {
+  return oj.FlattenedTreeDataSource.superclass.handleEvent.call(this, eventType, event);
 };
 
 /**
@@ -742,25 +675,22 @@ oj.FlattenedTreeDataSource.prototype.handleEvent = function(eventType, event)
  * @export
  * @return {undefined}
  */
-oj.FlattenedTreeDataSource.prototype.Destroy = function()
-{
-    // free internal cache
-    delete this.m_cache;
-    delete this.m_expandedKeys;
-    delete this.m_collapsedKeys;
-    if (this.m_queue)
-    {
-        delete this.m_queue;
-    }
+oj.FlattenedTreeDataSource.prototype.Destroy = function () {
+  // free internal cache
+  delete this.m_cache;
+  delete this.m_expandedKeys;
+  delete this.m_collapsedKeys;
+  if (this.m_queue) {
+    delete this.m_queue;
+  }
 
-    // unload listener
-    this.m_wrapped.off('change');
+  // unload listener
+  this.m_wrapped.off('change');
 
-    // delegate to underlying data source
-    if (this.m_wrapped.Destroy)
-    {
-        this.m_wrapped.Destroy();
-    }
+  // delegate to underlying data source
+  if (this.m_wrapped.Destroy) {
+    this.m_wrapped.Destroy();
+  }
 };
 
 /**
@@ -768,9 +698,8 @@ oj.FlattenedTreeDataSource.prototype.Destroy = function()
  * @return {number} the fetch size
  * @protected
  */
-oj.FlattenedTreeDataSource.prototype.getFetchSize = function()
-{
-    return this.m_fetchSize;
+oj.FlattenedTreeDataSource.prototype.getFetchSize = function () {
+  return this.m_fetchSize;
 };
 
 /**
@@ -778,20 +707,18 @@ oj.FlattenedTreeDataSource.prototype.getFetchSize = function()
  * @return {number} the max count
  * @protected
  */
-oj.FlattenedTreeDataSource.prototype.getMaxCount = function()
-{
-    return this.m_maxCount;
+oj.FlattenedTreeDataSource.prototype.getMaxCount = function () {
+  return this.m_maxCount;
 };
 
 /**
  * Retrieves the expanded row keys
- * @return {Array.<Object>|string} an array of expanded row keys or 'all' if 
+ * @return {Array.<Object>|string} an array of expanded row keys or 'all' if
  *         all rows are expanded.
  * @export
  */
-oj.FlattenedTreeDataSource.prototype.getExpandedKeys = function()
-{
-    return this.m_expandedKeys;
+oj.FlattenedTreeDataSource.prototype.getExpandedKeys = function () {
+  return this.m_expandedKeys;
 };
 
 /**
@@ -801,15 +728,13 @@ oj.FlattenedTreeDataSource.prototype.getExpandedKeys = function()
  *         value is null or if the option is not recognized.
  * @export
  */
-oj.FlattenedTreeDataSource.prototype.getOption = function(option)
-{
-    if (this.m_options != null)
-    {
-        return this.m_options[option];
-    }
+oj.FlattenedTreeDataSource.prototype.getOption = function (option) {
+  if (this.m_options != null) {
+    return this.m_options[option];
+  }
 
-    // unrecognized option or no options set
-    return null;
+  // unrecognized option or no options set
+  return null;
 };
 
 /**
@@ -817,9 +742,8 @@ oj.FlattenedTreeDataSource.prototype.getOption = function(option)
  * @return {Object} the underlying oj.TreeDataSource.
  * @export
  */
-oj.FlattenedTreeDataSource.prototype.getWrappedDataSource = function()
-{
-    return this.m_wrapped;
+oj.FlattenedTreeDataSource.prototype.getWrappedDataSource = function () {
+  return this.m_wrapped;
 };
 
 /**
@@ -827,29 +751,21 @@ oj.FlattenedTreeDataSource.prototype.getWrappedDataSource = function()
  * @param {number} count the child count of the parent node to fetch on.
  * @private
  */
-oj.FlattenedTreeDataSource.prototype._getFetchSizeToUse = function(count)
-{
-    var fetchSize, maxCount;
+oj.FlattenedTreeDataSource.prototype._getFetchSizeToUse = function (count) {
+  var fetchSize = this.getFetchSize();
+  var maxCount = this.getMaxCount();
 
-    fetchSize = this.getFetchSize();
-    maxCount = this.getMaxCount();
-
-    if (fetchSize === -1)
-    {
-        if (count === -1)
-        {
-            return maxCount;
-        }
-        return count;
+  if (fetchSize === -1) {
+    if (count === -1) {
+      return maxCount;
     }
-    else
-    {
-        if (count === -1)
-        {
-            return Math.min(fetchSize, maxCount);
-        }
-        return fetchSize;
-    } 
+    return count;
+  }
+
+  if (count === -1) {
+    return Math.min(fetchSize, maxCount);
+  }
+  return fetchSize;
 };
 
 /**
@@ -860,139 +776,136 @@ oj.FlattenedTreeDataSource.prototype._getFetchSizeToUse = function(count)
  * @property {number} range.start the start of the range in a flattened view
  * @property {number} range.count the number of rows to fetch
  * @protected
- */ 
-oj.FlattenedTreeDataSource.prototype.fetchRows = function(range, callbacks)
-{
-    this.m_busy = true;
+ */
+oj.FlattenedTreeDataSource.prototype.fetchRows = function (range, callbacks) {
+  this.m_busy = true;
 
-    // check if we should fetch rows from descendants result set or walk the tree
-    // to retrieve children
-    if (this._isExpandAll())
-    {
-        this._fetchRowsFromDescendants(range, callbacks);
-    }
-    else
-    {
-        this._fetchRowsFromChildren(range, callbacks);
-    }
+  // check if we should fetch rows from descendants result set or walk the tree
+  // to retrieve children
+  if (this._isExpandAll()) {
+    this._fetchRowsFromDescendants(range, callbacks);
+  } else {
+    this._fetchRowsFromChildren(range, callbacks);
+  }
 };
 
 /**
- * Fetch a range of rows from the underlying TreeDataSource.  
+ * Fetch a range of rows from the underlying TreeDataSource.
  * @param {Object} range the range of rows to fetch.  This is the range in a flattened view.
  * @property {number} range.start the start of the range in a flattened view
  * @property {number} range.count the number of rows to fetch
  * @protected
- */ 
-oj.FlattenedTreeDataSource.prototype._fetchRowsFromChildren = function(range, callbacks)
-{
-    var maxFetchSize, lastEntry, parent, count, index, depth, processed, nodeSet, fetchSize, fetchRange, lastEntryKey, lastEntryCount;
+ */
+oj.FlattenedTreeDataSource.prototype._fetchRowsFromChildren = function (range, callbacks) {
+  var fetchRange;
 
-    
-    // this condition should always be true since in high watermark scrolling we are
-    // always asking for rows after the current last row
-    if (range['start'] > this._getLastIndex())
-    {
-        maxFetchSize = this._getMaxFetchSize();
-        // initial fetch
-        if (this._getLastIndex() < 0)
-        {
-            fetchRange = {};
-            fetchRange['start'] = range['start'];
-            // adjust fetch count if neccessary
-            fetchRange['count'] = Math.min(maxFetchSize, range['count']);
-            this.m_wrapped.fetchChildren(null, fetchRange, {"success": function(nodeSet){this._handleFetchSuccess(nodeSet, null, 0, range, fetchRange, 0, callbacks);}.bind(this), "error": function(status){this._handleFetchError(status, callbacks);}.bind(this)});
+  // this condition should always be true since in high-water mark scrolling we are
+  // always asking for rows after the current last row
+  if (range.start > this._getLastIndex()) {
+    var maxFetchSize = this._getMaxFetchSize();
+    // initial fetch
+    if (this._getLastIndex() < 0) {
+      fetchRange = {};
+      fetchRange.start = range.start;
+      // adjust fetch count if neccessary
+      fetchRange.count = Math.min(maxFetchSize, range.count);
+      this.m_wrapped.fetchChildren(null, fetchRange, {
+        success: function (nodeSet) {
+          this._handleFetchSuccess(nodeSet, null, 0, range, fetchRange, 0, callbacks);
+        }.bind(this),
+        error: function (status) {
+          this._handleFetchError(status, callbacks);
+        }.bind(this)
+      });
 
-            return;
+      return;
+    } else if (maxFetchSize > 0) {
+      var lastEntry = this._getLastEntry();
+      var parent = lastEntry.parent;
+      var count = this.m_wrapped.getChildCount(parent);
+      var index = lastEntry.index;
+      var depth = lastEntry.depth;
+
+      // see if we are fetching within the parent
+      if (count === -1 || index < count - 1) {
+        var fetchSize = this._getFetchSizeToUse(count);
+        fetchRange = {};
+        fetchRange.start = index + 1;
+        if (count === -1) {
+          fetchRange.count = Math.min(fetchSize, range.count);
+        } else {
+          fetchRange.count = Math.min(maxFetchSize,
+                                      Math.min(Math.min(fetchSize, range.count),
+                                               count - fetchRange.start));
         }
-        else if (maxFetchSize > 0)
-        {
-            lastEntry = this._getLastEntry();
-            parent = lastEntry['parent'];
-            count = this.m_wrapped.getChildCount(parent);
-            index = lastEntry['index'];
-            depth = lastEntry['depth'];
+        this.m_wrapped.fetchChildren(parent, fetchRange, {
+          success: function (nodeSet) {
+            this._handleFetchSuccess(nodeSet, parent, depth, range, fetchRange, count, callbacks);
+          }.bind(this),
+          error: function (status) {
+            this._handleFetchError(status, callbacks);
+          }.bind(this)
+        });
+      } else {
+        // if this is the last child within the parent, then we still need to see if there are ancestors available to fetch
+        var lastEntryKey = lastEntry.key;
+        var lastEntryCount = this.m_wrapped.getChildCount(lastEntryKey);
+        var processed;
 
-            // see if we are fetching within the parent
-            if (count === -1 || index < count-1)
-            {
-                fetchSize = this._getFetchSizeToUse(count);
-                fetchRange = {};
-                fetchRange['start'] = index+1;
-                if (count === -1)
-                {
-                    fetchRange['count'] = Math.min(fetchSize, range['count']);
-                }
-                else
-                {
-                    fetchRange['count'] = Math.min(maxFetchSize, Math.min(Math.min(fetchSize, range['count']), count - fetchRange['start']));
-                }
-                this.m_wrapped.fetchChildren(parent, fetchRange, {"success": function(nodeSet){this._handleFetchSuccess(nodeSet, parent, depth, range, fetchRange, count, callbacks);}.bind(this), "error": function(status){this._handleFetchError(status, callbacks);}.bind(this)});
-            }
-            // if this is the last child within the parent, then we still need to see if there are ancestors available to fetch
-            else
-            {
-                lastEntryKey = lastEntry['key'];
-                lastEntryCount = this.m_wrapped.getChildCount(lastEntryKey);
-                if (this._isExpanded(lastEntryKey) && (lastEntryCount === -1 || lastEntryCount > 0))
-                {
-                    // if the last entry was expanded and has children fetch its children
-                    processed = this._fetchFromAncestors(lastEntry, depth + 1, range, callbacks, maxFetchSize);
-                }                       
-                else
-                {
-                    // fetch size is greater than the number of children remaining to fetch
-                    // so we'll need to go up the path (recursively if necessary) and see if
-                    // if we need to fetch from ancestors.
-                    processed = this._fetchFromAncestors(parent, depth, range, callbacks, maxFetchSize);
-                }
-                if (!processed)
-                {
-                    // nothing is used from node set, just return a empty node set
-                    nodeSet = new oj.EmptyNodeSet(null, range['start']);
-                    // invoke original success callback
-                    if (callbacks != null && callbacks['success'] != null)
-                    {
-                        callbacks['success'].call(null, nodeSet);
-                    }
-                    // busy not handled by the _fetchFromAncestors in this case
-                    this.m_busy = false; 
-                }
-            }
-            return;
+        if (this._isExpanded(lastEntryKey) && (lastEntryCount === -1 || lastEntryCount > 0)) {
+          // if the last entry was expanded and has children fetch its children
+          processed =
+            this._fetchFromAncestors(lastEntry, depth + 1, range, callbacks, maxFetchSize);
+        } else {
+          // fetch size is greater than the number of children remaining to fetch
+          // so we'll need to go up the path (recursively if necessary) and see if
+          // if we need to fetch from ancestors.
+          processed = this._fetchFromAncestors(parent, depth, range, callbacks, maxFetchSize);
         }
+        if (!processed) {
+          // nothing is used from node set, just return a empty node set
+          var nodeSet = new oj.EmptyNodeSet(null, range.start);
+          // invoke original success callback
+          if (callbacks != null && callbacks.success != null) {
+            callbacks.success.call(null, nodeSet);
+          }
+          // busy not handled by the _fetchFromAncestors in this case
+          this.m_busy = false;
+        }
+      }
+      return;
     }
+  }
 
-    // the only case we'll ended up here is if the max count has been reached or
-    // for some reason the caller is asking for count = 0
-    this.handleMaxCountReached(range, callbacks);
-    // busy can't be set by max count reached because it can be overwritten by wrapped datasource
-    this.m_busy = false;
+  // the only case we'll ended up here is if the max count has been reached or
+  // for some reason the caller is asking for count = 0
+  this.handleMaxCountReached(range, callbacks);
+  // busy can't be set by max count reached because it can be overwritten by wrapped datasource
+  this.m_busy = false;
 };
 
 /**
  * Checks whether a move operation is valid.
  * @param {any} rowToMove the key of the row to move
- * @param {any} referenceRow the key of the reference row which combined with position are used to determine 
+ * @param {any} referenceRow the key of the reference row which combined with position are used to determine
  *        the destination of where the row should moved to.
- * @param {number|string} position The position of the moved row relative to the reference row.  
- *        This can be a string: "before", "after", "inside", "first", "last", or the zero based index to position 
+ * @param {number|string} position The position of the moved row relative to the reference row.
+ *        This can be a string: "before", "after", "inside", "first", "last", or the zero based index to position
  *        the element at a specific point among the reference row's current children.
  * @return {string} returns "valid" if the move is valid, "invalid" otherwise.
  * @export
- */ 
-oj.FlattenedTreeDataSource.prototype.moveOK = function(rowToMove, referenceRow, position)
-{
-    return this.m_wrapped.moveOK(rowToMove, referenceRow, position);
+ */
+oj.FlattenedTreeDataSource.prototype.moveOK = function (rowToMove, referenceRow, position) {
+  return this.m_wrapped.moveOK(rowToMove, referenceRow, position);
 };
 
 /**
  * Moves a row from one location to another (different position within the same parent or a completely different parent)
  * @param {any} rowToMove the key of the row to move
- * @param {any} referenceRow the key of the reference row which combined with position are used to determine 
+ * @param {any} referenceRow the key of the reference row which combined with position are used to determine
  *        the destination of where the row should moved to.
- * @param {number|string} position The position of the moved row relative to the reference row.  
- *        This can be a string: "before", "after", "inside", "first", "last", or the zero based index to position 
+ * @param {number|string} position The position of the moved row relative to the reference row.
+ *        This can be a string: "before", "after", "inside", "first", "last", or the zero based index to position
  *        the element at a specific point among the reference row's current children.
  * @param {Object=} callbacks the callback to invoke when the move completed.
  * @property {function()} callbacks.success the callback to invoke when the move completed successfully.
@@ -1000,19 +913,18 @@ oj.FlattenedTreeDataSource.prototype.moveOK = function(rowToMove, referenceRow, 
  * @return {undefined}
  * @export
  */
-oj.FlattenedTreeDataSource.prototype.move = function(rowToMove, referenceRow, position, callbacks)
-{
+oj.FlattenedTreeDataSource.prototype.move =
+  function (rowToMove, referenceRow, position, callbacks) {
     this.m_wrapped.move(rowToMove, referenceRow, position, callbacks);
-};
+  };
 
 /**
  * Determine the maximum possible fetch size.
  * @return {number} the maximum fetch size
  * @private
  */
-oj.FlattenedTreeDataSource.prototype._getMaxFetchSize = function()
-{
-    return this.getMaxCount() - (this._getLastIndex()+1);
+oj.FlattenedTreeDataSource.prototype._getMaxFetchSize = function () {
+  return this.getMaxCount() - (this._getLastIndex() + 1);
 };
 
 /**
@@ -1021,14 +933,12 @@ oj.FlattenedTreeDataSource.prototype._getMaxFetchSize = function()
  * @param {Object} callbacks the original callbacks passed to the fetch operation
  * @private
  */
-oj.FlattenedTreeDataSource.prototype._handleFetchError = function(status, callbacks)
-{
-    if (callbacks != null && callbacks['error'] != null)
-    {
-        callbacks['error'].call(null, status);
-    }
+oj.FlattenedTreeDataSource.prototype._handleFetchError = function (status, callbacks) {
+  if (callbacks != null && callbacks.error != null) {
+    callbacks.error.call(null, status);
+  }
 
-    this.m_busy = false;
+  this.m_busy = false;
 };
 
 /**
@@ -1043,43 +953,46 @@ oj.FlattenedTreeDataSource.prototype._handleFetchError = function(status, callba
  * @param {Object=} options the original callbacks passed to the fetch operation
  * @private
  */
-oj.FlattenedTreeDataSource.prototype._handleFetchSuccess = function(nodeSet, parent, depth, originalRange, requestedRange, count, callbacks, options)
-{
-    var toExpand, flattenedRange, queue, prevNodeSetInfo;
-    toExpand = [];
+oj.FlattenedTreeDataSource.prototype._handleFetchSuccess =
+  function (nodeSet, parent, depth, originalRange, requestedRange, count, callbacks, options) {
+    var toExpand = [];
 
-    // first process the node set to get the rows to expand with the indexes        
+    // first process the node set to get the rows to expand with the indexes
     this._processNodeSet(nodeSet, parent, depth, toExpand);
 
-    flattenedRange = {start: originalRange['start'], count: nodeSet.getCount()};
+    var flattenedRange = { start: originalRange.start, count: nodeSet.getCount() };
+    // eslint-disable-next-line no-param-reassign
     nodeSet = new oj.NodeSetWrapper(nodeSet, this.insertMetadata.bind(this), flattenedRange);
-    
+
     // expand the fetched nodes to get the node set as full as possible from the original fetch
-    if (toExpand.length !== 0)
-    {                     
-        // there are rows to expand, so we'll need to combine the nodeset after
-        // we got the expanded nodeset
-        queue = [];
-        queue.push(toExpand);
+    if (toExpand.length !== 0) {
+      // there are rows to expand, so we'll need to combine the nodeset after
+      // we got the expanded nodeset
+      var queue = [];
+      queue.push(toExpand);
 
-        // we'll reuse the syncExpandRows method, which is used to combine nested expanding
-        // nodeset, the only difference is we'll include the callbacks here, see handleExpandSuccess method
-        prevNodeSetInfo = {};
-        prevNodeSetInfo['callbacks'] = 
-        {
-            "success": function(newNodeSet){this._verifyFetchResults(newNodeSet, parent, depth, originalRange, requestedRange, count, callbacks, options);}.bind(this), 
-            "error": function(status){this._handleFetchError(status, callbacks);}.bind(this)
-        };
-        prevNodeSetInfo['nodeSet'] = nodeSet;
-        prevNodeSetInfo['keys'] = [];
+      // we'll reuse the syncExpandRows method, which is used to combine nested expanding
+      // nodeset, the only difference is we'll include the callbacks here, see handleExpandSuccess method
+      var prevNodeSetInfo = {};
+      prevNodeSetInfo.callbacks =
+      {
+        success: function (newNodeSet) {
+          this._verifyFetchResults(newNodeSet, parent, depth, originalRange,
+                                     requestedRange, count, callbacks, options);
+        }.bind(this),
+        error: function (status) {
+          this._handleFetchError(status, callbacks);
+        }.bind(this)
+      };
+      prevNodeSetInfo.nodeSet = nodeSet;
+      prevNodeSetInfo.keys = [];
 
-        this._syncExpandRows(queue, prevNodeSetInfo);
+      this._syncExpandRows(queue, prevNodeSetInfo);
+    } else {
+      this._verifyFetchResults(nodeSet, parent, depth, originalRange, requestedRange,
+                               count, callbacks, options);
     }
-    else
-    {
-        this._verifyFetchResults(nodeSet, parent, depth, originalRange, requestedRange, count, callbacks, options)
-    }    
-};
+  };
 
 /**
  * Process success callback from fetchChildren, fetchFromAncestors or expand after a fetch children
@@ -1093,62 +1006,61 @@ oj.FlattenedTreeDataSource.prototype._handleFetchSuccess = function(nodeSet, par
  * @param {Object=} options the original callbacks passed to the fetch operation
  * @private
  */
-oj.FlattenedTreeDataSource.prototype._verifyFetchResults = function(nodeSet, parent, depth, originalRange, requestedRange, count, callbacks, options)
-{
-    var prevNodeSet, lastNodeIndex, lastNodeKey, mergedNodeSet, remainingRange, remainingOptions, processed;
-;
-    if (options != undefined)
-    {
-        // if there is a previousNodeSet merge it with the new one to try and fulfill the original fetch size
-        prevNodeSet = options['prevNodeSet'];
-        if (prevNodeSet != undefined)
-        {
-            lastNodeIndex = prevNodeSet.getStart() + prevNodeSet.getCount() - 1;
-            lastNodeKey = prevNodeSet.getMetadata(lastNodeIndex)['key'];
-            mergedNodeSet = new oj.MergedNodeSet(prevNodeSet, nodeSet, lastNodeKey);
-        }
+oj.FlattenedTreeDataSource.prototype._verifyFetchResults =
+  function (nodeSet, parent, depth, originalRange, requestedRange, count, callbacks, options) {
+    var mergedNodeSet;
+    var processed;
+
+    if (options != null) {
+      // if there is a previousNodeSet merge it with the new one to try and fulfill the original fetch size
+      var prevNodeSet = options.prevNodeSet;
+      if (prevNodeSet != null) {
+        var lastNodeIndex = (prevNodeSet.getStart() + prevNodeSet.getCount()) - 1;
+        var lastNodeKey = prevNodeSet.getMetadata(lastNodeIndex).key;
+        mergedNodeSet = new oj.MergedNodeSet(prevNodeSet, nodeSet, lastNodeKey);
+      }
     }
 
     // if the nodeSet contains less nodes than originally requested, attempt to fetch the remainder from the ancestors
-    if (nodeSet.getCount() < originalRange['count'] && parent != null && depth > 0)
-    {
-        remainingRange = {};
-        remainingRange['start'] = originalRange['start'] + nodeSet.getCount();
-        remainingRange['count'] = originalRange['count'] - nodeSet.getCount();
-        
-        remainingOptions = {};
-        remainingOptions['prevNodeSet'] = mergedNodeSet == null ? nodeSet : mergedNodeSet;
-        
-        processed = this._fetchFromAncestors(parent, depth, remainingRange, callbacks, undefined, remainingOptions);        
-    }
-    // if we overfetched because of expanded children then trim the nodeSet by wrapping the nodeSet in the correct range
-    else if (nodeSet.getCount() > originalRange['count'])
-    {
-        var difference = nodeSet.getCount() - originalRange['count'];
-        if (mergedNodeSet != null)
-        {
-            mergedNodeSet = new oj.NodeSetWrapper(mergedNodeSet, this.insertMetadata.bind(this), {'start': mergedNodeSet.getStart(), 'count': (mergedNodeSet.getCount() - difference)});
-            // remove entries that will not be passed back via the wrapped range
-            this._removeEntry(mergedNodeSet.getStart() + mergedNodeSet.getCount(), difference);
-        }
-        else
-        {
-            nodeSet = new oj.NodeSetWrapper(nodeSet, this.insertMetadata.bind(this), {'start': nodeSet.getStart(), 'count': (nodeSet.getCount() - difference)});
-            // remove entries that will not be passed back via the wrapped range
-            this._removeEntry(nodeSet.getStart() + nodeSet.getCount(), difference);            
-        }
+    if (nodeSet.getCount() < originalRange.count && parent != null && depth > 0) {
+      var remainingRange = {};
+      remainingRange.start = originalRange.start + nodeSet.getCount();
+      remainingRange.count = originalRange.count - nodeSet.getCount();
+
+      var remainingOptions = {};
+      remainingOptions.prevNodeSet = mergedNodeSet == null ? nodeSet : mergedNodeSet;
+
+      processed = this._fetchFromAncestors(parent, depth, remainingRange,
+                                           callbacks, undefined, remainingOptions);
+    } else if (nodeSet.getCount() > originalRange.count) {
+      // if we overfetched because of expanded children then trim the nodeSet by wrapping the nodeSet in the correct range
+      var difference = nodeSet.getCount() - originalRange.count;
+      if (mergedNodeSet != null) {
+        mergedNodeSet = new oj.NodeSetWrapper(mergedNodeSet, this.insertMetadata.bind(this), {
+          start: mergedNodeSet.getStart(),
+          count: (mergedNodeSet.getCount() - difference)
+        });
+        // remove entries that will not be passed back via the wrapped range
+        this._removeEntry(mergedNodeSet.getStart() + mergedNodeSet.getCount(), difference);
+      } else {
+        // eslint-disable-next-line no-param-reassign
+        nodeSet = new oj.NodeSetWrapper(nodeSet, this.insertMetadata.bind(this), {
+          start: nodeSet.getStart(),
+          count: (nodeSet.getCount() - difference)
+        });
+        // remove entries that will not be passed back via the wrapped range
+        this._removeEntry(nodeSet.getStart() + nodeSet.getCount(), difference);
+      }
     }
 
-    if (!processed)
-    {
-        if (callbacks != null && callbacks['success'] != null)
-        {
-            callbacks['success'].call(null, mergedNodeSet == null ? nodeSet : mergedNodeSet);
-        }
+    if (!processed) {
+      if (callbacks != null && callbacks.success != null) {
+        callbacks.success.call(null, mergedNodeSet == null ? nodeSet : mergedNodeSet);
+      }
     }
 
     this.m_busy = false;
-};
+  };
 
 /**
  * Returns the number of children for a specified parent.  If the value returned is not >= 0 then it is automatically assumed
@@ -1157,9 +1069,8 @@ oj.FlattenedTreeDataSource.prototype._verifyFetchResults = function(nodeSet, par
  * @return {number} the number of children for the specified parent.
  * @export
  */
-oj.FlattenedTreeDataSource.prototype.getChildCount = function(parent)
-{
-    return this.m_wrapped.getChildCount(parent);
+oj.FlattenedTreeDataSource.prototype.getChildCount = function (parent) {
+  return this.m_wrapped.getChildCount(parent);
 };
 
 /**
@@ -1168,91 +1079,103 @@ oj.FlattenedTreeDataSource.prototype.getChildCount = function(parent)
  * @param {number} depth the depth of the nodes
  * @param {Object} callbacks the original callbacks passed to the fetch operation
  * @param {number=} maxFetchSize maximum fetch size, optional
- * @param {Object=} options 
+ * @param {Object=} options
  * @return {boolean} true if results are fetched, false if nothing is fetched
  * @private
  */
-oj.FlattenedTreeDataSource.prototype._fetchFromAncestors = function(parent, depth, range, callbacks, maxFetchSize, options)
-{
-    var remainToFetch, current, i, currEntry, currDepth, count, index, countUnknown, fetchSize, batchFetchOptions, fetchRange, fetchedChildren;
+oj.FlattenedTreeDataSource.prototype._fetchFromAncestors =
+  function (parent, depth, range, callbacks, maxFetchSize, options) {
+    var batchFetchOptions;
 
-    fetchedChildren = false;
-    
-    if (maxFetchSize === undefined)
-    {
-        maxFetchSize = this._getMaxFetchSize();
+    var fetchedChildren = false;
+
+    if (maxFetchSize === undefined) {
+      // eslint-disable-next-line no-param-reassign
+      maxFetchSize = this._getMaxFetchSize();
     }
 
     // fetch size is greater than the number of children remaining to fetch
     // so we'll need to go up the path (recursively if necessary) and see if
     // if we need to fetch from ancestors.
-    if (this._isBatchFetching())
-    {
-        batchFetchOptions = {'queueOnly': true};
+    if (this._isBatchFetching()) {
+      batchFetchOptions = { queueOnly: true };
     }
 
-    fetchSize = this._getFetchSizeToUse(-1);
-    current = this._getLastIndex();
+    var fetchSize = this._getFetchSizeToUse(-1);
+    var current = this._getLastIndex();
+    var count;
+    var fetchRange;
+    var currDepth;
+
     // adjusted for loop i = current-1 to i = current.
     // this._getLastIndex automatically performs a -1
-    // so no need to set that again. 
-    for (i=current; i>=0; i--)
-    {
-        currEntry = this._getEntry(i);
-        currDepth = currEntry['depth'];
-        if (currDepth < depth)
-        {
-            parent = currEntry['parent'];
-            count = this.m_wrapped.getChildCount(parent);
-            index = currEntry['index'];
+    // so no need to set that again.
+    for (var i = current; i >= 0; i--) {
+      var currEntry = this._getEntry(i);
+      currDepth = currEntry.depth;
+      if (currDepth < depth) {
+        // eslint-disable-next-line no-param-reassign
+        parent = currEntry.parent;
+        count = this.m_wrapped.getChildCount(parent);
+        var index = currEntry.index;
 
-            countUnknown = (count === -1);
-            if (countUnknown || index < count-1)
-            {
-                fetchRange = {};
-                fetchRange['start'] = index+1;
-                if (countUnknown)
-                {
-                    fetchRange['count'] = Math.min(maxFetchSize, Math.max(0, fetchSize));
-                    // if count is unknown, we cannot do batch fetch
-                    batchFetchOptions = undefined;
-                    // stop going up parents
-                }
-                else
-                {
-                    fetchRange['count'] = Math.min(maxFetchSize, Math.min(fetchSize, count - fetchRange['start']));
-                }
+        var countUnknown = (count === -1);
+        if (countUnknown || index < count - 1) {
+          fetchRange = {};
+          fetchRange.start = index + 1;
+          if (countUnknown) {
+            fetchRange.count = Math.min(maxFetchSize, Math.max(0, fetchSize));
+            // if count is unknown, we cannot do batch fetch
+            batchFetchOptions = undefined;
+            // stop going up parents
+          } else {
+            fetchRange.count = Math.min(maxFetchSize,
+                                        Math.min(fetchSize, count - fetchRange.start));
+          }
 
-                // if there's nothing to fetch, quit
-                if (fetchRange['count'] == 0)
-                {
-                    break;
-                }
-                
-                // it's always attached at the end
-                this.m_wrapped.fetchChildren(parent, fetchRange, {"success": function(nodeSet){this._handleFetchSuccess(nodeSet, parent, currDepth, range, fetchRange, count, callbacks, options);}.bind(this), "error": function(status){this._handleFetchError(status, callbacks);}.bind(this)}, batchFetchOptions);
-                
-                fetchedChildren = true;
-                
-                break;
-            }
-            else
-            {
-                depth -= 1;
-            }
+          // if there's nothing to fetch, quit
+          if (fetchRange.count === 0) {
+            break;
+          }
+
+          // it's always attached at the end
+          this.m_wrapped.fetchChildren(parent, fetchRange, {
+            success: function (_parent, _currDepth, _fetchRange, _count, nodeSet) {
+              this._handleFetchSuccess(nodeSet, _parent, _currDepth, range, _fetchRange,
+                                       _count, callbacks, options);
+            }.bind(this, parent, currDepth, fetchRange, count),
+            error: function (status) {
+              this._handleFetchError(status, callbacks);
+            }.bind(this)
+          }, batchFetchOptions);
+
+          fetchedChildren = true;
+
+          break;
+        } else {
+          // eslint-disable-next-line no-param-reassign
+          depth -= 1;
         }
-    }            
+      }
+    }
 
     // if batching is used, fire a final fetch children call to flush the queue
-    if (batchFetchOptions != null)
-    {
-        this.m_wrapped.fetchChildren(parent, {'start': range['count'], 'count': 0}, {"success": function(nodeSet){this._handleFetchSuccess(nodeSet, parent, currDepth, range, fetchRange, count, callbacks, options);}.bind(this), "error": function(status){this._handleFetchError(status, callbacks);}.bind(this)});
-        fetchedChildren = true;
+    if (batchFetchOptions != null) {
+      this.m_wrapped.fetchChildren(parent, { start: range.count, count: 0 }, {
+        success: function (nodeSet) {
+          this._handleFetchSuccess(nodeSet, parent, currDepth, range, fetchRange,
+                                   count, callbacks, options);
+        }.bind(this),
+        error: function (status) {
+          this._handleFetchError(status, callbacks);
+        }.bind(this)
+      });
+      fetchedChildren = true;
     }
 
     // return false if no results are fetched
     return fetchedChildren;
-};
+  };
 
 /**
  * Walk the node set and do whatever processing is neccessary.
@@ -1262,27 +1185,22 @@ oj.FlattenedTreeDataSource.prototype._fetchFromAncestors = function(parent, dept
  * @param {Array.<Object>=} toExpand the set of keys to be expand.  It is populated by this method.
  * @private
  */
-oj.FlattenedTreeDataSource.prototype._processNodeSet = function(nodeSet, parent, depth, toExpand)
-{
-    var nodeStart, nodeCount, i, metadata, key;
+oj.FlattenedTreeDataSource.prototype._processNodeSet = function (nodeSet, parent, depth, toExpand) {
+  var nodeStart = nodeSet.getStart();
+  var nodeCount = nodeSet.getCount();
 
-    nodeStart = nodeSet.getStart();
-    nodeCount = nodeSet.getCount();
+  // walk the node set and populate the internal cache
+  for (var i = 0; i < nodeCount; i++) {
+    var metadata = nodeSet.getMetadata(nodeStart + i);
+    var key = metadata.key;
 
-    // walk the node set and populate the internal cache
-    for (i=0; i<nodeCount; i++)
-    {
-        metadata = nodeSet.getMetadata(nodeStart+i);
-        key = metadata['key'];
+    this._addEntry(key, depth, nodeStart + i, parent);
 
-        this._addEntry(key, depth, nodeStart+i, parent);
-
-        if (this._isExpanded(key))
-        {
-            // keep track of rows that needs to expand later
-            toExpand.push(key);
-        }
+    if (this._isExpanded(key)) {
+      // keep track of rows that needs to expand later
+      toExpand.push(key);
     }
+  }
 };
 
 /**
@@ -1291,25 +1209,19 @@ oj.FlattenedTreeDataSource.prototype._processNodeSet = function(nodeSet, parent,
  * @param {Object} metadata the existing metadata to inject into
  * @protected
  */
-oj.FlattenedTreeDataSource.prototype.insertMetadata = function(key, metadata)
-{
-    if (this._isExpanded(key) && !metadata['leaf'])
-    {
-        // also update metadata with state info
-        metadata['state'] = 'expanded';
-    }
-    else
-    {
-        // include state metadata for row expander to render correct icon
-        if (metadata['leaf'])
-        {
-            metadata['state'] = 'leaf';
-        }
-        else
-        {
-            metadata['state'] = 'collapsed';
-        }
-    }
+oj.FlattenedTreeDataSource.prototype.insertMetadata = function (key, metadata) {
+  if (this._isExpanded(key) && !metadata.leaf) {
+    // also update metadata with state info
+    // eslint-disable-next-line no-param-reassign
+    metadata.state = 'expanded';
+  } else if (metadata.leaf) {
+    // include state metadata for row expander to render correct icon
+    // eslint-disable-next-line no-param-reassign
+    metadata.state = 'leaf';
+  } else {
+    // eslint-disable-next-line no-param-reassign
+    metadata.state = 'collapsed';
+  }
 };
 
 /**
@@ -1318,20 +1230,25 @@ oj.FlattenedTreeDataSource.prototype.insertMetadata = function(key, metadata)
  * @property {number} range.start the start of the range in a flattened view
  * @property {number} range.count the number of rows to fetch
  * @protected
- */ 
-oj.FlattenedTreeDataSource.prototype._fetchRowsFromDescendants = function(range, callbacks)
-{
-    // give implementation a hint of maximum to fetch, implementation can choose to ignore it
-    var options = {'maxCount': this.getMaxCount()};
+ */
+oj.FlattenedTreeDataSource.prototype._fetchRowsFromDescendants = function (range, callbacks) {
+  // give implementation a hint of maximum to fetch, implementation can choose to ignore it
+  var options = { maxCount: this.getMaxCount() };
 
-    // give implementation a hint of where to start, implementation can choose to ignore it
-    if (this._getLastIndex() >= 0)
-    {
-        options['start'] = this._getEntry(this._getLastIndex())['key'];
-    }
+  // give implementation a hint of where to start, implementation can choose to ignore it
+  if (this._getLastIndex() >= 0) {
+    options.start = this._getEntry(this._getLastIndex()).key;
+  }
 
-    // invoke method on TreeDataSource
-    this.m_wrapped.fetchDescendants(null, {"success": function(nodeSet){this._handleFetchDescendantsSuccess(nodeSet, range, callbacks);}.bind(this), "error": function(status){this._handleFetchError(status, callbacks);}.bind(this)}, options);
+  // invoke method on TreeDataSource
+  this.m_wrapped.fetchDescendants(null, {
+    success: function (nodeSet) {
+      this._handleFetchDescendantsSuccess(nodeSet, range, callbacks);
+    }.bind(this),
+    error: function (status) {
+      this._handleFetchError(status, callbacks);
+    }.bind(this)
+  }, options);
 };
 
 /**
@@ -1341,11 +1258,10 @@ oj.FlattenedTreeDataSource.prototype._fetchRowsFromDescendants = function(range,
  *         criteria.direction the sort direction, valid values are "ascending", "descending", "none" (default)
  * @export
  */
-oj.FlattenedTreeDataSource.prototype.getSortCriteria = function()
-{
-    return this.m_wrapped.getSortCriteria();
+oj.FlattenedTreeDataSource.prototype.getSortCriteria = function () {
+  return this.m_wrapped.getSortCriteria();
 };
-    
+
 /**
  * Process success callback for fetchDescendants operation before handing it back to original caller.
  * @param {Object} nodeSet the set of fetched nodes
@@ -1353,76 +1269,66 @@ oj.FlattenedTreeDataSource.prototype.getSortCriteria = function()
  * @param {Object} callbacks the original callbacks passed to the fetch operation
  * @private
  */
-oj.FlattenedTreeDataSource.prototype._handleFetchDescendantsSuccess = function(nodeSet, range, callbacks)
-{
-    var maxFetchSize, count, lastEntry, options, actualStart;
+oj.FlattenedTreeDataSource.prototype._handleFetchDescendantsSuccess =
+  function (nodeSet, range, callbacks) {
+    var options;
+    var actualStart;
+    var _nodeSet = nodeSet;
 
-    // this condition should always be true since in high watermark scrolling we are
+    // this condition should always be true since in high-water mark scrolling we are
     // always asking for rows after the current last row
-    if (range['start'] > this._getLastIndex())
-    {
-        maxFetchSize = this._getMaxFetchSize();
-        count = Math.min(maxFetchSize, range['count']);
+    if (range.start > this._getLastIndex()) {
+      var maxFetchSize = this._getMaxFetchSize();
+      var count = Math.min(maxFetchSize, range.count);
 
-        // wrap it to inject additional metadata
-        nodeSet = new oj.NodeSetWrapper(nodeSet, this.insertMetadata.bind(this), null, this.m_collapsedKeys);
+      // wrap it to inject additional metadata
+      _nodeSet = new oj.NodeSetWrapper(_nodeSet,
+                                      this.insertMetadata.bind(this), null, this.m_collapsedKeys);
 
-        if (this._getLastIndex() >= 0)
-        {
-            // in fetchDescendants case, the result node set would probably contains more than what
-            // we would return.  The issue is we can't really use range to filter the set since the 
-            // range in the current view does not map one-to-one to the expand all node set as some 
-            // node might have been collapsed before the fetch.
-            // the solution is to use the last cached entry to find where new data starts in the
-            // result node set, and use range count to limit what to return
-            lastEntry = this._getLastEntry();
-            options = {'index': 0, 'found': false, 'count': 0};
-            this._processDescendantsNodeSet(nodeSet, null, 0, lastEntry, count, options);
-            actualStart = options['index'] + 1;
-        }
-        else
-        {
-            // initial fetch case, just specify the count to limit result
-            options = {'count': 0};
-            this._processDescendantsNodeSet(nodeSet, null, 0, null, count, options);
-            actualStart = 0;
-        }
+      if (this._getLastIndex() >= 0) {
+        // in fetchDescendants case, the result node set would probably contains more than what
+        // we would return.  The issue is we can't really use range to filter the set since the
+        // range in the current view does not map one-to-one to the expand all node set as some
+        // node might have been collapsed before the fetch.
+        // the solution is to use the last cached entry to find where new data starts in the
+        // result node set, and use range count to limit what to return
+        var lastEntry = this._getLastEntry();
+        options = { index: 0, found: false, count: 0 };
+        this._processDescendantsNodeSet(_nodeSet, null, 0, lastEntry, count, options);
+        actualStart = options.index + 1;
+      } else {
+        // initial fetch case, just specify the count to limit result
+        options = { count: 0 };
+        this._processDescendantsNodeSet(_nodeSet, null, 0, null, count, options);
+        actualStart = 0;
+      }
 
-        if (callbacks != null && callbacks['success'] != null)
-        {
-            if (options != null)
-            {
-                if (options['count'] === 0)
-                {
-                    // nothing is used from node set, just return a empty node set
-                    nodeSet = new oj.EmptyNodeSet(null, range['start']);
-                }
-                else 
-                {
-                    // wraps node set with a filter that only returns nodes that
-                    // have not been fetched already
-                    nodeSet = new oj.FlattenedNodeSet(nodeSet, actualStart);
-                }
-            }
-            else
-            {
-                nodeSet = new oj.FlattenedNodeSet(nodeSet);
-            }
-            callbacks['success'].call(null, nodeSet);
+      if (callbacks != null && callbacks.success != null) {
+        if (options != null) {
+          if (options.count === 0) {
+            // nothing is used from node set, just return a empty node set
+            _nodeSet = new oj.EmptyNodeSet(null, range.start);
+          } else {
+            // wraps node set with a filter that only returns nodes that
+            // have not been fetched already
+            _nodeSet = new oj.FlattenedNodeSet(_nodeSet, actualStart);
+          }
+        } else {
+          _nodeSet = new oj.FlattenedNodeSet(_nodeSet);
         }
-    }
-    else
-    {
-        // the only case we'll ended up here is if the max count has been reached or
-        // for some reason the caller is asking for count = 0
-        this.handleMaxCountReached(range, callbacks);
+        callbacks.success.call(null, _nodeSet);
+      }
+    } else {
+      // the only case we'll ended up here is if the max count has been reached or
+      // for some reason the caller is asking for count = 0
+      this.handleMaxCountReached(range, callbacks);
     }
 
     this.m_busy = false;
 
     // process any outstanding operations
     this._processQueue();
-};
+  };
 
 /**
  * Walk the node set and do whatever processing is neccessary.
@@ -1434,90 +1340,78 @@ oj.FlattenedTreeDataSource.prototype._handleFetchDescendantsSuccess = function(n
  * @param {Object=} options this object carries information collected in this method
  * @private
  */
-oj.FlattenedTreeDataSource.prototype._processDescendantsNodeSet = function(nodeSet, parent, depth, lastEntry, maxCount, options)
-{
-    var nodeStart, nodeCount, i, metadata, key, childNodeSet;
-
-    nodeStart = nodeSet.getStart();
-    nodeCount = nodeSet.getCount();
+oj.FlattenedTreeDataSource.prototype._processDescendantsNodeSet =
+  function (nodeSet, parent, depth, lastEntry, maxCount, options) {
+    var nodeStart = nodeSet.getStart();
+    var nodeCount = nodeSet.getCount();
 
     // walk the node set and populate the internal cache
-    for (i=0; i<nodeCount; i++)
-    {
-        // see if we have enough results
-        if (options['count'] == maxCount)
-        {
-            return;
+    for (var i = 0; i < nodeCount; i++) {
+      // see if we have enough results
+      if (options.count === maxCount) {
+        return;
+      }
+
+      var metadata = nodeSet.getMetadata(nodeStart + i);
+      var key = metadata.key;
+
+      // see if we need to check depth
+      if (options.checkDepth) {
+        if (lastEntry.depth === depth) {
+          // eslint-disable-next-line no-param-reassign
+          options.found = true;
+          // eslint-disable-next-line no-param-reassign
+          options.checkDepth = false;
         }
+      }
 
-        metadata = nodeSet.getMetadata(nodeStart+i);
-        key = metadata['key'];
+      if (lastEntry == null || options.found) {
+        this._addEntry(key, depth, nodeStart + i, parent);
 
-        // see if we need to check depth
-        if (options['checkDepth'])
-        {
-            if (lastEntry['depth'] === depth)
-            {
-                options['found'] = true;
-                options['checkDepth'] = false;
-            }
+        // eslint-disable-next-line no-param-reassign
+        options.count += 1;
+
+        // include state metadata for row expander
+        // in the fetchDescendants case the state is always 'expanded'
+        if (metadata.leaf) {
+          metadata.state = 'leaf';
+        } else {
+          metadata.state = 'expanded';
         }
+      }
 
-        if (lastEntry == null || options['found'])
-        {
-            this._addEntry(key, depth, nodeStart+i, parent);
-
-            options['count'] = options['count'] + 1;
-
-            // include state metadata for row expander
-            // in the fetchDescendants case the state is always 'expanded'
-            if (metadata['leaf'])
-            {
-                metadata['state'] = 'leaf';
-            }
-            else
-            {
-                metadata['state'] = 'expanded';
-            }
+      // mark we found the entry in node set that matches the last key
+      // the rest of node set we can start pushing to cache
+      if (lastEntry != null && !options.found) {
+        // we'll need to also check whether the last entry is expanded (or not leaf)
+        // if it is collapsed, then we can't add any nodes from the node set until
+        // we found child in the node set that has the same depth
+        if (key === lastEntry.key) {
+          if (metadata.leaf || this._isExpanded(key)) {
+            // eslint-disable-next-line no-param-reassign
+            options.found = true;
+          } else {
+            // collapsed.  Mark to check the depth of the next node before
+            // setting found to true.
+            // eslint-disable-next-line no-param-reassign
+            options.checkDepth = true;
+          }
+        } else {
+          // eslint-disable-next-line no-param-reassign
+          options.index += 1;
         }
+      }
 
-        // mark we found the entry in node set that matches the last key
-        // the rest of node set we can start pushing to cache
-        if (lastEntry != null && !options['found'])
-        {
-            // we'll need to also check whether the last entry is expanded (or not leaf)
-            // if it is collapsed, then we can't add any nodes from the node set until
-            // we found child in the node set that has the same depth
-            if (key === lastEntry['key'])
-            {
-                if (metadata['leaf'] || this._isExpanded(key))
-                {
-                    options['found'] = true;
-                }
-                else
-                {
-                    // collapsed.  Mark to check the depth of the next node before
-                    // setting found to true.
-                    options['checkDepth'] = true;
-                }
-            }
-            else
-            {
-                options['index'] = options['index'] + 1;
-            }
+      // process child node set, if any
+      if (nodeSet.getChildNodeSet && this._isExpanded(key)) {
+        var childNodeSet = nodeSet.getChildNodeSet(i);
+        if (childNodeSet != null) {
+          this._processDescendantsNodeSet(childNodeSet, key, depth + 1,
+                                          lastEntry, maxCount, options);
         }
-
-        // process child node set, if any
-        if (nodeSet.getChildNodeSet && this._isExpanded(key))
-        {
-            childNodeSet = nodeSet.getChildNodeSet(i);
-            if (childNodeSet != null)
-            {
-                this._processDescendantsNodeSet(childNodeSet, key, depth+1, lastEntry, maxCount, options);
-            }
-        }
+      }
     }
-};
+  };
 
 /**
  * Expand the specified row.
@@ -1525,9 +1419,8 @@ oj.FlattenedTreeDataSource.prototype._processDescendantsNodeSet = function(nodeS
  * @export
  * @return {undefined}
  */
-oj.FlattenedTreeDataSource.prototype.expand = function(rowKey)
-{
-    this._expand(rowKey);
+oj.FlattenedTreeDataSource.prototype.expand = function (rowKey) {
+  this._expand(rowKey);
 };
 
 /**
@@ -1536,59 +1429,55 @@ oj.FlattenedTreeDataSource.prototype.expand = function(rowKey)
  * @param {Object=} options additional options to pass to fetchChildren method
  * @private
  */
-oj.FlattenedTreeDataSource.prototype._expand = function(rowKey, options)
-{
-    var count, fetchSize, maxCount, refIndex, prevNodeSetInfo;
+oj.FlattenedTreeDataSource.prototype._expand = function (rowKey, options) {
+  this.m_busy = true;
 
-    this.m_busy = true;
+  var count = this.m_wrapped.getChildCount(rowKey);
+  var fetchSize = this._getFetchSizeToUse(count);
+  var maxCount = this.getMaxCount();
 
-    count = this.m_wrapped.getChildCount(rowKey);
-    fetchSize = this._getFetchSizeToUse(count);
-    maxCount = this.getMaxCount();
-
-    // if cache is full, check if the rowKey is the last row, if it's
-    // the last row do nothing
-    if (this._getLastIndex()+1 === maxCount)
-    {
-       refIndex = this.getIndex(rowKey);
-       if (refIndex == maxCount-1)
-       {
-           // we'll still have to return an empty nodeset to trigger done to occur in handleExpandSuccess
-           this.handleExpandSuccess(rowKey, new oj.EmptyNodeSet(rowKey, 0), 0, options);
-           return;
-       }
+  // if cache is full, check if the rowKey is the last row, if it's
+  // the last row do nothing
+  if (this._getLastIndex() + 1 === maxCount) {
+    var refIndex = this.getIndex(rowKey);
+    if (refIndex === maxCount - 1) {
+      // we'll still have to return an empty nodeset to trigger done to occur in handleExpandSuccess
+      this.handleExpandSuccess(rowKey, new oj.EmptyNodeSet(rowKey, 0), 0, options);
+      return;
     }
+  }
 
-    // nothing to do
-    if (fetchSize == 0)
-    {
-        // we'll still have to return an empty nodeset to trigger done to occur in handleExpandSuccess
-        this.handleExpandSuccess(rowKey, new oj.EmptyNodeSet(rowKey, 0), 0, options);
-        return;
-    }
+  // nothing to do
+  if (fetchSize === 0) {
+    // we'll still have to return an empty nodeset to trigger done to occur in handleExpandSuccess
+    this.handleExpandSuccess(rowKey, new oj.EmptyNodeSet(rowKey, 0), 0, options);
+    return;
+  }
 
-    this.m_wrapped.fetchChildren(rowKey, {"start": 0, "count": fetchSize}, {"success": function(nodeSet){this.handleExpandSuccess(rowKey, nodeSet, count, options);}.bind(this), "error": function(status){this.handleExpandError(rowKey, status);}.bind(this)});
+  this.m_wrapped.fetchChildren(rowKey, { start: 0, count: fetchSize }, {
+    success: function (nodeSet) {
+      this.handleExpandSuccess(rowKey, nodeSet, count, options);
+    }.bind(this),
+    error: function (status) {
+      this.handleExpandError(rowKey, status);
+    }.bind(this)
+  });
 };
 
 /**
  * Process any outstanding operation
  * @private
  */
-oj.FlattenedTreeDataSource.prototype._processQueue = function()
-{
-    var i, op;
-
-    if (this.m_queue && this.m_queue.length > 0)
-    {
-        for (i=this.m_queue.length-1; i>=0; i--)
-        {
-            op = this.m_queue[i];
-            this.collapse(op["key"]);            
-        }
-
-        // clear the queue
-        this.m_queue.length = 0;
+oj.FlattenedTreeDataSource.prototype._processQueue = function () {
+  if (this.m_queue && this.m_queue.length > 0) {
+    for (var i = this.m_queue.length - 1; i >= 0; i--) {
+      var op = this.m_queue[i];
+      this.collapse(op.key);
     }
+
+    // clear the queue
+    this.m_queue.length = 0;
+  }
 };
 
 /**
@@ -1597,14 +1486,12 @@ oj.FlattenedTreeDataSource.prototype._processQueue = function()
  * @param {any} rowKey the row key where the operation is to be apply
  * @private
  */
-oj.FlattenedTreeDataSource.prototype._queueOp = function(op, rowKey)
-{
-    if (this.m_queue == null)
-    {
-        this.m_queue = [];
-    }
+oj.FlattenedTreeDataSource.prototype._queueOp = function (op, rowKey) {
+  if (this.m_queue == null) {
+    this.m_queue = [];
+  }
 
-    this.m_queue.push({"op": op, "key": rowKey});
+  this.m_queue.push({ op: op, key: rowKey });
 };
 
 /**
@@ -1613,78 +1500,65 @@ oj.FlattenedTreeDataSource.prototype._queueOp = function(op, rowKey)
  * @return {undefined}
  * @export
  */
-oj.FlattenedTreeDataSource.prototype.collapse = function(rowKey)
-{
-    var rowIndex, parent, count, depth, lastIndex, i, j, keys;
+oj.FlattenedTreeDataSource.prototype.collapse = function (rowKey) {
+  // if in the middle of fetch, queue up the operation
+  if (this.m_busy) {
+    this._queueOp('collapse', rowKey);
+    return;
+  }
 
-    // if in the middle of fetch, queue up the operation
-    if (this.m_busy)
-    {
-        this._queueOp("collapse", rowKey);
-        return;
+  var rowIndex = this.getIndex(rowKey) + 1;
+  var parent = this._getEntry(rowIndex - 1);
+
+  // could happen if parent node has already collapsed
+  if (parent == null) {
+    return;
+  }
+
+  // keeping track of how many rows to remove
+  var count = 0;
+
+  var depth = parent.depth;
+  var lastIndex = this._getLastIndex();
+  for (var j = rowIndex; j < lastIndex + 1; j++) {
+    var rowData = this._getEntry(j);
+    var rowDepth = rowData.depth;
+    if (rowDepth > depth) {
+      count += 1;
+    } else if (rowDepth === depth) {
+      break;
     }
+  }
 
-    rowIndex = this.getIndex(rowKey) + 1;
-    parent = this._getEntry(rowIndex-1);
-    // could happen if parent node has already collapsed
-    if (parent == null)
-    {
-        return;
-    }
+  // nothing to do
+  if (count === 0) {
+    // still should fire an event to get the icon state updated properly
+    this.handleEvent('collapse', { rowKey: rowKey });
+    return;
+  }
 
-    // keeping track of how many rows to remove
-    count = 0;
+  // remove from expanded keys or add to collapsed keys
+  if (this._isExpandAll()) {
+    this.m_collapsedKeys.push(rowKey);
+  } else {
+    this._removeExpanded(rowKey);
+  }
 
-    depth = parent['depth'];
-    lastIndex = this._getLastIndex();
-    for (j=rowIndex; j<lastIndex+1; j++)
-    {
-        var rowData = this._getEntry(j);
-        var rowDepth = rowData['depth'];
-        if (rowDepth > depth)
-        {
-            count = count + 1;
-        }
-        else if (rowDepth == depth)
-        {
-            break;
-        }
-    }
+  // remove rows from view
+  var keys = [];
+  for (var i = 0; i < count; i++) {
+    keys.push({ key: this._getEntry(rowIndex + i).key, index: rowIndex + i });
+  }
 
-    // nothing to do
-    if (count == 0)
-    {
-        // still should fire an event to get the icon state updated properly
-        this.handleEvent("collapse", {'rowKey':rowKey});
-        return;
-    }
+  // remove from cache.  Note this has to be done before firing row remove event
+  // since it could cause a fetch which relies on the internal cache being up to date.
+  this._removeEntry(rowIndex, count);
 
-    // remove from expanded keys or add to collapsed keys
-    if (this._isExpandAll())
-    {
-        this.m_collapsedKeys.push(rowKey);
-    }
-    else
-    {
-        this._removeExpanded(rowKey);
-    }
+  // (firing of event to view)
+  this.removeRows(keys);
 
-    // remove rows from view
-    keys = [];
-    for (i=0; i<count; i++)
-    {
-        keys.push({"key": this._getEntry(rowIndex+i)['key'], "index":rowIndex+i});
-    }
-
-    // remove from cache.  Note this has to be done before firing row remove event
-    // since it could cause a fetch which relies on the internal cache being up to date.
-    this._removeEntry(rowIndex, count);    
-
-    // (firing of event to view)
-    this.removeRows(keys);
-
-    // fire datasource event
-    this.handleEvent("collapse", {'rowKey':rowKey});
+  // fire datasource event
+  this.handleEvent('collapse', { rowKey: rowKey });
 };
 
 /**
@@ -1693,34 +1567,24 @@ oj.FlattenedTreeDataSource.prototype.collapse = function(rowKey)
  * @return {boolean} true if the row is/should be expanded.  False otherwise.
  * @private
  */
-oj.FlattenedTreeDataSource.prototype._isExpanded = function(rowKey)
-{
-    if (this._isExpandAll())
-    {
-        if (this.m_collapsedKeys && this.m_collapsedKeys.length > 0)
-        {
-            // call helper method to check collapsed keys
-            return (this._getCollapsedKeyIndex(rowKey) === -1);
-        }
-        else
-        {
-            // everything expanded
-            return true;
-        }
+oj.FlattenedTreeDataSource.prototype._isExpanded = function (rowKey) {
+  if (this._isExpandAll()) {
+    if (this.m_collapsedKeys && this.m_collapsedKeys.length > 0) {
+      // call helper method to check collapsed keys
+      return (this._getCollapsedKeyIndex(rowKey) === -1);
     }
-    else
-    {
-        if (this.m_expandedKeys && this.m_expandedKeys.length > 0)
-        {
-            // call helper method to check expanded keys
-            return (this._getExpandedKeyIndex(rowKey) > -1);
-        }
-        else
-        {
-            // nothing expanded
-            return false;
-        }
-    }
+
+    // everything expanded
+    return true;
+  }
+
+  if (this.m_expandedKeys && this.m_expandedKeys.length > 0) {
+    // call helper method to check expanded keys
+    return (this._getExpandedKeyIndex(rowKey) > -1);
+  }
+
+  // nothing expanded
+  return false;
 };
 
 /**
@@ -1728,10 +1592,9 @@ oj.FlattenedTreeDataSource.prototype._isExpanded = function(rowKey)
  * @param {any} rowKey the key of the row
  * @return {number} the index of the key in the collapsed key array
  * @private
- */ 
-oj.FlattenedTreeDataSource.prototype._getCollapsedKeyIndex = function(rowKey)
-{
-    return this._getKeyIndex(this.m_collapsedKeys, rowKey);
+ */
+oj.FlattenedTreeDataSource.prototype._getCollapsedKeyIndex = function (rowKey) {
+  return this._getKeyIndex(this.m_collapsedKeys, rowKey);
 };
 
 /**
@@ -1739,10 +1602,9 @@ oj.FlattenedTreeDataSource.prototype._getCollapsedKeyIndex = function(rowKey)
  * @param {any} rowKey the key of the row
  * @return {number} the index of the key in the expanded key array
  * @private
- */ 
-oj.FlattenedTreeDataSource.prototype._getExpandedKeyIndex = function(rowKey)
-{
-    return this._getKeyIndex(this.m_expandedKeys, rowKey);
+ */
+oj.FlattenedTreeDataSource.prototype._getExpandedKeyIndex = function (rowKey) {
+  return this._getKeyIndex(this.m_expandedKeys, rowKey);
 };
 
 /**
@@ -1750,22 +1612,17 @@ oj.FlattenedTreeDataSource.prototype._getExpandedKeyIndex = function(rowKey)
  * @param {any} rowKey the key of the row
  * @return {number} the index of the key in the array
  * @private
- */ 
-oj.FlattenedTreeDataSource.prototype._getKeyIndex = function(arr, rowKey)
-{
-    var i, index;
-
-    index = -1;
-    for (i=0; i<arr.length; i++)
-    {
-        if (arr[i] === rowKey)
-        {
-            index = i;
-        }
+ */
+oj.FlattenedTreeDataSource.prototype._getKeyIndex = function (arr, rowKey) {
+  var index = -1;
+  for (var i = 0; i < arr.length; i++) {
+    if (arr[i] === rowKey) {
+      index = i;
     }
+  }
 
-    return index;
-}
+  return index;
+};
 
 
 /**
@@ -1773,15 +1630,13 @@ oj.FlattenedTreeDataSource.prototype._getKeyIndex = function(arr, rowKey)
  * @param {any} rowKey the key to remove
  * @private
  */
-oj.FlattenedTreeDataSource.prototype._removeExpanded = function(rowKey)
-{
-    var index = this._getExpandedKeyIndex(rowKey);
+oj.FlattenedTreeDataSource.prototype._removeExpanded = function (rowKey) {
+  var index = this._getExpandedKeyIndex(rowKey);
 
-    // index found, remove from array
-    if (index > -1)
-    {
-        this.m_expandedKeys.splice(index, 1);    
-    }
+  // index found, remove from array
+  if (index > -1) {
+    this.m_expandedKeys.splice(index, 1);
+  }
 };
 
 /**
@@ -1789,15 +1644,13 @@ oj.FlattenedTreeDataSource.prototype._removeExpanded = function(rowKey)
  * @param {any} rowKey the key to remove
  * @private
  */
-oj.FlattenedTreeDataSource.prototype._removeCollapsed = function(rowKey)
-{
-    var index = this._getCollapsedKeyIndex(rowKey);
+oj.FlattenedTreeDataSource.prototype._removeCollapsed = function (rowKey) {
+  var index = this._getCollapsedKeyIndex(rowKey);
 
-    // index found, remove from array
-    if (index > -1)
-    {
-        this.m_collapsedKeys.splice(index, 1);    
-    }
+  // index found, remove from array
+  if (index > -1) {
+    this.m_collapsedKeys.splice(index, 1);
+  }
 };
 
 /**
@@ -1806,10 +1659,10 @@ oj.FlattenedTreeDataSource.prototype._removeCollapsed = function(rowKey)
  * @param {Object} status the error status
  * @protected
  */
-oj.FlattenedTreeDataSource.prototype.handleExpandError = function(rowKey, status)
-{
-    // fire event, todo: should include error msg?
-    this.handleEvent("expand", {'rowKey':rowKey});
+// eslint-disable-next-line no-unused-vars
+oj.FlattenedTreeDataSource.prototype.handleExpandError = function (rowKey, status) {
+  // fire event, todo: should include error msg?
+  this.handleEvent('expand', { rowKey: rowKey });
 };
 
 /**
@@ -1824,195 +1677,167 @@ oj.FlattenedTreeDataSource.prototype.handleExpandError = function(rowKey, status
  * @property {Object=} options.prevNodeSetInfo.firstKey the ref row key for the FIRST expand call, this is needed when firing the insert event, where the insertion point is the first row key
  * @protected
  */
-oj.FlattenedTreeDataSource.prototype.handleExpandSuccess = function(rowKey, nodeSet, childCount, options)
-{
-    var refIndex, rangeStart, rowStart, rowCount, parent, depth, metadata, key, toExpand, i, j, queue, prevNodeSetInfo, done, maxCount, callbacks;
+oj.FlattenedTreeDataSource.prototype.handleExpandSuccess =
+  function (rowKey, nodeSet, childCount, options) {
+    var queue;
+    var prevNodeSetInfo;
 
     // wrap it to inject additional metadata
+    // eslint-disable-next-line no-param-reassign
     nodeSet = new oj.NodeSetWrapper(nodeSet, this.insertMetadata.bind(this));
 
-    refIndex = this.getIndex(rowKey) + 1;
-    rangeStart = refIndex;
+    var refIndex = this.getIndex(rowKey) + 1;
+    var rangeStart = refIndex;
 
-    rowStart = nodeSet.getStart();
-    rowCount = nodeSet.getCount();
+    var rowStart = nodeSet.getStart();
+    var rowCount = nodeSet.getCount();
 
-    parent = this._getEntry(refIndex-1);
-    depth = parent['depth']+1;
+    var parent = this._getEntry(refIndex - 1);
+    var depth = parent.depth + 1;
 
-    toExpand = [];
+    var toExpand = [];
 
     // go through the node set and insert an entry with info about the row into internal cache
-    for (i=rowStart; i<rowCount; i++)
-    {
-        metadata = nodeSet.getMetadata(i);
-        key = metadata['key'];
-        if (this._isExpanded(key))
-        {
-            // expand it if the user specified it to be expand (or the
-            // parent was previously collapsed before and now expanded again, 
-            // the expanded child would need to be expanded also)
-            toExpand.push(key);
-        }
+    for (var i = rowStart; i < rowCount; i++) {
+      var metadata = nodeSet.getMetadata(i);
+      var key = metadata.key;
+      if (this._isExpanded(key)) {
+        // expand it if the user specified it to be expand (or the
+        // parent was previously collapsed before and now expanded again,
+        // the expanded child would need to be expanded also)
+        toExpand.push(key);
+      }
 
-        // add to cache
-        this._insertRow(refIndex, metadata, parent['key'], i, depth);
+      // add to cache
+      this._insertRow(refIndex, metadata, parent.key, i, depth);
 
-        refIndex++;
+      refIndex += 1;
     }
 
     // keep track of expanded row or collapsed row for expand all case
-    if (this._isExpandAll())
-    {
-        this._removeCollapsed(rowKey);
-    }
-    else
-    {
-        // check whether it's already in expanded keys, which is the case
-        // if it is expanded by initial expansion
-        if (this.m_expandedKeys.indexOf(rowKey) === -1)
-        {
-            this.m_expandedKeys.push(rowKey);
-        }
+    if (this._isExpandAll()) {
+      this._removeCollapsed(rowKey);
+    } else if (this.m_expandedKeys.indexOf(rowKey) === -1) {
+      // check whether it's already in expanded keys, which is the case
+      // if it is expanded by initial expansion
+      this.m_expandedKeys.push(rowKey);
     }
 
     // extract optional params
-    if (options != undefined)
-    {
-        queue = options['queue'];
-        prevNodeSetInfo = options['prevNodeSetInfo'];
+    if (options != null) {
+      queue = options.queue;
+      prevNodeSetInfo = options.prevNodeSetInfo;
     }
 
-    // see if a previous nodeset has been set and merge with current one 
+    // see if a previous nodeset has been set and merge with current one
     // so that we have one nodeset that includes expanded children, a single row insert event
     // is fired and the nodeset will be in the proper order
-    if (prevNodeSetInfo != undefined)
-    {
-        nodeSet = new oj.MergedNodeSet(prevNodeSetInfo['nodeSet'], nodeSet, rowKey);
+    if (prevNodeSetInfo != null) {
+      // eslint-disable-next-line no-param-reassign
+      nodeSet = new oj.MergedNodeSet(prevNodeSetInfo.nodeSet, nodeSet, rowKey);
     }
 
     // check if there's nothing else to expand and process queue is empty
-    done = (toExpand.length == 0 && (queue === undefined || queue.length == 0));
-    if (done)
-    {
-        // fire event to insert the expanded rows
-        if (prevNodeSetInfo != undefined)
-        {
-            // check if this is part of a fetchRows call
-            callbacks = prevNodeSetInfo['callbacks'];
-            if (callbacks != null)
-            {
-                // invoke fetch success callback
-                callbacks['success'].call(null, nodeSet);
-                
-                // we are done at this point, we don't fire insert events
-                this.m_busy = false;
-                return;
-            }
-            else
-            {
-                // use the reference insertion point from prevNodeSetInfo instead
-                this.insertRows(prevNodeSetInfo['firstIndex'], prevNodeSetInfo['firstKey'], nodeSet);
-            }
-        }
-        else
-        {
-            this.insertRows(rangeStart, rowKey, nodeSet);
+    var done = (toExpand.length === 0 && (queue === undefined || queue.length === 0));
+    if (done) {
+      // fire event to insert the expanded rows
+      if (prevNodeSetInfo != null) {
+        // check if this is part of a fetchRows call
+        var callbacks = prevNodeSetInfo.callbacks;
+        if (callbacks != null) {
+          // invoke fetch success callback
+          callbacks.success.call(null, nodeSet);
+
+          // we are done at this point, we don't fire insert events
+          this.m_busy = false;
+          return;
         }
 
-        // if child count is > fetched or child count is unknown and requested fetch count is the same as result set size, 
-        // then delete all rows that comes after the reference row so that we can trigger a fetch when user scroll to the end
-        // ALSO delete all rows that comes after reference row if the reference row is the last row (according to max row count)
-        maxCount = this.getMaxCount();
-        if ((childCount === -1 && rowCount === this.getFetchSize()) || childCount > rowCount || refIndex == maxCount)
-        {
-            this._deleteAllRowsBelow(refIndex);
+        // use the reference insertion point from prevNodeSetInfo instead
+        this.insertRows(prevNodeSetInfo.firstIndex, prevNodeSetInfo.firstKey, nodeSet);
+      } else {
+        this.insertRows(rangeStart, rowKey, nodeSet);
+      }
+
+      // if child count is > fetched or child count is unknown and requested fetch count is the same as result set size,
+      // then delete all rows that comes after the reference row so that we can trigger a fetch when user scroll to the end
+      // ALSO delete all rows that comes after reference row if the reference row is the last row (according to max row count)
+      var maxCount = this.getMaxCount();
+      if ((childCount === -1 && rowCount === this.getFetchSize()) ||
+          childCount > rowCount || refIndex === maxCount) {
+        this._deleteAllRowsBelow(refIndex);
+      } else if (this._getLastIndex() >= maxCount) {
+        // also clean up rows that goes beyond max row count after expand
+        this._deleteAllRowsBelow(maxCount);
+      }
+
+      if (prevNodeSetInfo != null) {
+        // fire expand event for each row key cached in prevNodeSetInfo
+        for (var j = 0; j < prevNodeSetInfo.keys.length; j++) {
+          this.handleEvent('expand', { rowKey: prevNodeSetInfo.keys[j] });
         }
-        else if (this._getLastIndex() >= maxCount)
-        {
-            // also clean up rows that goes beyond max row count after expand
-            this._deleteAllRowsBelow(maxCount);
-        }
+      }
 
-        if (prevNodeSetInfo != undefined)
-        {
-            // fire expand event for each row key cached in prevNodeSetInfo
-            for (j=0; j<prevNodeSetInfo['keys'].length; j++)
-            {
-                this.handleEvent("expand", {'rowKey':prevNodeSetInfo['keys'][j]});
-            }
-        }
+      this.m_busy = false;
 
-        this.m_busy = false;
+      // fire event
+      this.handleEvent('expand', { rowKey: rowKey });
+    } else {
+      // there are still child rows to expand
+      // create queue if not yet created
+      if (queue === undefined) {
+        queue = [];
+      }
 
-        // fire event
-        this.handleEvent("expand", {'rowKey':rowKey});
-    }
-    else
-    {
-        // there are still child rows to expand
-        // create queue if not yet created
-        if (queue === undefined)
-        {
-            queue = [];
-        }
+      // push expanded rows to the queue
+      if (toExpand.length > 0) {
+        queue.push(toExpand);
+      }
 
-        // push expanded rows to the queue
-        if (toExpand.length > 0)
-        {
-            queue.push(toExpand);
-        }
+      // create prevNodeSetInfo if not yet created
+      if (prevNodeSetInfo === undefined) {
+        prevNodeSetInfo = {};
+        // populate the initial insertion index and key, this is needed when we are actually firing
+        // the insert event
+        prevNodeSetInfo.firstIndex = rangeStart;
+        prevNodeSetInfo.firstKey = rowKey;
+        // cache of row keys for firing expand event when everything is done
+        prevNodeSetInfo.keys = [];
+      }
 
-        // create prevNodeSetInfo if not yet created
-        if (prevNodeSetInfo === undefined)
-        {
-            prevNodeSetInfo = {};
-            // populate the initial insertion index and key, this is needed when we are actually firing
-            // the insert event
-            prevNodeSetInfo['firstIndex'] = rangeStart;
-            prevNodeSetInfo['firstKey'] = rowKey;
-            // cache of row keys for firing expand event when everything is done
-            prevNodeSetInfo['keys'] = [];
-        }
+      // update the previous node set
+      prevNodeSetInfo.nodeSet = nodeSet;
+      // update keys array for fire expand events later
+      prevNodeSetInfo.keys.push(rowKey);
 
-        // update the previous node set 
-        prevNodeSetInfo['nodeSet'] = nodeSet;
-        // update keys array for fire expand events later
-        prevNodeSetInfo['keys'].push(rowKey);
-
-        // expand any child rows that should be expanded
-        this._syncExpandRows(queue, prevNodeSetInfo);
+      // expand any child rows that should be expanded
+      this._syncExpandRows(queue, prevNodeSetInfo);
     }
 
     this.m_busy = false;
 
-    if (queue && queue.length == 0)
-    {
-        this._processQueue();
+    if (queue && queue.length === 0) {
+      this._processQueue();
     }
-};
+  };
 
 /**
  * Expands the specified array of rows synchronously, i.e. one will not start until the previous one is finished.
- * @param {Object} queue the queue of a set of expanded row keys remaining to process 
+ * @param {Object} queue the queue of a set of expanded row keys remaining to process
  * @param {Object} prevNodeSetInfo node set from the previous expand call
- * @private 
- */ 
-oj.FlattenedTreeDataSource.prototype._syncExpandRows = function(queue, prevNodeSetInfo)
-{
-    var last, key, options;
+ * @private
+ */
+oj.FlattenedTreeDataSource.prototype._syncExpandRows = function (queue, prevNodeSetInfo) {
+  // peek the last set of expanded rows from queue (since we are doing depth first traversal)
+  var last = queue[queue.length - 1];
+  // then take the first row key from the set
+  var key = last.shift();
+  // if this is the last item in the set, we can remove the set from queue
+  if (last.length === 0) {
+    queue.pop();
+  }
 
-    // peek the last set of expanded rows from queue (since we are doing depth first traversal)
-    last = queue[queue.length-1];    
-    // then take the first row key from the set
-    key = last.shift();
-    // if this is the last item in the set, we can remove the set from queue
-    if (last.length === 0)
-    {
-        queue.pop();
-    }
-
-    this._expand(key, {'prevNodeSetInfo': prevNodeSetInfo, 'queue': queue});    
+  this._expand(key, { prevNodeSetInfo: prevNodeSetInfo, queue: queue });
 };
 
 /**
@@ -2020,29 +1845,23 @@ oj.FlattenedTreeDataSource.prototype._syncExpandRows = function(queue, prevNodeS
  * @param {Array.<Object>} keys an array of row keys.
  * @private
  */
-oj.FlattenedTreeDataSource.prototype._expandRows = function(keys)
-{
-    var options, i;
+oj.FlattenedTreeDataSource.prototype._expandRows = function (keys) {
+  var options;
 
-    // use batch fetching if supported so we'll have less trip to server.
-    if (this._isBatchFetching())
-    {
-        options = {'queueOnly': true};
-    }
+  // use batch fetching if supported so we'll have less trip to server.
+  if (this._isBatchFetching()) {
+    options = { queueOnly: true };
+  }
 
-    // expand each of the rows
-    for (i=0; i<keys.length; i++)
-    {
-        // last expand should not have any options set to flush to batch queue
-        if (i == keys.length-1)
-        {
-            this._expand(keys[i]);
-        }            
-        else
-        {
-            this._expand(keys[i], options);
-        }            
+  // expand each of the rows
+  for (var i = 0; i < keys.length; i++) {
+    // last expand should not have any options set to flush to batch queue
+    if (i === keys.length - 1) {
+      this._expand(keys[i]);
+    } else {
+      this._expand(keys[i], options);
     }
+  }
 };
 
 /**
@@ -2054,48 +1873,39 @@ oj.FlattenedTreeDataSource.prototype._expandRows = function(keys)
  * @param {number} depth the depth of the node
  * @private
  */
-oj.FlattenedTreeDataSource.prototype._insertRow = function(index, metadata, parentKey, childIndex, depth)
-{
-    var key, rowData;
+oj.FlattenedTreeDataSource.prototype._insertRow =
+  function (index, metadata, parentKey, childIndex, depth) {
+    var key = metadata.key;
 
-    key = metadata['key'];
-
-    if (index <= this._getLastIndex())    
-    {
-        this._addEntry(key, depth, childIndex, parentKey, index);
+    if (index <= this._getLastIndex()) {
+      this._addEntry(key, depth, childIndex, parentKey, index);
+    } else {
+      this._addEntry(key, depth, childIndex, parentKey);
     }
-    else
-    {
-        this._addEntry(key, depth, childIndex, parentKey);
-    }
-};
+  };
 
 /**
  * Remove all rows below the row of the specified index including this row.
- * @param {number} index the index from which we start to delete rows 
+ * @param {number} index the index from which we start to delete rows
  * @param {number=} count the number of rows to delete.  If not specified, then delete until the end.
  * @private
  */
-oj.FlattenedTreeDataSource.prototype._deleteAllRowsBelow = function(index, count)
-{
-    var keys, event;
+oj.FlattenedTreeDataSource.prototype._deleteAllRowsBelow = function (index, count) {
+  var actualCount = count;
+  if (count == null) {
+    actualCount = (this._getLastIndex() + 1) - index;
+  }
 
-    if (count == undefined)
-    {
-        count = this._getLastIndex()+1 - index;
-    }
+  var keys = [];
+  for (var i = 0; i < actualCount; i++) {
+    keys.push({ key: this._getEntry(index + i).key, index: index + i });
+  }
 
-    keys = [];
-    for (var i=0; i<count; i++)
-    {
-        keys.push({"key": this._getEntry(index+i)['key'], "index":index+i});
-    }
+  // update internal cache
+  this._removeEntry(index, actualCount);
 
-    // update internal cache
-    this._removeEntry(index, count);    
-
-    // fire event to remove rows from view
-    this.removeRows(keys);
+  // fire event to remove rows from view
+  this.removeRows(keys);
 };
 
 /**
@@ -2103,36 +1913,27 @@ oj.FlattenedTreeDataSource.prototype._deleteAllRowsBelow = function(index, count
  * @param {Event} event the model change event
  * @private
  */
-oj.FlattenedTreeDataSource.prototype._handleModelEvent = function(event)
-{
-    var operation, ancestors, parentKey, index;
+oj.FlattenedTreeDataSource.prototype._handleModelEvent = function (event) {
+  var parentKey;
+  var operation = event.operation;
+  var ancestors = event.parent;
 
-    operation = event['operation'];
-    ancestors = event['parent'];
-    if (Array.isArray(ancestors))
-    {
-        // take the direct key of direct parent
-        parentKey = ancestors[ancestors.length-1];
-    }
-    else
-    {
-        // single element or null, value is the parent key
-        parentKey = ancestors;
-    }
-    index = event['index'];
+  if (Array.isArray(ancestors)) {
+    // take the direct key of direct parent
+    parentKey = ancestors[ancestors.length - 1];
+  } else {
+    // single element or null, value is the parent key
+    parentKey = ancestors;
+  }
+  var index = event.index;
 
-    if (operation === 'insert')
-    {
-        this._handleInsertEvent(parentKey, index, event['data']);
-    }
-    else if (operation === 'delete')
-    {
-        this._handleDeleteEvent(parentKey, index);
-    }
-    else if (operation === 'refresh')
-    {
-        this._handleRefreshEvent(parentKey);
-    }
+  if (operation === 'insert') {
+    this._handleInsertEvent(parentKey, index, event.data);
+  } else if (operation === 'delete') {
+    this._handleDeleteEvent(parentKey, index);
+  } else if (operation === 'refresh') {
+    this._handleRefreshEvent(parentKey);
+  }
 };
 
 /**
@@ -2142,20 +1943,17 @@ oj.FlattenedTreeDataSource.prototype._handleModelEvent = function(event)
  * @param {Object} nodeSet the node set containing the single insert data
  * @private
  */
-oj.FlattenedTreeDataSource.prototype._handleInsertEvent = function(parentKey, index, nodeSet)
-{
-    var parentIndex, parent, depth, insertIndex, metadata;
+oj.FlattenedTreeDataSource.prototype._handleInsertEvent = function (parentKey, index, nodeSet) {
+  var parentIndex = this.getIndex(parentKey);
+  var parent = this._getEntry(parentIndex);
+  var depth = parent.depth + 1;
+  var insertIndex = parentIndex + index + 1;
 
-    parentIndex = this.getIndex(parentKey);
-    parent = this._getEntry(parentIndex);
-    depth = parent['depth']+1;
-    insertIndex = parentIndex + index + 1;
+  // there should only be one row in the set
+  var metadata = nodeSet.getMetadata(nodeSet.getStart());
 
-    // there should only be one row in the set
-    metadata = nodeSet.getMetadata(nodeSet.getStart());
-
-    // insert into cache
-    this._insertRow(insertIndex, metadata, parentKey, index, depth)    
+  // insert into cache
+  this._insertRow(insertIndex, metadata, parentKey, index, depth);
 };
 
 /**
@@ -2164,36 +1962,31 @@ oj.FlattenedTreeDataSource.prototype._handleInsertEvent = function(parentKey, in
  * @param {number} index the index relative to its parent where the node is inserted
  * @private
  */
-oj.FlattenedTreeDataSource.prototype._handleDeleteEvent = function(parentKey, index)
-{
-    var parentIndex, parent, startIndex, start, count, currentIndex, lastIndex, current;
+oj.FlattenedTreeDataSource.prototype._handleDeleteEvent = function (parentKey, index) {
+  var parentIndex = this.getIndex(parentKey);
+  var parent = this._getEntry(parentIndex);
 
-    parentIndex = this.getIndex(parentKey);
-    parent = this._getEntry(parentIndex);
+  var startIndex = parentIndex + index;
+  var start = this._getEntry(startIndex);
 
-    startIndex = parentIndex + index;
-    start = this._getEntry(startIndex);
+  // make sure the child data is valid
+  oj.Assert.assert(start.parent === parent && start.depth === parent.depth + 1);
 
-    // make sure the child data is valid
-    oj.Assert.assert(start['parent'] === parent && start['depth'] === parent['depth']+1); 
-
-    // remove the entry and all of its children from cache
-    count = 1;
-    currentIndex = startIndex + 1;
-    lastIndex = this._getLastIndex();
-    while (currentIndex <= lastIndex)
-    {
-        current = this._getEntry(currentIndex);
-        // check if we have reached the last child of the deleted node
-        if (current['depth'] != start['depth'])
-        {
-            break;
-        }      
-        currentIndex++;
+  // remove the entry and all of its children from cache
+  var count = 1;
+  var currentIndex = startIndex + 1;
+  var lastIndex = this._getLastIndex();
+  while (currentIndex <= lastIndex) {
+    var current = this._getEntry(currentIndex);
+    // check if we have reached the last child of the deleted node
+    if (current.depth !== start.depth) {
+      break;
     }
+    currentIndex += 1;
+  }
 
-    // remove rows
-    this._deleteAllRowsBelow(startIndex, count);
+  // remove rows
+  this._deleteAllRowsBelow(startIndex, count);
 };
 
 /**
@@ -2201,14 +1994,12 @@ oj.FlattenedTreeDataSource.prototype._handleDeleteEvent = function(parentKey, in
  * @param {Object} parentKey the key of the parent where the node is inserted
  * @private
  */
-oj.FlattenedTreeDataSource.prototype._handleRefreshEvent = function(parentKey)
-{
-    if (parentKey == null)
-    {
-        // the entire tree is refreshed
-        // clean up internal cache
-        this.refresh();
-    }
+oj.FlattenedTreeDataSource.prototype._handleRefreshEvent = function (parentKey) {
+  if (parentKey == null) {
+    // the entire tree is refreshed
+    // clean up internal cache
+    this.refresh();
+  }
 };
 
 /**
@@ -2216,10 +2007,10 @@ oj.FlattenedTreeDataSource.prototype._handleRefreshEvent = function(parentKey)
  * @return {boolean} true if expand all rows, false otherwise.
  * @private
  */
-oj.FlattenedTreeDataSource.prototype._isExpandAll = function()
-{
-    var capability = this.m_wrapped.getCapability('fetchDescendants');
-    return (this.m_collapsedKeys != undefined && capability != null && capability != 'disable');
+oj.FlattenedTreeDataSource.prototype._isExpandAll = function () {
+  var capability = this.m_wrapped.getCapability('fetchDescendants');
+  return (this.m_collapsedKeys != null &&
+          capability != null && capability !== 'disable');
 };
 
 /**
@@ -2227,23 +2018,21 @@ oj.FlattenedTreeDataSource.prototype._isExpandAll = function()
  * @return {boolean} true if batch fetching is supported, false otherwise.
  * @private
  */
-oj.FlattenedTreeDataSource.prototype._isBatchFetching = function()
-{
-    var capability = this.m_wrapped.getCapability('batchFetch');
-    return (capability === 'enable');
+oj.FlattenedTreeDataSource.prototype._isBatchFetching = function () {
+  var capability = this.m_wrapped.getCapability('batchFetch');
+  return (capability === 'enable');
 };
 
-/////////////////////////////// helper methods subclass should find useful //////////////////////////////////////////////
+// ///////////////////////////// helper methods subclass should find useful //////////////////////////////////////////////
 /**
  * Refresh the data source.  Clear out any state.
  * @protected
  */
-oj.FlattenedTreeDataSource.prototype.refresh = function()
-{
-    // clear the cache
-    this._clearAll();
+oj.FlattenedTreeDataSource.prototype.refresh = function () {
+  // clear the cache
+  this._clearAll();
 
-    // todo: more work here to force fetch (remove then insert)
+  // todo: more work here to force fetch (remove then insert)
 };
 
 /**
@@ -2253,22 +2042,17 @@ oj.FlattenedTreeDataSource.prototype.refresh = function()
  *         cannot be found.
  * @protected
  */
-oj.FlattenedTreeDataSource.prototype.getIndex = function(rowKey)
-{
-    var lastIndex, i, rowData;
-
-    lastIndex = this._getLastIndex();
-    for (i=0; i<=lastIndex; i++)
-    {
-        rowData = this._getEntry(i);
-        if (rowData['key'] == rowKey)
-        {
-            return i;
-        }
+oj.FlattenedTreeDataSource.prototype.getIndex = function (rowKey) {
+  var lastIndex = this._getLastIndex();
+  for (var i = 0; i <= lastIndex; i++) {
+    var rowData = this._getEntry(i);
+    if (rowData.key === rowKey) {
+      return i;
     }
+  }
 
-    // can't find it, return -1
-    return -1;
+  // can't find it, return -1
+  return -1;
 };
 
 /**
@@ -2278,16 +2062,14 @@ oj.FlattenedTreeDataSource.prototype.getIndex = function(rowKey)
  *         fetched yet or is invalid.
  * @protected
  */
-oj.FlattenedTreeDataSource.prototype.getKey = function(index)
-{
-    // ensure the index is valid and in range
-    if (index < 0 || index > this._getLastIndex())
-    {
-        return null;
-    }
+oj.FlattenedTreeDataSource.prototype.getKey = function (index) {
+  // ensure the index is valid and in range
+  if (index < 0 || index > this._getLastIndex()) {
+    return null;
+  }
 
-    // just return from internal cache
-    return this._getEntry(index)['key'];
+  // just return from internal cache
+  return this._getEntry(index).key;
 };
 
 /**
@@ -2295,9 +2077,8 @@ oj.FlattenedTreeDataSource.prototype.getKey = function(index)
  * @return {Object} the fetched range (start, end).
  * @protected
  */
-oj.FlattenedTreeDataSource.prototype.getFetchedRange = function()
-{
-    return {'start': 0, 'end': this._getLastIndex()+1};
+oj.FlattenedTreeDataSource.prototype.getFetchedRange = function () {
+  return { start: 0, end: this._getLastIndex() + 1 };
 };
 
 /**
@@ -2306,37 +2087,32 @@ oj.FlattenedTreeDataSource.prototype.getFetchedRange = function()
  * @return {Array} an array of the key of the ancestors from root to the row with specified row key.
  * @protected
  */
-oj.FlattenedTreeDataSource.prototype.getAncestors = function(rowKey)
-{
-    var ancestors, index, parent;
+oj.FlattenedTreeDataSource.prototype.getAncestors = function (rowKey) {
+  var ancestors = [];
+  var index = this.getIndex(rowKey);
+  var parent = this._getParent(index);
 
-    ancestors = [];
-    index = this.getIndex(rowKey);
+  while (parent != null) {
+    ancestors.push(parent);
+    index = this.getIndex(parent);
     parent = this._getParent(index);
-    while (parent != null)
-    {
-        ancestors.push(parent);
-        index = this.getIndex(parent);
-        parent = this._getParent(index);
-    }
+  }
 
-    // reverse since we want to return from the root
-    return ancestors.reverse();
+  // reverse since we want to return from the root
+  return ancestors.reverse();
 };
-///////////////////////////////////// methods subclass must override ////////////////////////////////////////////////////////
+// /////////////////////////////////// methods subclass must override ////////////////////////////////////////////////////////
 /**
  * Handles what happened when the maximum row count has been reached.
  * @param {Object} range the range of the fetch request which caused the max count to be reached.
  * @param {Object} callbacks the callbacks of the fetch request which caused the max count to be reached.
  * @protected
  */
-oj.FlattenedTreeDataSource.prototype.handleMaxCountReached = function(range, callbacks)
-{
-    // send an error by default
-    if (callbacks != null && callbacks['error'] != null)
-    {
-        callbacks['error'].call(null);
-    }
+oj.FlattenedTreeDataSource.prototype.handleMaxCountReached = function (range, callbacks) {
+  // send an error by default
+  if (callbacks != null && callbacks.error != null) {
+    callbacks.error.call(null);
+  }
 };
 
 /**
@@ -2346,9 +2122,9 @@ oj.FlattenedTreeDataSource.prototype.handleMaxCountReached = function(range, cal
  * @param {Object} nodeSet the node set containing data/metadata of inserted rows
  * @protected
  */
-oj.FlattenedTreeDataSource.prototype.insertRows = function(insertAtIndex, insertAtKey, nodeSet)
-{
-    oj.Assert.failedInAbstractFunction();
+// eslint-disable-next-line no-unused-vars
+oj.FlattenedTreeDataSource.prototype.insertRows = function (insertAtIndex, insertAtKey, nodeSet) {
+  oj.Assert.failedInAbstractFunction();
 };
 
 /**
@@ -2356,20 +2132,19 @@ oj.FlattenedTreeDataSource.prototype.insertRows = function(insertAtIndex, insert
  * @param {Array.<any>} rowKeys an array of keys of the rows to be remove.
  * @protected
  */
-oj.FlattenedTreeDataSource.prototype.removeRows = function(rowKeys)
-{
-    oj.Assert.failedInAbstractFunction();
+// eslint-disable-next-line no-unused-vars
+oj.FlattenedTreeDataSource.prototype.removeRows = function (rowKeys) {
+  oj.Assert.failedInAbstractFunction();
 };
 
-///////////////////////////////// methods that manipulates the internal cache ///////////////////////////////////
+// /////////////////////////////// methods that manipulates the internal cache ///////////////////////////////////
 /**
  * Retrieve the flattened index of the last entry fetched so far
  * @return {number} the flattened index of the last entry
  * @private
  */
-oj.FlattenedTreeDataSource.prototype._getLastIndex = function()
-{
-    return this.m_cache.length-1;
+oj.FlattenedTreeDataSource.prototype._getLastIndex = function () {
+  return this.m_cache.length - 1;
 };
 
 /**
@@ -2377,63 +2152,55 @@ oj.FlattenedTreeDataSource.prototype._getLastIndex = function()
  * @return {Object} the metadata for the last entry
  * @private
  */
-oj.FlattenedTreeDataSource.prototype._getLastEntry = function()
-{
-    return this.m_cache[this._getLastIndex()];
+oj.FlattenedTreeDataSource.prototype._getLastEntry = function () {
+  return this.m_cache[this._getLastIndex()];
 };
 
 /**
  * Retrieve metadata info for the specified index.
- * @param {number} index the flattened index 
+ * @param {number} index the flattened index
  * @return {Object} the metadata info
  * @private
  */
-oj.FlattenedTreeDataSource.prototype._getEntry = function(index)
-{
-    return this.m_cache[index];
+oj.FlattenedTreeDataSource.prototype._getEntry = function (index) {
+  return this.m_cache[index];
 };
 
 /**
  * Retrieve the parent key for the specified index.
- * @param {number} index the flattened index 
+ * @param {number} index the flattened index
  * @return {Object} the parent key
  * @private
  */
-oj.FlattenedTreeDataSource.prototype._getParent = function(index)
-{
-    var entry = this.m_cache[index];
-    if (entry != null)
-    {
-        return entry['parent'];
-    }
-    return null;
+oj.FlattenedTreeDataSource.prototype._getParent = function (index) {
+  var entry = this.m_cache[index];
+  if (entry != null) {
+    return entry.parent;
+  }
+  return null;
 };
 
 /**
  * Add or insert entry to the cache
  * @param {Object} key the key
- * @param {number} depth the depth 
+ * @param {number} depth the depth
  * @param {number} index the index relative to its parent
  * @param {Object} parent the parent
  * @param {number=} insertAt insert the metadata entry at this flattened index
  * @private
  */
-oj.FlattenedTreeDataSource.prototype._addEntry = function(key, depth, index, parent, insertAt)
-{
-    var rowData = new Object();
-    rowData['key'] = key;
-    rowData['depth'] = depth;
-    rowData['index'] = index;
-    rowData['parent'] = parent;
+oj.FlattenedTreeDataSource.prototype._addEntry = function (key, depth, index, parent, insertAt) {
+  var rowData = {};
+  rowData.key = key;
+  rowData.depth = depth;
+  rowData.index = index;
+  rowData.parent = parent;
 
-    if (insertAt === undefined)
-    {
-        this.m_cache.push(rowData);
-    }
-    else
-    {
-        this.m_cache.splice(insertAt, 0, rowData);
-    }
+  if (insertAt === undefined) {
+    this.m_cache.push(rowData);
+  } else {
+    this.m_cache.splice(insertAt, 0, rowData);
+  }
 };
 
 /**
@@ -2442,40 +2209,37 @@ oj.FlattenedTreeDataSource.prototype._addEntry = function(key, depth, index, par
  * @param {number} count how many entries to remove starting from the flattened index
  * @private
  */
-oj.FlattenedTreeDataSource.prototype._removeEntry = function(index, count)
-{
-    this.m_cache.splice(index, count);
+oj.FlattenedTreeDataSource.prototype._removeEntry = function (index, count) {
+  this.m_cache.splice(index, count);
 };
 
 /**
  * Clears the internal cache
  * @private
  */
-oj.FlattenedTreeDataSource.prototype._clearAll = function()
-{
-    this.m_cache.length = 0;
+oj.FlattenedTreeDataSource.prototype._clearAll = function () {
+  this.m_cache.length = 0;
 };
 
 /**
  * Determines whether this data source supports certain feature.
  * @param {string} feature the feature in which its capabilities is inquired.  Currently the only valid feature is "sort".
- * @return {string|null} the name of the feature.  For "sort", the valid return values are: "full", "none".  
+ * @return {string|null} the name of the feature.  For "sort", the valid return values are: "full", "none".
  *         Returns null if the feature is not recognized.
  * @export
  * @expose
  * @memberof! oj.FlattenedTreeDataSource
  * @instance
  */
-oj.FlattenedTreeDataSource.prototype.getCapability = function(feature)
-{
-    return this.m_wrapped.getCapability(feature);
+oj.FlattenedTreeDataSource.prototype.getCapability = function (feature) {
+  return this.m_wrapped.getCapability(feature);
 };
 
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
  */
-
+/* global Components:false */
 /**
  * @ojcomponent oj.ojRowExpander
  * @augments oj.baseComponent
@@ -2528,91 +2292,91 @@ oj.FlattenedTreeDataSource.prototype.getCapability = function(feature)
  * <h4>Initial expansion</h4>
  * <p>To specify initial expanded rows with RowExpander, it is recommended that applications do this through the initial options in oj.FlattenedTreeDataSource, especially for expanding all rows initially.</p>
  */
-oj.__registerWidget('oj.ojRowExpander', $['oj']['baseComponent'],
-{
-    version: "1.0.0",
+oj.__registerWidget('oj.ojRowExpander', $.oj.baseComponent,
+  {
+    version: '1.0.0',
     widgetEventPrefix: 'oj',
     options:
-            {
-                /**
-                 * The context object obtained from the column renderer (Table) or cell renderer (DataGrid)
-                 *
-                 * @expose
-                 * @memberof oj.ojRowExpander
-                 * @instance
-                 * @type {Object}
-                 * @default null
-                 *
-                 */
-                context: null,
-                /**
-                 * Specifies if the RowExpander is expanded.  The default value is determined by the <code class="prettyprint">context</code> obtained from the column renderer (Table) or cell renderer (DataGrid), or null if no context is specified.
-                 * See <a href="#perf-section">performance</a> for recommended usage regarding initial expansion state.
-                 *
-                 * @expose
-                 * @memberof oj.ojRowExpander
-                 * @instance
-                 * @type {boolean|null}
-                 * @default null
-                 * @ojwriteback
-                 * @ojshortdesc Specifies if the RowExpander is expanded.
-                 *
-                 * @example <caption>Initialize the RowExpander with the <code class="prettyprint">expanded</code> attribute specified:</caption>
-                 * &lt;oj-row-expander expanded='true'>&lt;/oj-row-expander>
-                 *
-                 * @example <caption>Get or set the <code class="prettyprint">expanded</code> property after initialization:</caption>
-                 * // getter
-                 * var expandedValue = myRowExpander.expanded;
-                 *
-                 * // setter
-                 * myRowExpander.expanded = false;
-                 */
-                 expanded: null,
-                /**
-                 * Triggered when a expand is performed on the RowExpander
-                 *
-                 * @expose
-                 * @event
-                 * @memberof oj.ojRowExpander
-                 * @instance
-                 * @property {string} rowKey the key of the expanded row
-                 */
-                expand: null,
-                /**
-                 * Triggered when a collapse is performed on the RowExpander
-                 *
-                 * @expose
-                 * @event
-                 * @memberof oj.ojRowExpander
-                 * @instance
-                 * @property {string} rowKey the key of the collapsed row
-                 */
-                collapse: null
-            },
-    classNames:
-            {
-                'root': 'oj-rowexpander',
-                'icon': 'oj-component-icon',
-                'clickable': 'oj-clickable-icon-nocontext',
-                'expand': 'oj-rowexpander-expand-icon',
-                'collapse': 'oj-rowexpander-collapse-icon',
-                'leaf': 'oj-rowexpander-leaf-icon',
-                'lazyload': 'oj-rowexpander-lazyload-icon',
-                'toucharea': 'oj-rowexpander-touch-area',
-                'indent': 'oj-rowexpander-indent',
-                'iconspacer': 'oj-rowexpander-icon-spacer',
-                'depth0': 'oj-rowexpander-depth-0',
-                'depth1': 'oj-rowexpander-depth-1',
-                'depth2': 'oj-rowexpander-depth-2',
-                'depth3': 'oj-rowexpander-depth-3',
-                'depth4': 'oj-rowexpander-depth-4',
-                'depth5': 'oj-rowexpander-depth-5',
-                'depth6': 'oj-rowexpander-depth-6',
-                'depth7': 'oj-rowexpander-depth-7'
+    {
+      /**
+       * The context object obtained from the column renderer (Table) or cell renderer (DataGrid)
+       *
+       * @expose
+       * @memberof oj.ojRowExpander
+       * @instance
+       * @type {Object}
+       * @default null
+       *
+       */
+      context: null,
+      /**
+       * Specifies if the RowExpander is expanded.  The default value is determined by the <code class="prettyprint">context</code> obtained from the column renderer (Table) or cell renderer (DataGrid), or null if no context is specified.
+       * See <a href="#perf-section">performance</a> for recommended usage regarding initial expansion state.
+       *
+       * @expose
+       * @memberof oj.ojRowExpander
+       * @instance
+       * @type {boolean|null}
+       * @default null
+       * @ojwriteback
+       * @ojshortdesc Specifies if the RowExpander is expanded.
+       *
+       * @example <caption>Initialize the RowExpander with the <code class="prettyprint">expanded</code> attribute specified:</caption>
+       * &lt;oj-row-expander expanded='true'>&lt;/oj-row-expander>
+       *
+       * @example <caption>Get or set the <code class="prettyprint">expanded</code> property after initialization:</caption>
+       * // getter
+       * var expandedValue = myRowExpander.expanded;
+       *
+       * // setter
+       * myRowExpander.expanded = false;
+       */
+      expanded: null,
+      /**
+       * Triggered when a expand is performed on the RowExpander
+       *
+       * @expose
+       * @event
+       * @memberof oj.ojRowExpander
+       * @instance
+       * @property {string} rowKey the key of the expanded row
+       */
+      expand: null,
+      /**
+       * Triggered when a collapse is performed on the RowExpander
+       *
+       * @expose
+       * @event
+       * @memberof oj.ojRowExpander
+       * @instance
+       * @property {string} rowKey the key of the collapsed row
+       */
+      collapse: null
     },
-    constants :{
-        MAX_STYLE_DEPTH: 7,
-        NUM5_KEY: 53
+    classNames:
+    {
+      root: 'oj-rowexpander',
+      icon: 'oj-component-icon',
+      clickable: 'oj-clickable-icon-nocontext',
+      expand: 'oj-rowexpander-expand-icon',
+      collapse: 'oj-rowexpander-collapse-icon',
+      leaf: 'oj-rowexpander-leaf-icon',
+      lazyload: 'oj-rowexpander-lazyload-icon',
+      toucharea: 'oj-rowexpander-touch-area',
+      indent: 'oj-rowexpander-indent',
+      iconspacer: 'oj-rowexpander-icon-spacer',
+      depth0: 'oj-rowexpander-depth-0',
+      depth1: 'oj-rowexpander-depth-1',
+      depth2: 'oj-rowexpander-depth-2',
+      depth3: 'oj-rowexpander-depth-3',
+      depth4: 'oj-rowexpander-depth-4',
+      depth5: 'oj-rowexpander-depth-5',
+      depth6: 'oj-rowexpander-depth-6',
+      depth7: 'oj-rowexpander-depth-7'
+    },
+    constants: {
+      MAX_STYLE_DEPTH: 7,
+      NUM5_KEY: 53
     },
     /**
      * Create the row expander
@@ -2620,130 +2384,115 @@ oj.__registerWidget('oj.ojRowExpander', $['oj']['baseComponent'],
      * @memberof oj.ojRowExpander
      * @protected
      */
-    _ComponentCreate: function()
-    {
-        this._super();
-        this.element.addClass(this.classNames['root']);
-        this._initContent();
+    _ComponentCreate: function () {
+      this._super();
+      this.element.addClass(this.classNames.root);
+      this._initContent();
     },
     /**
      * Initialize the row expander after creation
      * @private
      */
-    _initContent : function ()
-    {
-        var self = this, context;
+    _initContent: function () {
+      var self = this;
 
-        context = this.options['context'];
-        //component now widget constructor or non existent
-        if (context['component'] != null)
-        {
-            this.component = typeof context['component'] === 'function' ? context['component']('instance') : context['component'];
-        }
-        else if (context['componentElement'])
-        {
-            var widgetElem = context['componentElement'];
-            widgetElem = $(widgetElem).hasClass('oj-component-initnode') ? widgetElem : $(widgetElem).find('.oj-component-initnode')[0];
-            this.component = oj.Components.__GetWidgetConstructor(widgetElem)('instance');
-        }
-        this.datasource = context['datasource'];
+      var context = this.options.context;
+      // component now widget constructor or non existent
+      if (context.component != null) {
+        this.component = typeof context.component === 'function' ?
+          context.component('instance') :
+          context.component;
+      } else if (context.componentElement) {
+        var widgetElem = context.componentElement;
+        widgetElem = $(widgetElem).hasClass('oj-component-initnode') ?
+          widgetElem :
+          $(widgetElem).find('.oj-component-initnode')[0];
+        this.component = Components.__GetWidgetConstructor(widgetElem)('instance');
+      }
+      this.datasource = context.datasource;
 
-        //root hidden so subtract 1
-        this.depth = context['depth'];
-        this.iconState = context['state'];
-        this.rowKey = context['key'];
-        this.index = context['index'];
-        this.parentKey = context['parentKey'];
+      // root hidden so subtract 1
+      this.depth = context.depth;
+      this.iconState = context.state;
+      this.rowKey = context.key;
+      this.index = context.index;
+      this.parentKey = context.parentKey;
 
-        this._addIndentation();
-        this._addIcon();
-        this._setIconStateClass();
+      this._addIndentation();
+      this._addIcon();
+      this._setIconStateClass();
 
-        if (this.iconState === 'expanded' || this.iconState === 'collapsed')
-        {
-            $(this.toucharea).on('touchend', function(event) {
-                //prevent scroll to top and # append, also prevents the following click
-                event.preventDefault();
-                self._fireExpandCollapse();
-            });
+      if (this.iconState === 'expanded' || this.iconState === 'collapsed') {
+        $(this.toucharea).on('touchend', function (event) {
+          // prevent scroll to top and # append, also prevents the following click
+          event.preventDefault();
+          self._fireExpandCollapse();
+        });
 
-            $(this.toucharea).on('click', function(event) {
-                //prevent scroll to top and # append
-                event.preventDefault();
-                self._fireExpandCollapse();
-            });
-            $(this.element).on('keypress', function(event) {
-                var code = event.keyCode || event.which;
-                if (code === $.ui.keyCode.ENTER || code === $.ui.keyCode.SPACE)
-                {
-                    // do expand or collapse
-                    self._fireExpandCollapse();
-                    // stop browser from for example scrolling the page
-                    event.preventDefault();
-                    // ensure focus stays
-                    event.target.focus();
-                }
-            });
+        $(this.toucharea).on('click', function (event) {
+          // prevent scroll to top and # append
+          event.preventDefault();
+          self._fireExpandCollapse();
+        });
+        $(this.element).on('keypress', function (event) {
+          var code = event.keyCode || event.which;
+          if (code === $.ui.keyCode.ENTER || code === $.ui.keyCode.SPACE) {
+            // do expand or collapse
+            self._fireExpandCollapse();
+            // stop browser from for example scrolling the page
+            event.preventDefault();
+            // ensure focus stays
+            event.target.focus();
+          }
+        });
 
-            // listen for key down event from host component
-            this.handleKeyDownCallback = this._handleKeyDownEvent.bind(this);
-            this.component.element.get(0).addEventListener('keydown', this.handleKeyDownCallback, true);
+        // listen for key down event from host component
+        this.handleKeyDownCallback = this._handleKeyDownEvent.bind(this);
+        this.component.element.get(0).addEventListener('keydown', this.handleKeyDownCallback, true);
 
-            // listens for expand and collapse event from flattened datasource
-            // this could be due to user clicks, keyboard shortcuts or programmatically
-            this.handleExpandCallback = this._handleExpandEvent.bind(this);
-            this.handleCollapseCallback = this._handleCollapseEvent.bind(this);
+        // listens for expand and collapse event from flattened datasource
+        // this could be due to user clicks, keyboard shortcuts or programmatically
+        this.handleExpandCallback = this._handleExpandEvent.bind(this);
+        this.handleCollapseCallback = this._handleCollapseEvent.bind(this);
 
-            this.datasource.on("expand", this.handleExpandCallback, this);
-            this.datasource.on("collapse", this.handleCollapseCallback, this);
+        this.datasource.on('expand', this.handleExpandCallback, this);
+        this.datasource.on('collapse', this.handleCollapseCallback, this);
 
-            // if expanded option is explicitly specified, make sure it's in sync with current state
-            this._initExpanded();
-        }
-        else if (this.iconState === 'leaf')
-        {
-            // we'll still need to handle ctrl+alt+5 for leaf node
-            // listen for key down event from host component
-            this.handleKeyDownCallback = this._handleKeyDownEvent.bind(this);
-            this.component.element.get(0).addEventListener('keydown', this.handleKeyDownCallback, true);
-            $(this.icon).attr('tabindex', -1);
-        }
+        // if expanded option is explicitly specified, make sure it's in sync with current state
+        this._initExpanded();
+      } else if (this.iconState === 'leaf') {
+        // we'll still need to handle ctrl+alt+5 for leaf node
+        // listen for key down event from host component
+        this.handleKeyDownCallback = this._handleKeyDownEvent.bind(this);
+        this.component.element.get(0).addEventListener('keydown', this.handleKeyDownCallback, true);
+        $(this.icon).attr('tabindex', -1);
+      }
 
-        // listen for active key change event from host component
-        this.handleActiveKeyChangeCallback = this._handleActiveKeyChangeEvent.bind(this);
-        if (this.component._IsCustomElement())
-        {
-            $(this.component.element).on('ojBeforeCurrentCell', this.handleActiveKeyChangeCallback);
-        }
-        else
-        {
-            $(this.component.element).on('ojbeforecurrentcell', this.handleActiveKeyChangeCallback);
-        }
+      // listen for active key change event from host component
+      this.handleActiveKeyChangeCallback = this._handleActiveKeyChangeEvent.bind(this);
+      if (this.component._IsCustomElement()) {
+        $(this.component.element).on('ojBeforeCurrentCell', this.handleActiveKeyChangeCallback);
+      } else {
+        $(this.component.element).on('ojbeforecurrentcell', this.handleActiveKeyChangeCallback);
+      }
     },
     /**
      * Sync initial state of expanded with context/FlattenedTreeModel
      * @private
      */
-    _initExpanded: function()
-    {
-        var expanded = this.options['expanded'];
-        if (expanded != null)
-        {
-            if (expanded && this.iconState === 'collapsed')
-            {
-                this._expand();
-            }
-            else if (!expanded && this.iconState === 'expanded')
-            {
-                this._collapse();
-            }
+    _initExpanded: function () {
+      var expanded = this.options.expanded;
+      if (expanded != null) {
+        if (expanded && this.iconState === 'collapsed') {
+          this._expand();
+        } else if (!expanded && this.iconState === 'expanded') {
+          this._collapse();
         }
-        else
-        {
-            // make sure expanded value reflect the current state
-            // we don't want to trigger option change event in this case
-            this.options['expanded'] = this.iconState === 'collapsed' ? false : true;
-        }
+      } else {
+        // make sure expanded value reflect the current state
+        // we don't want to trigger option change event in this case
+        this.options.expanded = this.iconState !== 'collapsed';
+      }
     },
 
     /**
@@ -2756,11 +2505,11 @@ oj.__registerWidget('oj.ojRowExpander', $['oj']['baseComponent'],
      * @example <caption>Invoke the <code class="prettyprint">refresh</code> method:</caption>
      * myRowExpander.refresh();
      */
-    refresh: function()
-    {
-        this.element.empty();
-        this._initContent();
+    refresh: function () {
+      this.element.empty();
+      this._initContent();
     },
+
     /**
      * destroy the row expander
      *
@@ -2773,49 +2522,48 @@ oj.__registerWidget('oj.ojRowExpander', $['oj']['baseComponent'],
      * @example <caption>Invoke the <code class="prettyprint">refresh</code> method:</caption>
      * $( ".selector" ).ojRowExpander( "destroy" );
      */
-    _destroy: function()
-    {
-        // unregister keydown and active key change handlers
-        this.component.element.get(0).removeEventListener('ojkeydown', this.handleKeyDownCallback, true);
-        $(this.component.element).off('ojbeforecurrentcell', this.handleActiveKeyChangeCallback);
+    _destroy: function () {
+      // unregister keydown and active key change handlers
+      this.component.element.get(0).removeEventListener('ojkeydown',
+                                                        this.handleKeyDownCallback, true);
+      $(this.component.element).off('ojbeforecurrentcell', this.handleActiveKeyChangeCallback);
 
-        // unregister expand/collapse events
-        this.datasource.off("expand", this.handleExpandCallback, this);
-        this.datasource.off("collapse", this.handleCollapseCallback, this);
+      // unregister expand/collapse events
+      this.datasource.off('expand', this.handleExpandCallback, this);
+      this.datasource.off('collapse', this.handleCollapseCallback, this);
 
-        this.element.removeClass(this.classNames['root']);
-        this.element.empty();
+      this.element.removeClass(this.classNames.root);
+      this.element.empty();
     },
+
     /**
      * Expand the current row expander
      * @return {boolean} true if the expand is processed, false if it's a no op.
      * @private
      */
-    _expand: function()
-    {
-        if (this.iconState === 'collapsed')
-        {
-            this._loading();
-            this.datasource.expand(this.rowKey);
-            return true;
-        }
-        return false;
+    _expand: function () {
+      if (this.iconState === 'collapsed') {
+        this._loading();
+        this.datasource.expand(this.rowKey);
+        return true;
+      }
+      return false;
     },
+
     /**
      * Collapse the current row expander
      * @return {boolean} true if the collapse is processed, false if it's a no op.
      * @private
      */
-    _collapse: function()
-    {
-        if (this.iconState === 'expanded')
-        {
-            this._loading();
-            this.datasource.collapse(this.rowKey);
-            return true;
-        }
-        return false;
+    _collapse: function () {
+      if (this.iconState === 'expanded') {
+        this._loading();
+        this.datasource.collapse(this.rowKey);
+        return true;
+      }
+      return false;
     },
+
     /**
      * Sets a single option value
      * @param {Object} key the option key
@@ -2824,199 +2572,200 @@ oj.__registerWidget('oj.ojRowExpander', $['oj']['baseComponent'],
      * @override
      * @private
      */
-    _setOption: function(key, value, flags)
-    {
-        if (key == 'expanded' && (flags['_context'] == null || flags['_context']['internalSet'] != true))
-        {
-            value ? this._expand() : this._collapse();
-            // don't update option, it will be update when the operation completed via expand/collapse event
-            return;
+    _setOption: function (key, value, flags) {
+      if (key === 'expanded' && (flags._context == null || flags._context.internalSet !== true)) {
+        if (value) {
+          this._expand();
+        } else {
+          this._collapse();
         }
+        // don't update option, it will be update when the operation completed via expand/collapse event
+        return;
+      }
 
-        this._super(key, value, flags);
+      this._super(key, value, flags);
 
-        // refresh if context is updated
-        if (key == 'context' && flags['_context'] != null && flags['_context']['internalSet'] != true)
-        {
-            this.refresh();
-        }
+      // refresh if context is updated
+      if (key === 'context' && flags._context != null && flags._context.internalSet !== true) {
+        this.refresh();
+      }
     },
+
     /**
      * Add athe indentation spacers to the row
      * @private
      */
-    _addIndentation: function()
-    {
-        var remainder, i, depth;
-        //0 index the depth for style purposes
-        depth = this.depth-1;
-        if (depth < this.constants.MAX_STYLE_DEPTH)
-        {
-            this._appendSpacer(depth);
+    _addIndentation: function () {
+      // 0 index the depth for style purposes
+      var depth = this.depth - 1;
+      if (depth < this.constants.MAX_STYLE_DEPTH) {
+        this._appendSpacer(depth);
+      } else {
+        for (var i = 1; i <= (depth / (this.constants.MAX_STYLE_DEPTH)); i++) {
+          this._appendSpacer(this.constants.MAX_STYLE_DEPTH);
         }
-        else
-        {
-            for (i=1; i <= (depth/(this.constants.MAX_STYLE_DEPTH)); i++)
-            {
-                this._appendSpacer(this.constants.MAX_STYLE_DEPTH);
-            }
-            remainder = (depth % this.constants.MAX_STYLE_DEPTH);
-            if (remainder < this.constants.MAX_STYLE_DEPTH)
-            {
-                this._appendSpacer(remainder);
-            }
+        var remainder = (depth % this.constants.MAX_STYLE_DEPTH);
+        if (remainder < this.constants.MAX_STYLE_DEPTH) {
+          this._appendSpacer(remainder);
         }
+      }
     },
+
     /**
      * Append appropriate spacer based on depth to the row expander
      * @param {number} depth the depth
      * @private
      */
-    _appendSpacer: function(depth)
-    {
-        var spacer = $(document.createElement('span')).addClass(this.classNames['indent']).addClass(this.classNames['depth'+depth]);
-        this.element.append(spacer); //@HTMLUpdateOK
+    _appendSpacer: function (depth) {
+      var spacer = $(document.createElement('span'))
+          .addClass(this.classNames.indent)
+          .addClass(this.classNames['depth' + depth]);
+      this.element.append(spacer); // @HTMLUpdateOK
     },
+
     /**
      * Add an icon to the row expander with appropriate class names for a clickable icon.
      * @private
      */
-    _addIcon: function()
-    {
-        var self, iconSpacer;
-        iconSpacer = $(document.createElement('div')).addClass(this.classNames['iconspacer']);
-        this.toucharea = $(document.createElement('div')).addClass(this.classNames['toucharea']);
-        this.icon = $(document.createElement('a')).attr('href', '#').attr('aria-labelledby', this._getLabelledBy()).addClass(this.classNames['icon']).addClass(this.classNames['clickable']).attr('aria-label', 
-            this.getTranslatedString('accessibleLevelDescription', {'level': this.depth}));
-        this.element.append(iconSpacer.append(this.toucharea.append(this.icon))); //@HTMLUpdateOK
+    _addIcon: function () {
+      var iconSpacer = $(document.createElement('div')).addClass(this.classNames.iconspacer);
+      this.toucharea = $(document.createElement('div')).addClass(this.classNames.toucharea);
+      this.icon = $(document.createElement('a'))
+        .attr('href', '#')
+        .attr('aria-labelledby', this._getLabelledBy())
+        .addClass(this.classNames.icon)
+        .addClass(this.classNames.clickable)
+        .attr('aria-label',
+              this.getTranslatedString('accessibleLevelDescription', { level: this.depth }));
+      this.element.append(iconSpacer.append(this.toucharea.append(this.icon))); // @HTMLUpdateOK
 
-        self = this;
-        this._focusable({
-            'element': self.icon,
-            'applyHighlight': true
-        });
+      var self = this;
+      this._focusable({
+        element: self.icon,
+        applyHighlight: true
+      });
     },
+
     /**
      * Add a class name on the icon
      * @private
      * @param {string} classKey the key of the appropriate icon class expand/collapse/leaf
      */
-    _addIconClass: function(classKey)
-    {
-        this.icon.addClass(this.classNames[classKey]);
+    _addIconClass: function (classKey) {
+      this.icon.addClass(this.classNames[classKey]);
     },
+
     /**
      * Remove a class name on the icon
      * @private
      * @param {string} classKey the key of the appropriate icon class expand/collapse/leaf
      */
-    _removeIconClass: function(classKey)
-    {
-        this.icon.removeClass(this.classNames[classKey]);
+    _removeIconClass: function (classKey) {
+      this.icon.removeClass(this.classNames[classKey]);
     },
+
     /**
      * Set the icon class to the the iconState property
      * @private
      */
-    _setIconStateClass: function()
-    {
-        switch (this.iconState)
-        {
-            case 'leaf':
-                this._removeIconClass('icon');
-                this._removeIconClass('clickable');
-                this._addIconClass('leaf');
-                break;
-            case 'collapsed':
-                this._addIconClass('expand');
-                this._ariaExpanded(false);
-                break;
-            case 'expanded':
-                this._addIconClass('collapse');
-                this._ariaExpanded(true);
-                break;
-            case 'loading':
-                this._removeIconClass('clickable');
-                this._addIconClass('lazyload');
-                break;
-        }
-
+    _setIconStateClass: function () {
+      switch (this.iconState) {
+        case 'leaf':
+          this._removeIconClass('icon');
+          this._removeIconClass('clickable');
+          this._addIconClass('leaf');
+          break;
+        case 'collapsed':
+          this._addIconClass('expand');
+          this._ariaExpanded(false);
+          break;
+        case 'expanded':
+          this._addIconClass('collapse');
+          this._ariaExpanded(true);
+          break;
+        case 'loading':
+          this._removeIconClass('clickable');
+          this._addIconClass('lazyload');
+          break;
+        default:
+          break;
+      }
     },
+
     /**
      * Removes the icon class of the iconState property
      * @private
      */
-    _removeIconStateClass: function()
-    {
-        switch (this.iconState)
-        {
-            case 'leaf':
-                this._removeIconClass('leaf');
-                this._addIconClass('icon');
-                this._addIconClass('clickable');
-                break;
-            case 'collapsed':
-                this._removeIconClass('expand');
-                break;
-            case 'expanded':
-                this._removeIconClass('collapse');
-                break;
-            case 'loading':
-                this._removeIconClass('lazyload');
-                this._addIconClass('clickable');
-                break;
-        }
-
+    _removeIconStateClass: function () {
+      switch (this.iconState) {
+        case 'leaf':
+          this._removeIconClass('leaf');
+          this._addIconClass('icon');
+          this._addIconClass('clickable');
+          break;
+        case 'collapsed':
+          this._removeIconClass('expand');
+          break;
+        case 'expanded':
+          this._removeIconClass('collapse');
+          break;
+        case 'loading':
+          this._removeIconClass('lazyload');
+          this._addIconClass('clickable');
+          break;
+        default:
+          break;
+      }
     },
+
     /**
      * Handles active key change event from host component (ojDataGrid or ojTable)
      * @param {Event} event
      * @param {Object|null|number=} ui
      * @private
      */
-    _handleActiveKeyChangeEvent: function(event, ui)
-    {
-        var rowKey, previousRowKey, context, state;
-        if (ui == null)
-        {
-            ui = event.detail;
-        }
-        if (ui['currentCell'] != null)
-        {
-            rowKey = ui['currentCell']['type'] == 'cell' ? ui['currentCell']['keys']['row'] :  ui['currentCell']['key'];
-            if (ui['previousValue'] != null)
-            {
-                previousRowKey = ui['previousCurrentCell']['type'] == 'cell' ? ui['previousCurrentCell']['keys']['row'] :  ui['previousCurrentCell']['key'];
-            }
-            // if the event is for this row and the active key change event is triggered
-            // by row change and not column change
-            if (this.rowKey === rowKey && previousRowKey != rowKey)
-            {
-                // if the component allows AccessibleContext to be set
-                if (this.component._setAccessibleContext)
-                {
-                    // row context of row expander for screen reader
-                    // todo: get index from TreeDataSource as well since that could change
-                    context = this.getTranslatedString('accessibleRowDescription', {'level': this.depth, 'num': this.index+1, 'total': this.datasource.getWrappedDataSource().getChildCount(this.parentKey)});
-                    // state of row expander for screen reader
-                    if (this.iconState === 'collapsed')
-                    {
-                        state = this.getTranslatedString('accessibleStateCollapsed');
-                    }
-                    else if (this.iconState === 'expanded')
-                    {
-                        state = this.getTranslatedString('accessibleStateExpanded');
-                    }
-                    else
-                    {
-                        // for leaf node don't read anything
-                        state = '';
-                    }
+    _handleActiveKeyChangeEvent: function (event, ui) {
+      var previousRowKey;
 
-                    this.component._setAccessibleContext({'context': context, 'state': state});
-                }
-            }
+      if (ui == null) {
+        // eslint-disable-next-line no-param-reassign
+        ui = event.detail;
+      }
+
+      if (ui.currentCell != null) {
+        var rowKey = ui.currentCell.type === 'cell' ? ui.currentCell.keys.row : ui.currentCell.key;
+        if (ui.previousValue != null) {
+          previousRowKey = ui.previousCurrentCell.type === 'cell' ?
+            ui.previousCurrentCell.keys.row :
+            ui.previousCurrentCell.key;
         }
+        // if the event is for this row and the active key change event is triggered
+        // by row change and not column change
+        if (this.rowKey === rowKey && previousRowKey !== rowKey) {
+          // if the component allows AccessibleContext to be set
+          if (this.component._setAccessibleContext) {
+            // row context of row expander for screen reader
+            // todo: get index from TreeDataSource as well since that could change
+            var context = this.getTranslatedString('accessibleRowDescription', {
+              level: this.depth,
+              num: this.index + 1,
+              total: this.datasource.getWrappedDataSource().getChildCount(this.parentKey)
+            });
+            // state of row expander for screen reader
+            var state;
+            if (this.iconState === 'collapsed') {
+              state = this.getTranslatedString('accessibleStateCollapsed');
+            } else if (this.iconState === 'expanded') {
+              state = this.getTranslatedString('accessibleStateExpanded');
+            } else {
+              // for leaf node don't read anything
+              state = '';
+            }
+
+            this.component._setAccessibleContext({ context: context, state: state });
+          }
+        }
+      }
     },
     /**
      * Handles keydown event from host component (ojDataGrid or ojTable)
@@ -3024,77 +2773,72 @@ oj.__registerWidget('oj.ojRowExpander', $['oj']['baseComponent'],
      * @param {Event} event
      * @private
      */
-    _handleKeyDownEvent: function(event)
-    {
-        var rowKey, code, context, ancestorInfo, ancestors, i;
-        var targetContext = oj.Components.__GetWidgetConstructor(this.component.element.get(0))('getContextByNode', event.target);
-
-        if (targetContext == null)
-        {
-            return;
-        }
-
-        rowKey = targetContext['key'];
-        if (rowKey == null)
-        {
-            rowKey = targetContext['keys']['row'];
-        }
-        if (this.rowKey === rowKey)
-        {
-            code = event.keyCode || event.which;
-            // ctrl (or equivalent) is pressed
-            if (oj.DomUtils.isMetaKeyPressed(event))
-            {
-                // Ctrl+Right expands, Ctrl+Left collapse in accordance with WAI-ARIA best practice
-                // consume the event as it's processed
-                if (code == $.ui.keyCode.RIGHT)
-                {
-                    if (this._expand())
-                    {
-                        event.preventDefault();
-                        return;
-                    }
-                }
-                else if (code == $.ui.keyCode.LEFT)
-                {
-                    if (this._collapse())
-                    {
-                        event.preventDefault();
-                        return;
-                    }
-                }
-                else if (event.altKey && code == this.constants.NUM5_KEY)
-                {
-                    // read current cell context
-                    if (this.component._setAccessibleContext)
-                    {
-                        ancestors = this.datasource.getAncestors(this.rowKey);
-                        if (ancestors != null && ancestors.length > 0)
-                        {
-                            ancestorInfo = [];
-                            for (i=0; i<ancestors.length; i++)
-                            {
-                                ancestorInfo.push({'key': ancestors[i], 'label': this.getTranslatedString('accessibleLevelDescription', {'level': i+1})});
-                            }
-                        }
-
-                        context = this.getTranslatedString('accessibleRowDescription', {'level': this.depth, 'num': this.index+1, 'total': this.datasource.getWrappedDataSource().getChildCount(this.parentKey)});
-                        this.component._setAccessibleContext({'context': context, 'state': '', 'ancestors': ancestorInfo});
-                    }
-                }
-            }
-        }
+    _handleKeyDownEvent: function (event) {
+      var targetContext =
+          Components.__GetWidgetConstructor(this.component.element.get(0))('getContextByNode',
+                                                                              event.target);
+      if (targetContext == null) {
         return;
+      }
+
+      var rowKey = targetContext.key;
+      if (rowKey == null) {
+        rowKey = targetContext.keys.row;
+      }
+      if (this.rowKey === rowKey) {
+        var code = event.keyCode || event.which;
+        // ctrl (or equivalent) is pressed
+        if (oj.DomUtils.isMetaKeyPressed(event)) {
+          // Ctrl+Right expands, Ctrl+Left collapse in accordance with WAI-ARIA best practice
+          // consume the event as it's processed
+          if (code === $.ui.keyCode.RIGHT) {
+            if (this._expand()) {
+              event.preventDefault();
+            }
+          } else if (code === $.ui.keyCode.LEFT) {
+            if (this._collapse()) {
+              event.preventDefault();
+            }
+          } else if (event.altKey && code === this.constants.NUM5_KEY) {
+            // read current cell context
+            if (this.component._setAccessibleContext) {
+              var ancestors = this.datasource.getAncestors(this.rowKey);
+              var ancestorInfo;
+              if (ancestors != null && ancestors.length > 0) {
+                ancestorInfo = [];
+                for (var i = 0; i < ancestors.length; i++) {
+                  ancestorInfo.push({
+                    key: ancestors[i],
+                    label: this.getTranslatedString('accessibleLevelDescription',
+                                                    { level: i + 1 })
+                  });
+                }
+              }
+
+              var context = this.getTranslatedString('accessibleRowDescription', {
+                level: this.depth,
+                num: this.index + 1,
+                total: this.datasource.getWrappedDataSource().getChildCount(this.parentKey)
+              });
+              this.component._setAccessibleContext({
+                context: context,
+                state: '',
+                ancestors: ancestorInfo
+              });
+            }
+          }
+        }
+      }
     },
+
     /**
      * Put row expander in a loading state.  This is called during expand/collapse.
      * @private
      */
-    _loading: function()
-    {
-        this._removeIconStateClass();
-        this.iconState = 'loading';
-        this._setIconStateClass();
+    _loading: function () {
+      this._removeIconStateClass();
+      this.iconState = 'loading';
+      this._setIconStateClass();
     },
 
     /**
@@ -3103,150 +2847,136 @@ oj.__registerWidget('oj.ojRowExpander', $['oj']['baseComponent'],
      * @param {Object} event the expand event from the data source, should contain rowKey
      * @private
      */
-    _handleExpandEvent: function(event)
-    {
-        var rowKey = event['rowKey'];
-        if (rowKey === this.rowKey)
-        {
-            this._removeIconStateClass();
-            this.iconState = 'expanded';
-            this._setIconStateClass();
-            this._ariaExpanded(true);
-            this._updateContextState('expanded');
+    _handleExpandEvent: function (event) {
+      var rowKey = event.rowKey;
+      if (rowKey === this.rowKey) {
+        this._removeIconStateClass();
+        this.iconState = 'expanded';
+        this._setIconStateClass();
+        this._ariaExpanded(true);
+        this._updateContextState('expanded');
 
-            // if the event is triggered by initial setting of expanded, we should not
-            // fire expand or option change event
-            var expanded = this.options['expanded'];
-            if (expanded == null || (expanded != null && !expanded))
-            {
-                this._trigger('expand', null, {'rowKey': rowKey});
-                this._updateExpandedState(true);
-            }
+        // if the event is triggered by initial setting of expanded, we should not
+        // fire expand or option change event
+        var expanded = this.options.expanded;
+        if (expanded == null || (expanded != null && !expanded)) {
+          this._trigger('expand', null, { rowKey: rowKey });
+          this._updateExpandedState(true);
         }
+      }
     },
+
     /**
      * Handle a collapse event coming from the datasource,
      * update the icon and the aria-expand property
      * @param {Object} event the collapse event from the data source, should contain rowKey
      * @private
      */
-    _handleCollapseEvent: function(event)
-    {
-        var rowKey = event['rowKey'];
-        if (rowKey === this.rowKey)
-        {
-            this._removeIconStateClass();
-            this.iconState = 'collapsed';
-            this._setIconStateClass();
-            this._ariaExpanded(false);
-            this._updateContextState('collapsed');
+    _handleCollapseEvent: function (event) {
+      var rowKey = event.rowKey;
+      if (rowKey === this.rowKey) {
+        this._removeIconStateClass();
+        this.iconState = 'collapsed';
+        this._setIconStateClass();
+        this._ariaExpanded(false);
+        this._updateContextState('collapsed');
 
-            // if the event is triggered by initial setting of expanded, we should not
-            // fire expand or option change event
-            var expanded = this.options['expanded'];
-            if (expanded == null || (expanded != null && expanded))
-            {
-                this._trigger('collapse', null, {'rowKey': rowKey});
-                this._updateExpandedState(false);
-            }
+        // if the event is triggered by initial setting of expanded, we should not
+        // fire expand or option change event
+        var expanded = this.options.expanded;
+        if (expanded == null || (expanded != null && expanded)) {
+          this._trigger('collapse', null, { rowKey: rowKey });
+          this._updateExpandedState(false);
         }
+      }
     },
+
     /**
      * Update the expanded option
      * @param {boolean} expanded
      * @private
      */
-    _updateExpandedState: function(expanded)
-    {
-        this.option('expanded', expanded, {'changed':true, '_context': {'internalSet': true, 'writeback':true}});
+    _updateExpandedState: function (expanded) {
+      this.option('expanded', expanded,
+                  { changed: true, _context: { internalSet: true, writeback: true } });
     },
+
     /**
      * Update context state
      * @param {string} newState
      * @private
      */
-    _updateContextState: function(newState)
-    {
-        var context = this.options['context'];
-        context['state'] = newState;
-        // need to reuse the same object so mark it as changed ourselves
-        this.option('context', context, {'changed':true, '_context': {'internalSet': true}});
+    _updateContextState: function (newState) {
+      var context = this.options.context;
+      context.state = newState;
+      // need to reuse the same object so mark it as changed ourselves
+      this.option('context', context, { changed: true, _context: { internalSet: true } });
     },
+
     /**
      * Fire the expand or collapse on the datasource and the oj event on the widget
      * @private
      */
-    _fireExpandCollapse: function()
-    {
-        var state = this.iconState;
+    _fireExpandCollapse: function () {
+      var state = this.iconState;
 
-        // show loading icon, note this changes the icon state to 'loading'
-        this._loading();
+      // show loading icon, note this changes the icon state to 'loading'
+      this._loading();
 
-        // invoke expand/collapse on datasource
-        if (state === 'collapsed')
-        {
-            this.datasource.expand(this.rowKey);
-        }
-        else if (state === 'expanded')
-        {
-            this.datasource.collapse(this.rowKey);
-        }
+      // invoke expand/collapse on datasource
+      if (state === 'collapsed') {
+        this.datasource.expand(this.rowKey);
+      } else if (state === 'expanded') {
+        this.datasource.collapse(this.rowKey);
+      }
     },
+
     /**
      * Sets the icon's aria-expanded property to the boolean passed in
      * @param {boolean|null} bool true if expanded false if not
      * @private
      */
-    _ariaExpanded: function(bool)
-    {
-        this.icon.attr('aria-expanded', bool);
+    _ariaExpanded: function (bool) {
+      this.icon.attr('aria-expanded', bool);
     },
 
     // @inheritdoc
-    getNodeBySubId: function(locator)
-    {
-        var subId;
+    getNodeBySubId: function (locator) {
+      if (locator == null) {
+        return this.element ? this.element[0] : null;
+      }
 
-        if (locator == null)
-        {
-            return this.element ? this.element[0] : null;
-        }
-
-        subId = locator['subId'];
-        if ((subId === 'oj-rowexpander-disclosure' || subId === 'oj-rowexpander-icon') && this.icon != null)
-        {
-            return this.icon.get(0);
-        }
-        // Non-null locators have to be handled by the component subclasses
-        return null;
+      var subId = locator.subId;
+      if ((subId === 'oj-rowexpander-disclosure' || subId === 'oj-rowexpander-icon') &&
+          this.icon != null) {
+        return this.icon.get(0);
+      }
+      // Non-null locators have to be handled by the component subclasses
+      return null;
     },
 
     // @inheritdoc
-    getSubIdByNode: function(node)
-    {
-        if (node === this.icon.get(0))
-        {
-            return {'subId': 'oj-rowexpander-disclosure'};
-        }
-        return null;
+    getSubIdByNode: function (node) {
+      if (node === this.icon.get(0)) {
+        return { subId: 'oj-rowexpander-disclosure' };
+      }
+      return null;
     },
-    _NotifyAttached: function()
-    {
-        this._super();
-        this.icon.attr('aria-labelledby', this._getLabelledBy());
+
+    _NotifyAttached: function () {
+      this._super();
+      this.icon.attr('aria-labelledby', this._getLabelledBy());
     },
     /**
      * Get the aria label of the rowexpander from the closest row expander
      * @return {string} the closest id set to the rowexpander
      * @private
      */
-    _getLabelledBy: function()
-    {
-        return this.element.parent().closest('[id]').attr('id');
+    _getLabelledBy: function () {
+      return this.element.parent().closest('[id]').attr('id');
     }
 
-    //////////////////     FRAGMENTS    //////////////////
+    // ////////////////     FRAGMENTS    //////////////////
     /**
      * <table class="keyboard-table">
      *   <thead>
@@ -3299,7 +3029,7 @@ oj.__registerWidget('oj.ojRowExpander', $['oj']['baseComponent'],
      * @memberof oj.ojRowExpander
      */
 
-    //////////////////     SUB-IDS     //////////////////
+    // ////////////////     SUB-IDS     //////////////////
 
     /**
      * <p>Sub-ID for the ojRowExpander's icon.</p>
@@ -3310,14 +3040,13 @@ oj.__registerWidget('oj.ojRowExpander', $['oj']['baseComponent'],
      * @example <caption>Get the icon from the RowExpander:</caption>
      * var node = myRowExpander.getNodeBySubId({subId: 'oj-rowexpander-disclosure'});
      */
-});
+  });
 
 /* global __oj_row_expander_metadata:false */
 
 (function () {
   __oj_row_expander_metadata.extension._WIDGET_NAME = 'ojRowExpander';
-  oj.CustomElementBridge.registerMetadata('oj-row-expander', 'baseComponent', __oj_row_expander_metadata);
-  oj.CustomElementBridge.register('oj-row-expander', { metadata: oj.CustomElementBridge.getMetadata('oj-row-expander') });
+  oj.CustomElementBridge.register('oj-row-expander', { metadata: __oj_row_expander_metadata });
 }());
 
 });

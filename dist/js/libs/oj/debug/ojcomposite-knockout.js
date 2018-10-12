@@ -4,86 +4,80 @@
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
-define(['ojs/ojcore', 'knockout', 'ojs/ojtemplateengine', 'ojs/ojkoshared'], function(oj, ko, templateEngine)
+define(['ojs/ojcore', 'knockout', 'ojs/ojtemplateengine', 'ojs/ojlogger', 'ojs/ojkoshared'], function(oj, ko, templateEngine, Logger)
 {
 /**
  * @protected
  * @ignore
  */
-(function()
-{
-
-  oj.__KO_CUSTOM_BINDING_PROVIDER_INSTANCE.addPostprocessor
-  (
-    {
-      'preprocessNode': function(node, wrappedReturn)
-      {
-        var newNodes;
-        if (node.nodeType === 1) {
-          var binding;
-          var attrs = ['name', 'slot'];
-          var nodeName = node.nodeName.toLowerCase();
-          var bPreprocess = false; 
-          if (nodeName === 'oj-slot' || nodeName === 'oj-bind-slot') {
-            bPreprocess = true;
-            attrs.push('index');
-            binding = 'ko _ojBindSlot_:{';
-          }
-          else if (nodeName === 'oj-bind-template-slot') {
-            bPreprocess = true;
-            attrs.push('data');
-            attrs.push('as');
-            binding = 'ko _ojBindTemplateSlot_:{';
-          }
-
-          if (bPreprocess) {
-            var valueExpressions = [];
-            for (var i = 0; i < attrs.length; i++) {
-              var attr = attrs[i];
-              var expr = _getExpression(node.getAttribute(attr));
-              if (expr)
-              {
-                valueExpressions.push(attr + ':' + expr);
-              }
-            }
-            binding += valueExpressions.join(',');
-            binding += '}';
-
-            var openComment = document.createComment(binding);
-
-            var closeComment = document.createComment('/ko');
-
-            newNodes = [openComment];
-
-            var parent  = node.parentNode;
-            parent.insertBefore(openComment, node); // @HTMLUpdateOK
-
-            // Copy the 'fallback content' children into the comment node
-            while (node.childNodes.length > 0)
-            {
-              var child = node.childNodes[0];
-              parent.insertBefore(child, node); // @HTMLUpdateOK
-              newNodes.push(child);
-            }
-
-            newNodes.push(closeComment);
-
-            parent.replaceChild(closeComment, node);
-          }
-        }
-        return newNodes? newNodes: wrappedReturn;
-      }
+(function () {
+  function _preprocessBindSlot(node, isTemplate) {
+    var newNodes;
+    var binding;
+    var attrs = ['name', 'slot'];
+    var bPreprocess = false;
+    if (!isTemplate) {
+      bPreprocess = true;
+      attrs.push('index');
+      binding = 'ko _ojBindSlot_:{';
+    } else {
+      bPreprocess = true;
+      attrs.push('data');
+      attrs.push('as');
+      binding = 'ko _ojBindTemplateSlot_:{';
     }
 
+    if (bPreprocess) {
+      var valueExpressions = [];
+      for (var i = 0; i < attrs.length; i++) {
+        var attr = attrs[i];
+        var expr = _getExpression(node.getAttribute(attr));
+        if (expr) {
+          valueExpressions.push(attr + ':' + expr);
+        }
+      }
+      binding += valueExpressions.join(',');
+      binding += '}';
+
+      var openComment = document.createComment(binding);
+
+      var closeComment = document.createComment('/ko');
+
+      newNodes = [openComment];
+
+      var parent = node.parentNode;
+      parent.insertBefore(openComment, node); // @HTMLUpdateOK
+
+      // Copy the 'fallback content' children into the comment node
+      while (node.childNodes.length > 0) {
+        var child = node.childNodes[0];
+        parent.insertBefore(child, node); // @HTMLUpdateOK
+        newNodes.push(child);
+      }
+
+      newNodes.push(closeComment);
+
+      parent.replaceChild(closeComment, node);
+    }
+    return newNodes;
+  }
+
+  oj.__KO_CUSTOM_BINDING_PROVIDER_INSTANCE.registerPreprocessor(
+    'oj-bind-slot', _preprocessBindSlot);
+
+  oj.__KO_CUSTOM_BINDING_PROVIDER_INSTANCE.registerPreprocessor(
+    'oj-slot', _preprocessBindSlot);
+
+  oj.__KO_CUSTOM_BINDING_PROVIDER_INSTANCE.registerPreprocessor(
+    'oj-bind-template-slot', function (node) {
+      return _preprocessBindSlot(node, true);
+    }
   );
 
-  function _getExpression(attrValue)
-  {
-    if (attrValue != null)
-    {
+  function _getExpression(attrValue) {
+    if (attrValue != null) {
       var exp = oj.__AttributeUtils.getExpressionInfo(attrValue).expr;
-      if (exp == null)
-      {
+      if (exp == null) {
         exp = "'" + attrValue + "'";
       }
       return exp;
@@ -91,9 +85,9 @@ define(['ojs/ojcore', 'knockout', 'ojs/ojtemplateengine', 'ojs/ojkoshared'], fun
 
     return null;
   }
+}());
 
-}
-)();
+/* global ko:false */
 
 /**
  * @ignore
@@ -104,8 +98,7 @@ oj.CompositeTemplateRenderer = {};
 /**
  * @ignore
  */
-oj.CompositeTemplateRenderer.renderTemplate = function(params, element, view) 
-{
+oj.CompositeTemplateRenderer.renderTemplate = function (params, element, view) {
   // Store composite children on a hidden node while slotting to avoid stale knockout bindings
   // when observables are updated while children are disconnected from DOM. The _storeNodes methods
   // also adds the storage node to the view so it's added to the DOM in setDomNodChildren
@@ -116,27 +109,28 @@ oj.CompositeTemplateRenderer.renderTemplate = function(params, element, view)
   // and then each time the component is connected to the DOM after a disconnect
   oj.CompositeTemplateRenderer.invokeViewModelMethod(params.viewModel, 'attached', [params.viewModelContext]);
   oj.CompositeTemplateRenderer.invokeViewModelMethod(params.viewModel, 'connected', [params.viewModelContext]);
-  
-  var bindingContext = oj.CompositeTemplateRenderer._createKoBindingContext(element);
+
+  var bindingContext = oj.CompositeTemplateRenderer._getKoBindingContext();
 
   // Null out the parent references since we don't want the composite View to be able to access the outside context
-  var childBindingContext = bindingContext['createChildContext'](params.viewModel, undefined, 
+  var childBindingContext = bindingContext.createChildContext(params.viewModel, undefined,
     function (ctx) {
+      // for upstream dependency we will still rely components being registered on the oj namespace.
       ctx[oj.Composite.__COMPOSITE_PROP] = element;
-      ctx['__oj_slots'] = params.slotMap;
-      ctx['__oj_nodestorage'] = nodeStorage;
-      ctx['$slotNodeCounts'] = params.slotNodeCounts;
-      ctx['$slotCounts'] = params.slotNodeCounts;
-      ctx['$props'] = params.props;
-      ctx['$properties'] = params.props;
-      ctx['$unique'] = params.unique;
-      ctx['$uniqueId'] = params.uniqueId;
-      ctx['$parent'] = null;
-      ctx['$parentContext'] = null;
-      ctx['$parents'] = null;
+      ctx.__oj_slots = params.slotMap;
+      ctx.__oj_nodestorage = nodeStorage;
+      ctx.$slotNodeCounts = params.slotNodeCounts;
+      ctx.$slotCounts = params.slotNodeCounts;
+      ctx.$props = params.props;
+      ctx.$properties = params.props;
+      ctx.$unique = params.unique;
+      ctx.$uniqueId = params.uniqueId;
+      ctx.$parent = null;
+      ctx.$parentContext = null;
+      ctx.$parents = null;
     }
   );
-  
+
   ko.applyBindingsToDescendants(childBindingContext, element);
 
   oj.CompositeTemplateRenderer.invokeViewModelMethod(params.viewModel, 'bindingsApplied', [params.viewModelContext]);
@@ -145,70 +139,63 @@ oj.CompositeTemplateRenderer.renderTemplate = function(params, element, view)
 /**
  * @ignore
  */
-oj.CompositeTemplateRenderer.getEnclosingComposite = function(node)
-{
+oj.CompositeTemplateRenderer.getEnclosingComposite = function (node) {
   var enclosing = null;
-
-  for(var ctx = ko.contextFor(node); ctx && !enclosing; ctx = ctx['$parentContext'])
-  {
+  // for upstream dependency we will still rely components being registered on the oj namespace.
+  for (var ctx = ko.contextFor(node); ctx && !enclosing; ctx = ctx.$parentContext) {
     enclosing = ctx[oj.Composite.__COMPOSITE_PROP];
   }
-  
+
   return enclosing;
 };
 
 /**
  * @ignore
  */
-oj.CompositeTemplateRenderer.createTracker = function()
-{
+oj.CompositeTemplateRenderer.createTracker = function () {
   return ko.observable();
 };
 
 /**
  * @ignore
  */
-oj.CompositeTemplateRenderer.invokeViewModelMethod = function(model, name, args)
-{
-  if (model == null)
-  {
-    return;
+oj.CompositeTemplateRenderer.invokeViewModelMethod = function (model, name, args) {
+  if (model == null) {
+    return undefined;
   }
   var handler = model[name];
-  if (typeof handler === 'function')
-  {
+  if (typeof handler === 'function') {
     return ko.ignoreDependencies(handler, model, args);
   }
+  return undefined;
 };
 
 /**
  * @ignore
  */
-oj.CompositeTemplateRenderer._storeNodes = function(element, view)
-{
+oj.CompositeTemplateRenderer._storeNodes = function (element, view) {
   var nodeStorage;
   var childNodes = element.childNodes;
-  if (childNodes)
-  {
+  if (childNodes) {
     nodeStorage = document.createElement('div');
-    nodeStorage.setAttribute('data-bind', '_ojNodeStorage_')
+    nodeStorage.setAttribute('data-bind', '_ojNodeStorage_');
     nodeStorage.style.display = 'none';
     view.push(nodeStorage);
     var assignableNodes = [];
-    for (var i = 0; i < childNodes.length; i++)
-    {
+    for (var i = 0; i < childNodes.length; i++) {
       var node = childNodes[i];
-      if (oj.BaseCustomElementBridge.isSlotAssignable(node))
-      {
+      if (oj.BaseCustomElementBridge.isSlotAssignable(node)) {
         assignableNodes.push(node);
       }
     }
-    assignableNodes.forEach(function (node) {
-      nodeStorage.appendChild(node); // @HTMLUpdateOK
+    assignableNodes.forEach(function (_node) {
+      nodeStorage.appendChild(_node); // @HTMLUpdateOK
     });
     // Notifies JET components inside nodeStorage that they have been hidden
-    if (oj.Components)
+    // For upstream or indirect dependency we will still rely components being registered on the oj namespace.
+    if (oj.Components) {
       oj.Components.subtreeHidden(nodeStorage);
+    }
   }
   return nodeStorage;
 };
@@ -216,67 +203,78 @@ oj.CompositeTemplateRenderer._storeNodes = function(element, view)
 /**
  * @ignore
  */
-oj.CompositeTemplateRenderer._createKoBindingContext = function(elem)
-{
-  var div = document.createElement("div");
-  ko.applyBindings(null, div);
-  var context = ko.contextFor(div);
-  
-  ko.cleanNode(div);
-  
-  return context;
+oj.CompositeTemplateRenderer._getKoBindingContext = function () {
+  // Cache the binding context that we use to generate the child
+  // binding context for the View
+  if (!oj.CompositeTemplateRenderer._BINDING_CONTEXT) {
+    var div = document.createElement('div');
+    ko.applyBindings(null, div);
+    oj.CompositeTemplateRenderer._BINDING_CONTEXT = ko.contextFor(div);
+    ko.cleanNode(div);
+  }
+
+  return oj.CompositeTemplateRenderer._BINDING_CONTEXT;
 };
-ko['bindingHandlers']['_ojNodeStorage_'] =
+
+/**
+ * @private
+ */
+oj.CompositeTemplateRenderer._BINDING_CONTEXT = null;
+
+/* global ko:false */
+
+ko.bindingHandlers._ojNodeStorage_ =
 {
-  'init': function()
-  {
-    return {'controlsDescendantBindings' : true};
+  init: function () {
+    return { controlsDescendantBindings: true };
   }
 };
 
-ko['bindingHandlers']['_ojBindSlot_'] =
+/* global ko:false, SlotUtils:false */
+
+ko.bindingHandlers._ojBindSlot_ =
 {
   init: function (element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
     // Add callback so we can move slot content to node storage during cleanup
-    ko.utils.domNodeDisposal.addDisposeCallback(element, SlotUtils.cleanup.bind(null, element, bindingContext));
+    ko.utils.domNodeDisposal
+      .addDisposeCallback(element, SlotUtils.cleanup.bind(null, element, bindingContext));
 
-    var slots = bindingContext['__oj_slots'];
+    var slots = bindingContext.__oj_slots;
 
     var values = valueAccessor();
     var unwrap = ko.utils.unwrapObservable;
-    var slotName =  unwrap(values['name']) || '';
-    var index =  unwrap(values['index']);
+    var slotName = unwrap(values.name) || '';
+    var index = unwrap(values.index);
     var assignedNodes = index != null ? [slots[slotName][index]] : slots[slotName];
 
-    if (assignedNodes)
-    {
-      for (var i = 0; i < assignedNodes.length; i++)
-      {
+    if (assignedNodes) {
+      var i;
+      for (i = 0; i < assignedNodes.length; i++) {
         // Save references to nodes we need to cleanup ._slot field
         var node = assignedNodes[i];
         // Get the slot value of this oj-bind-slot element so we can assign it to its
         // assigned nodes for downstream slotting
-        node['__oj_slots'] = unwrap(values['slot']) || '';
+        node.__oj_slots = unwrap(values.slot) || '';
       }
       ko.virtualElements.setDomNodeChildren(element, assignedNodes);
-      
+
       // Notifies JET components in node that they have been shown
-      if (oj.Components)
-      {
-        for (var i = 0; i < assignedNodes.length; i++)
-        {
+      // For upstream or indirect dependency we will still rely components being registered on the oj namespace.
+      if (oj.Components) {
+        for (i = 0; i < assignedNodes.length; i++) {
           oj.Components.subtreeShown(assignedNodes[i]);
         }
       }
 
       // If no assigned nodes, let ko apply bindings to default slot content
-      return {'controlsDescendantBindings' : true};
+      return { controlsDescendantBindings: true };
     }
+    return undefined;
   }
-}
+};
 
 // Allow _ojBindSlot_ binding on virtual elements (comment nodes) which is done during knockout's preprocessNode method
-ko.virtualElements.allowedBindings['_ojBindSlot_'] = true;
+ko.virtualElements.allowedBindings._ojBindSlot_ = true;
 
 /* global ko:false */
 
@@ -294,32 +292,35 @@ var SlotUtils = {};
  * @private
  */
 SlotUtils.cleanup = function (element, bindingContext) {
-	var nodeStorage = bindingContext.__oj_nodestorage;
-	// Move all non default template children to nodeStorage to keep bindings alive for
-	// case where knockout if binding cleans up node when toggling state
-	if (nodeStorage) {
-		// Check to see if we've processed this node as an assigned node, skipping it if we haven't
-		var node = ko.virtualElements.firstChild(element);
-		while (node) {
-			// Save a reference to the next node before we move it
-			var next = ko.virtualElements.nextSibling(node);
-			if (node.__oj_slots != null) {
-				nodeStorage.appendChild(node); // @HTMLUpdateOK
-				// Notifies JET components in node that they have been hidden
-				if (oj.Components) {
-					oj.Components.subtreeHidden(node);
-				}
-			}
-			node = next;
-		}
-	}
+  var nodeStorage = bindingContext.__oj_nodestorage;
+  // Move all non default template children to nodeStorage to keep bindings alive for
+  // case where knockout if binding cleans up node when toggling state
+  if (nodeStorage) {
+    // Check to see if we've processed this node as an assigned node, skipping it if we haven't
+    var node = ko.virtualElements.firstChild(element);
+    while (node) {
+      // Save a reference to the next node before we move it
+      var next = ko.virtualElements.nextSibling(node);
+      if (node.__oj_slots != null) {
+        nodeStorage.appendChild(node); // @HTMLUpdateOK
+        // Notifies JET components in node that they have been hidden
+        // For upstream or indirect dependency we will still rely components being registered on the oj namespace.
+        if (oj.Components) {
+          oj.Components.subtreeHidden(node);
+        }
+      }
+      node = next;
+    }
+  }
 };
-/* global ko:false */
+
+/* global ko:false, SlotUtils:false, templateEngine:false, Logger:false */
 
 ko.bindingHandlers._ojBindTemplateSlot_ = {
   init: function (element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
     // Add callback so we can move slot content to node storage during cleanup
-    ko.utils.domNodeDisposal.addDisposeCallback(element, SlotUtils.cleanup.bind(null, element, bindingContext));
+    ko.utils.domNodeDisposal
+      .addDisposeCallback(element, SlotUtils.cleanup.bind(null, element, bindingContext));
 
     var slots = bindingContext.__oj_slots;
 
@@ -343,10 +344,13 @@ ko.bindingHandlers._ojBindTemplateSlot_ = {
     }
 
     if (template) {
+      // for upstream dependency we will still rely components being registered on the oj namespace.
       var composite = bindingContext[oj.Composite.__COMPOSITE_PROP];
       if (template.tagName !== 'TEMPLATE') {
-        oj.Logger.error("Slot content for slot '" + slotName + "' under " + composite.tagName.toLowerCase() +
-          " with id '" + composite.id + "' should be wrapped inside a <template> node.");
+        Logger.error("Slot content for slot '" + slotName + "' under " +
+                        composite.tagName.toLowerCase() +
+                        " with id '" + composite.id +
+                        "' should be wrapped inside a <template> node.");
       }
       // Get the slot value of this oj-bind-template element so we can assign it to its
       // assigned nodes for downstream slotting
@@ -354,15 +358,14 @@ ko.bindingHandlers._ojBindTemplateSlot_ = {
 
       // Re-execute the template if the oj-bind-template-slot bound attributes change
       ko.computed(function () {
-
         // Use the template engine to execute the template
         var data = unwrap(values.data);
         var as = unwrap(values.as);
 
         // Extend the composite's bindingContext for the default template
-        var nodes = templateEngine.execute(isDefaultTemplate ? element : composite, template, data, isDefaultTemplate ? as : null);
+        var nodes = templateEngine.execute(isDefaultTemplate ? element : composite,
+                                           template, data, isDefaultTemplate ? as : null);
         ko.virtualElements.setDomNodeChildren(element, nodes);
-
       });
     } else {
       // Clear out any child nodes if no slot children or default template found
@@ -382,6 +385,7 @@ ko.virtualElements.allowedBindings._ojBindTemplateSlot_ = true;
  * @ojbindingelement
  * @ojmodule ojcomposite
  * @since 4.1.0
+ * @ojtsignore
  *
  * @classdesc
  * <h3 id="overview-section">
@@ -389,14 +393,15 @@ ko.virtualElements.allowedBindings._ojBindTemplateSlot_ = true;
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#overview-section"></a>
  * </h3>
  * <p>
- * The oj-bind-slot element is used inside a composite View as a placeholder for child DOM and is also
- * referred to as a slot. Default markup can be defined if no child DOM is assigned to that particular 
+ * The oj-bind-slot element is used inside a composite View as a placeholder for child DOM and is
+ * a declarative way to define a <a href="CustomElementOverview.html#ce-slots-section">slot</a>.
+ * Default markup can be defined if no child DOM is assigned to that particular
  * slot by adding the markup as children of the slot. An oj-bind-slot element with a name attribute
  * whose value is not the empty string is referred to as a named slot. A slot without a name attribute or one
  * whose name value is the empty string is referred to as the default slot where any composite
  * children without a slot attribute will be moved to.
- * </p> 
- * 
+ * </p>
+ *
  * <h3 id="slotprops-section">
  *   Slot Properties
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#slotprops-section"></a>
@@ -409,7 +414,7 @@ ko.virtualElements.allowedBindings._ojBindTemplateSlot_ = true;
  *  <li>A slot can also also have an index attribute to allow the slot's assigned nodes
  *    to be individually slotted (e.g. in conjunction with an oj-bind-for-each element).</li>
  * </ul>
- * 
+ *
  * <h3 id="nodeprops-section">
  *   Assignable Node Properties
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#nodeprops-section"></a>
@@ -474,7 +479,7 @@ ko.virtualElements.allowedBindings._ojBindTemplateSlot_ = true;
  * <pre class="prettyprint">
  * <code>
  * &lt;component-a>
- *  &lt;div id="outerFoo">  
+ *  &lt;div id="outerFoo">
  *      &lt;div id="A" slot="foo">&lt;/div>
  *      &lt;div id="D" slot="foo">&lt;/div>
  *  &lt;/div>
@@ -665,6 +670,7 @@ ko.virtualElements.allowedBindings._ojBindTemplateSlot_ = true;
  * @ojbindingelement
  * @ojmodule ojcomposite
  * @since 5.1.0
+ * @ojtsignore
  *
  * @classdesc
  * <h3 id="overview-section">
@@ -672,12 +678,13 @@ ko.virtualElements.allowedBindings._ojBindTemplateSlot_ = true;
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#overview-section"></a>
  * </h3>
  * <p>
- * The oj-bind-template-slot element is used inside a composite View as a placeholder for stamped child DOM and is also
- * referred to as a template slot. Similar to oj-bind-slot-elements, the oj-bind-template-slot has fallback content
+ * The oj-bind-template-slot element is used inside a composite View as a placeholder for stamped child DOM and
+ * is a declarative way to define a <a href="CustomElementOverview.html#ce-slots-template-section">template slot</a>.
+ * Similar to oj-bind-slot-elements, the oj-bind-template-slot has fallback content
  * which should be provided in a template node and will be used when the template has no assigned nodes.
  * The 'name' attribute on an oj-bind-template-slot follows the same rules as an oj-bind-slot where a template slot
  * with a name attribute whose value is not the empty string is referred to as a named slot and a template slot
- * without a name attribute or one whose name value is the empty string is referred to as the default slot 
+ * without a name attribute or one whose name value is the empty string is referred to as the default slot
  * where any composite children without a slot attribute will be moved to.
  * </p>
  *
@@ -693,7 +700,7 @@ ko.virtualElements.allowedBindings._ojBindTemplateSlot_ = true;
  *      if it has no assigned nodes. The binding context for the default template is the composite's binding context with the
  *      additional data properties.</li>
  * </ul>
- * 
+ *
  * <h3 id="nodeprops-section">
  *   Assignable Node Properties
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#nodeprops-section"></a>
@@ -710,8 +717,8 @@ ko.virtualElements.allowedBindings._ojBindTemplateSlot_ = true;
  *  <li>If the View does not contain a default slot, nodes assigned to the default slot will not appear in the DOM.</li>
  *  <li>Nodes that are not assigned to a slot will not appear in the DOM.</li>
  * </ul>
- * 
- * 
+ *
+ *
  * <h3 id="bindingcontext-section">
  *   Binding Context
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#bindingcontext-section"></a>
@@ -722,9 +729,9 @@ ko.virtualElements.allowedBindings._ojBindTemplateSlot_ = true;
  *  bindings are applied and are resolved in the application's binding context extended with additional
  *  properties provided by the composite. These additional properties are available on the $current
  *  variable in the application provided template node and should be documented in the composite's
- *  slot metadata.
+ *  <a href="MetadataOverview.html#slots>slot metadata</a>.
  * </p>
- * 
+ *
  * <h3 id="example1-section">
  *   Example #1: Basic Usage
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#example1-section"></a>
@@ -733,10 +740,10 @@ ko.virtualElements.allowedBindings._ojBindTemplateSlot_ = true;
  * <h4>Initial DOM</h4>
  * <pre class="prettyprint">
  * <code>
- * &lt;demo-list data="{{groceryList}}" as="groceryItem" header="Groceries">
- *  &lt;template slot="item">
+ * &lt;demo-list data="{{groceryList}}" header="Groceries">
+ *  &lt;template slot="item" data-oj-as="groceryItem">
  *    &lt;oj-checkboxset>
- *      &lt;oj-option value="bought">&lt;oj-bind-text value='[[groceryItem]]'>&lt;/oj-bind-text>&lt;oj-option>
+ *      &lt;oj-option value="bought">&lt;oj-bind-text value='[[groceryItem.value]]'>&lt;/oj-bind-text>&lt;oj-option>
  *    &lt;/oj-checkboxset>
  *  &lt;/template>
  * &lt;/demo-list>
@@ -759,11 +766,11 @@ ko.virtualElements.allowedBindings._ojBindTemplateSlot_ = true;
  *       &lt;template>
  *         &lt;tr>
  *           &lt;td>
- *             &lt;!-- Template slot for list items with default template -->
- *             &lt;oj-bind-template-slot name="item" data={{$current.data}} as="[[$properties.as]]">
+ *             &lt;!-- Template slot for list items with default template and alias -->
+ *             &lt;oj-bind-template-slot name="item" data={{$current.data}} as="listItem">
  *               &lt;!-- Default template -->
  *               &lt;template>
- *                 &lt;span>&lt;oj-bind-text value='[[$current.data]]'>&lt;/oj-bind-text>&lt;/span>
+ *                 &lt;span>&lt;oj-bind-text value='[[listItem.value]]'>&lt;/oj-bind-text>&lt;/span>
  *               &lt;/template>
  *             &lt;/oj-bind-template-slot>
  *           &lt;/td>
@@ -778,27 +785,29 @@ ko.virtualElements.allowedBindings._ojBindTemplateSlot_ = true;
 
 
 /**
- * An alias for $current that can be referenced inside application provided template DOM.
+ * An optional alias for $current that can be referenced inside the default template DOM. Note
+ * that application $current aliasing should be done with the
+ * <a href="CustomElementOverview.html#ce-slots-template-section">data-oj-as</a> attribute on the
+ * template element.
  * @expose
  * @name as
  * @memberof oj.ojBindTemplateSlot
  * @instance
  * @type {string}
  * @example <caption>Define a slot within a composite View with the name "foo":</caption>
- * &lt;oj-bind-template-slot name="foo" data="[[extraProperties]]" as="[[$properties.as]]">
+ * &lt;oj-bind-template-slot name="foo" data="[[extraProperties]]" as="listItem">
  *   &lt;!-- optional default template content -->
  *   &lt;template>
  *     ...
- *     <oj-bind-text value="[[$current.text]]"></oj-bind-text>
+ *     <oj-bind-text value="[[listItem.value]]"></oj-bind-text>
  *     ...
  *   &lt;/template>
  * &lt;/oj-bind-template-slot>
  */
 
 /**
- * The object containing additional context variables to extend the stamped template nodes' 
- * binding context. These variables will be exposed as variables on $current and the alias if
- * provided by the 'as' attribute.
+ * The object containing additional context variables to extend the stamped template nodes'
+ * binding context. These variables will be exposed as variables on $current and aliases.
  * @expose
  * @name data
  * @memberof oj.ojBindTemplateSlot
@@ -809,7 +818,7 @@ ko.virtualElements.allowedBindings._ojBindTemplateSlot_ = true;
  *   &lt;!-- optional default template content -->
  *   &lt;template>
  *     ...
- *     <oj-bind-text value="[[$current.text]]"></oj-bind-text>
+ *     <oj-bind-text value="[[$current.value]]"></oj-bind-text>
  *     ...
  *   &lt;/template>
  * &lt;/oj-bind-template-slot>

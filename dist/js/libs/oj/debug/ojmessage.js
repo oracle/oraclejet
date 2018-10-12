@@ -4,8 +4,9 @@
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
-define(['ojs/ojcore', 'jquery', 'knockout', 'hammerjs', 'ojs/ojjquery-hammer', 'ojs/ojknockout', 'ojs/ojcomposite', 'ojs/ojanimation', 'ojs/ojbutton', 'ojs/ojvalidation-datetime'], 
-       function(oj, $, ko, Hammer)
+define(['ojs/ojcore', 'jquery', 'knockout', 'ojs/ojcontext', 'ojs/ojthemeutils', 'ojs/ojtranslation', 'hammerjs', 'ojs/ojcomposite', 'ojs/ojcomponentcore', 'ojs/ojanimation', 
+      'ojs/ojvalidation-base', 'ojs/ojlogger', 'ojs/ojjquery-hammer', 'ojs/ojknockout', 'ojs/ojbutton', 'ojs/ojvalidation-datetime'], 
+       function(oj, $, ko, Context, ThemeUtils, Translations,  Hammer, Composite, Components, AnimationUtils, __ValidationBase, Logger)
 {
  
 
@@ -111,6 +112,8 @@ var __oj_message_metadata =
  * All rights reserved.
  */
 
+/* global ko:false, Hammer:false, Promise:false, Components:false, __ValidationBase: false, Logger:false, Translations:false, ThemeUtils:false, Context:false */
+
 /**
  * @ojcomponent oj.ojMessage
  * @since 5.0.0
@@ -215,7 +218,7 @@ var __oj_message_metadata =
  */
 
 // Attributes
-/////////////
+// ///////////
 
 /**
  * <p>Structured data specifying essential information to display a message on the UI.
@@ -561,7 +564,7 @@ var __oj_message_metadata =
  */
 
 // Events
-/////////
+// ///////
 
 /**
  * Triggered after the message is closed through user interaction or due to calling
@@ -673,7 +676,7 @@ var __oj_message_metadata =
  */
 
 // Methods
-//////////
+// ////////
 
 /**
  * Closes the message.
@@ -739,7 +742,7 @@ var __oj_message_metadata =
  */
 
 // Type Defs
-////////////
+// //////////
 
 /**
  * @typedef {Object} oj.ojMessage.Message
@@ -872,8 +875,6 @@ MessageViewModel.prototype._propertyChanged = function (detail) {
 
   // workaround for 
 
-  var message = this._properties.message;
-
   if (subPropertyChanged(detail, 'message', 'autoTimeout')) {
     this._clearAutoClose();
     this._scheduleAutoClose();
@@ -884,31 +885,27 @@ MessageViewModel.prototype._propertyChanged = function (detail) {
     this._unregisterSwipeHandler();
     this._registerSwipeHandler();
   }
-  
-  if (subPropertyChanged(detail, 'message', 'icon'))
-  {
+
+  if (subPropertyChanged(detail, 'message', 'icon')) {
     this.computedIconStyle(this._computeIconStyle());
     this.computedIconClass(this._computeIconClass());
   }
-  
-  if (subPropertyChanged(detail, 'message', 'category'))
-  {
+
+  if (subPropertyChanged(detail, 'message', 'category')) {
     this.computedCategory(this._computeCategory());
   }
-  
+
   // category if unspecified and iconclass are derived from severity, recompute those
-  if (subPropertyChanged(detail, 'message', 'severity'))
-  {
+  if (subPropertyChanged(detail, 'message', 'severity')) {
     this.computedSeverity(this._computeSeverity());
     this.computedCategory(this._computeCategory());
     this.computedIconClass(this._computeIconClass());
   }
-  
-  if (subPropertyChanged(detail, 'message', 'timestamp'))
-  {
+
+  if (subPropertyChanged(detail, 'message', 'timestamp')) {
     this.computedTimestamp(this._computeTimestamp());
   }
-  
+
   if (subPropertyChanged(detail, 'message', 'summary')) {
     this.computedSummary(this._computeSummary());
   }
@@ -916,7 +913,7 @@ MessageViewModel.prototype._propertyChanged = function (detail) {
   if (subPropertyChanged(detail, 'message', 'detail')) {
     this.computedDetail(this._computeDetail());
   }
-  
+
   if (subPropertyChanged(detail, 'translations', 'labelCloseIcon')) {
     this.computedLabelCloseIcon(this._computeLabelCloseIcon());
   }
@@ -972,49 +969,55 @@ MessageViewModel.prototype._isMessageOpen = function () {
 };
 
 MessageViewModel.prototype._closeMessage = function (event) {
-  var mediator = this._operationMediator;
-  // unregister the swipe handler
-  this._unregisterSwipeHandler();
-
-  // if we are pending the open operation, the close will be invoked after the open is done
-  if (mediator.isOperationPending('close', this._closeMessage.bind(this, event))) {
-    return;
-  }
-  mediator.destroy();
-
-  this._clearAutoClose();
-  this._operationMediator = new OperationMediator(this._composite, 'close');
-
   var messageContainerElement = document.getElementById(this._messagesContainerId);
-  var action = 'close';
-  var options = this._getAnimateOptionDefaults(action);
-  oj.AnimationUtils.startAnimation(messageContainerElement, action, options, this._composite)
-    .then(function () {
-      // We will just hide the message container, but not discard it, the ojClose listener
-      // could discard it if needed.
-      $(messageContainerElement).hide();
-      oj.Components.subtreeHidden(messageContainerElement);
 
-      var eventParams = {
-        bubbles: true,
-        cancelable: false,
-        detail: {
-          message: this._properties.message
+  // Possible that the oj-message element may be disconnected/removed while close is in progress,
+  //  guard against this case where messageContainerElement is removed
+  if (messageContainerElement) {
+    var mediator = this._operationMediator;
+    // unregister the swipe handler
+    this._unregisterSwipeHandler();
+
+    // if we are pending the open operation, the close will be invoked after the open is done
+    if (mediator.isOperationPending('close', this._closeMessage.bind(this, event))) {
+      return;
+    }
+    mediator.destroy();
+
+    this._clearAutoClose();
+    this._operationMediator = new OperationMediator(this._composite, 'close');
+
+    var action = 'close';
+    var options = this._getAnimateOptionDefaults(action);
+    // eslint-disable-next-line no-undef
+    AnimationUtils.startAnimation(messageContainerElement, action, options, this._composite)
+      .then(function () {
+        // We will just hide the message container, but not discard it, the ojClose listener
+        // could discard it if needed.
+        $(messageContainerElement).hide();
+        Components.subtreeHidden(messageContainerElement);
+
+        var eventParams = {
+          bubbles: true,
+          cancelable: false,
+          detail: {
+            message: this._properties.message
+          }
+        };
+
+        var closeEvent = new CustomEvent('ojClose', eventParams);
+        if (event) {
+          Object.defineProperty(closeEvent, '_originalEvent', { value: event, writable: false });
         }
-      };
 
-      var closeEvent = new CustomEvent('ojClose', eventParams);
-      if (event) {
-        Object.defineProperty(closeEvent, '_originalEvent', { value: event, writable: false });
-      }
-
-      this._composite.dispatchEvent(closeEvent);
-    }.bind(this));
+        this._composite.dispatchEvent(closeEvent);
+      }.bind(this));
+  }
 };
 
 MessageViewModel.prototype._computeSeverity = function () {
   var message = this._properties.message;
-  
+
   if (oj.StringUtils.isEmptyOrUndefined(message.severity)) {
     return MessageViewModel._getMessageDefault('severity');
   }
@@ -1027,39 +1030,39 @@ MessageViewModel.prototype._computeSeverity = function () {
 
 MessageViewModel.prototype._computeTimestamp = function () {
   var message = this._properties.message;
-  
+
   if (oj.StringUtils.isEmptyOrUndefined(message.timestamp)) {
     return undefined;
-  };
-  
+  }
+
   try {
     // get the default converter, use default format as in UX specs
-    var converter = oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME)
-                      .createConverter({ pattern: 'MM/dd/yy, hh:mm a' });
-    
+    var converter = __ValidationBase.Validation.converterFactory(
+      oj.ConverterFactory.CONVERTER_TYPE_DATETIME)
+      .createConverter({ pattern: 'MM/dd/yy, hh:mm a' });
+
     var formattedTimestamp = converter.format(message.timestamp);
-    
+
     // not so-clean implementation about how we avoid displaying date part when it is same date,
     //  should be solved better when we provide API to set custom converter in near future
     if (this._isDateToday(message.timestamp)) {
       formattedTimestamp = formattedTimestamp.split(', ')[1];
-    };
-    
+    }
+
     return formattedTimestamp;
-  } 
-  catch (e) {
+  } catch (e) {
     // expect oj.ConverterError if supplied value is not valid
-    oj.Logger.info(["JET oj-message id='", MessageViewModel._toSelector(this._composite),
+    Logger.info(["JET oj-message id='", MessageViewModel._toSelector(this._composite),
       "': failed to parse or format the supplied value to message.timestamp='",
       message.timestamp, "'."].join(''));
-    
+
     return undefined;
-  };
+  }
 };
 
 MessageViewModel.prototype._isDateToday = function (isoDate) {
   var todayDate = new Date();
-  var suppliedDate = oj.IntlConverterUtils.isoToLocalDate(isoDate);
+  var suppliedDate = __ValidationBase.IntlConverterUtils.isoToLocalDate(isoDate);
 
   return todayDate.getUTCFullYear() === suppliedDate.getUTCFullYear() &&
          todayDate.getUTCMonth() === suppliedDate.getUTCMonth() &&
@@ -1086,7 +1089,7 @@ MessageViewModel.prototype._computeCategory = function () {
     //  2. Localized value obtained from the bundle
     // However custom element bridge is not doing #2 (discussing with architects), fine to fetch
     //  from bundle in lieu of #2.
-    translatedCategory = oj.Translations.getComponentTranslations('oj-ojMessage')
+    translatedCategory = Translations.getComponentTranslations('oj-ojMessage')
                           .categories[severity];
   }
 
@@ -1095,15 +1098,15 @@ MessageViewModel.prototype._computeCategory = function () {
 
 MessageViewModel.prototype._computeAutoTimeout = function () {
   var message = this._properties.message;
-  
+
   if (isNaN(message.autoTimeout)) {
     return MessageViewModel._getMessageDefault('autoTimeout');
-  };
-  
+  }
+
   if (message.autoTimeout === 0) {
     return this._getThemedAutoTimeoutDefault();
-  };
-  
+  }
+
   return message.autoTimeout;
 };
 
@@ -1112,24 +1115,24 @@ MessageViewModel.prototype._computeIconStyle = function () {
 
   if (oj.StringUtils.isEmptyOrUndefined(message.icon)) {
     return undefined;
-  };
-  
+  }
+
   return ["url('", message.icon, "') no-repeat"].join('');
 };
 
 MessageViewModel.prototype._computeIconClass = function () {
   var message = this._properties.message;
-  
+
   if (!oj.StringUtils.isEmptyOrUndefined(message.icon)) {
     return undefined;
-  };
-  
+  }
+
   var computedSeverity = this._computeSeverity();
 
   if (computedSeverity === 'none') {
     return undefined;
-  };
-  
+  }
+
   var selectors = ['oj-component-icon', 'oj-message-status-icon'];
   selectors.push(['oj', 'message', computedSeverity, 'icon'].join('-'));
   return selectors.join(' ');
@@ -1147,42 +1150,42 @@ MessageViewModel.prototype._computeCloseAffordance = function () {
 
 MessageViewModel.prototype._computeSound = function () {
   var message = this._properties.message;
-  
+
   if (message.sound === undefined) {
     return MessageViewModel._getMessageDefault('sound');
-  };
-  
+  }
+
   return message.sound;
 };
 
 MessageViewModel.prototype._computeLabelCloseIcon = function () {
   var translations = this._properties.translations;
-  
+
   if (oj.StringUtils.isEmptyOrUndefined(translations.labelCloseIcon)) {
     // see comments in _computeCategory() that applies here as well
-    return oj.Translations.getTranslatedString('oj-ojMessage.labelCloseIcon');
-  };
-  
+    return Translations.getTranslatedString('oj-ojMessage.labelCloseIcon');
+  }
+
   return translations.labelCloseIcon;
 };
 
 MessageViewModel.prototype._computeSummary = function () {
   var message = this._properties.message;
-  
+
   if (oj.StringUtils.isEmptyOrUndefined(message.summary)) {
     return undefined;
-  };
-  
+  }
+
   return message.summary;
 };
 
 MessageViewModel.prototype._computeDetail = function () {
   var message = this._properties.message;
-  
+
   if (oj.StringUtils.isEmptyOrUndefined(message.detail)) {
     return undefined;
-  };
-  
+  }
+
   return message.detail;
 };
 
@@ -1198,43 +1201,49 @@ MessageViewModel.prototype._openMessage = function () {
   // ojBeforeOpen, ojOpen and ojAnimateStart. These events are  queued by the message open
   // besides resolving :id bindings defining its content.
   Promise.resolve().then(function () {
-    // notify the oj-messages to show the messages container so initial animation
-    // will be seen.
-    var eventParams = {
-      bubbles: true,
-      cancelable: false,
-      detail: {
-        message: this._properties.message
-      }
-    };
-
-    this._composite.dispatchEvent(new CustomEvent('ojBeforeOpen', eventParams));
-
     var messageContainerElement = document.getElementById(this._messagesContainerId);
-    var action = 'open';
-    var options = this._getAnimateOptionDefaults(action);
-    oj.AnimationUtils.startAnimation(messageContainerElement, action, options, this._composite)
-      .then(function () {
-        eventParams = {
-          bubbles: true,
-          cancelable: false,
-          detail: {
-            message: this._properties.message
-          }
-        };
-        
-        var computedSound = this._computeSound();
-        
-        if (computedSound !== 'none') {
-          // Initialize the AudioContext if the user agent supports Web Audio API
-          this._initAudioContext();
-          this._playSound(computedSound);
+
+    // Possible that the oj-message element may be disconnected/removed while open is in progress,
+    //  guard against this case where messageContainerElement is removed
+    if (messageContainerElement) {
+      // notify the oj-messages to show the messages container so initial animation
+      // will be seen.
+      var eventParams = {
+        bubbles: true,
+        cancelable: false,
+        detail: {
+          message: this._properties.message
         }
-        // register the swipe handler for touch devices
-        this._registerSwipeHandler();
-        this._scheduleAutoClose();
-        this._composite.dispatchEvent(new CustomEvent('ojOpen', eventParams));
-      }.bind(this));
+      };
+
+      this._composite.dispatchEvent(new CustomEvent('ojBeforeOpen', eventParams));
+
+      var action = 'open';
+      var options = this._getAnimateOptionDefaults(action);
+      // eslint-disable-next-line no-undef
+      AnimationUtils.startAnimation(messageContainerElement, action, options, this._composite)
+        .then(function () {
+          eventParams = {
+            bubbles: true,
+            cancelable: false,
+            detail: {
+              message: this._properties.message
+            }
+          };
+
+          var computedSound = this._computeSound();
+
+          if (computedSound !== 'none') {
+            // Initialize the AudioContext if the user agent supports Web Audio API
+            this._initAudioContext();
+            this._playSound(computedSound);
+          }
+          // register the swipe handler for touch devices
+          this._registerSwipeHandler();
+          this._scheduleAutoClose();
+          this._composite.dispatchEvent(new CustomEvent('ojOpen', eventParams));
+        }.bind(this));
+    }
   }.bind(this));
 };
 
@@ -1251,7 +1260,6 @@ MessageViewModel.prototype._handleKeydown = function (event) {
 };
 
 MessageViewModel.prototype._playSound = function (sound) {
-
   // Custom URL was specified for the sound, using <audio> element is simple and best for this case.
   if (sound !== 'defaults') {
     var audio = document.createElement('AUDIO');
@@ -1259,15 +1267,28 @@ MessageViewModel.prototype._playSound = function (sound) {
 
     // Handle any error due to possible invalid URL.
     audio.addEventListener('error', function () {
-      oj.Logger.info(["JET oj-message id='", MessageViewModel._toSelector(this._composite),
+      Logger.info(["JET oj-message id='", MessageViewModel._toSelector(this._composite),
         "': failed to load or play media file for URL in property message.sound='",
         sound, "'."].join(''));
     }.bind(this));
 
-    audio.play();
+    var promise = audio.play();
+
+    if (promise !== undefined) {
+      promise.then(function () {
+        // All is well with autoplay
+      }).catch(function (error) {
+        // Autoplay failed. Possible causes 1. Browser prevents auto-play unless certain rules are
+        //  met (which varies by browsers), 2. The audio file resource does not exist or cannot be
+        //  loaded.
+        Logger.info(["JET oj-message id='", MessageViewModel._toSelector(this._composite),
+          "': failed to load or play specified sound: '", sound,
+          "': error details: '", error].join(''));
+      }.bind(this));
+    }
   } else if (window.audioContext === undefined) {
     // User agent does not support web audio API
-    oj.Logger.info(["JET oj-message id='", MessageViewModel._toSelector(this._composite),
+    Logger.info(["JET oj-message id='", MessageViewModel._toSelector(this._composite),
       "': failed to load or play default sound for message because user agent does\n",
       "not support Web Audio API'"].join(''));
   } else {
@@ -1307,7 +1328,7 @@ MessageViewModel.prototype._createObservables = function () {
   // this["computedCategory"] = ko.pureComputed(this._computeCategory.bind(this), this);
   // this["computedLabelCloseIcon"] = ko.pureComputed(this._computeLabelCloseIcon.bind(this), this);
   // this["computedCloseAffordance"] = ko.pureComputed(this._computeCloseAffordance.bind(this), this);
-  // workaround for  
+  // workaround for 
 
   this.hasCloseAffordance = ko.observable(this._computeCloseAffordance() === 'defaults');
   this.computedIconStyle = ko.observable(this._computeIconStyle());
@@ -1339,7 +1360,7 @@ MessageViewModel._DEFAULTS = {
 };
 
 MessageViewModel.prototype._getThemedAutoTimeoutDefault = function () {
-  var themedDefaults = oj.ThemeUtils.parseJSONFromFontFamily('oj-message-option-defaults');
+  var themedDefaults = ThemeUtils.parseJSONFromFontFamily('oj-message-option-defaults');
   if (themedDefaults && themedDefaults.autoTimeout) {
     return themedDefaults.autoTimeout;
   }
@@ -1412,7 +1433,7 @@ OperationMediator.prototype._init = function () {
 
   // Add a busy state for the pending operation.  The busy state resolver will
   // be invoked when the resolved queue is delivered (operation completes).
-  var busyContext = oj.Context.getContext(this._element).getBusyContext();
+  var busyContext = Context.getContext(this._element).getBusyContext();
   var options = { description: this._getBusyStateDescription.bind(this, this._element,
     this._operation) };
   var resolve = busyContext.addBusyState(options);
@@ -1530,13 +1551,13 @@ OperationMediator.prototype.isOperationPending = function (operation, callback) 
   var pendingOperation = this.getPendingOperation();
   if (operation === pendingOperation) {
     // Same request is already pending. Silently fail.
-    oj.Logger.info(["An oj-message id='", MessageViewModel._toSelector(this._element),
+    Logger.info(["An oj-message id='", MessageViewModel._toSelector(this._element),
       "' invoked a '", operation,
       "' operation while pending animation of the same type of operation. ",
       'The second request will be ignored.'].join(''));
     isPending = true;
   } else if (pendingOperation !== 'none') {
-    oj.Logger.info(["An oj-message id='", MessageViewModel._toSelector(this._element),
+    Logger.info(["An oj-message id='", MessageViewModel._toSelector(this._element),
       "' invoked a '", operation,
       "' operation while pending animation of a '", pendingOperation,
       "' operation. The second request will be invoked after the pending ",
@@ -1551,11 +1572,13 @@ OperationMediator.prototype.isOperationPending = function (operation, callback) 
 };
 
 /* global __oj_message_metadata */
-oj.Composite.register('oj-message',
+// eslint-disable-next-line no-undef
+Composite.register('oj-message',
   {
     view: _MESSAGE_VIEW,
     viewModel: MessageViewModel,
     metadata: __oj_message_metadata
   });
+
 
 });

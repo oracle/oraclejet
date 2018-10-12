@@ -1,23 +1,26 @@
 {
   "name": "oj-row-expander",
-  "version": "5.2.0",
-  "jetVersion": "5.2.0",
+  "version": "6.0.0",
+  "jetVersion": "6.0.0",
   "displayName": "Row Expander",
   "type": "core",
   "description": "Enable hierarchical data to be displayed in a JET Table and JET DataGrid.",
+  "help": "https://docs.oracle.com/en/middleware/jet/6/reference-api/oj.ojRowExpander.html",
   "properties": {
     "context": {
       "description": "The context object obtained from the column renderer (Table) or cell renderer (DataGrid)",
       "type": "object",
       "displayName": "Context",
-      "value": null
+      "value": null,
+      "help": "context"
     },
     "expanded": {
       "description": "Specifies if the RowExpander is expanded.",
       "type": "boolean|null",
       "displayName": "Expanded",
       "value": null,
-      "writeback": true
+      "writeback": true,
+      "help": "expanded"
     },
     "translations": {
       "description": "A collection of translated resources from the translation bundle, or null if this component has no resources.",
@@ -25,46 +28,55 @@
       "displayName": "Translations",
       "value": {},
       "translatable": true,
+      "help": "translations",
       "properties": {
         "accessibleLevelDescription": {
           "description": "Provides properties to customize the accessible context level of the expanded or collapsed row\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "Accessible Level Description"
+          "displayName": "Accessible Level Description",
+          "help": "translations.accessibleLevelDescription"
         },
         "accessibleRowCollapsed": {
           "description": "Provides properties to customize the accessible context when a row is collapsed\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "Accessible Row Collapsed"
+          "displayName": "Accessible Row Collapsed",
+          "help": "translations.accessibleRowCollapsed"
         },
         "accessibleRowDescription": {
           "description": "Provides properties to customize the accessible context level and index of the row\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "Accessible Row Description"
+          "displayName": "Accessible Row Description",
+          "help": "translations.accessibleRowDescription"
         },
         "accessibleRowExpanded": {
           "description": "Provides properties to customize the accessible context when a row is expanded\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "Accessible Row Expanded"
+          "displayName": "Accessible Row Expanded",
+          "help": "translations.accessibleRowExpanded"
         },
         "accessibleStateCollapsed": {
           "description": "Provides properties to customize the accessible state of a collapsed row\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "Accessible State Collapsed"
+          "displayName": "Accessible State Collapsed",
+          "help": "translations.accessibleStateCollapsed"
         },
         "accessibleStateExpanded": {
           "description": "Provides properties to customize the accessible state of an expanded row\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "Accessible State Expanded"
+          "displayName": "Accessible State Expanded",
+          "help": "translations.accessibleStateExpanded"
         }
       }
     }
   },
   "methods": {
     "refresh": {
-      "description": "Redraw the RowExpander element."
+      "description": "Redraw the RowExpander element.",
+      "help": "refresh"
     },
     "setProperty": {
-      "description": "Sets a property or a single subproperty for complex properties and notifies the component\nof the change, triggering a [property]Changed event.",
+      "description": "Sets a property or a single subproperty for complex properties and notifies the component of the change, triggering a [property]Changed event.",
+      "help": "setProperty",
       "params": [
         {
           "name": "property",
@@ -81,6 +93,7 @@
     },
     "getProperty": {
       "description": "Retrieves a value for a property or a single subproperty for complex properties.",
+      "help": "getProperty",
       "params": [
         {
           "name": "property",
@@ -92,6 +105,7 @@
     },
     "setProperties": {
       "description": "Performs a batch set of properties.",
+      "help": "setProperties",
       "params": [
         {
           "name": "properties",
@@ -105,6 +119,7 @@
   "events": {
     "ojExpand": {
       "description": "Triggered when a expand is performed on the RowExpander",
+      "help": "expand",
       "detail": {
         "rowKey": {
           "description": "the key of the expanded row",
@@ -114,6 +129,7 @@
     },
     "ojCollapse": {
       "description": "Triggered when a collapse is performed on the RowExpander",
+      "help": "collapse",
       "detail": {
         "rowKey": {
           "description": "the key of the collapsed row",
@@ -124,7 +140,9 @@
   },
   "slots": {
     "contextMenu": {
-      "description": "The contextMenu slot is set on the oj-menu within this element. \nThis is used to designate the JET Menu that this component should launch as a context menu on right-click, Shift-F10, Press & Hold, or component-specific gesture. \nIf specified, the browser's native context menu will be replaced by the JET Menu specified in this slot.\n\nThe application can register a listener for the Menu's ojBeforeOpen event. The listener can cancel the launch via event.preventDefault(), \nor it can customize the menu contents by editing the menu DOM directly, and then calling refresh() on the Menu.\n\nTo help determine whether it's appropriate to cancel the launch or customize the menu, the ojBeforeOpen listener can use component API's to determine which \ntable cell, chart item, etc., is the target of the context menu. See the JSDoc and demos of the individual components for details. \n\nKeep in mind that any such logic must work whether the context menu was launched via right-click, Shift-F10, Press & Hold, or component-specific touch gesture."
+      "description": "The contextMenu slot is set on the <oj-menu> instance within this element. It designates the JET Menu that this component should launch as a context menu.",
+      "maxItems": 1,
+      "help": "contextMenu"
     }
   }
 }

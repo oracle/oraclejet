@@ -1,0 +1,85 @@
+// Copyright (c) 2014, 2018, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+
+// ----- start dependencies ---------
+
+// set up include variables before importing dependencies
+@if $includeRadiosetClasses != false {
+  $includePopupClasses:             true !global;
+  $includeLabelClasses:             true !global;
+  $includeMessagingClasses:         true !global;
+  $includeFormControlCommonClasses: true !global;
+  $includeIconClasses: true !global;
+}
+
+// import dependencies
+@import "../../common/helpers/oj.common.helpers";
+@import "oj.alta.windows.messaging";
+@import "oj.alta.windows.popup";
+@import "oj.alta.windows.formcontrol.label";
+@import "oj.alta.windows.formcontrol.common";
+@import "oj.alta.windows.icons";
+
+// ----- end dependencies ---------
+
+
+// import classes defined in the common directory
+@import "../../common/widgets/oj.common.formcontrol.radioset";
+
+
+@if $includeRadiosetClasses != false {
+  @include module-include-once("alta.windows.radioset") {
+
+
+    @if($radioCheckboxRenderInputAs == 'backgroundImage') {
+
+      // TODO Bug 25897533: Clean up after sprite tooling is implemented
+      @if ($radioCheckboxImageDir)
+      {
+        // single checkbox disabled selected icon is different on Windows theme for single checkbox.
+        // it's gray both unselected/selected for single checkbox, 
+        // and gray/blueish for unselected/selected for multiple checkboxes.
+        .oj-checkboxset-single .oj-choice-row.oj-disabled.oj-selected .oj-radiocheckbox-icon,
+        .oj-checkboxset-single .oj-choice-item.oj-disabled.oj-selected .oj-radiocheckbox-icon {
+          background-image: oj-radiocheckbox-image-url("cbsingle_dis_selected.svg");
+        }
+        
+        // not all themes have a hover icon, and if I put this in common, the image will flicker on
+        // hover even though the image contents are the same, and I don't want this to happen.
+        // single checkbox images
+        // there is a hover icon for single checkboxes
+        .oj-checkboxset.oj-checkboxset-single .oj-hover:not(.oj-active) .oj-radiocheckbox-icon {
+          background-image: oj-radiocheckbox-image-url("cbsingle_hover_unselected.svg");
+        }
+
+        .oj-checkboxset.oj-checkboxset-single .oj-hover.oj-selected:not(.oj-active) .oj-radiocheckbox-icon {
+          background-image: oj-radiocheckbox-image-url("cbsingle_hover_selected.svg");
+        }
+      }
+      @else
+      {
+        // single checkbox disabled selected icon is different on Windows theme for single checkbox.
+        // it's gray both unselected/selected for single checkbox,
+        // and gray/blueish for unselected/selected for multiple checkboxes.
+        .oj-checkboxset-single .oj-choice-row.oj-disabled.oj-selected .oj-radiocheckbox-icon,
+        .oj-checkboxset-single .oj-choice-item.oj-disabled.oj-selected .oj-radiocheckbox-icon {
+          @extend .oj-fwk-icon-cbsingle-dis-selected;
+        }
+  
+        // not all themes have a hover icon, and if I put this in common, the image will flicker on
+        // hover even though the image contents are the same, and I don't want this to happen.
+        // single checkbox images
+        // there is a hover icon for single checkboxes
+        .oj-checkboxset.oj-checkboxset-single .oj-hover:not(.oj-active) .oj-radiocheckbox-icon {
+          @extend .oj-fwk-icon-cbsingle-hover-unselected;
+        }
+  
+        .oj-checkboxset.oj-checkboxset-single .oj-hover.oj-selected:not(.oj-active) .oj-radiocheckbox-icon {
+          @extend .oj-fwk-icon-cbsingle-hover-selected;
+        }
+      }
+
+    }
+  }
+}

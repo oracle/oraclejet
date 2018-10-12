@@ -15,7 +15,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojdatasource-common'], function(oj, $)
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
  */
- 
+
  /**
  * @class oj.ArrayCellSet
  * @classdesc A CellSet represents a collection of cells.  The CellSet is an object returned by the success callback
@@ -31,15 +31,14 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojdatasource-common'], function(oj, $)
  * @export
  * @hideconstructor
  * @ojtsignore
- * @see oj.ArrayDataGridDataSource 
+ * @see oj.ArrayDataGridDataSource
  */
-oj.ArrayCellSet = function(startRow, endRow, startColumn, endColumn, callback)
-{
-    this.m_startRow = startRow;
-    this.m_endRow = endRow;
-    this.m_startColumn = startColumn;
-    this.m_endColumn = endColumn;
-    this.m_callback = callback;
+oj.ArrayCellSet = function (startRow, endRow, startColumn, endColumn, callback) {
+  this.m_startRow = startRow;
+  this.m_endRow = endRow;
+  this.m_startColumn = startColumn;
+  this.m_endColumn = endColumn;
+  this.m_callback = callback;
 };
 
 /**
@@ -54,41 +53,43 @@ oj.ArrayCellSet = function(startRow, endRow, startColumn, endColumn, callback)
  * @memberof oj.ArrayCellSet
  * @method
  * @instance
- * @memberof oj.ArrayCellSet 
+ * @memberof oj.ArrayCellSet
  */
-oj.ArrayCellSet.prototype.getData = function(indexes)
-{
-    var self, returnObj, rowIndex, columnIndex;
-    self = this;
-    rowIndex = indexes['row'];
-    columnIndex = indexes['column'];
-    returnObj = {};
-    Object.defineProperty(returnObj, 'data', {
-        enumerable: true,
-        get: function(){return self.m_callback._getCellData(rowIndex, columnIndex)},
-        set: function (newValue) { self.m_callback._setCellData(rowIndex, columnIndex, newValue)}
-    });
-    return returnObj;
+oj.ArrayCellSet.prototype.getData = function (indexes) {
+  var self = this;
+  var rowIndex = indexes.row;
+  var columnIndex = indexes.column;
+  var returnObj = {};
+
+  Object.defineProperty(returnObj, 'data', {
+    enumerable: true,
+    get: function () {
+      return self.m_callback._getCellData(rowIndex, columnIndex);
+    },
+    set: function (newValue) {
+      self.m_callback._setCellData(rowIndex, columnIndex, newValue);
+    }
+  });
+  return returnObj;
 };
 
 /**
- * Gets the metadata of the specified index.  An error is throw when 1) the range is not yet available 
- * 2) the index specified is out of bounds. 
- * @param {Object} indexes the index of each axis in which we want to retrieve the metadata from.  
+ * Gets the metadata of the specified index.  An error is throw when 1) the range is not yet available
+ * 2) the index specified is out of bounds.
+ * @param {Object} indexes the index of each axis in which we want to retrieve the metadata from.
  * @param {number} indexes.row the index of the row axis.
  * @param {number} indexes.column the index of the column axis.
- * @return {Object} the metadata object for the specific index.  The metadata that the DataGrid supports are: 
+ * @return {Object} the metadata object for the specific index.  The metadata that the DataGrid supports are:
  *         1) keys - the key (of each axis) of the cell.
  * @export
  * @expose
  * @memberof oj.ArrayCellSet
  * @method
  * @instance
- * @memberof oj.ArrayCellSet 
+ * @memberof oj.ArrayCellSet
  */
-oj.ArrayCellSet.prototype.getMetadata = function(indexes)
-{
-    return this.m_callback._getCellMetadata(indexes['row'], indexes['column']);
+oj.ArrayCellSet.prototype.getMetadata = function (indexes) {
+  return this.m_callback._getCellMetadata(indexes.row, indexes.column);
 };
 
 /**
@@ -100,20 +101,16 @@ oj.ArrayCellSet.prototype.getMetadata = function(indexes)
  * @memberof oj.ArrayCellSet
  * @method
  * @instance
- * @memberof oj.ArrayCellSet 
+ * @memberof oj.ArrayCellSet
  */
-oj.ArrayCellSet.prototype.getStart = function(axis)
-{
-    if (axis == "row")
-    {
-        return this.m_startRow;
-    }
-    else if (axis == "column")
-    {
-        return this.m_startColumn;
-    }
+oj.ArrayCellSet.prototype.getStart = function (axis) {
+  if (axis === 'row') {
+    return this.m_startRow;
+  } else if (axis === 'column') {
+    return this.m_startColumn;
+  }
 
-    return -1;
+  return -1;
 };
 
 /**
@@ -125,28 +122,25 @@ oj.ArrayCellSet.prototype.getStart = function(axis)
  * @memberof oj.ArrayCellSet
  * @method
  * @instance
- * @memberof oj.ArrayCellSet 
+ * @memberof oj.ArrayCellSet
  */
-oj.ArrayCellSet.prototype.getCount = function(axis)
-{
-    if (axis === "row")
-    {
-        return Math.max(0, this.m_endRow - this.m_startRow);
-    }
+oj.ArrayCellSet.prototype.getCount = function (axis) {
+  if (axis === 'row') {
+    return Math.max(0, this.m_endRow - this.m_startRow);
+  }
 
-    if (axis === "column")
-    {
-        return Math.max(0, this.m_endColumn - this.m_startColumn);
-    }
+  if (axis === 'column') {
+    return Math.max(0, this.m_endColumn - this.m_startColumn);
+  }
 
-    return 0;
+  return 0;
 };
 
 /**
  * Gets the extent of a particular row/column index within the context of the cellSet.
  * Extent is defined as the number of indexes along the appropriate axis spanned by the cell.
  * If the extent extends beyond the start and end of the requested cell range the extent should be trimmed to the edge of the requested cell range and the object for {'more': {'before', 'after'}} should have the value appropriate boolean set.
- * @param {Object} indexes the index of each axis in which we want to retrieve the data from. 
+ * @param {Object} indexes the index of each axis in which we want to retrieve the data from.
  * @param {number} indexes.row the index of the row axis.
  * @param {number} indexes.column the index of the column axis.
  * @return {Object} an object containing two properties row and column. Each of those properties has two sub properties:
@@ -169,13 +163,15 @@ oj.ArrayCellSet.prototype.getCount = function(axis)
  * @memberof oj.ArrayCellSet
  * @since 4.0.0
  */
-oj.ArrayCellSet.prototype.getExtent = function(indexes)
-{
-    return {'row': {'extent':1, 'more': {'before':false, 'after':false}},
-            'column': {'extent':1, 'more': {'before':false, 'after':false}}};
+// eslint-disable-next-line no-unused-vars
+oj.ArrayCellSet.prototype.getExtent = function (indexes) {
+  return {
+    row: { extent: 1, more: { before: false, after: false } },
+    column: { extent: 1, more: { before: false, after: false } }
+  };
 };
 
-////// testing methods to get properties //////
+// //// testing methods to get properties //////
 /**
  * Gets the start row property for testing
  * @return {number} the start row
@@ -185,9 +181,8 @@ oj.ArrayCellSet.prototype.getExtent = function(indexes)
  * @instance
  * @memberof oj.ArrayCellSet
  */
-oj.ArrayCellSet.prototype.getStartRow = function()
-{
-    return this.m_startRow;
+oj.ArrayCellSet.prototype.getStartRow = function () {
+  return this.m_startRow;
 };
 
 /**
@@ -199,14 +194,16 @@ oj.ArrayCellSet.prototype.getStartRow = function()
  * @instance
  * @memberof oj.ArrayCellSet
  */
-oj.ArrayCellSet.prototype.getStartColumn = function()
-{
-    return this.m_startColumn;
+oj.ArrayCellSet.prototype.getStartColumn = function () {
+  return this.m_startColumn;
 };
+
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
  */
+
+/* global Promise:false */
 
 /**
  * @class oj.ArrayDataGridDataSource
@@ -228,34 +225,30 @@ oj.ArrayCellSet.prototype.getStartColumn = function()
  * @extends oj.DataGridDataSource
  * @ojtsignore
  */
-oj.ArrayDataGridDataSource = function(data, options)
-{
-    var errSummary, errDetail;
-    if (!(data instanceof Array) &&
-            (typeof (data) != 'function' &&
-                    typeof (data.subscribe) != 'function'))
-    {
-        // we only support Array or ko.observableArray. To
-        // check for observableArray, we can't do instanceof check because it's
-        // a function. So we just check if it contains a subscribe function.
-        errSummary = '_ERR_DATA_INVALID_TYPE_SUMMARY';
-        errDetail = '_ERR_DATA_INVALID_TYPE_DETAIL';
-        throw new Error(errSummary + '\n' + errDetail);
-    }
+oj.ArrayDataGridDataSource = function (data, options) {
+  if (!(data instanceof Array) &&
+      (typeof (data) !== 'function' &&
+       typeof (data.subscribe) !== 'function')) {
+    // we only support Array or ko.observableArray. To
+    // check for observableArray, we can't do instanceof check because it's
+    // a function. So we just check if it contains a subscribe function.
+    var errSummary = '_ERR_DATA_INVALID_TYPE_SUMMARY';
+    var errDetail = '_ERR_DATA_INVALID_TYPE_DETAIL';
+    throw new Error(errSummary + '\n' + errDetail);
+  }
 
-    this.rowHeaderKey = this._getRowHeaderFromOptions(options);
+  this.rowHeaderKey = this._getRowHeaderFromOptions(options);
 
-    if (options != null)
-    {
-        // undefined if no row header, 'm_defaultIndex' if indexed, other strings keys, numbers index of array
-        this.columns = options['columns'];
-        this['sortCriteria'] = options['initialSort'];
-    }
-    oj.ArrayDataGridDataSource.superclass.constructor.call(this, data);
+  if (options != null) {
+    // undefined if no row header, 'm_defaultIndex' if indexed, other strings keys, numbers index of array
+    this.columns = options.columns;
+    this.sortCriteria = options.initialSort;
+  }
+  oj.ArrayDataGridDataSource.superclass.constructor.call(this, data);
 };
 
 // Subclass from oj.DataGridDataSource
-oj.Object.createSubclass(oj.ArrayDataGridDataSource, oj.DataGridDataSource, "oj.ArrayDataGridDataSource");
+oj.Object.createSubclass(oj.ArrayDataGridDataSource, oj.DataGridDataSource, 'oj.ArrayDataGridDataSource');
 
 /**
  * Initial the array based data source.
@@ -264,23 +257,20 @@ oj.Object.createSubclass(oj.ArrayDataGridDataSource, oj.DataGridDataSource, "oj.
  * @override
  * @protected
  */
-oj.ArrayDataGridDataSource.prototype.Init = function()
-{
-    // suck out the column definition from data
-    if (this.columns == null)
-    {
-        this.columns = this._getColumnsForScaffolding(this.getDataArray());
-    }
-    this._initializeRowKeys();
+oj.ArrayDataGridDataSource.prototype.Init = function () {
+  // suck out the column definition from data
+  if (this.columns == null) {
+    this.columns = this._getColumnsForScaffolding(this.getDataArray());
+  }
+  this._initializeRowKeys();
 
-    //if the data is an observable array subscribe to array change notifications
-    if (typeof (this.data) == 'function')
-    {
-        this.data['subscribe'](this._subscribe.bind(this), null, 'arrayChange');
-    }
+  // if the data is an observable array subscribe to array change notifications
+  if (typeof (this.data) === 'function') {
+    this.data.subscribe(this._subscribe.bind(this), null, 'arrayChange');
+  }
 
-    // call super
-    oj.ArrayDataGridDataSource.superclass.Init.call(this);
+  // call super
+  oj.ArrayDataGridDataSource.superclass.Init.call(this);
 };
 
 /**
@@ -294,7 +284,7 @@ oj.ArrayDataGridDataSource.prototype.comparator = null;
 
 /**
  * @export
- * 
+ *
  * @type {Object}
  * @property {string} axis the sort axis valid values are "column", "row"
  * @property {string|number} key The key that identifies which field to sort
@@ -312,33 +302,24 @@ oj.ArrayDataGridDataSource.prototype.sortCriteria = null;
  * @private
  * @memberof oj.ArrayDataGridDataSource
  */
-oj.ArrayDataGridDataSource.prototype._getRowHeaderFromOptions = function(options)
-{
-    if (options != null && options['rowHeader'] != null)
-    {
-        var option = options['rowHeader'];
-        if (typeof option === 'object')
-        {
-            if (option['default'] != null)
-            {
-                if (option['default'] == 'none')
-                {
-                    return undefined;
-                }
-                else if (option['default'] == 'index')
-                {
-                    return 'm_defaultIndex';
-                }
-            }
+oj.ArrayDataGridDataSource.prototype._getRowHeaderFromOptions = function (options) {
+  if (options != null && options.rowHeader != null) {
+    var option = options.rowHeader;
+    if (typeof option === 'object') {
+      if (option.default != null) {
+        if (option.default === 'none') {
+          return undefined;
+        } else if (option.default === 'index') {
+          return 'm_defaultIndex';
         }
-        else if (option != null)
-        {
-            return option;
-        }
+      }
+    } else if (option != null) {
+      return option;
     }
+  }
 
-    // nothing set means indexed headers
-    return 'm_defaultIndex';
+  // nothing set means indexed headers
+  return 'm_defaultIndex';
 };
 
 /**
@@ -346,15 +327,13 @@ oj.ArrayDataGridDataSource.prototype._getRowHeaderFromOptions = function(options
  * @private
  * @memberof oj.ArrayDataGridDataSource
  */
-oj.ArrayDataGridDataSource.prototype._initializeRowKeys = function()
-{
-    var data;
-    data = this.getDataArray();
-    for (this.lastKey = 0; this.lastKey < data.length; this.lastKey += 1)
-    {
-        //inject the row key into the object
-        data[this.lastKey]['ojKey'] = this.lastKey.toString();
-    }
+oj.ArrayDataGridDataSource.prototype._initializeRowKeys = function () {
+  var data;
+  data = this.getDataArray();
+  for (this.lastKey = 0; this.lastKey < data.length; this.lastKey += 1) {
+    // inject the row key into the object
+    data[this.lastKey].ojKey = this.lastKey.toString();
+  }
 };
 
 /**
@@ -365,27 +344,21 @@ oj.ArrayDataGridDataSource.prototype._initializeRowKeys = function()
  * @private
  * @memberof oj.ArrayDataGridDataSource
  */
-oj.ArrayDataGridDataSource.prototype._getColumnsForScaffolding = function(data)
-{
-    var propertyName, columns;
-    if ((typeof data.length !== 'number') || data.length === 0)
-    {
-        return [];
-    }
+oj.ArrayDataGridDataSource.prototype._getColumnsForScaffolding = function (data) {
+  if ((typeof data.length !== 'number') || data.length === 0) {
+    return [];
+  }
 
-    columns = [];
-    for (propertyName in data[0])
-    {
-        if (data[0].hasOwnProperty(propertyName))
-        {
-            if (!(this.rowHeaderKey != undefined && propertyName == this.rowHeaderKey))
-            {
-                columns.push(propertyName);
-            }
-        }
+  var columns = [];
+  var propertyNames = Object.keys(data[0]);
+  for (var i = 0; i < propertyNames.length; i++) {
+    var propertyName = propertyNames[i];
+    if (!(this.rowHeaderKey !== undefined && propertyName === this.rowHeaderKey)) {
+      columns.push(propertyName);
     }
+  }
 
-    return columns;
+  return columns;
 };
 
 /**
@@ -396,37 +369,34 @@ oj.ArrayDataGridDataSource.prototype._getColumnsForScaffolding = function(data)
  * @export
  * @method
  * @instance
- * @memberof oj.ArrayDataGridDataSource 
+ * @memberof oj.ArrayDataGridDataSource
  */
-oj.ArrayDataGridDataSource.prototype.getCount = function(axis)
-{
-    if (axis === "row")
-    {
-        return this._size();
-    }
+oj.ArrayDataGridDataSource.prototype.getCount = function (axis) {
+  if (axis === 'row') {
+    return this._size();
+  }
 
-    if (axis === "column")
-    {
-        return this.columns.length;
-    }
+  if (axis === 'column') {
+    return this.columns.length;
+  }
 
-    return 0;
+  return 0;
 };
 
 /**
  * Returns whether the total count returned in getCount function is an actual or an estimate.
- * @param {string} axis the axis in which we inquire whether the total count is an estimate.  Valid values are 
+ * @param {string} axis the axis in which we inquire whether the total count is an estimate.  Valid values are
  *        "row" and "column".
  * @return {string} "exact" if the count returned in getCount function is the actual count, "estimate" if the
  *         count returned in getCount function is an estimate. The default value is "exact".
  * @export
  * @method
  * @instance
- * @memberof oj.ArrayDataGridDataSource 
+ * @memberof oj.ArrayDataGridDataSource
  */
-oj.ArrayDataGridDataSource.prototype.getCountPrecision = function(axis)
-{
-    return "exact";
+// eslint-disable-next-line no-unused-vars
+oj.ArrayDataGridDataSource.prototype.getCountPrecision = function (axis) {
+  return 'exact';
 };
 
 /**
@@ -436,30 +406,22 @@ oj.ArrayDataGridDataSource.prototype.getCountPrecision = function(axis)
  * @private
  * @memberof oj.ArrayDataGridDataSource
  */
-oj.ArrayDataGridDataSource.prototype._getHeaderData = function(axis, index)
-{
-    var data;
-    if (axis === 'row')
-    {
-        if (this.rowHeaderKey == undefined)
-        {
-            return null;
-        }
-        else if (this.rowHeaderKey == 'm_defaultIndex')
-        {
-            // generate data by index
-            return this._getRowKeyByIndex(index);
-        }
-        else
-        {
-            data = this.getDataArray();
-            return data[index][this.rowHeaderKey];
-        }
+oj.ArrayDataGridDataSource.prototype._getHeaderData = function (axis, index) {
+  if (axis === 'row') {
+    if (this.rowHeaderKey === undefined) {
+      return null;
+    } else if (this.rowHeaderKey === 'm_defaultIndex') {
+      // generate data by index
+      return this._getRowKeyByIndex(index);
     }
-    else if (axis === 'column')
-    {
-        return this.columns[index];
-    }
+
+    var data = this.getDataArray();
+    return data[index][this.rowHeaderKey];
+  } else if (axis === 'column') {
+    return this.columns[index];
+  }
+
+  return undefined;
 };
 
 /**
@@ -469,23 +431,20 @@ oj.ArrayDataGridDataSource.prototype._getHeaderData = function(axis, index)
  * @private
  * @memberof oj.ArrayDataGridDataSource
  */
-oj.ArrayDataGridDataSource.prototype._getHeaderMetadata = function(axis, index)
-{
-    var key;
-    if (axis === 'row')
-    {
-        return {'key': this._getRowKeyByIndex(index)};
+oj.ArrayDataGridDataSource.prototype._getHeaderMetadata = function (axis, index) {
+  var key;
+  if (axis === 'row') {
+    return { key: this._getRowKeyByIndex(index) };
+  } else if (axis === 'column') {
+    key = this._getHeaderData(axis, index);
+    if (this.sortCriteria != null && this.sortCriteria.key === key) {
+      return { key: this._getHeaderData(axis, index), sortDirection: this.sortCriteria.direction };
     }
-    else if (axis === 'column')
-    {
-        key = this._getHeaderData(axis, index);
-        if (this['sortCriteria'] != null && this['sortCriteria']['key'] === key)
-        {
-            return {'key': this._getHeaderData(axis, index), 'sortDirection': this['sortCriteria']['direction']};
-        }
 
-        return {'key': key};
-    }
+    return { key: key };
+  }
+
+  return undefined;
 };
 
 /**
@@ -494,7 +453,7 @@ oj.ArrayDataGridDataSource.prototype._getHeaderMetadata = function(axis, index)
  *        axis, start, count.
  * @property {string} headerRange.axis the axis of the header that are fetched.  Valid values are "row" and "column".
  * @property {number} headerRange.start the start index of the range in which the header data are fetched.
- * @property {number} headerRange.count the size of the range in which the header data are fetched.  
+ * @property {number} headerRange.count the size of the range in which the header data are fetched.
  * @param {Object} callbacks the callbacks to be invoke when fetch headers operation is completed.
  * @property {function({startHeaderSet: Object}, {headerRange: Object}, {endHeaderSet: Object}):undefined} callbacks.success the callback to invoke when fetch headers completed successfully.
  *        The function takes three parameters: HeaderSet object representing start headers, headerRange object passed into the original fetchHeaders call,
@@ -506,47 +465,40 @@ oj.ArrayDataGridDataSource.prototype._getHeaderMetadata = function(axis, index)
  * @export
  * @method
  * @instance
- * @memberof oj.ArrayDataGridDataSource 
+ * @memberof oj.ArrayDataGridDataSource
  * @return {undefined}
  */
-oj.ArrayDataGridDataSource.prototype.fetchHeaders = function(headerRange, callbacks, callbackObjects)
-{
-    var axis, start, count, end, headerSet, data;
+oj.ArrayDataGridDataSource.prototype.fetchHeaders = function (
+  headerRange, callbacks, callbackObjects
+) {
+  var axis = headerRange.axis;
+  var start = headerRange.start;
+  var end;
+  var count = headerRange.count;
 
-    axis = headerRange.axis;
-    start = headerRange.start;
-    count = headerRange.count;
+  start = Math.max(0, start);
+  if (axis === 'column') {
+    end = Math.min(this.columns.length, start + count);
+  } else {
+    var data = this.getDataArray();
+    // check if no row header is available
+    if (this.rowHeaderKey === undefined) {
+      // header count = 0
+      end = start;
+    } else {
+      end = Math.min(data.length, start + count);
+    }
+  }
+  var headerSet = new oj.ArrayHeaderSet(start, end, axis, this);
 
-    start = Math.max(0, start);
-    if (axis === "column")
-    {
-        end = Math.min(this.columns.length, start + count);
+  if (callbacks != null && callbacks.success != null) {
+    // make sure callbackObjects is not null
+    if (callbackObjects == null) {
+      // eslint-disable-next-line no-param-reassign
+      callbackObjects = {};
     }
-    else
-    {
-        data = this.getDataArray();
-        // check if no row header is available
-        if (this.rowHeaderKey === undefined)
-        {
-            // header count = 0
-            end = start;
-        }
-        else
-        {
-            end = Math.min(data.length, start + count);
-        }
-    }
-    headerSet = new oj.ArrayHeaderSet(start, end, axis, this);
-
-    if (callbacks != null && callbacks['success'] != null)
-    {
-        // make sure callbackObjects is not null
-        if (callbackObjects == null)
-        {
-            callbackObjects = {};
-        }
-        callbacks['success'].call(callbackObjects['success'], headerSet, headerRange, null);
-    }
+    callbacks.success.call(callbackObjects.success, headerSet, headerRange, null);
+  }
 };
 
 /**
@@ -556,10 +508,9 @@ oj.ArrayDataGridDataSource.prototype.fetchHeaders = function(headerRange, callba
  * @private
  * @memberof oj.ArrayDataGridDataSource
  */
-oj.ArrayDataGridDataSource.prototype._getCellData = function(row, column)
-{
-    var col = this.columns[column];
-    return this.getDataArray()[row][col];
+oj.ArrayDataGridDataSource.prototype._getCellData = function (row, column) {
+  var col = this.columns[column];
+  return this.getDataArray()[row][col];
 };
 
 /**
@@ -569,9 +520,8 @@ oj.ArrayDataGridDataSource.prototype._getCellData = function(row, column)
  * @private
  * @memberof oj.ArrayDataGridDataSource
  */
-oj.ArrayDataGridDataSource.prototype._setCellData = function(row, column, newValue)
-{
-    this.getDataArray()[row][this.columns[column]] = newValue;
+oj.ArrayDataGridDataSource.prototype._setCellData = function (row, column, newValue) {
+  this.getDataArray()[row][this.columns[column]] = newValue;
 };
 
 /**
@@ -581,20 +531,19 @@ oj.ArrayDataGridDataSource.prototype._setCellData = function(row, column, newVal
  * @private
  * @memberof oj.ArrayDataGridDataSource
  */
-oj.ArrayDataGridDataSource.prototype._getCellMetadata = function(row, column)
-{
-    var keys = {"row": this._getRowKeyByIndex(row), "column": this.columns[column]};
-    return {"keys": keys};
+oj.ArrayDataGridDataSource.prototype._getCellMetadata = function (row, column) {
+  var keys = { row: this._getRowKeyByIndex(row), column: this.columns[column] };
+  return { keys: keys };
 };
 
 /**
  * Fetch a range of cells from the data source.
- * @param {Array.<Object>} cellRanges Information about the cell range.  A cell range is defined by an array 
+ * @param {Array.<Object>} cellRanges Information about the cell range.  A cell range is defined by an array
  *        of range info for each axis, where each range contains three properties: axis, start, count.
- * @property {string} cellRanges.axis the axis associated with this range where cells are fetched.  Valid 
+ * @property {string} cellRanges.axis the axis associated with this range where cells are fetched.  Valid
  *        values are "row" and "column".
  * @property {number} cellRanges.start the start index of the range for this axis in which the cells are fetched.
- * @property {number} cellRanges.count the size of the range for this axis in which the cells are fetched. 
+ * @property {number} cellRanges.count the size of the range for this axis in which the cells are fetched.
  * @param {Object} callbacks the callbacks to be invoke when fetch cells operation is completed.
  * @property {function({cellSet: Object}, {cellRanges: Array.<Object>}):undefined} callbacks.success the callback to invoke when fetch cells completed successfully.
  * @property {function({status: Object}):undefined} callbacks.error the callback to invoke when fetch cells failed.
@@ -606,52 +555,49 @@ oj.ArrayDataGridDataSource.prototype._getCellMetadata = function(row, column)
  * @instance
  * @memberof oj.ArrayDataGridDataSource
  */
-oj.ArrayDataGridDataSource.prototype.fetchCells = function(cellRanges, callbacks, callbackObjects)
-{
-    var i, cellRange, rowStart, rowEnd, cellSet, colStart, colEnd;
+oj.ArrayDataGridDataSource.prototype.fetchCells = function (
+  cellRanges, callbacks, callbackObjects
+) {
+  var rowStart;
+  var rowEnd;
+  var colStart;
+  var colEnd;
 
-    // extract the start and end row/column info from cellRanges (there should only be two, one for each axis)
-    for (i = 0; i < cellRanges.length; i += 1)
-    {
-        cellRange = cellRanges[i];
-        if (cellRange['axis'] === "row")
-        {
-            rowStart = cellRange['start'];
-            rowEnd = Math.min(this._size(), rowStart + cellRange['count']);
-        }
-        else if (cellRange['axis'] === "column")
-        {
-            colStart = cellRange['start'];
-            colEnd = Math.min(this.columns.length, colStart + cellRange['count']);
-        }
+  // extract the start and end row/column info from cellRanges (there should only be two, one for each axis)
+  for (var i = 0; i < cellRanges.length; i += 1) {
+    var cellRange = cellRanges[i];
+    if (cellRange.axis === 'row') {
+      rowStart = cellRange.start;
+      rowEnd = Math.min(this._size(), rowStart + cellRange.count);
+    } else if (cellRange.axis === 'column') {
+      colStart = cellRange.start;
+      colEnd = Math.min(this.columns.length, colStart + cellRange.count);
     }
+  }
 
-    // check for errors
-    if (rowEnd === undefined || colEnd === undefined)
-    {
-        if (callbacks != null && callbacks['error'] != null)
-        {
-            // make sure callbackObjects is not null
-            if (callbackObjects == null)
-            {
-                callbackObjects = {};
-            }
-            callbacks['error'].call(callbackObjects['error']);
-        }
-        return;
+  // check for errors
+  if (rowEnd === undefined || colEnd === undefined) {
+    if (callbacks != null && callbacks.error != null) {
+      // make sure callbackObjects is not null
+      if (callbackObjects == null) {
+        // eslint-disable-next-line no-param-reassign
+        callbackObjects = {};
+      }
+      callbacks.error.call(callbackObjects.error);
     }
+    return;
+  }
 
-    cellSet = new oj.ArrayCellSet(rowStart, rowEnd, colStart, colEnd, this);
+  var cellSet = new oj.ArrayCellSet(rowStart, rowEnd, colStart, colEnd, this);
 
-    if (callbacks != null && callbacks['success'] != null)
-    {
-        // make sure callbackObjects is not null
-        if (callbackObjects == null)
-        {
-            callbackObjects = {};
-        }
-        callbacks['success'].call(callbackObjects['success'], cellSet, cellRanges);
+  if (callbacks != null && callbacks.success != null) {
+    // make sure callbackObjects is not null
+    if (callbackObjects == null) {
+      // eslint-disable-next-line no-param-reassign
+      callbackObjects = {};
     }
+    callbacks.success.call(callbackObjects.success, cellSet, cellRanges);
+  }
 };
 
 /**
@@ -663,18 +609,19 @@ oj.ArrayDataGridDataSource.prototype.fetchCells = function(cellRanges, callbacks
  * @export
  * @method
  * @instance
- * @memberof oj.ArrayDataGridDataSource 
+ * @memberof oj.ArrayDataGridDataSource
  */
-oj.ArrayDataGridDataSource.prototype.keys = function(indexes)
-{
-    var rowIndex = indexes['row'], columnIndex = indexes['column'];
-    return new Promise(function(resolve, reject) {
-        resolve({"row": this._getRowKeyByIndex(rowIndex), "column": this.columns[columnIndex]});
-    }.bind(this));
+oj.ArrayDataGridDataSource.prototype.keys = function (indexes) {
+  var rowIndex = indexes.row;
+  var columnIndex = indexes.column;
+
+  return new Promise(function (resolve) {
+    resolve({ row: this._getRowKeyByIndex(rowIndex), column: this.columns[columnIndex] });
+  }.bind(this));
 };
 
 /**
- * Returns the row and column index based on the keys. In a paging case returns the 
+ * Returns the row and column index based on the keys. In a paging case returns the
  * index on the page, not the absolute index in the array.
  * @param {Object} keys the key for each axis
  * @property {any} keys.row the key for the row axis
@@ -683,24 +630,25 @@ oj.ArrayDataGridDataSource.prototype.keys = function(indexes)
  * @export
  * @method
  * @instance
- * @memberof oj.ArrayDataGridDataSource 
+ * @memberof oj.ArrayDataGridDataSource
  */
-oj.ArrayDataGridDataSource.prototype.indexes = function(keys)
-{
-    var rowKey = keys['row'], columnKey = keys['column'];
-    return new Promise(function(resolve, reject) {
-        resolve({"row": this._getRowIndexByKey(rowKey), "column": this.columns.indexOf(columnKey)});
-    }.bind(this));
+oj.ArrayDataGridDataSource.prototype.indexes = function (keys) {
+  var rowKey = keys.row;
+  var columnKey = keys.column;
+
+  return new Promise(function (resolve) {
+    resolve({ row: this._getRowIndexByKey(rowKey), column: this.columns.indexOf(columnKey) });
+  }.bind(this));
 };
 
 /**
  * Performs a sort on the data source.
- * @param {Object|null} criteria the sort criteria. 
+ * @param {Object|null} criteria the sort criteria.
  * @property {string} criteria.axis The axis in which the sort is performed, valid values are "row", "column"
  * @property {any} criteria.key The key that identifies which header to sort
  * @property {string} criteria.direction the sort direction, valid values are "ascending", "descending", "none" (default)
  * @param {Object=} callbacks the callbacks to be invoke upon completion of the sort operation.
- * @property {function():undefined=} callbacks.success the callback to invoke when the sort completed successfully.  
+ * @property {function():undefined=} callbacks.success the callback to invoke when the sort completed successfully.
  * @property {function({status: Object}):undefined=} callbacks.error the callback to invoke when sort failed.
  * @param {Object=} callbackObjects the object in which the callback function is invoked on.
  * @property {Object=} callbackObjects.success
@@ -711,85 +659,70 @@ oj.ArrayDataGridDataSource.prototype.indexes = function(keys)
  * @memberof oj.ArrayDataGridDataSource
  * @return {undefined}
  */
-oj.ArrayDataGridDataSource.prototype.sort = function(criteria, callbacks, callbackObjects)
-{
-    var sortArray = [], newColumns = [], i, headerIndex, axis, headerKey, direction;
+oj.ArrayDataGridDataSource.prototype.sort = function (criteria, callbacks, callbackObjects) {
+  var sortArray = [];
+  var newColumns = [];
 
-    // make sure callbackObjects is non null
-    if (callbacks != null && callbackObjects == null)
-    {
-        callbackObjects = {};
+  // make sure callbackObjects is non null
+  if (callbacks != null && callbackObjects == null) {
+    // eslint-disable-next-line no-param-reassign
+    callbackObjects = {};
+  }
+
+  // keep a copy of the original unsorted array.  Both array and observable array have slice method.
+  if (this.origData === undefined) {
+    this._origSortCriteria = this.sortCriteria;
+    this.origData = this.data.slice();
+  }
+
+  if (criteria == null) {
+    // eslint-disable-next-line no-param-reassign
+    criteria = this.sortCriteria;
+  } else {
+    this.sortCriteria = criteria;
+  }
+
+  // reset sort order if no criteria is set in the call or as a property
+  if (criteria == null) {
+    this._resetSortOrder(callbacks, callbackObjects);
+    return;
+  }
+
+  var axis = criteria.axis;
+  var headerKey = criteria.key;
+
+  if (axis === 'column') {
+    this.getDataArray().sort(this._getComparator());
+
+    if (callbacks != null && callbacks.success != null) {
+      callbacks.success.call(callbackObjects.success);
+    }
+  } else if (axis === 'row') {
+    var headerIndex = this._getRowIndexByKey(headerKey);
+    // rebuild the array to sort on
+    var i;
+    for (i = 0; i < this.columns.length; i += 1) {
+      sortArray[i] = this.getDataArray()[headerIndex][this.columns[i]];
     }
 
-    // keep a copy of the original unsorted array.  Both array and observable array have slice method.
-    if (this.origData == undefined)
-    {
-        this._origSortCriteria = this['sortCriteria'];
-        this.origData = this.data.slice();
+    // sort the given array with no headerKey specified
+    sortArray.sort(this._getComparator());
+
+    // reorder the columns property
+    for (i = 0; i < this.columns.length; i += 1) {
+      newColumns[i] =
+        this.columns[sortArray.indexOf(this.getDataArray()[headerIndex][this.columns[i]])];
     }
 
-    if (criteria == null)
-    {
-      criteria = this['sortCriteria'];
+    // keep a copy of the original column order.
+    this.origColumns = this.columns;
+    this.columns = newColumns;
+    if (callbacks != null && callbacks.success != null) {
+      callbacks.success.call(callbackObjects.success);
     }
-    else
-    {
-        this['sortCriteria'] = criteria;
-    }
-
-    // reset sort order if no criteria is set in the call or as a property
-    if (criteria == null)
-    {
-        this._resetSortOrder(callbacks, callbackObjects);
-        return;
-    }
-
-    axis = criteria['axis'];
-    headerKey = criteria['key'];
-    direction = criteria['direction'];
-
-    if (axis === 'column')
-    {
-        this.getDataArray().sort(this._getComparator());
-
-        if (callbacks != null && callbacks['success'] != null)
-        {
-            callbacks['success'].call(callbackObjects['success']);
-        }
-    }
-    else if (axis === 'row')
-    {
-        headerIndex = this._getRowIndexByKey(headerKey);
-        //rebuild the array to sort on
-        for (i = 0; i < this.columns.length; i += 1)
-        {
-            sortArray[i] = this.getDataArray()[headerIndex][this.columns[i]];
-        }
-
-        //sort the given array with no headerKey specified
-        sortArray.sort(this._getComparator());
-
-        //reorder the columns property
-        for (i = 0; i < this.columns.length; i += 1)
-        {
-            newColumns[i] = this.columns[sortArray.indexOf(this.getDataArray()[headerIndex][this.columns[i]])];
-        }
-
-        // keep a copy of the original column order.
-        this.origColumns = this.columns;
-        this.columns = newColumns;
-        if (callbacks != null && callbacks['success'] != null)
-        {
-            callbacks['success'].call(callbackObjects['success']);
-        }
-    }
-    else
-    {
-        if (callbacks !== null && callbacks['error'] != null)
-        {
-            callbacks['error'].call(callbackObjects['error'], "Invalid axis value");
-        }
-    }
+  } else if (callbacks !== null && callbacks.error != null) {
+    callbacks.error.call(callbackObjects.error, 'Invalid axis value');
+  }
 };
 
 /**
@@ -803,25 +736,21 @@ oj.ArrayDataGridDataSource.prototype.sort = function(criteria, callbacks, callba
  * @private
  * @memberof oj.ArrayDataGridDataSource
  */
-oj.ArrayDataGridDataSource.prototype._resetSortOrder = function(callbacks, callbackObjects)
-{
-    // reset data to the unsorted array
-    if (this.origData != null)
-    {
-        this.data = this.origData;
-        this['sortCriteria'] = this._origSortCriteria;
-    }
+oj.ArrayDataGridDataSource.prototype._resetSortOrder = function (callbacks, callbackObjects) {
+  // reset data to the unsorted array
+  if (this.origData !== undefined) {
+    this.data = this.origData;
+    this.sortCriteria = this._origSortCriteria;
+  }
 
-    // reset column order if row header was sorted before
-    if (this.origColumns != null)
-    {
-        this.columns = this.origColumns;
-    }
+  // reset column order if row header was sorted before
+  if (this.origColumns != null) {
+    this.columns = this.origColumns;
+  }
 
-    if (callbacks != null && callbacks['success'] != null)
-    {
-        callbacks['success'].call(callbackObjects['success']);
-    }
+  if (callbacks != null && callbacks.success != null) {
+    callbacks.success.call(callbackObjects.success);
+  }
 };
 
 /**
@@ -834,18 +763,15 @@ oj.ArrayDataGridDataSource.prototype._resetSortOrder = function(callbacks, callb
  * @instance
  * @memberof oj.ArrayDataGridDataSource
 */
-oj.ArrayDataGridDataSource.prototype.getCapability = function(feature)
-{
-    if (feature === 'sort')
-    {
-        // array based data source supports column sorting only
-        return 'column';
-    }
-    if (feature === 'move')
-    {
-        return 'row';
-    }
-    return null;
+oj.ArrayDataGridDataSource.prototype.getCapability = function (feature) {
+  if (feature === 'sort') {
+    // array based data source supports column sorting only
+    return 'column';
+  }
+  if (feature === 'move') {
+    return 'row';
+  }
+  return null;
 };
 
 /**
@@ -854,18 +780,16 @@ oj.ArrayDataGridDataSource.prototype.getCapability = function(feature)
  * @private
  * @memberof oj.ArrayDataGridDataSource
  */
-oj.ArrayDataGridDataSource.prototype._getComparator = function()
-{
-    var comparator, key, direction, axis;
-    comparator = this['comparator'];
-    if (comparator == null)
-    {
-      key = this['sortCriteria']['key'];
-      direction = this['sortCriteria']['direction'];
-      axis = this['sortCriteria']['axis'];
-      return this._naturalSort(direction, key, axis);
-    }
-    return comparator;
+oj.ArrayDataGridDataSource.prototype._getComparator = function () {
+  var comparator = this.comparator;
+  if (comparator == null) {
+    var key = this.sortCriteria.key;
+    var direction = this.sortCriteria.direction;
+    var axis = this.sortCriteria.axis;
+
+    return this._naturalSort(direction, key, axis);
+  }
+  return comparator;
 };
 
 /**
@@ -877,117 +801,116 @@ oj.ArrayDataGridDataSource.prototype._getComparator = function()
  * @private
  * @memberof oj.ArrayDataGridDataSource
  */
-oj.ArrayDataGridDataSource.prototype._naturalSort = function(direction, key, axis)
-{
-    if (direction === 'ascending')
-    {
-        return function(a, b)
-        {
-            var as, bs;
-            //Get the values the array we're sorting
-            if (key != undefined && axis == 'column')
-            {
-                //if the sorting item is an array it will be indexed with strings of ints and needs
-                //to be accessed using ints not strings
-                if (a instanceof Array)
-                {
-                    a = a[parseInt(key, 10)];
-                    b = b[parseInt(key, 10)];
-                }
-                else
-                {
-                    a = a[key];
-                    b = b[key];
-                }
-            }
-            //Strings of numbers return false, so we can compare strings of numbers with numbers
-            as = isNaN(a);
-            bs = isNaN(b);
-            //If they are strings, check to see if they are dates, if they are, turn the string to a sortable date formatted string
-            if (a instanceof Date) {
-                a = a.toISOString();
-                as = true;
-            }
-            if (b instanceof Date) {
-                b = b.toISOString();
-                bs = true;
-            }
-            //both are string
-            if (as && bs)
-            {
-                return a < b ? -1 : a === b ? 0 : 1;
-            }
-            //only a is a string
-            if (as)
-            {
-                return 1;
-            }
-            //only b is a string
-            if (bs)
-            {
-                return -1;
-            }
-            //both are numbers
-            return a - b;
-        };
-    }
-    if (direction === 'descending')
-    {
-        return function(a, b)
-        {
-            var as, bs;
-            if (key != undefined && axis == 'column')
-            {
-                //if the sorting item is an array it will be indexed with strings of ints and needs
-                //to be accessed using ints not strings
-                if (a instanceof Array)
-                {
-                    a = a[parseInt(key, 10)];
-                    b = b[parseInt(key, 10)];
-                }
-                else
-                {
-                    a = a[key];
-                    b = b[key];
-                }
-            }
-            as = isNaN(a);
-            bs = isNaN(b);
-            if (a instanceof Date) {
-                a = a.toISOString();
-                as = true;
-            }
-            if (b instanceof Date) {
-                b = b.toISOString();
-                bs = true;
-            }
-            if (as && bs)
-            {
-                return a > b ? -1 : a === b ? 0 : 1;
-            }
-            if (as)
-            {
-                return -1;
-            }
-            if (bs)
-            {
-                return 1;
-            }
-            return b - a;
-        };
-    }
+oj.ArrayDataGridDataSource.prototype._naturalSort = function (direction, key, axis) {
+  if (direction === 'ascending') {
+    return function (_a, _b) {
+      var as;
+      var bs;
+      var a = _a;
+      var b = _b;
 
-    // only if direction is not recognized
-    return;
+      // Get the values the array we're sorting
+      if (key != null && axis === 'column') {
+        // if the sorting item is an array it will be indexed with strings of ints and needs
+        // to be accessed using ints not strings
+        if (a instanceof Array) {
+          a = a[parseInt(key, 10)];
+          b = b[parseInt(key, 10)];
+        } else {
+          a = a[key];
+          b = b[key];
+        }
+      }
+      // Strings of numbers return false, so we can compare strings of numbers with numbers
+      as = isNaN(a);
+      bs = isNaN(b);
+      // If they are strings, check to see if they are dates, if they are, turn the string to a sortable date formatted string
+      if (a instanceof Date) {
+        a = a.toISOString();
+        as = true;
+      }
+      if (b instanceof Date) {
+        b = b.toISOString();
+        bs = true;
+      }
+      // both are string
+      if (as && bs) {
+        if (a < b) {
+          return -1;
+        } else if (a === b) {
+          return 0;
+        }
+        return 1;
+      }
+      // only a is a string
+      if (as) {
+        return 1;
+      }
+      // only b is a string
+      if (bs) {
+        return -1;
+      }
+      // both are numbers
+      return a - b;
+    };
+  }
+  if (direction === 'descending') {
+    return function (_a, _b) {
+      var as;
+      var bs;
+      var a = _a;
+      var b = _b;
+
+      if (key != null && axis === 'column') {
+        // if the sorting item is an array it will be indexed with strings of ints and needs
+        // to be accessed using ints not strings
+        if (a instanceof Array) {
+          a = a[parseInt(key, 10)];
+          b = b[parseInt(key, 10)];
+        } else {
+          a = a[key];
+          b = b[key];
+        }
+      }
+      as = isNaN(a);
+      bs = isNaN(b);
+      if (a instanceof Date) {
+        a = a.toISOString();
+        as = true;
+      }
+      if (b instanceof Date) {
+        b = b.toISOString();
+        bs = true;
+      }
+      if (as && bs) {
+        if (a > b) {
+          return -1;
+        } else if (a === b) {
+          return 0;
+        }
+        return 1;
+      }
+      if (as) {
+        return -1;
+      }
+      if (bs) {
+        return 1;
+      }
+      return b - a;
+    };
+  }
+
+  // only if direction is not recognized
+  return undefined;
 };
 
 /**
  * Moves a row from one location to another.
  * @param {any} rowToMove the key of the row to move
- * @param {any} referenceRow the key of the reference row which combined with position are used to determine 
+ * @param {any} referenceRow the key of the reference row which combined with position are used to determine
  *        the destination of where the row should moved to.
  * @param {string} position The position of the moved row relative to the reference row.
- *        Valid values are: "before", "after" 
+ *        Valid values are: "before", "after"
  * @param {Object=} callbacks the callbacks to be invoke upon completion of the move operation.
  * @property {function():undefined=} callbacks.success the callback to invoke when the sort completed successfully.
  * @property {function({status: Object}):undefined=} callbacks.error the callback to invoke when sort failed.
@@ -1000,46 +923,43 @@ oj.ArrayDataGridDataSource.prototype._naturalSort = function(direction, key, axi
  * @memberof oj.ArrayDataGridDataSource
  * @return {undefined}
  */
-oj.ArrayDataGridDataSource.prototype.move = function(rowToMove, referenceRow, position, callbacks, callbackObjects)
-{
-    var moveKeyIndex, moveData, atKeyIndex, event, data;
+oj.ArrayDataGridDataSource.prototype.move = function (
+  // eslint-disable-next-line no-unused-vars
+  rowToMove, referenceRow, position, callbacks, callbackObjects
+) {
+  var atKeyIndex;
+  var event;
 
-    //remove the data from the array, but hold on to it
-    moveKeyIndex = this._getRowIndexByKey(rowToMove);
-    moveData = this.data.splice(moveKeyIndex, 1)[0];
+  // remove the data from the array, but hold on to it
+  var moveKeyIndex = this._getRowIndexByKey(rowToMove);
+  var moveData = this.data.splice(moveKeyIndex, 1)[0];
 
-    //fire the delete event to the datagrid
-    if (this.data instanceof Array)
-    {
-        event = this._getModelEvent('delete', rowToMove, null, moveKeyIndex, -1, true);
-        this.handleEvent("change", event);
-    }
+  // fire the delete event to the datagrid
+  if (this.data instanceof Array) {
+    event = this._getModelEvent('delete', rowToMove, null, moveKeyIndex, -1, true);
+    this.handleEvent('change', event);
+  }
 
-    //add the stored data back into the array
-    if (referenceRow === null)
-    {
-        this.data.push(moveData);
-        atKeyIndex = this.data.length - 1;
-    }
-    else
-    {
-        atKeyIndex = this._getRowIndexByKey(referenceRow);
-        this.data.splice(atKeyIndex, 0, moveData);
-    }
+  // add the stored data back into the array
+  if (referenceRow === null) {
+    this.data.push(moveData);
+    atKeyIndex = this.data.length - 1;
+  } else {
+    atKeyIndex = this._getRowIndexByKey(referenceRow);
+    this.data.splice(atKeyIndex, 0, moveData);
+  }
 
-    //fire the insert event to the datagrid
-    if (this.data instanceof Array)
-    {
-        event = this._getModelEvent('insert', rowToMove, null, atKeyIndex, -1);
-        this.handleEvent("change", event);
-    }
+  // fire the insert event to the datagrid
+  if (this.data instanceof Array) {
+    event = this._getModelEvent('insert', rowToMove, null, atKeyIndex, -1);
+    this.handleEvent('change', event);
+  }
 
-    // if we keep track of original data, we'll need to update it
-    if (this.origData != null)
-    {
-       // note that once a row is moved then the current sort order is the new unsorted order
-       this.origData = this.data.slice();
-    }
+  // if we keep track of original data, we'll need to update it
+  if (this.origData !== undefined) {
+    // note that once a row is moved then the current sort order is the new unsorted order
+    this.origData = this.data.slice();
+  }
 };
 
 /**
@@ -1047,17 +967,17 @@ oj.ArrayDataGridDataSource.prototype.move = function(rowToMove, referenceRow, po
  * @param {any} rowToMove the key of the row to move
  * @param {any} referenceRow the key of the reference row which combined with position are used to determine
  *        the destination of where the row should moved to.
- * @param {string} position The position of the moved row relative to the reference row.  
+ * @param {string} position The position of the moved row relative to the reference row.
  *        Valid values are: "before", "after".
  * @return {string} returns "valid" if the move is valid, "invalid" otherwise.
  * @export
  * @method
  * @instance
- * @memberof oj.ArrayDataGridDataSource 
+ * @memberof oj.ArrayDataGridDataSource
 */
-oj.ArrayDataGridDataSource.prototype.moveOK = function(rowToMove, referenceRow, position)
-{
-    return "valid";
+// eslint-disable-next-line no-unused-vars
+oj.ArrayDataGridDataSource.prototype.moveOK = function (rowToMove, referenceRow, position) {
+  return 'valid';
 };
 
 /**
@@ -1066,13 +986,11 @@ oj.ArrayDataGridDataSource.prototype.moveOK = function(rowToMove, referenceRow, 
  * @private
  * @memberof oj.ArrayDataGridDataSource
  */
-oj.ArrayDataGridDataSource.prototype.getDataArray = function()
-{
-    if (typeof (this.data) === 'function')
-    {
-        return this.data();
-    }
-    return this.data;
+oj.ArrayDataGridDataSource.prototype.getDataArray = function () {
+  if (typeof (this.data) === 'function') {
+    return this.data();
+  }
+  return this.data;
 };
 
 /**
@@ -1082,17 +1000,14 @@ oj.ArrayDataGridDataSource.prototype.getDataArray = function()
  * @private
  * @memberof oj.ArrayDataGridDataSource
  */
-oj.ArrayDataGridDataSource.prototype._getRowIndexByKey = function(key)
-{
-    var i, data = this.getDataArray();
-    for (i = 0; i < data.length; i++)
-    {
-        if (data[i]['ojKey'] === key)
-        {
-            return i;
-        }
+oj.ArrayDataGridDataSource.prototype._getRowIndexByKey = function (key) {
+  var data = this.getDataArray();
+  for (var i = 0; i < data.length; i++) {
+    if (data[i].ojKey === key) {
+      return i;
     }
-    return -1;
+  }
+  return -1;
 };
 
 /**
@@ -1102,14 +1017,12 @@ oj.ArrayDataGridDataSource.prototype._getRowIndexByKey = function(key)
  * @private
  * @memberof oj.ArrayDataGridDataSource
  */
-oj.ArrayDataGridDataSource.prototype._getRowKeyByIndex = function(index)
-{
-    var data = this.getDataArray();
-    if (data[index])
-    {
-        return data[index]['ojKey'];
-    }
-    return null;
+oj.ArrayDataGridDataSource.prototype._getRowKeyByIndex = function (index) {
+  var data = this.getDataArray();
+  if (data[index]) {
+    return data[index].ojKey;
+  }
+  return null;
 };
 
 /**
@@ -1124,15 +1037,16 @@ oj.ArrayDataGridDataSource.prototype._getRowKeyByIndex = function(index)
  * @private
  * @memberof oj.ArrayDataGridDataSource
  */
-oj.ArrayDataGridDataSource.prototype._getModelEvent = function(operation, rowKey, columnKey, rowIndex, columnIndex, silent)
-{
-    var event = {};
-    event['source'] = this;
-    event['operation'] = operation;
-    event['keys'] = {'row': rowKey, 'column': columnKey};
-    event['indexes'] = {'row': rowIndex, 'column': columnIndex};
-    event['silent'] = silent;
-    return event;
+oj.ArrayDataGridDataSource.prototype._getModelEvent = function (
+  operation, rowKey, columnKey, rowIndex, columnIndex, silent
+) {
+  var event = {};
+  event.source = this;
+  event.operation = operation;
+  event.keys = { row: rowKey, column: columnKey };
+  event.indexes = { row: rowIndex, column: columnIndex };
+  event.silent = silent;
+  return event;
 };
 
 /**
@@ -1141,84 +1055,82 @@ oj.ArrayDataGridDataSource.prototype._getModelEvent = function(operation, rowKey
  * @private
  * @memberof oj.ArrayDataGridDataSource
  */
-oj.ArrayDataGridDataSource.prototype._subscribe = function(changes)
-{
-    var i, rowData, rowKey, rowIndex, added = false, move = false, keys = [], indexes = [], event, beforeDelCount = 0, change;
+oj.ArrayDataGridDataSource.prototype._subscribe = function (changes) {
+  var i;
+  var added = false;
+  var move = false;
+  var change;
+  var event;
 
-    // first loop though the changes,
-    for (i = 0; i < changes.length; i++)
-    {
-        change = changes[i];
-        // if a model was moved using a reverseAll or a sort, just refresh the grid
-        if (change['moved'] !== undefined)
-        {
-            move = true;
-            event = this._getModelEvent('refresh', null, null);
-            this.handleEvent("change", event);
-            break;
-        }
-
-        // check if there were any adds, this way the delete will know to be fired silently
-        if (change['status'] === 'added')
-        {
-            added = true;
-        }
+  // first loop though the changes,
+  for (i = 0; i < changes.length; i++) {
+    change = changes[i];
+    // if a model was moved using a reverseAll or a sort, just refresh the grid
+    if (change.moved !== undefined) {
+      move = true;
+      event = this._getModelEvent('refresh', null, null);
+      this.handleEvent('change', event);
+      break;
     }
 
-    //if we moved a model we just refreshed
-    if (!move)
-    {
-        //loop through changes looking for deletes
-        for (i = 0; i < changes.length; i++)
-        {
-            change = changes[i];
-            if (change['status'] === 'deleted')
-            {
-                rowData = change['value'];
-                rowIndex = change['index'];
-                rowKey = rowData['ojKey'];
+    // check if there were any adds, this way the delete will know to be fired silently
+    if (change.status === 'added') {
+      added = true;
+    }
+  }
 
-                //collect the deletes to do in one batch delete
-                keys.push({'row': rowKey, 'column': -1});
-                indexes.push({'row': rowIndex, 'column': -1});
-            }
-        }
+  // if we moved a model we just refreshed
+  if (!move) {
+    var rowData;
+    var rowKey;
+    var rowIndex;
+    var keys = [];
+    var indexes = [];
 
-        // batch delete all deletes
-        if (keys.length > 0)
-        {
-            event = {'source': this, 'operation': 'delete', 'keys': keys, 'indexes': indexes, 'silent': added};
-            this.handleEvent("change", event);
-        }
+    // loop through changes looking for deletes
+    for (i = 0; i < changes.length; i++) {
+      change = changes[i];
+      if (change.status === 'deleted') {
+        rowData = change.value;
+        rowIndex = change.index;
+        rowKey = rowData.ojKey;
 
-        //loop through changes looking for adds
-        for (i = 0; i < changes.length; i++)
-        {
-            change = changes[i];
-            if (change['status'] === 'added')
-            {
-                rowData = change['value'];
-                rowIndex = change['index'];
-                //if no key add inject one into the add object based on the last assigned key
-                if (rowData['ojKey'] == null)
-                {
-                    rowData['ojKey'] = this.lastKey.toString();
-                    this.lastKey++;
-                }
-                //add at the given index and remove from the end of the page silently
-                rowKey = rowData['ojKey'];
-                event = this._getModelEvent('insert', rowKey, null, rowIndex, -1);
-                this.handleEvent("change", event);
-            }
-        }
+        // collect the deletes to do in one batch delete
+        keys.push({ row: rowKey, column: -1 });
+        indexes.push({ row: rowIndex, column: -1 });
+      }
     }
 
-    // if we keep track of original data, we'll need to update it
-    if (this.origData != null)
-    {
-       // note that once the observable array is updated then the current sort order is the new unsorted order
-       this.origData = this.data.slice();
+    // batch delete all deletes
+    if (keys.length > 0) {
+      event = { source: this, operation: 'delete', keys: keys, indexes: indexes, silent: added };
+      this.handleEvent('change', event);
     }
+
+    // loop through changes looking for adds
+    for (i = 0; i < changes.length; i++) {
+      change = changes[i];
+      if (change.status === 'added') {
+        rowData = change.value;
+        rowIndex = change.index;
+        // if no key add inject one into the add object based on the last assigned key
+        if (rowData.ojKey == null) {
+          rowData.ojKey = this.lastKey.toString();
+          this.lastKey += 1;
+        }
+        // add at the given index and remove from the end of the page silently
+        rowKey = rowData.ojKey;
+        event = this._getModelEvent('insert', rowKey, null, rowIndex, -1);
+        this.handleEvent('change', event);
+      }
+    }
+  }
+
+  // if we keep track of original data, we'll need to update it
+  if (this.origData !== undefined) {
+    // note that once the observable array is updated then the current sort order is the new unsorted order
+    this.origData = this.data.slice();
+  }
 };
 
 /**
@@ -1229,12 +1141,11 @@ oj.ArrayDataGridDataSource.prototype._subscribe = function(changes)
  * @private
  * @memberof oj.ArrayDataGridDataSource
  */
-oj.ArrayDataGridDataSource.prototype._size = function()
-{
-    return this.getDataArray()['length'];
+oj.ArrayDataGridDataSource.prototype._size = function () {
+  return this.getDataArray().length;
 };
 
-//////// testing methods to get properties /////////
+// ////// testing methods to get properties /////////
 /**
  * Gets the rowHeaderKey property.  This is an internal method for testing and should not be used by application.
  * @return {string|null} the row header key
@@ -1242,9 +1153,8 @@ oj.ArrayDataGridDataSource.prototype._size = function()
  * @ignore
  * @memberof oj.ArrayDataGridDataSource
  */
-oj.ArrayDataGridDataSource.prototype.getRowHeaderKey = function()
-{
-    return this.rowHeaderKey;
+oj.ArrayDataGridDataSource.prototype.getRowHeaderKey = function () {
+  return this.rowHeaderKey;
 };
 
 /**
@@ -1254,9 +1164,8 @@ oj.ArrayDataGridDataSource.prototype.getRowHeaderKey = function()
  * @ignore
  * @memberof oj.ArrayDataGridDataSource
  */
-oj.ArrayDataGridDataSource.prototype.getColumns = function()
-{
-    return this.columns;
+oj.ArrayDataGridDataSource.prototype.getColumns = function () {
+  return this.columns;
 };
 
 /**
@@ -1266,10 +1175,10 @@ oj.ArrayDataGridDataSource.prototype.getColumns = function()
  * @ignore
  * @memberof oj.ArrayDataGridDataSource
  */
-oj.ArrayDataGridDataSource.prototype.getData = function()
-{
-    return this.data;
+oj.ArrayDataGridDataSource.prototype.getData = function () {
+  return this.data;
 };
+
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
@@ -1289,14 +1198,13 @@ oj.ArrayDataGridDataSource.prototype.getData = function()
  * @export
  * @hideconstructor
  * @ojtsignore
- * @see oj.ArrayDataGridDataSource 
+ * @see oj.ArrayDataGridDataSource
  */
-oj.ArrayHeaderSet = function(start, end, axis, callback)
-{
-    this.m_start = start;
-    this.m_end = end;
-    this.m_axis = axis;
-    this.m_callback = callback;
+oj.ArrayHeaderSet = function (start, end, axis, callback) {
+  this.m_start = start;
+  this.m_end = end;
+  this.m_axis = axis;
+  this.m_callback = callback;
 };
 
 /**
@@ -1309,20 +1217,18 @@ oj.ArrayHeaderSet = function(start, end, axis, callback)
  * @expose
  * @method
  * @instance
- * @memberof oj.ArrayHeaderSet 
+ * @memberof oj.ArrayHeaderSet
  */
-oj.ArrayHeaderSet.prototype.getData = function(index, level)
-{
-    if (this.m_callback == null)
-    {
-        return null;
-    }
+oj.ArrayHeaderSet.prototype.getData = function (index, level) {
+  if (this.m_callback == null) {
+    return null;
+  }
 
-    // make sure index/level are valid
-    oj.Assert.assert(index <= this.m_end && index >= this.m_start, 'index out of bounds');
-    oj.Assert.assert(level == null || level == 0, 'level out of bounds');
+  // make sure index/level are valid
+  oj.Assert.assert(index <= this.m_end && index >= this.m_start, 'index out of bounds');
+  oj.Assert.assert(level == null || level === 0, 'level out of bounds');
 
-    return this.m_callback._getHeaderData(this.m_axis, index);
+  return this.m_callback._getHeaderData(this.m_axis, index);
 };
 
 /**
@@ -1338,20 +1244,18 @@ oj.ArrayHeaderSet.prototype.getData = function(index, level)
  * @expose
  * @method
  * @instance
- * @memberof oj.ArrayHeaderSet 
+ * @memberof oj.ArrayHeaderSet
  */
-oj.ArrayHeaderSet.prototype.getMetadata = function(index, level)
-{
-    if (this.m_callback == null)
-    {
-        return null;
-    }
+oj.ArrayHeaderSet.prototype.getMetadata = function (index, level) {
+  if (this.m_callback == null) {
+    return null;
+  }
 
-    // make sure index/level are valid
-    oj.Assert.assert(index <= this.m_end && index >= this.m_start, 'index out of bounds');
-    oj.Assert.assert(level == null || level == 0, 'level out of bounds');
+  // make sure index/level are valid
+  oj.Assert.assert(index <= this.m_end && index >= this.m_start, 'index out of bounds');
+  oj.Assert.assert(level == null || level === 0, 'level out of bounds');
 
-    return this.m_callback._getHeaderMetadata(this.m_axis, index);
+  return this.m_callback._getHeaderMetadata(this.m_axis, index);
 };
 
 /**
@@ -1363,15 +1267,13 @@ oj.ArrayHeaderSet.prototype.getMetadata = function(index, level)
  * @expose
  * @method
  * @instance
- * @memberof oj.ArrayHeaderSet 
+ * @memberof oj.ArrayHeaderSet
  */
-oj.ArrayHeaderSet.prototype.getLevelCount = function()
-{
-    if (this.getCount() > 0)
-    {
-        return 1;
-    }
-    return 0;
+oj.ArrayHeaderSet.prototype.getLevelCount = function () {
+  if (this.getCount() > 0) {
+    return 1;
+  }
+  return 0;
 };
 
 /**
@@ -1393,13 +1295,12 @@ oj.ArrayHeaderSet.prototype.getLevelCount = function()
  * @expose
  * @method
  * @instance
- * @memberof oj.ArrayHeaderSet 
+ * @memberof oj.ArrayHeaderSet
  */
-oj.ArrayHeaderSet.prototype.getExtent = function(index, level)
-{
-    oj.Assert.assert(index <= this.m_end && index >= this.m_start, 'index out of bounds');
-    oj.Assert.assert(level == null || level == 0, 'level out of bounds');
-    return {'extent': 1, 'more':{'before': false, 'after':false}};
+oj.ArrayHeaderSet.prototype.getExtent = function (index, level) {
+  oj.Assert.assert(index <= this.m_end && index >= this.m_start, 'index out of bounds');
+  oj.Assert.assert(level == null || level === 0, 'level out of bounds');
+  return { extent: 1, more: { before: false, after: false } };
 };
 
 /**
@@ -1412,13 +1313,12 @@ oj.ArrayHeaderSet.prototype.getExtent = function(index, level)
  * @expose
  * @method
  * @instance
- * @memberof oj.ArrayHeaderSet 
+ * @memberof oj.ArrayHeaderSet
  */
-oj.ArrayHeaderSet.prototype.getDepth = function(index, level)
-{
-    oj.Assert.assert(index <= this.m_end && index >= this.m_start, 'index out of bounds');
-    oj.Assert.assert(level == null || level == 0, 'level out of bounds');
-    return 1;
+oj.ArrayHeaderSet.prototype.getDepth = function (index, level) {
+  oj.Assert.assert(index <= this.m_end && index >= this.m_start, 'index out of bounds');
+  oj.Assert.assert(level == null || level === 0, 'level out of bounds');
+  return 1;
 };
 
 /**
@@ -1443,16 +1343,14 @@ oj.ArrayHeaderSet.prototype.getLabel = function () {
  * @expose
  * @method
  * @instance
- * @memberof oj.ArrayHeaderSet 
+ * @memberof oj.ArrayHeaderSet
  */
-oj.ArrayHeaderSet.prototype.getCount = function()
-{
-    if (this.m_callback == null)
-    {
-        return 0;
-    }
+oj.ArrayHeaderSet.prototype.getCount = function () {
+  if (this.m_callback == null) {
+    return 0;
+  }
 
-    return Math.max(0, this.m_end - this.m_start);
+  return Math.max(0, this.m_end - this.m_start);
 };
 
 /**
@@ -1464,8 +1362,8 @@ oj.ArrayHeaderSet.prototype.getCount = function()
  * @method
  * @instance
  */
-oj.ArrayHeaderSet.prototype.getStart = function()
-{
-    return this.m_start;
+oj.ArrayHeaderSet.prototype.getStart = function () {
+  return this.m_start;
 };
+
 });

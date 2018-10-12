@@ -13,12 +13,12 @@
       width:200px;
       height:200px;
     }
-            
+
     // This is to prevent the flash of unstyled content before the html becomes JET components.
     @if $initialVisibility == hidden {
       oj-led-gauge:not(.oj-complete) {
         visibility: hidden;
-      }      
+      }
     }
 
     oj-led-gauge {
@@ -29,12 +29,12 @@
       width:40px;
       height:40px;
     }
-            
+
     // This is to prevent the flash of unstyled content before the html becomes JET components.
     @if $initialVisibility == hidden {
       oj-status-meter-gauge:not(.oj-complete) {
         visibility: hidden;
-      }      
+      }
     }
 
     oj-status-meter-gauge {
@@ -45,12 +45,12 @@
       width:220px;
       height:25px;
     }
-            
+
     // This is to prevent the flash of unstyled content before the html becomes JET components.
     @if $initialVisibility == hidden {
       oj-rating-gauge:not(.oj-complete) {
         visibility: hidden;
-      }      
+      }
     }
 
     oj-rating-gauge {
@@ -65,30 +65,47 @@
     .oj-gauge-metric-label {
       font-weight: bold;
     }
-    
+
     .oj-gauge-tick-label {
     }
 
     // color for the first threshold on a gauge, typically represents a low value
     .oj-gauge-threshold1 {
-      color: $dvtThreshold1Color;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        color: var(--oj-gauge-threshold-color-1);
+      } @else {
+        color: $dvtThreshold1Color;
+      }
     }
 
     // color for the second threshold on a gauge, typically represents a medium value
     .oj-gauge-threshold2 {
-      color: $dvtThreshold2Color;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        color: var(--oj-gauge-threshold-color-2);
+      } @else {
+        color: $dvtThreshold2Color;
+      }
     }
 
     // color for the third threshold on a gauge, typically represents a high value
     .oj-gauge-threshold3 {
-      color: $dvtThreshold3Color;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        color: var(--oj-gauge-threshold-color-3);
+      } @else {
+        color: $dvtThreshold3Color;
+      }
     }
 
     .oj-dialgauge.oj-focus-highlight,
     .oj-ledgauge.oj-focus-highlight,
     .oj-statusmetergauge.oj-focus-highlight,
     .oj-ratinggauge.oj-focus-highlight {
-      @include oj-browser-focus-outline-approximation($primaryTextColor);
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        outline: dotted 1px var(--oj-primary-text-color);   // used on most browsers
+        outline: -webkit-focus-ring-color auto;             // used on chrome
+      } @else {
+        @include oj-browser-focus-outline-approximation($primaryTextColor);
+      }
     }
   }
 }

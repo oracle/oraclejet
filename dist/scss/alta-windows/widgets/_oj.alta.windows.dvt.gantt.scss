@@ -22,7 +22,7 @@
 
 @if $includeGanttClasses != false {
   @include module-include-once("alta.windows.gantt") {
-  	.oj-gantt-zoomin-icon {
+    .oj-gantt-zoomin-icon {
       background-image:oj-common-image-url("dvt/common/zoom_in_16_ena.svg");
     }
     
@@ -32,8 +32,6 @@
     
     .oj-gantt-zoomin-icon.oj-active {
       background-image:oj-common-image-url("dvt/common/zoom_in_16_act.svg");
-      background-color:$buttonBgColorActive;
-      border-color:$buttonBorderColorActive;
     }
     
     .oj-gantt-zoomin-icon.oj-disabled {
@@ -50,8 +48,6 @@
     
     .oj-gantt-zoomout-icon.oj-active {
       background-image:oj-common-image-url("dvt/common/zoom_out_16_act.svg");
-      background-color:$buttonBgColorActive;
-      border-color:$buttonBorderColorActive;
     }
     
     .oj-gantt-zoomout-icon.oj-disabled {

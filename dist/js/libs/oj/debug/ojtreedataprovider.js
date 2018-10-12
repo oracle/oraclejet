@@ -28,22 +28,24 @@ define(['ojs/ojcore', 'ojs/ojeventtarget', 'ojs/ojdataprovider'], function(oj)
  * http://jquery.org/license
  */
 
-/*jslint browser: true,devel:true*/
+/* jslint browser: true,devel:true*/
 /**
  * @ojstatus preview
  * @since 5.1.0
  * @export
  * @interface oj.TreeDataProvider
+ * @ojtsmodule
  * @extends oj.DataProvider
  * @ojsignature {target: "Type",
  *               value: "interface TreeDataProvider<K, D> extends DataProvider<K, D>"}
+ * @ojtsimport {module: "ojdataprovider", type: "AMD", imported: ["DataProvider"]}
  * @classdesc
  * TreeDataProvider is the basic interface for getting runtime data which JET components that display hierarchical list of items (such as [oj-tree-view]{@link oj.ojTreeView}) can use.
  * <p>
  * This interface extends DataProvider, with the addition of a <code class="prettyprint">getChildDataProvider</code> method.
  * </p><p>
  * Unless otherwise noted, all methods operate on the set of sibling items with the same parent.
- * For example, <code class="prettyprint">fetchFirst</code> returns an iterable for the sibling items with the same parent; <code class="prettyprint">getTotalSize</code> returns a promise that 
+ * For example, <code class="prettyprint">fetchFirst</code> returns an iterable for the sibling items with the same parent; <code class="prettyprint">getTotalSize</code> returns a promise that
  * resolves to the number of items with the same parent.
  * </p><p>
  * To retrieve the children of an item, consumers use the <code class="prettyprint">getChildDataProvider</code> method to get another TreeDataProvider for the children of that item.
@@ -53,7 +55,7 @@ define(['ojs/ojcore', 'ojs/ojeventtarget', 'ojs/ojdataprovider'], function(oj)
  * Applications can also create their own implementations of this interface and use them with JET components that support it.  For example, an application can create a TreeDataProvider implementation
  * that fetches data from a REST endpoint.
  * </p><p>
- * Implementation class must implement all of the interface methods.  It should also fire the events described below when appropriate, so that JET components or other consumers can respond to data change accordingly. 
+ * Implementation class must implement all of the interface methods.  It should also fire the events described below when appropriate, so that JET components or other consumers can respond to data change accordingly.
  * </p>
  *
  * <h3 id="events-section">
@@ -61,6 +63,8 @@ define(['ojs/ojcore', 'ojs/ojeventtarget', 'ojs/ojdataprovider'], function(oj)
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#events-section"></a>
  * </h3>
  * Implementation can fire the following events by creating an instance of the event class and passing the event payload in the constructor.
+ * All events should be fired at the root-level TreeDataProvider instance, so that consumers only need to add one listener for the entire tree.
+ * Events should not be fired at child-level TreeDataProvider returned by getChildDataProvider, as there is no bubbling support for DataProvider events.
  * <h4 id="event:DataProviderMutationEvent" class="name">
  *   {@link oj.DataProviderMutationEvent}
  * </h4>
@@ -98,13 +102,15 @@ define(['ojs/ojcore', 'ojs/ojeventtarget', 'ojs/ojdataprovider'], function(oj)
  * dataProvider.addEventListener("mutate", listener);
  * </code></pre>
  */
-oj.TreeDataProvider = function()
-{
+oj.TreeDataProvider = function () {
 };
+// mapping variable definition, used in a no-require environment. Maps the oj.TreeDataProvider function object to the name used in the require callback.
+// eslint-disable-next-line no-unused-vars
+var TreeDataProvider = oj.TreeDataProvider;
 
 /**
  * Get the data provider for the children of the row identified by parentKey.
- * 
+ *
  * @ojstatus preview
  * @since 5.1.0
  * @param {any} parentKey key of the row to get child data provider for.
@@ -117,10 +123,12 @@ oj.TreeDataProvider = function()
  * @method
  * @name getChildDataProvider
  * @ojsignature {target: "Type",
- *               value: "(any): TreeDataProvider<K, D>"}
+ *               value: "(parentKey: any): TreeDataProvider<K, D>"}
  */
 
 /**
  * End of jsdoc
  */
+
+  ;return oj.TreeDataProvider;
 });

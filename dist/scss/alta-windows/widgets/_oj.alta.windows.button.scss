@@ -23,22 +23,6 @@
 @if $includeButtonClasses != false {
   @include module-include-once("alta.windows.button") {
 
-
-      // alternate button colors
-      //----------------------------------
-
-    .oj-button-primary {
-      @if $buttonPrimaryColor != null {
-        @include oj-button-alt($altColor: $buttonPrimaryColor);
-      }
-    }
-
-    .oj-button-confirm {
-      @if $buttonConfirmColor != null {
-        @include oj-button-alt($altColor: $buttonConfirmColor);
-      }
-    }
-
     
   }
 }

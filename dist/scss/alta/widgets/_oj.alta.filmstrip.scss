@@ -23,22 +23,5 @@
 
 @if $includeFilmStripClasses != false  {
   @include module-include-once("alta.filmstrip") {
-    
-    //active should trump hover
-    .oj-filmstrip-arrow.oj-active,
-    .oj-filmstrip-arrow.oj-active.oj-hover {
-        //from .oj-button.oj-active
-        background-color: $buttonHalfChromeBgColorHover;
-        @include oj-background-image($buttonBgImageHover);
-        border-color: $buttonHalfChromeBorderColorHover;
-        opacity: $filmStripArrowOpacity;
-    }
-    
-    //active should trump hover
-    .oj-filmstrip-arrow.oj-active .oj-filmstrip-arrow-icon,
-    .oj-filmstrip-arrow.oj-active.oj-hover .oj-filmstrip-arrow-icon {
-        //from .oj-button.oj-active .oj-button-icon
-        color: $buttonHalfChromeBgColorActive;
-    }
   }
 }

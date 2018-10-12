@@ -1,39 +1,45 @@
 {
   "name": "oj-accordion",
-  "version": "5.2.0",
-  "jetVersion": "5.2.0",
+  "version": "6.0.0",
+  "jetVersion": "6.0.0",
   "displayName": "Accordion",
   "type": "core",
   "description": "Displays a set of Collapsible child elements.",
+  "help": "https://docs.oracle.com/en/middleware/jet/6/reference-api/oj.ojAccordion.html",
   "properties": {
     "expanded": {
       "description": "A list of expanded child collapsibles.",
       "type": "Array<string>|Array<number>|Array<Object>|null",
       "displayName": "Expanded",
       "value": null,
-      "writeback": true
+      "writeback": true,
+      "help": "expanded"
     },
     "multiple": {
       "description": "Specifies whether multiple collapsibles can be open at the same time.",
       "type": "boolean",
       "displayName": "Multiple",
-      "value": false
+      "value": false,
+      "help": "multiple"
     },
     "translations": {
       "description": "A collection of translated resources from the translation bundle, or null if this component has no resources.",
       "type": "object|null",
       "displayName": "Translations",
       "value": {},
-      "translatable": true
+      "translatable": true,
+      "help": "translations"
     }
   },
   "methods": {
     "refresh": {
       "description": "Refreshes the visual state of the accordion.\n\nThis method does not accept any arguments.",
+      "help": "refresh",
       "return": "void"
     },
     "setProperty": {
-      "description": "Sets a property or a single subproperty for complex properties and notifies the component\nof the change, triggering a [property]Changed event.",
+      "description": "Sets a property or a single subproperty for complex properties and notifies the component of the change, triggering a [property]Changed event.",
+      "help": "setProperty",
       "params": [
         {
           "name": "property",
@@ -50,6 +56,7 @@
     },
     "getProperty": {
       "description": "Retrieves a value for a property or a single subproperty for complex properties.",
+      "help": "getProperty",
       "params": [
         {
           "name": "property",
@@ -61,6 +68,7 @@
     },
     "setProperties": {
       "description": "Performs a batch set of properties.",
+      "help": "setProperties",
       "params": [
         {
           "name": "properties",
@@ -75,6 +83,7 @@
     "ojBeforeExpand": {
       "description": "Triggered immediately before any collapsible in the accordion is expanded.",
       "cancelable": true,
+      "help": "beforeExpand",
       "detail": {
         "toCollapsible": {
           "description": "The collapsible being expanded.",
@@ -88,6 +97,7 @@
     },
     "ojExpand": {
       "description": "Triggered after any collapsible in the accordion is expanded.",
+      "help": "expand",
       "detail": {
         "toCollapsible": {
           "description": "The collapsible being expanded.",
@@ -102,6 +112,7 @@
     "ojBeforeCollapse": {
       "description": "Triggered immediately before any collapsible in the accordion is collapsed.",
       "cancelable": true,
+      "help": "beforeCollapse",
       "detail": {
         "toCollapsible": {
           "description": "The collapsible being expanded.",
@@ -115,6 +126,7 @@
     },
     "ojCollapse": {
       "description": "Triggered after any collapsible in the accordion has been collapsed.",
+      "help": "collapse",
       "detail": {
         "toCollapsible": {
           "description": "The collapsible being expanded.",
@@ -130,10 +142,13 @@
   "slots": {
     "": {
       "description": "The <oj-accordion> element accepts one or more <oj-collapsible> elements as children.",
-      "displayName": "default"
+      "displayName": "default",
+      "help": "Default"
     },
     "contextMenu": {
-      "description": "The contextMenu slot is set on the oj-menu within this element. \nThis is used to designate the JET Menu that this component should launch as a context menu on right-click, Shift-F10, Press & Hold, or component-specific gesture. \nIf specified, the browser's native context menu will be replaced by the JET Menu specified in this slot.\n\nThe application can register a listener for the Menu's ojBeforeOpen event. The listener can cancel the launch via event.preventDefault(), \nor it can customize the menu contents by editing the menu DOM directly, and then calling refresh() on the Menu.\n\nTo help determine whether it's appropriate to cancel the launch or customize the menu, the ojBeforeOpen listener can use component API's to determine which \ntable cell, chart item, etc., is the target of the context menu. See the JSDoc and demos of the individual components for details. \n\nKeep in mind that any such logic must work whether the context menu was launched via right-click, Shift-F10, Press & Hold, or component-specific touch gesture."
+      "description": "The contextMenu slot is set on the <oj-menu> instance within this element. It designates the JET Menu that this component should launch as a context menu.",
+      "maxItems": 1,
+      "help": "contextMenu"
     }
   }
 }

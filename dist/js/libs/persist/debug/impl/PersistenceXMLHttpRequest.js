@@ -542,6 +542,56 @@ define(['../persistenceUtils', './logger'], function (persistenceUtils, logger) 
       }, function (arrayBufferError) {
         logger.error('error reading response as arrayBuffer!');
       });
+    } else if (contentType &&
+      contentType.indexOf('multipart/form-data') !== -1) {
+      logger.log('Offline Persistence Toolkit PersistenceXMLHttpRequest: Calling response.formData()');
+      self._responseType = 'formData';
+      var parseMultipartForm = function(data) {
+        var responseText = '';
+        var pairs = persistenceUtils.parseMultipartFormData(data, contentType);
+        pairs.forEach(function(pair) {
+          responseText = responseText + pair.data;
+        });
+        self._response = responseText;
+        self._responseText = responseText;
+        _readyStateChange(self, PersistenceXMLHttpRequest.DONE);
+
+        if (typeof self.onload == 'function') {
+          self.onload();
+        }
+      }
+      if (response.formData) {
+        try {
+          response.formData().then(function (formData) {
+            var responseText = '';
+            var values = formData.values();
+            var value;
+            var next;
+            do {
+              next = values.next();
+              value = next.value;
+              if (value) {
+                responseText = responseText + value;
+              }
+            } while (!next.done);
+            self._response = responseText;
+            self._responseText = responseText;
+            _readyStateChange(self, PersistenceXMLHttpRequest.DONE);
+
+            if (typeof self.onload == 'function') {
+              self.onload();
+            }
+          });
+        } catch (err) {
+          response.text().then(function (data) {
+            parseMultipartForm(data);
+          });
+        }
+      } else {
+        response.text().then(function (data) {
+          parseMultipartForm(data);
+        });
+      }
     } else {
       response.text().then(function (data) {
         logger.log('Offline Persistence Toolkit PersistenceXMLHttpRequest: Calling response.text()');

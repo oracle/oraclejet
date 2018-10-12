@@ -4,16 +4,18 @@
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
-define(['ojs/ojcore', 'jquery', 'ojs/ojdatasource-common', 'ojs/ojmodel'], function(oj, $)
+define(['ojs/ojcore', 'jquery', 'ojs/ojmodel', 'ojs/ojdatasource-common'], function(oj, $, Model)
 {
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
  */
 
+/* global Promise:false */
+
 /**
  * A CollectionNodeSet represents a collection of nodes.  The CollectionNodeSet is an object returned by the success callback
- * of the fetchChildren method on CollectionTreeDataSource.  
+ * of the fetchChildren method on CollectionTreeDataSource.
  * @implements oj.NodeSet
  * @constructor
  * @since 1.0
@@ -26,15 +28,22 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojdatasource-common', 'ojs/ojmodel'], funct
  * @export
  * @ojtsignore
  */
-oj.CollectionNodeSet = function(parentKey, collection, models, treeDataSource, start, count)
-{
+oj.CollectionNodeSet = function (parentKey, collection, models, treeDataSource, start, count) {
   this.parentKey = parentKey;
   this.collection = collection;
   this.models = models;
   this.childNodeSet = [];
   this.treeDataSource = treeDataSource;
+
   // Can't have start exceeding valid indices
-  this.start = start < models.length ? start : (models.length === 0) ? 0 : models.length-1;
+  if (start < models.length) {
+    this.start = start;
+  } else if (models.length === 0) {
+    this.start = 0;
+  } else {
+    this.start = models.length - 1;
+  }
+
   // Unknown count: we'll assign it.  Also can't have count exceeding collection size
   this.count = count === -1 ? models.length : Math.min(models.length, count);
 };
@@ -42,10 +51,10 @@ oj.CollectionNodeSet = function(parentKey, collection, models, treeDataSource, s
 /**
  * @protected
  */
-oj.CollectionNodeSet.prototype.FetchDescendants = function(callbacks) {
-  this._fetchDescendants(this, true).then(function () {
-    if (callbacks['success']) {
-      callbacks['success']();
+oj.CollectionNodeSet.prototype.FetchDescendants = function (callbacks) {
+  this._fetchDescendants(this).then(function () {
+    if (callbacks.success) {
+      callbacks.success();
     }
   });
 };
@@ -53,25 +62,23 @@ oj.CollectionNodeSet.prototype.FetchDescendants = function(callbacks) {
 /**
  * @private
  */
-oj.CollectionNodeSet.prototype._fetchDescendants = function(nodeSet, topLevel) {  
-  return new Promise(function(resolve, reject) {
+oj.CollectionNodeSet.prototype._fetchDescendants = function (nodeSet) {
+  return new Promise(function (resolve) {
     var count = nodeSet.getCount();
 
     // Walk over each node in this node set, and fetch all the descendants of each
     function nextNode(index) {
       if (index < count) {
-        nodeSet.FetchChildNodeSet(index, {'success':function(childNodeSet) {
-                                            if (childNodeSet !== null) {
-                                                nodeSet._fetchDescendants(childNodeSet, false).then(function() {
-                                                    nextNode(index+1);
-                                                });
-                                            }
-                                            else {
-                                                nextNode(index+1);
-                                            }
-        }});
-      }
-      else {
+        nodeSet.FetchChildNodeSet(index, { success: function (childNodeSet) {
+          if (childNodeSet !== null) {
+            nodeSet._fetchDescendants(childNodeSet).then(function () {
+              nextNode(index + 1);
+            });
+          } else {
+            nextNode(index + 1);
+          }
+        } });
+      } else {
         resolve(undefined);
       }
     }
@@ -82,76 +89,72 @@ oj.CollectionNodeSet.prototype._fetchDescendants = function(nodeSet, topLevel) {
 /**
  * @protected
  */
-oj.CollectionNodeSet.prototype.FetchChildNodeSet = function(index, callbacks) {
+oj.CollectionNodeSet.prototype.FetchChildNodeSet = function (index, callbacks) {
   var model = this.models[index];
   var parse = this.treeDataSource.parseMetadata(model);
-  if (parse['leaf']) {
+  if (parse.leaf) {
     // We're at the leaf: don't fetch any more
     this.childNodeSet[index] = null;
-    callbacks['success'](null);
+    callbacks.success(null);
     return;
   }
 
   var collection = this.treeDataSource.GetChildCollection(model);
-  var parentKey = this.treeDataSource.parseMetadata(model)['key'];
+  var parentKey = this.treeDataSource.parseMetadata(model).key;
   var self = this;
-  this.treeDataSource.FetchCollection(collection, 0, -1, {'success':function(nodeSet) {
+  this.treeDataSource.FetchCollection(collection, 0, -1, { success: function (nodeSet) {
     self.childNodeSet[index] = nodeSet;
-    callbacks['success'](nodeSet);
-  }}, parentKey); 
+    callbacks.success(nodeSet);
+  } }, parentKey);
 };
 
 /**
  * @private
  */
-oj.CollectionNodeSet.prototype._getCollection = function() {
+oj.CollectionNodeSet.prototype._getCollection = function () {
   return this.collection;
 };
 
 /**
-* Gets the parent key for this result set.  
-* @return {any} the parent key for this result set. 
+* Gets the parent key for this result set.
+* @return {any} the parent key for this result set.
 * @export
 * @memberof oj.CollectionNodeSet
 */
-oj.CollectionNodeSet.prototype.getParent = function()
-{
-    return this.parentKey;
+oj.CollectionNodeSet.prototype.getParent = function () {
+  return this.parentKey;
 };
 
 /**
-* Gets the start index of the result set.  
+* Gets the start index of the result set.
 * @return {number} the start index of the result set.
 * @export
 * @memberof oj.CollectionNodeSet
 */
-oj.CollectionNodeSet.prototype.getStart = function()
-{
+oj.CollectionNodeSet.prototype.getStart = function () {
   return this.start;
 };
 
 /**
-* Gets the actual count of the result set.  
+* Gets the actual count of the result set.
 * @return {number} the actual count of the result set.
 * @export
 * @memberof oj.CollectionNodeSet
 */
-oj.CollectionNodeSet.prototype.getCount = function()
-{
+oj.CollectionNodeSet.prototype.getCount = function () {
   return this.count;
 };
 
 /**
 * Gets the data of the specified index.  An error is throw when 1) the range is not yet available and
-* 2) the index specified is out of bounds. 
-* @param {number} index the index of the node/row in which we want to retrieve the data from.  
+* 2) the index specified is out of bounds.
+* @param {number} index the index of the node/row in which we want to retrieve the data from.
 * @return {any} the data for the specified index.  oj.RowData should be returned for data that represents a row
 *         with a number of columns.
 * @export
 * @memberof oj.CollectionNodeSet
 */
-oj.CollectionNodeSet.prototype.getData = function(index)
-{
+oj.CollectionNodeSet.prototype.getData = function (index) {
   this._checkRange(index);
   return this.models[index].attributes;
 };
@@ -159,37 +162,36 @@ oj.CollectionNodeSet.prototype.getData = function(index)
 /**
  * @private
  */
-oj.CollectionNodeSet.prototype._checkRange = function(index) {
-  if (index < this.start || index > this.start+this.count) {
+oj.CollectionNodeSet.prototype._checkRange = function (index) {
+  if (index < this.start || index > this.start + this.count) {
     // Out of range
-    throw "Out of range";
+    throw new Error('Out of range');
   }
 };
 
 /**
-* Gets the metadata of the specified index.  An error is throw when 1) the range is not yet available and 
-* 2) the index specified is out of bounds. 
+* Gets the metadata of the specified index.  An error is throw when 1) the range is not yet available and
+* 2) the index specified is out of bounds.
 * The metadata that the data source must return are:
 *  1) key - Object, the key of the node/row.
-*  2) leaf - boolean, true if it's a leaf, false otherwise. 
+*  2) leaf - boolean, true if it's a leaf, false otherwise.
 *  3) depth? - number, the depth of the node/row. (or should the caller just calculate it?)
-* @param {number} index the index of the node/row in which we want to retrieve the metadata from.  
+* @param {number} index the index of the node/row in which we want to retrieve the metadata from.
 * @return {{key: *, leaf: boolean, depth: number}} the metadata object for the specific index.
 * @export
 * @memberof oj.CollectionNodeSet
-*/	
-oj.CollectionNodeSet.prototype.getMetadata = function(index)
-{
+*/
+oj.CollectionNodeSet.prototype.getMetadata = function (index) {
   this._checkRange(index);
 
-  var metadata = {'leaf': false, 'depth': -1};
+  var metadata = { leaf: false, depth: -1 };
 
   var model = this.models[index];
 
   var parse = this.treeDataSource.parseMetadata(model);
-  metadata['key'] = parse['key'];
-  metadata['leaf'] = parse['leaf'];
-  metadata['depth'] = parse['depth'];
+  metadata.key = parse.key;
+  metadata.leaf = parse.leaf;
+  metadata.depth = parse.depth;
 
   return metadata;
 };
@@ -201,7 +203,7 @@ oj.CollectionNodeSet.prototype.getMetadata = function(index)
  * @export
  * @memberof oj.CollectionNodeSet
  */
-oj.CollectionNodeSet.prototype.getChildNodeSet = function(index) {
+oj.CollectionNodeSet.prototype.getChildNodeSet = function (index) {
   if (this.treeDataSource._virtual) {
     return null;
   }
@@ -210,9 +212,12 @@ oj.CollectionNodeSet.prototype.getChildNodeSet = function(index) {
 
   return this.childNodeSet[index];
 };
+
+/* global Promise:false, Model:false */
+
 /**
  * @class oj.CollectionTreeDataSource
- * @classdesc TreeDataSource implementation that represents hierachical data available from an {@link oj.Collection} object, such as an external data source.  This data source can be used by [ListView]{@link oj.ojListView}, 
+ * @classdesc TreeDataSource implementation that represents hierachical data available from an {@link oj.Collection} object, such as an external data source.  This data source can be used by [ListView]{@link oj.ojListView},
  *            [NavigationList]{@link oj.ojNavigationList}, and [TreeView]{@link oj.ojTreeView}.<br><br>
  *            See the <a href="../jetCookbook.html?component=treeView&demo=collection">Tree View - Data Source: Collection</a> demo for an example.<br><br>
  *            Refer to {@link oj.TreeDataSource} for other data sources that represent hierarachical data.
@@ -226,14 +231,14 @@ oj.CollectionNodeSet.prototype.getChildNodeSet = function(index) {
  * @extends oj.TreeDataSource
  * @ojtsignore
  */
-oj.CollectionTreeDataSource = function(options)
-{
+oj.CollectionTreeDataSource = function (options) {
+  // eslint-disable-next-line no-param-reassign
   options = options || {};
-  this.rootCollection = options['root'];
-  this.childCollectionCallback = options['childCollectionCallback'];
-  this.parseMetadata = options['parseMetadata'];
+  this.rootCollection = options.root;
+  this.childCollectionCallback = options.childCollectionCallback;
+  this.parseMetadata = options.parseMetadata;
   this.sortkey = null;
-  this.sortdir = "none";
+  this.sortdir = 'none';
   // This is a parent->collection cache
   this.cache = {};
 
@@ -247,12 +252,12 @@ oj.CollectionTreeDataSource = function(options)
 /**
  * @private
  */
-oj.CollectionTreeDataSource.prototype.parseMetadata = function(model) {    
-  return {'key':model['idAttribute']+"="+model['id']};
+oj.CollectionTreeDataSource.prototype.parseMetadata = function (model) {
+  return { key: model.idAttribute + '=' + model.id };
 };
 
 // Subclass from oj.TreeDataSource
-oj.Object.createSubclass(oj.CollectionTreeDataSource, oj.TreeDataSource, "oj.CollectionTreeDataSource");
+oj.Object.createSubclass(oj.CollectionTreeDataSource, oj.TreeDataSource, 'oj.CollectionTreeDataSource');
 
 /**
  * Initializes the data source.
@@ -261,8 +266,7 @@ oj.Object.createSubclass(oj.CollectionTreeDataSource, oj.TreeDataSource, "oj.Col
  * @ojtsignore
  * @export
  */
-oj.CollectionTreeDataSource.prototype.Init = function()
-{
+oj.CollectionTreeDataSource.prototype.Init = function () {
   // super
   oj.CollectionTreeDataSource.superclass.Init.call(this);
 };
@@ -276,8 +280,7 @@ oj.CollectionTreeDataSource.prototype.Init = function()
  * @export
  * @memberof oj.CollectionTreeDataSource
  */
-oj.CollectionTreeDataSource.prototype.getChildCount = function(parent)
-{
+oj.CollectionTreeDataSource.prototype.getChildCount = function (parent) {
   var childColl = this.__getParentsChildCollectionFromCache(parent);
   if (childColl) {
     if (childColl.length > 0) {
@@ -301,10 +304,11 @@ oj.CollectionTreeDataSource.prototype.getChildCount = function(parent)
  * @export
  * @memberof oj.CollectionTreeDataSource
  */
-oj.CollectionTreeDataSource.prototype.getChildCollection = function(key, callbacks) {
-    this.fetchChildren(key, null, {'success':function(nodeSet) {
-            callbacks['success'](nodeSet._getCollection());
-    }, 'error':callbacks['error']});
+oj.CollectionTreeDataSource.prototype.getChildCollection = function (key, callbacks) {
+  this.fetchChildren(key, null, { success: function (nodeSet) {
+    callbacks.success(nodeSet._getCollection());
+  },
+    error: callbacks.error });
 };
 
 /**
@@ -322,39 +326,35 @@ oj.CollectionTreeDataSource.prototype.getChildCollection = function(key, callbac
  * @export
  * @memberof oj.CollectionTreeDataSource
  */
-oj.CollectionTreeDataSource.prototype.fetchChildren = function(parent, range, callbacks, options)
-{
-    range = range || {};
-    var start = range['start'] ? range['start'] : 0;
-    var count = range['count'] ? range['count'] : -1;
-    
-    if (parent === null) {
-      // Do root
-      this.FetchCollection(null, start, count, callbacks, null);
-      return;
-    }
-    // Use child collection callback to set up child collection, then fetch it
-    var self = this;
-    this._getModelForId(this.rootCollection, start, count, parent, 0).then(function(parentModel) {
+// eslint-disable-next-line no-unused-vars
+oj.CollectionTreeDataSource.prototype.fetchChildren = function (parent, range, callbacks, options) {
+  // eslint-disable-next-line no-param-reassign
+  range = range || {};
+  var start = range.start ? range.start : 0;
+  var count = range.count ? range.count : -1;
+
+  if (parent === null) {
+    // Do root
+    this.FetchCollection(null, start, count, callbacks, null);
+    return;
+  }
+  // Use child collection callback to set up child collection, then fetch it
+  var self = this;
+  this._getModelForId(this.rootCollection, start, count, parent, 0).then(function (parentModel) {
     if (parentModel) {
       var collection = self.GetChildCollection(parentModel.model);
       try {
         self.FetchCollection(collection, start, count, callbacks, parent);
-      }
-      catch (error)
-      {
-        if (callbacks && callbacks['error']) {
-          callbacks['error']({'status': error['message']});
+      } catch (error) {
+        if (callbacks && callbacks.error) {
+          callbacks.error({ status: error.message });
         }
-      } 
-    }
-    else {
-      // Couldn't find a model for the given Id: call the error if present
-      if (callbacks && callbacks['error']) {
-        callbacks['error'](parent);
       }
+    } else if (callbacks && callbacks.error) {
+      // Couldn't find a model for the given Id: call the error if present
+      callbacks.error(parent);
     }
- });
+  });
 };
 
 
@@ -362,71 +362,73 @@ oj.CollectionTreeDataSource.prototype.fetchChildren = function(parent, range, ca
  * Called by common model when a model is added to a collection
  * @private
  */
-oj.CollectionTreeDataSource.prototype.ModelAdded = function(model, collection, options) {
-    var index = 0;
-    if (options && options['at']) {
-        index = options['at'];
-    }
-    var parents = this._getParentChain(collection);
-    var parent = parents != null && parents.length > 0 ? parents[parents.length-1] : null;
-    var event = this._createEvent(this, "insert", index, parents, this._putModelInNodeSet(parent, model));
-    this.handleEvent("change", event);
+oj.CollectionTreeDataSource.prototype.ModelAdded = function (model, collection, options) {
+  var index = 0;
+  if (options && options.at) {
+    index = options.at;
+  }
+  var parents = this._getParentChain(collection);
+  var parent = parents != null && parents.length > 0 ? parents[parents.length - 1] : null;
+  var event = this._createEvent(this, 'insert', index, parents, this._putModelInNodeSet(parent, model));
+  this.handleEvent('change', event);
 };
 
 /**
  * Called by common model when a model is removed from a collection
  * @private
  */
-oj.CollectionTreeDataSource.prototype.ModelRemoved = function(model, collection, options) {
-    var index = 0;
-    if (options && options['index']) {
-        index = options['index'];
-    }
-    this._removeCollectionFromCache(model);
-    var event = this._createEvent(this, "delete", index, this._getParentChain(collection), null);
-    this.handleEvent("change", event);
+oj.CollectionTreeDataSource.prototype.ModelRemoved = function (model, collection, options) {
+  var index = 0;
+  if (options && options.index) {
+    index = options.index;
+  }
+  this._removeCollectionFromCache(model);
+  var event = this._createEvent(this, 'delete', index, this._getParentChain(collection), null);
+  this.handleEvent('change', event);
 };
 
 /**
  * Called by common model when a model is updated
  * @private
  */
-oj.CollectionTreeDataSource.prototype.ModelUpdated = function(model, options) {
-    var collectionForModel = model['collection'];
-    var index = model.GetIndex();
-    var parents = null;
-    if (collectionForModel) {
-        // If this model's collection is found, get its parent chain from the actual collection
-        parents = this._getParentChain(collectionForModel);
-    }
-    var parent = parents != null && parents.length > 0 ? parents[parents.length-1] : null;
-    var event = this._createEvent(this, "update", index, parents, this._putModelInNodeSet(parent, model));
-    this.handleEvent("change", event);
+// eslint-disable-next-line no-unused-vars
+oj.CollectionTreeDataSource.prototype.ModelUpdated = function (model, options) {
+  var collectionForModel = model.collection;
+  var index = model.GetIndex();
+  var parents = null;
+  if (collectionForModel) {
+    // If this model's collection is found, get its parent chain from the actual collection
+    parents = this._getParentChain(collectionForModel);
+  }
+  var parent = parents != null && parents.length > 0 ? parents[parents.length - 1] : null;
+  var event = this._createEvent(this, 'update', index, parents, this._putModelInNodeSet(parent, model));
+  this.handleEvent('change', event);
 };
 
 /**
  * Called if a collection is refreshed
  * @protected
  */
-oj.CollectionTreeDataSource.prototype.CollectionRefreshed = function(collection, resp, options) {
-    var event = this._createEvent(this, "refresh", null, this._getParentChain(collection), null);
-    this.handleEvent("refresh", event);
+// eslint-disable-next-line no-unused-vars
+oj.CollectionTreeDataSource.prototype.CollectionRefreshed = function (collection, resp, options) {
+  var event = this._createEvent(this, 'refresh', null, this._getParentChain(collection), null);
+  this.handleEvent('refresh', event);
 };
 
 /**
  * @private
  */
-oj.CollectionTreeDataSource.prototype._putModelInNodeSet = function(parent, model) {
+oj.CollectionTreeDataSource.prototype._putModelInNodeSet = function (parent, model) {
 /*    var rows = [];
     rows.push(model.attributes);
     var options = {};
-    options['idAttribute'] = model['idAttribute'];    
+    options['idAttribute'] = model['idAttribute'];
     var rowset = new oj.ArrayRowSet(rows, options);
     rowset.fetch();
     return rowset;*/
-    var collection = new oj.Collection();
-    collection.add(model);
-    return this._getNodeSet(collection, parent, 0, 1, [model]);    
+  var collection = new Model.Collection();
+  collection.add(model);
+  return this._getNodeSet(collection, parent, 0, 1, [model]);
 };
 
 /**
@@ -434,52 +436,53 @@ oj.CollectionTreeDataSource.prototype._putModelInNodeSet = function(parent, mode
  * child key of root on down to collection's parent
  * @private
  */
-oj.CollectionTreeDataSource.prototype._getParentChain = function(collection) {
-    var parents = [];
-    var parent = null;
-    var coll = collection;
-    do {
-        parent = this._getParentOfCollection(coll);
-        if (parent !== null) {
-            if (parent !== oj.CollectionTreeDataSource.ROOT_CACHE_KEY) {
-                parents.unshift(parent);
-            }
-            coll = this._getCollectionOfKey(parent);
-        }
-    } while (parent != null);
-    return parents;
+oj.CollectionTreeDataSource.prototype._getParentChain = function (collection) {
+  var parents = [];
+  var parent = null;
+  var coll = collection;
+  do {
+    parent = this._getParentOfCollection(coll);
+    if (parent !== null) {
+      if (parent !== oj.CollectionTreeDataSource.ROOT_CACHE_KEY) {
+        parents.unshift(parent);
+      }
+      coll = this._getCollectionOfKey(parent);
+    }
+  } while (parent != null);
+  return parents;
 };
 
 // Generate the cache key
-oj.CollectionTreeDataSource.ROOT_CACHE_KEY = "%!@ROOT%#@!";
+oj.CollectionTreeDataSource.ROOT_CACHE_KEY = '%!@ROOT%#@!';
 /**
  * @private
  */
-oj.CollectionTreeDataSource.prototype._getCacheKey = function(model) {
-    // If model (parent) is null, look for the root
-    // If model is not an oj.Model, just use it as the key
-    var key = model instanceof oj.Model ? this.parseMetadata(model)['key'] : model;
-    return model ? key : oj.CollectionTreeDataSource.ROOT_CACHE_KEY;
+oj.CollectionTreeDataSource.prototype._getCacheKey = function (model) {
+  // If model (parent) is null, look for the root
+  // If model is not an oj.Model, just use it as the key
+  var key = model instanceof Model.Model ? this.parseMetadata(model).key : model;
+  // Handle model === 0 case
+  return (model != null) ? key : oj.CollectionTreeDataSource.ROOT_CACHE_KEY;
 };
 
 /**
  * Return a cached collection given a parent Model.  Null if not cached
  * @private
  */
-oj.CollectionTreeDataSource.prototype.__getParentsChildCollectionFromCache = function(model) {
-    return this.cache[this._getCacheKey(model)];
+oj.CollectionTreeDataSource.prototype.__getParentsChildCollectionFromCache = function (model) {
+  return this.cache[this._getCacheKey(model)];
 };
 
 /**
  * Put a collection into the cache whose parent is represented by model
  * @private
  */
-oj.CollectionTreeDataSource.prototype._setCollectionInCache = function(model, collection) {
+oj.CollectionTreeDataSource.prototype._setCollectionInCache = function (model, collection) {
   // Tack on listeners
-  collection.on(oj.Events.EventType['ADD'], this.ModelAdded, this);
-  collection.on(oj.Events.EventType['REMOVE'], this.ModelRemoved, this);
-  collection.on(oj.Events.EventType['CHANGE'], this.ModelUpdated, this);
-  collection.on(oj.Events.EventType['SYNC'], this.CollectionRefreshed, this);
+  collection.on(Model.Events.EventType.ADD, this.ModelAdded, this);
+  collection.on(Model.Events.EventType.REMOVE, this.ModelRemoved, this);
+  collection.on(Model.Events.EventType.CHANGE, this.ModelUpdated, this);
+  collection.on(Model.Events.EventType.SYNC, this.CollectionRefreshed, this);
   var key = this._getCacheKey(model);
   this.cache[key] = collection;
   return this.cache[key];
@@ -489,16 +492,16 @@ oj.CollectionTreeDataSource.prototype._setCollectionInCache = function(model, co
  * Remove any collections with the given model as a parent
  * @private
  */
-oj.CollectionTreeDataSource.prototype._removeCollectionFromCache = function(model) {
+oj.CollectionTreeDataSource.prototype._removeCollectionFromCache = function (model) {
   var key = this._getCacheKey(model);
-  for (var prop in this.cache) {
-    if (this.cache.hasOwnProperty(prop)) {
-      if (prop === key) {
-        // Found it: remove listeners and delete it
-        this.cache[key].off(null, null, this);
-        delete this.cache[key];
-        return;
-      }
+  var props = Object.keys(this.cache);
+  for (var i = 0; i < props.length; i++) {
+    var prop = props[i];
+    if (prop === key) {
+      // Found it: remove listeners and delete it
+      this.cache[key].off(null, null, this);
+      delete this.cache[key];
+      return;
     }
   }
 };
@@ -508,60 +511,60 @@ oj.CollectionTreeDataSource.prototype._removeCollectionFromCache = function(mode
  * The expectation is that the model would have to have been locally fetched
  * @private
  */
-oj.CollectionTreeDataSource.prototype._keyInCollection = function(key, collection) {
-    var count = collection['length'];
-    var model = null;
-    for (var i = 0; i < count; i++) {
-        model = collection['models'][i];
-        if (model) {
-          var currKey = this._getCacheKey(model);
-          if (key === currKey) {
-              return true;
-          }
-        }
+oj.CollectionTreeDataSource.prototype._keyInCollection = function (key, collection) {
+  var count = collection.length;
+  var model = null;
+  for (var i = 0; i < count; i++) {
+    model = collection.models[i];
+    if (model) {
+      var currKey = this._getCacheKey(model);
+      if (key === currKey) {
+        return true;
+      }
     }
-    return false;
+  }
+  return false;
 };
 
 /**
  * Get the collection containing the given key
  * @private
  */
-oj.CollectionTreeDataSource.prototype._getCollectionOfKey = function(key) {
+oj.CollectionTreeDataSource.prototype._getCollectionOfKey = function (key) {
   // Search the cache for the parent key
-  for (var prop in this.cache) {
-    if (this.cache.hasOwnProperty(prop)) {
-      var collection = this.cache[prop];
-      if (this._keyInCollection(key, collection)) {
-        return collection;
-      }
-    }
-  }
-  return null;    
-};
-
-/**
- * Get the parent key for the given collection from the cache, if found
- * @private
- */
-oj.CollectionTreeDataSource.prototype._getParentOfCollection = function(collection) {
-  // Search the cache for the parent key
-  for (var prop in this.cache) {
-    if (this.cache.hasOwnProperty(prop)) {
-      if (this.cache[prop] === collection) {
-        return prop;
-      }
+  var props = Object.keys(this.cache);
+  for (var i = 0; i < props.length; i++) {
+    var prop = props[i];
+    var collection = this.cache[prop];
+    if (this._keyInCollection(key, collection)) {
+      return collection;
     }
   }
   return null;
 };
 
 /**
- * Return an object giving the child collection for the given model along with a boolean indicating whether the collection was found 
- * in cache. 
+ * Get the parent key for the given collection from the cache, if found
+ * @private
+ */
+oj.CollectionTreeDataSource.prototype._getParentOfCollection = function (collection) {
+  // Search the cache for the parent key
+  var props = Object.keys(this.cache);
+  for (var i = 0; i < props.length; i++) {
+    var prop = props[i];
+    if (this.cache[prop] === collection) {
+      return prop;
+    }
+  }
+  return null;
+};
+
+/**
+ * Return an object giving the child collection for the given model along with a boolean indicating whether the collection was found
+ * in cache.
  * @protected
  */
-oj.CollectionTreeDataSource.prototype.GetChildCollection = function(parentModel) {    
+oj.CollectionTreeDataSource.prototype.GetChildCollection = function (parentModel) {
   // Is it in the cache?
   var cached = true;
   var collection = this.__getParentsChildCollectionFromCache(parentModel);
@@ -578,34 +581,40 @@ oj.CollectionTreeDataSource.prototype.GetChildCollection = function(parentModel)
     }
   }
 
-  return {collection:collection,cached:cached};
+  return { collection: collection, cached: cached };
 };
 
 /**
  * @private
  */
-oj.CollectionTreeDataSource.prototype._createEvent = function(source, operation, index, parent, data) {
-    return {'source':source, 'operation':operation, 'index':index, 'parent':parent, 'data':data};
+oj.CollectionTreeDataSource.prototype._createEvent = function (
+  source, operation, index, parent, data
+) {
+  return { source: source, operation: operation, index: index, parent: parent, data: data };
 };
 
 /**
  * Call to fetch models for an already-created collection--used only by fetchDescendants
  * @protected
  */
-oj.CollectionTreeDataSource.prototype.FetchCollection = function(collectionObj, start, count, callbacks, parent) {
+oj.CollectionTreeDataSource.prototype.FetchCollection = function (
+  collectionObj, start, count, callbacks, parent
+) {
   var self = this;
   if (collectionObj === null) {
     // Fetch the root
     // Check for the root in the cache
+    // eslint-disable-next-line no-param-reassign
     collectionObj = this.__getParentsChildCollectionFromCache(null);
     if (!collectionObj) {
       // Not found, put a representation in there
-      collectionObj = {collection:self.rootCollection,cached:false};
+      // eslint-disable-next-line no-param-reassign
+      collectionObj = { collection: self.rootCollection, cached: false };
       self._setCollectionInCache(null, this.rootCollection);
-    }
-    else {
+    } else {
       // Root was found precached: set up its information
-      collectionObj = {collection:collectionObj, cached:true};
+      // eslint-disable-next-line no-param-reassign
+      collectionObj = { collection: collectionObj, cached: true };
     }
   }
   if (collectionObj) {
@@ -614,11 +623,11 @@ oj.CollectionTreeDataSource.prototype.FetchCollection = function(collectionObj, 
       if (coll.IsVirtual()) {
         self._virtual = true;
       }
-      if (callbacks['success']) {
+      if (callbacks.success) {
         // return a nodeset version of this fetched collection via the callback
-        callbacks['success'](self._getNodeSet(coll, parent, start, count, models));
+        callbacks.success(self._getNodeSet(coll, parent, start, count, models));
       }
-    }, callbacks['error']);    
+    }, callbacks.error);
   }
 };
 
@@ -626,7 +635,9 @@ oj.CollectionTreeDataSource.prototype.FetchCollection = function(collectionObj, 
  * Turn collection into a CollectionNodeSet
  * @private
  */
-oj.CollectionTreeDataSource.prototype._getNodeSet = function(collection, parent, start, count, models) {
+oj.CollectionTreeDataSource.prototype._getNodeSet = function (
+  collection, parent, start, count, models
+) {
   return new oj.CollectionNodeSet(parent, collection, models, this, start, count);
 };
 
@@ -634,58 +645,59 @@ oj.CollectionTreeDataSource.prototype._getNodeSet = function(collection, parent,
  * Do any of the models in this collection or its children have the given key
  * @private
  */
-oj.CollectionTreeDataSource.prototype._scanForKey = function(collection, key) {
-    // Search collection for key
-    var self = this;
-    var models = new Array(collection['length']);
- 
-    return new Promise(function(resolve, reject) {
-      function checkNext(index, collection, key) {
-        if (index < collection['length']) {
-          // Get the model at location index
-          collection.at(index, {'deferred':true}).then(function (model) {
-            // Store the model
-            models[index] = model;
-            
-            // Does the retrieved model match the key when parsed out?  If so return it
-            if (model) {
-              var parse = self.parseMetadata(model);
-              if (key === parse['key']) {
-                  resolve({model: model, models: models});
-                  return;
-              }
-            }
-            // No model or no match: go to the next model in the collection
-            index++;
-            checkNext(index, collection, key);
-         });
-        }
-        else {
-          // Hit the end: not found
-          resolve({model: null, models: models});
-          return;
-        }
-      };
+oj.CollectionTreeDataSource.prototype._scanForKey = function (collection, key) {
+  // Search collection for key
+  var self = this;
+  var models = new Array(collection.length);
 
-      // Start checking at the 0th model in the collection
-      checkNext(0, collection, key);
-    });
+  return new Promise(function (resolve) {
+    function checkNext(index, _collection, _key) {
+      if (index < collection.length) {
+        // Get the model at location index
+        _collection.at(index, { deferred: true }).then(function (model) {
+          // Store the model
+          models[index] = model;
+
+          // Does the retrieved model match the key when parsed out?  If so return it
+          if (model) {
+            var parse = self.parseMetadata(model);
+            if (_key === parse.key) {
+              resolve({ model: model, models: models });
+              return;
+            }
+          }
+          // No model or no match: go to the next model in the collection
+          // eslint-disable-next-line no-param-reassign
+          index += 1;
+          checkNext(index, _collection, _key);
+        });
+      } else {
+        // Hit the end: not found
+        resolve({ model: null, models: models });
+      }
+    }
+
+    // Start checking at the 0th model in the collection
+    checkNext(0, collection, key);
+  });
 };
 
 /**
  * Returns a promise with an object giving the model that corresponds to the given key, and the depth in the hierarchy at which it was found
- * @private 
+ * @private
  */
-oj.CollectionTreeDataSource.prototype._getModelForId = function(collection, start, count, key, depth) {
+oj.CollectionTreeDataSource.prototype._getModelForId = function (
+  collection, start, count, key, depth
+) {
   var self = this;
 
-  return new Promise(function(resolve, reject) {
+  return new Promise(function (resolve) {
     // Does the starting collection contain the key?
     self._scanForKey(collection, key).then(function (obj) {
       // Yes, resolve (return it)
       if (obj.model) {
-          resolve({model:obj.model, depth: depth});
-          return;
+        resolve({ model: obj.model, depth: depth });
+        return;
       }
       // It does not
       // Wrong collection: search each model's child collections, and check recursively
@@ -696,29 +708,31 @@ oj.CollectionTreeDataSource.prototype._getModelForId = function(collection, star
           var childColl = tds.GetChildCollection(models[index]);
           if (!childColl.collection) {
             // No child collection found: move on to the next model in the current collection
-            index++;
+            // eslint-disable-next-line no-param-reassign
+            index += 1;
             getNextCollection(index, models, tds);
           } else {
             // Fetch the child collection if necessary
-            tds._fetch(childColl, start, count, function(fetchColl, nextModels) {
+            // eslint-disable-next-line no-unused-vars
+            tds._fetch(childColl, start, count, function (fetchColl, nextModels) {
               // Now check the child collection recursively for the key, moving depth down 1
-              tds._getModelForId(fetchColl, start, count, key, depth+1).then(function(childModel) {
-                // Found the model in this collection: unwind
-                if (childModel) {
-                  // Found somewhere down this tree
-                  resolve(childModel);
-                  return;
-                } else {
-                  // Not found down that tree
-                  // Move to the next model
-                  index++;
-                  getNextCollection(index, models, tds);
-                }
-              });                                
+              tds._getModelForId(fetchColl, start, count, key, depth + 1)
+                .then(function (childModel) {
+                  // Found the model in this collection: unwind
+                  if (childModel) {
+                    // Found somewhere down this tree
+                    resolve(childModel);
+                  } else {
+                    // Not found down that tree
+                    // Move to the next model
+                    // eslint-disable-next-line no-param-reassign
+                    index += 1;
+                    getNextCollection(index, models, tds);
+                  }
+                });
             }, null);
           }
-        }
-        else {
+        } else {
           // Hit the end
           resolve(null);
         }
@@ -732,19 +746,20 @@ oj.CollectionTreeDataSource.prototype._getModelForId = function(collection, star
 /**
  * @private
  */
-oj.CollectionTreeDataSource.prototype._getModelsFromCollection = function(collection) {
-  function loop(collection, a, b, models) {
-    return new Promise(function(allresolve, allreject) {
+oj.CollectionTreeDataSource.prototype._getModelsFromCollection = function (collection) {
+  function loop(_collection, a, b, models) {
+    return new Promise(function (allresolve, allreject) {
       var i;
-      var doTask = function(index) {
-                     var promise = new Promise(function(resolve, reject) {
-                     collection.at(index).then(function(model) {
-                       models[index] = model;
-                       resolve(index+1);
-                     }, reject);
-                     });
-                     return promise;
-                  };
+      var doTask = function (index) {
+        var promise = new Promise(function (resolve, reject) {
+          _collection.at(index).then(function (model) {
+            // eslint-disable-next-line no-param-reassign
+            models[index] = model;
+            resolve(index + 1);
+          }, reject);
+        });
+        return promise;
+      };
 
       var currentStep = Promise.resolve(0);
 
@@ -753,65 +768,71 @@ oj.CollectionTreeDataSource.prototype._getModelsFromCollection = function(collec
       }
       return currentStep.then(allresolve, allreject);
     });
-  };
+  }
 
   if (collection.IsVirtual()) {
-    var models = new Array(collection['length']);
-    return new Promise(function(resolve, reject) {
-      loop(collection, 0, collection['length'], models).then(function() {
+    var models = new Array(collection.length);
+    return new Promise(function (resolve) {
+      loop(collection, 0, collection.length, models).then(function () {
         resolve(models);
       });
     });
   }
-  else {
-    return new Promise(function(resolve, reject) {
-        resolve(collection['models']);
-    });      
-  }  
+
+  return new Promise(function (resolve) {
+    resolve(collection.models);
+  });
 };
 
 /**
  * Do a fetch or just return the collection if it came from cache
  * @private
  */
-oj.CollectionTreeDataSource.prototype._fetch = function(collectionCacheObj, start, count, success, error) {    
+oj.CollectionTreeDataSource.prototype._fetch = function (
+  collectionCacheObj, start, count, success, error
+) {
   var self = this;
   var cached = collectionCacheObj.cached;
   if (cached) {
     // If it's cached, it's fetched
-    this._getModelsFromCollection(collectionCacheObj.collection).then(function(models) {
+    this._getModelsFromCollection(collectionCacheObj.collection).then(function (models) {
       success(collectionCacheObj.collection, models);
     });
-  }
-  else {
+  } else {
     // apply sorting if necessary
-    if (this.sortkey && this.sortkey !== "none") {
+    if (this.sortkey && this.sortkey !== 'none') {
+      // eslint-disable-next-line no-param-reassign
       collectionCacheObj.collection.comparator = this.sortkey;
+      // eslint-disable-next-line no-param-reassign
       collectionCacheObj.collection.sortDirection = this.sortdir;
     }
-    if (collectionCacheObj.collection['length'] > 0 || !collectionCacheObj.collection.IsUrlBased(null)) {
-      // Already fetched: just return        
-      success(collectionCacheObj.collection, collectionCacheObj.collection['models']);
+    if (collectionCacheObj.collection.length > 0 ||
+        !collectionCacheObj.collection.IsUrlBased(null)) {
+      // Already fetched: just return
+      success(collectionCacheObj.collection, collectionCacheObj.collection.models);
       return;
     }
     // Do a real fetch from the collection's url
     if (count === -1) {
       // Don't want any records thrown out if virtual--rely on the fetched models to be there once cached
-      collectionCacheObj.collection['modelLimit'] = -1;
-      collectionCacheObj.collection.fetch({'success':function(fetchColl) {
+      // eslint-disable-next-line no-param-reassign
+      collectionCacheObj.collection.modelLimit = -1;
+      collectionCacheObj.collection.fetch({ success: function (fetchColl) {
         // Tack on handlers
-        self._getModelsFromCollection(fetchColl).then(function(models) {
+        self._getModelsFromCollection(fetchColl).then(function (models) {
           success(fetchColl, models);
         });
-      }, 'error':error});
-    }
-    else {
+      },
+        error: error });
+    } else {
       // Ensure a range if we have one
       // Don't want any records thrown out if virtual--rely on the fetched models to be there once cached
-      collectionCacheObj.collection['modelLimit'] = -1;      
-      collectionCacheObj.collection.setRangeLocal(start, count).then(function(results) {
-        collectionCacheObj.models = results['models'];
-        success(collectionCacheObj.collection, results['models']);
+      // eslint-disable-next-line no-param-reassign
+      collectionCacheObj.collection.modelLimit = -1;
+      collectionCacheObj.collection.setRangeLocal(start, count).then(function (results) {
+        // eslint-disable-next-line no-param-reassign
+        collectionCacheObj.models = results.models;
+        success(collectionCacheObj.collection, results.models);
       });
     }
   }
@@ -831,37 +852,37 @@ oj.CollectionTreeDataSource.prototype._fetch = function(collectionCacheObj, star
  * @export
  * @memberof oj.CollectionTreeDataSource
  */
-oj.CollectionTreeDataSource.prototype.fetchDescendants = function(parent, callbacks, options)
-{
+// eslint-disable-next-line no-unused-vars
+oj.CollectionTreeDataSource.prototype.fetchDescendants = function (parent, callbacks, options) {
   // No fetchDescendants for virtual
   if (this._virtual) {
     oj.Assert.failedInAbstractFunction();
   }
-    var self = this;
-    if (parent === null) {
-      // Do root
-      this.FetchCollection(null, 0, -1, {'success':function(nodeSet) {
-                                                  nodeSet.FetchDescendants({'success':function() {
-                                                    if (callbacks['success']) {
-                                                      callbacks['success'](nodeSet);
-                                                    }
-                                                  }});
-      }}, null);
-      return;
+  var self = this;
+  if (parent === null) {
+    // Do root
+    this.FetchCollection(null, 0, -1, { success: function (nodeSet) {
+      nodeSet.FetchDescendants({ success: function () {
+        if (callbacks.success) {
+          callbacks.success(nodeSet);
+        }
+      } });
+    } }, null);
+    return;
+  }
+  // Use child collection callback to set up child collection, then fetch it
+  this._getModelForId(this.rootCollection, 0, -1, parent, 0).then(function (parentModel) {
+    if (parentModel) {
+      var collection = self.GetChildCollection(parentModel.model);
+      self.FetchCollection(collection, 0, -1, { success: function (nodeSet) {
+        nodeSet.FetchDescendants({ success: function () {
+          if (callbacks.success) {
+            callbacks.success(nodeSet);
+          }
+        } });
+      } }, parent);
     }
-    // Use child collection callback to set up child collection, then fetch it
-    this._getModelForId(this.rootCollection, 0, -1, parent, 0).then(function(parentModel) {
-      if (parentModel) {
-        var collection = self.GetChildCollection(parentModel.model);
-        self.FetchCollection(collection, 0, -1, {'success':function(nodeSet) {
-          nodeSet.FetchDescendants({'success':function() {
-            if (callbacks['success']) {
-                callbacks['success'](nodeSet);
-            }
-          }});                                                                    
-        }}, parent);
-      }
-   });
+  });
 };
 
 /**
@@ -876,10 +897,9 @@ oj.CollectionTreeDataSource.prototype.fetchDescendants = function(parent, callba
  * @export
  * @memberof oj.CollectionTreeDataSource
  */
-oj.CollectionTreeDataSource.prototype.sort = function(criteria, callbacks)
-{
-  var key = criteria['key'];
-  var dir = criteria['direction'];
+oj.CollectionTreeDataSource.prototype.sort = function (criteria, callbacks) {
+  var key = criteria.key;
+  var dir = criteria.direction;
   var needSort = false;
   if (key !== this.sortkey) {
     this.sortkey = key;
@@ -891,29 +911,31 @@ oj.CollectionTreeDataSource.prototype.sort = function(criteria, callbacks)
   }
   if (needSort) {
     // If clearing, clear the cache
-    if (this.sortdir === "none") {
+    if (this.sortdir === 'none') {
       this.cache = {};
     }
     // Go off and sort each collection, as long as it has "criteria" as one of its attributes
-    for (var prop in this.cache) {
-      if (this.cache.hasOwnProperty(prop)) {
-        var collection = this.cache[prop];
-        this._applySortToCollection(collection);
-      }
+    var props = Object.keys(this.cache);
+    for (var i = 0; i < props.length; i++) {
+      var prop = props[i];
+      var collection = this.cache[prop];
+      this._applySortToCollection(collection);
     }
   }
-  if (callbacks && callbacks['success']) {
-    callbacks['success']();
+  if (callbacks && callbacks.success) {
+    callbacks.success();
   }
 };
 
 /**
  * @private
  */
-oj.CollectionTreeDataSource.prototype._applySortToCollection = function(collection) {
-  collection['comparator'] = this.sortkey;
-  collection['sortDirection'] = (this.sortdir === "ascending") ? 1 : -1;
-  collection.sort();    
+oj.CollectionTreeDataSource.prototype._applySortToCollection = function (collection) {
+// eslint-disable-next-line no-param-reassign
+  collection.comparator = this.sortkey;
+// eslint-disable-next-line no-param-reassign
+  collection.sortDirection = (this.sortdir === 'ascending') ? 1 : -1;
+  collection.sort();
 };
 
 /**
@@ -927,38 +949,39 @@ oj.CollectionTreeDataSource.prototype._applySortToCollection = function(collecti
  * @export
  * @memberof oj.CollectionTreeDataSource
  */
-oj.CollectionTreeDataSource.prototype.getSortCriteria = function()
-{
-  return {'key': this.sortkey, 'direction': this.sortdir};
+oj.CollectionTreeDataSource.prototype.getSortCriteria = function () {
+  return { key: this.sortkey, direction: this.sortdir };
 };
 
 /**
  * Moves a row from one location to another (different position within the same parent or a completely different parent)
  * @param {any} rowToMove the key of the row to move
- * @param {any} referenceRow the key of the reference row which combined with position are used to determine 
+ * @param {any} referenceRow the key of the reference row which combined with position are used to determine
  *        the destination of where the row should moved to.
- * @param {number|string} position The position of the moved row relative to the reference row.  
- *        This can be a string: "before", "after", "inside", "first", "last", or the zero based index to position 
+ * @param {number|string} position The position of the moved row relative to the reference row.
+ *        This can be a string: "before", "after", "inside", "first", "last", or the zero based index to position
  *        the element at a specific point among the reference row's current children.
  * @param {Object} callbacks the callbacks for the move function
- * @param {function():void} callbacks.success the callback to invoke when the move completed successfully.  
+ * @param {function():void} callbacks.success the callback to invoke when the move completed successfully.
  * @param {function({status: *})=} callbacks.error the callback to invoke when move failed.
  * @return {void}
  * @export
  * @memberof oj.CollectionTreeDataSource
- */ 
-oj.CollectionTreeDataSource.prototype.move = function(rowToMove, referenceRow, position, callbacks)
-{
+ */
+oj.CollectionTreeDataSource.prototype.move = function (
+  // eslint-disable-next-line no-unused-vars
+  rowToMove, referenceRow, position, callbacks
+) {
   oj.Assert.failedInAbstractFunction();
 };
 
 /**
  * Checks whether a move operation is valid.
  * @param {any} rowToMove the key of the row to move
- * @param {any} referenceRow the key of the reference row which combined with position are used to determine 
+ * @param {any} referenceRow the key of the reference row which combined with position are used to determine
  *        the destination of where the row should moved to.
- * @param {number|string} position The position of the moved row relative to the reference row.  
- *        This can be a string: "before", "after", "inside", "first", "last", or the zero based index to position 
+ * @param {number|string} position The position of the moved row relative to the reference row.
+ *        This can be a string: "before", "after", "inside", "first", "last", or the zero based index to position
  *        the element at a specific point among the reference row's current children.
  * @return {string} returns "valid" if the move is valid, "invalid" otherwise.
  * @ojsignature {target: "Type",
@@ -966,37 +989,36 @@ oj.CollectionTreeDataSource.prototype.move = function(rowToMove, referenceRow, p
  *               for: "returns"}
  * @export
  * @memberof oj.CollectionTreeDataSource
- */ 
-oj.CollectionTreeDataSource.prototype.moveOK = function(rowToMove, referenceRow, position)
-{
-  return "invalid";
+ */
+// eslint-disable-next-line no-unused-vars
+oj.CollectionTreeDataSource.prototype.moveOK = function (rowToMove, referenceRow, position) {
+  return 'invalid';
 };
 
 /**
  * Determines whether this CollectionTreeDataSource supports the specified feature.
- * @param {string} feature the feature in which its capabilities is inquired.  Currently the valid features "sort", 
+ * @param {string} feature the feature in which its capabilities is inquired.  Currently the valid features "sort",
  *        "move", "fetchDescendants", "batchFetch"
  * @return {string|null} the name of the feature.  Returns null if the feature is not recognized.
- *         For "sort", the valid return values are: "default", "none".  
- *         For "fetchDescendants", the valid return values are: "enable", "disable", "suboptimal".  
- *         For "move", the valid return values are: "default", "none".  
- *         For "batchFetch", the valid return values are: "enable", "disable".  
+ *         For "sort", the valid return values are: "default", "none".
+ *         For "fetchDescendants", the valid return values are: "enable", "disable", "suboptimal".
+ *         For "move", the valid return values are: "default", "none".
+ *         For "batchFetch", the valid return values are: "enable", "disable".
  * @export
  * @memberof oj.CollectionTreeDataSource
  */
-oj.CollectionTreeDataSource.prototype.getCapability = function(feature)
-{
-  if (feature === "sort") {
-    return "default";
+oj.CollectionTreeDataSource.prototype.getCapability = function (feature) {
+  if (feature === 'sort') {
+    return 'default';
   }
-  if (feature === "move") {
-    return "none";
+  if (feature === 'move') {
+    return 'none';
   }
-  if (feature === "batchFetch") {
-    return "disable";
+  if (feature === 'batchFetch') {
+    return 'disable';
   }
-  if (feature === "fetchDescendants") {
-    return "disable";
+  if (feature === 'fetchDescendants') {
+    return 'disable';
   }
   return null;
 };

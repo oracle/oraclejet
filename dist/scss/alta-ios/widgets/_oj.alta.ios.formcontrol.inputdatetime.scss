@@ -48,10 +48,15 @@
     .oj-inputdatetime-date-only .oj-inputdatetime-input,
     .oj-inputdatetime-time-only .oj-inputdatetime-input
     {
-      //need to include end border radius for cases we do not show trigger icon
-      @include oj-border-radius($formControlBorderRadius,
-                                  $slowOverride: false);
-      @include oj-border-radius-slowoverride();
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        border-radius: var(--oj-form-control-border-radius);
+      }
+      @else {
+        //need to include end border radius for cases we do not show trigger icon
+        @include oj-border-radius($formControlBorderRadius,
+                                    $slowOverride: false);
+        @include oj-border-radius-slowoverride();
+      }
     }
   }
 }

@@ -22,19 +22,6 @@
 
 @if $includeMenuClasses != false  {
   @include module-include-once("alta.menu") {
-
-    .oj-menu-item > a {
-        @include oj-ltr() {
-            padding-right: 1.75rem; // originally set to be 21px @12px, from Alta spec.  Now is 24.5px @14px.
-        }
-        @include oj-rtl() {
-            padding-left: 1.75rem; // ditto
-        }
-    }
-
-    .oj-menu-submenu-icon { 
-        @extend .oj-fwk-icon-arrow03-end; 
-    }
     
   }
 }

@@ -4,12 +4,12 @@
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
-define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojcomponentcore', 'ojs/ojanimation'], 
+define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojcontext', 'promise', 'ojs/ojanimation'], 
        /*
         * @param {Object} oj 
         * @param {jQuery} $
         */
-       function(oj, $)
+       function(oj, $, Components, Context)
 {
 
 var __oj_collapsible_metadata = 
@@ -57,7 +57,7 @@ var __oj_collapsible_metadata =
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
  */
-
+/* global Components:false, Context:false */
 /**
  * @preserve Copyright 2013 jQuery Foundation and other contributors
  * Released under the MIT license.
@@ -839,6 +839,12 @@ The child element of the oj-collapsible in the named <a href="#header">header</a
             this._changeExpandedOption(isExpanded);
           }
 
+          //  - ojcollapsible should update disclosure icon before animation not after
+          this._getCollapsibleIcon().toggleClass(OPEN_ICON, isExpanded)
+          // logic or cause same icon for expanded/collapsed state would remove the oj-icon-class
+            .toggleClass(CLOSE_ICON, (!isExpanded || OPEN_ICON === CLOSE_ICON))
+            .end();
+
         //  - expansion animation on initial render.
           if (this._initialRender || document.hidden ||
             this.element.hasClass('oj-collapsible-skip-animation')) {
@@ -854,7 +860,7 @@ The child element of the oj-collapsible in the named <a href="#header">header</a
           // Add a busy state for the animation.  The busy state resolver will be invoked
           // when the animation is completed
             if (!this._animationResolve) {
-              var busyContext = oj.Context.getContext(element[0]).getBusyContext();
+              var busyContext = Context.getContext(element[0]).getBusyContext();
               this._animationResolve = busyContext.addBusyState(
                 { description: "The collapsible id='" +
                   this.element.attr('id') + "' is animating." });
@@ -1090,19 +1096,14 @@ The child element of the oj-collapsible in the named <a href="#header">header</a
           element.addClass('oj-expanded');
 
         //  - ojcollapsible needs to call oj.components.subtreeshown()/subtreehidden()
-          oj.Components.subtreeShown(wrapper[0]);
+          Components.subtreeShown(wrapper[0]);
         } else {
           element.removeClass('oj-expanded');
           element.addClass('oj-collapsed');
 
         //  - ojcollapsible needs to call oj.components.subtreeshown()/subtreehidden()
-          oj.Components.subtreeHidden(wrapper[0]);
+          Components.subtreeHidden(wrapper[0]);
         }
-
-        this._getCollapsibleIcon().toggleClass(OPEN_ICON, isExpanded)
-      // logic or cause same icon for expanded/collapsed state would remove the oj-icon-class
-        .toggleClass(CLOSE_ICON, (!isExpanded || OPEN_ICON === CLOSE_ICON))
-        .end();
 
       // aria
         if (isExpanded) {
@@ -1276,8 +1277,7 @@ The child element of the oj-collapsible in the named <a href="#header">header</a
 (function () {
   __oj_collapsible_metadata.extension._WIDGET_NAME = 'ojCollapsible';
   __oj_collapsible_metadata.extension._CONTROLS_SUBTREE_HIDDEN = true;
-  oj.CustomElementBridge.registerMetadata('oj-collapsible', 'baseComponent', __oj_collapsible_metadata);
-  oj.CustomElementBridge.register('oj-collapsible', { metadata: oj.CustomElementBridge.getMetadata('oj-collapsible') });
+  oj.CustomElementBridge.register('oj-collapsible', { metadata: __oj_collapsible_metadata });
 }());
 
 });

@@ -4,7 +4,7 @@
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
-define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/internal-deps/dvt/DvtTagCloud'], function(oj, $, comp, base, dvt)
+define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/internal-deps/dvt/DvtTagCloud'], function(oj, $, Components, base, dvt)
 {
   
 
@@ -258,9 +258,9 @@ var __oj_tag_cloud_item_metadata =
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
  */
- 
-/* global dvt:false */
- 
+
+/* global dvt:false, Components:false, KeySet:false */
+
 /**
  * @ojcomponent oj.ojTagCloud
  * @augments oj.dvtBaseComponent
@@ -268,7 +268,7 @@ var __oj_tag_cloud_item_metadata =
  * @ojstatus preview
  * @ojrole application
  * @ojshortdesc An interactive data visualization of textual data, where the importance of each tagged word or phrase is represented by font size or color.
- * @ojtsimport ojdataprovider
+ * @ojtsimport {module: "ojdataprovider", type: "AMD", imported: ["DataProvider"]}
  * @ojsignature [{
  *                target: "Type",
  *                value: "class ojTagCloud<K, D> extends dvtBaseComponent<ojTagCloudSettableProperties<K, D>>"
@@ -550,7 +550,9 @@ oj.__registerWidget('oj.ojTagCloud', $.oj.dvtBaseComponent,
        * @memberof oj.ojTagCloud
        * @instance
        * @type {Array.<Object>|Promise|null}
-       * @ojsignature {target: "Accessor", value: {GetterType: "Promise<Array<oj.ojTagCloud.Item>>|null", SetterType: "Array<oj.ojTagCloud.Item>|Promise<Array<oj.ojTagCloud.Item>>|null"}, jsdocOverride: true}
+       * @ojsignature {target: "Accessor", value: {GetterType: "Promise<Array<oj.ojTagCloud.Item<K>>>|null",
+       *                                           SetterType: "Array<oj.ojTagCloud.Item<K>>|Promise<Array<oj.ojTagCloud.Item<K>>>|null"},
+       *                                           jsdocOverride: true}
        * @default null
        *
        * @example <caption>Initialize the tag cloud with the
@@ -604,6 +606,7 @@ oj.__registerWidget('oj.ojTagCloud', $.oj.dvtBaseComponent,
        * @memberof oj.ojTagCloud
        * @instance
        * @type {Array.<any>}
+       * @ojsignature [{target: "Type", value: "Array<K>"}]
        * @default []
        * @ojwriteback
        *
@@ -688,7 +691,7 @@ oj.__registerWidget('oj.ojTagCloud', $.oj.dvtBaseComponent,
          * @instance
          * @type {function(Object):Object|null}
          * @default null
-         * @ojsignature {target: "Type", value: "((context: oj.ojTagCloud.TooltipContext) => ({insert: Element|string}|{preventDefault: boolean}))", jsdocOverride: true}
+         * @ojsignature {target: "Type", value: "((context: oj.ojTagCloud.TooltipContext<K>) => ({insert: Element|string}|{preventDefault: boolean}))", jsdocOverride: true}
          *
          * @example <caption>See the <a href="#tooltip">tooltip</a> attribute for usage examples.</caption>
          */
@@ -799,16 +802,16 @@ oj.__registerWidget('oj.ojTagCloud', $.oj.dvtBaseComponent,
        */
       touchResponse: 'auto'
     },
- 
+
     //* * @inheritdoc */
     _CreateDvtComponent: function (context, callback, callbackObj) {
       return dvt.TagCloud.newInstance(context, callback, callbackObj);
     },
- 
+
     //* * @inheritdoc */
     _ConvertLocatorToSubId: function (locator) {
       var subId = locator.subId;
- 
+
       // Convert the supported locators
       if (subId === 'oj-tagcloud-item') {
         // item[index]
@@ -816,16 +819,16 @@ oj.__registerWidget('oj.ojTagCloud', $.oj.dvtBaseComponent,
       } else if (subId === 'oj-tagcloud-tooltip') {
         subId = 'tooltip';
       }
- 
+
       // Return the converted result or the original subId if a supported locator wasn't recognized. We will remove
       // support for the old subId syntax in 1.2.0.
       return subId;
     },
- 
+
     //* * @inheritdoc */
     _ConvertSubIdToLocator: function (subId) {
       var locator = {};
- 
+
       if (subId.indexOf('item') === 0) {
         // item[index]
         locator.subId = 'oj-tagcloud-item';
@@ -833,17 +836,17 @@ oj.__registerWidget('oj.ojTagCloud', $.oj.dvtBaseComponent,
       } else if (subId === 'tooltip') {
         locator.subId = 'oj-tagcloud-tooltip';
       }
- 
+
       return locator;
     },
- 
+
     //* * @inheritdoc */
     _GetComponentStyleClasses: function () {
       var styleClasses = this._super();
       styleClasses.push('oj-tagcloud');
       return styleClasses;
     },
- 
+
     //* * @inheritdoc */
     _GetChildStyleClasses: function () {
       var styleClasses = this._super();
@@ -852,34 +855,34 @@ oj.__registerWidget('oj.ojTagCloud', $.oj.dvtBaseComponent,
       styleClasses['oj-tagcloud'] = { path: 'styleDefaults/svgStyle', property: 'TEXT' };
       return styleClasses;
     },
- 
+
     //* * @inheritdoc */
     _GetEventTypes: function () {
       return ['optionChange'];
     },
- 
+
     //* * @inheritdoc */
     _GetTranslationMap: function () {
       // The translations are stored on the options object.
       var translations = this.options.translations;
- 
+
       // Safe to modify super's map because function guarentees a new map is returned
       var ret = this._super();
       ret['DvtUtilBundle.TAG_CLOUD'] = translations.componentName;
       return ret;
     },
- 
+
     //* * @inheritdoc */
     _InitOptions: function (originalDefaults, constructorOptions) {
       this._super(originalDefaults, constructorOptions);
- 
+
       // styleDefaults subproperty defaults are dynamically generated
       // so we need to retrieve it here and override the dynamic getter by
       // setting the returned object as the new value.
       var styleDefaults = this.options.styleDefaults;
       this.options.styleDefaults = styleDefaults;
     },
- 
+
     /**
      * Returns an object with the following properties for automation testing verification of the item at the
      * specified index.
@@ -904,7 +907,7 @@ oj.__registerWidget('oj.ojTagCloud', $.oj.dvtBaseComponent,
     getItemCount: function () {
       return this._component.getAutomation().getItemCount();
     },
- 
+
     /**
      * {@ojinclude "name":"nodeContextDoc"}
      * @param {!Element} node - {@ojinclude "name":"nodeContextParam"}
@@ -923,28 +926,32 @@ oj.__registerWidget('oj.ojTagCloud', $.oj.dvtBaseComponent,
       if (context && context.subId !== 'oj-tagcloud-tooltip') {
         return context;
       }
- 
+
       return null;
     },
- 
+
     //* * @inheritdoc */
     _GetComponentDeferredDataPaths: function () {
       return { root: ['items', 'data'] };
     },
- 
+
     //* * @inheritdoc */
     _GetSimpleDataProviderConfigs: function () {
       return {
-        data: { templateName: 'itemTemplate', templateElementName: 'oj-tag-cloud-item', resultPath: 'items' }
+        data: {
+          templateName: 'itemTemplate',
+          templateElementName: 'oj-tag-cloud-item',
+          resultPath: 'items'
+        }
       };
     }
- 
+
   });
- 
+
 // Conditionally set the defaults for custom element vs widget syntax since we expose different APIs
-oj.Components.setDefaultOptions({
+Components.setDefaultOptions({
   ojTagCloud: {
-    styleDefaults: oj.Components.createDynamicPropertyGetter(function (context) {
+    styleDefaults: Components.createDynamicPropertyGetter(function (context) {
       if (context.isCustomElement) {
         return { svgStyle: {} };
       }
@@ -1066,6 +1073,7 @@ oj.Components.setDefaultOptions({
 
 /**
  * @typedef {Object} oj.ojTagCloud.Item
+ * @ojtsignore
  * @property {Array.<string>=} categories An array of category strings corresponding to the tag cloud items. This allows highlighting and filtering of items.
  * @property {string=} color The color of the text. Will be overridden by any color defined in the style option. The default value comes from the CSS and varies based on theme.
  * @property {any=} id The item id should be set by the application if the DataProvider is not being used. The row key will be used as id in the DataProvider case.
@@ -1075,6 +1083,8 @@ oj.Components.setDefaultOptions({
  * @property {string=} svgClassName The CSS style class defining the style of the item text.
  * @property {string=} url The url this item references.
  * @property {number} value The value of this item which will be used to scale its font-size within the tag cloud.
+ * @ojsignature [{target: "Type", value: "K", for: "id"},
+ *               {target: "Type", value: "<K>", for: "genericTypeParameters"}]
  */
 /**
  * @typedef {Object} oj.ojTagCloud.TooltipContext
@@ -1084,6 +1094,8 @@ oj.Components.setDefaultOptions({
  * @property {string} label The data label of the hovered item.
  * @property {Element} parentElement The tooltip element. The function can directly modify or append content to this element.
  * @property {number} value The value of the hovered item.
+ * @ojsignature [{target: "Type", value: "K", for: "id"},
+ *               {target: "Type", value: "<K>", for: "genericTypeParameters"}]
  */
 
 // METHOD TYPEDEFS
@@ -1146,6 +1158,7 @@ oj.Components.setDefaultOptions({
  *
  * @ojstatus preview
  * @ojslot itemTemplate
+ * @ojmaxitems 1
  * @memberof oj.ojTagCloud
  * @property {Element} componentElement The &lt;oj-tag-cloud> custom element.
  * @property {Object} data The data object for the current item.
@@ -1370,15 +1383,13 @@ oj.Components.setDefaultOptions({
  */
 (function () {
   __oj_tag_cloud_metadata.extension._WIDGET_NAME = 'ojTagCloud';
-  oj.CustomElementBridge.registerMetadata('oj-tag-cloud', 'dvtBaseComponent', __oj_tag_cloud_metadata);
-  oj.CustomElementBridge.register('oj-tag-cloud', { metadata: oj.CustomElementBridge.getMetadata('oj-tag-cloud') });
+  oj.CustomElementBridge.register('oj-tag-cloud', { metadata: __oj_tag_cloud_metadata });
 }());
 /* global __oj_tag_cloud_item_metadata:false */
 (function () {
   __oj_tag_cloud_item_metadata.extension._CONSTRUCTOR = function () {};
-  oj.CustomElementBridge.registerMetadata('oj-tag-cloud-item', null, __oj_tag_cloud_item_metadata);
   oj.CustomElementBridge.register('oj-tag-cloud-item', {
-    metadata: oj.CustomElementBridge.getMetadata('oj-tag-cloud-item')
+    metadata: __oj_tag_cloud_item_metadata
   });
 }());
 

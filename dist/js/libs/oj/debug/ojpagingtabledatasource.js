@@ -27,7 +27,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojdatasource-common'], function(oj, $)
  * http://jquery.org/license
  */
 
-/*jslint browser: true,devel:true*/
+/* jslint browser: true,devel:true*/
 /**
  * The interface for oj.PagingModel which should be implemented by all object instances
  * bound to the data parameter for oj.PagingControl. oj.PagingModel implementations should
@@ -37,8 +37,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojdatasource-common'], function(oj, $)
  * @since 1.1
  * @ojtsignore
  */
-oj.PagingModel = function()
-{
+oj.PagingModel = function () {
 };
 
 /**
@@ -111,17 +110,17 @@ oj.PagingModel = function()
  */
 
 /**
- * Returns the confidence for the totalSize value. 
- * @return {string} "actual" if the totalSize is the time of the fetch is an exact number 
- *                  "estimate" if the totalSize is an estimate 
- *                  "atLeast" if the totalSize is at least a certain number 
+ * Returns the confidence for the totalSize value.
+ * @return {string} "actual" if the totalSize is the time of the fetch is an exact number
+ *                  "estimate" if the totalSize is an estimate
+ *                  "atLeast" if the totalSize is at least a certain number
  *                  "unknown" if the totalSize is unknown
  * @export
  * @expose
  * @method
  * @name totalSizeConfidence
  * @memberof oj.PagingModel
- * @instance 
+ * @instance
  */
 
 /**
@@ -131,27 +130,27 @@ oj.PagingModel = function()
  * @enum {string}
  */
 oj.PagingModel.EventType =
-  {
+{
     /** Triggered before the current page has changed. <p>
      * This event is vetoable.<p>
      * The event payload contains:<p>
      * <b>page</b> The new current page<br>
      * <b>previousPage</b> The old current page
      */
-    'BEFOREPAGE': "beforePage",
+  BEFOREPAGE: 'beforePage',
     /** Triggered when the current page has changed<p>
      * The event payload contains:<p>
      * <b>page</b> The new current page<br>
      * <b>previousPage</b> The old current page
      */
-    'PAGE': "page",
+  PAGE: 'page',
     /** Triggered when the page count has changed<p>
      * The event payload contains:<p>
      * <b>pageCount</b> The new page count<br>
      * <b>previousPageCount</b> The old page count
      */
-    'PAGECOUNT': "pageCount"
-  };
+  PAGECOUNT: 'pageCount'
+};
 
 
 /**
@@ -165,12 +164,14 @@ oj.PagingModel.EventType =
  * http://jquery.org/license
  */
 
-/*jslint browser: true,devel:true*/
+/* global Promise:false */
+
+/* jslint browser: true,devel:true*/
 /**
  * @export
  * @class oj.PagingTableDataSource
  * @classdesc Object representing data that supports paging functionality.  This data source can be used by [ListView]{@link oj.ojListView}, [PagingControl]{@link oj.ojPagingControl}, and [Table]{@link oj.ojTable}.
- *            <p>This class implements the {@link oj.PagingModel} interface and 
+ *            <p>This class implements the {@link oj.PagingModel} interface and
  *            publish all of the oj.PagingModel event types, which can be
  *            listened to using the [on()]{@link oj.PagingTableDataSource#on}
  *            method.</p>
@@ -184,18 +185,16 @@ oj.PagingModel.EventType =
  * @since 1.0
  * @ojtsignore
  */
-oj.PagingTableDataSource = function(dataSource, options)
-{
+// eslint-disable-next-line no-unused-vars
+oj.PagingTableDataSource = function (dataSource, options) {
   // Initialize
-  options = options || {};
-  
-  if (!(dataSource instanceof oj.TableDataSource))
-  {
+
+  if (!(dataSource instanceof oj.TableDataSource)) {
     // we only support Array, oj.Collection, or ko.observableArray. To
     // check for observableArray, we can't do instanceof check because it's
     // a function. So we just check if it contains a subscribe function.
-    var errSummary = oj.TableDataSource._LOGGER_MSG['_ERR_DATA_INVALID_TYPE_SUMMARY'];
-    var errDetail = oj.TableDataSource._LOGGER_MSG['_ERR_DATA_INVALID_TYPE_DETAIL'];
+    var errSummary = oj.TableDataSource._LOGGER_MSG._ERR_DATA_INVALID_TYPE_SUMMARY;
+    var errDetail = oj.TableDataSource._LOGGER_MSG._ERR_DATA_INVALID_TYPE_DETAIL;
     throw new Error(errSummary + '\n' + errDetail);
   }
   this.dataSource = dataSource;
@@ -207,16 +206,20 @@ oj.PagingTableDataSource = function(dataSource, options)
   // PagingTableDataSource doesn't need its own copy of sortCriteria and can
   // just act as a proxy for the underlying dataSource
   Object.defineProperty(this, 'sortCriteria',
-  {
-    'configurable': false,
-    'enumerable': true,
-    'get': function() { return this.dataSource['sortCriteria']; },
-    'set': function(newValue) { this.dataSource['sortCriteria'] = newValue; }
-  });
+    {
+      configurable: false,
+      enumerable: true,
+      get: function () {
+        return this.dataSource.sortCriteria;
+      },
+      set: function (newValue) {
+        this.dataSource.sortCriteria = newValue;
+      }
+    });
 };
 
-// Subclass from oj.DataSource 
-oj.Object.createSubclass(oj.PagingTableDataSource, oj.TableDataSource, "oj.PagingTableDataSource");
+// Subclass from oj.DataSource
+oj.Object.createSubclass(oj.PagingTableDataSource, oj.TableDataSource, 'oj.PagingTableDataSource');
 
 /**
  * Initializes the instance.
@@ -225,8 +228,7 @@ oj.Object.createSubclass(oj.PagingTableDataSource, oj.TableDataSource, "oj.Pagin
  * @override
  * @protected
  */
-oj.PagingTableDataSource.prototype.Init = function()
-{
+oj.PagingTableDataSource.prototype.Init = function () {
   oj.PagingTableDataSource.superclass.Init.call(this);
 };
 
@@ -238,9 +240,8 @@ oj.PagingTableDataSource.prototype.Init = function()
  * @memberof oj.PagingTableDataSource
  * @instance
  */
-oj.PagingTableDataSource.prototype.getWrappedDataSource = function()
-{
-    return this.dataSource;
+oj.PagingTableDataSource.prototype.getWrappedDataSource = function () {
+  return this.dataSource;
 };
 
 /**
@@ -251,10 +252,8 @@ oj.PagingTableDataSource.prototype.getWrappedDataSource = function()
  * @memberof oj.PagingTableDataSource
  * @instance
  */
-oj.PagingTableDataSource.prototype.getPage = function()
-{
-  if (this._fetchType == 'loadMore')
-  {
+oj.PagingTableDataSource.prototype.getPage = function () {
+  if (this._fetchType === 'loadMore') {
     return 0;
   }
   return this._getPageFromStartIndex();
@@ -271,53 +270,49 @@ oj.PagingTableDataSource.prototype.getPage = function()
  * @memberof oj.PagingTableDataSource
  * @instance
  */
-oj.PagingTableDataSource.prototype.setPage = function(value, options)
-{
+oj.PagingTableDataSource.prototype.setPage = function (value, options) {
+  // eslint-disable-next-line no-param-reassign
   options = options || {};
+  // eslint-disable-next-line no-param-reassign
   value = parseInt(value, 10);
-  
-  try 
-  {
-    oj.PagingTableDataSource.superclass.handleEvent.call(this, oj.PagingModel.EventType['BEFOREPAGE'], {'page' : value, 'previousPage' : this._getPageFromStartIndex()});
-  }
-  catch (err)
-  {
+
+  try {
+    oj.PagingTableDataSource.superclass.handleEvent
+      .call(this, oj.PagingModel.EventType.BEFOREPAGE,
+            { page: value, previousPage: this._getPageFromStartIndex() });
+  } catch (err) {
     return Promise.reject(err);
   }
   var previousPage = this._getPageFromStartIndex();
-  this._pageSize = options['pageSize'] != null ? options['pageSize'] : this._pageSize;
-  options['pageSize'] = this._pageSize;
-  options['startIndex'] = value * this._pageSize;
-  this._startIndex = options['startIndex'] == null ? this._startIndex : options['startIndex'];
+  this._pageSize = options.pageSize != null ? options.pageSize : this._pageSize;
+  // eslint-disable-next-line no-param-reassign
+  options.pageSize = this._pageSize;
+  // eslint-disable-next-line no-param-reassign
+  options.startIndex = value * this._pageSize;
+  this._startIndex = options.startIndex == null ? this._startIndex : options.startIndex;
   this._fetchType = 'page';
   var self = this;
-  return new Promise(function(resolve, reject) 
-  {
+  return new Promise(function (resolve, reject) {
     // we only support paged fetches
-    if (self._pageSize > 0)
-    {
-      self.dataSource.fetch(options).then(function(result)
-      {
-        result['startIndex'] = 0;
-        if (result['data'].length > 0)
-        {
-          self._updateEndIndex(self._startIndex + result['data'].length - 1, true);
-        }
-        else
-        {
+    if (self._pageSize > 0) {
+      self.dataSource.fetch(options).then(function (result) {
+        // eslint-disable-next-line no-param-reassign
+        result.startIndex = 0;
+        if (result.data.length > 0) {
+          self._updateEndIndex((self._startIndex + result.data.length) - 1, true);
+        } else {
           self._updateEndIndex(-1, true);
         }
-        oj.PagingTableDataSource.superclass.handleEvent.call(self, oj.PagingModel.EventType['PAGE'], {'page' : self._getPageFromStartIndex(), 'previousPage' : previousPage});
+        oj.PagingTableDataSource.superclass.handleEvent
+          .call(self, oj.PagingModel.EventType.PAGE,
+                { page: self._getPageFromStartIndex(), previousPage: previousPage });
         resolve(null);
       },
-      function(e)
-      {
+      function (e) {
         self._startIndex = previousPage * self._pageSize;
-        reject(e); 
+        reject(e);
       });
-    }
-    else
-    {
+    } else {
       resolve(null);
     }
   });
@@ -331,10 +326,8 @@ oj.PagingTableDataSource.prototype.setPage = function(value, options)
  * @memberof oj.PagingTableDataSource
  * @instance
  */
-oj.PagingTableDataSource.prototype.getStartItemIndex = function()
-{
-  if (this._fetchType == 'loadMore')
-  {
+oj.PagingTableDataSource.prototype.getStartItemIndex = function () {
+  if (this._fetchType === 'loadMore') {
     return 0;
   }
   return this._startIndex;
@@ -349,8 +342,7 @@ oj.PagingTableDataSource.prototype.getStartItemIndex = function()
  * @memberof oj.PagingTableDataSource
  * @instance
  */
-oj.PagingTableDataSource.prototype.getEndItemIndex = function()
-{
+oj.PagingTableDataSource.prototype.getEndItemIndex = function () {
   return this._endIndex;
 };
 
@@ -362,18 +354,17 @@ oj.PagingTableDataSource.prototype.getEndItemIndex = function()
  * @memberof oj.PagingTableDataSource
  * @instance
  */
-oj.PagingTableDataSource.prototype.getPageCount = function()
-{
+oj.PagingTableDataSource.prototype.getPageCount = function () {
   var totalSize = this.totalSize();
-  return totalSize == -1 ? -1 : Math.ceil(totalSize / this._pageSize);
+  return totalSize === -1 ? -1 : Math.ceil(totalSize / this._pageSize);
 };
 
-/**** start delegated functions ****/
+/** ** start delegated functions ****/
 
 /**
  * Return the row data found at the given index.
- * 
- * @param {number} index Index for which to return the row data. 
+ *
+ * @param {number} index Index for which to return the row data.
  * @param {Object=} options Options to control the at.
  * @param {number} options.fetchSize fetch size to use if the call needs to fetch more records from the server, if virtualized.  Overrides the overall fetchSize setting <p>
  * @return {Promise} Promise resolves to a compound object which has the structure below. If the index is out of range, Promise resolves to null.<p>
@@ -389,8 +380,7 @@ oj.PagingTableDataSource.prototype.getPageCount = function()
  * @memberof oj.PagingTableDataSource
  * @instance
  */
-oj.PagingTableDataSource.prototype.at = function(index, options)
-{
+oj.PagingTableDataSource.prototype.at = function (index, options) {
   return this.dataSource.at(index, options);
 };
 
@@ -407,60 +397,50 @@ oj.PagingTableDataSource.prototype.at = function(index, options)
  * <tr><td><b>keys</b></td><td>An array of key values for the rows</td></tr>
  * <tr><td><b>startIndex</b></td><td>The startIndex for the returned set of rows</td></tr>
  * </tbody>
- * </table>  
+ * </table>
  * @export
  * @expose
  * @memberof oj.PagingTableDataSource
  * @instance
  */
-oj.PagingTableDataSource.prototype.fetch = function(options)
-{
+oj.PagingTableDataSource.prototype.fetch = function (options) {
+  // eslint-disable-next-line no-param-reassign
   options = options || {};
-  if (options['startIndex'] == null)
-  {
+  if (options.startIndex == null) {
     // this is just a refresh call from ojTable. So treat it as a paged fetch
     return this.setPage(this.getPage());
   }
-  else
-  {
-    this._fetchType = 'loadMore';
-  }
-  this._startIndex = options['startIndex'] == null ? this._startIndex : options['startIndex'];
-  var pageSize = options['pageSize'] == null ? this._pageSize : options['pageSize'];
-  
-  if (this._pageSize == null)
-  {
+
+  this._fetchType = 'loadMore';
+
+  this._startIndex = options.startIndex == null ? this._startIndex : options.startIndex;
+  var pageSize = options.pageSize == null ? this._pageSize : options.pageSize;
+
+  if (this._pageSize == null) {
     this._pageSize = pageSize;
   }
-  
-  options['pageSize'] = pageSize;
-  options['startIndex'] = this._startIndex;
-  
+
+  // eslint-disable-next-line no-param-reassign
+  options.pageSize = pageSize;
+  // eslint-disable-next-line no-param-reassign
+  options.startIndex = this._startIndex;
+
   var self = this;
-  return new Promise(function(resolve, reject) 
-  {
+  return new Promise(function (resolve, reject) {
     // we only support paged fetches
-    if (pageSize > 0)
-    {
-      self.dataSource.fetch(options).then(function(result)
-      {
-        if (result['data'].length > 0)
-        {
-          self._updateEndIndex(self._startIndex + result['data'].length - 1, true);
-        }
-        else
-        {
+    if (pageSize > 0) {
+      self.dataSource.fetch(options).then(function (result) {
+        if (result.data.length > 0) {
+          self._updateEndIndex((self._startIndex + result.data.length) - 1, true);
+        } else {
           self._updateEndIndex(-1, true);
         }
         resolve(result);
       },
-      function(e)
-      {
+      function (e) {
         reject(e);
       });
-    }
-    else
-    {
+    } else {
       resolve(null);
     }
   });
@@ -468,7 +448,7 @@ oj.PagingTableDataSource.prototype.fetch = function(options)
 
 /**
  * Return the first row data whose id value is the given id
- * @param {string} id ID for which to return the row data, if found. 
+ * @param {string} id ID for which to return the row data, if found.
  * @param {Object=} options Options to control the get.
  * @return {Promise} Promise which resolves to a compound object which has the structure below where the id matches the given id. If none are found, resolves to null.<p>
  * <table>
@@ -483,30 +463,28 @@ oj.PagingTableDataSource.prototype.fetch = function(options)
  * @memberof oj.PagingTableDataSource
  * @instance
  */
-oj.PagingTableDataSource.prototype.get = function(id, options)
-{
+oj.PagingTableDataSource.prototype.get = function (id, options) {
   return this.dataSource.get(id, options);
 };
 
 /**
  * Determines whether this TableDataSource supports certain feature.
  * @param {string} feature the feature in which its capabilities is inquired.  Currently the only valid feature is "sort".
- * @return {string|null} the name of the feature.  For "sort", the valid return values are: "full", "none".  
+ * @return {string|null} the name of the feature.  For "sort", the valid return values are: "full", "none".
  *         Returns null if the feature is not recognized.
  * @export
  * @expose
  * @memberof oj.PagingTableDataSource
  * @instance
  */
-oj.PagingTableDataSource.prototype.getCapability = function(feature)
-{
+oj.PagingTableDataSource.prototype.getCapability = function (feature) {
   return this.dataSource.getCapability(feature);
 };
 
 /**
  * Attach an event handler to the datasource
  * @param {string} eventType eventType supported by the datasource.
- *        <p>In addition to this class's event types, it can also be one of the 
+ *        <p>In addition to this class's event types, it can also be one of the
  *           {@link oj.PagingModel} event types.</p>
  * @param {function(Object)} eventHandler event handler function
  * @return {void}
@@ -515,43 +493,50 @@ oj.PagingTableDataSource.prototype.getCapability = function(feature)
  * @memberof oj.PagingTableDataSource
  * @instance
  */
-oj.PagingTableDataSource.prototype.on = function(eventType, eventHandler)
-{
+oj.PagingTableDataSource.prototype.on = function (eventType, eventHandler) {
   var self = this;
   var dataSource = (/** @type {{on: Function}} */ (this.dataSource));
+  var ev;
 
-  if (eventType == oj.TableDataSource.EventType['SYNC'])
-  {
-    var ev = function(event){self._handleSyncEvent(event, eventHandler);}
-    this._dataSourceWrappedEventHandlers.push({'eventType': eventType, 'eventHandler': eventHandler, 'wrappedEventHandler': ev});
+  if (eventType === oj.TableDataSource.EventType.SYNC) {
+    ev = function (event) {
+      self._handleSyncEvent(event, eventHandler);
+    };
+    this._dataSourceWrappedEventHandlers.push({
+      eventType: eventType,
+      eventHandler: eventHandler,
+      wrappedEventHandler: ev
+    });
     dataSource.on(eventType, ev);
-  }
-  else if (eventType == oj.TableDataSource.EventType['ADD'] ||
-           eventType == oj.TableDataSource.EventType['REMOVE'] ||
-           eventType == oj.TableDataSource.EventType['CHANGE'])
-  {
-    var ev = function(event){self._handleRowEvent(event, eventHandler);}
-    this._dataSourceWrappedEventHandlers.push({'eventType': eventType, 'eventHandler': eventHandler, 'wrappedEventHandler': ev});
+  } else if (eventType === oj.TableDataSource.EventType.ADD ||
+             eventType === oj.TableDataSource.EventType.REMOVE ||
+             eventType === oj.TableDataSource.EventType.CHANGE) {
+    ev = function (event) {
+      self._handleRowEvent(event, eventHandler);
+    };
+    this._dataSourceWrappedEventHandlers.push({
+      eventType: eventType,
+      eventHandler: eventHandler,
+      wrappedEventHandler: ev
+    });
     dataSource.on(eventType, ev);
-  }
-  else if (eventType == oj.TableDataSource.EventType['REFRESH'] ||
-           eventType == oj.TableDataSource.EventType['RESET'])
-  {
-    var ev = function(event){
+  } else if (eventType === oj.TableDataSource.EventType.REFRESH ||
+             eventType === oj.TableDataSource.EventType.RESET) {
+    ev = function (event) {
       self._startIndex = 0;
       eventHandler(event);
-    }
-    this._dataSourceWrappedEventHandlers.push({'eventType': eventType, 'eventHandler': eventHandler, 'wrappedEventHandler': ev});
+    };
+    this._dataSourceWrappedEventHandlers.push({
+      eventType: eventType,
+      eventHandler: eventHandler,
+      wrappedEventHandler: ev
+    });
     dataSource.on(eventType, ev);
-  }
-  else if (eventType == oj.PagingModel.EventType['PAGE'] ||
-           eventType == oj.PagingModel.EventType['BEFOREPAGE'] ||
-           eventType == oj.PagingModel.EventType['PAGECOUNT'])
-  {
+  } else if (eventType === oj.PagingModel.EventType.PAGE ||
+             eventType === oj.PagingModel.EventType.BEFOREPAGE ||
+             eventType === oj.PagingModel.EventType.PAGECOUNT) {
     oj.PagingTableDataSource.superclass.on.call(this, eventType, eventHandler);
-  }
-  else
-  {
+  } else {
     dataSource.on(eventType, eventHandler);
   }
 };
@@ -566,25 +551,20 @@ oj.PagingTableDataSource.prototype.on = function(eventType, eventHandler)
  * @memberof oj.PagingTableDataSource
  * @instance
  */
-oj.PagingTableDataSource.prototype.off = function(eventType, eventHandler)
-{
-  if (eventType == oj.PagingModel.EventType['PAGE'] ||
-      eventType == oj.PagingModel.EventType['PAGECOUNT'])
-  {
+oj.PagingTableDataSource.prototype.off = function (eventType, eventHandler) {
+  if (eventType === oj.PagingModel.EventType.PAGE ||
+      eventType === oj.PagingModel.EventType.PAGECOUNT) {
     oj.PagingTableDataSource.superclass.off.call(this, eventType, eventHandler);
   }
   var dataSource = (/** @type {{off: Function}} */ (this.dataSource));
-  
-  if (this._dataSourceWrappedEventHandlers != null)
-  {
+
+  if (this._dataSourceWrappedEventHandlers != null) {
     var dataSourceWrappedEventHandlersCount = this._dataSourceWrappedEventHandlers.length;
     var i;
-    for (i = 0; i < dataSourceWrappedEventHandlersCount; i++) 
-    {
-      if (this._dataSourceWrappedEventHandlers[i]['eventType'] == eventType &&
-          this._dataSourceWrappedEventHandlers[i]['eventHandler'] == eventHandler)
-      {
-        dataSource.off(eventType, this._dataSourceWrappedEventHandlers[i]['wrappedEventHandler']);
+    for (i = 0; i < dataSourceWrappedEventHandlersCount; i++) {
+      if (this._dataSourceWrappedEventHandlers[i].eventType === eventType &&
+          this._dataSourceWrappedEventHandlers[i].eventHandler === eventHandler) {
+        dataSource.off(eventType, this._dataSourceWrappedEventHandlers[i].wrappedEventHandler);
         this._dataSourceWrappedEventHandlers.splice(i, 1);
         break;
       }
@@ -604,8 +584,7 @@ oj.PagingTableDataSource.prototype.off = function(eventType, eventHandler)
  * @memberof oj.PagingTableDataSource
  * @instance
  */
-oj.PagingTableDataSource.prototype.sort = function(criteria)
-{
+oj.PagingTableDataSource.prototype.sort = function (criteria) {
   return this.dataSource.sort(criteria);
 };
 
@@ -617,135 +596,110 @@ oj.PagingTableDataSource.prototype.sort = function(criteria)
  * @memberof oj.PagingTableDataSource
  * @instance
  */
-oj.PagingTableDataSource.prototype.totalSize = function()
-{
+oj.PagingTableDataSource.prototype.totalSize = function () {
   return this.dataSource.totalSize();
 };
 
 /**
- * Returns the confidence for the totalSize value. 
- * @return {string} "actual" if the totalSize is the time of the fetch is an exact number 
- *                  "estimate" if the totalSize is an estimate 
- *                  "atLeast" if the totalSize is at least a certain number 
+ * Returns the confidence for the totalSize value.
+ * @return {string} "actual" if the totalSize is the time of the fetch is an exact number
+ *                  "estimate" if the totalSize is an estimate
+ *                  "atLeast" if the totalSize is at least a certain number
  *                  "unknown" if the totalSize is unknown
  * @ojsignature {target: "Type", for: "returns", value: "'actual'|'estimate'|'atLeast'|'unknown'"}
  * @export
  * @expose
  * @memberof oj.PagingTableDataSource
- * @instance 
+ * @instance
  */
-oj.PagingTableDataSource.prototype.totalSizeConfidence = function()
-{ 
+oj.PagingTableDataSource.prototype.totalSizeConfidence = function () {
   return this.dataSource.totalSizeConfidence();
 };
 
-/**** end delegated functions ****/
+/** ** end delegated functions ****/
 
-oj.PagingTableDataSource.prototype._getPageFromStartIndex = function()
-{
-  if (this._pageSize > 0)
-  {
+oj.PagingTableDataSource.prototype._getPageFromStartIndex = function () {
+  if (this._pageSize > 0) {
     return Math.floor(this._startIndex / this._pageSize);
   }
   return 0;
-}
+};
 
-oj.PagingTableDataSource.prototype._handleRowEvent = function(event, eventHandler)
-{
+oj.PagingTableDataSource.prototype._handleRowEvent = function (event, eventHandler) {
   var ignoreRows = [];
   var i;
-  for (i = 0; i < event['indexes'].length; i++)
-  {
-    var rowIdx = event['indexes'][i];
-    if (rowIdx !== undefined) 
-    {
+  for (i = 0; i < event.indexes.length; i++) {
+    var rowIdx = event.indexes[i];
+    if (rowIdx !== undefined) {
       // adjust by startIndex
-      if (this._fetchType == 'page')
-      {
-        rowIdx = rowIdx - this._startIndex;
+      if (this._fetchType === 'page') {
+        rowIdx -= this._startIndex;
       }
-      
-      if (rowIdx < 0 || rowIdx >= this._startIndex + this._pageSize)
-      {
+
+      if (rowIdx < 0 || rowIdx >= this._startIndex + this._pageSize) {
         // ignore if it's not in our page range
         ignoreRows.push(i);
       }
     }
   }
-  
-  if (ignoreRows.length > 0)
-  {
-    ignoreRows.sort(function(a, b) 
-    { 
+
+  if (ignoreRows.length > 0) {
+    ignoreRows.sort(function (a, b) {
       return a - b;
     });
-    
-    for (i = ignoreRows.length - 1; i >= 0; i--)
-    {
-      event['data'].splice(ignoreRows[i], 1);
-      event['indexes'].splice(ignoreRows[i], 1);
-      event['keys'].splice(ignoreRows[i], 1);
+
+    for (i = ignoreRows.length - 1; i >= 0; i--) {
+      event.data.splice(ignoreRows[i], 1);
+      event.indexes.splice(ignoreRows[i], 1);
+      event.keys.splice(ignoreRows[i], 1);
     }
   }
-  
-  if (event['indexes'].length > 0)
-  {
-    this._updateEndIndex(event['indexes'][event['indexes'].length - 1], false);
+
+  if (event.indexes.length > 0) {
+    this._updateEndIndex(event.indexes[event.indexes.length - 1], false);
   }
-  
-  event['startIndex'] = this._startIndex;
+
+  // eslint-disable-next-line no-param-reassign
+  event.startIndex = this._startIndex;
   eventHandler(event);
 };
 
-oj.PagingTableDataSource.prototype._handleSyncEvent = function(event, eventHandler)
-{
-  var eventStartIndex = event['startIndex'];
-  
-  if (eventStartIndex != this._startIndex)
-  {
-    this._startIndex = event['startIndex'];
+oj.PagingTableDataSource.prototype._handleSyncEvent = function (event, eventHandler) {
+  var eventStartIndex = event.startIndex;
+
+  if (eventStartIndex !== this._startIndex) {
+    this._startIndex = event.startIndex;
   }
-  
-  if (event['data'].length > 0)
-  {
-    this._updateEndIndex(event['startIndex'] + event['data'].length - 1, true);
-  }
-  else
-  {
+
+  if (event.data.length > 0) {
+    this._updateEndIndex((event.startIndex + event.data.length) - 1, true);
+  } else {
     this._updateEndIndex(-1, true);
   }
-  
-  if (this._fetchType == 'page')
-  {
+
+  if (this._fetchType === 'page') {
     // For paged fetches, reset the startIndex to zero since we always render
     // starting at 0
     var clonedEvent = {};
     oj.CollectionUtils.copyInto(clonedEvent, event);
-    clonedEvent['startIndex'] = 0;
+    clonedEvent.startIndex = 0;
     eventHandler(clonedEvent);
-  }
-  else
-  {
+  } else {
     eventHandler(event);
   }
 };
 
-oj.PagingTableDataSource.prototype._updateEndIndex = function(lastRowIdx, reset)
-{ 
-  if (reset)
-  {
+oj.PagingTableDataSource.prototype._updateEndIndex = function (lastRowIdx, reset) {
+  if (reset) {
     this._endIndex = lastRowIdx;
-  }
-  else
-  {
+  } else {
     // only update if greater
     this._endIndex = lastRowIdx > this._endIndex ? lastRowIdx : this._endIndex;
   }
 
   var totalSize = this.totalSize();
 
-  if (totalSize > 0)
-  {
+  if (totalSize > 0) {
     this._endIndex = this._endIndex > totalSize - 1 ? totalSize - 1 : this._endIndex;
   }
 };
@@ -757,24 +711,25 @@ oj.PagingTableDataSource.prototype._updateEndIndex = function(lastRowIdx, reset)
  * @memberof oj.PagingTableDataSource
  */
 oj.PagingTableDataSource.EventType =
-  {
-    /** Triggered when a Row is added to a PagingDataSource */
-    'ADD': "add",
-    /** Triggered when a Row is removed from a PagingDataSource */
-    'REMOVE': "remove",
-    /** Triggered when a PagingDataSource is reset */
-    'RESET': "reset",
-    /** Triggered when a PagingDataSource has been updated by a fetch */
-    'SYNC': "sync",
-    /** Triggered when a PagingDataSource has been refreshed */
-    'REFRESH': "refresh",
-    /** Triggered when a PagingDataSource has been sorted */
-    'SORT': "sort",
-    /** Triggered when a Row's attributes have been changed */
-    'CHANGE': "change",
-     /** Triggered when a PagingDataSource has sent a fetch request. */
-    'REQUEST': "request",
-    /** Triggered when an error occurred on the PagingDataSource */
-    'ERROR': "error"
-  };
+{
+  /** Triggered when a Row is added to a PagingDataSource */
+  ADD: 'add',
+  /** Triggered when a Row is removed from a PagingDataSource */
+  REMOVE: 'remove',
+  /** Triggered when a PagingDataSource is reset */
+  RESET: 'reset',
+  /** Triggered when a PagingDataSource has been updated by a fetch */
+  SYNC: 'sync',
+  /** Triggered when a PagingDataSource has been refreshed */
+  REFRESH: 'refresh',
+  /** Triggered when a PagingDataSource has been sorted */
+  SORT: 'sort',
+  /** Triggered when a Row's attributes have been changed */
+  CHANGE: 'change',
+  /** Triggered when a PagingDataSource has sent a fetch request. */
+  REQUEST: 'request',
+  /** Triggered when an error occurred on the PagingDataSource */
+  ERROR: 'error'
+};
+
 });

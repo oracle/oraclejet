@@ -1,7 +1,7 @@
 // Copyright (c) 2014, 2018, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-// WARNING: do not directly import this file, instead import the 
-//          version in your base theme's directory, 
+// WARNING: do not directly import this file, instead import the
+//          version in your base theme's directory,
 //          for example alta/widgets/_oj.alta.tabs.scss
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
@@ -15,12 +15,12 @@
 
     /* tabs */
     /* --------------------------------------------------------------- */
-        
+
     // This is to prevent the flash of unstyled content before the html becomes JET components.
     @if $initialVisibility == hidden {
       oj-tabs:not(.oj-complete) {
         visibility: hidden;
-      }      
+      }
     }
 
     /*
@@ -28,14 +28,20 @@
      */
     .oj-tabs {
       position: relative;
-      font-size: $fontSize;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        font-size: var(--oj-font-size);
+      } @else {
+        font-size: $fontSize;
+      }
+
     }
 
     /*
      * use flexbox so that vertial tabs automatically lay out correctly on resize
      */
     .oj-tabs.oj-tabs-vertical {
-      @include oj-display-flex-property();
+      display: flex;
     }
 
 
@@ -58,7 +64,13 @@
      * applied to a tab when it's selected
      */
     .oj-tabs-tab.oj-selected {
-      background-color: $tabsPanelBgColor;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        background-color: var(--oj-tabs-panel-bg-color);
+      } @else {
+        background-color: $tabsPanelBgColor;
+      }
+
     }
 
     .oj-tabs,
@@ -95,8 +107,13 @@
       line-height: 1rem;
       vertical-align: middle;
       font-weight: normal;
-      color: $tabsNavTextColor;
       text-decoration: none;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        color: var(--oj-tabs-nav-text-color);
+      } @else {
+        color: $tabsNavTextColor;
+      }
     }
 
     /*
@@ -104,7 +121,7 @@
      */
     .oj-tabs-title-overflow {
       display: inline-block;
-      overflow: hidden; 
+      overflow: hidden;
       white-space: nowrap;
       text-overflow: ellipsis;
     }
@@ -137,13 +154,19 @@
 
     /*
      * applied to the icon font in the tab title and close icon
-     * add .oj-tabs-tab .oj-tabs-close-icon:hover to 
+     * add .oj-tabs-tab .oj-tabs-close-icon:hover to
      * override color set in a:hover.oj-clickable-icon-nocontext
      */
     .oj-tabs-tab .oj-tabs-tab-icon,
     .oj-tabs-tab .oj-tabs-close-icon,
     .oj-tabs-tab .oj-tabs-close-icon:hover {
-      color: $iconColorDefault;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        color: var(--oj-icon-color-default);
+      } @else {
+        color: $iconColorDefault;
+      }
+
     }
 
     /*
@@ -151,7 +174,12 @@
      */
     .oj-tabs-tab.oj-hover .oj-tabs-tab-icon,
     .oj-tabs-tab .oj-tabs-close-icon.oj-hover {
-      color: $iconColorHover;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        color: var(--oj-icon-color-hover);
+      } @else {
+        color: $iconColorHover;
+      }
     }
 
     /*
@@ -159,22 +187,38 @@
      */
     .oj-tabs-tab.oj-active .oj-tabs-tab-icon,
     .oj-tabs-tab .oj-tabs-close-icon.oj-active {
-      color: $iconColorActive;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        color: var(--oj-icon-color-active);
+      } @else {
+        color: $iconColorActive;
+      }
     }
 
     /*
      * applied to the icon font in the tab title and close icon when selected
      */
     .oj-tabs-tab.oj-selected .oj-tabs-tab-icon {
-      color: $iconColorSelected;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        color: var(--oj-icon-color-selected);
+      } @else {
+        color: $iconColorSelected;
+      }
     }
 
     /*
      * applied to the icon font in the tab title and close icon when disabled
      */
     .oj-tabs-tab.oj-disabled .oj-tabs-tab-icon {
-      color: $iconColorDisabled;
-      opacity: $opacityDisabled;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        color: var(--oj-icon-color-disabled);
+        opacity: var(--oj-opacity-disabled);
+      } @else {
+        color: $iconColorDisabled;
+        opacity: $opacityDisabled;
+      }
     }
 
     /*
@@ -203,7 +247,7 @@
     }
 
 
-    /* 
+    /*
      * Bug 18283133 - ER for placing buttons alongside tabs
      */
 
@@ -211,14 +255,14 @@
      * For the facet after the tab bar, grow but no shrink when resized
      */
     .oj-tabs-facet {
-      @include oj-flex-property(1 0 auto); 
+      flex: 1 0 auto;
     }
 
     /*
      * For the facet before the tab bar, no grow or shrink when resized
      */
     .oj-tabs-facet.oj-start {
-      @include oj-flex-property(0 0 auto); 
+      flex: 0 0 auto;
     }
 
     /*
@@ -233,7 +277,7 @@
      * Use flex layout only if the tab bar contains any facets
      */
     .oj-tabs-horizontal > .oj-tabs-nav-root:not(.oj-conveyorbelt) {
-      @include oj-display-flex-property();
+      display: flex;
     }
 
     /*
@@ -268,9 +312,16 @@
      */
     .oj-tabs-panel {
       display: block;
-      padding: $panelPadding;
-      color: $textColor;
-      background-color: $tabsPanelBgColor;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        padding: var(--oj-panel-padding);
+        color: var(--oj-text-color);
+        background-color: var(--oj-tabs-panel-bg-color);
+      } @else {
+        padding: $panelPadding;
+        color: $textColor;
+        background-color: $tabsPanelBgColor;
+      }
     }
 
     /* vertical tabs */
@@ -283,7 +334,7 @@
       margin: 0;
 
       // don't change the tab bar size when ojtab is resized
-      @include oj-flex-property(0 0 auto); 
+      flex: 0 0 auto;
 
       // make sure the tab bar is layout after the panel content so the connected border is covered
       position: relative;
@@ -334,7 +385,7 @@
       margin-top: 0;
 
       //Bug 21562918 - ojtable "max-width: 100%" doesn't work well
-      @include oj-flex-property(1 1); 
+      flex: 1 1;
 
       min-width: 0;
       min-height: 0;
@@ -344,15 +395,20 @@
     /* Tabs with the oj-tabs-icon-only class specified */
     /* --------------------------------------------------------------- */
 
-    /* 
-     * override background setting in 
+    /*
+     * override background setting in
      * .oj-tabs-icon-only > .oj-tabs-nav-root .oj-tabs-tab
      */
     .oj-tabs-text-icon > .oj-tabs-nav-root .oj-tabs-tab.oj-selected,
     .oj-tabs-text-icon > .oj-tabs-nav-root .oj-tabs-tab.oj-selected.oj-hover,
     .oj-tabs-icon-only > .oj-tabs-nav-root .oj-tabs-tab.oj-selected,
     .oj-tabs-icon-only > .oj-tabs-nav-root .oj-tabs-tab.oj-selected.oj-hover {
-      background-color: $tabsPanelBgColor;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        background-color: var(--oj-tabs-panel-bg-color);
+      } @else {
+        background-color: $tabsPanelBgColor;
+      }
       background-image: none;
     }
 
@@ -386,7 +442,7 @@
 
     // todo: copied from alta file
 
-    
+
     /*
      * applied to the tab bar
      */
@@ -396,10 +452,10 @@
     }
 
     /*
-     * applied to each tab 
+     * applied to each tab
      */
     .oj-tabs-tab {
-      // In Alta: the selected tab has thicker border (3px) and bold tab label 
+      // In Alta: the selected tab has thicker border (3px) and bold tab label
       // while the normal tabs don't.
       // To reduce the size jumps between selected and un-selected
       // add transparent borders to all tabs and change the border-color when selected.
@@ -411,7 +467,13 @@
      * applied to a selected tab
      */
     .oj-tabs-tab.oj-selected {
-      border-color: $tabsNavAccentBorderColorSelected;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        border-color: var(--oj-tabs-nav-accent-border-color-selected);
+      } @else {
+        border-color: $tabsNavAccentBorderColorSelected;
+      }
+
     }
 
     /*
@@ -436,7 +498,12 @@
      * applied to the tab title text when it's disabled
      */
     .oj-tabs-tab.oj-disabled .oj-tabs-title {
-      color: $textColorDisabled;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        color: var(--oj-text-color-disabled);
+      } @else {
+        color: $textColorDisabled;
+      }
     }
 
 
@@ -450,14 +517,25 @@
       border-color: transparent;
       border-style: solid;
       border-width: 1px 1px 0 1px;
-      @include oj-border-radius($tabsNavBorderRadius $tabsNavBorderRadius 0 0);
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        border-radius: var(--oj-tabs-nav-border-radius) var(--oj-tabs-nav-border-radius) 0 0;
+      } @else {
+        @include oj-border-radius($tabsNavBorderRadius $tabsNavBorderRadius 0 0);
+      }
     }
 
     /*
      * used to display the left and right borders of the selected tab
      */
     .oj-tabs-tab.oj-selected .oj-tabs-tab-content {
-      border-color: $tabsNavBorderColorSelected;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        border-color: var(--oj-tabs-nav-border-color-selected);
+      } @else {
+        border-color: $tabsNavBorderColorSelected;
+      }
+
     }
 
     /*
@@ -474,16 +552,26 @@
     .oj-tabs-horizontal > .oj-tabs-nav-root .oj-tabs-tab {
       top: 0;
       margin: 0;
-      border-width: $tabsNavAccentBorderWidthSelected 0 0 0;
-
-      @include oj-border-radius($tabsNavBorderRadius $tabsNavBorderRadius 0 0);
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        border-width: var(--oj-tabs-nav-accent-border-width-selected) 0 0 0;
+        border-radius: var(--oj-tabs-nav-border-radius) var(--oj-tabs-nav-border-radius) 0 0;
+      } @else {
+        border-width: $tabsNavAccentBorderWidthSelected 0 0 0;
+        @include oj-border-radius($tabsNavBorderRadius $tabsNavBorderRadius 0 0);
+      }
     }
 
     /*
      * applied to a horizontal tab when edge = bottom
      */
     .oj-tabs-horizontal.oj-tabs-bottom > .oj-tabs-nav-root .oj-tabs-tab {
-      border-width: 0 0 $tabsNavAccentBorderWidthSelected 0;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        border-width: 0 0 var(--oj-tabs-nav-accent-border-width-selected) 0;
+      } @else {
+        border-width: 0 0 $tabsNavAccentBorderWidthSelected 0;
+      }
     }
 
     .oj-tabs-horizontal.oj-tabs-text-icon.oj-tabs-bottom > .oj-tabs-nav-root .oj-tabs-tab,
@@ -497,12 +585,25 @@
      * make the start border on the first selected tab match the container
      */
     .oj-first-child-selected > .oj-tabs-nav-root .oj-tabs-tab.oj-selected .oj-tabs-tab-content {
-      @include oj-ltr() {
-        border-left-color: $tabsPanelBorderColor;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+      } @else {
+        @include oj-ltr() {
+          border-left-color: $tabsPanelBorderColor;
+        }
+        @include oj-rtl() {
+          border-right-color: $tabsPanelBorderColor;
+        }
       }
-      @include oj-rtl() {
-        border-right-color: $tabsPanelBorderColor;        
-      }
+    }
+
+    @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+    {
+      html:not([dir="rtl"]) .oj-first-child-selected > .oj-tabs-nav-root .oj-tabs-tab.oj-selected .oj-tabs-tab-content {
+        border-left-color: var(--oj-tabs-panel-border-color); }
+
+      html[dir="rtl"] .oj-first-child-selected > .oj-tabs-nav-root .oj-tabs-tab.oj-selected .oj-tabs-tab-content {
+        border-right-color: var(--oj-tabs-panel-border-color); }
     }
 
 
@@ -533,9 +634,14 @@
      * applied to the panel body
      */
     .oj-tabs-panel {
-      border: 1px solid $tabsPanelBorderColor;
-      @include oj-border-radius($largeBorderRadius);
-
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        border: 1px solid var(--oj-tabs-panel-border-color);
+        border-radius: var(--oj-border-radius-lg);
+      } @else {
+        border: 1px solid $tabsPanelBorderColor;
+        @include oj-border-radius($largeBorderRadius);
+      }
       margin-top: -1px;
     }
 
@@ -551,24 +657,48 @@
      * don't apply top left border radius when the 1st tab is selected
      */
     .oj-first-child-selected > .oj-tabs-panel {
-      @include oj-ltr() {
-        @include oj-border-top-left-radius(0, $slowOverride: false);
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+      } @else {
+        @include oj-ltr() {
+          @include oj-border-top-left-radius(0, $slowOverride: false);
+        }
+        @include oj-rtl() {
+          @include oj-border-top-right-radius(0, $slowOverride: false);
+        }
       }
-      @include oj-rtl() {
-        @include oj-border-top-right-radius(0, $slowOverride: false);
-      }
+    }
+    @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+    {
+      html:not([dir="rtl"]) .oj-first-child-selected > .oj-tabs-panel {
+        border-top-left-radius: 0; }
+
+      html[dir="rtl"] .oj-first-child-selected > .oj-tabs-panel {
+        border-top-right-radius: 0; }
     }
 
     /*
      * applied to the panel body when 1st tab is selected and edge = bottom
      */
     .oj-tabs-bottom.oj-first-child-selected > .oj-tabs-panel {
-      @include oj-ltr() {
-        @include oj-border-bottom-left-radius(0, $slowOverride: false);
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+      } @else {
+        @include oj-ltr() {
+          @include oj-border-bottom-left-radius(0, $slowOverride: false);
+        }
+        @include oj-rtl() {
+          @include oj-border-bottom-right-radius(0, $slowOverride: false);
+        }
       }
-      @include oj-rtl() {
-        @include oj-border-bottom-right-radius(0, $slowOverride: false);
-      }
+    }
+    @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+    {
+      html:not([dir="rtl"]) .oj-tabs-bottom.oj-first-child-selected > .oj-tabs-panel {
+        border-bottom-left-radius: 0; }
+
+      html[dir="rtl"] .oj-tabs-bottom.oj-first-child-selected > .oj-tabs-panel {
+        border-bottom-right-radius: 0; }
     }
 
 
@@ -587,34 +717,50 @@
      */
     .oj-tabs-vertical > .oj-tabs-nav-root .oj-tabs-tab {
       line-height: 1rem;
-
-      @include oj-ltr() {
-        border-width: 0 0 0 $tabsNavAccentBorderWidthSelected;
-        @include oj-border-radius($tabsNavBorderRadius 0 0 $tabsNavBorderRadius,
-                                  $slowOverride: false);
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+        html:not([dir="rtl"]) & {
+          border-width: 0 0 0 var(--oj-tabs-nav-accent-border-width-selected);
+          border-radius: var(--oj-tabs-nav-border-radius) 0 0 var(--oj-tabs-nav-border-radius); }
+        html[dir="rtl"] & {
+          border-width: 0 var(--oj-tabs-nav-accent-border-width-selected) 0 0;
+          border-radius: 0 var(--oj-tabs-nav-border-radius) var(--oj-tabs-nav-border-radius) 0; }
+      } 
+      @else {
+        @include oj-ltr() {
+          border-width: 0 0 0 $tabsNavAccentBorderWidthSelected;
+          @include oj-border-radius($tabsNavBorderRadius 0 0 $tabsNavBorderRadius, $slowOverride: false);
+        }
+        @include oj-rtl() {
+          border-width: 0 $tabsNavAccentBorderWidthSelected 0 0;
+          @include oj-border-radius(0 $tabsNavBorderRadius $tabsNavBorderRadius 0, $slowOverride: false);
+        }
+        @include oj-border-radius-slowoverride();
       }
-      @include oj-rtl() {
-        border-width: 0 $tabsNavAccentBorderWidthSelected 0 0;
-        @include oj-border-radius(0 $tabsNavBorderRadius $tabsNavBorderRadius 0,
-                                  $slowOverride: false);
-      }
-
-      @include oj-border-radius-slowoverride();
     }
 
     /*
      * applied to the vertical tab when edge = end
      */
     .oj-tabs-vertical.oj-tabs-end > .oj-tabs-nav-root .oj-tabs-tab {
-      @include oj-rtl() {
-        border-width: 0 0 0 $tabsNavAccentBorderWidthSelected;
-        @include oj-border-radius($tabsNavBorderRadius 0 0 $tabsNavBorderRadius,
-                                  $slowOverride: false);
-      }
-      @include oj-ltr() {
-        border-width: 0 $tabsNavAccentBorderWidthSelected 0 0;
-        @include oj-border-radius(0 $tabsNavBorderRadius $tabsNavBorderRadius 0,
-                                  $slowOverride: false);
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        html[dir="rtl"] & {
+          border-width: 0 0 0 var(--oj-tabs-nav-accent-border-width-selected);
+          border-radius: var(--oj-tabs-nav-border-radius) 0 0 var(--oj-tabs-nav-border-radius); }
+  
+        html:not([dir="rtl"]) & {
+          border-width: 0 var(--oj-tabs-nav-accent-border-width-selected) 0 0;
+          border-radius: 0 var(--oj-tabs-nav-border-radius) var(--oj-tabs-nav-border-radius) 0; }
+      } 
+      @else {
+        @include oj-rtl() {
+          border-width: 0 0 0 $tabsNavAccentBorderWidthSelected;
+          @include oj-border-radius($tabsNavBorderRadius 0 0 $tabsNavBorderRadius, $slowOverride: false);
+        }
+        @include oj-ltr() {
+          border-width: 0 $tabsNavAccentBorderWidthSelected 0 0;
+          @include oj-border-radius(0 $tabsNavBorderRadius $tabsNavBorderRadius 0, $slowOverride: false);
+        }
       }
     }
 
@@ -637,17 +783,21 @@
      */
     .oj-tabs-vertical > .oj-tabs-nav-root .oj-tabs-tab-content {
       border-width: 1px 0 1px 0;
-
-      @include oj-ltr() {
-        @include oj-border-radius($tabsNavBorderRadius 0 0 $tabsNavBorderRadius,
-                                  $slowOverride: false);
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        html:not([dir="rtl"]) & {
+            border-radius: var(--oj-tabs-nav-border-radius) 0 0 var(--oj-tabs-nav-border-radius); }
+        html[dir="rtl"] & {
+            border-radius: 0 var(--oj-tabs-nav-border-radius) var(--oj-tabs-nav-border-radius) 0; }
+      } @else {
+        @include oj-ltr() {
+          @include oj-border-radius($tabsNavBorderRadius 0 0 $tabsNavBorderRadius, $slowOverride: false);
+        }
+        @include oj-rtl() {
+          @include oj-border-radius(0 $tabsNavBorderRadius $tabsNavBorderRadius 0, $slowOverride: false);
+        }
+        @include oj-border-radius-slowoverride();
       }
-      @include oj-rtl() {
-        @include oj-border-radius(0 $tabsNavBorderRadius $tabsNavBorderRadius 0,
-                                  $slowOverride: false);
-      }
-
-      @include oj-border-radius-slowoverride();
     }
 
     /*
@@ -664,18 +814,33 @@
     .oj-tabs-text-icon > .oj-tabs-nav-root .oj-tabs-tab,
     .oj-tabs-icon-only > .oj-tabs-nav-root .oj-tabs-tab {
       border-width: 1px;
-      @include oj-border-radius(0);
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        border-radius: 0;
+      } @else {
+        @include oj-border-radius(0);
+      }
     }
 
     .oj-tabs-text-icon > .oj-tabs-nav-root .oj-tabs-tab-content,
     .oj-tabs-icon-only > .oj-tabs-nav-root .oj-tabs-tab-content {
       border-width: 0;
-      @include oj-border-radius(0);
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        border-radius: 0;
+      } @else {
+        @include oj-border-radius(0);
+      }
     }
 
     .oj-tabs-text-icon > .oj-tabs-nav-root .oj-tabs-tab.oj-selected,
     .oj-tabs-icon-only > .oj-tabs-nav-root .oj-tabs-tab.oj-selected {
-      border-color: $tabsPanelBorderColor;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        border-color: var(--oj-tabs-panel-border-color);
+      } @else {
+        border-color: $tabsPanelBorderColor;
+      }
     }
 
     /* vertical tabs with the oj-tabs-icon-only class specified */
@@ -685,47 +850,66 @@
      */
     .oj-tabs-vertical.oj-tabs-text-icon > .oj-tabs-nav-root .oj-tabs-tab.oj-selected,
     .oj-tabs-vertical.oj-tabs-icon-only > .oj-tabs-nav-root .oj-tabs-tab.oj-selected {
-
-      @include oj-ltr() {
-        @include oj-border-radius($mediumBorderRadius 0 0 $mediumBorderRadius,
-                                  $slowOverride: false);
-        border-right-color: transparent;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        html:not([dir="rtl"]) & {
+          border-radius: var(--oj-border-radius-md) 0 0 var(--oj-border-radius-md);
+          border-right-color: transparent; 
+        }
+        html[dir="rtl"] & {
+          border-radius: 0 var(--oj-border-radius-md) var(--oj-border-radius-md) 0;
+          border-left-color: transparent; 
+        }
+      } @else {
+        @include oj-ltr() {
+          @include oj-border-radius($mediumBorderRadius 0 0 $mediumBorderRadius, $slowOverride: false);
+          border-right-color: transparent;
+        }
+        @include oj-rtl() {
+          @include oj-border-radius(0 $mediumBorderRadius $mediumBorderRadius 0, $slowOverride: false);
+          border-left-color: transparent;
+        }
+        @include oj-border-radius-slowoverride();
       }
-      @include oj-rtl() {
-        @include oj-border-radius(0 $mediumBorderRadius $mediumBorderRadius 0,
-                                  $slowOverride: false);
-        border-left-color: transparent;
-      }
-
-      @include oj-border-radius-slowoverride();
     }
 
     /*
-     * display top, bottom and right border and border radius on the selected tab 
+     * display top, bottom and right border and border radius on the selected tab
      * when edge = end
      */
     .oj-tabs-vertical.oj-tabs-text-icon.oj-tabs-end > .oj-tabs-nav-root .oj-tabs-tab.oj-selected,
     .oj-tabs-vertical.oj-tabs-icon-only.oj-tabs-end > .oj-tabs-nav-root .oj-tabs-tab.oj-selected {
-
-      @include oj-ltr() {
-        @include oj-border-radius(0 $mediumBorderRadius $mediumBorderRadius 0,
-                                  $slowOverride: false);
-        border-color: $tabsPanelBorderColor;
-
-        // set margin to cover up the border connect between the selected tab and 
-        // the panel content border 
-        margin-left: -1px;
-        border-left-color: transparent;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        html:not([dir="rtl"]) & {
+          border-radius: 0 var(--oj-border-radius-md) var(--oj-border-radius-md) 0;
+          border-color: var(--oj-tabs-panel-border-color);
+          margin-left: -1px;
+          border-left-color: transparent; 
+        }
+        html[dir="rtl"] & {
+         border-radius: var(--oj-border-radius-md) 0 0 var(--oj-border-radius-md);
+         border-color: var(--oj-tabs-panel-border-color);
+         margin-right: -1px;
+         border-right-color: transparent; 
+        }
+      } @else {
+        @include oj-ltr() {
+          @include oj-border-radius(0 $mediumBorderRadius $mediumBorderRadius 0, $slowOverride: false);
+          border-color: $tabsPanelBorderColor;
+          // set margin to cover up the border connect between the selected tab and
+          // the panel content border
+          margin-left: -1px;
+          border-left-color: transparent;
+        }
+        @include oj-rtl() {
+          @include oj-border-radius($mediumBorderRadius 0 0 $mediumBorderRadius, $slowOverride: false);
+          border-color: $tabsPanelBorderColor;
+          margin-right: -1px;
+          border-right-color: transparent;
+        }
+        @include oj-border-radius-slowoverride();
       }
-      @include oj-rtl() {
-        @include oj-border-radius($mediumBorderRadius 0 0 $mediumBorderRadius,
-                                  $slowOverride: false);
-        border-color: $tabsPanelBorderColor;
-        margin-right: -1px;
-        border-right-color: transparent;
-      }
-
-      @include oj-border-radius-slowoverride();
     }
 
 
@@ -738,18 +922,25 @@
     .oj-tabs-horizontal.oj-tabs-text-icon > .oj-tabs-nav-root .oj-tabs-tab.oj-selected,
     .oj-tabs-horizontal.oj-tabs-icon-only > .oj-tabs-nav-root .oj-tabs-tab.oj-selected {
       border-bottom-color: transparent;
-
-      @include oj-border-radius($mediumBorderRadius $mediumBorderRadius 0 0);
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        border-radius: var(--oj-border-radius-md) var(--oj-border-radius-md) 0 0;
+      } @else {
+        @include oj-border-radius($mediumBorderRadius $mediumBorderRadius 0 0);
+      }
     }
 
     .oj-tabs-horizontal.oj-tabs-text-icon.oj-tabs-bottom > .oj-tabs-nav-root .oj-tabs-tab.oj-selected,
     .oj-tabs-horizontal.oj-tabs-icon-only.oj-tabs-bottom > .oj-tabs-nav-root .oj-tabs-tab.oj-selected {
-      border-color: $tabsPanelBorderColor;
       border-top-color: transparent;
-
-      @include oj-border-radius(0 0 $mediumBorderRadius $mediumBorderRadius);
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        border-color: var(--oj-tabs-panel-border-color);
+        border-radius: 0 0 var(--oj-border-radius-md) var(--oj-border-radius-md);
+      } @else {
+        border-color: $tabsPanelBorderColor;
+        @include oj-border-radius(0 0 $mediumBorderRadius $mediumBorderRadius);
+      }
     }
-
   }
 }
-

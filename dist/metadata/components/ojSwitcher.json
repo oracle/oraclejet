@@ -1,21 +1,24 @@
 {
   "name": "oj-switcher",
-  "version": "5.2.0",
-  "jetVersion": "5.2.0",
+  "version": "6.0.0",
+  "jetVersion": "6.0.0",
   "displayName": "Switcher",
   "type": "core",
   "description": "Dynamically decides which child element should be made visible.",
+  "help": "https://docs.oracle.com/en/middleware/jet/6/reference-api/oj.ojSwitcher.html",
   "properties": {
     "value": {
       "description": "Gets and Sets value for this switcher.",
       "type": "string",
       "displayName": "Value",
-      "value": ""
+      "value": "",
+      "help": "value"
     }
   },
   "methods": {
     "setProperty": {
       "description": "Sets a property or a single subproperty for complex properties and notifies the component\nof the change, triggering a [property]Changed event.",
+      "help": "setProperty",
       "params": [
         {
           "name": "property",
@@ -32,6 +35,7 @@
     },
     "getProperty": {
       "description": "Retrieves a value for a property or a single subproperty for complex properties.",
+      "help": "getProperty",
       "params": [
         {
           "name": "property",
@@ -43,6 +47,7 @@
     },
     "setProperties": {
       "description": "Performs a batch set of properties.",
+      "help": "setProperties",
       "params": [
         {
           "name": "properties",
@@ -54,6 +59,7 @@
     },
     "refresh": {
       "description": "Refreshes the visual state of the component.",
+      "help": "refresh",
       "return": "void"
     }
   }

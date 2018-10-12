@@ -18,6 +18,7 @@ var ArrayDataProvider = /** @class */ (function () {
         this._KEY = 'key';
         this._KEYS = 'keys';
         this._AFTERKEYS = 'afterKeys';
+        this._ADDBEFOREKEYS = 'addBeforeKeys';
         this._DIRECTION = 'direction';
         this._ATTRIBUTE = 'attribute';
         this._SORT = 'sort';
@@ -176,15 +177,17 @@ var ArrayDataProvider = /** @class */ (function () {
             return class_12;
         }());
         this.DataProviderAddOperationEventDetail = /** @class */ (function () {
-            function class_13(_parent, keys, afterKeys, metadata, data, indexes) {
+            function class_13(_parent, keys, afterKeys, addBeforeKeys, metadata, data, indexes) {
                 this._parent = _parent;
                 this.keys = keys;
                 this.afterKeys = afterKeys;
+                this.addBeforeKeys = addBeforeKeys;
                 this.metadata = metadata;
                 this.data = data;
                 this.indexes = indexes;
                 this[_parent._KEYS] = keys;
                 this[_parent._AFTERKEYS] = afterKeys;
+                this[_parent._ADDBEFOREKEYS] = addBeforeKeys;
                 this[_parent._METADATA] = metadata;
                 this[_parent._DATA] = data;
                 this[_parent._INDEXES] = indexes;
@@ -392,13 +395,13 @@ var ArrayDataProvider = /** @class */ (function () {
                     operationRemoveEventDetail = new self.DataProviderOperationEventDetail(self, keySet_2, metadataArray, dataArray, indexArray);
                 }
                 dataArray = [], keyArray = [], indexArray = [];
+                var generatedKeys = self._generateKeysIfNeeded();
                 for (i = 0; i < changes.length; i++) {
                     if (changes[i]['status'] === 'added' &&
                         updatedIndexes.indexOf(i) < 0 &&
                         removeDuplicate.indexOf(i) < 0) {
-                        self._generateKeysIfNeeded();
                         id = self._getId(changes[i].value);
-                        if (id == null) {
+                        if (id == null && (generatedKeys || self._keysSpecified)) {
                             id = self._getKeys()[changes[i].index];
                         }
                         if (id == null) {
@@ -428,7 +431,7 @@ var ArrayDataProvider = /** @class */ (function () {
                     afterKeyArray.map(function (key) {
                         afterKeySet_1.add(key);
                     });
-                    operationAddEventDetail = new self.DataProviderAddOperationEventDetail(self, keySet_3, afterKeySet_1, metadataArray, dataArray, indexArray);
+                    operationAddEventDetail = new self.DataProviderAddOperationEventDetail(self, keySet_3, afterKeySet_1, afterKeyArray, metadataArray, dataArray, indexArray);
                 }
                 var mutationEventDetail = new self.DataProviderMutationEventDetail(self, operationAddEventDetail, operationRemoveEventDetail, operationUpdateEventDetail);
                 self._mutationEvent = new oj.DataProviderMutationEvent(mutationEventDetail);
@@ -658,14 +661,14 @@ oj.EventTargetMixin.applyMixin(ArrayDataProvider);
  * http://jquery.org/license
  */
 
-/*jslint browser: true,devel:true*/
+/* jslint browser: true,devel:true*/
 /**
  * @ojstatus preview
  * @since 4.1.0
  * @export
  * @class oj.ArrayDataProvider
  * @implements oj.DataProvider
- * @classdesc This class implements {@link oj.DataProvider}.  
+ * @classdesc This class implements {@link oj.DataProvider}.
  *            Object representing data available from an array.  This dataprovider can be used by [ListView]{@link oj.ojListView}, [NavigationList]{@link oj.ojNavigationList},
  *            [TabBar]{@link oj.ojTabBar}, and [Table]{@link oj.ojTable}.<br><br>
  *            See the <a href="../jetCookbook.html?component=table&demo=basicTable">Table - Base Table</a> demo for an example.<br><br>
@@ -707,23 +710,28 @@ oj.EventTargetMixin.applyMixin(ArrayDataProvider);
  * @param {Object=} options Options for the ArrayDataProvider
  * @param {oj.SortComparators=} options.sortComparators Optional {@link oj.sortComparator} to use for sort.
  * @param {Array.<oj.SortCriterion>=} options.implicitSort Optional array of {@link oj.sortCriterion} used to specify sort information when the data loaded into the dataprovider is already sorted.
- * @param {(Array|function():Array)=} options.keys Optional keys for the data. If not supplied, then the keys are generated according options.keyAttributes. If that is also not supplied then index is used as key. 
+ * @param {(Array|function():Array)=} options.keys Optional keys for the data. If not supplied, then the keys are generated according options.keyAttributes. If that is also not supplied then index is used as key.
  * @param {(string | Array.<string>)=} options.idAttribute <span class="important">Deprecated: this option is deprecated and will be removed in the future.
  *                                                  Please use the keyAttributes option instead.</span><br><br>
  *                                                  Optionally the field name which stores the id in the data. Can be a string denoting a single key attribute or an array
- *                                                  of strings for multiple key attributes. @index causes ArrayDataProvider to use index as key and @value will cause ArrayDataProvider to
+ *                                                  of strings for multiple key attributes. Please note that the ids in ArrayDataProvider must always be unique. Please do not introduce duplicate ids, even during temporary mutation operations.
+ *                                                  @index causes ArrayDataProvider to use index as key and @value will cause ArrayDataProvider to
  *                                                  use all attributes as key. @index is the default.
  * @param {(string | Array.<string>)=} options.keyAttributes Optionally the field name which stores the key in the data. Can be a string denoting a single key attribute or an array
- *                                                  of strings for multiple key attributes. @index causes ArrayDataProvider to use index as key and @value will cause ArrayDataProvider to
+ *                                                  of strings for multiple key attributes. Please note that the ids in ArrayDataProvider must always be unique. Please do not introduce duplicate ids, even during temporary mutation operations. @index causes ArrayDataProvider to use index as key and @value will cause ArrayDataProvider to
  *                                                  use all attributes as key. @index is the default.
  * @ojsignature [{target: "Type",
  *               value: "class ArrayDataProvider<K, D> implements DataProvider<K, D>"},
  *               {target: "Type",
- *               value: "SortCriterion<D>[]", 
+ *               value: "Array<SortCriterion<D>>",
  *               for: "options.implicitSort"},
  *               {target: "Type",
- *               value: "SortComparators<D>", 
+ *               value: "ArrayDataProvider.SortComparators<D>",
  *               for: "options.sortComparators"}]
+ * @ojtsimport {module: "ojdataprovider", type: "AMD", imported: ["DataProvider", "SortCriterion", "FetchByKeysParameters",
+ * "ContainsKeysResults","FetchByKeysResults","FetchByOffsetParameters","FetchByOffsetResults",
+ * "FetchListResult","FetchListParameters"]}
+ * @ojtsmodule
  * @example
  * // First initialize an array
  * var deptArray = [{DepartmentId: 10, DepartmentName: 'Administration', LocationId: 200},
@@ -783,7 +791,7 @@ oj.EventTargetMixin.applyMixin(ArrayDataProvider);
 
 /**
  * Fetch the first block of data.
- * 
+ *
  * @ojstatus preview
  * @param {oj.FetchListParameters=} params Fetch parameters
  * @return {AsyncIterable.<oj.FetchListResult>} AsyncIterable with {@link oj.FetchListResult}
@@ -795,12 +803,12 @@ oj.EventTargetMixin.applyMixin(ArrayDataProvider);
  * @method
  * @name fetchFirst
  * @ojsignature {target: "Type",
- *               value: "<F extends FetchListResult<K, D>>(params?: FetchListParameters<D>): AsyncIterable<F>"}
+ *               value: "(params?: FetchListParameters<D>): AsyncIterable<FetchListResult<K, D>>"}
  */
 
 /**
  * Determines whether this DataProvider supports certain feature.
- * 
+ *
  * @ojstatus preview
  * @param {string} capabilityName capability name. Supported capability names are:
  *                  "fetchByKeys", "fetchByOffset", and "sort".
@@ -822,7 +830,7 @@ oj.EventTargetMixin.applyMixin(ArrayDataProvider);
 
 /**
  * Return the total number of rows in this dataprovider
- * 
+ *
  * @ojstatus preview
  * @return {Promise.<number>} Returns a Promise which resolves to the total number of rows. -1 is unknown row count.
  * @export
@@ -835,7 +843,7 @@ oj.EventTargetMixin.applyMixin(ArrayDataProvider);
 
 /**
  * Return a string that indicates if this data provider is empty
- * 
+ *
  * @ojstatus preview
  * @return {"yes"|"no"|"unknown"} a string that indicates if this data provider is empty. Valid values are:
  *                  "yes": this data provider is empty.
@@ -900,6 +908,7 @@ oj.EventTargetMixin.applyMixin(ArrayDataProvider);
 /**
  * End of jsdoc
  */
+
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
@@ -916,12 +925,13 @@ oj.EventTargetMixin.applyMixin(ArrayDataProvider);
  * http://jquery.org/license
  */
 
-/*jslint browser: true,devel:true*/
+/* jslint browser: true,devel:true*/
 /**
  * @ojstatus preview
  * @since 4.1.0
  * @export
  * @interface oj.SortComparators
+ * @ojtsnamespace ArrayDataProvider
  * @ojsignature {target: "Type",
  *               value: "interface SortComparators<D>"}
  */
@@ -929,12 +939,12 @@ oj.EventTargetMixin.applyMixin(ArrayDataProvider);
 
 /**
  * Sort comparators. Map of attribute to comparator function.
- * 
+ *
  * @ojstatus preview
  * @since 4.1.0
  * @export
  * @expose
- * @memberof oj.SortComparator
+ * @memberof oj.SortComparators
  * @instance
  * @name comparators
  * @type {Map.<string, Function>}
@@ -945,5 +955,6 @@ oj.EventTargetMixin.applyMixin(ArrayDataProvider);
 /**
  * End of jsdoc
  */
+
   return ArrayDataProvider;
 });

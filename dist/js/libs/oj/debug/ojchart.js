@@ -4,7 +4,7 @@
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
-define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/internal-deps/dvt/DvtChart'], function(oj, $, comp, base, dvt)
+define(['ojs/ojcore', 'jquery', 'ojs/ojconfig', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/internal-deps/dvt/DvtChart', 'ojs/ojattributegrouphandler', 'ojs/ojkeyset', 'ojs/ojlogger'], function(oj, $, Config, comp, DvtAttributeUtils, dvt, attributeGroupHandler, KeySet, Logger)
 {
 var __oj_chart_metadata = 
 {
@@ -78,7 +78,69 @@ var __oj_chart_metadata =
       }
     },
     "dataLabel": {
-      "type": "function"
+      "type": "function",
+      "properties": {
+        "id": {
+          "type": "any"
+        },
+        "series": {
+          "type": "string"
+        },
+        "group": {
+          "type": "string|Array<string>"
+        },
+        "value": {
+          "type": "number"
+        },
+        "targetValue": {
+          "type": "number"
+        },
+        "x": {
+          "type": "number|string"
+        },
+        "y": {
+          "type": "number"
+        },
+        "z": {
+          "type": "number"
+        },
+        "low": {
+          "type": "number"
+        },
+        "high": {
+          "type": "number"
+        },
+        "open": {
+          "type": "number"
+        },
+        "close": {
+          "type": "number"
+        },
+        "volume": {
+          "type": "number"
+        },
+        "label": {
+          "type": "string"
+        },
+        "totalValue": {
+          "type": "number"
+        },
+        "data": {
+          "type": "object"
+        },
+        "itemData": {
+          "type": "object"
+        },
+        "seriesData": {
+          "type": "object"
+        },
+        "groupData": {
+          "type": "object"
+        },
+        "componentElement": {
+          "type": "Element"
+        }
+      }
     },
     "dnd": {
       "type": "object",
@@ -271,7 +333,7 @@ var __oj_chart_metadata =
       "type": "function"
     },
     "groups": {
-      "type": "Array<Object>|Array<string>|Promise"
+      "type": "Array<string>|Array<Object>|Promise"
     },
     "hiddenCategories": {
       "type": "Array<string>",
@@ -480,7 +542,21 @@ var __oj_chart_metadata =
           "value": {}
         },
         "renderer": {
-          "type": "function"
+          "type": "function",
+          "properties": {
+            "outerBounds": {
+              "type": "object"
+            },
+            "innerBounds": {
+              "type": "object"
+            },
+            "label": {
+              "type": "string"
+            },
+            "componentElement": {
+              "type": "Element"
+            }
+          }
         },
         "scaling": {
           "type": "string",
@@ -766,7 +842,7 @@ var __oj_chart_metadata =
           "value": "auto"
         },
         "markerShape": {
-          "type": "string",
+          "type": "\"auto\"|\"circle\"|\"diamond\"|\"human\"|\"plus\"|\"square\"|\"star\"|\"triangleDown\"|\"triangleUp\"|string",
           "value": "auto"
         },
         "markerSize": {
@@ -864,7 +940,72 @@ var __oj_chart_metadata =
       "type": "object",
       "properties": {
         "renderer": {
-          "type": "function"
+          "type": "function",
+          "properties": {
+            "parentElement": {
+              "type": "Element"
+            },
+            "id": {
+              "type": "any"
+            },
+            "series": {
+              "type": "string"
+            },
+            "group": {
+              "type": "string|Array<string>"
+            },
+            "label": {
+              "type": "string"
+            },
+            "value": {
+              "type": "number"
+            },
+            "x": {
+              "type": "number|string"
+            },
+            "y": {
+              "type": "number"
+            },
+            "z": {
+              "type": "number"
+            },
+            "low": {
+              "type": "number"
+            },
+            "high": {
+              "type": "number"
+            },
+            "open": {
+              "type": "number"
+            },
+            "close": {
+              "type": "number"
+            },
+            "volume": {
+              "type": "number"
+            },
+            "targetValue": {
+              "type": "number"
+            },
+            "data": {
+              "type": "object"
+            },
+            "itemData": {
+              "type": "object"
+            },
+            "seriesData": {
+              "type": "object"
+            },
+            "groupData": {
+              "type": "object"
+            },
+            "componentElement": {
+              "type": "Element"
+            },
+            "color": {
+              "type": "string"
+            }
+          }
         }
       }
     },
@@ -2381,7 +2522,7 @@ var __oj_chart_item_metadata =
       "value": "auto"
     },
     "markerShape": {
-      "type": "string",
+      "type": "\"circle\"|\"diamond\"|\"human\"|\"plus\"|\"square\"|\"star\"|\"triangleDown\"|\"triangleUp\"|\"auto\"|string",
       "value": "auto"
     },
     "markerSize": {
@@ -2596,7 +2737,7 @@ var __oj_chart_series_metadata =
       "value": "auto"
     },
     "markerShape": {
-      "type": "string",
+      "type": "\"circle\"|\"diamond\"|\"human\"|\"plus\"|\"square\"|\"star\"|\"triangleDown\"|\"triangleUp\"|\"auto\"|string",
       "value": "auto"
     },
     "markerSize": {
@@ -2776,7 +2917,7 @@ var __oj_spark_chart_metadata =
       "value": ""
     },
     "markerShape": {
-      "type": "string",
+      "type": "\"auto\"|\"circle\"|\"diamond\"|\"human\"|\"plus\"|\"square\"|\"star\"|\"triangleDown\"|\"triangleUp\"|string",
       "value": "auto"
     },
     "markerSize": {
@@ -2939,7 +3080,7 @@ var __oj_spark_chart_item_metadata =
       "value": "off"
     },
     "markerShape": {
-      "type": "string",
+      "type": "\"auto\"|\"circle\"|\"diamond\"|\"human\"|\"plus\"|\"square\"|\"star\"|\"triangleDown\"|\"triangleUp\"|string",
       "value": "auto"
     },
     "markerSize": {
@@ -2965,34 +3106,35 @@ var __oj_spark_chart_item_metadata =
  * All rights reserved.
  */
 
+/* global Promise:true, Logger:false */
 
  /**
  * Handler for DataProvider generated content for chart
  * @constructor
  * @ignore
  */
-oj.ChartDataProviderHandler = function(component, data, templateEngine)
-{
+oj.ChartDataProviderHandler = function (component, data, templateEngine) {
   this._component = component;
   this._templateEngine = templateEngine;
   this._templates = component.getTemplates();
   this._data = data;
 
-  if (!this._templates.itemTemplate)
-    oj.Logger.error('No itemTemplate slot specified.');
-  else
+  if (!this._templates.itemTemplate) {
+    Logger.error('No itemTemplate slot specified.');
+  } else {
     this.Init();
+  }
 };
 
-// Subclass from oj.Object 
-oj.Object.createSubclass(oj.ChartDataProviderHandler, oj.Object, "oj.ChartDataProviderHandler");
+// Subclass from oj.Object
+oj.Object.createSubclass(oj.ChartDataProviderHandler, oj.Object, 'oj.ChartDataProviderHandler');
 
 
 /**
  * Initializes the instance.
  * @protected
  */
-oj.ChartDataProviderHandler.prototype.Init = function() {
+oj.ChartDataProviderHandler.prototype.Init = function () {
   this._parentElement = this._component.element[0];
   this._itemTemplate = this._templates.itemTemplate[0];
   this._seriesTemplate = this._templates.seriesTemplate ? this._templates.seriesTemplate[0] : null;
@@ -3004,152 +3146,114 @@ oj.ChartDataProviderHandler.prototype.Init = function() {
   // item map. key: series+group ids, value: corresponding item
   this._itemMap = {};
   // seriesContexts: conatins series context for each series
-  this._seriesContexts = {}; 
+  this._seriesContexts = {};
   // groupContexts: contains the group context for a each level of each group
   this._groupContexts = {};
   // itemContexts: contains the item context for a each item
   this._itemContexts = {};
 
-  var rowData = this._data['data'];
-  var rowKeys = this._data['keys'];
-   
-  // Generate chart data      
+  var rowData = this._data.data;
+  var rowKeys = this._data.keys;
+
+  // Generate chart data
   var numSeries = 0;
   var numOuterGroups = 0;
-    
-  // get top level chart item property names
-  var itemTagName = "oj-chart-item";
-  var chartItemProperties = Object.keys(oj.CustomElementBridge.getMetadata(itemTagName).properties); // todo: remove change listener names
 
-  var chartItemNodes = [];
-  var itemsContainer = document.createElement("div");
-  itemsContainer.setAttribute("data-oj-context", "");
-  var fragment = document.createDocumentFragment();
+  // get top level chart item property names
+  var itemTagName = 'oj-chart-item';
+  var chartItemProperties = this._component.getElementPropertyNames(itemTagName);
 
   // stamp out chart item templates and collect chart item nodes
+  var chartDataItems = [];
   for (var i = 0; i < rowData.length; i++) {
     var rowItem = rowData[i];
     var rowKey = rowKeys[i];
-    var itemContext = {};
-    itemContext = {'data': rowItem, 'key': rowKey, 'index': i, 'componentElement' : this._parentElement};
+    var itemContext = { data: rowItem,
+      key: rowKey,
+      index: i,
+      componentElement: this._parentElement };
 
-    var chartItemNode;
-    try { 
-      var templateNodes = this._templateEngine.execute(this._parentElement, this._itemTemplate , itemContext, this._alias);
-      for (var j = 0; j < templateNodes.length; j++) {
-        if (templateNodes[j].tagName && templateNodes[j].tagName.toLowerCase() === itemTagName) {
-          chartItemNode = templateNodes[j];
-          break;
-        }
-      }
-    }
-    catch (error) {
-      oj.Logger.error(error);
-      chartItemNodes = [];
-      break;
-    }
-
-    this._itemContexts[i] = itemContext;
-    chartItemNodes.push(chartItemNode);
-    fragment.appendChild(chartItemNode);
-  }
-  // add to document.body for properties to be evaluated into attributes
-  itemsContainer.appendChild(fragment);
-  document.body.appendChild(itemsContainer); 
-
-  var self = this;
-
-  var chartData = oj.Context.getContext(itemsContainer).getBusyContext().whenReady().then(function () {
-    var chartDataItems = [];
-    // Iterate through fetched data and generate actual chart data items info from item nodes
-    for (var i = 0; i < chartItemNodes.length; i++) {  
-      var chartItemNode = chartItemNodes[i];
-      var itemContext = self._itemContexts[i];
-
-      var chartDataItem = {id: rowKeys[i], _itemData: rowData[i]};
-      for (var k = 0; k < chartItemProperties.length; k++) {
-        var propertyValue = chartItemNode.getProperty(chartItemProperties[k]); // safe to read off properties at this point
-        if (propertyValue !== undefined)
-          chartDataItem[chartItemProperties[k]] = propertyValue;
-      }
-
+    try {
+      var chartDataItem = this._templateEngine.resolveProperties(this._parentElement,
+        this._itemTemplate, itemTagName, chartItemProperties, itemContext, this._alias);
+      chartDataItem.id = rowKey;
+      chartDataItem._itemData = rowItem;
+      this._itemContexts[i] = itemContext;
       // only process unique rows. ie item keys not seen yet
-      if (!self._itemMap[chartDataItem.seriesId] || !self._itemMap[chartDataItem.seriesId][chartDataItem.groupId]){
+      if (!this._itemMap[chartDataItem.seriesId] ||
+        !this._itemMap[chartDataItem.seriesId][chartDataItem.groupId]) {
         chartDataItems.push(chartDataItem);
 
-        delete itemContext.componentElement
-        
+        delete itemContext.componentElement;
+
         // While processing each data row, pull out each seriesId and generate/update seriesContext for that series
-        var seriesId = chartDataItem['seriesId'];
-        if (!self._seriesContexts[seriesId]) {
+        var seriesId = chartDataItem.seriesId;
+        if (!this._seriesContexts[seriesId]) {
           var seriesContext = {};
-          seriesContext = {'componentElement' : self._parentElement, 'id': seriesId, 'items': [itemContext], 'index': numSeries};
-          self._seriesContexts[seriesId] = seriesContext;
-          numSeries++;
+          seriesContext = {
+            componentElement: this._parentElement,
+            id: seriesId,
+            items: [],
+            index: numSeries
+          };
+          this._seriesContexts[seriesId] = seriesContext;
+          numSeries += 1;
         }
-        else
-          self._seriesContexts[seriesId]['items'].push(itemContext);
-          
+        this._seriesContexts[seriesId].items.push(itemContext);
 
         // While processing each data row, pull out each groupId and generate/update groupContext for each group/nested group
-        var groupId = chartDataItem['groupId'];
+        var groupId = chartDataItem.groupId;
         var count = numOuterGroups;
-        if (!self._groupContexts[groupId.slice(0, groupId.length - 1)])
-          numOuterGroups++;
-        self._groupContexts = self._addToGroupContexts(self._groupContexts, itemContext, groupId, 1, count);
-        
+        if (!this._groupContexts[groupId.slice(0, groupId.length - 1)]) {
+          numOuterGroups += 1;
+        }
+        this._groupContexts = this._addToGroupContexts(this._groupContexts, itemContext,
+                                                        groupId, 1, count);
 
-        // make a map of series+group ids to their corresponding items 
-        if (!self._itemMap[chartDataItem.seriesId]) 
-          self._itemMap[chartDataItem.seriesId] = {};
-        self._itemMap[chartDataItem.seriesId][chartDataItem.groupId] = chartDataItem;
+        // make a map of series+group ids to their corresponding items
+        if (!this._itemMap[chartDataItem.seriesId]) {
+          this._itemMap[chartDataItem.seriesId] = {};
+        }
+        this._itemMap[chartDataItem.seriesId][chartDataItem.groupId] = chartDataItem;
       }
+    } catch (error) {
+      Logger.error(error);
+      chartDataItems = [];
+      break;
     }
-    
-    self._templateEngine.clean(itemsContainer);
-    document.body.removeChild(itemsContainer);
-    itemsContainer = null;
+  }
 
-    return chartDataItems;
-  });
-
-  
-  this._groups = chartData.then(function (chartDataItems) {
+  if (chartDataItems.length > 0) {
     // Create chart groups
-    return self._createGroups(chartDataItems).then(function (chartGroups) {
-      // Sort groups 
-      if (self._groupComparator)
-        chartGroups = self._sortGroups(chartGroups);
-
-      return chartGroups;
-    });
-  }); 
-  
-  this._series = this._groups.then(function (chartGroups) {
-    // Create chart series and add corresponding items
-    return self._createSeries(chartGroups).then(function (chartSeries) {
-      // Sort series
-      if (self._seriesComparator) 
-        chartSeries = self._sortSeries(chartSeries);
-      return chartSeries;
-    });
-  });
+    this._groups = this._createGroups(chartDataItems);
+    // Sort groups
+    if (this._groupComparator) {
+      // eslint-disable-next-line no-param-reassign
+      this._sortGroups(this._groups);
+    }
+    this._series = this._createSeries(this._groups);
+    // Sort series
+    if (this._seriesComparator) {
+      // eslint-disable-next-line no-param-reassign
+      this._sortSeries(this._series);
+    }
+  }
 };
 
 /**
- * This returns a promise that resolves to a chart series array derived from the data provider
- * @return {Promise} A promise that resolves to series array
- */ 
-oj.ChartDataProviderHandler.prototype.getSeries = function() {
-  return this._series || Promise.resolve([]);
+ * This returns the chart series array derived from the data provider
+ * @return {Array} The series array
+ */
+oj.ChartDataProviderHandler.prototype.getSeries = function () {
+  return this._series || [];
 };
 
 /**
- * This returns a promise that resolves to a chart groups array derived from the data provider
- * @return {Promise} A promise that resolves to group array
- */ 
-oj.ChartDataProviderHandler.prototype.getGroups = function() {
-  return this._groups || Promise.resolve([]);
+ * This returns the chart groups array derived from the data provider
+ * @return {Array} The group array
+ */
+oj.ChartDataProviderHandler.prototype.getGroups = function () {
+  return this._groups || [];
 };
 
 /* GROUPS AND SERIES HELPERS */
@@ -3163,228 +3267,158 @@ oj.ChartDataProviderHandler.prototype.getGroups = function() {
  * @param {number} count The index of the current group/nested group we are updating the context for, in relation to that group's parent
  * @private
  */
-oj.ChartDataProviderHandler.prototype._addToGroupContexts = function(groupContexts, itemContext, groupId, depth, count) {
+oj.ChartDataProviderHandler.prototype._addToGroupContexts = function (
+  groupContexts, itemContext, groupId, depth, count) {
   var groupIndex = depth - 1;
   if (groupIndex < groupId.length) {
     var currentId = groupId[groupIndex]; // id for the group a the current depth
-    var currentContext = groupContexts[currentId]
+    var currentContext = groupContexts[currentId];
     if (!currentContext) {
-      groupContexts[currentId] = {}
-      groupContexts[currentId] = {'ids': groupId, 
-                      'componentElement': this._parentElement,
-                      'items': [itemContext],
-                      'depth': depth,
-                      'leaf': depth == groupId.length,
-                      'index': count};
+      // eslint-disable-next-line no-param-reassign
+      groupContexts[currentId] = {
+        ids: groupId,
+        componentElement: this._parentElement,
+        items: [itemContext],
+        depth: depth,
+        leaf: depth === groupId.length,
+        index: count };
+    } else {
+      // a groupContext will have the data rows and keys for all of its descdendants
+      currentContext.items.push(itemContext);
     }
-    else {
-      // a groupContext will have the data rows and keys for all of its descdendants 
-      currentContext['items'].push(itemContext);
-    }
-    count = currentContext ? currentContext['items'].length - 1 : 0;
-    groupContexts = this._addToGroupContexts(groupContexts, itemContext, groupId, depth + 1, count);
+    var _count = currentContext ? currentContext.items.length - 1 : 0;
+    return this._addToGroupContexts(groupContexts, itemContext,
+                                             groupId, depth + 1, _count);
   }
-  
+
   return groupContexts;
 };
 
 /**
  * Iterate through the previously created series ids, and create the series array
  * @param {Array} chartGroupsData The current chart groups array
- * @return {Promise} Promise that resolves into the series array
+ * @return {Array} The series array
  * @private
- */ 
-oj.ChartDataProviderHandler.prototype._createSeries = function(chartGroupsData) {
+ */
+oj.ChartDataProviderHandler.prototype._createSeries = function (chartGroupsData) {
   var seriesIds = Object.keys(this._seriesContexts);
   // get top level chart series property names
-  var seriesTagName = "oj-chart-series";
-  var chartSeriesProperties = Object.keys(oj.CustomElementBridge.getMetadata(seriesTagName).properties); // todo: remove change listener names
+  var seriesTagName = 'oj-chart-series';
+  var chartSeriesProperties = this._component.getElementPropertyNames(seriesTagName);
 
-  var seriesNodes = [];
-  var seriesContainer;
-  var busyContextPromise;
-
-  if (this._seriesTemplate) {
-    // stamp out chart series templates and collect chart series nodes
-    seriesContainer = document.createElement("div");
-    seriesContainer.setAttribute("data-oj-context", "");
-    var fragment = document.createDocumentFragment();
-    for (var i = 0; i < seriesIds.length; i++) {
-      var seriesId = seriesIds[i];
-      var chartSeriesNode;
-      var seriesContext = this._seriesContexts[seriesId];
-      try {
-        var templateNodes = this._templateEngine.execute(this._parentElement, this._seriesTemplate, seriesContext, this._alias);
-        for (var j = 0; j < templateNodes.length; j++) {
-          if (templateNodes[j].tagName && templateNodes[j].tagName.toLowerCase() === seriesTagName) {
-            chartSeriesNode = templateNodes[j];
-            break;
-          }
-        }
+  var seriesArray = [];
+  for (var i = 0; i < seriesIds.length; i++) {
+    var seriesId = seriesIds[i];
+    var seriesContext = this._seriesContexts[seriesId];
+    try {
+      var _chartDataSeries;
+      if (this._seriesTemplate) {
+        _chartDataSeries = this._templateEngine.resolveProperties(this._parentElement,
+          this._seriesTemplate, seriesTagName, chartSeriesProperties, seriesContext, this._alias);
+      } else {
+        _chartDataSeries = {};
       }
-      catch (error) {
-        oj.Logger.error(error);
-        seriesNodes = [];
-        break;
-      }
-      seriesNodes.push(chartSeriesNode);
-      fragment.appendChild(chartSeriesNode);
+      _chartDataSeries.id = seriesId;
+      _chartDataSeries.name = seriesId;
+      seriesArray.push(_chartDataSeries);
+    } catch (error) {
+      Logger.error(error);
+      seriesArray = [];
+      break;
     }
-    // add to document.body for properties to be evaluated into attributes
-    seriesContainer.appendChild(fragment);
-    document.body.appendChild(seriesContainer);
-    busyContextPromise = oj.Context.getContext(seriesContainer).getBusyContext().whenReady();
   }
-  else
-    busyContextPromise = Promise.resolve();
-
-  var self = this;
-  var seriesArrayPromise = busyContextPromise.then(function () {
-    var seriesArray = [];
-    // Iterate through series ids and generate actual chart series info from series nodes
-    for (var i = 0; i < seriesIds.length; i++) {
-      var seriesId = seriesIds[i];
-      var chartDataSeries = {'id': seriesId, 'name': seriesId};
-      
-      if (seriesNodes.length > 0) {
-        var chartSeriesNode = seriesNodes[i];
-        
-        for (var k = 0; k < chartSeriesProperties.length; k++) {
-          var propertyValue = chartSeriesNode.getProperty(chartSeriesProperties[k]); // safe to read off properties at this point
-          if (propertyValue !== undefined){
-            chartDataSeries[chartSeriesProperties[k]] = propertyValue;
-          }
-        }
-      }
-      seriesArray.push(chartDataSeries);
-    }
-
-    if (seriesContainer) {
-      self._templateEngine.clean(seriesContainer);
-      document.body.removeChild(seriesContainer);
-      seriesContainer = null;
-    }
-
-    // add items to series since groups are sorted
-    return self._addItemsToSeries(seriesArray, chartGroupsData);
-
-  });
-
-  
-  return seriesArrayPromise;
-}
+  this._addItemsToSeries(seriesArray, chartGroupsData);
+  return seriesArray;
+};
 
 /**
  * Populates the items into the various series.
  * @return {Array} The chart series array
  * @return {Array} The chart group array
- * @return {Array} The chart series array with their corresponding items placed in them
  * @private
- */ 
-oj.ChartDataProviderHandler.prototype._addItemsToSeries = function (chartSeriesData, chartGroupsData) {
+ */
+oj.ChartDataProviderHandler.prototype._addItemsToSeries = function (
+  chartSeriesData, chartGroupsData) {
   var getGroupKeys = function (group) {
-    if (!group.groups)
+    if (!group.groups) {
       return [group.id];
-    else {
-      var groupKeys = [];
-      for (var i = 0; i < group.groups.length; i++) {
-        groupKeys.push([group.id].concat(getGroupKeys(group.groups[i])));
-      }
-      return groupKeys;
     }
-  }
+
+    var groupKeys = [];
+    for (var _i = 0; _i < group.groups.length; _i++) {
+      groupKeys.push([group.id].concat(getGroupKeys(group.groups[_i])));
+    }
+    return groupKeys;
+  };
 
   var groupKeys = [];
+  var i;
   // get group keys. the groupKeys indices corresponds to chart item indices
-  for (var i = 0; i < chartGroupsData.length; i++) {
+  for (i = 0; i < chartGroupsData.length; i++) {
     var group = chartGroupsData[i];
     var subGroupKeys = getGroupKeys(group);
     groupKeys = groupKeys.concat(subGroupKeys);
   }
 
-  for (var i = 0; i < chartSeriesData.length; i++) {
+  for (i = 0; i < chartSeriesData.length; i++) {
     var series = chartSeriesData[i];
     var seriesItems = [];
     for (var j = 0; j < groupKeys.length; j++) {
       var groupId = groupKeys[j];
       var item = this._itemMap[series.id][groupId] || null; // get corresponding item from map.
       if (item) {
-        delete item["groupId"];
-        delete item["seriesId"];
+        delete item.groupId;
+        delete item.seriesId;
       }
       seriesItems.push(item);
     }
-    chartSeriesData[i]["items"] = seriesItems;
+    // eslint-disable-next-line no-param-reassign
+    chartSeriesData[i].items = seriesItems;
   }
-  return chartSeriesData;
-}
+};
 
 /**
  * Iterate through the previously created chart data items, and create the groups array
  * @param {Array} chartDataItems The array of all the data items
- * @return {Promise} A promise that resolves into the groups array
+ * @return {Array} The groups array
  * @private
- */ 
-oj.ChartDataProviderHandler.prototype._createGroups = function(chartDataItems) {
+ */
+oj.ChartDataProviderHandler.prototype._createGroups = function (chartDataItems) {
   // get top level chart group property names
-  var groupTagName = "oj-chart-group";
-  var chartGroupProperties = Object.keys(oj.CustomElementBridge.getMetadata(groupTagName).properties); // todo: remove change listener names
-  var groupsContainer;
-  var busyContextPromise;
-  
-  // create group nodes with templates and group contexts and attach to div so properties can be read
-  var chartGroupNodes = {};
-  if (this._groupTemplate) {   
-    groupsContainer = document.createElement("div");
-    groupsContainer.setAttribute("data-oj-context", "");
-    var fragment = document.createDocumentFragment(); 
-    var groupIds = Object.keys(this._groupContexts);
-    for (var i = 0; i < groupIds.length; i++) {
-      var currentGroupId = groupIds[i];
-      var chartGroupNode;
-      var groupContext = this._groupContexts[currentGroupId];
-      try {
-        var templateNodes = this._templateEngine.execute(this._parentElement, this._groupTemplate, groupContext, this._alias);
-        for (var j = 0; j < templateNodes.length; j++) {
-          if (templateNodes[j].tagName && templateNodes[j].tagName.toLowerCase() === groupTagName) {
-            chartGroupNode = templateNodes[j];
-            break;
-          }
-        }
+  var groupTagName = 'oj-chart-group';
+  var chartGroupProperties = this._component.getElementPropertyNames(groupTagName);
+
+  var chartGroupItems = {};
+  var i;
+  var groupIds = Object.keys(this._groupContexts);
+  for (i = 0; i < groupIds.length; i++) {
+    var currentGroupId = groupIds[i];
+    var groupContext = this._groupContexts[currentGroupId];
+    try {
+      var groupItem;
+      if (this._groupTemplate) {
+        groupItem = this._templateEngine.resolveProperties(this._parentElement,
+          this._groupTemplate, groupTagName, chartGroupProperties, groupContext, this._alias);
+      } else {
+        groupItem = {};
       }
-      catch (error) {
-        oj.Logger.error(error);
-        chartGroupNodes = {};
-        break;
-      }
-      groupsContainer.appendChild(chartGroupNode);  
-      chartGroupNodes[currentGroupId] = chartGroupNode; 
+      groupItem.id = currentGroupId;
+      groupItem.name = currentGroupId;
+      chartGroupItems[currentGroupId] = groupItem;
+    } catch (error) {
+      Logger.error(error);
+      chartGroupItems = {};
+      break;
     }
-    // add to document.body for properties to be evaluated into attributes
-    groupsContainer.appendChild(fragment);
-    document.body.appendChild(groupsContainer);
-    busyContextPromise = oj.Context.getContext(groupsContainer).getBusyContext().whenReady();
   }
-  else
-    busyContextPromise = Promise.resolve();
 
-  var self = this;
-  var groupsArrayPromise = busyContextPromise.then(function () {
-    var groupsArray = [];
-    for (var i = 0; i < chartDataItems.length; i++) {
-      var item = chartDataItems[i];
-      groupsArray = self._addGroupItem(item, item['groupId'], groupsArray, chartGroupProperties, chartGroupNodes);
-    }
-    
-    if (groupsContainer) {
-      self._templateEngine.clean(groupsContainer);
-      document.body.removeChild(groupsContainer);
-      groupsContainer = null;
-    }
-    return groupsArray;
-  });
+  var groupsArray = [];
+  for (i = 0; i < chartDataItems.length; i++) {
+    var item = chartDataItems[i];
+    groupsArray = this._addGroupItem(item, item.groupId, groupsArray, chartGroupItems);
+  }
 
-  return groupsArrayPromise;
+  return groupsArray;
 };
 
 /**
@@ -3394,43 +3428,40 @@ oj.ChartDataProviderHandler.prototype._createGroups = function(chartDataItems) {
  * @param {Array} groupId The array of groupIds for the leaf we will add the item to
  * @param {Array} groupsArray The current groups array object
  * @param {Object} templateEngine The template engine to be used to stamp out the groups properties.
- * @param {Object} chartGroupProperties The chart group attributes
- * @param {Object} chartGroupNodes A map of group ids to group nodes
+ * @param {Object} chartGroupItems A map of group ids to resolved group properties
  * @return {Array} The groups array, with the given item added to the proper group leaf
  * @private
  */
-oj.ChartDataProviderHandler.prototype._addGroupItem = function(item, groupId, groupsArray, chartGroupProperties, chartGroupNodes) {  
-  if (!groupsArray)
+oj.ChartDataProviderHandler.prototype._addGroupItem = function (
+  item, groupId, groupsArray, chartGroupItems) {
+  if (!groupsArray) {
+    // eslint-disable-next-line no-param-reassign
     groupsArray = [];
-        
+  }
+
   var currentGroupId = groupId[0];
-  
+
   // check to see if we're adding to an existing group
   var index = null;
-  for (var i = 0; i < groupsArray.length; i++) { 
-    if (groupsArray[i]['id'] == currentGroupId)
+  for (var i = 0; i < groupsArray.length; i++) {
+    if (groupsArray[i].id === currentGroupId) {
       index = i;
-  }
-  
-  var groupItem;
-  if(index != null) // we are adding to an existing group
-    groupItem = groupsArray[index];
-  else { // create new group   
-    groupItem = {'id' : currentGroupId, 'name' : currentGroupId};
-
-    var chartGroupNode = chartGroupNodes[currentGroupId];
-    if (chartGroupNode) {   
-      for (var j = 0; j < chartGroupProperties.length; j++) {
-        var propertyValue = chartGroupNode.getProperty(chartGroupProperties[j]); // safe to read off properties at this point
-        if (propertyValue !== undefined)
-          groupItem[chartGroupProperties[j]] = propertyValue;
-      }    
     }
+  }
+
+  var groupItem;
+  if (index != null) { // we are adding to an existing group
+    groupItem = groupsArray[index];
+  } else { // create new group
+    groupItem = chartGroupItems[currentGroupId];
     groupsArray.push(groupItem);
   }
-  
-  if(groupId.length > 1) // not a leaf, add the next level of groups
-    groupItem['groups'] = this._addGroupItem(item, groupId.slice(1), groupItem['groups'], chartGroupProperties, chartGroupNodes);
+
+  if (groupId.length > 1) { // not a leaf, add the next level of groups
+    groupItem.groups = this._addGroupItem(item, groupId.slice(1),
+                                          groupItem.groups,
+                                          chartGroupItems);
+  }
 
   return groupsArray;
 };
@@ -3438,73 +3469,77 @@ oj.ChartDataProviderHandler.prototype._addGroupItem = function(item, groupId, gr
 /**
  * Sort the series
  * @param {Array} seriesArray The current series array
- * @return {Array} The sorted series array
  * @private
  */
-oj.ChartDataProviderHandler.prototype._sortSeries = function(seriesArray) {
-  var sortFunction = function(seriesContexts, seriesComparator) {
-    return function(a, b) {
-      return seriesComparator(seriesContexts[a['id']], seriesContexts[b['id']]);
-    }
-  };        
+oj.ChartDataProviderHandler.prototype._sortSeries = function (seriesArray) {
+  var sortFunction = function (seriesContexts, seriesComparator) {
+    return function (a, b) {
+      return seriesComparator(seriesContexts[a.id], seriesContexts[b.id]);
+    };
+  };
 
   seriesArray.sort(sortFunction(this._seriesContexts, this._seriesComparator));
   // Update seriesContext indices after sort
   for (var i = 0; i < seriesArray.length; i++) {
-    var seriesId = seriesArray[i]['id'];
-    this._seriesContexts[seriesId]['index'] = i;
-  } 
-
-  return seriesArray;
-}
+    var seriesId = seriesArray[i].id;
+    this._seriesContexts[seriesId].index = i;
+  }
+};
 
 /**
  * Sort the groups
  * @param {Array} groupsArray The current groups array
- * @return {Array} The sorted groups array
  * @private
  */
-oj.ChartDataProviderHandler.prototype._sortGroups = function(groupsArray) {
-   
-  var sortFunction = function(groupContexts, groupComparator) {    
-    return function(a, b) {
-      var id1 = a['id'];
-      var id2 = b['id'];
+oj.ChartDataProviderHandler.prototype._sortGroups = function (groupsArray) {
+  var sortFunction = function (groupContexts, groupComparator) {
+    return function (a, b) {
+      var id1 = a.id;
+      var id2 = b.id;
       var context1 = groupContexts[id1];
       var context2 = groupContexts[id2];
       return groupComparator(context1, context2);
-    }
+    };
   };
 
   groupsArray.sort(sortFunction(this._groupContexts, this._groupComparator));
   for (var i = 0; i < groupsArray.length; i++) {
-    var groupId = groupsArray[i]['id'];
-    
+    var groupId = groupsArray[i].id;
+
     // Update group context indices after sorting
-    this._groupContexts[groupId]['index'] = i;
-    
+    this._groupContexts[groupId].index = i;
+
     // Sort nested groups if they exist
-    if(groupsArray[i]['groups'])
-      groupsArray[i]['groups'] = this._sortGroups(groupsArray[i]['groups'])
+    if (groupsArray[i].groups) {
+      this._sortGroups(groupsArray[i].groups);
+    }
   }
-  
-  return groupsArray;
 };
+
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
  */
-/* global dvt:false */
+/* global Promise:false, dvt:false, attributeGroupHandler:false, KeySet:false, Config:false */
 
 /**
  * @ojcomponent oj.ojChart
  * @augments oj.dvtBaseComponent
  * @since 0.7
  * @ojstatus preview
- * @ojtsignore
  * @ojshortdesc Displays information graphically, making relationships among the data easier to understand.
  * @ojrole application
- * @ojtsimport ojdataprovider
+ * @ojtsimport {module: "ojdataprovider", type: "AMD", imported: ["DataProvider"]}
+ * @ojsignature [{
+ *                target: "Type",
+ *                value: "class ojChart<K, D> extends dvtBaseComponent<ojChartSettableProperties<K, D>>"
+ *               },
+ *               {
+ *                target: "Type",
+ *                value: "ojChartSettableProperties<K, D> extends dvtBaseComponentSettableProperties",
+ *                for: "SettableProperties"
+ *               }
+ *              ]
  * @classdesc
  * <h3 id="chartOverview-section">
  *   JET Chart
@@ -3580,15 +3615,44 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
     options: {
       /**
        * An object with the following properties, used to define the series and groups when using a DataProvider to provide data to the chart. Also accepts a Promise for deferred data rendering.
-       * @ignore
        * @name data
        * @memberof oj.ojChart
        * @instance
-       * @type {Object|Promise|null}
+       * @type {oj.DataProvider|null}
        * @ojsignature {target: "Type", value: "oj.DataProvider<K, D>|null"}
        * @default null
        */
       data: null,
+      /**
+       * An array of objects with the following properties, used to define series labels and override series styles.
+       * Only a single series is supported for stock charts. Also accepts a Promise for deferred data rendering.
+       * @expose
+       * @ojtsignore
+       * @name series
+       * @memberof oj.ojChart
+       * @instance
+       * @type {Array.<Object>|Promise|null}
+       * @ojsignature {target: "Accessor", value: {GetterType: "Promise<Array<oj.ojChart.Series<K1>>>|null",
+       *                                           SetterType: "Array<oj.ojChart.Series<K1>>|Promise<Array<oj.ojChart.Series<K1>>>|null"},
+       *                                           jsdocOverride: true}
+       * @default null
+       */
+      series: null,
+      /**
+       * An array of objects with the following properties, used to define series labels and override series styles.
+       * Only a single series is supported for stock charts. Also accepts a Promise for deferred data rendering.
+       * @expose
+       * @ojtsignore
+       * @name groups
+       * @memberof oj.ojChart
+       * @instance
+       * @type {Array.<string>|Array.<Object>|Promise|null}
+       * @ojsignature {target: "Accessor", value: {GetterType: "Promise<Array<string>>|Promise<Array<oj.ojChart.Group<K1>>>|null",
+       *                                           SetterType: "Array<string>|Promise<Array<string>>|Array<oj.ojChart.Group<K1>>|Promise<Array<oj.ojChart.Group<K1>>>|null"},
+       *                                           jsdocOverride: true}
+       * @default null
+       */
+      groups: null,
 
       /**
        * Triggered during a selection gesture, such as a change in the marquee selection rectangle.
@@ -3613,6 +3677,51 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
        * @ojbubbles
        */
       selectInput: null,
+
+      /**
+       * An object containing an optional callback function for tooltip customization.
+       * @expose
+       * @name tooltip
+       * @memberof oj.ojChart
+       * @instance
+       * @type {Object}
+       *
+       * @example <caption>Initialize the Chart with the <code class="prettyprint">tooltip</code> attribute specified:</caption>
+       * &lt;oj-chart tooltip.renderer='[[tooltipFun]]'>&lt;/oj-chart>
+       *
+       * &lt;oj-chart tooltip='[[{"renderer": tooltipFun}]]'>&lt;/oj-chart>
+       *
+       * @example <caption>Get or set the <code class="prettyprint">tooltip</code> property after initialization:</caption>
+       * // Get one
+       * var value = myChart.tooltip.renderer;
+       *
+       * // Set one, leaving the others intact.
+       * myChart.setProperty('tooltip.renderer', tooltipFun);
+       *
+       * // Get all
+       * var values = myChart.tooltip;
+       *
+       * // Set all. Must list every resource key, as those not listed are lost.
+       * myChart.tooltip = {'renderer': tooltipFun};
+       */
+      tooltip: {
+        /**
+         * A function that returns a custom tooltip for chart. The function takes a dataContext argument
+         * provided by the chart with the following properties:
+         *  <ul>
+         *    <li>insert: HTMLElement | string - An HTML element, which will be appended to the tooltip, or a tooltip string.</li>
+         *    <li>preventDefault: <code>true</code> - Indicates that the tooltip should not be displayed. It is not necessary to return {preventDefault:false} to display tooltip, since this is a default behavior.</li>
+         *  </ul>
+         * @expose
+         * @name tooltip.renderer
+         * @memberof! oj.ojChart
+         * @instance
+         * @type {?(function(Object):Object)}
+         * @ojsignature {target: "Type", value: "((context: oj.ojChart.TooltipContext) => ({insert: Element|string}|{preventDefault: boolean}))", jsdocOverride: true}
+         * @default null
+         */
+        renderer: null
+      },
 
       /**
        * Triggered after the viewport is changed due to a zoom or scroll operation.
@@ -3669,7 +3778,4820 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
        * @instance
        * @ojbubbles
        */
-      drill: null
+      drill: null,
+      /**
+       * Defines whether the plot area is split into two sections, so that sets of data assigned to the different Y-axes appear in different parts of the plot area. Stock charts do not support "off".
+       * @expose
+       * @name splitDualY
+       * @memberof oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "on"
+       * @ojvalue {string} "off"
+       * @ojvalue {string} "auto"
+       * @default "auto"
+       */
+      /**
+       * In a split dual-Y chart, specifies the fraction of the space that is given to the Y-axis subchart. Valid values are numbers from 0 to 1.
+       * @expose
+       * @name splitterPosition
+       * @memberof oj.ojChart
+       * @instance
+       * @type {number}
+       * @default 0.5
+       * @ojmin 0
+       * @ojmax 1
+       */
+      /**
+       * The type of time axis to display in the chart. Time axis is only supported for Cartesian bar, line, area, stock, box plot, and combo charts. If the type is "enabled" or "skipGaps", the time values must be provided through the "groups" attribute and stacking is supported. If the type is "skipGaps", the groups will be rendered at a regular interval regardless of any time gaps that may exist in the data. If the type is "mixedFrequency", the time values must be provided through the "x" attribute of the the data items and stacking is not supported.
+       * @expose
+       * @name timeAxisType
+       * @memberof oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "enabled"
+       * @ojvalue {string} "mixedFrequency"
+       * @ojvalue {string} "skipGaps"
+       * @ojvalue {string} "disabled"
+       * @ojvalue {string} "auto"
+       * @default "auto"
+       */
+      /**
+       * The type of selection behavior that is enabled on the chart.
+       * @expose
+       * @name selectionMode
+       * @memberof oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "single"
+       * @ojvalue {string} "multiple"
+       * @ojvalue {string} "none"
+       * @default "none"
+       */
+      /**
+       * The action that is performed when a drag occurs on the chart. Pan and marquee zoom are only available if zoom and scroll is turned on. Marquee select is only available if multiple selection is turned on. If the value is set to "user" and multiple actions are available, buttons will be displayed on the plot area to let users switch between modes.
+       * @expose
+       * @name dragMode
+       * @memberof oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "pan"
+       * @ojvalue {string} "zoom"
+       * @ojvalue {string} "select"
+       * @ojvalue {string} "off"
+       * @ojvalue {string} "user"
+       * @default "user"
+       */
+      /**
+       * The chart type.
+       * @expose
+       * @name type
+       * @memberof oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "line"
+       * @ojvalue {string} "area"
+       * @ojvalue {string} "lineWithArea"
+       * @ojvalue {string} "stock"
+       * @ojvalue {string} "boxPlot"
+       * @ojvalue {string} "combo"
+       * @ojvalue {string} "pie"
+       * @ojvalue {string} "scatter"
+       * @ojvalue {string} "bubble"
+       * @ojvalue {string} "funnel"
+       * @ojvalue {string} "pyramid"
+       * @ojvalue {string} "bar"
+       * @default "bar"
+       */
+      /**
+       * Defines whether the data items are stacked. Only applies to bar, line, area, and combo charts. Does not apply to range series.
+       * @expose
+       * @name stack
+       * @memberof oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "on"
+       * @ojvalue {string} "off"
+       * @default "off"
+       */
+      /**
+       * Defines whether or not the total values of stacked data items should be displayed. Only applies to bar charts. It can be formatted by the valueFormat of the type 'label'.
+       * @expose
+       * @name stackLabel
+       * @memberof oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "on"
+       * @ojvalue {string} "off"
+       * @default "off"
+       */
+      /**
+       * The chart orientation. Only applies to bar, line, area, combo, box plot, and funnel charts.
+       * @expose
+       * @name orientation
+       * @memberof oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "horizontal"
+       * @ojvalue {string} "vertical"
+       * @default "vertical"
+       */
+      /**
+       * Defines whether the grid shape of the polar chart is circle or polygon. Only applies to polar line and area charts.
+       * @expose
+       * @name polarGridShape
+       * @memberof oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "polygon"
+       * @ojvalue {string} "circle"
+       * @default "circle"
+       */
+      /**
+       * The coordinate system of the chart. Only applies to bar, line, area, combo, scatter, and bubble charts.
+       * @expose
+       * @name coordinateSystem
+       * @memberof oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "polar"
+       * @ojvalue {string} "cartesian"
+       * @default "cartesian"
+       */
+      /**
+       * Defines the hide and show behavior that is performed when clicking on a legend item. When data items are hidden, the y axes can be optionally rescaled to fit to the remaining data.
+       * @expose
+       * @name hideAndShowBehavior
+       * @memberof oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "withRescale"
+       * @ojvalue {string} "withoutRescale"
+       * @ojvalue {string} "none"
+       * @default "none"
+       */
+      /**
+       * An array of category strings used for filtering. Series or data items with any category matching an item in this array will be filtered.
+       * @expose
+       * @name hiddenCategories
+       * @memberof oj.ojChart
+       * @instance
+       * @type {Array.<string>}
+       * @default []
+       * @ojwriteback
+       */
+      /**
+       * Defines the behavior applied when hovering over data items.
+       * @expose
+       * @name hoverBehavior
+       * @memberof oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "dim"
+       * @ojvalue {string} "none"
+       * @default "none"
+       */
+      /**
+       * An array of category strings used for highlighting. Series or data items matching all categories in this array will be highlighted.
+       * @expose
+       * @name highlightedCategories
+       * @memberof oj.ojChart
+       * @instance
+       * @type {Array.<string>}
+       * @default []
+       * @ojwriteback
+       */
+      /**
+       * The matching condition for the highlightedCategories property. By default, highlightMatch is 'all' and only items whose categories match all of the values specified in the highlightedCategories array will be highlighted. If highlightMatch is 'any', then items that match at least one of the highlightedCategories values will be highlighted.
+       * @expose
+       * @name highlightMatch
+       * @memberof oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "any"
+       * @ojvalue {string} "all"
+       * @default "all"
+       */
+      /**
+       * Defines the animation that is applied on data changes. Animation is automatically disabled when there are a large number of data items.
+       * @expose
+       * @name animationOnDataChange
+       * @memberof oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "auto"
+       * @ojvalue {string} "slideToLeft"
+       * @ojvalue {string} "slideToRight"
+       * @ojvalue {string} "none"
+       * @default "none"
+       */
+      /**
+       * Defines the animation that is shown on initial display. Animation is automatically disabled when there are a large number of data items.
+       * @expose
+       * @name animationOnDisplay
+       * @memberof oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "auto"
+       * @ojvalue {string} "alphaFade"
+       * @ojvalue {string} "zoom"
+       * @ojvalue {string} "none"
+       * @default "none"
+       */
+      /**
+       * An alias for the $current context variable when referenced inside the item, series or group templates when using a DataProvider.
+       * @expose
+       * @name as
+       * @memberof oj.ojChart
+       * @instance
+       * @type {string}
+       * @default ""
+       */
+      /**
+       * A comparator function that determines the ordering of the chart series when using a DataProvider. If undefined, the series will follow the order in which they are found in the data. The series objects will have the same properties as the context for <a href="#seriesTemplate">seriesTemplate's $current</a>.
+       * @expose
+       * @name seriesComparator
+       * @memberof oj.ojChart
+       * @instance
+       * @type {?(function(Object, Object):number)}
+       * @return {number} Returns a number less than zero, zero or greater than zero to determine the order.
+       * If seriesComparator(a, b) is less than 0, chart series a comes before chart series b.
+       * If seriesComparator(a, b) is 0, the original order is preserved.
+       * If seriesComparator(a, b) is greater than 0, chart series b comes before chart series a.
+       * @default null
+       */
+      /**
+       * A comparator function that determines the ordering of the chart groups when using a DataProvider. If undefined, the group will follow the order in which they are found in the data. The group objects will have the same properties as the context for <a href="#groupTemplate">groupTemplate's $current</a>.
+       * @expose
+       * @name groupComparator
+       * @memberof oj.ojChart
+       * @instance
+       * @type {?(function(Object, Object):number)}
+       * @return {number} Returns a number less than zero, zero or greater than zero to determine the order.
+       * If groupComparator(a, b) is less than 0, chart group a comes before chart group b.
+       * If groupComparator(a, b) is 0, the original order is preserved.
+       * If groupComparator(a, b) is greater than 0, chart group b comes before chart group a.
+       * @default null
+       */
+      /**
+       * Defines whether the data cursor is enabled. If set to "auto", the data cursor is shown only for line or area charts on touch devices. The data cursor is not shown when the tooltip is null and it is not supported on polar charts.
+       * @ojvalue {string} "off"
+       * @expose
+       * @name dataCursor
+       * @memberof oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "on"
+       * @ojvalue {string} "auto"
+       * @default "auto"
+       */
+      /**
+       * Defines the behavior of the data cursor when moving between data items.
+       * @expose
+       * @name dataCursorBehavior
+       * @memberof oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "smooth"
+       * @ojvalue {string} "snap"
+       * @ojvalue {string} "auto"
+       * @default "auto"
+       */
+      /**
+       * Speficies the position of the data cursor. Used for synchronizing data cursors across multiple charts. Null if the data cursor is not displayed.
+       * @expose
+       * @name dataCursorPosition
+       * @memberof oj.ojChart
+       * @instance
+       * @type {Object}
+       * @ojwriteback
+       */
+      /**
+       * The x value of the data cursor.
+       * @expose
+       * @name dataCursorPosition.x
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {number|string}
+       * @default null
+       */
+      /**
+       * The y value of the data cursor. If both y and y2 are defined, y will take precedence.
+       * @expose
+       * @name dataCursorPosition.y
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {number}
+       * @default null
+       */
+      /**
+       * The y2 value of the data cursor. If both y and y2 are defined, y will take precedence.
+       * @expose
+       * @name dataCursorPosition.y2
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {number}
+       * @default null
+       */
+      /**
+       * Specifies the sorting of the data. It should only be used for pie charts, bar/line/area charts with one series, or stacked bar/area charts. Sorting will not apply when using a hierarchical group axis.
+       * @expose
+       * @name sorting
+       * @memberof oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "ascending"
+       * @ojvalue {string} "descending"
+       * @ojvalue {string} "off"
+       * @default "off"
+       */
+      /**
+       * Specifies the fraction of the whole pie under which a slice would be aggregated into an "Other" slice. Valid values range from 0 (default) to 1. For example, a value of 0.1 would cause all slices which are less than 10% of the pie to be aggregated into the "Other" slice. Only applies to pie chart.
+       * @expose
+       * @name otherThreshold
+       * @memberof oj.ojChart
+       * @instance
+       * @type {number}
+       * @default 0
+       * @ojmin 0
+       * @ojmax 1
+       */
+
+      /**
+       * An array used to define the ids of the initially selected objects.
+       * When the selection is changed, the <code class="prettyprint">event.detail</code> of the <code class="prettyprint">selectionChanged</code> event will contain the following additional properties:<br><br>
+       * <table class="props">
+       *   <thead>
+       *     <tr>
+       *       <th>Name</th>
+       *       <th>Type</th>
+       *       <th>Description</th>
+       *     </tr>
+       *   </thead>
+       *   <tbody>
+       *     <tr>
+       *       <td class="name"><code>selectionData</code></td>
+       *       <td class="type">Object</td>
+       *       <td class="description">an array containing objects describing the selected data items
+       *         <h6>Properties</h6>
+       *         <table class="props">
+       *           <thead>
+       *             <tr>
+       *               <th>Name</th>
+       *               <th>Type</th>
+       *               <th>Description</th>
+       *             </tr>
+       *           </thead>
+       *           <tbody>
+       *             <tr>
+       *               <td class="name"><code>data</code></td>
+       *               <td class="type">object</td>
+       *               <td class="description">the data of the item, if one was specified</td>
+       *             </tr>
+       *             <tr>
+       *               <td class="name"><code>groupData</code></td>
+       *               <td class="type">Array</td>
+       *               <td class="description">the group data of the item</td>
+       *             </tr>
+       *             <tr>
+       *               <td class="name"><code>seriesData</code></td>
+       *               <td class="type">object</td>
+       *               <td class="description">the series data of the item</td>
+       *             </tr>
+       *           </tbody>
+       *         </table>
+       *       </td>
+       *     </tr>
+       *     <tr>
+       *       <td class="name"><code>endGroup</code></td>
+       *       <td class="type">string</td>
+       *       <td class="description">the end group of a marquee selection on a chart with categorical axis</td>
+       *     </tr>
+       *     <tr>
+       *       <td class="name"><code>startGroup</code></td>
+       *       <td class="type">string</td>
+       *       <td class="description">the start group of a marquee selection on a chart with categorical axis</td>
+       *     </tr>
+       *     <tr>
+       *       <td class="name"><code>xMax</code></td>
+       *       <td class="type">number</td>
+       *       <td class="description">the maximum x value of a marquee selection</td>
+       *     </tr>
+       *     <tr>
+       *       <td class="name"><code>xMin</code></td>
+       *       <td class="type">number</td>
+       *       <td class="description">the minimum x value of a marquee selection</td>
+       *     </tr>
+       *     <tr>
+       *       <td class="name"><code>yMax</code></td>
+       *       <td class="type">number</td>
+       *       <td class="description">the maximum y value of a marquee selection</td>
+       *     </tr>
+       *     <tr>
+       *       <td class="name"><code>yMin</code></td>
+       *       <td class="type">number</td>
+       *       <td class="description">the minimum y value of a marquee selection</td>
+       *     </tr>
+       *   </tbody>
+       * </table>
+       * @expose
+       * @name selection
+       * @memberof oj.ojChart
+       * @instance
+       * @type {Array.<any>}
+       * @ojsignature {target:"Type", value:"Array<K>"}
+       * @default []
+       * @ojwriteback
+       */
+      /**
+       * An object defining the center content of a pie chart. Either a label can be displayed at the center of the pie chart or custom HTML content.
+       * @expose
+       * @name pieCenter
+       * @memberof oj.ojChart
+       * @instance
+       * @type {Object}
+       */
+      /**
+       * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) to format the label if it is numeric. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
+       * @expose
+       * @name pieCenter.converter
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {Object}
+       * @default null
+       */
+      /**
+       * The scaling behavior of the label if it is numeric. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
+       * @expose
+       * @name pieCenter.scaling
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "none"
+       * @ojvalue {string} "thousand"
+       * @ojvalue {string} "million"
+       * @ojvalue {string} "billion"
+       * @ojvalue {string} "trillion"
+       * @ojvalue {string} "quadrillion"
+       * @ojvalue {string} "auto"
+       * @default "auto"
+       */
+      /**
+       * Specifies the text for the label. When a innerRadius is specified, the label will automatically be scaled to fit within the inner circle. If the innerRadius is 0, the default font size will be used.
+       * @expose
+       * @name pieCenter.label
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @default null
+       * @ojtranslatable
+       */
+      /**
+       * The CSS style object defining the style of the label.
+       * @expose
+       * @name pieCenter.labelStyle
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {Object}
+       * @default {}
+       */
+
+      /**
+       * A function that returns custom center content. The function takes a dataContext argument,
+       * provided by the chart, with the following properties:
+       * <ul>
+       *   <li>insert: HTMLElement - An HTML element, which will be overlaid on top of the pie chart.
+       *   This HTML element will block interactivity of the chart  by default, but the CSS pointer-events property
+       *   can be set to 'none' on this element if the chart's interactivity is desired.
+       *   </li>
+       * </ul>
+       * @expose
+       * @name pieCenter.renderer
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {function(Object):Object|null}
+       * @ojsignature {target: "Type", value: "((context: oj.ojChart.PieCenterContext) => ({insert: Element|string}|{preventDefault: boolean}))", jsdocOverride: true}
+       * @default null
+       */
+      /**
+       * An object defining properties for the axis, tick marks, tick labels, and axis titles.
+       * @expose
+       * @name xAxis
+       * @memberof oj.ojChart
+       * @instance
+       * @type {Object}
+       */
+      /**
+       * Defines whether the axis is rendered.
+       * @expose
+       * @name xAxis.rendered
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "off"
+       * @ojvalue {string} "on"
+       * @default "on"
+       */
+      /**
+       * Defines the size of the axis in pixels (e.g. '50px') or percent (e.g. '15%').
+       * @expose
+       * @name xAxis.size
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @default null
+       */
+      /**
+       * Defines the maximum size of the axis in pixels (e.g. '50px') or percent (e.g. '15%').
+       * @expose
+       * @name xAxis.maxSize
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @default null
+       */
+      /**
+       * The axis title. Does not apply to polar charts.
+       * @expose
+       * @name xAxis.title
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @default null
+       * @ojtranslatable
+       */
+      /**
+       * The array of reference objects associated with the axis.
+       * @expose
+       * @name xAxis.referenceObjects
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {Array.<Object>}
+       * @default []
+       */
+      /**
+       * The id of the reference object.
+       * @expose
+       * @name xAxis.referenceObjects[].id
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @default null
+       */
+      /**
+       * An optional array of category strings corresponding to this reference object. This allows highlighting and filtering of a reference object through interactions with legend sections. If not defined, the reference object id is used.
+       * @expose
+       * @name xAxis.referenceObjects[].categories
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {Array.<string>}
+       * @default null
+       */
+      /**
+       * The text displayed in the legend for the reference object.
+       * @expose
+       * @name xAxis.referenceObjects[].text
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @default null
+       * @ojtranslatable
+       */
+      /**
+       * The type of reference object being shown.
+       * @expose
+       * @name xAxis.referenceObjects[].type
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "area"
+       * @ojvalue {string} "line"
+       * @default "line"
+       */
+      /**
+       * The location of the reference object relative to the data items.
+       * @expose
+       * @name xAxis.referenceObjects[].location
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "front"
+       * @ojvalue {string} "back"
+       * @default "back"
+       */
+      /**
+       * The color of the reference object.
+       * @expose
+       * @name xAxis.referenceObjects[].color
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojformat color
+       * @default null
+       */
+      /**
+       * The width of the reference line.
+       * @expose
+       * @name xAxis.referenceObjects[].lineWidth
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {number}
+       * @default null
+       * @ojunits pixels
+       * @ojmin 0
+       */
+      /**
+       * The line style of the reference line.
+       * @expose
+       * @name xAxis.referenceObjects[].lineStyle
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "dotted"
+       * @ojvalue {string} "dashed"
+       * @ojvalue {string} "solid"
+       * @default "solid"
+       */
+      /**
+       * The line type of the reference line. Only applies if the line value is not constant. centeredStepped and centeredSegmented are not supported for polar, scatter, and bubble charts.
+       * @expose
+       * @name xAxis.referenceObjects[].lineType
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "curved"
+       * @ojvalue {string} "stepped"
+       * @ojvalue {string} "centeredStepped"
+       * @ojvalue {string} "segmented"
+       * @ojvalue {string} "centeredSegmented"
+       * @ojvalue {string} "straight"
+       * @default "straight"
+       */
+      /**
+       * The CSS style class to apply to the reference object. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the reference object color attribute.
+       * @expose
+       * @name xAxis.referenceObjects[].svgClassName
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @default null
+       */
+      /**
+       * The inline style to apply to the reference object. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the reference object color attribute.
+       * @expose
+       * @name xAxis.referenceObjects[].svgStyle
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {Object}
+       * @default null
+       */
+      /**
+       * The value of a reference line. For categorical axes, the value represents the group index. For example,   0 is the position of the first group, and 1.5 is the position half way between the second and the third group.
+       * @expose
+       * @name xAxis.referenceObjects[].value
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {number}
+       * @default null
+       */
+      /**
+       * The low value of a reference area. For categorical axes, the value represents the group index. For example,   0 is the position of the first group, and 1.5 is the position half way between the second and the third group.
+       * @expose
+       * @name xAxis.referenceObjects[].low
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {number}
+       * @default null
+       */
+      /**
+       * The high value of a reference area. For categorical axes, the value represents the group index. For example,    0 is the position of the first group, and 1.5 is the position half way between the second and the third group.
+       * @expose
+       * @name xAxis.referenceObjects[].high
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {number}
+       * @default null
+       */
+      /**
+       * The description of this object. This is used for accessibility and also for customizing the tooltip text.
+       * @expose
+       * @name xAxis.referenceObjects[].shortDesc
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @default null
+       */
+      /**
+       * Defines whether the reference object should be shown in the legend.
+       * @expose
+       * @name xAxis.referenceObjects[].displayInLegend
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "on"
+       * @ojvalue {string} "off"
+       * @default "off"
+       */
+      /**
+       * The minimum value of the axis. Defaults to null for automatic calculation based on the data. For categorical axes, the value represents the group index. For example, 0 is the position of the first group, and 1.5 is the position half way between the second and the third group.
+       * @expose
+       * @name xAxis.min
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {number|string}
+       * @default null
+       */
+      /**
+       * The maximum value of the axis. Defaults to null for automatic calculation based on the data. For categorical axes, the value represents the group index. For example, 0 is the position of the first group, and 1.5 is the position half way between the second and the third group.
+       * @expose
+       * @name xAxis.max
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {number|string}
+       * @default null
+       */
+      /**
+       * The minimum data value corresponding to an axis. If specified, the automatic axis extent calculation will use this value. Only applies to numerical axes.
+       * @expose
+       * @name xAxis.dataMin
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {number}
+       * @default null
+       */
+      /**
+       * The maximum data value corresponding to an axis. If specified, the automatic axis extent calculation will use this value. Only applies to numerical axes.
+       * @expose
+       * @name xAxis.dataMax
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {number}
+       * @default null
+       */
+      /**
+       * The increment between major tick marks. Defaults to null for automatic calculation based on the data. Only applies to time and numerical axes. For log axis, the step is a multiplier, so for example, if the step is 2, the major tick marks will be rendered at 1, 2, 4, 8, and so on.
+       * @expose
+       * @name xAxis.step
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {number}
+       * @default null
+       * @ojexclusivemin 0
+       */
+      /**
+       * The minimum increment between major tick marks. This is typically used to prevent fractional axis values for discrete measures. Only applies to numerical axes.
+       * @expose
+       * @name xAxis.minStep
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {number}
+       * @default null
+       * @ojexclusivemin 0
+       */
+      /**
+       * The increment between minor tick marks. Defaults to null for automatic calculation based on the data. Only applies to numerical axes. For log axis, the step is a multiplier, so for example, if the minorStep is 2, the minor tick marks will be rendered at 1, 2, 4, 8, and so on.
+       * @expose
+       * @name xAxis.minorStep
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {number}
+       * @default null
+       * @ojexclusivemin 0
+       */
+      /**
+       * Defines the axis scale. Only applies to numerical axes.
+       * @expose
+       * @name xAxis.scale
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "log"
+       * @ojvalue {string} "linear"
+       * @default "linear"
+       */
+      /**
+       * The CSS style object defining the style of the axis title. The CSS white-space property can be defined with value "nowrap" to disable default text wrapping of the title.
+       * @expose
+       * @name xAxis.titleStyle
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {Object}
+       * @default {}
+       */
+      /**
+       * An object defining the properties of the tick labels.
+       * @expose
+       * @name xAxis.tickLabel
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {Object}
+       */
+      /**
+       * Defines whether the tick labels are rendered.
+       * @expose
+       * @name xAxis.tickLabel.rendered
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "off"
+       * @ojvalue {string} "on"
+       * @default "on"
+       */
+      /**
+       * The CSS style object defining the style of the labels. The CSS white-space property can be defined with value "nowrap" to disable default text wrapping of categorical labels.
+       * @expose
+       * @name xAxis.tickLabel.style
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {Object}
+       * @default {}
+       */
+      /**
+       * The scaling behavior of the labels. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
+       * @expose
+       * @name xAxis.tickLabel.scaling
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "none"
+       * @ojvalue {string} "thousand"
+       * @ojvalue {string} "million"
+       * @ojvalue {string} "billion"
+       * @ojvalue {string} "trillion"
+       * @ojvalue {string} "quadrillion"
+       * @ojvalue {string} "auto"
+       * @default "auto"
+       */
+      /**
+       * Defines whether the chart will automatically rotate the labels by 90 degrees in order to fit more labels on the axis. The rotation will only be applied to categorical labels for a horizontal axis.
+       * @expose
+       * @name xAxis.tickLabel.rotation
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "none"
+       * @ojvalue {string} "auto"
+       * @default "auto"
+       */
+      /**
+       * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) to format the labels. When using a time axis, this attribute also takes an array of two converters, which apply respectively to the first and second label levels. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
+       * @expose
+       * @name xAxis.tickLabel.converter
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {Object}
+       * @default null
+       */
+      /**
+       * An object defining properties for the axis line.
+       * @expose
+       * @name xAxis.axisLine
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {Object}
+       */
+      /**
+       * The color of the axis line.
+       * @expose
+       * @name xAxis.axisLine.lineColor
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojformat color
+       * @default null
+       */
+      /**
+       * The width of the axis line.
+       * @expose
+       * @name xAxis.axisLine.lineWidth
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {number}
+       * @default null
+       * @ojunits pixels
+       * @ojmin 0
+       */
+      /**
+       * Defines whether the axis line is rendered.
+       * @expose
+       * @name xAxis.axisLine.rendered
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "off"
+       * @ojvalue {string} "on"
+       * @default "on"
+       */
+      /**
+       * An object defining properties for the major tick marks.
+       * @expose
+       * @name xAxis.majorTick
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {Object}
+       */
+      /**
+       * The color of the major tick marks.
+       * @expose
+       * @name xAxis.majorTick.lineColor
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojformat color
+       * @default null
+       */
+      /**
+       * The line style of the major tick marks.
+       * @expose
+       * @name xAxis.majorTick.lineStyle
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "dotted"
+       * @ojvalue {string} "dashed"
+       * @ojvalue {string} "solid"
+       * @default "solid"
+       */
+      /**
+       * The width of the major tick marks.
+       * @expose
+       * @name xAxis.majorTick.lineWidth
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {number}
+       * @default null
+       * @ojunits pixels
+       * @ojmin 0
+       */
+      /**
+       * The color of the major tick mark at the baseline (x = 0). Valid values are auto, inherit, or a custom color. If set to inherit, it will follow the lineColor attribute.
+       * @expose
+       * @name xAxis.majorTick.baselineColor
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "inherit"
+       * @ojvalue {string} "auto"
+       * @default "auto"
+       */
+      /**
+       * The line style of the major tick mark at the baseline (x = 0). If not specified, it will follow the lineStyle attribute.
+       * @expose
+       * @name xAxis.majorTick.baselineStyle
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "dotted"
+       * @ojvalue {string} "dashed"
+       * @ojvalue {string} "solid"
+       * @default "solid"
+       */
+      /**
+       * The width of the major tick mark at the baseline (x = 0) If not specified, it will follow the lineWidth attribute.
+       * @expose
+       * @name xAxis.majorTick.baselineWidth
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {number}
+       * @default null
+       * @ojunits pixels
+       * @ojmin 0
+       */
+      /**
+       * Defines whether the major tick marks are rendered.
+       * @expose
+       * @name xAxis.majorTick.rendered
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "on"
+       * @ojvalue {string} "off"
+       * @ojvalue {string} "auto"
+       * @default "auto"
+       */
+      /**
+       * An object defining properties for the minor tick marks.
+       * @expose
+       * @name xAxis.minorTick
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {Object}
+       */
+      /**
+       * The color of the minor tick marks.
+       * @expose
+       * @name xAxis.minorTick.lineColor
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojformat color
+       * @default null
+       */
+      /**
+       * The line style of the minor tick marks.
+       * @expose
+       * @name xAxis.minorTick.lineStyle
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "dotted"
+       * @ojvalue {string} "dashed"
+       * @ojvalue {string} "solid"
+       * @default "solid"
+       */
+      /**
+       * The width of the minor tick marks.
+       * @expose
+       * @name xAxis.minorTick.lineWidth
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {number}
+       * @default null
+       * @ojunits pixels
+       * @ojmin 0
+       */
+      /**
+       * Defines whether the minor tick marks are rendered.
+       * @expose
+       * @name xAxis.minorTick.rendered
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "on"
+       * @ojvalue {string} "off"
+       * @ojvalue {string} "auto"
+       * @default "auto"
+       */
+      /**
+       * Defines whether the axis baseline starts at the minimum value of the data or at zero. Only applies to numerical data axes.
+       * @expose
+       * @name xAxis.baselineScaling
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "min"
+       * @ojvalue {string} "zero"
+       * @default "zero"
+       */
+      /**
+       * Specifies the minimum x coordinate of the current viewport for zoom and scroll. For group axis, the group index will be treated as the axis coordinate. If both viewportStartGroup and viewportMin are specified, then viewportMin takes precedence. If not specified, this value will be the axis min.
+       * @expose
+       * @name xAxis.viewportMin
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {number|string}
+       * @default null
+       */
+      /**
+       * Specifies the maximum x coordinate of the current viewport for zoom and scroll. For group axis, the group index will be treated as the axis coordinate. If both viewportEndGroup and viewportMax are specified, then viewportMax takes precedence. If not specified, this value will be the axis max.
+       * @expose
+       * @name xAxis.viewportMax
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {number|string}
+       * @default null
+       */
+      /**
+       * Specifies the start group of the current viewport. Only applies to charts with group or time axis. If not specified, the default start group is the first group in the data set.
+       * @expose
+       * @name xAxis.viewportStartGroup
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {number|string}
+       * @default null
+       */
+      /**
+       * Specifies the end group of the current viewport. Only applies to charts with group or time axis. If not specified, the default end group is the last group in the data set.
+       * @expose
+       * @name xAxis.viewportEndGroup
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {number|string}
+       * @default null
+       */
+      /**
+       * An object defining properties for the axis, tick marks, tick labels, and axis titles.
+       * @expose
+       * @name yAxis
+       * @memberof oj.ojChart
+       * @instance
+       * @type {Object}
+       */
+      /**
+       * Defines whether the axis is rendered.
+       * @expose
+       * @name yAxis.rendered
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "off"
+       * @ojvalue {string} "on"
+       * @default "on"
+       */
+      /**
+       * Defines the size of the axis in pixels (e.g. '50px') or percent (e.g. '15%').
+       * @expose
+       * @name yAxis.size
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @default null
+       */
+      /**
+       * Defines the maximum size of the axis in pixels (e.g. '50px') or percent (e.g. '15%').
+       * @expose
+       * @name yAxis.maxSize
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @default null
+       */
+      /**
+       * The axis title. Does not apply to polar charts.
+       * @expose
+       * @name yAxis.title
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @default null
+       * @ojtranslatable
+       */
+      /**
+       * The position of the axis relative to its content. For vertical charts, only start and end apply. For horizontal charts, only top and bottom apply.
+       * @expose
+       * @name yAxis.position
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "start"
+       * @ojvalue {string} "end"
+       * @ojvalue {string} "top"
+       * @ojvalue {string} "bottom"
+       * @ojvalue {string} "auto"
+       * @default "auto"
+       */
+      /**
+       * The array of reference objects associated with the axis.
+       * @expose
+       * @name yAxis.referenceObjects
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {Array.<Object>}
+       * @default []
+       */
+      /**
+       * The id of the reference object.
+       * @expose
+       * @name yAxis.referenceObjects[].id
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @default null
+       */
+      /**
+       * An optional array of category strings corresponding to this reference object. This allows highlighting and filtering of a reference object through interactions with legend sections. If not defined, the reference object id is used.
+       * @expose
+       * @name yAxis.referenceObjects[].categories
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {Array.<string>}
+       * @default null
+       */
+      /**
+       * The text displayed in the legend for the reference object.
+       * @expose
+       * @name yAxis.referenceObjects[].text
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @default null
+       * @ojtranslatable
+       */
+      /**
+       * The type of reference object being shown.
+       * @expose
+       * @name yAxis.referenceObjects[].type
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "area"
+       * @ojvalue {string} "line"
+       * @default "line"
+       */
+      /**
+       * The location of the reference object relative to the data items.
+       * @expose
+       * @name yAxis.referenceObjects[].location
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "front"
+       * @ojvalue {string} "back"
+       * @default "back"
+       */
+      /**
+       * The color of the reference object.
+       * @expose
+       * @name yAxis.referenceObjects[].color
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojformat color
+       * @default null
+       */
+      /**
+       * The width of the reference line.
+       * @expose
+       * @name yAxis.referenceObjects[].lineWidth
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {number}
+       * @default null
+       * @ojunits pixels
+       * @ojmin 0
+       */
+      /**
+       * The line style of the reference line.
+       * @expose
+       * @name yAxis.referenceObjects[].lineStyle
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "dotted"
+       * @ojvalue {string} "dashed"
+       * @ojvalue {string} "solid"
+       * @default "solid"
+       */
+      /**
+       * The line type of the reference line. Only applies if the line value is not constant. centeredStepped and centeredSegmented are not supported for polar, scatter, and bubble charts.
+       * @expose
+       * @name yAxis.referenceObjects[].lineType
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "curved"
+       * @ojvalue {string} "stepped"
+       * @ojvalue {string} "centeredStepped"
+       * @ojvalue {string} "segmented"
+       * @ojvalue {string} "centeredSegmented"
+       * @ojvalue {string} "straight"
+       * @default "straight"
+       */
+      /**
+       * The CSS style class to apply to the reference object. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the reference object color attribute.
+       * @expose
+       * @name yAxis.referenceObjects[].svgClassName
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @default null
+       */
+      /**
+       * The inline style to apply to the reference object. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the reference object color attribute.
+       * @expose
+       * @name yAxis.referenceObjects[].svgStyle
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {Object}
+       * @default null
+       */
+      /**
+       * The value of a reference line. This property defines a constant value across the entire reference line and is ignored if the items array is specified.
+       * @expose
+       * @name yAxis.referenceObjects[].value
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {number}
+       * @default null
+       */
+      /**
+       * The low value of a reference area. This property defines a constant value across the entire reference area and is ignored if the items array is specified.
+       * @expose
+       * @name yAxis.referenceObjects[].low
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {number}
+       * @default null
+       */
+      /**
+       * The high value of a reference area. This property defines a constant value across the entire reference area and is ignored if the items array is specified.
+       * @expose
+       * @name yAxis.referenceObjects[].high
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {number}
+       * @default null
+       */
+      /**
+       * The description of this object. This is used for accessibility and also for customizing the tooltip text.
+       * @expose
+       * @name yAxis.referenceObjects[].shortDesc
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @default null
+       */
+      /**
+       * Defines whether the reference object should be shown in the legend.
+       * @expose
+       * @name yAxis.referenceObjects[].displayInLegend
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "on"
+       * @ojvalue {string} "off"
+       * @default "off"
+       */
+      /**
+       * An array of values or an array of objects with the following properties that defines the data for a varying reference object. Only supported for y1 and y2 axes for all chart types.
+       * @expose
+       * @name yAxis.referenceObjects[].items
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {Array.<Object>|Array.<number>}
+       * @default null
+       */
+      /**
+       * The low value of this point of a reference area.
+       * @expose
+       * @name yAxis.referenceObjects[].items[].low
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {number}
+       * @default null
+       */
+      /**
+       * The high value of this point of a reference area.
+       * @expose
+       * @name yAxis.referenceObjects[].items[].high
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {number}
+       * @default null
+       */
+      /**
+       * The value of this point of a line object. Null can be specified to skip a data point.
+       * @expose
+       * @name yAxis.referenceObjects[].items[].value
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {number}
+       * @default null
+       */
+      /**
+       * The x value of this point. Mainly used for scatter and bubble chart and to specify the date for mixed-frequency time axis.
+       * For categorical axis, if the x value is not specified, it will default to the item index.
+       * For regular time axis, if the x value is not specified, it will default to the group name of the item.
+       * @expose
+       * @name yAxis.referenceObjects[].items[].x
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {number|string}
+       * @default null
+       */
+      /**
+       * The minimum value of the axis. Defaults to null for automatic calculation based on the data.
+       * @expose
+       * @name yAxis.min
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {number}
+       * @default null
+       */
+      /**
+       * The maximum value of the axis. Defaults to null for automatic calculation based on the data.
+       * @expose
+       * @name yAxis.max
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {number}
+       * @default null
+       */
+      /**
+       * The minimum data value corresponding to an axis. If specified, the automatic axis extent calculation will use this value.
+       * @expose
+       * @name yAxis.dataMin
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {number}
+       * @default null
+       */
+      /**
+       * The maximum data value corresponding to an axis. If specified, the automatic axis extent calculation will use this value.
+       * @expose
+       * @name yAxis.dataMax
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {number}
+       * @default null
+       */
+      /**
+       * The increment between major tick marks. Defaults to null for automatic calculation based on the data. For log axis, the step is a multiplier, so for example, if the step is 2, the major tick marks will be rendered at 1, 2, 4, 8, and so on.
+       * @expose
+       * @name yAxis.step
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {number}
+       * @default null
+       * @ojexclusivemin 0
+       */
+      /**
+       * The minimum increment between major tick marks. This is typically used to prevent fractional axis values for discrete measures.
+       * @expose
+       * @name yAxis.minStep
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {number}
+       * @default null
+       * @ojexclusivemin 0
+       */
+      /**
+       * The increment between minor tick marks. Defaults to null for automatic calculation based on the data. For log axis, the step is a multiplier, so for example, if the minorStep is 2, the minor tick marks will be rendered at 1, 2, 4, 8, and so on.
+       * @expose
+       * @name yAxis.minorStep
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {number}
+       * @default null
+       * @ojexclusivemin 0
+       */
+      /**
+       * Defines the axis scale. Only applies to numerical axes.
+       * @expose
+       * @name yAxis.scale
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "log"
+       * @ojvalue {string} "linear"
+       * @default "linear"
+       */
+      /**
+       * The CSS style object defining the style of the axis title. The CSS white-space property can be defined with value "nowrap" to disable default text wrapping of the title.
+       * @expose
+       * @name yAxis.titleStyle
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {Object}
+       * @default {}
+       */
+      /**
+       * An object defining the properties of the tick labels.
+       * @expose
+       * @name yAxis.tickLabel
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {Object}
+       */
+      /**
+       * Defines whether the tick labels are rendered.
+       * @expose
+       * @name yAxis.tickLabel.rendered
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "off"
+       * @ojvalue {string} "on"
+       * @default "on"
+       */
+      /**
+       * Defines the position of the tick labels relative to the plot area. Inside position is not supported for scatter and bubble charts.
+       * @expose
+       * @name yAxis.tickLabel.position
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "inside"
+       * @ojvalue {string} "outside"
+       * @default "outside"
+       */
+      /**
+       * The CSS style object defining the style of the labels.
+       * @expose
+       * @name yAxis.tickLabel.style
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {Object}
+       * @default {}
+       */
+      /**
+       * The scaling behavior of the labels. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
+       * @expose
+       * @name yAxis.tickLabel.scaling
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "none"
+       * @ojvalue {string} "thousand"
+       * @ojvalue {string} "million"
+       * @ojvalue {string} "billion"
+       * @ojvalue {string} "trillion"
+       * @ojvalue {string} "quadrillion"
+       * @ojvalue {string} "auto"
+       * @default "auto"
+       */
+      /**
+       * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) to format the labels. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
+       * @expose
+       * @name yAxis.tickLabel.converter
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {Object}
+       * @default null
+       */
+      /**
+       * An object defining properties for the axis line.
+       * @expose
+       * @name yAxis.axisLine
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {Object}
+       */
+      /**
+       * The color of the axis line.
+       * @expose
+       * @name yAxis.axisLine.lineColor
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojformat color
+       * @default null
+       */
+      /**
+       * The width of the axis line.
+       * @expose
+       * @name yAxis.axisLine.lineWidth
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {number}
+       * @default null
+       * @ojunits pixels
+       * @ojmin 0
+       */
+      /**
+       * Defines whether the axis line is rendered.
+       * @expose
+       * @name yAxis.axisLine.rendered
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "on"
+       * @ojvalue {string} "off"
+       * @ojvalue {string} "auto"
+       * @default "auto"
+       */
+      /**
+       * An object defining properties for the major tick marks.
+       * @expose
+       * @name yAxis.majorTick
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {Object}
+       */
+      /**
+       * The color of the major tick marks.
+       * @expose
+       * @name yAxis.majorTick.lineColor
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojformat color
+       * @default null
+       */
+      /**
+       * The width of the major tick marks.
+       * @expose
+       * @name yAxis.majorTick.lineWidth
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {number}
+       * @default null
+       * @ojunits pixels
+       * @ojmin 0
+       */
+      /**
+       * The line style of the major tick marks.
+       * @expose
+       * @name yAxis.majorTick.lineStyle
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "dotted"
+       * @ojvalue {string} "dashed"
+       * @ojvalue {string} "solid"
+       * @default "solid"
+       */
+      /**
+       * The color of the major tick mark at the baseline (y = 0). Valid values are auto, inherit, or a custom color. If set to inherit, it will follow the lineColor attribute.
+       * @expose
+       * @name yAxis.majorTick.baselineColor
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "inherit"
+       * @ojvalue {string} "auto"
+       * @default "auto"
+       */
+      /**
+       * The line style of the major tick mark at the baseline (y = 0). If not specified, it will follow the lineStyle attribute.
+       * @expose
+       * @name yAxis.majorTick.baselineStyle
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "dotted"
+       * @ojvalue {string} "dashed"
+       * @ojvalue {string} "solid"
+       * @default "solid"
+       */
+      /**
+       * The width of the major tick mark at the baseline (y = 0) If not specified, it will follow the lineWidth attribute.
+       * @expose
+       * @name yAxis.majorTick.baselineWidth
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {number}
+       * @default null
+       * @ojunits pixels
+       * @ojmin 0
+       */
+      /**
+       * Defines whether the major tick marks are rendered.
+       * @expose
+       * @name yAxis.majorTick.rendered
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "on"
+       * @ojvalue {string} "off"
+       * @ojvalue {string} "auto"
+       * @default "auto"
+       */
+      /**
+       * An object defining properties for the minor tick marks.
+       * @expose
+       * @name yAxis.minorTick
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {Object}
+       */
+      /**
+       * The color of the minor tick marks.
+       * @expose
+       * @name yAxis.minorTick.lineColor
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojformat color
+       * @default null
+       */
+      /**
+       * The line style of the minor tick marks.
+       * @expose
+       * @name yAxis.minorTick.lineStyle
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "dotted"
+       * @ojvalue {string} "dashed"
+       * @ojvalue {string} "solid"
+       * @default "solid"
+       */
+      /**
+       * The width of the minor tick marks.
+       * @expose
+       * @name yAxis.minorTick.lineWidth
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {number}
+       * @default null
+       * @ojunits pixels
+       * @ojmin 0
+       */
+      /**
+       * Defines whether the minor tick marks are rendered.
+       * @expose
+       * @name yAxis.minorTick.rendered
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "on"
+       * @ojvalue {string} "off"
+       * @ojvalue {string} "auto"
+       * @default "auto"
+       */
+      /**
+       * Defines whether the axis baseline starts at the minimum value of the data or at zero. Only applies to numerical data axes.
+       * @expose
+       * @name yAxis.baselineScaling
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "min"
+       * @ojvalue {string} "zero"
+       * @default "zero"
+       */
+      /**
+       * Specifies the minimum y coordinate of the current viewport for zoom and scroll. Only applies to bubble and scatter charts. If not specified, this value will be the axis min.
+       * @expose
+       * @name yAxis.viewportMin
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {number}
+       * @default null
+       */
+      /**
+       * Specifies the maximum y coordinate of the current viewport for zoom and scroll. Only applies to bubble and scatter charts. If not specified, this value will be the axis max.
+       * @expose
+       * @name yAxis.viewportMax
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {number}
+       * @default null
+       */
+      /**
+       * An object defining properties for the axis, tick marks, tick labels, and axis titles. Y2 axis is only supported for Cartesian bar, line, area, and combo charts.
+       * @expose
+       * @name y2Axis
+       * @memberof oj.ojChart
+       * @instance
+       * @type {Object}
+       */
+      /**
+       * Defines whether the axis is rendered.
+       * @expose
+       * @name y2Axis.rendered
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "off"
+       * @ojvalue {string} "on"
+       * @default "on"
+       */
+      /**
+       * Defines the size of the axis in pixels (e.g. '50px') or percent (e.g. '15%').
+       * @expose
+       * @name y2Axis.size
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @default null
+       */
+      /**
+       * Defines the maximum size of the axis in pixels (e.g. '50px') or percent (e.g. '15%').
+       * @expose
+       * @name y2Axis.maxSize
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @default null
+       */
+      /**
+       * The axis title.
+       * @expose
+       * @name y2Axis.title
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @default null
+       * @ojtranslatable
+       */
+      /**
+       * The position of the axis relative to its content. For vertical charts, only start and end apply. For horizontal charts, only top and bottom apply.
+       * @expose
+       * @name y2Axis.position
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "start"
+       * @ojvalue {string} "end"
+       * @ojvalue {string} "top"
+       * @ojvalue {string} "bottom"
+       * @ojvalue {string} "auto"
+       * @default "auto"
+       */
+      /**
+       * The array of reference objects associated with the axis.
+       * @expose
+       * @name y2Axis.referenceObjects
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {Array.<Object>}
+       * @default []
+       */
+      /**
+       * The id of the reference object.
+       * @expose
+       * @name y2Axis.referenceObjects[].id
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @default null
+       */
+      /**
+       * An optional array of category strings corresponding to this reference object. This allows highlighting and filtering of a reference object through interactions with legend sections. If not defined, the reference object id is used.
+       * @expose
+       * @name y2Axis.referenceObjects[].categories
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {Array.<string>}
+       * @default null
+       */
+      /**
+       * The text displayed in the legend for the reference object.
+       * @expose
+       * @name y2Axis.referenceObjects[].text
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @default null
+       * @ojtranslatable
+       */
+      /**
+       * The type of reference object being shown.
+       * @expose
+       * @name y2Axis.referenceObjects[].type
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "area"
+       * @ojvalue {string} "line"
+       * @default "line"
+       */
+      /**
+       * The location of the reference object relative to the data items.
+       * @expose
+       * @name y2Axis.referenceObjects[].location
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "front"
+       * @ojvalue {string} "back"
+       * @default "back"
+       */
+      /**
+       * The color of the reference object.
+       * @expose
+       * @name y2Axis.referenceObjects[].color
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojformat color
+       * @default null
+       */
+      /**
+       * The width of the reference line.
+       * @expose
+       * @name y2Axis.referenceObjects[].lineWidth
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {number}
+       * @default null
+       * @ojunits pixels
+       * @ojmin 0
+       */
+      /**
+       * The line style of the reference line.
+       * @expose
+       * @name y2Axis.referenceObjects[].lineStyle
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "dotted"
+       * @ojvalue {string} "dashed"
+       * @ojvalue {string} "solid"
+       * @default "solid"
+       */
+      /**
+       * The line type of the reference line. Only applies if the line value is not constant. centeredStepped and centeredSegmented are not supported for polar, scatter, and bubble charts.
+       * @expose
+       * @name y2Axis.referenceObjects[].lineType
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "curved"
+       * @ojvalue {string} "stepped"
+       * @ojvalue {string} "centeredStepped"
+       * @ojvalue {string} "segmented"
+       * @ojvalue {string} "centeredSegmented"
+       * @ojvalue {string} "straight"
+       * @default "straight"
+       */
+      /**
+       * The CSS style class to apply to the reference object. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the reference object color attribute.
+       * @expose
+       * @name y2Axis.referenceObjects[].svgClassName
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @default null
+       */
+      /**
+       * The inline style to apply to the reference object. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the reference object color attribute.
+       * @expose
+       * @name y2Axis.referenceObjects[].svgStyle
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {Object}
+       * @default null
+       */
+      /**
+       * The value of a reference line. This property defines a constant value across the entire reference line and is ignored if the items array is specified.
+       * @expose
+       * @name y2Axis.referenceObjects[].value
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {number}
+       * @default null
+       */
+      /**
+       * The low value of a reference area. This property defines a constant value across the entire reference area and is ignored if the items array is specified.
+       * @expose
+       * @name y2Axis.referenceObjects[].low
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {number}
+       * @default null
+       */
+      /**
+       * The high value of a reference area. This property defines a constant value across the entire reference area and is ignored if the items array is specified.
+       * @expose
+       * @name y2Axis.referenceObjects[].high
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {number}
+       * @default null
+       */
+      /**
+       * The description of this object. This is used for accessibility and also for customizing the tooltip text.
+       * @expose
+       * @name y2Axis.referenceObjects[].shortDesc
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @default null
+       */
+      /**
+       * Defines whether the reference object should be shown in the legend.
+       * @expose
+       * @name y2Axis.referenceObjects[].displayInLegend
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "on"
+       * @ojvalue {string} "off"
+       * @default "off"
+       */
+      /**
+       * An array of values or an array of objects with the following properties that defines the data for a varying reference object. Only supported for y1 and y2 axes for all chart types.
+       * @expose
+       * @name y2Axis.referenceObjects[].items
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {Array.<Object>|Array.<number>}
+       * @default null
+       */
+      /**
+      * The low value of this point of a reference area.
+      * @expose
+      * @name y2Axis.referenceObjects[].items[].low
+      * @memberof! oj.ojChart
+      * @instance
+      * @type {number}
+      * @default null
+      */
+      /**
+      * The high value of this point of a reference area.
+      * @expose
+      * @name y2Axis.referenceObjects[].items[].high
+      * @memberof! oj.ojChart
+      * @instance
+      * @type {number}
+      * @default null
+      */
+      /**
+      * The value of this point of a line object. Null can be specified to skip a data point.
+      * @expose
+      * @name y2Axis.referenceObjects[].items[].value
+      * @memberof! oj.ojChart
+      * @instance
+      * @type {number}
+      * @default null
+      */
+      /**
+      * The x value of this point. Mainly used for scatter and bubble chart and to specify the date for mixed-frequency time axis.
+      * For categorical axis, if the x value is not specified, it will default to the item index.
+      * For regular time axis, if the x value is not specified, it will default to the group name of the item.
+      * @expose
+      * @name y2Axis.referenceObjects[].items[].x
+      * @memberof! oj.ojChart
+      * @instance
+      * @type {number|string}
+      * @default null
+      */
+      /**
+      * The minimum value of the axis. Defaults to null for automatic calculation based on the data.
+      * @expose
+      * @name y2Axis.min
+      * @memberof! oj.ojChart
+      * @instance
+      * @type {number}
+      * @default null
+      */
+      /**
+      * The maximum value of the axis. Defaults to null for automatic calculation based on the data.
+      * @expose
+      * @name y2Axis.max
+      * @memberof! oj.ojChart
+      * @instance
+      * @type {number}
+      * @default null
+      */
+      /**
+      * The minimum data value corresponding to an axis. If specified, the automatic axis extent calculation will use this value.
+      * @expose
+      * @name y2Axis.dataMin
+      * @memberof! oj.ojChart
+      * @instance
+      * @type {number}
+      * @default null
+      */
+      /**
+      * The maximum data value corresponding to an axis. If specified, the automatic axis extent calculation will use this value.
+      * @expose
+      * @name y2Axis.dataMax
+      * @memberof! oj.ojChart
+      * @instance
+      * @type {number}
+      * @default null
+      */
+      /**
+      * The increment between major tick marks. Defaults to null for automatic calculation based on the data. For log axis, the step is a multiplier, so for example, if the step is 2, the major tick marks will be rendered at 1, 2, 4, 8, and so on.
+      * @expose
+      * @name y2Axis.step
+      * @memberof! oj.ojChart
+      * @instance
+      * @type {number}
+      * @default null
+      * @ojexclusivemin 0
+      */
+      /**
+      * The minimum increment between major tick marks. This is typically used to prevent fractional axis values for discrete measures.
+      * @expose
+      * @name y2Axis.minStep
+      * @memberof! oj.ojChart
+      * @instance
+      * @type {number}
+      * @default null
+      * @ojexclusivemin 0
+      */
+      /**
+      * The increment between minor tick marks. Defaults to null for automatic calculation based on the data. For log axis, the step is a multiplier, so for example, if the minorStep is 2, the minor tick marks will be rendered at 1, 2, 4, 8, and so on.
+      * @expose
+      * @name y2Axis.minorStep
+      * @memberof! oj.ojChart
+      * @instance
+      * @type {number}
+      * @default null
+      * @ojexclusivemin 0
+      */
+      /**
+      * Defines the axis scale. Only applies to numerical axes.
+      * @expose
+      * @name y2Axis.scale
+      * @memberof! oj.ojChart
+      * @instance
+      * @type {string}
+      * @ojvalue {string} "log"
+      * @ojvalue {string} "linear"
+      * @default "linear"
+      */
+      /**
+      * The CSS style object defining the style of the axis title. The CSS white-space property can be defined with value "nowrap" to disable default text wrapping of the title.
+      * @expose
+      * @name y2Axis.titleStyle
+      * @memberof! oj.ojChart
+      * @instance
+      * @type {Object}
+      * @default {}
+      */
+      /**
+      * An object defining the properties of the tick labels.
+      * @expose
+      * @name y2Axis.tickLabel
+      * @memberof! oj.ojChart
+      * @instance
+      * @type {Object}
+      */
+      /**
+      * Defines whether the tick labels are rendered.
+      * @expose
+      * @name y2Axis.tickLabel.rendered
+      * @memberof! oj.ojChart
+      * @instance
+      * @type {string}
+      * @ojvalue {string} "off"
+      * @ojvalue {string} "on"
+      * @default "on"
+      */
+      /**
+      * Defines the position of the tick labels relative to the plot area.
+      * @expose
+      * @name y2Axis.tickLabel.position
+      * @memberof! oj.ojChart
+      * @instance
+      * @type {string}
+      * @ojvalue {string} "inside"
+      * @ojvalue {string} "outside"
+      * @default "outside"
+      */
+      /**
+      * The CSS style object defining the style of the labels.
+      * @expose
+      * @name y2Axis.tickLabel.style
+      * @memberof! oj.ojChart
+      * @instance
+      * @type {Object}
+      * @default {}
+      */
+      /**
+      * The scaling behavior of the labels. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
+      * @expose
+      * @name y2Axis.tickLabel.scaling
+      * @memberof! oj.ojChart
+      * @instance
+      * @type {string}
+      * @ojvalue {string} "none"
+      * @ojvalue {string} "thousand"
+      * @ojvalue {string} "million"
+      * @ojvalue {string} "billion"
+      * @ojvalue {string} "trillion"
+      * @ojvalue {string} "quadrillion"
+      * @ojvalue {string} "auto"
+      * @default "auto"
+      */
+      /**
+      * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) to format the labels. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
+      * @expose
+      * @name y2Axis.tickLabel.converter
+      * @memberof! oj.ojChart
+      * @instance
+      * @type {Object}
+      * @default null
+      */
+      /**
+      * An object defining properties for the axis line.
+      * @expose
+      * @name y2Axis.axisLine
+      * @memberof! oj.ojChart
+      * @instance
+      * @type {Object}
+      */
+      /**
+      * The color of the axis line.
+      * @expose
+      * @name y2Axis.axisLine.lineColor
+      * @memberof! oj.ojChart
+      * @instance
+      * @type {string}
+      * @ojformat color
+      * @default null
+      */
+      /**
+      * The width of the axis line.
+      * @expose
+      * @name y2Axis.axisLine.lineWidth
+      * @memberof! oj.ojChart
+      * @instance
+      * @type {number}
+      * @default null
+      * @ojunits pixels
+      * @ojmin 0
+      */
+      /**
+      * Defines whether the axis line is rendered.
+      * @expose
+      * @name y2Axis.axisLine.rendered
+      * @memberof! oj.ojChart
+      * @instance
+      * @type {string}
+      * @ojvalue {string} "on"
+      * @ojvalue {string} "off"
+      * @ojvalue {string} "auto"
+      * @default "auto"
+      */
+      /**
+      * An object defining properties for the major tick marks.
+      * @expose
+      * @name y2Axis.majorTick
+      * @memberof! oj.ojChart
+      * @instance
+      * @type {Object}
+      */
+      /**
+      * The color of the major tick marks.
+      * @expose
+      * @name y2Axis.majorTick.lineColor
+      * @memberof! oj.ojChart
+      * @instance
+      * @type {string}
+      * @ojformat color
+      * @default null
+      */
+      /**
+      * The line style of the major tick marks.
+      * @expose
+      * @name y2Axis.majorTick.lineStyle
+      * @memberof! oj.ojChart
+      * @instance
+      * @type {string}
+      * @ojvalue {string} "dotted"
+      * @ojvalue {string} "dashed"
+      * @ojvalue {string} "solid"
+      * @default "solid"
+      */
+      /**
+      * The width of the major tick marks.
+      * @expose
+      * @name y2Axis.majorTick.lineWidth
+      * @memberof! oj.ojChart
+      * @instance
+      * @type {number}
+      * @default null
+      * @ojunits pixels
+      * @ojmin 0
+      */
+      /**
+      * The color of the major tick mark at the baseline (y = 0). Valid values are auto, inherit, or a custom color. If set to inherit, it will follow the lineColor attribute.
+      * @expose
+      * @name y2Axis.majorTick.baselineColor
+      * @memberof! oj.ojChart
+      * @instance
+      * @type {string}
+      * @ojvalue {string} "inherit"
+      * @ojvalue {string} "auto"
+      * @default "auto"
+      */
+      /**
+      * The line style of the major tick mark at the baseline (y = 0). If not specified, it will follow the lineStyle attribute.
+      * @expose
+      * @name y2Axis.majorTick.baselineStyle
+      * @memberof! oj.ojChart
+      * @instance
+      * @type {string}
+      * @ojvalue {string} "dotted"
+      * @ojvalue {string} "dashed"
+      * @ojvalue {string} "solid"
+      * @default "solid"
+      */
+      /**
+      * The width of the major tick mark at the baseline (y = 0) If not specified, it will follow the lineWidth attribute.
+      * @expose
+      * @name y2Axis.majorTick.baselineWidth
+      * @memberof! oj.ojChart
+      * @instance
+      * @type {number}
+      * @default null
+      * @ojunits pixels
+      * @ojmin 0
+      */
+      /**
+      * Defines whether the major tick marks are rendered.
+      * @expose
+      * @name y2Axis.majorTick.rendered
+      * @memberof! oj.ojChart
+      * @instance
+      * @type {string}
+      * @ojvalue {string} "on"
+      * @ojvalue {string} "off"
+      * @ojvalue {string} "auto"
+      * @default "auto"
+      */
+      /**
+      * An object defining properties for the minor tick marks.
+      * @expose
+      * @name y2Axis.minorTick
+      * @memberof! oj.ojChart
+      * @instance
+      * @type {Object}
+      */
+      /**
+      * The color of the minor tick marks.
+      * @expose
+      * @name y2Axis.minorTick.lineColor
+      * @memberof! oj.ojChart
+      * @instance
+      * @type {string}
+      * @ojformat color
+      * @default null
+      */
+      /**
+      * The line style of the minor tick marks.
+      * @expose
+      * @name y2Axis.minorTick.lineStyle
+      * @memberof! oj.ojChart
+      * @instance
+      * @type {string}
+      * @ojvalue {string} "dotted"
+      * @ojvalue {string} "dashed"
+      * @ojvalue {string} "solid"
+      * @default "solid"
+      */
+      /**
+      * The width of the minor tick marks.
+      * @expose
+      * @name y2Axis.minorTick.lineWidth
+      * @memberof! oj.ojChart
+      * @instance
+      * @type {number}
+      * @default null
+      * @ojunits pixels
+      * @ojmin 0
+      */
+      /**
+      * Defines whether the minor tick marks are rendered.
+      * @expose
+      * @name y2Axis.minorTick.rendered
+      * @memberof! oj.ojChart
+      * @instance
+      * @type {string}
+      * @ojvalue {string} "on"
+      * @ojvalue {string} "off"
+      * @ojvalue {string} "auto"
+      * @default "auto"
+      */
+      /**
+      * Defines whether the axis baseline starts at the minimum value of the data or at zero. Only applies to numerical data axes.
+      * @expose
+      * @name y2Axis.baselineScaling
+      * @memberof! oj.ojChart
+      * @instance
+      * @type {string}
+      * @ojvalue {string} "min"
+      * @ojvalue {string} "zero"
+      * @default "zero"
+      */
+      /**
+      * Defines whether the tick marks of the y1 and y2 axes are aligned. Not supported for logarithmic axes.
+      * @expose
+      * @name y2Axis.alignTickMarks
+      * @memberof! oj.ojChart
+      * @instance
+      * @type {string}
+      * @ojvalue {string} "off"
+      * @ojvalue {string} "on"
+      * @default "on"
+      */
+      /**
+      * An object defining the overview scrollbar. Only applies if zoomAndScroll is not off. Currently only supported for vertical bar, line, area, stock, and combo charts.
+      * @expose
+      * @name overview
+      * @memberof oj.ojChart
+      * @instance
+      * @type {Object}
+      */
+      /**
+      * Specifies whether the overview scrollbar is rendered. If not, simple scrollbar will be used.
+      * @expose
+      * @name overview.rendered
+      * @memberof! oj.ojChart
+      * @instance
+      * @type {string}
+      * @ojvalue {string} "on"
+      * @ojvalue {string} "off"
+      * @default "off"
+      */
+      /**
+      * Specifies the height of the overview scrollbar in pixels (e.g. '50px') or percent (e.g. '15%').
+      * @expose
+      * @name overview.height
+      * @memberof! oj.ojChart
+      * @instance
+      * @type {string}
+      * @default null
+      */
+      /**
+      * An object containing the property override for the overview chart. The API is the same as the chart property API, and the property provided here will be merged on top of the default property of the overview chart. This can be used to customize the style or the type of the overview chart.
+      * @expose
+      * @name overview.content
+      * @memberof! oj.ojChart
+      * @instance
+      * @type {Object}
+      * @default {}
+      */
+      /**
+      * An object defining the style of the plot area.
+      * @expose
+      * @name plotArea
+      * @memberof oj.ojChart
+      * @instance
+      * @type {Object}
+      */
+      /**
+      * The border color to be set on the chart's plot area.
+      * @expose
+      * @name plotArea.borderColor
+      * @memberof! oj.ojChart
+      * @instance
+      * @type {string}
+      * @ojformat color
+      * @default null
+      */
+      /**
+      * The border width to be set on the chart's plot area.
+      * @expose
+      * @name plotArea.borderWidth
+      * @memberof! oj.ojChart
+      * @instance
+      * @type {number}
+      * @default null
+      * @ojunits pixels
+      */
+      /**
+      * The color of the plot area background.
+      * @expose
+      * @name plotArea.backgroundColor
+      * @memberof! oj.ojChart
+      * @instance
+      * @type {string}
+      * @ojformat color
+      * @default null
+      */
+      /**
+      * Specifies whether the plot area is rendered.
+      * @expose
+      * @name plotArea.rendered
+      * @memberof! oj.ojChart
+      * @instance
+      * @type {string}
+      * @ojvalue {string} "off"
+      * @ojvalue {string} "on"
+      * @default "on"
+      */
+      /**
+      * An object defining the style, positioning, and behavior of the legend.
+      * @expose
+      * @name legend
+      * @memberof oj.ojChart
+      * @instance
+      * @type {Object}
+      */
+      /**
+      * The legend title.
+      * @expose
+      * @name legend.title
+      * @memberof! oj.ojChart
+      * @instance
+      * @type {string}
+      * @default null
+      * @ojtranslatable
+      */
+      /**
+      * An array of objects with the following properties defining the additional legend sections, other than the default series and reference object sections.
+      * @expose
+      * @name legend.sections
+      * @memberof! oj.ojChart
+      * @instance
+      * @type {Array.<Object>}
+      * @default []
+      */
+      /**
+      * The title of the legend section.
+      * @expose
+      * @name legend.sections[].title
+      * @memberof! oj.ojChart
+      * @instance
+      * @type {string}
+      * @default null
+      * @ojtranslatable
+      */
+      /**
+      * The horizontal alignment of the section title. If the section is collapsible or nested, only start alignment is supported.
+      * @expose
+      * @name legend.sections[].titleHalign
+      * @memberof! oj.ojChart
+      * @instance
+      * @type {string}
+      * @ojvalue {string} "center"
+      * @ojvalue {string} "end"
+      * @ojvalue {string} "start"
+      * @default "start"
+      */
+      /**
+      * The CSS style object defining the style of the section title.
+      * @expose
+      * @name legend.sections[].titleStyle
+      * @memberof! oj.ojChart
+      * @instance
+      * @type {Object}
+      * @default null
+      */
+      /**
+      * An array of nested legend sections.
+      * @expose
+      * @name legend.sections[].sections
+      * @memberof! oj.ojChart
+      * @instance
+      * @type {Array.<Object>}
+      * @default null
+      */
+      /**
+      * An array of objects with the following properties defining the legend items. Also accepts a Promise for deferred data rendering.
+      * @expose
+      * @name legend.sections[].items
+      * @memberof! oj.ojChart
+      * @instance
+      * @type {Array.<Object>|Promise}
+      * @default null
+      */
+      /**
+      * The id of the legend item, which is provided as part of the context for events fired by this chart. If not specified, the id defaults to the text of the legend item.
+      * @expose
+      * @name legend.sections[].items[].id
+      * @memberof! oj.ojChart
+      * @instance
+      * @type {string}
+      * @default null
+      */
+      /**
+      * The legend item text.
+      * @expose
+      * @name legend.sections[].items[].text
+      * @memberof! oj.ojChart
+      * @instance
+      * @type {string}
+      * @default null
+      * @ojtranslatable
+      */
+      /**
+      * An array of categories for the legend item. Legend items currently only support a single category. If no category is specified, this defaults to the id or text of the legend item.
+      * @expose
+      * @name legend.sections[].items[].categories
+      * @memberof! oj.ojChart
+      * @instance
+      * @type {Array.<string>}
+      * @default null
+      */
+      /**
+      * The type of legend symbol to display.
+      * @expose
+      * @name legend.sections[].items[].symbolType
+      * @memberof! oj.ojChart
+      * @instance
+      * @type {string}
+      * @ojvalue {string} "line"
+      * @ojvalue {string} "lineWithMarker"
+      * @ojvalue {string} "image"
+      * @ojvalue {string} "marker"
+      * @default "marker"
+      */
+      /**
+      * The URI of the image of the legend symbol.
+      * @expose
+      * @name legend.sections[].items[].source
+      * @memberof! oj.ojChart
+      * @instance
+      * @type {string}
+      * @default null
+      */
+      /**
+      * The color of the legend symbol (line or marker). When symbolType is "lineWithMarker", this attribute defines the line color and the markerColor attribute defines the marker color.
+      * @expose
+      * @name legend.sections[].items[].color
+      * @memberof! oj.ojChart
+      * @instance
+      * @type {string}
+      * @ojformat color
+      * @default null
+      */
+      /**
+      * The border color of the marker. Only applies if symbolType is "marker" or "lineWithMarker".
+      * @expose
+      * @name legend.sections[].items[].borderColor
+      * @memberof! oj.ojChart
+      * @instance
+      * @type {string}
+      * @ojformat color
+      * @default null
+      */
+      /**
+      * The pattern used to fill the marker. Only applies if symbolType is "marker" or "lineWithMarker".
+      * @expose
+      * @name legend.sections[].items[].pattern
+      * @memberof! oj.ojChart
+      * @instance
+      * @type {string}
+      * @ojvalue {string} "smallChecker"
+      * @ojvalue {string} "smallCrosshatch"
+      * @ojvalue {string} "smallDiagonalLeft"
+      * @ojvalue {string} "smallDiagonalRight"
+      * @ojvalue {string} "smallDiamond"
+      * @ojvalue {string} "smallTriangle"
+      * @ojvalue {string} "largeChecker"
+      * @ojvalue {string} "largeCrosshatch"
+      * @ojvalue {string} "largeDiagonalLeft"
+      * @ojvalue {string} "largeDiagonalRight"
+      * @ojvalue {string} "largeDiamond"
+      * @ojvalue {string} "largeTriangle"
+      * @ojvalue {string} "none"
+      * @default "none"
+      */
+      /**
+      * The line style. Only applies when the symbolType is "line" or "lineWithMarker".
+      * @expose
+      * @name legend.sections[].items[].lineStyle
+      * @memberof! oj.ojChart
+      * @instance
+      * @type {string}
+      * @ojvalue {string} "dotted"
+      * @ojvalue {string} "dashed"
+      * @ojvalue {string} "solid"
+      * @default "solid"
+      */
+      /**
+      * The line width in pixels. Only applies when the symbolType is "line" or "lineWithMarker".
+      * @expose
+      * @name legend.sections[].items[].lineWidth
+      * @memberof! oj.ojChart
+      * @instance
+      * @type {number}
+      * @default null
+      * @ojunits pixels
+      * @ojmin 0
+      */
+      /**
+      * The shape of the marker. In addition to the built-in shapes, it may also take SVG path commands to specify a custom shape. The legend will style the custom shapes the same way as built-in shapes, supporting properties like color and borderColor and applying hover and filter effects. Only applies if symbolType is "marker" or "lineWithMarker".
+      * @expose
+      * @name legend.sections[].items[].markerShape
+      * @memberof! oj.ojChart
+      * @instance
+      * @type {("circle"|"diamond"|"human"|"plus"|"rectangle"|"square"|"star"|"triangleDown"|"triangleUp"|string)=}
+      * @default "square"
+      */
+      /**
+      * The color of the marker, if different than the line color. Only applies if the symbolType is "lineWithMarker".
+      * @expose
+      * @name legend.sections[].items[].markerColor
+      * @memberof! oj.ojChart
+      * @instance
+      * @type {string}
+      * @ojformat color
+      * @default null
+      */
+      /**
+      * Defines whether the legend item corresponds to visible data items. A hollow symbol is shown if the value is "hidden".
+      * @expose
+      * @name legend.sections[].items[].categoryVisibility
+      * @memberof! oj.ojChart
+      * @instance
+      * @type {string}
+      * @ojvalue {string} "hidden"
+      * @ojvalue {string} "visible"
+      * @default "visible"
+      */
+      /**
+      * The description of this legend item. This is used for accessibility and for customizing the tooltip text.
+      * @expose
+      * @name legend.sections[].items[].shortDesc
+      * @memberof! oj.ojChart
+      * @instance
+      * @type {string}
+      * @default null
+      */
+      /**
+      * An object with the following properties for the series section in the legend.
+      * @expose
+      * @name legend.seriesSection
+      * @memberof! oj.ojChart
+      * @instance
+      * @type {Object}
+      */
+      /**
+      * The title of the series section.
+      * @expose
+      * @name legend.seriesSection.title
+      * @memberof! oj.ojChart
+      * @instance
+      * @type {string}
+      * @default null
+      * @ojtranslatable
+      */
+      /**
+      * The horizontal alignment of the section title. If the section is collapsible or nested, only start alignment is supported.
+      * @expose
+      * @name legend.seriesSection.titleHalign
+      * @memberof! oj.ojChart
+      * @instance
+      * @type {string}
+      * @ojvalue {string} "center"
+      * @ojvalue {string} "end"
+      * @ojvalue {string} "start"
+      * @default "start"
+      */
+      /**
+      * The CSS style object defining the style of the section title.
+      * @expose
+      * @name legend.seriesSection.titleStyle
+      * @memberof! oj.ojChart
+      * @instance
+      * @type {Object}
+      * @default {}
+      */
+      /**
+      * An object with the following properties for the reference object section in the legend.
+      * @expose
+      * @name legend.referenceObjectSection
+      * @memberof! oj.ojChart
+      * @instance
+      * @type {Object}
+      */
+      /**
+      * The title of the reference object section.
+      * @expose
+      * @name legend.referenceObjectSection.title
+      * @memberof! oj.ojChart
+      * @instance
+      * @type {string}
+      * @default null
+      * @ojtranslatable
+      */
+      /**
+      * The horizontal alignment of the section title. If the section is collapsible or nested, only start alignment is supported.
+      * @expose
+      * @name legend.referenceObjectSection.titleHalign
+      * @memberof! oj.ojChart
+      * @instance
+      * @type {string}
+      * @ojvalue {string} "center"
+      * @ojvalue {string} "end"
+      * @ojvalue {string} "start"
+      * @default "start"
+      */
+      /**
+      * The CSS style object defining the style of the section title.
+      * @expose
+      * @name legend.referenceObjectSection.titleStyle
+      * @memberof! oj.ojChart
+      * @instance
+      * @type {Object}
+      * @default {}
+      */
+      /**
+      * The position of the legend within the chart. By default, the legend will be placed on the side or bottom, based on the size of the chart and the legend contents.
+      * @expose
+      * @name legend.position
+      * @memberof! oj.ojChart
+      * @instance
+      * @type {string}
+      * @ojvalue {string} "start"
+      * @ojvalue {string} "end"
+      * @ojvalue {string} "bottom"
+      * @ojvalue {string} "top"
+      * @ojvalue {string} "auto"
+      * @default "auto"
+      */
+      /**
+      * Defines whether the legend is displayed. If set to auto, the legend will be hidden for charts with a large number of series. To ensure that the legend is always displayed, set this attribute to 'on'. To turn on legend for stock, funnel and pyramid charts, set the displayInLegend property for the series items to 'on'.
+      * @expose
+      * @name legend.rendered
+      * @memberof! oj.ojChart
+      * @instance
+      * @type {string}
+      * @ojvalue {string} "on"
+      * @ojvalue {string} "off"
+      * @ojvalue {string} "auto"
+      * @default "auto"
+      */
+      /**
+      * Defines the size of the legend in pixels (e.g. '50px') or percent (e.g. '15%').
+      * @expose
+      * @name legend.size
+      * @memberof! oj.ojChart
+      * @instance
+      * @type {string}
+      * @default null
+      */
+      /**
+      * Defines the maximum size of the legend in pixels (e.g. '50px') or percent (e.g. '15%').
+      * @expose
+      * @name legend.maxSize
+      * @memberof! oj.ojChart
+      * @instance
+      * @type {string}
+      * @default null
+      */
+      /**
+      * The color of the legend background.
+      * @expose
+      * @name legend.backgroundColor
+      * @memberof! oj.ojChart
+      * @instance
+      * @type {string}
+      * @ojformat color
+      * @default null
+      */
+      /**
+      * The border color of the legend.
+      * @expose
+      * @name legend.borderColor
+      * @memberof! oj.ojChart
+      * @instance
+      * @type {string}
+      * @ojformat color
+      * @default null
+      */
+      /**
+      * The CSS style object defining the style of the legend text.
+      * @expose
+      * @name legend.textStyle
+      * @memberof! oj.ojChart
+      * @instance
+      * @type {Object}
+      * @default {}
+      */
+      /**
+      * The width of the legend symbol (line or marker) in pixels.
+      * @expose
+      * @name legend.symbolWidth
+      * @memberof! oj.ojChart
+      * @instance
+      * @type {number}
+      * @default null
+      * @ojunits pixels
+      */
+      /**
+      * The height of the legend symbol (line or marker) in pixels.
+      * @expose
+      * @name legend.symbolHeight
+      * @memberof! oj.ojChart
+      * @instance
+      * @type {number}
+      * @default null
+      * @ojunits pixels
+      */
+      /**
+      * The horizontal alignment of the title.
+      * @expose
+      * @name legend.titleHalign
+      * @memberof! oj.ojChart
+      * @instance
+      * @type {string}
+      * @ojvalue {string} "center"
+      * @ojvalue {string} "end"
+      * @ojvalue {string} "start"
+      * @default "start"
+      */
+      /**
+      * The CSS style object defining the style of the title.
+      * @expose
+      * @name legend.titleStyle
+      * @memberof! oj.ojChart
+      * @instance
+      * @type {Object}
+      * @default {}
+      */
+      /**
+      * Defines whether scrolling is enabled for the legend.
+      * @expose
+      * @name legend.scrolling
+      * @memberof! oj.ojChart
+      * @instance
+      * @type {string}
+      * @ojvalue {string} "off"
+      * @ojvalue {string} "asNeeded"
+      * @default "asNeeded"
+      */
+      /**
+      * An object defining the default styles for series colors, marker shapes, and other style attributes. Properties specified on this object may be overridden by specifications on the data object.
+      * @expose
+      * @name styleDefaults
+      * @memberof oj.ojChart
+      * @instance
+      * @type {Object}
+      */
+      /**
+      * Defines the fill effect for the data items.
+      * @expose
+      * @name styleDefaults.seriesEffect
+      * @memberof! oj.ojChart
+      * @instance
+      * @type {string}
+      * @ojvalue {string} "color"
+      * @ojvalue {string} "pattern"
+      * @ojvalue {string} "gradient"
+      * @default "gradient"
+      */
+      /**
+      * The array defining the default color ramp for the series.
+      * @expose
+      * @name styleDefaults.colors
+      * @memberof! oj.ojChart
+      * @instance
+      * @type {Array.<string>}
+      * @default null
+      */
+      /**
+      * The array defining the default pattern ramp for the series. This is used only when seriesEffect is 'pattern'.
+      * @expose
+      * @name styleDefaults.patterns
+      * @memberof! oj.ojChart
+      * @instance
+      * @type {Array.<string>}
+      * @default null
+      */
+      /**
+      * Specifies the color of the "Other" slice. Only applies to pie chart.
+      * @expose
+      * @name styleDefaults.otherColor
+      * @memberof! oj.ojChart
+      * @instance
+      * @type {string}
+      * @ojformat color
+      * @default null
+      */
+      /**
+      * The array defining the default shape ramp for the series. Valid values are defined in the markerShape attribute.
+      * @expose
+      * @name styleDefaults.shapes
+      * @memberof! oj.ojChart
+      * @instance
+      * @type {Array.<string>}
+      * @default null
+      */
+      /**
+      * The default border color for the data items. For funnel and pyramid charts, it is used for the slice border.
+      * @expose
+      * @name styleDefaults.borderColor
+      * @memberof! oj.ojChart
+      * @instance
+      * @type {string}
+      * @ojformat color
+      * @default null
+      */
+      /**
+      * The default border width for the data items. For funnel and pyramid charts, it is used for the slice border.
+      * @expose
+      * @name styleDefaults.borderWidth
+      * @memberof! oj.ojChart
+      * @instance
+      * @type {number}
+      * @default null
+      * @ojunits pixels
+      */
+      /**
+      * The default background color of funnel slices that show actual/target values.
+      * @expose
+      * @name styleDefaults.funnelBackgroundColor
+      * @memberof! oj.ojChart
+      * @instance
+      * @type {string}
+      * @ojformat color
+      * @default null
+      */
+      /**
+      * Defines whether the chart is displayed with a 3D effect. Only applies to pie, funnel and pyramid charts.
+      * @expose
+      * @name styleDefaults.threeDEffect
+      * @memberof! oj.ojChart
+      * @instance
+      * @type {string}
+      * @ojvalue {string} "on"
+      * @ojvalue {string} "off"
+      * @default "off"
+      */
+      /**
+      * The selection effect that is applied to selected items. The values explode and highlightAndExplode only apply to pie charts.
+      * @expose
+      * @name styleDefaults.selectionEffect
+      * @memberof! oj.ojChart
+      * @instance
+      * @type {string}
+      * @ojvalue {string} "explode"
+      * @ojvalue {string} "highlightAndExplode"
+      * @ojvalue {string} "highlight"
+      * @default "highlight"
+      */
+      /**
+      * The duration of the animations, in milliseconds.
+      * @expose
+      * @name styleDefaults.animationDuration
+      * @memberof! oj.ojChart
+      * @instance
+      * @type {number}
+      * @default null
+      * @ojunits milliseconds
+      * @ojmin 0
+      */
+      /**
+      * Defines whether data change indicators are displayed during animation.
+      * @expose
+      * @name styleDefaults.animationIndicators
+      * @memberof! oj.ojChart
+      * @instance
+      * @type {string}
+      * @ojvalue {string} "none"
+      * @ojvalue {string} "all"
+      * @default "all"
+      */
+      /**
+      * The color of the indicator shown for an increasing data change animation.
+      * @expose
+      * @name styleDefaults.animationUpColor
+      * @memberof! oj.ojChart
+      * @instance
+      * @type {string}
+      * @ojformat color
+      * @default null
+      */
+      /**
+      * The color of the indicator shown for a decreasing data change animation.
+      * @expose
+      * @name styleDefaults.animationDownColor
+      * @memberof! oj.ojChart
+      * @instance
+      * @type {string}
+      * @ojformat color
+      * @default null
+      */
+      /**
+       * The fill color of the marquee. Applies to marquee selection and marquee zoom.
+       * @expose
+       * @name styleDefaults.marqueeColor
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojformat color
+       * @default null
+       */
+      /**
+       * The border color of the marquee. Applies to marquee selection and marquee zoom.
+       * @expose
+       * @name styleDefaults.marqueeBorderColor
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojformat color
+       * @default null
+       */
+      /**
+       * Specifies the radius of the inner circle that can be used to create a donut chart. Valid values range from 0 (default) to 1. Not supported if 3D effect is on.
+       * @expose
+       * @name styleDefaults.pieInnerRadius
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {number}
+       * @default 0
+       * @ojmin 0
+       * @ojmax 1
+       */
+      /**
+       * The width of the data line. Only applies to line, lineWithArea, scatter, and bubble series.
+       * @expose
+       * @name styleDefaults.lineWidth
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {number}
+       * @default null
+       * @ojunits pixels
+       * @ojmin 0
+       */
+      /**
+       * The line type of the data line or area. Only applies to line, area, scatter, and bubble series. centeredStepped and centeredSegmented are not supported for polar, scatter, and bubble charts.
+       * @expose
+       * @name styleDefaults.lineType
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "straight"
+       * @ojvalue {string} "curved"
+       * @ojvalue {string} "stepped"
+       * @ojvalue {string} "centeredStepped"
+       * @ojvalue {string} "segmented"
+       * @ojvalue {string} "centeredSegmented"
+       * @ojvalue {string} "none"
+       * @ojvalue {string} "auto"
+       * @default "auto"
+       */
+      /**
+       * The line style of the data line. Only applies to line, lineWithArea, scatter, and bubble series.
+       * @expose
+       * @name styleDefaults.lineStyle
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "dotted"
+       * @ojvalue {string} "dashed"
+       * @ojvalue {string} "solid"
+       * @default "solid"
+       */
+      /**
+       * The color of the data markers, if different from the series color.
+       * @expose
+       * @name styleDefaults.markerColor
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojformat color
+       * @default null
+       */
+      /**
+       * Defines whether the data markers should be displayed. Only applies to line, area, scatter, and bubble series. If auto, the markers will be displayed whenever the data points are not connected by a line.
+       * @expose
+       * @name styleDefaults.markerDisplayed
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "on"
+       * @ojvalue {string} "off"
+       * @ojvalue {string} "auto"
+       * @default "auto"
+       */
+      /**
+       * The shape of the data markers. In addition to the built-in shapes, it may also take SVG path commands to specify a custom shape. The chart will style the custom shapes the same way as built-in shapes, supporting properties like color and borderColor and applying hover and selection effects. Only 'auto' is supported for range series.
+       * @expose
+       * @name styleDefaults.markerShape
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {("auto"|"circle"|"diamond"|"human"|"plus"|"square"|"star"|"triangleDown"|"triangleUp"|string)=}
+       * @default "auto"
+       */
+      /**
+       * The size of the data markers in pixels.
+       * @expose
+       * @name styleDefaults.markerSize
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {number}
+       * @default null
+       * @ojunits pixels
+       */
+      /**
+       * The color of the line extending from the pie slice to the slice label.
+       * @expose
+       * @name styleDefaults.pieFeelerColor
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojformat color
+       * @default null
+       */
+      /**
+       * Specifies the presence and size of the gaps between data items, such as bars, markers, and areas. Valid values are a percentage string from 0% to 100%, where 100% produces the maximum supported gaps.
+       * @expose
+       * @name styleDefaults.dataItemGaps
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @default null
+       */
+      /**
+       * In stock charts, the color of the candlestick when the 'close' value is greater than the 'open' value.
+       * @expose
+       * @name styleDefaults.stockRisingColor
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojformat color
+       * @default null
+       */
+      /**
+       * In stock charts, the color of the candlestick when the 'open' value is greater than the 'close' value.
+       * @expose
+       * @name styleDefaults.stockFallingColor
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojformat color
+       * @default null
+       */
+      /**
+       * In stock charts, the color of the range bars for candlestick.
+       * @expose
+       * @name styleDefaults.stockRangeColor
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojformat color
+       * @default null
+       */
+      /**
+       * In stock charts, the color of the volume bars. If specified, overrides the default rising and falling colors used by the volume bars.
+       * @expose
+       * @name styleDefaults.stockVolumeColor
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojformat color
+       * @default null
+       */
+      /**
+       * The position of the data label. For range series, if an array of two values are provided, the first and second value will apply to the low and high point respectively. The 'outsideSlice' value only applies to pie charts. The 'aboveMarker', 'belowMarker', 'beforeMarker', and 'afterMarker' values only apply to line, area, scatter, and bubble series. The 'insideBarEdge' and 'outsideBarEdge' values only apply to non-polar bar series. Stacked bars do not support 'outsideBarEdge'. The chart does not currently adjust layout to fit labels within the plot area or deal with any overlaps between labels.
+       * @expose
+       * @name styleDefaults.dataLabelPosition
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string|Array.<string>}
+       * @ojvalue {string} "center"
+       * @ojvalue {string} "outsideSlice"
+       * @ojvalue {string} "aboveMarker"
+       * @ojvalue {string} "belowMarker"
+       * @ojvalue {string} "beforeMarker"
+       * @ojvalue {string} "afterMarker"
+       * @ojvalue {string} "insideBarEdge"
+       * @ojvalue {string} "outsideBarEdge"
+       * @ojvalue {string} "none"
+       * @ojvalue {string} "auto"
+       * @default "auto"
+       */
+      /**
+       * The CSS style object defining the style of the data label text. For range series, if an array of two values are provided, the first and second value will apply to the low and high point respectively.
+       * @expose
+       * @name styleDefaults.dataLabelStyle
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {object|Array.<Object>}
+       * @default null
+       */
+      /**
+       * The CSS style object defining the style of the stack label. Only applies to stacked bar charts.
+       * @expose
+       * @name styleDefaults.stackLabelStyle
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {Object}
+       * @default {}
+       */
+      /**
+       * Specifies the width of the bar group gap as a ratio of the group width. The valid value is a number from 0 to 1.
+       * @expose
+       * @name styleDefaults.barGapRatio
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {number}
+       * @default null
+       * @ojmin 0
+       * @ojmax 1
+       */
+      /**
+       * Specifies the maximum width of each bar in pixels.
+       * @expose
+       * @name styleDefaults.maxBarWidth
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {number}
+       * @default null
+       * @ojunits pixels
+       */
+      /**
+       * Specifies initial hover delay in ms for highlighting items in chart.
+       * @expose
+       * @name styleDefaults.hoverBehaviorDelay
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {number}
+       * @default null
+       * @ojunits milliseconds
+       * @ojmin 0
+       */
+      /**
+       * The CSS style object defining the style of the labels in the tooltip.
+       * @expose
+       * @name styleDefaults.tooltipLabelStyle
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {Object}
+       * @default {}
+       */
+      /**
+       * The CSS style object defining the style of the values in the tooltip.
+       * @expose
+       * @name styleDefaults.tooltipValueStyle
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {Object}
+       * @default {}
+       */
+      /**
+       * An object defining the data cursor style.
+       * @expose
+       * @name styleDefaults.dataCursor
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {Object}
+       */
+      /**
+       * The width of the data cursor line in pixels.
+       * @expose
+       * @name styleDefaults.dataCursor.lineWidth
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {number}
+       * @default null
+       * @ojunits pixels
+       * @ojmin 0
+       */
+      /**
+       * The color of the data cursor line.
+       * @expose
+       * @name styleDefaults.dataCursor.lineColor
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojformat color
+       * @default null
+       */
+      /**
+       * The line style of the data cursor line.
+       * @expose
+       * @name styleDefaults.dataCursor.lineStyle
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "dotted"
+       * @ojvalue {string} "dashed"
+       * @ojvalue {string} "solid"
+       * @default "solid"
+       */
+      /**
+       * The color of the data cursor marker. Defaults to the data series color.
+       * @expose
+       * @name styleDefaults.dataCursor.markerColor
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojformat color
+       * @default null
+       */
+      /**
+       * The size of the data cursor marker in pixels.
+       * @expose
+       * @name styleDefaults.dataCursor.markerSize
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {number}
+       * @default null
+       * @ojunits pixels
+       */
+      /**
+       * Whether the data cursor marker is displayed. Marker should only be hidden if the data cursor is displaying information for the entire group.
+       * @expose
+       * @name styleDefaults.dataCursor.markerDisplayed
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "off"
+       * @ojvalue {string} "on"
+       * @default "on"
+       */
+      /**
+       * An object defining the style for hierarchical label separators.
+       * @expose
+       * @name styleDefaults.groupSeparators
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {Object}
+       */
+      /**
+       * Defines whether the group separators are displayed.
+       * @expose
+       * @name styleDefaults.groupSeparators.rendered
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "off"
+       * @ojvalue {string} "auto"
+       * @default "auto"
+       */
+      /**
+       * The color of the separators lines.
+       * @expose
+       * @name styleDefaults.groupSeparators.color
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojformat color
+       * @default null
+       */
+      /**
+       * An object containing the style properties of the box plot items.
+       * @expose
+       * @name styleDefaults.boxPlot
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {Object}
+       */
+      /**
+       * The CSS style class to apply to the whisker stems.
+       * @expose
+       * @name styleDefaults.boxPlot.whiskerSvgClassName
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @default ""
+       */
+      /**
+       * The CSS inline style to apply to the whisker stems.
+       * @expose
+       * @name styleDefaults.boxPlot.whiskerSvgStyle
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {Object}
+       * @default {}
+       */
+      /**
+       * The CSS style class to apply to the whisker ends.
+       * @expose
+       * @name styleDefaults.boxPlot.whiskerEndSvgClassName
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @default ""
+       */
+      /**
+       * The CSS inline style to apply to the whisker ends.
+       * @expose
+       * @name styleDefaults.boxPlot.whiskerEndSvgStyle
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {Object}
+       * @default {}
+       */
+      /**
+       *  Specifies the length of the whisker ends in pixels (e.g. '9px') or as a percentage of the box width (e.g. '50%').
+       * @expose
+       * @name styleDefaults.boxPlot.whiskerEndLength
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @default null
+       */
+      /**
+       * The CSS style class to apply to the median line.
+       * @expose
+       * @name styleDefaults.boxPlot.medianSvgClassName
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @default ""
+       */
+      /**
+       * The CSS inline style to apply to the median line.
+       * @expose
+       * @name styleDefaults.boxPlot.medianSvgStyle
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {Object}
+       * @default {}
+       */
+      /**
+       * An object specifying value formatting and tooltip behavior, whose keys generally correspond to the attribute names on the data items.
+       * @name valueFormats
+       * @memberof oj.ojChart
+       * @instance
+       * @type {Object}
+       */
+      /**
+       * Specifies tooltip behavior for the series.
+       * @expose
+       * @name valueFormats.series
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {Object}
+       */
+      /**
+       * A string representing the label that is displayed before the value in the tooltip.
+       * @expose
+       * @name valueFormats.series.tooltipLabel
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @default null
+       * @ojtranslatable
+       */
+      /**
+       * Whether the value is displayed in the tooltip.
+       * @expose
+       * @name valueFormats.series.tooltipDisplay
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "off"
+       * @ojvalue {string} "auto"
+       * @default "auto"
+       */
+      /**
+       * Specifies tooltip behavior for the groups.
+       * @expose
+       * @name valueFormats.group
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {Object}
+       */
+      /**
+       * A string representing the label that is displayed before the value in the tooltip. This value can also take an array of strings to be applied to hierarchical group names, from outermost to innermost.
+       * @expose
+       * @name valueFormats.group.tooltipLabel
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string|Array.<string>}
+       * @default null
+       * @ojtranslatable
+       */
+      /**
+       * Whether the value is displayed in the tooltip.
+       * @expose
+       * @name valueFormats.group.tooltipDisplay
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "off"
+       * @ojvalue {string} "auto"
+       * @default "auto"
+       */
+      /**
+       * Specifies the value formatting and tooltip behavior for the x values.
+       * @expose
+       * @name valueFormats.x
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {Object}
+       */
+      /**
+       * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used to format the label. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
+       * @expose
+       * @name valueFormats.x.converter
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {Object}
+       * @default null
+       */
+      /**
+       * The scaling behavior of the value. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
+       * @expose
+       * @name valueFormats.x.scaling
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "none"
+       * @ojvalue {string} "thousand"
+       * @ojvalue {string} "million"
+       * @ojvalue {string} "billion"
+       * @ojvalue {string} "trillion"
+       * @ojvalue {string} "quadrillion"
+       * @ojvalue {string} "auto"
+       * @default "auto"
+       */
+      /**
+       * A string representing the label that is displayed before the value in the tooltip.
+       * @expose
+       * @name valueFormats.x.tooltipLabel
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @default null
+       * @ojtranslatable
+       */
+      /**
+       * Whether the value is displayed in the tooltip.
+       * @expose
+       * @name valueFormats.x.tooltipDisplay
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "off"
+       * @ojvalue {string} "auto"
+       * @default "auto"
+       */
+      /**
+       * Specifies the value formatting and tooltip behavior for the y values.
+       * @expose
+       * @name valueFormats.y
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {Object}
+       */
+      /**
+       * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used to format the label. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
+       * @expose
+       * @name valueFormats.y.converter
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {Object}
+       * @default null
+       */
+      /**
+       * The scaling behavior of the value. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
+       * @expose
+       * @name valueFormats.y.scaling
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "none"
+       * @ojvalue {string} "thousand"
+       * @ojvalue {string} "million"
+       * @ojvalue {string} "billion"
+       * @ojvalue {string} "trillion"
+       * @ojvalue {string} "quadrillion"
+       * @ojvalue {string} "auto"
+       * @default "auto"
+       */
+      /**
+       * A string representing the label that is displayed before the value in the tooltip.
+       * @expose
+       * @name valueFormats.y.tooltipLabel
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @default null
+       * @ojtranslatable
+       */
+      /**
+       * Whether the value is displayed in the tooltip.
+       * @expose
+       * @name valueFormats.y.tooltipDisplay
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "off"
+       * @ojvalue {string} "auto"
+       * @default "auto"
+       */
+      /**
+       * Specifies the value formatting and tooltip behavior for the y2 values.
+       * @expose
+       * @name valueFormats.y2
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {Object}
+       */
+      /**
+       * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used to format the label. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
+       * @expose
+       * @name valueFormats.y2.converter
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {Object}
+       * @default null
+       */
+      /**
+       * The scaling behavior of the value. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
+       * @expose
+       * @name valueFormats.y2.scaling
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "none"
+       * @ojvalue {string} "thousand"
+       * @ojvalue {string} "million"
+       * @ojvalue {string} "billion"
+       * @ojvalue {string} "trillion"
+       * @ojvalue {string} "quadrillion"
+       * @ojvalue {string} "auto"
+       * @default "auto"
+       */
+      /**
+       * A string representing the label that is displayed before the value in the tooltip.
+       * @expose
+       * @name valueFormats.y2.tooltipLabel
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @default null
+       * @ojtranslatable
+       */
+      /**
+       * Whether the value is displayed in the tooltip.
+       * @expose
+       * @name valueFormats.y2.tooltipDisplay
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "off"
+       * @ojvalue {string} "auto"
+       * @default "auto"
+       */
+      /**
+       * Specifies the value formatting and tooltip behavior for the z values.
+       * @expose
+       * @name valueFormats.z
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {Object}
+       */
+      /**
+       * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used to format the label. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
+       * @expose
+       * @name valueFormats.z.converter
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {Object}
+       * @default null
+       */
+      /**
+       * The scaling behavior of the value. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
+       * @expose
+       * @name valueFormats.z.scaling
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "none"
+       * @ojvalue {string} "thousand"
+       * @ojvalue {string} "million"
+       * @ojvalue {string} "billion"
+       * @ojvalue {string} "trillion"
+       * @ojvalue {string} "quadrillion"
+       * @ojvalue {string} "auto"
+       * @default "auto"
+       */
+      /**
+       * A string representing the label that is displayed before the value in the tooltip.
+       * @expose
+       * @name valueFormats.z.tooltipLabel
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @default null
+       * @ojtranslatable
+       */
+      /**
+       * Whether the value is displayed in the tooltip.
+       * @expose
+       * @name valueFormats.z.tooltipDisplay
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "off"
+       * @ojvalue {string} "auto"
+       * @default "auto"
+       */
+      /**
+       * Specifies the value formatting and tooltip behavior for the values.
+       * @expose
+       * @name valueFormats.value
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {Object}
+       */
+      /**
+       * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used to format the label. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
+       * @expose
+       * @name valueFormats.value.converter
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {Object}
+       * @default null
+       */
+      /**
+       * The scaling behavior of the value. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
+       * @expose
+       * @name valueFormats.value.scaling
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "none"
+       * @ojvalue {string} "thousand"
+       * @ojvalue {string} "million"
+       * @ojvalue {string} "billion"
+       * @ojvalue {string} "trillion"
+       * @ojvalue {string} "quadrillion"
+       * @ojvalue {string} "auto"
+       * @default "auto"
+       */
+      /**
+       * A string representing the label that is displayed before the value in the tooltip.
+       * @expose
+       * @name valueFormats.value.tooltipLabel
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @default null
+       * @ojtranslatable
+       */
+      /**
+       * Whether the value is displayed in the tooltip.
+       * @expose
+       * @name valueFormats.value.tooltipDisplay
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "off"
+       * @ojvalue {string} "auto"
+       * @default "auto"
+       */
+      /**
+       * Specifies the value formatting and tooltip behavior for the target values of a funnel chart.
+       * @expose
+       * @name valueFormats.targetValue
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {Object}
+       */
+      /**
+       * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used to format the label. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
+       * @expose
+       * @name valueFormats.targetValue.converter
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {Object}
+       * @default null
+       */
+      /**
+       * The scaling behavior of the value. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
+       * @expose
+       * @name valueFormats.targetValue.scaling
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "none"
+       * @ojvalue {string} "thousand"
+       * @ojvalue {string} "million"
+       * @ojvalue {string} "billion"
+       * @ojvalue {string} "trillion"
+       * @ojvalue {string} "quadrillion"
+       * @ojvalue {string} "auto"
+       * @default "auto"
+       */
+      /**
+       * A string representing the label that is displayed before the value in the tooltip.
+       * @expose
+       * @name valueFormats.targetValue.tooltipLabel
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @default null
+       * @ojtranslatable
+       */
+      /**
+       * Whether the value is displayed in the tooltip.
+       * @expose
+       * @name valueFormats.targetValue.tooltipDisplay
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "off"
+       * @ojvalue {string} "auto"
+       * @default "auto"
+       */
+      /**
+       * Specifies the value formatting and tooltip behavior for the low values.
+       * @expose
+       * @name valueFormats.low
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {Object}
+       */
+      /**
+       * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used to format the label. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
+       * @expose
+       * @name valueFormats.low.converter
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {Object}
+       * @default null
+       */
+      /**
+       * The scaling behavior of the value. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
+       * @expose
+       * @name valueFormats.low.scaling
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "none"
+       * @ojvalue {string} "thousand"
+       * @ojvalue {string} "million"
+       * @ojvalue {string} "billion"
+       * @ojvalue {string} "trillion"
+       * @ojvalue {string} "quadrillion"
+       * @ojvalue {string} "auto"
+       * @default "auto"
+       */
+      /**
+       * A string representing the label that is displayed before the value in the tooltip.
+       * @expose
+       * @name valueFormats.low.tooltipLabel
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @default null
+       * @ojtranslatable
+       */
+      /**
+       * Whether the value is displayed in the tooltip.
+       * @expose
+       * @name valueFormats.low.tooltipDisplay
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "off"
+       * @ojvalue {string} "auto"
+       * @default "auto"
+       */
+      /**
+       * Specifies the value formatting and tooltip behavior for the high values.
+       * @expose
+       * @name valueFormats.high
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {Object}
+       */
+      /**
+       * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used to format the label. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
+       * @expose
+       * @name valueFormats.high.converter
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {Object}
+       * @default null
+       */
+      /**
+       * The scaling behavior of the value. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
+       * @expose
+       * @name valueFormats.high.scaling
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "none"
+       * @ojvalue {string} "thousand"
+       * @ojvalue {string} "million"
+       * @ojvalue {string} "billion"
+       * @ojvalue {string} "trillion"
+       * @ojvalue {string} "quadrillion"
+       * @ojvalue {string} "auto"
+       * @default "auto"
+       */
+      /**
+       * A string representing the label that is displayed before the value in the tooltip.
+       * @expose
+       * @name valueFormats.high.tooltipLabel
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @default null
+       * @ojtranslatable
+       */
+      /**
+       * Whether the value is displayed in the tooltip.
+       * @expose
+       * @name valueFormats.high.tooltipDisplay
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "off"
+       * @ojvalue {string} "auto"
+       * @default "auto"
+       */
+      /**
+       * Specifies the value formatting and tooltip behavior for the open values of a stock chart.
+       * @expose
+       * @name valueFormats.open
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {Object}
+       */
+      /**
+       * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used to format the label. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
+       * @expose
+       * @name valueFormats.open.converter
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {Object}
+       * @default null
+       */
+      /**
+       * The scaling behavior of the value. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
+       * @expose
+       * @name valueFormats.open.scaling
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "none"
+       * @ojvalue {string} "thousand"
+       * @ojvalue {string} "million"
+       * @ojvalue {string} "billion"
+       * @ojvalue {string} "trillion"
+       * @ojvalue {string} "quadrillion"
+       * @ojvalue {string} "auto"
+       * @default "auto"
+       */
+      /**
+       * A string representing the label that is displayed before the value in the tooltip.
+       * @expose
+       * @name valueFormats.open.tooltipLabel
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @default null
+       * @ojtranslatable
+       */
+      /**
+       * Whether the value is displayed in the tooltip.
+       * @expose
+       * @name valueFormats.open.tooltipDisplay
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "off"
+       * @ojvalue {string} "auto"
+       * @default "auto"
+       */
+      /**
+       * Specifies the value formatting and tooltip behavior for the close values of a stock chart.
+       * @expose
+       * @name valueFormats.close
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {Object}
+       */
+      /**
+       * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used to format the label. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
+       * @expose
+       * @name valueFormats.close.converter
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {Object}
+       * @default null
+       */
+      /**
+       * The scaling behavior of the value. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
+       * @expose
+       * @name valueFormats.close.scaling
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "none"
+       * @ojvalue {string} "thousand"
+       * @ojvalue {string} "million"
+       * @ojvalue {string} "billion"
+       * @ojvalue {string} "trillion"
+       * @ojvalue {string} "quadrillion"
+       * @ojvalue {string} "auto"
+       * @default "auto"
+       */
+      /**
+       * A string representing the label that is displayed before the value in the tooltip.
+       * @expose
+       * @name valueFormats.close.tooltipLabel
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @default null
+       * @ojtranslatable
+       */
+      /**
+       * Whether the value is displayed in the tooltip.
+       * @expose
+       * @name valueFormats.close.tooltipDisplay
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "off"
+       * @ojvalue {string} "auto"
+       * @default "auto"
+       */
+      /**
+       * Specifies the value formatting and tooltip behavior for the volume values of a stock chart.
+       * @expose
+       * @name valueFormats.volume
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {Object}
+       */
+      /**
+       * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used to format the label. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
+       * @expose
+       * @name valueFormats.volume.converter
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {Object}
+       * @default null
+       */
+      /**
+       * The scaling behavior of the value. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
+       * @expose
+       * @name valueFormats.volume.scaling
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "none"
+       * @ojvalue {string} "thousand"
+       * @ojvalue {string} "million"
+       * @ojvalue {string} "billion"
+       * @ojvalue {string} "trillion"
+       * @ojvalue {string} "quadrillion"
+       * @ojvalue {string} "auto"
+       * @default "auto"
+       */
+      /**
+       * A string representing the label that is displayed before the value in the tooltip.
+       * @expose
+       * @name valueFormats.volume.tooltipLabel
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @default null
+       * @ojtranslatable
+       */
+      /**
+       * Whether the value is displayed in the tooltip.
+       * @expose
+       * @name valueFormats.volume.tooltipDisplay
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "off"
+       * @ojvalue {string} "auto"
+       * @default "auto"
+       */
+      /**
+       * Specifies the value formatting and tooltip behavior for the q1 values of a box plot.
+       * @expose
+       * @name valueFormats.q1
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {Object}
+       */
+      /**
+       * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used to format the label. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
+       * @expose
+       * @name valueFormats.q1.converter
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {Object}
+       * @default null
+       */
+      /**
+       * The scaling behavior of the value. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
+       * @expose
+       * @name valueFormats.q1.scaling
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "none"
+       * @ojvalue {string} "thousand"
+       * @ojvalue {string} "million"
+       * @ojvalue {string} "billion"
+       * @ojvalue {string} "trillion"
+       * @ojvalue {string} "quadrillion"
+       * @ojvalue {string} "auto"
+       * @default "auto"
+       */
+      /**
+       * A string representing the label that is displayed before the value in the tooltip.
+       * @expose
+       * @name valueFormats.q1.tooltipLabel
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @default null
+       * @ojtranslatable
+       */
+      /**
+       * Whether the value is displayed in the tooltip.
+       * @expose
+       * @name valueFormats.q1.tooltipDisplay
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "off"
+       * @ojvalue {string} "auto"
+       * @default "auto"
+       */
+      /**
+       * Specifies the value formatting and tooltip behavior for the q2 values of a box plot.
+       * @expose
+       * @name valueFormats.q2
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {Object}
+       */
+      /**
+       * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used to format the label. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
+       * @expose
+       * @name valueFormats.q2.converter
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {Object}
+       * @default null
+       */
+      /**
+       * The scaling behavior of the value. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
+       * @expose
+       * @name valueFormats.q2.scaling
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "none"
+       * @ojvalue {string} "thousand"
+       * @ojvalue {string} "million"
+       * @ojvalue {string} "billion"
+       * @ojvalue {string} "trillion"
+       * @ojvalue {string} "quadrillion"
+       * @ojvalue {string} "auto"
+       * @default "auto"
+       */
+      /**
+       * A string representing the label that is displayed before the value in the tooltip.
+       * @expose
+       * @name valueFormats.q2.tooltipLabel
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @default null
+       * @ojtranslatable
+       */
+      /**
+       * Whether the value is displayed in the tooltip.
+       * @expose
+       * @name valueFormats.q2.tooltipDisplay
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "off"
+       * @ojvalue {string} "auto"
+       * @default "auto"
+       */
+      /**
+       * Specifies the value formatting and tooltip behavior for the q3 values of a box plot.
+       * @expose
+       * @name valueFormats.q3
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {Object}
+       */
+      /**
+       * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used to format the label. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
+       * @expose
+       * @name valueFormats.q3.converter
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {Object}
+       * @default null
+       */
+      /**
+       * The scaling behavior of the value. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
+       * @expose
+       * @name valueFormats.q3.scaling
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "none"
+       * @ojvalue {string} "thousand"
+       * @ojvalue {string} "million"
+       * @ojvalue {string} "billion"
+       * @ojvalue {string} "trillion"
+       * @ojvalue {string} "quadrillion"
+       * @ojvalue {string} "auto"
+       * @default "auto"
+       */
+      /**
+       * A string representing the label that is displayed before the value in the tooltip.
+       * @expose
+       * @name valueFormats.q3.tooltipLabel
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @default null
+       * @ojtranslatable
+       */
+      /**
+       * Whether the value is displayed in the tooltip.
+       * @expose
+       * @name valueFormats.q3.tooltipDisplay
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "off"
+       * @ojvalue {string} "auto"
+       * @default "auto"
+       */
+      /**
+       * Specifies the value formatting for the data item labels.
+       * @expose
+       * @name valueFormats.label
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {Object}
+       */
+      /**
+       * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used to format the label. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
+       * @expose
+       * @name valueFormats.label.converter
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {Object}
+       * @default null
+       */
+      /**
+       * The scaling behavior of the value. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
+       * @expose
+       * @name valueFormats.label.scaling
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "none"
+       * @ojvalue {string} "thousand"
+       * @ojvalue {string} "million"
+       * @ojvalue {string} "billion"
+       * @ojvalue {string} "trillion"
+       * @ojvalue {string} "quadrillion"
+       * @ojvalue {string} "auto"
+       * @default "auto"
+       */
+      /**
+       * Specifies the zoom and scroll behavior of the chart. "Live" behavior means that the chart will be updated continuously as it is being manipulated, while "delayed" means that the update will wait until the zoom/scroll action is done. While "live" zoom and scroll provides the best end user experience, no guarantess are made about the rendering performance or usability for large data sets or slow client environments. If performance is an issue, "delayed" zoom and scroll should be used instead.
+       * @expose
+       * @name zoomAndScroll
+       * @memberof oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "delayedScrollOnly"
+       * @ojvalue {string} "liveScrollOnly"
+       * @ojvalue {string} "delayed"
+       * @ojvalue {string} "live"
+       * @ojvalue {string} "off"
+       * @default "off"
+       */
+      /**
+       * Specifies the zoom direction of bubble and scatter charts. "Auto" zooms in both x and y direction. Use "x" or "y" for single direction zooming.
+       * @expose
+       * @name zoomDirection
+       * @memberof oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "x"
+       * @ojvalue {string} "y"
+       * @ojvalue {string} "auto"
+       * @default "auto"
+       */
+      /**
+       * Whether automatic initial zooming is enabled. The valid values are "first" to initially zoom to the first data points (after the viewportMin) that can fit in the plot area, "last" to initially zoom to the last data points (before the viewportMax), and "none" to disable initial zooming. Only applies to bar, line, area, and combo charts with zoomAndScroll turned on.
+       * @expose
+       * @name initialZooming
+       * @memberof oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "first"
+       * @ojvalue {string} "last"
+       * @ojvalue {string} "none"
+       * @default "none"
+       */
+      /**
+       *  Whether drilling is enabled. Drillable objects will show a pointer cursor on hover and fire an <code class="prettyprint">ojDrill</code> event on click (double click if selection is enabled). Use "on" to enable drilling for all series objects (legend items), group objects (x-axis labels), and data items. Use "seriesOnly" or "groupsOnly" to enable drilling for series objects or group objects only. To enable or disable drilling on individual series, group, or data item, use the drilling attribute in each series, group, or data item.
+       * @expose
+       * @name drilling
+       * @memberof oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "on"
+       * @ojvalue {string} "seriesOnly"
+       * @ojvalue {string} "groupsOnly"
+       * @ojvalue {string} "off"
+       * @default "off"
+       */
+      /**
+       * Data visualizations require a press and hold delay before triggering tooltips, marquee selection, and rollover effects on mobile devices to avoid interfering with page panning, but these hold delays can make applications seem slower and less responsive. For a better user experience, the application can remove the touch and hold delay when data visualizations are used within a non scrolling container or if there is sufficient space outside of the visualization for panning. If touchResponse is touchStart the element will instantly trigger the touch gesture and consume the page pan events if the element does not require an internal feature that requires a touch start gesture like panning, zooming, or when marquee selection is initiated. If touchResponse is auto, the element will behave like touchStart if it determines that it is not rendered within scrolling content and if panning is not available for those elements that support the feature.
+       * @expose
+       * @name touchResponse
+       * @memberof oj.ojChart
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "touchStart"
+       * @ojvalue {string} "auto"
+       * @default "auto"
+       */
+      /**
+       *  A function that returns a custom data label. The function takes a dataContext argument, provided by the chart, with the following properties: <ul> <li>id: The id of the data item.</li> <li>series: The id of the series the data item belongs to.</li> <li>group: The id or an array of ids of the group(s) the data item belongs to. For hierarchical groups, it will be an array of outermost to innermost group ids.</li> <li>value, targetValue, x, y, z, low, high, open, close, volume: The values of the data item.</li> <li>label: The label for the data item if the dataLabel callback is ignored. The dataLabel callback can concatenate this with another string to easily enhance the default label.</li> <li>totalValue: The total of all values in the chart. This will only be included for pie charts.</li> <li>data: The data object of the data item. For nested items, it will be an array containing the parent item data and nested item data.</li> <li>itemData: The row data object for the data item. This will only be set if a DataProvider is being used. </li> <li>seriesData: The data for the series the data item belongs to.</li> <li>groupData: An array of data for the group the data item belongs to. For hierarchical groups, it will be an array of outermost to innermost group data related to the data item.</li> <li>componentElement: The chart element.</li> </ul> The function may return a number or a string or in the case of range charts, an array of numbers or strings. If any label is a number, it will be formatted by the valueFormat of the type 'label' before being used as labels.
+       * @expose
+       * @name dataLabel
+       * @memberof oj.ojChart
+       * @instance
+       * @type {?(function(Object):Object)}
+       * @ojsignature {target: "Type", value: "((context: oj.ojChart.DataLabelContext) => ({insert: Element|string}|{preventDefault: boolean}))", jsdocOverride: true}
+       * @default null
+       */
+      /**
+       * Provides support for HTML5 Drag and Drop events. Please refer to <a href="https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/Drag_and_drop">third party documentation</a> on HTML5 Drag and Drop to learn how to use it.
+       * @expose
+       * @name dnd
+       * @memberof oj.ojChart
+       * @instance
+       * @type {Object}
+       */
+      /**
+       * An object that describes drag functionality.
+       * @expose
+       * @name dnd.drag
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {Object}
+       */
+      /**
+       * Allows dragging of chart data items, including bars, line/area/scatter markers, bubbles, and pie/funnel/pyramid slices.
+       * @expose
+       * @name dnd.drag.items
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {Object}
+       */
+      /**
+       * The MIME types to use for the dragged data in the dataTransfer object. This can be a string if there is only one type, or an array of strings if multiple types are needed. For example, if selected employee data items are being dragged, dataTypes could be "application/employees+json". Drop targets can examine the data types and decide whether to accept the data. For each type in the array, dataTransfer.setData will be called with the specified type and the data. The data is an array of the dataContexts of the selected data items. The dataContext is the JSON version of the dataContext that we use for "tooltip" and "dataLabels" properties, excluding componentElement and parentElement. This property is required unless the application calls setData itself in a dragStart callback function.
+       * @expose
+       * @name dnd.drag.items.dataTypes
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string|Array.<string>}
+       * @default null
+       */
+      /**
+       * An optional callback function that receives the "drag" event as argument.
+       * @expose
+       * @name dnd.drag.items.drag
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {function(Event)}
+       * @default null
+       */
+      /**
+       * An optional callback function that receives the "dragend" event as argument.
+       * @expose
+       * @name dnd.drag.items.dragEnd
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {function(Event)}
+       * @default null
+       */
+      /**
+       * An optional callback function that receives the "dragstart" event and context information as arguments. The context information is as follows: <ul> <li> item {Array.(object)}: An array of dataContexts of the dragged data items. The dataContext is the same as what we use for "tooltip" and "dataLabels" properties. </li> </ul> This function can set its own data and drag image as needed. When this function is called, event.dataTransfer is already populated with the default data and drag image.
+       * @expose
+       * @name dnd.drag.items.dragStart
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {function(Event, object)}
+       * @default null
+       */
+      /**
+       * Allows dragging of chart series from the legend items.
+       * @expose
+       * @name dnd.drag.series
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {Object}
+       */
+      /**
+       * The MIME types to use for the dragged data in the dataTransfer object. This can be a string if there is only one type, or an array of strings if multiple types are needed. For example, if selected employee data items are being dragged, dataTypes could be "application/employees+json". Drop targets can examine the data types and decide whether to accept the data. For each type in the array, dataTransfer.setData will be called with the specified type and the data. The data is an array of the dataContexts of the selected series. The dataContext is the JSON version of the dataContext that we use for "tooltip" and "dataLabels" properties, excluding componentElement and parentElement. This property is required unless the application calls setData itself in a dragStart callback function.
+       * @expose
+       * @name dnd.drag.series.dataTypes
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string|Array.<string>}
+       * @default null
+       */
+      /**
+       * An optional callback function that receives the "drag" event as argument.
+       * @expose
+       * @name dnd.drag.series.drag
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {function(Event)}
+       * @default null
+       */
+      /**
+       * An optional callback function that receives the "dragend" event as argument.
+       * @expose
+       * @name dnd.drag.series.dragEnd
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {function(Event)}
+       * @default null
+       */
+      /**
+       * An optional callback function that receives the "dragstart" event and context information as arguments. The context information is as follows: <ul> <li> series {Array.(object)}: An array of dataContexts of the dragged series. The dataContext is the same as what we use for "tooltip" and "dataLabels" properties. </li> </ul> This function can set its own data and drag image as needed. When this function is called, event.dataTransfer is already populated with the default data and drag image.
+       * @expose
+       * @name dnd.drag.series.dragStart
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {function(Event, object)}
+       * @default null
+       */
+      /**
+       * Allows dragging of chart groups from the categorical axis labels.
+       * @expose
+       * @name dnd.drag.groups
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {Object}
+       */
+      /**
+       * The MIME types to use for the dragged data in the dataTransfer object. This can be a string if there is only one type, or an array of strings if multiple types are needed. For example, if selected employee data items are being dragged, dataTypes could be "application/employees+json". Drop targets can examine the data types and decide whether to accept the data. For each type in the array, dataTransfer.setData will be called with the specified type and the data. The data is an array of the dataContexts of the selected groups. The dataContext is the JSON version of the dataContext that we use for "tooltip" and "dataLabels" properties, excluding componentElement and parentElement. This property is required unless the application calls setData itself in a dragStart callback function.
+       * @expose
+       * @name dnd.drag.groups.dataTypes
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string|Array.<string>}
+       * @default null
+       */
+      /**
+       * An optional callback function that receives the "drag" event as argument.
+       * @expose
+       * @name dnd.drag.groups.drag
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {function(Event)}
+       * @default null
+       */
+      /**
+       * An optional callback function that receives the "dragend" event as argument.
+       * @expose
+       * @name dnd.drag.groups.dragEnd
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {function(Event)}
+       * @default null
+       */
+      /**
+       * An optional callback function that receives the "dragstart" event and context information as arguments. The context information is as follows: <ul> <li> groups {Array.(object)}: An array of dataContexts of the dragged groups. The dataContext is the same as what we use for "tooltip" and "dataLabels" properties. </li> </ul> This function can set its own data and drag image as needed. When this function is called, event.dataTransfer is already populated with the default data and drag image.
+       * @expose
+       * @name dnd.drag.groups.dragStart
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {function(Event, object)}
+       * @default null
+       */
+      /**
+       * An object that describes drop functionality.
+       * @expose
+       * @name dnd.drop
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {Object}
+       */
+      /**
+       * Allows dropping on the plot area.
+       * @expose
+       * @name dnd.drop.plotArea
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {Object}
+       */
+      /**
+       * An array of MIME data types this element can accept. This property is required unless dragEnter, dragOver, and drop callback functions are specified to handle the corresponding events.
+       * @expose
+       * @name dnd.drop.plotArea.dataTypes
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string|Array.<string>}
+       * @default null
+       */
+      /**
+       * An optional callback function that receives the "dragenter" event and context information as arguments. The context information is as follows: <ul> <li>x {number}: The X axis value at the event position.</li> <li>y {number}: The Y axis value at the event position.</li> <li>y2 {number}: The Y2 axis value at the event position.</li> </ul> This function should call <code class="prettyprint">event.preventDefault()</code> to indicate the dragged data can be accepted. Otherwise, dataTypes will be matched against the drag data types to determine if the data is acceptable.
+       * @expose
+       * @name dnd.drop.plotArea.dragEnter
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {function(Event, object)}
+       * @default null
+       */
+      /**
+       * An optional callback function that receives the "dragover" event and context information as arguments. The context information is as follows: <ul> <li>x {number}: The X axis value at the event position.</li> <li>y {number}: The Y axis value at the event position.</li> <li>y2 {number}: The Y2 axis value at the event position.</li> </ul> This function should call <code class="prettyprint">event.preventDefault()</code> to indicate the dragged data can be accepted. Otherwise, dataTypes will be matched against the drag data types to determine if the data is acceptable.
+       * @expose
+       * @name dnd.drop.plotArea.dragOver
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {function(Event, object)}
+       * @default null
+       */
+      /**
+       * An optional callback function that receives the "dragleave" event and context information as arguments. The context information is as follows: <ul> <li>x {number}: The X axis value at the event position.</li> <li>y {number}: The Y axis value at the event position.</li> <li>y2 {number}: The Y2 axis value at the event position.</li> </ul>
+       * @expose
+       * @name dnd.drop.plotArea.dragLeave
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {function(Event, object)}
+       * @default null
+       */
+      /**
+       * An optional callback function that receives the "drop" event and context information as arguments. The context information is as follows: <ul> <li>x {number}: The X axis value at the event position.</li> <li>y {number}: The Y axis value at the event position.</li> <li>y2 {number}: The Y2 axis value at the event position.</li> </ul> This function should call <code class="prettyprint">event.preventDefault()</code> to indicate the dragged data can be accepted.
+       * @expose
+       * @name dnd.drop.plotArea.drop
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {function(Event, object)}
+       * @default null
+       */
+      /**
+       * Allows dropping on the X axis.
+       * @expose
+       * @name dnd.drop.xAxis
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {Object}
+       */
+      /**
+       * An array of MIME data types this element can accept. This property is required unless dragEnter, dragOver, and drop callback functions are specified to handle the corresponding events.
+       * @expose
+       * @name dnd.drop.xAxis.dataTypes
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string|Array.<string>}
+       * @default null
+       */
+      /**
+       * An optional callback function that receives the "dragenter" event and context information as arguments. The context information is as follows: <ul> <li>x {number}: The X axis value at the event position.</li> </ul> This function should call <code class="prettyprint">event.preventDefault()</code> to indicate the dragged data can be accepted. Otherwise, dataTypes will be matched against the drag data types to determine if the data is acceptable.
+       * @expose
+       * @name dnd.drop.xAxis.dragEnter
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {function(Event, object)}
+       * @default null
+       */
+      /**
+       * An optional callback function that receives the "dragover" event and context information as arguments. The context information is as follows: <ul> <li>x {number}: The X axis value at the event position.</li> </ul> This function should call <code class="prettyprint">event.preventDefault()</code> to indicate the dragged data can be accepted. Otherwise, dataTypes will be matched against the drag data types to determine if the data is acceptable.
+       * @expose
+       * @name dnd.drop.xAxis.dragOver
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {function(Event, object)}
+       * @default null
+       */
+      /**
+       * An optional callback function that receives the "dragleave" event and context information as arguments. The context information is as follows: <ul> <li>x {number}: The X axis value at the event position.</li> </ul>
+       * @expose
+       * @name dnd.drop.xAxis.dragLeave
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {function(Event, object)}
+       * @default null
+       */
+      /**
+       * An optional callback function that receives the "drop" event and context information as arguments. The context information is as follows: <ul> <li>x {number}: The X axis value at the event position.</li> </ul> This function should call <code class="prettyprint">event.preventDefault()</code> to indicate the dragged data can be accepted.
+       * @expose
+       * @name dnd.drop.xAxis.drop
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {function(Event, object)}
+       * @default null
+       */
+      /**
+       * Allows dropping on the Y axis.
+       * @expose
+       * @name dnd.drop.yAxis
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {Object}
+       */
+      /**
+       * An array of MIME data types this element can accept. This property is required unless dragEnter, dragOver, and drop callback functions are specified to handle the corresponding events.
+       * @expose
+       * @name dnd.drop.yAxis.dataTypes
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string|Array.<string>}
+       * @default null
+       */
+      /**
+       * An optional callback function that receives the "dragenter" event and context information as arguments. The context information is as follows: <ul> <li>y {number}: The Y axis value at the event position.</li> </ul> This function should call <code class="prettyprint">event.preventDefault()</code> to indicate the dragged data can be accepted. Otherwise, dataTypes will be matched against the drag data types to determine if the data is acceptable.
+       * @expose
+       * @name dnd.drop.yAxis.dragEnter
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {function(Event, object)}
+       * @default null
+       */
+      /**
+       * An optional callback function that receives the "dragover" event and context information as arguments. The context information is as follows: <ul> <li>y {number}: The Y axis value at the event position.</li> </ul> This function should call <code class="prettyprint">event.preventDefault()</code> to indicate the dragged data can be accepted. Otherwise, dataTypes will be matched against the drag data types to determine if the data is acceptable.
+       * @expose
+       * @name dnd.drop.yAxis.dragOver
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {function(Event, object)}
+       * @default null
+       */
+      /**
+       * An optional callback function that receives the "dragleave" event and context information as arguments. The context information is as follows: <ul> <li>y {number}: The Y axis value at the event position.</li> </ul>
+       * @expose
+       * @name dnd.drop.yAxis.dragLeave
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {function(Event, object)}
+       * @default null
+       */
+      /**
+       * An optional callback function that receives the "drop" event and context information as arguments. The context information is as follows: <ul> <li>y {number}: The Y axis value at the event position.</li> </ul> This function should call <code class="prettyprint">event.preventDefault()</code> to indicate the dragged data can be accepted.
+       * @expose
+       * @name dnd.drop.yAxis.drop
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {function(Event, object)}
+       * @default null
+       */
+      /**
+       * Allows dropping on the Y2 axis.
+       * @expose
+       * @name dnd.drop.y2Axis
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {Object}
+       */
+      /**
+       * An array of MIME data types this element can accept. This property is required unless dragEnter, dragOver, and drop callback functions are specified to handle the corresponding events.
+       * @expose
+       * @name dnd.drop.y2Axis.dataTypes
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string|Array.<string>}
+       * @default null
+       */
+      /**
+       * An optional callback function that receives the "dragenter" event and context information as arguments. The context information is as follows: <ul> <li>y2 {number}: The Y2 axis value at the event position.</li> </ul> This function should call <code class="prettyprint">event.preventDefault()</code> to indicate the dragged data can be accepted. Otherwise, dataTypes will be matched against the drag data types to determine if the data is acceptable.
+       * @expose
+       * @name dnd.drop.y2Axis.dragEnter
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {function(Event, object)}
+       * @default null
+       */
+      /**
+       * An optional callback function that receives the "dragover" event and context information as arguments. The context information is as follows: <ul> <li>y2 {number}: The Y2 axis value at the event position.</li> </ul> This function should call <code class="prettyprint">event.preventDefault()</code> to indicate the dragged data can be accepted. Otherwise, dataTypes will be matched against the drag data types to determine if the data is acceptable.
+       * @expose
+       * @name dnd.drop.y2Axis.dragOver
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {function(Event, object)}
+       * @default null
+       */
+      /**
+       * An optional callback function that receives the "dragleave" event and context information as arguments. The context information is as follows: <ul> <li>y2 {number}: The Y2 axis value at the event position.</li> </ul>
+       * @expose
+       * @name dnd.drop.y2Axis.dragLeave
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {function(Event, object)}
+       * @default null
+       */
+      /**
+       * An optional callback function that receives the "drop" event and context information as arguments. The context information is as follows: <ul> <li>y2 {number}: The Y2 axis value at the event position.</li> </ul> This function should call <code class="prettyprint">event.preventDefault()</code> to indicate the dragged data can be accepted.
+       * @expose
+       * @name dnd.drop.y2Axis.drop
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {function(Event, object)}
+       * @default null
+       */
+      /**
+       * Allows dropping on the legend.
+       * @expose
+       * @name dnd.drop.legend
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {Object}
+       */
+      /**
+       * An array of MIME data types this element can accept. This property is required unless dragEnter, dragOver, and drop callback functions are specified to handle the corresponding events.
+       * @expose
+       * @name dnd.drop.legend.dataTypes
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {string|Array.<string>}
+       * @default null
+       */
+      /**
+       * An optional callback function that receives the "dragenter" event and empty context information as arguments. This function should call <code class="prettyprint">event.preventDefault()</code> to indicate the dragged data can be accepted. Otherwise, dataTypes will be matched against the drag data types to determine if the data is acceptable.
+       * @expose
+       * @name dnd.drop.legend.dragEnter
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {function(Event, object)}
+       * @default null
+       */
+      /**
+       * An optional callback function that receives the "dragover" event and empty context information as arguments. This function should call <code class="prettyprint">event.preventDefault()</code> to indicate the dragged data can be accepted. Otherwise, dataTypes will be matched against the drag data types to determine if the data is acceptable.
+       * @expose
+       * @name dnd.drop.legend.dragOver
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {function(Event, object)}
+       * @default null
+       */
+      /**
+       * An optional callback function that receives the "dragleave" event and empty context information as arguments.
+       * @expose
+       * @name dnd.drop.legend.dragLeave
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {function(Event, object)}
+       * @default null
+       */
+      /**
+       * An optional callback function that receives the "drop" event and emtpy context information as arguments. This function should call <code class="prettyprint">event.preventDefault()</code> to indicate the dragged data can be accepted.
+       * @expose
+       * @name dnd.drop.legend.drop
+       * @memberof! oj.ojChart
+       * @instance
+       * @type {function(Event, object)}
+       * @default null
+       */
+
+
     },
 
     //* * @inheritdoc */
@@ -3717,10 +8639,14 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
       var self = this;
       // Support for dataprovider and chart templates
       var chartOptions = new oj.ChartDataProviderHandler(self, data, templateEngine);
+      return { paths: ['series', 'groups', 'data'], values: [chartOptions.getSeries(), chartOptions.getGroups(), data] };
+    },
 
-      return Promise.all([chartOptions.getSeries(), chartOptions.getGroups(), data]).then(function (values) {
-        return {paths: ["series", "groups", "data"], values: values};
-      });
+    //* * @inheritdoc */
+    _GetSimpleDataProviderConfigs: function () {
+      return {
+        data: { expandedKeySet: new KeySet.ExpandAllKeySet() }
+      };
     },
 
     //* * @inheritdoc */
@@ -3795,7 +8721,7 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
         this.options.styleDefaults = {};
       }
       if (!this.options.styleDefaults.colors) {
-        var handler = new oj.ColorAttributeGroupHandler();
+        var handler = new attributeGroupHandler.ColorAttributeGroupHandler();
         // override default colors with css attribute group colors
         this.options.styleDefaults.colors = handler.getValueRamp();
       }
@@ -3913,7 +8839,7 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
             var selectedItemData = { data: selection[i].data,
               seriesData: selection[i].seriesData,
               groupData: selection[i].groupData,
-              itemData: selection[i].itemData};
+              itemData: selection[i].itemData };
             selectedItems.push(selectedItem);
             selectionData.push(selectedItemData);
           }
@@ -4008,13 +8934,13 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
       // Add images
       // TODO these should be defined in the skin instead
       resources.overviewGrippy =
-        oj.Config.getResourceUrl('resources/internal-deps/dvt/chart/drag_horizontal.png');
+        Config.getResourceUrl('resources/internal-deps/dvt/chart/drag_horizontal.png');
 
       // Add cursors
       resources.panCursorDown =
-        oj.Config.getResourceUrl('resources/internal-deps/dvt/chart/hand-closed.cur');
+        Config.getResourceUrl('resources/internal-deps/dvt/chart/hand-closed.cur');
       resources.panCursorUp =
-        oj.Config.getResourceUrl('resources/internal-deps/dvt/chart/hand-open.cur');
+        Config.getResourceUrl('resources/internal-deps/dvt/chart/hand-open.cur');
 
       // Drag button images
       resources.panUp = 'oj-chart-pan-icon';
@@ -4250,7 +9176,7 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
      * {@ojinclude "name":"nodeContextDoc"}
      * @param {!Element} node - {@ojinclude "name":"nodeContextParam"}
      * @returns {Object|null} {@ojinclude "name":"nodeContextReturn"}
-     *
+     * @ojsignature {target: "Type", value: "oj.ojChart.PieCenterLabelContext|oj.ojChart.LegendItemContext|oj.ojChart.ReferenceObject|oj.ojChart.GroupContext|oj.ojChart.AxisTitleContext|oj.ojChart.ItemContext|oj.ojChart.SeriesContext", jsdocOverride: true, for: "returns"}
      * @example {@ojinclude "name":"nodeContextExample"}
      *
      * @expose
@@ -4449,6146 +9375,286 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
  */
 
 /**
- * An array of objects with the following properties, used to define series labels and override series styles. Only a single series is supported for stock charts. Also accepts a Promise for deferred data rendering.
- * @expose
- * @ojtsignore
- * @name series
- * @memberof oj.ojChart
- * @instance
- * @type {Array.<Object>|Promise}
- * @default null
- */
-/**
- * The name of the series, displayed in the legend and tooltips.
- * @expose
- * @ojtsignore
- * @name series[].name
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default null
- */
-/**
- * An array of values or an array of objects with the following properties that defines the data items for the series.
- * @expose
- * @ojtsignore
- * @name series[].items
- * @memberof! oj.ojChart
- * @instance
- * @type {Array.<Object>|Array.<number>}
- * @default null
- */
-/**
- * An array of nested data items to be used for defining the markers for outliers or additional data items of a box plot.
- * @expose
- * @ojtsignore
- * @name series[].items[].items
- * @memberof! oj.ojChart
- * @instance
- * @type {Array.<Object>|Array.<number>}
- * @default null
- */
-/**
- * (Optional) The id of the data item. This id will be provided as part of the context for events on the chart. If the chart is using a data provider then the id type is an object and the row key will be used as the id, otherwise it is a string.
- * @expose
- * @ojtsignore
- * @name series[].items[].id
- * @memberof! oj.ojChart
- * @instance
- * @type {any}
- * @default null
- */
-/**
- * The x value. Mainly used for scatter and bubble chart and to specify the date for mixed-frequency time axis.
- * For categorical axis, if the x value is not specified, it will default to the item index.
- * For regular time axis, if the x value is not specified, it will default to the group name of the item.
- * @expose
- * @ojtsignore
- * @name series[].items[].x
- * @memberof! oj.ojChart
- * @instance
- * @type {number|string}
- * @default null
- */
-/**
- * The y value. Also the primary value for charts without a y-Axis, such as pie charts.
- * @expose
- * @ojtsignore
- * @name series[].items[].y
- * @memberof! oj.ojChart
- * @instance
- * @type {number}
- * @default null
- */
-/**
- * The z value. Defines the bubble radius for a bubble chart, as well as the width of a bar or a box plot item.
- * @expose
- * @ojtsignore
- * @name series[].items[].z
- * @memberof! oj.ojChart
- * @instance
- * @type {number}
- * @default null
- */
-/**
- * The low value for range bar/area, stock candlestick, or box plot item. Define 'low' and 'high' instead of 'value' or 'y' to create a range bar/area chart.
- * @expose
- * @ojtsignore
- * @name series[].items[].low
- * @memberof! oj.ojChart
- * @instance
- * @type {number}
- * @default null
- */
-/**
- * The high value for range bar/area, stock candlestick, or box plot item. Define 'low' and 'high' instead of 'value' or 'y' to create a range bar/area chart.
- * @expose
- * @ojtsignore
- * @name series[].items[].high
- * @memberof! oj.ojChart
- * @instance
- * @type {number}
- * @default null
- */
-/**
- * The open value for stock candlestick.
- * @expose
- * @ojtsignore
- * @name series[].items[].open
- * @memberof! oj.ojChart
- * @instance
- * @type {number}
- * @default null
- */
-/**
- * The close value for stock candlestick. When bar, line, or area series type are used on a stock chart, this value is displayed.
- * @expose
- * @ojtsignore
- * @name series[].items[].close
- * @memberof! oj.ojChart
- * @instance
- * @type {number}
- * @default null
- */
-/**
- * The value for stock volume bar. When this value is provided, the volume bar is displayed on the y2 axis.
- * @expose
- * @ojtsignore
- * @name series[].items[].volume
- * @memberof! oj.ojChart
- * @instance
- * @type {number}
- * @default null
- */
-/**
- * The first quartile value for box plot.
- * @expose
- * @ojtsignore
- * @name series[].items[].q1
- * @memberof! oj.ojChart
- * @instance
- * @type {number}
- * @default null
- */
-/**
- * The second quartile (median) value for box plot.
- * @expose
- * @ojtsignore
- * @name series[].items[].q2
- * @memberof! oj.ojChart
- * @instance
- * @type {number}
- * @default null
- */
-/**
- * The third quartile value for box plot.
- * @expose
- * @ojtsignore
- * @name series[].items[].q3
- * @memberof! oj.ojChart
- * @instance
- * @type {number}
- * @default null
- */
-/**
- * The description of this object. This is used for accessibility and also for customizing the tooltip text.
- * @expose
- * @ojtsignore
- * @name series[].items[].shortDesc
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default null
- * @ojtranslatable
- */
-/**
- * The color of the data item.
- * @expose
- * @ojtsignore
- * @name series[].items[].color
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojformat color
- * @default null
- */
-/**
- * The border color of the data item. For funnel and pyramid charts, it is used for the slice border.
- * @expose
- * @ojtsignore
- * @name series[].items[].borderColor
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojformat color
- * @default null
- */
-/**
- * The border width of the data item. For funnel and pyramid charts, it is used for the slice border.
- * @expose
- * @ojtsignore
- * @name series[].items[].borderWidth
- * @memberof! oj.ojChart
- * @instance
- * @type {number}
- * @default null
- * @ojunits pixels
- */
-/**
- * The pattern used to fill the data item. A solid fill is used by default, unless the seriesEffect is 'pattern'.
- * @expose
- * @ojtsignore
- * @name series[].items[].pattern
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "smallChecker"
- * @ojvalue {string} "smallCrosshatch"
- * @ojvalue {string} "smallDiagonalLeft"
- * @ojvalue {string} "smallDiagonalRight"
- * @ojvalue {string} "smallDiamond"
- * @ojvalue {string} "smallTriangle"
- * @ojvalue {string} "largeChecker"
- * @ojvalue {string} "largeCrosshatch"
- * @ojvalue {string} "largeDiagonalLeft"
- * @ojvalue {string} "largeDiagonalRight"
- * @ojvalue {string} "largeDiamond"
- * @ojvalue {string} "largeTriangle"
- * @ojvalue {string} "auto"
- * @default "auto"
- */
-/**
- * The CSS style class to apply to the data item. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the item color attribute.
- * @expose
- * @ojtsignore
- * @name series[].items[].svgClassName
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default null
- */
-/**
- * The inline style to apply to the data item. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the item color attribute.
- * @expose
- * @ojtsignore
- * @name series[].items[].svgStyle
- * @memberof! oj.ojChart
- * @instance
- * @type {Object}
- * @default null
- */
-/**
- * Defines whether the data marker is displayed. Only applies to line, area, scatter, and bubble series. If auto, the markers will be displayed whenever the data points are not connected by a line.
- * @expose
- * @ojtsignore
- * @name series[].items[].markerDisplayed
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "on"
- * @ojvalue {string} "off"
- * @ojvalue {string} "auto"
- * @default "auto"
- */
-/**
- * The shape of the data markers. In addition to the built-in shapes, it may also take SVG path commands to specify a custom shape. The chart will style the custom shapes the same way as built-in shapes, supporting properties like color and borderColor and applying hover and selection effects. Only 'auto' is supported for range series.
- * @expose
- * @ojtsignore
- * @name series[].items[].markerShape
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "square"
- * @ojvalue {string} "circle"
- * @ojvalue {string} "diamond"
- * @ojvalue {string} "plus"
- * @ojvalue {string} "triangleDown"
- * @ojvalue {string} "triangleUp"
- * @ojvalue {string} "human"
- * @ojvalue {string} "star"
- * @ojvalue {string} "auto"
- * @default "auto"
- */
-/**
- * The size of the data markers. Does not apply to bubble charts, which calculate marker size based on the z values.
- * @expose
- * @ojtsignore
- * @name series[].items[].markerSize
- * @memberof! oj.ojChart
- * @instance
- * @type {number}
- * @default null
- * @ojunits pixels
- */
-/**
- *  The URI of the custom image. If specified, it takes precedence over shape.
- * @expose
- * @ojtsignore
- * @name series[].items[].source
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default null
- */
-/**
- *  The optional URI for the hover state. If not specified, the source image will be used.
- * @expose
- * @ojtsignore
- * @name series[].items[].sourceHover
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default null
- */
-/**
- * The optional URI for the selected state. If not specified, the source image will be used.
- * @expose
- * @ojtsignore
- * @name series[].items[].sourceSelected
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default null
- */
-/**
- *  The optional URI for the hover selected state. If not specified, the source image will be used.
- * @expose
- * @ojtsignore
- * @name series[].items[].sourceHoverSelected
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default null
- */
-/**
- * The label for the data item. For range series, if an array of two values are provided, the first and second value will apply to the low and high point respectively. Not supported for box plot or candlestick.
- * @expose
- * @ojtsignore
- * @name series[].items[].label
- * @memberof! oj.ojChart
- * @instance
- * @type {string|Array.<string>}
- * @default null
- * @ojtranslatable
- */
-/**
- * The position of the data label. For range series, if an array of two values are provided, the first and second value will apply to the low and high point respectively. The 'outsideSlice' value only applies to pie charts. The 'aboveMarker', 'belowMarker', 'beforeMarker', and 'afterMarker' values only apply to line, area, scatter, and bubble series. The 'insideBarEdge' and 'outsideBarEdge' values only apply to non-polar bar series. Stacked bars do not support 'outsideBarEdge'. The chart does not currently adjust layout to fit labels within the plot area or deal with any overlaps between labels.
- * @expose
- * @ojtsignore
- * @name series[].items[].labelPosition
- * @memberof! oj.ojChart
- * @instance
- * @type {string|Array.<string>}
- * @ojvalue {string} "center"
- * @ojvalue {string} "outsideSlice"
- * @ojvalue {string} "aboveMarker"
- * @ojvalue {string} "belowMarker"
- * @ojvalue {string} "beforeMarker"
- * @ojvalue {string} "afterMarker"
- * @ojvalue {string} "insideBarEdge"
- * @ojvalue {string} "outsideBarEdge"
- * @ojvalue {string} "none"
- * @ojvalue {string} "auto"
- * @default "auto"
- */
-/**
- * The CSS style object defining the style of the data label. For range series, if an array of two values are provided, the first and second value will apply to the low and high point respectively.
- * @expose
- * @ojtsignore
- * @name series[].items[].labelStyle
- * @memberof! oj.ojChart
- * @instance
- * @type {object|Array.<Object>}
- * @default null
- */
-/**
- * An optional array of category strings corresponding to this data item. This enables highlighting and filtering of individual data items through interactions with the legend or other visualization elements. If not defined, series categories are used.
- * @expose
- * @ojtsignore
- * @name series[].items[].categories
- * @memberof! oj.ojChart
- * @instance
- * @type {Array.<string>}
- * @default null
- */
-/**
- * The value for this data item. Corresponding to the y value for bar, line, area, and combo charts and the slice values for pie, funnel and pyramid charts. Null can be specified to skip a data point.
- * @expose
- * @ojtsignore
- * @name series[].items[].value
- * @memberof! oj.ojChart
- * @instance
- * @type {number}
- * @default null
- */
-/**
- * The target value for a funnel chart. When this is set, the value attribute defines the filled area within the slice and this represents the value of the whole slice.
- * @expose
- * @ojtsignore
- * @name series[].items[].targetValue
- * @memberof! oj.ojChart
- * @instance
- * @type {number}
- * @default null
- */
-/**
- *  Whether drilling is enabled for the data item. Drillable objects will show a pointer cursor on hover and fire an <code class="prettyprint">ojDrill</code> event on click (double click if selection is enabled). To enable drilling for all data items at once, use the drilling attribute in the top level.
- * @expose
- * @ojtsignore
- * @name series[].items[].drilling
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "on"
- * @ojvalue {string} "off"
- * @ojvalue {string} "inherit"
- * @default "inherit"
- */
-/**
- * An object containing the style properties of the box plot item.
- * @expose
- * @ojtsignore
- * @name series[].items[].boxPlot
- * @memberof! oj.ojChart
- * @instance
- * @type {Object}
- */
-/**
- *  The color of the Q2 segment of the box.
- * @expose
- * @ojtsignore
- * @name series[].items[].boxPlot.q2Color
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojformat color
- * @default null
- */
-/**
- *  The CSS style class to apply to the Q2 segment of the box. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the q2Color attribute.
- * @expose
- * @ojtsignore
- * @name series[].items[].boxPlot.q2SvgClassName
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default null
- */
-/**
- *  The CSS inline style to apply to the Q2 segment of the box. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the q2Color attribute.
- * @expose
- * @ojtsignore
- * @name series[].items[].boxPlot.q2SvgStyle
- * @memberof! oj.ojChart
- * @instance
- * @type {Object}
- * @default null
- */
-/**
- *  The CSS inline style to apply to the Q3 segment of the box. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the q3Color attribute.
- * @expose
- * @ojtsignore
- * @name series[].items[].boxPlot.q3SvgStyle
- * @memberof! oj.ojChart
- * @instance
- * @type {Object}
- * @default null
- */
-/**
- *  The CSS style class to apply to the Q3 segment of the box. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the q3Color attribute.
- * @expose
- * @ojtsignore
- * @name series[].items[].boxPlot.q3SvgClassName
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default null
- */
-/**
- * The CSS style class to apply to the whisker stems.
- * @expose
- * @ojtsignore
- * @name series[].items[].boxPlot.whiskerSvgClassName
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default null
- */
-/**
- * The CSS inline style to apply to the whisker stems.
- * @expose
- * @ojtsignore
- * @name series[].items[].boxPlot.whiskerSvgStyle
- * @memberof! oj.ojChart
- * @instance
- * @type {Object}
- * @default null
- */
-/**
- * The CSS style class to apply to the whisker ends.
- * @expose
- * @ojtsignore
- * @name series[].items[].boxPlot.whiskerEndSvgClassName
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default null
- */
-/**
- * The CSS inline style to apply to the whisker ends.
- * @expose
- * @ojtsignore
- * @name series[].items[].boxPlot.whiskerEndSvgStyle
- * @memberof! oj.ojChart
- * @instance
- * @type {Object}
- * @default null
- */
-/**
- *  Specifies the length of the whisker ends in pixels (e.g. '9px') or as a percentage of the box width (e.g. '50%'). The specified length will be rounded down to an odd number of pixels to ensure symmetry.
- * @expose
- * @ojtsignore
- * @name series[].items[].boxPlot.whiskerEndLength
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default null
- */
-/**
- * The CSS style class to apply to the median line.
- * @expose
- * @ojtsignore
- * @name series[].items[].boxPlot.medianSvgClassName
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default null
- */
-/**
- * The CSS inline style to apply to the median line.
- * @expose
- * @ojtsignore
- * @name series[].items[].boxPlot.medianSvgStyle
- * @memberof! oj.ojChart
- * @instance
- * @type {Object}
- * @default null
- */
-/**
- * The id of the series. Defaults to the name or the series index if not specified.
- * @expose
- * @ojtsignore
- * @name series[].id
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default null
- */
-/**
- * The type of data objects to display for this series. Only applies to bar, line, area, stock, box plot, and combo charts.
- * @expose
- * @ojtsignore
- * @name series[].type
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "bar"
- * @ojvalue {string} "line"
- * @ojvalue {string} "area"
- * @ojvalue {string} "lineWithArea"
- * @ojvalue {string} "candlestick"
- * @ojvalue {string} "boxPlot"
- * @ojvalue {string} "auto"
- * @default "auto"
- */
-/**
- * The color of the series.
- * @expose
- * @ojtsignore
- * @name series[].color
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojformat color
- * @default null
- */
-/**
- * The border color of the series.
- * @expose
- * @ojtsignore
- * @name series[].borderColor
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojformat color
- * @default null
- */
-/**
- * The border width of the series.
- * @expose
- * @ojtsignore
- * @name series[].borderWidth
- * @memberof! oj.ojChart
- * @instance
- * @type {number}
- * @default null
- * @ojunits pixels
- */
-/**
- * The area color of the series. Only applies if series type is area or lineWithArea.
- * @expose
- * @ojtsignore
- * @name series[].areaColor
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojformat color
- * @default null
- */
-/**
- * The CSS style class to apply if series type is area or lineWithArea. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the color attribute.
- * @expose
- * @ojtsignore
- * @name series[].areaSvgClassName
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default null
- */
-/**
- * The inline style to apply if series type is area or lineWithArea. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the color attribute.
- * @expose
- * @ojtsignore
- * @name series[].areaSvgStyle
- * @memberof! oj.ojChart
- * @instance
- * @type {Object}
- * @default null
- */
-/**
- * The CSS style class to apply to the series. For series of type lineWithArea, this style will only be applied to the line if areaClassName is also specified. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the color attribute.
- * @expose
- * @ojtsignore
- * @name series[].svgClassName
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default null
- */
-/**
- * The inline style to apply to the series. For series of type lineWithArea, this style will only be applied to the line if areaStyle is also specified.The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the color attribute.
- * @expose
- * @ojtsignore
- * @name series[].svgStyle
- * @memberof! oj.ojChart
- * @instance
- * @type {Object}
- * @default null
- */
-/**
- * The CSS style class to apply to the data markers.The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the marker color attribute.
- * @expose
- * @ojtsignore
- * @name series[].markerSvgClassName
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default null
- */
-/**
- * The inline style to apply to the data markers. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the marker color attribute.
- * @expose
- * @ojtsignore
- * @name series[].markerSvgStyle
- * @memberof! oj.ojChart
- * @instance
- * @type {Object}
- * @default null
- */
-/**
- * The pattern used to fill the series. A solid fill is used by default, unless the seriesEffect is 'pattern'.
- * @expose
- * @ojtsignore
- * @name series[].pattern
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "smallChecker"
- * @ojvalue {string} "smallCrosshatch"
- * @ojvalue {string} "smallDiagonalLeft"
- * @ojvalue {string} "smallDiagonalRight"
- * @ojvalue {string} "smallDiamond"
- * @ojvalue {string} "smallTriangle"
- * @ojvalue {string} "largeChecker"
- * @ojvalue {string} "largeCrosshatch"
- * @ojvalue {string} "largeDiagonalLeft"
- * @ojvalue {string} "largeDiagonalRight"
- * @ojvalue {string} "largeDiamond"
- * @ojvalue {string} "largeTriangle"
- * @ojvalue {string} "auto"
- * @default "auto"
- */
-/**
- * The shape of the data markers. In addition to the built-in shapes, it may also take SVG path commands to specify a custom shape. The chart will style the custom shapes the same way as built-in shapes, supporting properties like color and borderColor and applying hover and selection effects. Only 'auto' is supported for range series.
- * @expose
- * @ojtsignore
- * @name series[].markerShape
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "square"
- * @ojvalue {string} "circle"
- * @ojvalue {string} "diamond"
- * @ojvalue {string} "plus"
- * @ojvalue {string} "triangleDown"
- * @ojvalue {string} "triangleUp"
- * @ojvalue {string} "human"
- * @ojvalue {string} "star"
- * @ojvalue {string} "auto"
- * @default "auto"
- */
-/**
- * The color of the data markers, if different from the series color.
- * @expose
- * @ojtsignore
- * @name series[].markerColor
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojformat color
- * @default null
- */
-/**
- * Defines whether the data markers should be displayed. Only applies to line, area, scatter, and bubble series. If auto, the markers will be displayed whenever the data points are not connected by a line.
- * @expose
- * @ojtsignore
- * @name series[].markerDisplayed
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "on"
- * @ojvalue {string} "off"
- * @ojvalue {string} "auto"
- * @default "auto"
- */
-/**
- * The size of the data markers.
- * @expose
- * @ojtsignore
- * @name series[].markerSize
- * @memberof! oj.ojChart
- * @instance
- * @type {number}
- * @default null
- * @ojunits pixels
- */
-/**
- * The width of the data line. Only applies to line, lineWithArea, scatter, and bubble series.
- * @expose
- * @ojtsignore
- * @name series[].lineWidth
- * @memberof! oj.ojChart
- * @instance
- * @type {number}
- * @default null
- * @ojunits pixels
- * @ojmin 0
- */
-/**
- * The line style of the data line. Only applies to line, lineWithArea, scatter, and bubble series.
- * @expose
- * @ojtsignore
- * @name series[].lineStyle
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "dotted"
- * @ojvalue {string} "dashed"
- * @ojvalue {string} "solid"
- * @default "solid"
- */
-/**
- * The line type of the data line or area. Only applies to line, area, scatter, and bubble series. centeredStepped and centeredSegmented are not supported for polar, scatter, and bubble charts.
- * @expose
- * @ojtsignore
- * @name series[].lineType
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "straight"
- * @ojvalue {string} "curved"
- * @ojvalue {string} "stepped"
- * @ojvalue {string} "centeredStepped"
- * @ojvalue {string} "segmented"
- * @ojvalue {string} "centeredSegmented"
- * @ojvalue {string} "none"
- * @ojvalue {string} "auto"
- * @default "auto"
- */
-/**
- *  The URI of the custom image. If specified, it takes precedence over shape.
- * @expose
- * @ojtsignore
- * @name series[].source
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default null
- */
-/**
- *  The optional URI for the hover state. If not specified, the source image will be used.
- * @expose
- * @ojtsignore
- * @name series[].sourceHover
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default null
- */
-/**
- *  The optional URI for the selected state. If not specified, the source image will be used.
- * @expose
- * @ojtsignore
- * @name series[].sourceSelected
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default null
- */
-/**
- *  The optional URI for the hover selected state. If not specified, the source image will be used.
- * @expose
- * @ojtsignore
- * @name series[].sourceHoverSelected
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default null
- */
-/**
- * A number from 0 to 1 indicating the amount to explode the pie slice. Only applies to pie charts.
- * @expose
- * @ojtsignore
- * @name series[].pieSliceExplode
- * @memberof! oj.ojChart
- * @instance
- * @type {number}
- * @default 0
- * @ojmin 0
- * @ojmax 1
- */
-/**
- * Defines whether the series is associated with the y2 axis. Only applies to Cartesian bar, line, area, and combo charts.
- * @expose
- * @ojtsignore
- * @name series[].assignedToY2
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "on"
- * @ojvalue {string} "off"
- * @default "off"
- */
-/**
- * In stacked charts, groups series together for stacking. All series without a stackCategory will be assigned to the same stack.
- * @expose
- * @ojtsignore
- * @name series[].stackCategory
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default null
- */
-/**
- * Defines whether the series should be shown in the legend. When set to 'auto', the series will not be displayed in the legend if it has null data or if it is a stock, funnel, or pyramid series.
- * @expose
- * @ojtsignore
- * @name series[].displayInLegend
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "on"
- * @ojvalue {string} "off"
- * @ojvalue {string} "auto"
- * @default "auto"
- */
-/**
- *  Whether drilling is enabled on the series item. Drillable objects will show a pointer cursor on hover and fire an <code class="prettyprint">ojDrill</code> event on click. To enable drilling for all series items at once, use the drilling attribute in the top level.
- * @expose
- * @ojtsignore
- * @name series[].drilling
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "on"
- * @ojvalue {string} "off"
- * @ojvalue {string} "inherit"
- * @default "inherit"
- */
-/**
- * An optional array of category strings corresponding to this series. This allows highlighting and filtering of a series through interactions with legend sections. If not defined, the series id is used.
- * @expose
- * @ojtsignore
- * @name series[].categories
- * @memberof! oj.ojChart
- * @instance
- * @type {Array.<string>}
- * @default null
- */
-/**
- * The description of this series. This is used for accessibility and for customizing the tooltip text on the corressponding legend item for the series.
- * @expose
- * @ojtsignore
- * @name series[].shortDesc
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default null
- * @ojtranslatable
- */
-/**
- * An object containing the style properties of the box plot series.
- * @expose
- * @ojtsignore
- * @name series[].boxPlot
- * @memberof! oj.ojChart
- * @instance
- * @type {Object}
- */
-/**
- *  The color of the Q2 segment of the box.
- * @expose
- * @ojtsignore
- * @name series[].boxPlot.q2Color
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojformat color
- * @default null
- */
-/**
- *  The CSS style class to apply to the Q2 segment of the box. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the q2Color attribute.
- * @expose
- * @ojtsignore
- * @name series[].boxPlot.q2SvgClassName
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default null
- */
-/**
- *  The CSS inline style to apply to the Q2 segment of the box. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the q2Color attribute.
- * @expose
- * @ojtsignore
- * @name series[].boxPlot.q2SvgStyle
- * @memberof! oj.ojChart
- * @instance
- * @type {Object}
- * @default null
- */
-/**
- *  The color of the Q3 segment of the box.
- * @expose
- * @ojtsignore
- * @name series[].boxPlot.q3Color
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojformat color
- * @default null
- */
-/**
- *  The CSS style class to apply to the Q3 segment of the box. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the q3Color attribute.
- * @expose
- * @ojtsignore
- * @name series[].boxPlot.q3SvgClassName
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default null
- */
-/**
- *  The CSS inline style to apply to the Q3 segment of the box. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the q3Color attribute.
- * @expose
- * @ojtsignore
- * @name series[].boxPlot.q3SvgStyle
- * @memberof! oj.ojChart
- * @instance
- * @type {Object}
- * @default null
- */
-/**
- * The CSS style class to apply to the whisker stems.
- * @expose
- * @ojtsignore
- * @name series[].boxPlot.whiskerSvgClassName
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default null
- */
-/**
- * The CSS inline style to apply to the whisker stems.
- * @expose
- * @ojtsignore
- * @name series[].boxPlot.whiskerSvgStyle
- * @memberof! oj.ojChart
- * @instance
- * @type {Object}
- * @default null
- */
-/**
- * The CSS style class to apply to the whisker ends.
- * @expose
- * @ojtsignore
- * @name series[].boxPlot.whiskerEndSvgClassName
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default null
- */
-/**
- * The CSS inline style to apply to the whisker ends.
- * @expose
- * @ojtsignore
- * @name series[].boxPlot.whiskerEndSvgStyle
- * @memberof! oj.ojChart
- * @instance
- * @type {Object}
- * @default null
- */
-/**
- *  Specifies the length of the whisker ends in pixels (e.g. '9px') or as a percentage of the box width (e.g. '50%').
- * @expose
- * @ojtsignore
- * @name series[].boxPlot.whiskerEndLength
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default null
- */
-/**
- * The CSS style class to apply to the median line.
- * @expose
- * @ojtsignore
- * @name series[].boxPlot.medianSvgClassName
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default null
- */
-/**
- * The CSS inline style to apply to the median line.
- * @expose
- * @ojtsignore
- * @name series[].boxPlot.medianSvgStyle
- * @memberof! oj.ojChart
- * @instance
- * @type {Object}
- * @default null
- */
-/**
- * An array of strings identifying the group labels, or an array of objects with the following properties. Also accepts a Promise for deferred data rendering.
- * @expose
- * @name groups
- * @memberof oj.ojChart
- * @instance
- * @type {Array.<Object>|Array.<string>|Promise}
- * @default null
- */
-/**
- * The name of the group.
- * @expose
- * @name groups[].name
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default null
- */
-/**
- * The id of the group. Defaults to the name if not specified.
- * @expose
- * @name groups[].id
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default null
- */
-/**
- * The CSS style object defining the style of the group label text. Supports color,
- * fontFamily, fontSize, fontStyle, fontWeight, textDecoration, cursor,
- * backgroundColor, borderColor, borderRadius, and borderWidth properties.
- * Only applies to a categorical axis.
- * @name groups[].labelStyle
- * @memberof! oj.ojChart
- * @instance
- * @type {Object}
- * @default null
- */
-/**
- * The description of the group. This is used for customizing the tooltip text and only applies to a categorical axis.
- * @expose
- * @name groups[].shortDesc
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default null
- * @ojtranslatable
- */
-/**
- *  Whether drilling is enabled on the group label. Drillable objects will show a pointer cursor on hover and fire an <code class="prettyprint">ojDrill</code> event on click. To enable drilling for all group labels at once, use the drilling attribute in the top level.
- * @expose
- * @name groups[].drilling
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "on"
- * @ojvalue {string} "off"
- * @ojvalue {string} "inherit"
- * @default "inherit"
- */
-/**
- * An array of nested group objects.
- * @expose
- * @name groups[].groups
- * @memberof! oj.ojChart
- * @instance
- * @type {Array.<string>|Array.<Object>}
- * @default null
- */
-/**
- * An array used to define the ids of the initially selected objects.
- * When the selection is changed, the <code class="prettyprint">event.detail</code> of the <code class="prettyprint">selectionChanged</code> event will contain the following additional properties:<br><br>
- * <table class="props">
- *   <thead>
- *     <tr>
- *       <th>Name</th>
- *       <th>Type</th>
- *       <th>Description</th>
- *     </tr>
- *   </thead>
- *   <tbody>
- *     <tr>
- *       <td class="name"><code>selectionData</code></td>
- *       <td class="type">Object</td>
- *       <td class="description">an array containing objects describing the selected data items
- *         <h6>Properties</h6>
- *         <table class="props">
- *           <thead>
- *             <tr>
- *               <th>Name</th>
- *               <th>Type</th>
- *               <th>Description</th>
- *             </tr>
- *           </thead>
- *           <tbody>
- *             <tr>
- *               <td class="name"><code>data</code></td>
- *               <td class="type">object</td>
- *               <td class="description">the data of the item, if one was specified</td>
- *             </tr>
- *             <tr>
- *               <td class="name"><code>groupData</code></td>
- *               <td class="type">Array</td>
- *               <td class="description">the group data of the item</td>
- *             </tr>
- *             <tr>
- *               <td class="name"><code>seriesData</code></td>
- *               <td class="type">object</td>
- *               <td class="description">the series data of the item</td>
- *             </tr>
- *           </tbody>
- *         </table>
- *       </td>
- *     </tr>
- *     <tr>
- *       <td class="name"><code>endGroup</code></td>
- *       <td class="type">string</td>
- *       <td class="description">the end group of a marquee selection on a chart with categorical axis</td>
- *     </tr>
- *     <tr>
- *       <td class="name"><code>startGroup</code></td>
- *       <td class="type">string</td>
- *       <td class="description">the start group of a marquee selection on a chart with categorical axis</td>
- *     </tr>
- *     <tr>
- *       <td class="name"><code>xMax</code></td>
- *       <td class="type">number</td>
- *       <td class="description">the maximum x value of a marquee selection</td>
- *     </tr>
- *     <tr>
- *       <td class="name"><code>xMin</code></td>
- *       <td class="type">number</td>
- *       <td class="description">the minimum x value of a marquee selection</td>
- *     </tr>
- *     <tr>
- *       <td class="name"><code>yMax</code></td>
- *       <td class="type">number</td>
- *       <td class="description">the maximum y value of a marquee selection</td>
- *     </tr>
- *     <tr>
- *       <td class="name"><code>yMin</code></td>
- *       <td class="type">number</td>
- *       <td class="description">the minimum y value of a marquee selection</td>
- *     </tr>
- *   </tbody>
- * </table>
- * @expose
- * @name selection
- * @memberof oj.ojChart
- * @instance
- * @type {Array.<any>}
- * @default []
- * @ojwriteback
- */
-/**
- * Defines whether the plot area is split into two sections, so that sets of data assigned to the different Y-axes appear in different parts of the plot area. Stock charts do not support "off".
- * @expose
- * @name splitDualY
- * @memberof oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "on"
- * @ojvalue {string} "off"
- * @ojvalue {string} "auto"
- * @default "auto"
- */
-/**
- * In a split dual-Y chart, specifies the fraction of the space that is given to the Y-axis subchart. Valid values are numbers from 0 to 1.
- * @expose
- * @name splitterPosition
- * @memberof oj.ojChart
- * @instance
- * @type {number}
- * @default 0.5
- * @ojmin 0
- * @ojmax 1
- */
-/**
- * The type of time axis to display in the chart. Time axis is only supported for Cartesian bar, line, area, stock, box plot, and combo charts. If the type is "enabled" or "skipGaps", the time values must be provided through the "groups" attribute and stacking is supported. If the type is "skipGaps", the groups will be rendered at a regular interval regardless of any time gaps that may exist in the data. If the type is "mixedFrequency", the time values must be provided through the "x" attribute of the the data items and stacking is not supported.
- * @expose
- * @name timeAxisType
- * @memberof oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "enabled"
- * @ojvalue {string} "mixedFrequency"
- * @ojvalue {string} "skipGaps"
- * @ojvalue {string} "disabled"
- * @ojvalue {string} "auto"
- * @default "auto"
- */
-/**
- * The type of selection behavior that is enabled on the chart.
- * @expose
- * @name selectionMode
- * @memberof oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "single"
- * @ojvalue {string} "multiple"
- * @ojvalue {string} "none"
- * @default "none"
- */
-/**
- * The action that is performed when a drag occurs on the chart. Pan and marquee zoom are only available if zoom and scroll is turned on. Marquee select is only available if multiple selection is turned on. If the value is set to "user" and multiple actions are available, buttons will be displayed on the plot area to let users switch between modes.
- * @expose
- * @name dragMode
- * @memberof oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "pan"
- * @ojvalue {string} "zoom"
- * @ojvalue {string} "select"
- * @ojvalue {string} "off"
- * @ojvalue {string} "user"
- * @default "user"
- */
-/**
- * The chart type.
- * @expose
- * @name type
- * @memberof oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "line"
- * @ojvalue {string} "area"
- * @ojvalue {string} "lineWithArea"
- * @ojvalue {string} "stock"
- * @ojvalue {string} "boxPlot"
- * @ojvalue {string} "combo"
- * @ojvalue {string} "pie"
- * @ojvalue {string} "scatter"
- * @ojvalue {string} "bubble"
- * @ojvalue {string} "funnel"
- * @ojvalue {string} "pyramid"
- * @ojvalue {string} "bar"
- * @default "bar"
- */
-/**
- * Defines whether the data items are stacked. Only applies to bar, line, area, and combo charts. Does not apply to range series.
- * @expose
- * @name stack
- * @memberof oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "on"
- * @ojvalue {string} "off"
- * @default "off"
- */
-/**
- * Defines whether or not the total values of stacked data items should be displayed. Only applies to bar charts. It can be formatted by the valueFormat of the type 'label'.
- * @expose
- * @name stackLabel
- * @memberof oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "on"
- * @ojvalue {string} "off"
- * @default "off"
- */
-/**
- * The chart orientation. Only applies to bar, line, area, combo, box plot, and funnel charts.
- * @expose
- * @name orientation
- * @memberof oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "horizontal"
- * @ojvalue {string} "vertical"
- * @default "vertical"
- */
-/**
- * Defines whether the grid shape of the polar chart is circle or polygon. Only applies to polar line and area charts.
- * @expose
- * @name polarGridShape
- * @memberof oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "polygon"
- * @ojvalue {string} "circle"
- * @default "circle"
- */
-/**
- * The coordinate system of the chart. Only applies to bar, line, area, combo, scatter, and bubble charts.
- * @expose
- * @name coordinateSystem
- * @memberof oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "polar"
- * @ojvalue {string} "cartesian"
- * @default "cartesian"
- */
-/**
- * Defines the hide and show behavior that is performed when clicking on a legend item. When data items are hidden, the y axes can be optionally rescaled to fit to the remaining data.
- * @expose
- * @name hideAndShowBehavior
- * @memberof oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "withRescale"
- * @ojvalue {string} "withoutRescale"
- * @ojvalue {string} "none"
- * @default "none"
- */
-/**
- * An array of category strings used for filtering. Series or data items with any category matching an item in this array will be filtered.
- * @expose
- * @name hiddenCategories
- * @memberof oj.ojChart
- * @instance
- * @type {Array.<string>}
- * @default []
- * @ojwriteback
- */
-/**
- * Defines the behavior applied when hovering over data items.
- * @expose
- * @name hoverBehavior
- * @memberof oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "dim"
- * @ojvalue {string} "none"
- * @default "none"
- */
-/**
- * An array of category strings used for highlighting. Series or data items matching all categories in this array will be highlighted.
- * @expose
- * @name highlightedCategories
- * @memberof oj.ojChart
- * @instance
- * @type {Array.<string>}
- * @default []
- * @ojwriteback
- */
-/**
- * The matching condition for the highlightedCategories property. By default, highlightMatch is 'all' and only items whose categories match all of the values specified in the highlightedCategories array will be highlighted. If highlightMatch is 'any', then items that match at least one of the highlightedCategories values will be highlighted.
- * @expose
- * @name highlightMatch
- * @memberof oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "any"
- * @ojvalue {string} "all"
- * @default "all"
- */
-/**
- * Defines the animation that is applied on data changes. Animation is automatically disabled when there are a large number of data items.
- * @expose
- * @name animationOnDataChange
- * @memberof oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "auto"
- * @ojvalue {string} "slideToLeft"
- * @ojvalue {string} "slideToRight"
- * @ojvalue {string} "none"
- * @default "none"
- */
-/**
- * Defines the animation that is shown on initial display. Animation is automatically disabled when there are a large number of data items.
- * @expose
- * @name animationOnDisplay
- * @memberof oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "auto"
- * @ojvalue {string} "alphaFade"
- * @ojvalue {string} "zoom"
- * @ojvalue {string} "none"
- * @default "none"
- */
- /**
- * An alias for the $current context variable when referenced inside the item, series or group templates when using a DataProvider.
- * @expose
- * @name as
- * @memberof oj.ojChart
- * @instance
- * @type {string}
- * @default ""
- */
-/**
- * The DataProvider for the chart. It should provide data rows where each row will map data for a single chart data item. If multiple rows map to the same group/series, only one of those rows will be rendered. The row key will be used as the id for chart items.
- * @expose
- * @name data
- * @memberof oj.ojChart
- * @instance
- * @type {oj.DataProvider|null}
- * @default null
- */
-/**
- * A comparator function that determines the ordering of the chart series when using a DataProvider. If undefined, the series will follow the order in which they are found in the data. The series objects will have the same properties as the context for <a href="#seriesTemplate">seriesTemplate's $current</a>.
- * @expose
- * @name seriesComparator
- * @memberof oj.ojChart
- * @instance
- * @type {function(Object, Object)}
- * @default null
- */
-/**
- * A comparator function that determines the ordering of the chart groups when using a DataProvider. If undefined, the group will follow the order in which they are found in the data. The group objects will have the same properties as the context for <a href="#groupTemplate">groupTemplate's $current</a>.
- * @expose
- * @name groupComparator
- * @memberof oj.ojChart
- * @instance
- * @type {function(Object, Object)}
- * @default null
- */
-/**
- * Defines whether the data cursor is enabled. If set to "auto", the data cursor is shown only for line or area charts on touch devices. The data cursor is not shown when the tooltip is null and it is not supported on polar charts.
- * @expose
- * @name dataCursor
- * @memberof oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "on"
- * @ojvalue {string} "off"
- * @ojvalue {string} "auto"
- * @default "auto"
- */
-/**
- * Defines the behavior of the data cursor when moving between data items.
- * @expose
- * @name dataCursorBehavior
- * @memberof oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "smooth"
- * @ojvalue {string} "snap"
- * @ojvalue {string} "auto"
- * @default "auto"
- */
-/**
- * Speficies the position of the data cursor. Used for synchronizing data cursors across multiple charts. Null if the data cursor is not displayed.
- * @expose
- * @name dataCursorPosition
- * @memberof oj.ojChart
- * @instance
- * @type {Object}
- * @ojwriteback
- */
-/**
- * The x value of the data cursor.
- * @expose
- * @name dataCursorPosition.x
- * @memberof! oj.ojChart
- * @instance
- * @type {number|string}
- * @default null
- */
-/**
- * The y value of the data cursor. If both y and y2 are defined, y will take precedence.
- * @expose
- * @name dataCursorPosition.y
- * @memberof! oj.ojChart
- * @instance
- * @type {number}
- * @default null
- */
-/**
- * The y2 value of the data cursor. If both y and y2 are defined, y will take precedence.
- * @expose
- * @name dataCursorPosition.y2
- * @memberof! oj.ojChart
- * @instance
- * @type {number}
- * @default null
- */
-/**
- * Specifies the sorting of the data. It should only be used for pie charts, bar/line/area charts with one series, or stacked bar/area charts. Sorting will not apply when using a hierarchical group axis.
- * @expose
- * @name sorting
- * @memberof oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "ascending"
- * @ojvalue {string} "descending"
- * @ojvalue {string} "off"
- * @default "off"
- */
-/**
- * Specifies the fraction of the whole pie under which a slice would be aggregated into an "Other" slice. Valid values range from 0 (default) to 1. For example, a value of 0.1 would cause all slices which are less than 10% of the pie to be aggregated into the "Other" slice. Only applies to pie chart.
- * @expose
- * @name otherThreshold
- * @memberof oj.ojChart
- * @instance
- * @type {number}
- * @default 0
- * @ojmin 0
- * @ojmax 1
- */
-/**
- * An object defining the center content of a pie chart. Either a label can be displayed at the center of the pie chart or custom HTML content.
- * @expose
- * @name pieCenter
- * @memberof oj.ojChart
- * @instance
- * @type {Object}
- */
-/**
- * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) to format the label if it is numeric. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
- * @expose
- * @name pieCenter.converter
- * @memberof! oj.ojChart
- * @instance
- * @type {Object}
- * @default null
- */
-/**
- * The scaling behavior of the label if it is numeric. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
- * @expose
- * @name pieCenter.scaling
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "none"
- * @ojvalue {string} "thousand"
- * @ojvalue {string} "million"
- * @ojvalue {string} "billion"
- * @ojvalue {string} "trillion"
- * @ojvalue {string} "quadrillion"
- * @ojvalue {string} "auto"
- * @default "auto"
- */
-/**
- * Specifies the text for the label. When a innerRadius is specified, the label will automatically be scaled to fit within the inner circle. If the innerRadius is 0, the default font size will be used.
- * @expose
- * @name pieCenter.label
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default null
- * @ojtranslatable
- */
-/**
- * The CSS style object defining the style of the label.
- * @expose
- * @name pieCenter.labelStyle
- * @memberof! oj.ojChart
- * @instance
- * @type {Object}
- * @default {}
- */
-/**
- * A function that returns custom center content. The function takes a dataContext argument,
- * provided by the chart, with the following properties:
- * <ul>
- *   <li>outerBounds: Object containing (x, y, width, height) of the rectangle
- *   circumscribing the center area. The x and y coordinates are relative to the top,
- *   left corner of the element.</li>
- *   <li>innerBounds: Object containing (x, y, width, height) of the rectangle
- *   inscribed in the center area. The x and y coordinates are relative to the top,
- *   left corner of the element.</li>
- *   <li>label: The pieCenter label.</li>
- *   <li>componentElement: The chart element.</li>
- * </ul>
- * The function should return an Object with the following property:
- * <ul>
- *   <li>insert: HTMLElement - An HTML element, which will be overlaid on top of the pie chart.
- *   This HTML element will block interactivity of the chart  by default, but the CSS pointer-events property
- *   can be set to 'none' on this element if the chart's interactivity is desired.
- *   </li>
- * </ul>
- * @expose
- * @name pieCenter.renderer
- * @memberof! oj.ojChart
- * @instance
- * @type {function(Object)}
- * @default null
- */
-/**
- * An object defining properties for the axis, tick marks, tick labels, and axis titles.
- * @expose
- * @name xAxis
- * @memberof oj.ojChart
- * @instance
- * @type {Object}
- */
-/**
- * Defines whether the axis is rendered.
- * @expose
- * @name xAxis.rendered
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "off"
- * @ojvalue {string} "on"
- * @default "on"
- */
-/**
- * Defines the size of the axis in pixels (e.g. '50px') or percent (e.g. '15%').
- * @expose
- * @name xAxis.size
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default null
- */
-/**
- * Defines the maximum size of the axis in pixels (e.g. '50px') or percent (e.g. '15%').
- * @expose
- * @name xAxis.maxSize
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default null
- */
-/**
- * The axis title. Does not apply to polar charts.
- * @expose
- * @name xAxis.title
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default null
- * @ojtranslatable
- */
-/**
- * The array of reference objects associated with the axis.
- * @expose
- * @name xAxis.referenceObjects
- * @memberof! oj.ojChart
- * @instance
- * @type {Array.<Object>}
- * @default []
- */
-/**
- * The id of the reference object.
- * @expose
- * @name xAxis.referenceObjects[].id
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default null
- */
-/**
- * An optional array of category strings corresponding to this reference object. This allows highlighting and filtering of a reference object through interactions with legend sections. If not defined, the reference object id is used.
- * @expose
- * @name xAxis.referenceObjects[].categories
- * @memberof! oj.ojChart
- * @instance
- * @type {Array.<string>}
- * @default null
- */
-/**
- * The text displayed in the legend for the reference object.
- * @expose
- * @name xAxis.referenceObjects[].text
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default null
- * @ojtranslatable
- */
-/**
- * The type of reference object being shown.
- * @expose
- * @name xAxis.referenceObjects[].type
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "area"
- * @ojvalue {string} "line"
- * @default "line"
- */
-/**
- * The location of the reference object relative to the data items.
- * @expose
- * @name xAxis.referenceObjects[].location
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "front"
- * @ojvalue {string} "back"
- * @default "back"
- */
-/**
- * The color of the reference object.
- * @expose
- * @name xAxis.referenceObjects[].color
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojformat color
- * @default null
- */
-/**
- * The width of the reference line.
- * @expose
- * @name xAxis.referenceObjects[].lineWidth
- * @memberof! oj.ojChart
- * @instance
- * @type {number}
- * @default null
- * @ojunits pixels
- * @ojmin 0
- */
-/**
- * The line style of the reference line.
- * @expose
- * @name xAxis.referenceObjects[].lineStyle
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "dotted"
- * @ojvalue {string} "dashed"
- * @ojvalue {string} "solid"
- * @default "solid"
- */
-/**
- * The line type of the reference line. Only applies if the line value is not constant. centeredStepped and centeredSegmented are not supported for polar, scatter, and bubble charts.
- * @expose
- * @name xAxis.referenceObjects[].lineType
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "curved"
- * @ojvalue {string} "stepped"
- * @ojvalue {string} "centeredStepped"
- * @ojvalue {string} "segmented"
- * @ojvalue {string} "centeredSegmented"
- * @ojvalue {string} "straight"
- * @default "straight"
- */
-/**
- * The CSS style class to apply to the reference object. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the reference object color attribute.
- * @expose
- * @name xAxis.referenceObjects[].svgClassName
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default null
- */
-/**
- * The inline style to apply to the reference object. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the reference object color attribute.
- * @expose
- * @name xAxis.referenceObjects[].svgStyle
- * @memberof! oj.ojChart
- * @instance
- * @type {Object}
- * @default null
- */
-/**
- * The value of a reference line. For categorical axes, the value represents the group index. For example,   0 is the position of the first group, and 1.5 is the position half way between the second and the third group.
- * @expose
- * @name xAxis.referenceObjects[].value
- * @memberof! oj.ojChart
- * @instance
- * @type {number}
- * @default null
- */
-/**
- * The low value of a reference area. For categorical axes, the value represents the group index. For example,   0 is the position of the first group, and 1.5 is the position half way between the second and the third group.
- * @expose
- * @name xAxis.referenceObjects[].low
- * @memberof! oj.ojChart
- * @instance
- * @type {number}
- * @default null
- */
-/**
- * The high value of a reference area. For categorical axes, the value represents the group index. For example,    0 is the position of the first group, and 1.5 is the position half way between the second and the third group.
- * @expose
- * @name xAxis.referenceObjects[].high
- * @memberof! oj.ojChart
- * @instance
- * @type {number}
- * @default null
- */
-/**
- * The description of this object. This is used for accessibility and also for customizing the tooltip text.
- * @expose
- * @name xAxis.referenceObjects[].shortDesc
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default null
- */
-/**
- * Defines whether the reference object should be shown in the legend.
- * @expose
- * @name xAxis.referenceObjects[].displayInLegend
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "on"
- * @ojvalue {string} "off"
- * @default "off"
- */
-/**
- * The minimum value of the axis. Defaults to null for automatic calculation based on the data. For categorical axes, the value represents the group index. For example, 0 is the position of the first group, and 1.5 is the position half way between the second and the third group.
- * @expose
- * @name xAxis.min
- * @memberof! oj.ojChart
- * @instance
- * @type {number|string}
- * @default null
- */
-/**
- * The maximum value of the axis. Defaults to null for automatic calculation based on the data. For categorical axes, the value represents the group index. For example, 0 is the position of the first group, and 1.5 is the position half way between the second and the third group.
- * @expose
- * @name xAxis.max
- * @memberof! oj.ojChart
- * @instance
- * @type {number|string}
- * @default null
- */
-/**
- * The minimum data value corresponding to an axis. If specified, the automatic axis extent calculation will use this value. Only applies to numerical axes.
- * @expose
- * @name xAxis.dataMin
- * @memberof! oj.ojChart
- * @instance
- * @type {number}
- * @default null
- */
-/**
- * The maximum data value corresponding to an axis. If specified, the automatic axis extent calculation will use this value. Only applies to numerical axes.
- * @expose
- * @name xAxis.dataMax
- * @memberof! oj.ojChart
- * @instance
- * @type {number}
- * @default null
- */
-/**
- * The increment between major tick marks. Defaults to null for automatic calculation based on the data. Only applies to time and numerical axes. For log axis, the step is a multiplier, so for example, if the step is 2, the major tick marks will be rendered at 1, 2, 4, 8, and so on.
- * @expose
- * @name xAxis.step
- * @memberof! oj.ojChart
- * @instance
- * @type {number}
- * @default null
- * @ojexclusivemin 0
- */
-/**
- * The minimum increment between major tick marks. This is typically used to prevent fractional axis values for discrete measures. Only applies to numerical axes.
- * @expose
- * @name xAxis.minStep
- * @memberof! oj.ojChart
- * @instance
- * @type {number}
- * @default null
- * @ojexclusivemin 0
- */
-/**
- * The increment between minor tick marks. Defaults to null for automatic calculation based on the data. Only applies to numerical axes. For log axis, the step is a multiplier, so for example, if the minorStep is 2, the minor tick marks will be rendered at 1, 2, 4, 8, and so on.
- * @expose
- * @name xAxis.minorStep
- * @memberof! oj.ojChart
- * @instance
- * @type {number}
- * @default null
- * @ojexclusivemin 0
- */
-/**
- * Defines the axis scale. Only applies to numerical axes.
- * @expose
- * @name xAxis.scale
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "log"
- * @ojvalue {string} "linear"
- * @default "linear"
- */
-/**
- * The CSS style object defining the style of the axis title. The CSS white-space property can be defined with value "nowrap" to disable default text wrapping of the title.
- * @expose
- * @name xAxis.titleStyle
- * @memberof! oj.ojChart
- * @instance
- * @type {Object}
- * @default {}
- */
-/**
- * An object defining the properties of the tick labels.
- * @expose
- * @name xAxis.tickLabel
- * @memberof! oj.ojChart
- * @instance
- * @type {Object}
- */
-/**
- * Defines whether the tick labels are rendered.
- * @expose
- * @name xAxis.tickLabel.rendered
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "off"
- * @ojvalue {string} "on"
- * @default "on"
- */
-/**
- * The CSS style object defining the style of the labels. The CSS white-space property can be defined with value "nowrap" to disable default text wrapping of categorical labels.
- * @expose
- * @name xAxis.tickLabel.style
- * @memberof! oj.ojChart
- * @instance
- * @type {Object}
- * @default {}
- */
-/**
- * The scaling behavior of the labels. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
- * @expose
- * @name xAxis.tickLabel.scaling
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "none"
- * @ojvalue {string} "thousand"
- * @ojvalue {string} "million"
- * @ojvalue {string} "billion"
- * @ojvalue {string} "trillion"
- * @ojvalue {string} "quadrillion"
- * @ojvalue {string} "auto"
- * @default "auto"
- */
-/**
- * Defines whether the chart will automatically rotate the labels by 90 degrees in order to fit more labels on the axis. The rotation will only be applied to categorical labels for a horizontal axis.
- * @expose
- * @name xAxis.tickLabel.rotation
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "none"
- * @ojvalue {string} "auto"
- * @default "auto"
- */
-/**
- * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) to format the labels. When using a time axis, this attribute also takes an array of two converters, which apply respectively to the first and second label levels. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
- * @expose
- * @name xAxis.tickLabel.converter
- * @memberof! oj.ojChart
- * @instance
- * @type {Object}
- * @default null
- */
-/**
- * An object defining properties for the axis line.
- * @expose
- * @name xAxis.axisLine
- * @memberof! oj.ojChart
- * @instance
- * @type {Object}
- */
-/**
- * The color of the axis line.
- * @expose
- * @name xAxis.axisLine.lineColor
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojformat color
- * @default null
- */
-/**
- * The width of the axis line.
- * @expose
- * @name xAxis.axisLine.lineWidth
- * @memberof! oj.ojChart
- * @instance
- * @type {number}
- * @default null
- * @ojunits pixels
- * @ojmin 0
- */
-/**
- * Defines whether the axis line is rendered.
- * @expose
- * @name xAxis.axisLine.rendered
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "off"
- * @ojvalue {string} "on"
- * @default "on"
- */
-/**
- * An object defining properties for the major tick marks.
- * @expose
- * @name xAxis.majorTick
- * @memberof! oj.ojChart
- * @instance
- * @type {Object}
- */
-/**
- * The color of the major tick marks.
- * @expose
- * @name xAxis.majorTick.lineColor
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojformat color
- * @default null
- */
-/**
- * The line style of the major tick marks.
- * @expose
- * @name xAxis.majorTick.lineStyle
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "dotted"
- * @ojvalue {string} "dashed"
- * @ojvalue {string} "solid"
- * @default "solid"
- */
-/**
- * The width of the major tick marks.
- * @expose
- * @name xAxis.majorTick.lineWidth
- * @memberof! oj.ojChart
- * @instance
- * @type {number}
- * @default null
- * @ojunits pixels
- * @ojmin 0
- */
-/**
- * The color of the major tick mark at the baseline (x = 0). Valid values are auto, inherit, or a custom color. If set to inherit, it will follow the lineColor attribute.
- * @expose
- * @name xAxis.majorTick.baselineColor
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "inherit"
- * @ojvalue {string} "auto"
- * @default "auto"
- */
-/**
- * The line style of the major tick mark at the baseline (x = 0). If not specified, it will follow the lineStyle attribute.
- * @expose
- * @name xAxis.majorTick.baselineStyle
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "dotted"
- * @ojvalue {string} "dashed"
- * @ojvalue {string} "solid"
- * @default "solid"
- */
-/**
- * The width of the major tick mark at the baseline (x = 0) If not specified, it will follow the lineWidth attribute.
- * @expose
- * @name xAxis.majorTick.baselineWidth
- * @memberof! oj.ojChart
- * @instance
- * @type {number}
- * @default null
- * @ojunits pixels
- * @ojmin 0
- */
-/**
- * Defines whether the major tick marks are rendered.
- * @expose
- * @name xAxis.majorTick.rendered
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "on"
- * @ojvalue {string} "off"
- * @ojvalue {string} "auto"
- * @default "auto"
- */
-/**
- * An object defining properties for the minor tick marks.
- * @expose
- * @name xAxis.minorTick
- * @memberof! oj.ojChart
- * @instance
- * @type {Object}
- */
-/**
- * The color of the minor tick marks.
- * @expose
- * @name xAxis.minorTick.lineColor
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojformat color
- * @default null
- */
-/**
- * The line style of the minor tick marks.
- * @expose
- * @name xAxis.minorTick.lineStyle
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "dotted"
- * @ojvalue {string} "dashed"
- * @ojvalue {string} "solid"
- * @default "solid"
- */
-/**
- * The width of the minor tick marks.
- * @expose
- * @name xAxis.minorTick.lineWidth
- * @memberof! oj.ojChart
- * @instance
- * @type {number}
- * @default null
- * @ojunits pixels
- * @ojmin 0
- */
-/**
- * Defines whether the minor tick marks are rendered.
- * @expose
- * @name xAxis.minorTick.rendered
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "on"
- * @ojvalue {string} "off"
- * @ojvalue {string} "auto"
- * @default "auto"
- */
-/**
- * Defines whether the axis baseline starts at the minimum value of the data or at zero. Only applies to numerical data axes.
- * @expose
- * @name xAxis.baselineScaling
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "min"
- * @ojvalue {string} "zero"
- * @default "zero"
- */
-/**
- * Specifies the minimum x coordinate of the current viewport for zoom and scroll. For group axis, the group index will be treated as the axis coordinate. If both viewportStartGroup and viewportMin are specified, then viewportMin takes precedence. If not specified, this value will be the axis min.
- * @expose
- * @name xAxis.viewportMin
- * @memberof! oj.ojChart
- * @instance
- * @type {number|string}
- * @default null
- */
-/**
- * Specifies the maximum x coordinate of the current viewport for zoom and scroll. For group axis, the group index will be treated as the axis coordinate. If both viewportEndGroup and viewportMax are specified, then viewportMax takes precedence. If not specified, this value will be the axis max.
- * @expose
- * @name xAxis.viewportMax
- * @memberof! oj.ojChart
- * @instance
- * @type {number|string}
- * @default null
- */
-/**
- * Specifies the start group of the current viewport. Only applies to charts with group or time axis. If not specified, the default start group is the first group in the data set.
- * @expose
- * @name xAxis.viewportStartGroup
- * @memberof! oj.ojChart
- * @instance
- * @type {number|string}
- * @default null
- */
-/**
- * Specifies the end group of the current viewport. Only applies to charts with group or time axis. If not specified, the default end group is the last group in the data set.
- * @expose
- * @name xAxis.viewportEndGroup
- * @memberof! oj.ojChart
- * @instance
- * @type {number|string}
- * @default null
- */
-/**
- * An object defining properties for the axis, tick marks, tick labels, and axis titles.
- * @expose
- * @name yAxis
- * @memberof oj.ojChart
- * @instance
- * @type {Object}
- */
-/**
- * Defines whether the axis is rendered.
- * @expose
- * @name yAxis.rendered
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "off"
- * @ojvalue {string} "on"
- * @default "on"
- */
-/**
- * Defines the size of the axis in pixels (e.g. '50px') or percent (e.g. '15%').
- * @expose
- * @name yAxis.size
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default null
- */
-/**
- * Defines the maximum size of the axis in pixels (e.g. '50px') or percent (e.g. '15%').
- * @expose
- * @name yAxis.maxSize
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default null
- */
-/**
- * The axis title. Does not apply to polar charts.
- * @expose
- * @name yAxis.title
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default null
- * @ojtranslatable
- */
-/**
- * The position of the axis relative to its content. For vertical charts, only start and end apply. For horizontal charts, only top and bottom apply.
- * @expose
- * @name yAxis.position
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "start"
- * @ojvalue {string} "end"
- * @ojvalue {string} "top"
- * @ojvalue {string} "bottom"
- * @ojvalue {string} "auto"
- * @default "auto"
- */
-/**
- * The array of reference objects associated with the axis.
- * @expose
- * @name yAxis.referenceObjects
- * @memberof! oj.ojChart
- * @instance
- * @type {Array.<Object>}
- * @default []
- */
-/**
- * The id of the reference object.
- * @expose
- * @name yAxis.referenceObjects[].id
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default null
- */
-/**
- * An optional array of category strings corresponding to this reference object. This allows highlighting and filtering of a reference object through interactions with legend sections. If not defined, the reference object id is used.
- * @expose
- * @name yAxis.referenceObjects[].categories
- * @memberof! oj.ojChart
- * @instance
- * @type {Array.<string>}
- * @default null
- */
-/**
- * The text displayed in the legend for the reference object.
- * @expose
- * @name yAxis.referenceObjects[].text
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default null
- * @ojtranslatable
- */
-/**
- * The type of reference object being shown.
- * @expose
- * @name yAxis.referenceObjects[].type
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "area"
- * @ojvalue {string} "line"
- * @default "line"
- */
-/**
- * The location of the reference object relative to the data items.
- * @expose
- * @name yAxis.referenceObjects[].location
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "front"
- * @ojvalue {string} "back"
- * @default "back"
- */
-/**
- * The color of the reference object.
- * @expose
- * @name yAxis.referenceObjects[].color
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojformat color
- * @default null
- */
-/**
- * The width of the reference line.
- * @expose
- * @name yAxis.referenceObjects[].lineWidth
- * @memberof! oj.ojChart
- * @instance
- * @type {number}
- * @default null
- * @ojunits pixels
- * @ojmin 0
- */
-/**
- * The line style of the reference line.
- * @expose
- * @name yAxis.referenceObjects[].lineStyle
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "dotted"
- * @ojvalue {string} "dashed"
- * @ojvalue {string} "solid"
- * @default "solid"
- */
-/**
- * The line type of the reference line. Only applies if the line value is not constant. centeredStepped and centeredSegmented are not supported for polar, scatter, and bubble charts.
- * @expose
- * @name yAxis.referenceObjects[].lineType
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "curved"
- * @ojvalue {string} "stepped"
- * @ojvalue {string} "centeredStepped"
- * @ojvalue {string} "segmented"
- * @ojvalue {string} "centeredSegmented"
- * @ojvalue {string} "straight"
- * @default "straight"
- */
-/**
- * The CSS style class to apply to the reference object. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the reference object color attribute.
- * @expose
- * @name yAxis.referenceObjects[].svgClassName
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default null
- */
-/**
- * The inline style to apply to the reference object. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the reference object color attribute.
- * @expose
- * @name yAxis.referenceObjects[].svgStyle
- * @memberof! oj.ojChart
- * @instance
- * @type {Object}
- * @default null
- */
-/**
- * The value of a reference line. This property defines a constant value across the entire reference line and is ignored if the items array is specified.
- * @expose
- * @name yAxis.referenceObjects[].value
- * @memberof! oj.ojChart
- * @instance
- * @type {number}
- * @default null
- */
-/**
- * The low value of a reference area. This property defines a constant value across the entire reference area and is ignored if the items array is specified.
- * @expose
- * @name yAxis.referenceObjects[].low
- * @memberof! oj.ojChart
- * @instance
- * @type {number}
- * @default null
- */
-/**
- * The high value of a reference area. This property defines a constant value across the entire reference area and is ignored if the items array is specified.
- * @expose
- * @name yAxis.referenceObjects[].high
- * @memberof! oj.ojChart
- * @instance
- * @type {number}
- * @default null
- */
-/**
- * The description of this object. This is used for accessibility and also for customizing the tooltip text.
- * @expose
- * @name yAxis.referenceObjects[].shortDesc
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default null
- */
-/**
- * Defines whether the reference object should be shown in the legend.
- * @expose
- * @name yAxis.referenceObjects[].displayInLegend
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "on"
- * @ojvalue {string} "off"
- * @default "off"
- */
-/**
- * An array of values or an array of objects with the following properties that defines the data for a varying reference object. Only supported for y1 and y2 axes for all chart types.
- * @expose
- * @name yAxis.referenceObjects[].items
- * @memberof! oj.ojChart
- * @instance
- * @type {Array.<Object>|Array.<number>}
- * @default null
- */
-/**
- * The low value of this point of a reference area.
- * @expose
- * @name yAxis.referenceObjects[].items[].low
- * @memberof! oj.ojChart
- * @instance
- * @type {number}
- * @default null
- */
-/**
- * The high value of this point of a reference area.
- * @expose
- * @name yAxis.referenceObjects[].items[].high
- * @memberof! oj.ojChart
- * @instance
- * @type {number}
- * @default null
- */
-/**
- * The value of this point of a line object. Null can be specified to skip a data point.
- * @expose
- * @name yAxis.referenceObjects[].items[].value
- * @memberof! oj.ojChart
- * @instance
- * @type {number}
- * @default null
- */
-/**
- * The x value of this point. Mainly used for scatter and bubble chart and to specify the date for mixed-frequency time axis.
- * For categorical axis, if the x value is not specified, it will default to the item index.
- * For regular time axis, if the x value is not specified, it will default to the group name of the item.
- * @expose
- * @name yAxis.referenceObjects[].items[].x
- * @memberof! oj.ojChart
- * @instance
- * @type {number|string}
- * @default null
- */
-/**
- * The minimum value of the axis. Defaults to null for automatic calculation based on the data.
- * @expose
- * @name yAxis.min
- * @memberof! oj.ojChart
- * @instance
- * @type {number}
- * @default null
- */
-/**
- * The maximum value of the axis. Defaults to null for automatic calculation based on the data.
- * @expose
- * @name yAxis.max
- * @memberof! oj.ojChart
- * @instance
- * @type {number}
- * @default null
- */
-/**
- * The minimum data value corresponding to an axis. If specified, the automatic axis extent calculation will use this value.
- * @expose
- * @name yAxis.dataMin
- * @memberof! oj.ojChart
- * @instance
- * @type {number}
- * @default null
- */
-/**
- * The maximum data value corresponding to an axis. If specified, the automatic axis extent calculation will use this value.
- * @expose
- * @name yAxis.dataMax
- * @memberof! oj.ojChart
- * @instance
- * @type {number}
- * @default null
- */
-/**
- * The increment between major tick marks. Defaults to null for automatic calculation based on the data. For log axis, the step is a multiplier, so for example, if the step is 2, the major tick marks will be rendered at 1, 2, 4, 8, and so on.
- * @expose
- * @name yAxis.step
- * @memberof! oj.ojChart
- * @instance
- * @type {number}
- * @default null
- * @ojexclusivemin 0
- */
-/**
- * The minimum increment between major tick marks. This is typically used to prevent fractional axis values for discrete measures.
- * @expose
- * @name yAxis.minStep
- * @memberof! oj.ojChart
- * @instance
- * @type {number}
- * @default null
- * @ojexclusivemin 0
- */
-/**
- * The increment between minor tick marks. Defaults to null for automatic calculation based on the data. For log axis, the step is a multiplier, so for example, if the minorStep is 2, the minor tick marks will be rendered at 1, 2, 4, 8, and so on.
- * @expose
- * @name yAxis.minorStep
- * @memberof! oj.ojChart
- * @instance
- * @type {number}
- * @default null
- * @ojexclusivemin 0
- */
-/**
- * Defines the axis scale. Only applies to numerical axes.
- * @expose
- * @name yAxis.scale
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "log"
- * @ojvalue {string} "linear"
- * @default "linear"
- */
-/**
- * The CSS style object defining the style of the axis title. The CSS white-space property can be defined with value "nowrap" to disable default text wrapping of the title.
- * @expose
- * @name yAxis.titleStyle
- * @memberof! oj.ojChart
- * @instance
- * @type {Object}
- * @default {}
- */
-/**
- * An object defining the properties of the tick labels.
- * @expose
- * @name yAxis.tickLabel
- * @memberof! oj.ojChart
- * @instance
- * @type {Object}
- */
-/**
- * Defines whether the tick labels are rendered.
- * @expose
- * @name yAxis.tickLabel.rendered
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "off"
- * @ojvalue {string} "on"
- * @default "on"
- */
-/**
- * Defines the position of the tick labels relative to the plot area. Inside position is not supported for scatter and bubble charts.
- * @expose
- * @name yAxis.tickLabel.position
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "inside"
- * @ojvalue {string} "outside"
- * @default "outside"
- */
-/**
- * The CSS style object defining the style of the labels.
- * @expose
- * @name yAxis.tickLabel.style
- * @memberof! oj.ojChart
- * @instance
- * @type {Object}
- * @default {}
- */
-/**
- * The scaling behavior of the labels. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
- * @expose
- * @name yAxis.tickLabel.scaling
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "none"
- * @ojvalue {string} "thousand"
- * @ojvalue {string} "million"
- * @ojvalue {string} "billion"
- * @ojvalue {string} "trillion"
- * @ojvalue {string} "quadrillion"
- * @ojvalue {string} "auto"
- * @default "auto"
- */
-/**
- * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) to format the labels. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
- * @expose
- * @name yAxis.tickLabel.converter
- * @memberof! oj.ojChart
- * @instance
- * @type {Object}
- * @default null
- */
-/**
- * An object defining properties for the axis line.
- * @expose
- * @name yAxis.axisLine
- * @memberof! oj.ojChart
- * @instance
- * @type {Object}
- */
-/**
- * The color of the axis line.
- * @expose
- * @name yAxis.axisLine.lineColor
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojformat color
- * @default null
- */
-/**
- * The width of the axis line.
- * @expose
- * @name yAxis.axisLine.lineWidth
- * @memberof! oj.ojChart
- * @instance
- * @type {number}
- * @default null
- * @ojunits pixels
- * @ojmin 0
- */
-/**
- * Defines whether the axis line is rendered.
- * @expose
- * @name yAxis.axisLine.rendered
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "on"
- * @ojvalue {string} "off"
- * @ojvalue {string} "auto"
- * @default "auto"
- */
-/**
- * An object defining properties for the major tick marks.
- * @expose
- * @name yAxis.majorTick
- * @memberof! oj.ojChart
- * @instance
- * @type {Object}
- */
-/**
- * The color of the major tick marks.
- * @expose
- * @name yAxis.majorTick.lineColor
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojformat color
- * @default null
- */
-/**
- * The width of the major tick marks.
- * @expose
- * @name yAxis.majorTick.lineWidth
- * @memberof! oj.ojChart
- * @instance
- * @type {number}
- * @default null
- * @ojunits pixels
- * @ojmin 0
- */
-/**
- * The line style of the major tick marks.
- * @expose
- * @name yAxis.majorTick.lineStyle
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "dotted"
- * @ojvalue {string} "dashed"
- * @ojvalue {string} "solid"
- * @default "solid"
- */
-/**
- * The color of the major tick mark at the baseline (y = 0). Valid values are auto, inherit, or a custom color. If set to inherit, it will follow the lineColor attribute.
- * @expose
- * @name yAxis.majorTick.baselineColor
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "inherit"
- * @ojvalue {string} "auto"
- * @default "auto"
- */
-/**
- * The line style of the major tick mark at the baseline (y = 0). If not specified, it will follow the lineStyle attribute.
- * @expose
- * @name yAxis.majorTick.baselineStyle
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "dotted"
- * @ojvalue {string} "dashed"
- * @ojvalue {string} "solid"
- * @default "solid"
- */
-/**
- * The width of the major tick mark at the baseline (y = 0) If not specified, it will follow the lineWidth attribute.
- * @expose
- * @name yAxis.majorTick.baselineWidth
- * @memberof! oj.ojChart
- * @instance
- * @type {number}
- * @default null
- * @ojunits pixels
- * @ojmin 0
- */
-/**
- * Defines whether the major tick marks are rendered.
- * @expose
- * @name yAxis.majorTick.rendered
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "on"
- * @ojvalue {string} "off"
- * @ojvalue {string} "auto"
- * @default "auto"
- */
-/**
- * An object defining properties for the minor tick marks.
- * @expose
- * @name yAxis.minorTick
- * @memberof! oj.ojChart
- * @instance
- * @type {Object}
- */
-/**
- * The color of the minor tick marks.
- * @expose
- * @name yAxis.minorTick.lineColor
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojformat color
- * @default null
- */
-/**
- * The line style of the minor tick marks.
- * @expose
- * @name yAxis.minorTick.lineStyle
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "dotted"
- * @ojvalue {string} "dashed"
- * @ojvalue {string} "solid"
- * @default "solid"
- */
-/**
- * The width of the minor tick marks.
- * @expose
- * @name yAxis.minorTick.lineWidth
- * @memberof! oj.ojChart
- * @instance
- * @type {number}
- * @default null
- * @ojunits pixels
- * @ojmin 0
- */
-/**
- * Defines whether the minor tick marks are rendered.
- * @expose
- * @name yAxis.minorTick.rendered
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "on"
- * @ojvalue {string} "off"
- * @ojvalue {string} "auto"
- * @default "auto"
- */
-/**
- * Defines whether the axis baseline starts at the minimum value of the data or at zero. Only applies to numerical data axes.
- * @expose
- * @name yAxis.baselineScaling
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "min"
- * @ojvalue {string} "zero"
- * @default "zero"
- */
-/**
- * Specifies the minimum y coordinate of the current viewport for zoom and scroll. Only applies to bubble and scatter charts. If not specified, this value will be the axis min.
- * @expose
- * @name yAxis.viewportMin
- * @memberof! oj.ojChart
- * @instance
- * @type {number}
- * @default null
- */
-/**
- * Specifies the maximum y coordinate of the current viewport for zoom and scroll. Only applies to bubble and scatter charts. If not specified, this value will be the axis max.
- * @expose
- * @name yAxis.viewportMax
- * @memberof! oj.ojChart
- * @instance
- * @type {number}
- * @default null
- */
-/**
- * An object defining properties for the axis, tick marks, tick labels, and axis titles. Y2 axis is only supported for Cartesian bar, line, area, and combo charts.
- * @expose
- * @name y2Axis
- * @memberof oj.ojChart
- * @instance
- * @type {Object}
- */
-/**
- * Defines whether the axis is rendered.
- * @expose
- * @name y2Axis.rendered
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "off"
- * @ojvalue {string} "on"
- * @default "on"
- */
-/**
- * Defines the size of the axis in pixels (e.g. '50px') or percent (e.g. '15%').
- * @expose
- * @name y2Axis.size
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default null
- */
-/**
- * Defines the maximum size of the axis in pixels (e.g. '50px') or percent (e.g. '15%').
- * @expose
- * @name y2Axis.maxSize
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default null
- */
-/**
- * The axis title.
- * @expose
- * @name y2Axis.title
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default null
- * @ojtranslatable
- */
-/**
- * The position of the axis relative to its content. For vertical charts, only start and end apply. For horizontal charts, only top and bottom apply.
- * @expose
- * @name y2Axis.position
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "start"
- * @ojvalue {string} "end"
- * @ojvalue {string} "top"
- * @ojvalue {string} "bottom"
- * @ojvalue {string} "auto"
- * @default "auto"
- */
-/**
- * The array of reference objects associated with the axis.
- * @expose
- * @name y2Axis.referenceObjects
- * @memberof! oj.ojChart
- * @instance
- * @type {Array.<Object>}
- * @default []
- */
-/**
- * The id of the reference object.
- * @expose
- * @name y2Axis.referenceObjects[].id
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default null
- */
-/**
- * An optional array of category strings corresponding to this reference object. This allows highlighting and filtering of a reference object through interactions with legend sections. If not defined, the reference object id is used.
- * @expose
- * @name y2Axis.referenceObjects[].categories
- * @memberof! oj.ojChart
- * @instance
- * @type {Array.<string>}
- * @default null
- */
-/**
- * The text displayed in the legend for the reference object.
- * @expose
- * @name y2Axis.referenceObjects[].text
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default null
- * @ojtranslatable
- */
-/**
- * The type of reference object being shown.
- * @expose
- * @name y2Axis.referenceObjects[].type
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "area"
- * @ojvalue {string} "line"
- * @default "line"
- */
-/**
- * The location of the reference object relative to the data items.
- * @expose
- * @name y2Axis.referenceObjects[].location
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "front"
- * @ojvalue {string} "back"
- * @default "back"
- */
-/**
- * The color of the reference object.
- * @expose
- * @name y2Axis.referenceObjects[].color
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojformat color
- * @default null
- */
-/**
- * The width of the reference line.
- * @expose
- * @name y2Axis.referenceObjects[].lineWidth
- * @memberof! oj.ojChart
- * @instance
- * @type {number}
- * @default null
- * @ojunits pixels
- * @ojmin 0
- */
-/**
- * The line style of the reference line.
- * @expose
- * @name y2Axis.referenceObjects[].lineStyle
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "dotted"
- * @ojvalue {string} "dashed"
- * @ojvalue {string} "solid"
- * @default "solid"
- */
-/**
- * The line type of the reference line. Only applies if the line value is not constant. centeredStepped and centeredSegmented are not supported for polar, scatter, and bubble charts.
- * @expose
- * @name y2Axis.referenceObjects[].lineType
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "curved"
- * @ojvalue {string} "stepped"
- * @ojvalue {string} "centeredStepped"
- * @ojvalue {string} "segmented"
- * @ojvalue {string} "centeredSegmented"
- * @ojvalue {string} "straight"
- * @default "straight"
- */
-/**
- * The CSS style class to apply to the reference object. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the reference object color attribute.
- * @expose
- * @name y2Axis.referenceObjects[].svgClassName
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default null
- */
-/**
- * The inline style to apply to the reference object. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the reference object color attribute.
- * @expose
- * @name y2Axis.referenceObjects[].svgStyle
- * @memberof! oj.ojChart
- * @instance
- * @type {Object}
- * @default null
- */
-/**
- * The value of a reference line. This property defines a constant value across the entire reference line and is ignored if the items array is specified.
- * @expose
- * @name y2Axis.referenceObjects[].value
- * @memberof! oj.ojChart
- * @instance
- * @type {number}
- * @default null
- */
-/**
- * The low value of a reference area. This property defines a constant value across the entire reference area and is ignored if the items array is specified.
- * @expose
- * @name y2Axis.referenceObjects[].low
- * @memberof! oj.ojChart
- * @instance
- * @type {number}
- * @default null
- */
-/**
- * The high value of a reference area. This property defines a constant value across the entire reference area and is ignored if the items array is specified.
- * @expose
- * @name y2Axis.referenceObjects[].high
- * @memberof! oj.ojChart
- * @instance
- * @type {number}
- * @default null
- */
-/**
- * The description of this object. This is used for accessibility and also for customizing the tooltip text.
- * @expose
- * @name y2Axis.referenceObjects[].shortDesc
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default null
- */
-/**
- * Defines whether the reference object should be shown in the legend.
- * @expose
- * @name y2Axis.referenceObjects[].displayInLegend
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "on"
- * @ojvalue {string} "off"
- * @default "off"
- */
-/**
- * An array of values or an array of objects with the following properties that defines the data for a varying reference object. Only supported for y1 and y2 axes for all chart types.
- * @expose
- * @name y2Axis.referenceObjects[].items
- * @memberof! oj.ojChart
- * @instance
- * @type {Array.<Object>|Array.<number>}
- * @default null
- */
-/**
- * The low value of this point of a reference area.
- * @expose
- * @name y2Axis.referenceObjects[].items[].low
- * @memberof! oj.ojChart
- * @instance
- * @type {number}
- * @default null
- */
-/**
- * The high value of this point of a reference area.
- * @expose
- * @name y2Axis.referenceObjects[].items[].high
- * @memberof! oj.ojChart
- * @instance
- * @type {number}
- * @default null
- */
-/**
- * The value of this point of a line object. Null can be specified to skip a data point.
- * @expose
- * @name y2Axis.referenceObjects[].items[].value
- * @memberof! oj.ojChart
- * @instance
- * @type {number}
- * @default null
- */
-/**
- * The x value of this point. Mainly used for scatter and bubble chart and to specify the date for mixed-frequency time axis.
- * For categorical axis, if the x value is not specified, it will default to the item index.
- * For regular time axis, if the x value is not specified, it will default to the group name of the item.
- * @expose
- * @name y2Axis.referenceObjects[].items[].x
- * @memberof! oj.ojChart
- * @instance
- * @type {number|string}
- * @default null
- */
-/**
- * The minimum value of the axis. Defaults to null for automatic calculation based on the data.
- * @expose
- * @name y2Axis.min
- * @memberof! oj.ojChart
- * @instance
- * @type {number}
- * @default null
- */
-/**
- * The maximum value of the axis. Defaults to null for automatic calculation based on the data.
- * @expose
- * @name y2Axis.max
- * @memberof! oj.ojChart
- * @instance
- * @type {number}
- * @default null
- */
-/**
- * The minimum data value corresponding to an axis. If specified, the automatic axis extent calculation will use this value.
- * @expose
- * @name y2Axis.dataMin
- * @memberof! oj.ojChart
- * @instance
- * @type {number}
- * @default null
- */
-/**
- * The maximum data value corresponding to an axis. If specified, the automatic axis extent calculation will use this value.
- * @expose
- * @name y2Axis.dataMax
- * @memberof! oj.ojChart
- * @instance
- * @type {number}
- * @default null
- */
-/**
- * The increment between major tick marks. Defaults to null for automatic calculation based on the data. For log axis, the step is a multiplier, so for example, if the step is 2, the major tick marks will be rendered at 1, 2, 4, 8, and so on.
- * @expose
- * @name y2Axis.step
- * @memberof! oj.ojChart
- * @instance
- * @type {number}
- * @default null
- * @ojexclusivemin 0
- */
-/**
- * The minimum increment between major tick marks. This is typically used to prevent fractional axis values for discrete measures.
- * @expose
- * @name y2Axis.minStep
- * @memberof! oj.ojChart
- * @instance
- * @type {number}
- * @default null
- * @ojexclusivemin 0
- */
-/**
- * The increment between minor tick marks. Defaults to null for automatic calculation based on the data. For log axis, the step is a multiplier, so for example, if the minorStep is 2, the minor tick marks will be rendered at 1, 2, 4, 8, and so on.
- * @expose
- * @name y2Axis.minorStep
- * @memberof! oj.ojChart
- * @instance
- * @type {number}
- * @default null
- * @ojexclusivemin 0
- */
-/**
- * Defines the axis scale. Only applies to numerical axes.
- * @expose
- * @name y2Axis.scale
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "log"
- * @ojvalue {string} "linear"
- * @default "linear"
- */
-/**
- * The CSS style object defining the style of the axis title. The CSS white-space property can be defined with value "nowrap" to disable default text wrapping of the title.
- * @expose
- * @name y2Axis.titleStyle
- * @memberof! oj.ojChart
- * @instance
- * @type {Object}
- * @default {}
- */
-/**
- * An object defining the properties of the tick labels.
- * @expose
- * @name y2Axis.tickLabel
- * @memberof! oj.ojChart
- * @instance
- * @type {Object}
- */
-/**
- * Defines whether the tick labels are rendered.
- * @expose
- * @name y2Axis.tickLabel.rendered
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "off"
- * @ojvalue {string} "on"
- * @default "on"
- */
-/**
- * Defines the position of the tick labels relative to the plot area.
- * @expose
- * @name y2Axis.tickLabel.position
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "inside"
- * @ojvalue {string} "outside"
- * @default "outside"
- */
-/**
- * The CSS style object defining the style of the labels.
- * @expose
- * @name y2Axis.tickLabel.style
- * @memberof! oj.ojChart
- * @instance
- * @type {Object}
- * @default {}
- */
-/**
- * The scaling behavior of the labels. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
- * @expose
- * @name y2Axis.tickLabel.scaling
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "none"
- * @ojvalue {string} "thousand"
- * @ojvalue {string} "million"
- * @ojvalue {string} "billion"
- * @ojvalue {string} "trillion"
- * @ojvalue {string} "quadrillion"
- * @ojvalue {string} "auto"
- * @default "auto"
- */
-/**
- * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) to format the labels. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
- * @expose
- * @name y2Axis.tickLabel.converter
- * @memberof! oj.ojChart
- * @instance
- * @type {Object}
- * @default null
- */
-/**
- * An object defining properties for the axis line.
- * @expose
- * @name y2Axis.axisLine
- * @memberof! oj.ojChart
- * @instance
- * @type {Object}
- */
-/**
- * The color of the axis line.
- * @expose
- * @name y2Axis.axisLine.lineColor
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojformat color
- * @default null
- */
-/**
- * The width of the axis line.
- * @expose
- * @name y2Axis.axisLine.lineWidth
- * @memberof! oj.ojChart
- * @instance
- * @type {number}
- * @default null
- * @ojunits pixels
- * @ojmin 0
- */
-/**
- * Defines whether the axis line is rendered.
- * @expose
- * @name y2Axis.axisLine.rendered
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "on"
- * @ojvalue {string} "off"
- * @ojvalue {string} "auto"
- * @default "auto"
- */
-/**
- * An object defining properties for the major tick marks.
- * @expose
- * @name y2Axis.majorTick
- * @memberof! oj.ojChart
- * @instance
- * @type {Object}
- */
-/**
- * The color of the major tick marks.
- * @expose
- * @name y2Axis.majorTick.lineColor
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojformat color
- * @default null
- */
-/**
- * The line style of the major tick marks.
- * @expose
- * @name y2Axis.majorTick.lineStyle
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "dotted"
- * @ojvalue {string} "dashed"
- * @ojvalue {string} "solid"
- * @default "solid"
- */
-/**
- * The width of the major tick marks.
- * @expose
- * @name y2Axis.majorTick.lineWidth
- * @memberof! oj.ojChart
- * @instance
- * @type {number}
- * @default null
- * @ojunits pixels
- * @ojmin 0
- */
-/**
- * The color of the major tick mark at the baseline (y = 0). Valid values are auto, inherit, or a custom color. If set to inherit, it will follow the lineColor attribute.
- * @expose
- * @name y2Axis.majorTick.baselineColor
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "inherit"
- * @ojvalue {string} "auto"
- * @default "auto"
- */
-/**
- * The line style of the major tick mark at the baseline (y = 0). If not specified, it will follow the lineStyle attribute.
- * @expose
- * @name y2Axis.majorTick.baselineStyle
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "dotted"
- * @ojvalue {string} "dashed"
- * @ojvalue {string} "solid"
- * @default "solid"
- */
-/**
- * The width of the major tick mark at the baseline (y = 0) If not specified, it will follow the lineWidth attribute.
- * @expose
- * @name y2Axis.majorTick.baselineWidth
- * @memberof! oj.ojChart
- * @instance
- * @type {number}
- * @default null
- * @ojunits pixels
- * @ojmin 0
- */
-/**
- * Defines whether the major tick marks are rendered.
- * @expose
- * @name y2Axis.majorTick.rendered
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "on"
- * @ojvalue {string} "off"
- * @ojvalue {string} "auto"
- * @default "auto"
- */
-/**
- * An object defining properties for the minor tick marks.
- * @expose
- * @name y2Axis.minorTick
- * @memberof! oj.ojChart
- * @instance
- * @type {Object}
- */
-/**
- * The color of the minor tick marks.
- * @expose
- * @name y2Axis.minorTick.lineColor
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojformat color
- * @default null
- */
-/**
- * The line style of the minor tick marks.
- * @expose
- * @name y2Axis.minorTick.lineStyle
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "dotted"
- * @ojvalue {string} "dashed"
- * @ojvalue {string} "solid"
- * @default "solid"
- */
-/**
- * The width of the minor tick marks.
- * @expose
- * @name y2Axis.minorTick.lineWidth
- * @memberof! oj.ojChart
- * @instance
- * @type {number}
- * @default null
- * @ojunits pixels
- * @ojmin 0
- */
-/**
- * Defines whether the minor tick marks are rendered.
- * @expose
- * @name y2Axis.minorTick.rendered
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "on"
- * @ojvalue {string} "off"
- * @ojvalue {string} "auto"
- * @default "auto"
- */
-/**
- * Defines whether the axis baseline starts at the minimum value of the data or at zero. Only applies to numerical data axes.
- * @expose
- * @name y2Axis.baselineScaling
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "min"
- * @ojvalue {string} "zero"
- * @default "zero"
- */
-/**
- * Defines whether the tick marks of the y1 and y2 axes are aligned. Not supported for logarithmic axes.
- * @expose
- * @name y2Axis.alignTickMarks
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "off"
- * @ojvalue {string} "on"
- * @default "on"
- */
-/**
- * An object defining the overview scrollbar. Only applies if zoomAndScroll is not off. Currently only supported for vertical bar, line, area, stock, and combo charts.
- * @expose
- * @name overview
- * @memberof oj.ojChart
- * @instance
- * @type {Object}
- */
-/**
- * Specifies whether the overview scrollbar is rendered. If not, simple scrollbar will be used.
- * @expose
- * @name overview.rendered
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "on"
- * @ojvalue {string} "off"
- * @default "off"
- */
-/**
- * Specifies the height of the overview scrollbar in pixels (e.g. '50px') or percent (e.g. '15%').
- * @expose
- * @name overview.height
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default null
- */
-/**
- * An object containing the property override for the overview chart. The API is the same as the chart property API, and the property provided here will be merged on top of the default property of the overview chart. This can be used to customize the style or the type of the overview chart.
- * @expose
- * @name overview.content
- * @memberof! oj.ojChart
- * @instance
- * @type {Object}
- * @default {}
- */
-/**
- * An object defining the style of the plot area.
- * @expose
- * @name plotArea
- * @memberof oj.ojChart
- * @instance
- * @type {Object}
- */
-/**
- * The border color to be set on the chart's plot area.
- * @expose
- * @name plotArea.borderColor
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojformat color
- * @default null
- */
-/**
- * The border width to be set on the chart's plot area.
- * @expose
- * @name plotArea.borderWidth
- * @memberof! oj.ojChart
- * @instance
- * @type {number}
- * @default null
- * @ojunits pixels
- */
-/**
- * The color of the plot area background.
- * @expose
- * @name plotArea.backgroundColor
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojformat color
- * @default null
- */
-/**
- * Specifies whether the plot area is rendered.
- * @expose
- * @name plotArea.rendered
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "off"
- * @ojvalue {string} "on"
- * @default "on"
- */
-/**
- * An object defining the style, positioning, and behavior of the legend.
- * @expose
- * @name legend
- * @memberof oj.ojChart
- * @instance
- * @type {Object}
- */
-/**
- * The legend title.
- * @expose
- * @name legend.title
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default null
- * @ojtranslatable
- */
-/**
- * An array of objects with the following properties defining the additional legend sections, other than the default series and reference object sections.
- * @expose
- * @name legend.sections
- * @memberof! oj.ojChart
- * @instance
- * @type {Array.<Object>}
- * @default []
- */
-/**
- * The title of the legend section.
- * @expose
- * @name legend.sections[].title
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default null
- * @ojtranslatable
- */
-/**
- * The horizontal alignment of the section title. If the section is collapsible or nested, only start alignment is supported.
- * @expose
- * @name legend.sections[].titleHalign
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "center"
- * @ojvalue {string} "end"
- * @ojvalue {string} "start"
- * @default "start"
- */
-/**
- * The CSS style object defining the style of the section title.
- * @expose
- * @name legend.sections[].titleStyle
- * @memberof! oj.ojChart
- * @instance
- * @type {Object}
- * @default null
- */
-/**
- * An array of nested legend sections.
- * @expose
- * @name legend.sections[].sections
- * @memberof! oj.ojChart
- * @instance
- * @type {Array.<Object>}
- * @default null
- */
-/**
- * An array of objects with the following properties defining the legend items. Also accepts a Promise for deferred data rendering.
- * @expose
- * @name legend.sections[].items
- * @memberof! oj.ojChart
- * @instance
- * @type {Array.<Object>|Promise}
- * @default null
- */
-/**
- * The id of the legend item, which is provided as part of the context for events fired by this chart. If not specified, the id defaults to the text of the legend item.
- * @expose
- * @name legend.sections[].items[].id
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default null
- */
-/**
- * The legend item text.
- * @expose
- * @name legend.sections[].items[].text
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default null
- * @ojtranslatable
- */
-/**
- * An array of categories for the legend item. Legend items currently only support a single category. If no category is specified, this defaults to the id or text of the legend item.
- * @expose
- * @name legend.sections[].items[].categories
- * @memberof! oj.ojChart
- * @instance
- * @type {Array.<string>}
- * @default null
- */
-/**
- * The type of legend symbol to display.
- * @expose
- * @name legend.sections[].items[].symbolType
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "line"
- * @ojvalue {string} "lineWithMarker"
- * @ojvalue {string} "image"
- * @ojvalue {string} "marker"
- * @default "marker"
- */
-/**
- * The URI of the image of the legend symbol.
- * @expose
- * @name legend.sections[].items[].source
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default null
- */
-/**
- * The color of the legend symbol (line or marker). When symbolType is "lineWithMarker", this attribute defines the line color and the markerColor attribute defines the marker color.
- * @expose
- * @name legend.sections[].items[].color
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojformat color
- * @default null
- */
-/**
- * The border color of the marker. Only applies if symbolType is "marker" or "lineWithMarker".
- * @expose
- * @name legend.sections[].items[].borderColor
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojformat color
- * @default null
- */
-/**
- * The pattern used to fill the marker. Only applies if symbolType is "marker" or "lineWithMarker".
- * @expose
- * @name legend.sections[].items[].pattern
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "smallChecker"
- * @ojvalue {string} "smallCrosshatch"
- * @ojvalue {string} "smallDiagonalLeft"
- * @ojvalue {string} "smallDiagonalRight"
- * @ojvalue {string} "smallDiamond"
- * @ojvalue {string} "smallTriangle"
- * @ojvalue {string} "largeChecker"
- * @ojvalue {string} "largeCrosshatch"
- * @ojvalue {string} "largeDiagonalLeft"
- * @ojvalue {string} "largeDiagonalRight"
- * @ojvalue {string} "largeDiamond"
- * @ojvalue {string} "largeTriangle"
- * @ojvalue {string} "none"
- * @default "none"
- */
-/**
- * The line style. Only applies when the symbolType is "line" or "lineWithMarker".
- * @expose
- * @name legend.sections[].items[].lineStyle
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "dotted"
- * @ojvalue {string} "dashed"
- * @ojvalue {string} "solid"
- * @default "solid"
- */
-/**
- * The line width in pixels. Only applies when the symbolType is "line" or "lineWithMarker".
- * @expose
- * @name legend.sections[].items[].lineWidth
- * @memberof! oj.ojChart
- * @instance
- * @type {number}
- * @default null
- * @ojunits pixels
- * @ojmin 0
- */
-/**
- * The shape of the marker. In addition to the built-in shapes, it may also take SVG path commands to specify a custom shape. The legend will style the custom shapes the same way as built-in shapes, supporting properties like color and borderColor and applying hover and filter effects. Only applies if symbolType is "marker" or "lineWithMarker".
- * @expose
- * @name legend.sections[].items[].markerShape
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "circle"
- * @ojvalue {string} "diamond"
- * @ojvalue {string} "triangleUp"
- * @ojvalue {string} "triangleDown"
- * @ojvalue {string} "plus"
- * @ojvalue {string} "human"
- * @ojvalue {string} "rectangle"
- * @ojvalue {string} "star"
- * @ojvalue {string} "square"
- * @default "square"
- */
-/**
- * The color of the marker, if different than the line color. Only applies if the symbolType is "lineWithMarker".
- * @expose
- * @name legend.sections[].items[].markerColor
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojformat color
- * @default null
- */
-/**
- * Defines whether the legend item corresponds to visible data items. A hollow symbol is shown if the value is "hidden".
- * @expose
- * @name legend.sections[].items[].categoryVisibility
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "hidden"
- * @ojvalue {string} "visible"
- * @default "visible"
- */
-/**
- * The description of this legend item. This is used for accessibility and for customizing the tooltip text.
- * @expose
- * @name legend.sections[].items[].shortDesc
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default null
- */
-/**
- * An object with the following properties for the series section in the legend.
- * @expose
- * @name legend.seriesSection
- * @memberof! oj.ojChart
- * @instance
- * @type {Object}
- */
-/**
- * The title of the series section.
- * @expose
- * @name legend.seriesSection.title
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default null
- * @ojtranslatable
- */
-/**
- * The horizontal alignment of the section title. If the section is collapsible or nested, only start alignment is supported.
- * @expose
- * @name legend.seriesSection.titleHalign
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "center"
- * @ojvalue {string} "end"
- * @ojvalue {string} "start"
- * @default "start"
- */
-/**
- * The CSS style object defining the style of the section title.
- * @expose
- * @name legend.seriesSection.titleStyle
- * @memberof! oj.ojChart
- * @instance
- * @type {Object}
- * @default {}
- */
-/**
- * An object with the following properties for the reference object section in the legend.
- * @expose
- * @name legend.referenceObjectSection
- * @memberof! oj.ojChart
- * @instance
- * @type {Object}
- */
-/**
- * The title of the reference object section.
- * @expose
- * @name legend.referenceObjectSection.title
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default null
- * @ojtranslatable
- */
-/**
- * The horizontal alignment of the section title. If the section is collapsible or nested, only start alignment is supported.
- * @expose
- * @name legend.referenceObjectSection.titleHalign
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "center"
- * @ojvalue {string} "end"
- * @ojvalue {string} "start"
- * @default "start"
- */
-/**
- * The CSS style object defining the style of the section title.
- * @expose
- * @name legend.referenceObjectSection.titleStyle
- * @memberof! oj.ojChart
- * @instance
- * @type {Object}
- * @default {}
- */
-/**
- * The position of the legend within the chart. By default, the legend will be placed on the side or bottom, based on the size of the chart and the legend contents.
- * @expose
- * @name legend.position
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "start"
- * @ojvalue {string} "end"
- * @ojvalue {string} "bottom"
- * @ojvalue {string} "top"
- * @ojvalue {string} "auto"
- * @default "auto"
- */
-/**
- * Defines whether the legend is displayed. If set to auto, the legend will be hidden for charts with a large number of series. To ensure that the legend is always displayed, set this attribute to 'on'. To turn on legend for stock, funnel and pyramid charts, set the displayInLegend property for the series items to 'on'.
- * @expose
- * @name legend.rendered
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "on"
- * @ojvalue {string} "off"
- * @ojvalue {string} "auto"
- * @default "auto"
- */
-/**
- * Defines the size of the legend in pixels (e.g. '50px') or percent (e.g. '15%').
- * @expose
- * @name legend.size
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default null
- */
-/**
- * Defines the maximum size of the legend in pixels (e.g. '50px') or percent (e.g. '15%').
- * @expose
- * @name legend.maxSize
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default null
- */
-/**
- * The color of the legend background.
- * @expose
- * @name legend.backgroundColor
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojformat color
- * @default null
- */
-/**
- * The border color of the legend.
- * @expose
- * @name legend.borderColor
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojformat color
- * @default null
- */
-/**
- * The CSS style object defining the style of the legend text.
- * @expose
- * @name legend.textStyle
- * @memberof! oj.ojChart
- * @instance
- * @type {Object}
- * @default {}
- */
-/**
- * The width of the legend symbol (line or marker) in pixels.
- * @expose
- * @name legend.symbolWidth
- * @memberof! oj.ojChart
- * @instance
- * @type {number}
- * @default null
- * @ojunits pixels
- */
-/**
- * The height of the legend symbol (line or marker) in pixels.
- * @expose
- * @name legend.symbolHeight
- * @memberof! oj.ojChart
- * @instance
- * @type {number}
- * @default null
- * @ojunits pixels
- */
-/**
- * The horizontal alignment of the title.
- * @expose
- * @name legend.titleHalign
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "center"
- * @ojvalue {string} "end"
- * @ojvalue {string} "start"
- * @default "start"
- */
-/**
- * The CSS style object defining the style of the title.
- * @expose
- * @name legend.titleStyle
- * @memberof! oj.ojChart
- * @instance
- * @type {Object}
- * @default {}
- */
-/**
- * Defines whether scrolling is enabled for the legend.
- * @expose
- * @name legend.scrolling
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "off"
- * @ojvalue {string} "asNeeded"
- * @default "asNeeded"
- */
-/**
- * An object defining the default styles for series colors, marker shapes, and other style attributes. Properties specified on this object may be overridden by specifications on the data object.
- * @expose
- * @name styleDefaults
- * @memberof oj.ojChart
- * @instance
- * @type {Object}
- */
-/**
- * Defines the fill effect for the data items.
- * @expose
- * @name styleDefaults.seriesEffect
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "color"
- * @ojvalue {string} "pattern"
- * @ojvalue {string} "gradient"
- * @default "gradient"
- */
-/**
- * The array defining the default color ramp for the series.
- * @expose
- * @name styleDefaults.colors
- * @memberof! oj.ojChart
- * @instance
- * @type {Array.<string>}
- * @default null
- */
-/**
- * The array defining the default pattern ramp for the series. This is used only when seriesEffect is 'pattern'.
- * @expose
- * @name styleDefaults.patterns
- * @memberof! oj.ojChart
- * @instance
- * @type {Array.<string>}
- * @default null
- */
-/**
- * Specifies the color of the "Other" slice. Only applies to pie chart.
- * @expose
- * @name styleDefaults.otherColor
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojformat color
- * @default null
- */
-/**
- * The array defining the default shape ramp for the series. Valid values are defined in the markerShape attribute.
- * @expose
- * @name styleDefaults.shapes
- * @memberof! oj.ojChart
- * @instance
- * @type {Array.<string>}
- * @default null
- */
-/**
- * The default border color for the data items. For funnel and pyramid charts, it is used for the slice border.
- * @expose
- * @name styleDefaults.borderColor
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojformat color
- * @default null
- */
-/**
- * The default border width for the data items. For funnel and pyramid charts, it is used for the slice border.
- * @expose
- * @name styleDefaults.borderWidth
- * @memberof! oj.ojChart
- * @instance
- * @type {number}
- * @default null
- * @ojunits pixels
- */
-/**
- * The default background color of funnel slices that show actual/target values.
- * @expose
- * @name styleDefaults.funnelBackgroundColor
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojformat color
- * @default null
- */
-/**
- * Defines whether the chart is displayed with a 3D effect. Only applies to pie, funnel and pyramid charts.
- * @expose
- * @name styleDefaults.threeDEffect
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "on"
- * @ojvalue {string} "off"
- * @default "off"
- */
-/**
- * The selection effect that is applied to selected items. The values explode and highlightAndExplode only apply to pie charts.
- * @expose
- * @name styleDefaults.selectionEffect
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "explode"
- * @ojvalue {string} "highlightAndExplode"
- * @ojvalue {string} "highlight"
- * @default "highlight"
- */
-/**
- * The duration of the animations, in milliseconds.
- * @expose
- * @name styleDefaults.animationDuration
- * @memberof! oj.ojChart
- * @instance
- * @type {number}
- * @default null
- * @ojunits milliseconds
- * @ojmin 0
- */
-/**
- * Defines whether data change indicators are displayed during animation.
- * @expose
- * @name styleDefaults.animationIndicators
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "none"
- * @ojvalue {string} "all"
- * @default "all"
- */
-/**
- * The color of the indicator shown for an increasing data change animation.
- * @expose
- * @name styleDefaults.animationUpColor
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojformat color
- * @default null
- */
-/**
- * The color of the indicator shown for a decreasing data change animation.
- * @expose
- * @name styleDefaults.animationDownColor
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojformat color
- * @default null
- */
-/**
- * The fill color of the marquee. Applies to marquee selection and marquee zoom.
- * @expose
- * @name styleDefaults.marqueeColor
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojformat color
- * @default null
- */
-/**
- * The border color of the marquee. Applies to marquee selection and marquee zoom.
- * @expose
- * @name styleDefaults.marqueeBorderColor
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojformat color
- * @default null
- */
-/**
- * Specifies the radius of the inner circle that can be used to create a donut chart. Valid values range from 0 (default) to 1. Not supported if 3D effect is on.
- * @expose
- * @name styleDefaults.pieInnerRadius
- * @memberof! oj.ojChart
- * @instance
- * @type {number}
- * @default 0
- * @ojmin 0
- * @ojmax 1
- */
-/**
- * The width of the data line. Only applies to line, lineWithArea, scatter, and bubble series.
- * @expose
- * @name styleDefaults.lineWidth
- * @memberof! oj.ojChart
- * @instance
- * @type {number}
- * @default null
- * @ojunits pixels
- * @ojmin 0
- */
-/**
- * The line type of the data line or area. Only applies to line, area, scatter, and bubble series. centeredStepped and centeredSegmented are not supported for polar, scatter, and bubble charts.
- * @expose
- * @name styleDefaults.lineType
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "straight"
- * @ojvalue {string} "curved"
- * @ojvalue {string} "stepped"
- * @ojvalue {string} "centeredStepped"
- * @ojvalue {string} "segmented"
- * @ojvalue {string} "centeredSegmented"
- * @ojvalue {string} "none"
- * @ojvalue {string} "auto"
- * @default "auto"
- */
-/**
- * The line style of the data line. Only applies to line, lineWithArea, scatter, and bubble series.
- * @expose
- * @name styleDefaults.lineStyle
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "dotted"
- * @ojvalue {string} "dashed"
- * @ojvalue {string} "solid"
- * @default "solid"
- */
-/**
- * The color of the data markers, if different from the series color.
- * @expose
- * @name styleDefaults.markerColor
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojformat color
- * @default null
- */
-/**
- * Defines whether the data markers should be displayed. Only applies to line, area, scatter, and bubble series. If auto, the markers will be displayed whenever the data points are not connected by a line.
- * @expose
- * @name styleDefaults.markerDisplayed
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "on"
- * @ojvalue {string} "off"
- * @ojvalue {string} "auto"
- * @default "auto"
- */
-/**
- * The shape of the data markers. In addition to the built-in shapes, it may also take SVG path commands to specify a custom shape. The chart will style the custom shapes the same way as built-in shapes, supporting properties like color and borderColor and applying hover and selection effects. Only 'auto' is supported for range series.
- * @expose
- * @name styleDefaults.markerShape
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string=} "square"
- * @ojvalue {string=} "circle"
- * @ojvalue {string=} "diamond"
- * @ojvalue {string=} "plus"
- * @ojvalue {string=} "triangleDown"
- * @ojvalue {string=} "triangleUp"
- * @ojvalue {string=} "human"
- * @ojvalue {string=} "star"
- * @ojvalue {string=} "auto"
- * @default "auto"
- */
-/**
- * The size of the data markers in pixels.
- * @expose
- * @name styleDefaults.markerSize
- * @memberof! oj.ojChart
- * @instance
- * @type {number}
- * @default null
- * @ojunits pixels
- */
-/**
- * The color of the line extending from the pie slice to the slice label.
- * @expose
- * @name styleDefaults.pieFeelerColor
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojformat color
- * @default null
- */
-/**
- * Specifies the presence and size of the gaps between data items, such as bars, markers, and areas. Valid values are a percentage string from 0% to 100%, where 100% produces the maximum supported gaps.
- * @expose
- * @name styleDefaults.dataItemGaps
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default null
- */
-/**
- * In stock charts, the color of the candlestick when the 'close' value is greater than the 'open' value.
- * @expose
- * @name styleDefaults.stockRisingColor
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojformat color
- * @default null
- */
-/**
- * In stock charts, the color of the candlestick when the 'open' value is greater than the 'close' value.
- * @expose
- * @name styleDefaults.stockFallingColor
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojformat color
- * @default null
- */
-/**
- * In stock charts, the color of the range bars for candlestick.
- * @expose
- * @name styleDefaults.stockRangeColor
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojformat color
- * @default null
- */
-/**
- * In stock charts, the color of the volume bars. If specified, overrides the default rising and falling colors used by the volume bars.
- * @expose
- * @name styleDefaults.stockVolumeColor
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojformat color
- * @default null
- */
-/**
- * The position of the data label. For range series, if an array of two values are provided, the first and second value will apply to the low and high point respectively. The 'outsideSlice' value only applies to pie charts. The 'aboveMarker', 'belowMarker', 'beforeMarker', and 'afterMarker' values only apply to line, area, scatter, and bubble series. The 'insideBarEdge' and 'outsideBarEdge' values only apply to non-polar bar series. Stacked bars do not support 'outsideBarEdge'. The chart does not currently adjust layout to fit labels within the plot area or deal with any overlaps between labels.
- * @expose
- * @name styleDefaults.dataLabelPosition
- * @memberof! oj.ojChart
- * @instance
- * @type {string|Array.<string>}
- * @ojvalue {string} "center"
- * @ojvalue {string} "outsideSlice"
- * @ojvalue {string} "aboveMarker"
- * @ojvalue {string} "belowMarker"
- * @ojvalue {string} "beforeMarker"
- * @ojvalue {string} "afterMarker"
- * @ojvalue {string} "insideBarEdge"
- * @ojvalue {string} "outsideBarEdge"
- * @ojvalue {string} "none"
- * @ojvalue {string} "auto"
- * @default "auto"
- */
-/**
- * The CSS style object defining the style of the data label text. For range series, if an array of two values are provided, the first and second value will apply to the low and high point respectively.
- * @expose
- * @name styleDefaults.dataLabelStyle
- * @memberof! oj.ojChart
- * @instance
- * @type {object|Array.<Object>}
- * @default null
- */
-/**
- * The CSS style object defining the style of the stack label. Only applies to stacked bar charts.
- * @expose
- * @name styleDefaults.stackLabelStyle
- * @memberof! oj.ojChart
- * @instance
- * @type {Object}
- * @default {}
- */
-/**
- * Specifies the width of the bar group gap as a ratio of the group width. The valid value is a number from 0 to 1.
- * @expose
- * @name styleDefaults.barGapRatio
- * @memberof! oj.ojChart
- * @instance
- * @type {number}
- * @default null
- * @ojmin 0
- * @ojmax 1
- */
-/**
- * Specifies the maximum width of each bar in pixels.
- * @expose
- * @name styleDefaults.maxBarWidth
- * @memberof! oj.ojChart
- * @instance
- * @type {number}
- * @default null
- * @ojunits pixels
- */
-/**
- * Specifies initial hover delay in ms for highlighting items in chart.
- * @expose
- * @name styleDefaults.hoverBehaviorDelay
- * @memberof! oj.ojChart
- * @instance
- * @type {number}
- * @default null
- * @ojunits milliseconds
- * @ojmin 0
- */
-/**
- * The CSS style object defining the style of the labels in the tooltip.
- * @expose
- * @name styleDefaults.tooltipLabelStyle
- * @memberof! oj.ojChart
- * @instance
- * @type {Object}
- * @default {}
- */
-/**
- * The CSS style object defining the style of the values in the tooltip.
- * @expose
- * @name styleDefaults.tooltipValueStyle
- * @memberof! oj.ojChart
- * @instance
- * @type {Object}
- * @default {}
- */
-/**
- * An object defining the data cursor style.
- * @expose
- * @name styleDefaults.dataCursor
- * @memberof! oj.ojChart
- * @instance
- * @type {Object}
- */
-/**
- * The width of the data cursor line in pixels.
- * @expose
- * @name styleDefaults.dataCursor.lineWidth
- * @memberof! oj.ojChart
- * @instance
- * @type {number}
- * @default null
- * @ojunits pixels
- * @ojmin 0
- */
-/**
- * The color of the data cursor line.
- * @expose
- * @name styleDefaults.dataCursor.lineColor
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojformat color
- * @default null
- */
-/**
- * The line style of the data cursor line.
- * @expose
- * @name styleDefaults.dataCursor.lineStyle
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "dotted"
- * @ojvalue {string} "dashed"
- * @ojvalue {string} "solid"
- * @default "solid"
- */
-/**
- * The color of the data cursor marker. Defaults to the data series color.
- * @expose
- * @name styleDefaults.dataCursor.markerColor
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojformat color
- * @default null
- */
-/**
- * The size of the data cursor marker in pixels.
- * @expose
- * @name styleDefaults.dataCursor.markerSize
- * @memberof! oj.ojChart
- * @instance
- * @type {number}
- * @default null
- * @ojunits pixels
- */
-/**
- * Whether the data cursor marker is displayed. Marker should only be hidden if the data cursor is displaying information for the entire group.
- * @expose
- * @name styleDefaults.dataCursor.markerDisplayed
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "off"
- * @ojvalue {string} "on"
- * @default "on"
- */
-/**
- * An object defining the style for hierarchical label separators.
- * @expose
- * @name styleDefaults.groupSeparators
- * @memberof! oj.ojChart
- * @instance
- * @type {Object}
- */
-/**
- * Defines whether the group separators are displayed.
- * @expose
- * @name styleDefaults.groupSeparators.rendered
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "off"
- * @ojvalue {string} "auto"
- * @default "auto"
- */
-/**
- * The color of the separators lines.
- * @expose
- * @name styleDefaults.groupSeparators.color
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojformat color
- * @default null
- */
-/**
- * An object containing the style properties of the box plot items.
- * @expose
- * @name styleDefaults.boxPlot
- * @memberof! oj.ojChart
- * @instance
- * @type {Object}
- */
-/**
- * The CSS style class to apply to the whisker stems.
- * @expose
- * @name styleDefaults.boxPlot.whiskerSvgClassName
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default ""
- */
-/**
- * The CSS inline style to apply to the whisker stems.
- * @expose
- * @name styleDefaults.boxPlot.whiskerSvgStyle
- * @memberof! oj.ojChart
- * @instance
- * @type {Object}
- * @default {}
- */
-/**
- * The CSS style class to apply to the whisker ends.
- * @expose
- * @name styleDefaults.boxPlot.whiskerEndSvgClassName
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default ""
- */
-/**
- * The CSS inline style to apply to the whisker ends.
- * @expose
- * @name styleDefaults.boxPlot.whiskerEndSvgStyle
- * @memberof! oj.ojChart
- * @instance
- * @type {Object}
- * @default {}
- */
-/**
- *  Specifies the length of the whisker ends in pixels (e.g. '9px') or as a percentage of the box width (e.g. '50%').
- * @expose
- * @name styleDefaults.boxPlot.whiskerEndLength
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default null
- */
-/**
- * The CSS style class to apply to the median line.
- * @expose
- * @name styleDefaults.boxPlot.medianSvgClassName
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default ""
- */
-/**
- * The CSS inline style to apply to the median line.
- * @expose
- * @name styleDefaults.boxPlot.medianSvgStyle
- * @memberof! oj.ojChart
- * @instance
- * @type {Object}
- * @default {}
- */
-/**
- * An object specifying value formatting and tooltip behavior, whose keys generally correspond to the attribute names on the data items.
- * @name valueFormats
- * @memberof oj.ojChart
- * @instance
- * @type {Object}
- */
-/**
- * Specifies tooltip behavior for the series.
- * @expose
- * @name valueFormats.series
- * @memberof! oj.ojChart
- * @instance
- * @type {Object}
- */
-/**
- * A string representing the label that is displayed before the value in the tooltip.
- * @expose
- * @name valueFormats.series.tooltipLabel
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default null
- * @ojtranslatable
- */
-/**
- * Whether the value is displayed in the tooltip.
- * @expose
- * @name valueFormats.series.tooltipDisplay
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "off"
- * @ojvalue {string} "auto"
- * @default "auto"
- */
-/**
- * Specifies tooltip behavior for the groups.
- * @expose
- * @name valueFormats.group
- * @memberof! oj.ojChart
- * @instance
- * @type {Object}
- */
-/**
- * A string representing the label that is displayed before the value in the tooltip. This value can also take an array of strings to be applied to hierarchical group names, from outermost to innermost.
- * @expose
- * @name valueFormats.group.tooltipLabel
- * @memberof! oj.ojChart
- * @instance
- * @type {string|Array.<string>}
- * @default null
- * @ojtranslatable
- */
-/**
- * Whether the value is displayed in the tooltip.
- * @expose
- * @name valueFormats.group.tooltipDisplay
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "off"
- * @ojvalue {string} "auto"
- * @default "auto"
- */
-/**
- * Specifies the value formatting and tooltip behavior for the x values.
- * @expose
- * @name valueFormats.x
- * @memberof! oj.ojChart
- * @instance
- * @type {Object}
- */
-/**
- * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used to format the label. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
- * @expose
- * @name valueFormats.x.converter
- * @memberof! oj.ojChart
- * @instance
- * @type {Object}
- * @default null
- */
-/**
- * The scaling behavior of the value. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
- * @expose
- * @name valueFormats.x.scaling
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "none"
- * @ojvalue {string} "thousand"
- * @ojvalue {string} "million"
- * @ojvalue {string} "billion"
- * @ojvalue {string} "trillion"
- * @ojvalue {string} "quadrillion"
- * @ojvalue {string} "auto"
- * @default "auto"
- */
-/**
- * A string representing the label that is displayed before the value in the tooltip.
- * @expose
- * @name valueFormats.x.tooltipLabel
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default null
- * @ojtranslatable
- */
-/**
- * Whether the value is displayed in the tooltip.
- * @expose
- * @name valueFormats.x.tooltipDisplay
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "off"
- * @ojvalue {string} "auto"
- * @default "auto"
- */
-/**
- * Specifies the value formatting and tooltip behavior for the y values.
- * @expose
- * @name valueFormats.y
- * @memberof! oj.ojChart
- * @instance
- * @type {Object}
- */
-/**
- * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used to format the label. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
- * @expose
- * @name valueFormats.y.converter
- * @memberof! oj.ojChart
- * @instance
- * @type {Object}
- * @default null
- */
-/**
- * The scaling behavior of the value. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
- * @expose
- * @name valueFormats.y.scaling
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "none"
- * @ojvalue {string} "thousand"
- * @ojvalue {string} "million"
- * @ojvalue {string} "billion"
- * @ojvalue {string} "trillion"
- * @ojvalue {string} "quadrillion"
- * @ojvalue {string} "auto"
- * @default "auto"
- */
-/**
- * A string representing the label that is displayed before the value in the tooltip.
- * @expose
- * @name valueFormats.y.tooltipLabel
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default null
- * @ojtranslatable
- */
-/**
- * Whether the value is displayed in the tooltip.
- * @expose
- * @name valueFormats.y.tooltipDisplay
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "off"
- * @ojvalue {string} "auto"
- * @default "auto"
- */
-/**
- * Specifies the value formatting and tooltip behavior for the y2 values.
- * @expose
- * @name valueFormats.y2
- * @memberof! oj.ojChart
- * @instance
- * @type {Object}
- */
-/**
- * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used to format the label. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
- * @expose
- * @name valueFormats.y2.converter
- * @memberof! oj.ojChart
- * @instance
- * @type {Object}
- * @default null
- */
-/**
- * The scaling behavior of the value. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
- * @expose
- * @name valueFormats.y2.scaling
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "none"
- * @ojvalue {string} "thousand"
- * @ojvalue {string} "million"
- * @ojvalue {string} "billion"
- * @ojvalue {string} "trillion"
- * @ojvalue {string} "quadrillion"
- * @ojvalue {string} "auto"
- * @default "auto"
- */
-/**
- * A string representing the label that is displayed before the value in the tooltip.
- * @expose
- * @name valueFormats.y2.tooltipLabel
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default null
- * @ojtranslatable
- */
-/**
- * Whether the value is displayed in the tooltip.
- * @expose
- * @name valueFormats.y2.tooltipDisplay
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "off"
- * @ojvalue {string} "auto"
- * @default "auto"
- */
-/**
- * Specifies the value formatting and tooltip behavior for the z values.
- * @expose
- * @name valueFormats.z
- * @memberof! oj.ojChart
- * @instance
- * @type {Object}
- */
-/**
- * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used to format the label. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
- * @expose
- * @name valueFormats.z.converter
- * @memberof! oj.ojChart
- * @instance
- * @type {Object}
- * @default null
- */
-/**
- * The scaling behavior of the value. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
- * @expose
- * @name valueFormats.z.scaling
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "none"
- * @ojvalue {string} "thousand"
- * @ojvalue {string} "million"
- * @ojvalue {string} "billion"
- * @ojvalue {string} "trillion"
- * @ojvalue {string} "quadrillion"
- * @ojvalue {string} "auto"
- * @default "auto"
- */
-/**
- * A string representing the label that is displayed before the value in the tooltip.
- * @expose
- * @name valueFormats.z.tooltipLabel
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default null
- * @ojtranslatable
- */
-/**
- * Whether the value is displayed in the tooltip.
- * @expose
- * @name valueFormats.z.tooltipDisplay
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "off"
- * @ojvalue {string} "auto"
- * @default "auto"
- */
-/**
- * Specifies the value formatting and tooltip behavior for the values.
- * @expose
- * @name valueFormats.value
- * @memberof! oj.ojChart
- * @instance
- * @type {Object}
- */
-/**
- * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used to format the label. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
- * @expose
- * @name valueFormats.value.converter
- * @memberof! oj.ojChart
- * @instance
- * @type {Object}
- * @default null
- */
-/**
- * The scaling behavior of the value. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
- * @expose
- * @name valueFormats.value.scaling
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "none"
- * @ojvalue {string} "thousand"
- * @ojvalue {string} "million"
- * @ojvalue {string} "billion"
- * @ojvalue {string} "trillion"
- * @ojvalue {string} "quadrillion"
- * @ojvalue {string} "auto"
- * @default "auto"
- */
-/**
- * A string representing the label that is displayed before the value in the tooltip.
- * @expose
- * @name valueFormats.value.tooltipLabel
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default null
- * @ojtranslatable
- */
-/**
- * Whether the value is displayed in the tooltip.
- * @expose
- * @name valueFormats.value.tooltipDisplay
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "off"
- * @ojvalue {string} "auto"
- * @default "auto"
- */
-/**
- * Specifies the value formatting and tooltip behavior for the target values of a funnel chart.
- * @expose
- * @name valueFormats.targetValue
- * @memberof! oj.ojChart
- * @instance
- * @type {Object}
- */
-/**
- * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used to format the label. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
- * @expose
- * @name valueFormats.targetValue.converter
- * @memberof! oj.ojChart
- * @instance
- * @type {Object}
- * @default null
- */
-/**
- * The scaling behavior of the value. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
- * @expose
- * @name valueFormats.targetValue.scaling
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "none"
- * @ojvalue {string} "thousand"
- * @ojvalue {string} "million"
- * @ojvalue {string} "billion"
- * @ojvalue {string} "trillion"
- * @ojvalue {string} "quadrillion"
- * @ojvalue {string} "auto"
- * @default "auto"
- */
-/**
- * A string representing the label that is displayed before the value in the tooltip.
- * @expose
- * @name valueFormats.targetValue.tooltipLabel
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default null
- * @ojtranslatable
- */
-/**
- * Whether the value is displayed in the tooltip.
- * @expose
- * @name valueFormats.targetValue.tooltipDisplay
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "off"
- * @ojvalue {string} "auto"
- * @default "auto"
- */
-/**
- * Specifies the value formatting and tooltip behavior for the low values.
- * @expose
- * @name valueFormats.low
- * @memberof! oj.ojChart
- * @instance
- * @type {Object}
- */
-/**
- * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used to format the label. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
- * @expose
- * @name valueFormats.low.converter
- * @memberof! oj.ojChart
- * @instance
- * @type {Object}
- * @default null
- */
-/**
- * The scaling behavior of the value. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
- * @expose
- * @name valueFormats.low.scaling
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "none"
- * @ojvalue {string} "thousand"
- * @ojvalue {string} "million"
- * @ojvalue {string} "billion"
- * @ojvalue {string} "trillion"
- * @ojvalue {string} "quadrillion"
- * @ojvalue {string} "auto"
- * @default "auto"
- */
-/**
- * A string representing the label that is displayed before the value in the tooltip.
- * @expose
- * @name valueFormats.low.tooltipLabel
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default null
- * @ojtranslatable
- */
-/**
- * Whether the value is displayed in the tooltip.
- * @expose
- * @name valueFormats.low.tooltipDisplay
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "off"
- * @ojvalue {string} "auto"
- * @default "auto"
- */
-/**
- * Specifies the value formatting and tooltip behavior for the high values.
- * @expose
- * @name valueFormats.high
- * @memberof! oj.ojChart
- * @instance
- * @type {Object}
- */
-/**
- * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used to format the label. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
- * @expose
- * @name valueFormats.high.converter
- * @memberof! oj.ojChart
- * @instance
- * @type {Object}
- * @default null
- */
-/**
- * The scaling behavior of the value. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
- * @expose
- * @name valueFormats.high.scaling
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "none"
- * @ojvalue {string} "thousand"
- * @ojvalue {string} "million"
- * @ojvalue {string} "billion"
- * @ojvalue {string} "trillion"
- * @ojvalue {string} "quadrillion"
- * @ojvalue {string} "auto"
- * @default "auto"
- */
-/**
- * A string representing the label that is displayed before the value in the tooltip.
- * @expose
- * @name valueFormats.high.tooltipLabel
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default null
- * @ojtranslatable
- */
-/**
- * Whether the value is displayed in the tooltip.
- * @expose
- * @name valueFormats.high.tooltipDisplay
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "off"
- * @ojvalue {string} "auto"
- * @default "auto"
- */
-/**
- * Specifies the value formatting and tooltip behavior for the open values of a stock chart.
- * @expose
- * @name valueFormats.open
- * @memberof! oj.ojChart
- * @instance
- * @type {Object}
- */
-/**
- * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used to format the label. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
- * @expose
- * @name valueFormats.open.converter
- * @memberof! oj.ojChart
- * @instance
- * @type {Object}
- * @default null
- */
-/**
- * The scaling behavior of the value. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
- * @expose
- * @name valueFormats.open.scaling
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "none"
- * @ojvalue {string} "thousand"
- * @ojvalue {string} "million"
- * @ojvalue {string} "billion"
- * @ojvalue {string} "trillion"
- * @ojvalue {string} "quadrillion"
- * @ojvalue {string} "auto"
- * @default "auto"
- */
-/**
- * A string representing the label that is displayed before the value in the tooltip.
- * @expose
- * @name valueFormats.open.tooltipLabel
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default null
- * @ojtranslatable
- */
-/**
- * Whether the value is displayed in the tooltip.
- * @expose
- * @name valueFormats.open.tooltipDisplay
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "off"
- * @ojvalue {string} "auto"
- * @default "auto"
- */
-/**
- * Specifies the value formatting and tooltip behavior for the close values of a stock chart.
- * @expose
- * @name valueFormats.close
- * @memberof! oj.ojChart
- * @instance
- * @type {Object}
- */
-/**
- * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used to format the label. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
- * @expose
- * @name valueFormats.close.converter
- * @memberof! oj.ojChart
- * @instance
- * @type {Object}
- * @default null
- */
-/**
- * The scaling behavior of the value. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
- * @expose
- * @name valueFormats.close.scaling
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "none"
- * @ojvalue {string} "thousand"
- * @ojvalue {string} "million"
- * @ojvalue {string} "billion"
- * @ojvalue {string} "trillion"
- * @ojvalue {string} "quadrillion"
- * @ojvalue {string} "auto"
- * @default "auto"
- */
-/**
- * A string representing the label that is displayed before the value in the tooltip.
- * @expose
- * @name valueFormats.close.tooltipLabel
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default null
- * @ojtranslatable
- */
-/**
- * Whether the value is displayed in the tooltip.
- * @expose
- * @name valueFormats.close.tooltipDisplay
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "off"
- * @ojvalue {string} "auto"
- * @default "auto"
- */
-/**
- * Specifies the value formatting and tooltip behavior for the volume values of a stock chart.
- * @expose
- * @name valueFormats.volume
- * @memberof! oj.ojChart
- * @instance
- * @type {Object}
- */
-/**
- * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used to format the label. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
- * @expose
- * @name valueFormats.volume.converter
- * @memberof! oj.ojChart
- * @instance
- * @type {Object}
- * @default null
- */
-/**
- * The scaling behavior of the value. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
- * @expose
- * @name valueFormats.volume.scaling
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "none"
- * @ojvalue {string} "thousand"
- * @ojvalue {string} "million"
- * @ojvalue {string} "billion"
- * @ojvalue {string} "trillion"
- * @ojvalue {string} "quadrillion"
- * @ojvalue {string} "auto"
- * @default "auto"
- */
-/**
- * A string representing the label that is displayed before the value in the tooltip.
- * @expose
- * @name valueFormats.volume.tooltipLabel
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default null
- * @ojtranslatable
- */
-/**
- * Whether the value is displayed in the tooltip.
- * @expose
- * @name valueFormats.volume.tooltipDisplay
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "off"
- * @ojvalue {string} "auto"
- * @default "auto"
- */
-/**
- * Specifies the value formatting and tooltip behavior for the q1 values of a box plot.
- * @expose
- * @name valueFormats.q1
- * @memberof! oj.ojChart
- * @instance
- * @type {Object}
- */
-/**
- * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used to format the label. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
- * @expose
- * @name valueFormats.q1.converter
- * @memberof! oj.ojChart
- * @instance
- * @type {Object}
- * @default null
- */
-/**
- * The scaling behavior of the value. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
- * @expose
- * @name valueFormats.q1.scaling
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "none"
- * @ojvalue {string} "thousand"
- * @ojvalue {string} "million"
- * @ojvalue {string} "billion"
- * @ojvalue {string} "trillion"
- * @ojvalue {string} "quadrillion"
- * @ojvalue {string} "auto"
- * @default "auto"
- */
-/**
- * A string representing the label that is displayed before the value in the tooltip.
- * @expose
- * @name valueFormats.q1.tooltipLabel
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default null
- * @ojtranslatable
- */
-/**
- * Whether the value is displayed in the tooltip.
- * @expose
- * @name valueFormats.q1.tooltipDisplay
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "off"
- * @ojvalue {string} "auto"
- * @default "auto"
- */
-/**
- * Specifies the value formatting and tooltip behavior for the q2 values of a box plot.
- * @expose
- * @name valueFormats.q2
- * @memberof! oj.ojChart
- * @instance
- * @type {Object}
- */
-/**
- * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used to format the label. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
- * @expose
- * @name valueFormats.q2.converter
- * @memberof! oj.ojChart
- * @instance
- * @type {Object}
- * @default null
- */
-/**
- * The scaling behavior of the value. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
- * @expose
- * @name valueFormats.q2.scaling
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "none"
- * @ojvalue {string} "thousand"
- * @ojvalue {string} "million"
- * @ojvalue {string} "billion"
- * @ojvalue {string} "trillion"
- * @ojvalue {string} "quadrillion"
- * @ojvalue {string} "auto"
- * @default "auto"
- */
-/**
- * A string representing the label that is displayed before the value in the tooltip.
- * @expose
- * @name valueFormats.q2.tooltipLabel
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default null
- * @ojtranslatable
- */
-/**
- * Whether the value is displayed in the tooltip.
- * @expose
- * @name valueFormats.q2.tooltipDisplay
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "off"
- * @ojvalue {string} "auto"
- * @default "auto"
- */
-/**
- * Specifies the value formatting and tooltip behavior for the q3 values of a box plot.
- * @expose
- * @name valueFormats.q3
- * @memberof! oj.ojChart
- * @instance
- * @type {Object}
- */
-/**
- * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used to format the label. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
- * @expose
- * @name valueFormats.q3.converter
- * @memberof! oj.ojChart
- * @instance
- * @type {Object}
- * @default null
- */
-/**
- * The scaling behavior of the value. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
- * @expose
- * @name valueFormats.q3.scaling
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "none"
- * @ojvalue {string} "thousand"
- * @ojvalue {string} "million"
- * @ojvalue {string} "billion"
- * @ojvalue {string} "trillion"
- * @ojvalue {string} "quadrillion"
- * @ojvalue {string} "auto"
- * @default "auto"
- */
-/**
- * A string representing the label that is displayed before the value in the tooltip.
- * @expose
- * @name valueFormats.q3.tooltipLabel
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @default null
- * @ojtranslatable
- */
-/**
- * Whether the value is displayed in the tooltip.
- * @expose
- * @name valueFormats.q3.tooltipDisplay
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "off"
- * @ojvalue {string} "auto"
- * @default "auto"
- */
-/**
- * Specifies the value formatting for the data item labels.
- * @expose
- * @name valueFormats.label
- * @memberof! oj.ojChart
- * @instance
- * @type {Object}
- */
-/**
- * The converter (an object literal or instance that duck types <a href="oj.Converter.html">oj.Converter</a>) used to format the label. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
- * @expose
- * @name valueFormats.label.converter
- * @memberof! oj.ojChart
- * @instance
- * @type {Object}
- * @default null
- */
-/**
- * The scaling behavior of the value. When using a converter, scaling should be set to none, as the formatted result may not be compatible with the scaling suffixes.
- * @expose
- * @name valueFormats.label.scaling
- * @memberof! oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "none"
- * @ojvalue {string} "thousand"
- * @ojvalue {string} "million"
- * @ojvalue {string} "billion"
- * @ojvalue {string} "trillion"
- * @ojvalue {string} "quadrillion"
- * @ojvalue {string} "auto"
- * @default "auto"
- */
-/**
- * Specifies the zoom and scroll behavior of the chart. "Live" behavior means that the chart will be updated continuously as it is being manipulated, while "delayed" means that the update will wait until the zoom/scroll action is done. While "live" zoom and scroll provides the best end user experience, no guarantess are made about the rendering performance or usability for large data sets or slow client environments. If performance is an issue, "delayed" zoom and scroll should be used instead.
- * @expose
- * @name zoomAndScroll
- * @memberof oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "delayedScrollOnly"
- * @ojvalue {string} "liveScrollOnly"
- * @ojvalue {string} "delayed"
- * @ojvalue {string} "live"
- * @ojvalue {string} "off"
- * @default "off"
- */
-/**
- * Specifies the zoom direction of bubble and scatter charts. "Auto" zooms in both x and y direction. Use "x" or "y" for single direction zooming.
- * @expose
- * @name zoomDirection
- * @memberof oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "x"
- * @ojvalue {string} "y"
- * @ojvalue {string} "auto"
- * @default "auto"
- */
-/**
- * Whether automatic initial zooming is enabled. The valid values are "first" to initially zoom to the first data points (after the viewportMin) that can fit in the plot area, "last" to initially zoom to the last data points (before the viewportMax), and "none" to disable initial zooming. Only applies to bar, line, area, and combo charts with zoomAndScroll turned on.
- * @expose
- * @name initialZooming
- * @memberof oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "first"
- * @ojvalue {string} "last"
- * @ojvalue {string} "none"
- * @default "none"
- */
-/**
- *  Whether drilling is enabled. Drillable objects will show a pointer cursor on hover and fire an <code class="prettyprint">ojDrill</code> event on click (double click if selection is enabled). Use "on" to enable drilling for all series objects (legend items), group objects (x-axis labels), and data items. Use "seriesOnly" or "groupsOnly" to enable drilling for series objects or group objects only. To enable or disable drilling on individual series, group, or data item, use the drilling attribute in each series, group, or data item.
- * @expose
- * @name drilling
- * @memberof oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "on"
- * @ojvalue {string} "seriesOnly"
- * @ojvalue {string} "groupsOnly"
- * @ojvalue {string} "off"
- * @default "off"
- */
-/**
- * An object containing an optional callback function for tooltip customization.
- * @expose
- * @name tooltip
- * @memberof oj.ojChart
- * @instance
- * @type {Object}
- */
-/**
- *  A function that returns a custom tooltip. The function takes a dataContext argument,
- *  provided by the chart, with the following properties:
- *  <ul>
- *    <li>parentElement: The tooltip element. This can be used to change the tooltip border or background color.</li>
- *    <li>id: The id of the hovered item.</li>
- *    <li>series: The id of the series the hovered item belongs to.</li>
- *    <li>group: The ids or an array of ids of the group(s) the hovered item belongs to.
- *        For hierarchical groups, it will be an array of outermost to innermost group ids.</li>
- *    <li>value, targetValue, x, y, z, low, high, open, close, volume: The values of the hovered item.</li>
- *    <li>label: The data label of the hovered item.</li>
- *    <li>data: The data object of the hovered item. For nested items, it will be an array containing
- *     the parent item data and nested item data.</li>
- *	  <li>itemData: The row data object for the hovered item. This will only be set if a DataProvider is being used.</li>
- *    <li>seriesData: The data for the series the hovered item belongs to.</li>
- *    <li>groupData: An array of data for the group the hovered item belongs to. For hierarchical groups,
- *     it will be an array of outermost to innermost group data related to the hovered item.</li>
- *    <li>componentElement: The chart element.</li>
- *    <li>color: The color of the hovered item.</li>
- *  </ul>
- *  For reference objects, this tooltip function is only called if the reference object has an id.
- *  Note: In future releases, tooltips may be fired for objects other than data items and reference objects.
- *  To know whether a hovered object is a data item, please check that the "series" and "group" properties are not null.
- *  The function should return an Object that contains only one of the two properties:
- *  <ul>
- *    <li>insert: HTMLElement | string - An HTML element, which will be appended to the tooltip, or a tooltip string.</li>
- *    <li>preventDefault: <code>true</code> - Indicates that the tooltip should not be displayed. It is not necessary to return {preventDefault:false} to display tooltip, since this is a default behavior.</li>
- *  </ul>
- * @expose
- * @name tooltip.renderer
- * @memberof! oj.ojChart
- * @instance
- * @type {function(Object)}
- * @default null
- */
-/**
- * Data visualizations require a press and hold delay before triggering tooltips, marquee selection, and rollover effects on mobile devices to avoid interfering with page panning, but these hold delays can make applications seem slower and less responsive. For a better user experience, the application can remove the touch and hold delay when data visualizations are used within a non scrolling container or if there is sufficient space outside of the visualization for panning. If touchResponse is touchStart the element will instantly trigger the touch gesture and consume the page pan events if the element does not require an internal feature that requires a touch start gesture like panning, zooming, or when marquee selection is initiated. If touchResponse is auto, the element will behave like touchStart if it determines that it is not rendered within scrolling content and if panning is not available for those elements that support the feature.
- * @expose
- * @name touchResponse
- * @memberof oj.ojChart
- * @instance
- * @type {string}
- * @ojvalue {string} "touchStart"
- * @ojvalue {string} "auto"
- * @default "auto"
- */
-/**
- *  A function that returns a custom data label. The function takes a dataContext argument, provided by the chart, with the following properties: <ul> <li>id: The id of the data item.</li> <li>series: The id of the series the data item belongs to.</li> <li>group: The id or an array of ids of the group(s) the data item belongs to. For hierarchical groups, it will be an array of outermost to innermost group ids.</li> <li>value, targetValue, x, y, z, low, high, open, close, volume: The values of the data item.</li> <li>label: The label for the data item if the dataLabel callback is ignored. The dataLabel callback can concatenate this with another string to easily enhance the default label.</li> <li>totalValue: The total of all values in the chart. This will only be included for pie charts.</li> <li>data: The data object of the data item. For nested items, it will be an array containing the parent item data and nested item data.</li> <li>itemData: The row data object for the data item. This will only be set if a DataProvider is being used. </li> <li>seriesData: The data for the series the data item belongs to.</li> <li>groupData: An array of data for the group the data item belongs to. For hierarchical groups, it will be an array of outermost to innermost group data related to the data item.</li> <li>componentElement: The chart element.</li> </ul> The function may return a number or a string or in the case of range charts, an array of numbers or strings. If any label is a number, it will be formatted by the valueFormat of the type 'label' before being used as labels.
- * @expose
- * @name dataLabel
- * @memberof oj.ojChart
- * @instance
- * @type {function(Object)}
- * @default null
- */
-/**
- * Provides support for HTML5 Drag and Drop events. Please refer to <a href="https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/Drag_and_drop">third party documentation</a> on HTML5 Drag and Drop to learn how to use it.
- * @expose
- * @name dnd
- * @memberof oj.ojChart
- * @instance
- * @type {Object}
- */
-/**
- * An object that describes drag functionality.
- * @expose
- * @name dnd.drag
- * @memberof! oj.ojChart
- * @instance
- * @type {Object}
- */
-/**
- * Allows dragging of chart data items, including bars, line/area/scatter markers, bubbles, and pie/funnel/pyramid slices.
- * @expose
- * @name dnd.drag.items
- * @memberof! oj.ojChart
- * @instance
- * @type {Object}
- */
-/**
- * The MIME types to use for the dragged data in the dataTransfer object. This can be a string if there is only one type, or an array of strings if multiple types are needed. For example, if selected employee data items are being dragged, dataTypes could be "application/employees+json". Drop targets can examine the data types and decide whether to accept the data. For each type in the array, dataTransfer.setData will be called with the specified type and the data. The data is an array of the dataContexts of the selected data items. The dataContext is the JSON version of the dataContext that we use for "tooltip" and "dataLabels" properties, excluding componentElement and parentElement. This property is required unless the application calls setData itself in a dragStart callback function.
- * @expose
- * @name dnd.drag.items.dataTypes
- * @memberof! oj.ojChart
- * @instance
- * @type {string|Array.<string>}
- * @default null
- */
-/**
- * An optional callback function that receives the "drag" event as argument.
- * @expose
- * @name dnd.drag.items.drag
- * @memberof! oj.ojChart
- * @instance
- * @type {function(Event)}
- * @default null
- */
-/**
- * An optional callback function that receives the "dragend" event as argument.
- * @expose
- * @name dnd.drag.items.dragEnd
- * @memberof! oj.ojChart
- * @instance
- * @type {function(Event)}
- * @default null
- */
-/**
- * An optional callback function that receives the "dragstart" event and context information as arguments. The context information is as follows: <ul> <li> item {Array.(object)}: An array of dataContexts of the dragged data items. The dataContext is the same as what we use for "tooltip" and "dataLabels" properties. </li> </ul> This function can set its own data and drag image as needed. When this function is called, event.dataTransfer is already populated with the default data and drag image.
- * @expose
- * @name dnd.drag.items.dragStart
- * @memberof! oj.ojChart
- * @instance
- * @type {function(Event, object)}
- * @default null
- */
-/**
- * Allows dragging of chart series from the legend items.
- * @expose
- * @name dnd.drag.series
- * @memberof! oj.ojChart
- * @instance
- * @type {Object}
- */
-/**
- * The MIME types to use for the dragged data in the dataTransfer object. This can be a string if there is only one type, or an array of strings if multiple types are needed. For example, if selected employee data items are being dragged, dataTypes could be "application/employees+json". Drop targets can examine the data types and decide whether to accept the data. For each type in the array, dataTransfer.setData will be called with the specified type and the data. The data is an array of the dataContexts of the selected series. The dataContext is the JSON version of the dataContext that we use for "tooltip" and "dataLabels" properties, excluding componentElement and parentElement. This property is required unless the application calls setData itself in a dragStart callback function.
- * @expose
- * @name dnd.drag.series.dataTypes
- * @memberof! oj.ojChart
- * @instance
- * @type {string|Array.<string>}
- * @default null
- */
-/**
- * An optional callback function that receives the "drag" event as argument.
- * @expose
- * @name dnd.drag.series.drag
- * @memberof! oj.ojChart
- * @instance
- * @type {function(Event)}
- * @default null
- */
-/**
- * An optional callback function that receives the "dragend" event as argument.
- * @expose
- * @name dnd.drag.series.dragEnd
- * @memberof! oj.ojChart
- * @instance
- * @type {function(Event)}
- * @default null
- */
-/**
- * An optional callback function that receives the "dragstart" event and context information as arguments. The context information is as follows: <ul> <li> series {Array.(object)}: An array of dataContexts of the dragged series. The dataContext is the same as what we use for "tooltip" and "dataLabels" properties. </li> </ul> This function can set its own data and drag image as needed. When this function is called, event.dataTransfer is already populated with the default data and drag image.
- * @expose
- * @name dnd.drag.series.dragStart
- * @memberof! oj.ojChart
- * @instance
- * @type {function(Event, object)}
- * @default null
- */
-/**
- * Allows dragging of chart groups from the categorical axis labels.
- * @expose
- * @name dnd.drag.groups
- * @memberof! oj.ojChart
- * @instance
- * @type {Object}
- */
-/**
- * The MIME types to use for the dragged data in the dataTransfer object. This can be a string if there is only one type, or an array of strings if multiple types are needed. For example, if selected employee data items are being dragged, dataTypes could be "application/employees+json". Drop targets can examine the data types and decide whether to accept the data. For each type in the array, dataTransfer.setData will be called with the specified type and the data. The data is an array of the dataContexts of the selected groups. The dataContext is the JSON version of the dataContext that we use for "tooltip" and "dataLabels" properties, excluding componentElement and parentElement. This property is required unless the application calls setData itself in a dragStart callback function.
- * @expose
- * @name dnd.drag.groups.dataTypes
- * @memberof! oj.ojChart
- * @instance
- * @type {string|Array.<string>}
- * @default null
- */
-/**
- * An optional callback function that receives the "drag" event as argument.
- * @expose
- * @name dnd.drag.groups.drag
- * @memberof! oj.ojChart
- * @instance
- * @type {function(Event)}
- * @default null
- */
-/**
- * An optional callback function that receives the "dragend" event as argument.
- * @expose
- * @name dnd.drag.groups.dragEnd
- * @memberof! oj.ojChart
- * @instance
- * @type {function(Event)}
- * @default null
- */
-/**
- * An optional callback function that receives the "dragstart" event and context information as arguments. The context information is as follows: <ul> <li> groups {Array.(object)}: An array of dataContexts of the dragged groups. The dataContext is the same as what we use for "tooltip" and "dataLabels" properties. </li> </ul> This function can set its own data and drag image as needed. When this function is called, event.dataTransfer is already populated with the default data and drag image.
- * @expose
- * @name dnd.drag.groups.dragStart
- * @memberof! oj.ojChart
- * @instance
- * @type {function(Event, object)}
- * @default null
- */
-/**
- * An object that describes drop functionality.
- * @expose
- * @name dnd.drop
- * @memberof! oj.ojChart
- * @instance
- * @type {Object}
- */
-/**
- * Allows dropping on the plot area.
- * @expose
- * @name dnd.drop.plotArea
- * @memberof! oj.ojChart
- * @instance
- * @type {Object}
- */
-/**
- * An array of MIME data types this element can accept. This property is required unless dragEnter, dragOver, and drop callback functions are specified to handle the corresponding events.
- * @expose
- * @name dnd.drop.plotArea.dataTypes
- * @memberof! oj.ojChart
- * @instance
- * @type {string|Array.<string>}
- * @default null
- */
-/**
- * An optional callback function that receives the "dragenter" event and context information as arguments. The context information is as follows: <ul> <li>x {number}: The X axis value at the event position.</li> <li>y {number}: The Y axis value at the event position.</li> <li>y2 {number}: The Y2 axis value at the event position.</li> </ul> This function should call <code class="prettyprint">event.preventDefault()</code> to indicate the dragged data can be accepted. Otherwise, dataTypes will be matched against the drag data types to determine if the data is acceptable.
- * @expose
- * @name dnd.drop.plotArea.dragEnter
- * @memberof! oj.ojChart
- * @instance
- * @type {function(Event, object)}
- * @default null
- */
-/**
- * An optional callback function that receives the "dragover" event and context information as arguments. The context information is as follows: <ul> <li>x {number}: The X axis value at the event position.</li> <li>y {number}: The Y axis value at the event position.</li> <li>y2 {number}: The Y2 axis value at the event position.</li> </ul> This function should call <code class="prettyprint">event.preventDefault()</code> to indicate the dragged data can be accepted. Otherwise, dataTypes will be matched against the drag data types to determine if the data is acceptable.
- * @expose
- * @name dnd.drop.plotArea.dragOver
- * @memberof! oj.ojChart
- * @instance
- * @type {function(Event, object)}
- * @default null
- */
-/**
- * An optional callback function that receives the "dragleave" event and context information as arguments. The context information is as follows: <ul> <li>x {number}: The X axis value at the event position.</li> <li>y {number}: The Y axis value at the event position.</li> <li>y2 {number}: The Y2 axis value at the event position.</li> </ul>
- * @expose
- * @name dnd.drop.plotArea.dragLeave
- * @memberof! oj.ojChart
- * @instance
- * @type {function(Event, object)}
- * @default null
- */
-/**
- * An optional callback function that receives the "drop" event and context information as arguments. The context information is as follows: <ul> <li>x {number}: The X axis value at the event position.</li> <li>y {number}: The Y axis value at the event position.</li> <li>y2 {number}: The Y2 axis value at the event position.</li> </ul> This function should call <code class="prettyprint">event.preventDefault()</code> to indicate the dragged data can be accepted.
- * @expose
- * @name dnd.drop.plotArea.drop
- * @memberof! oj.ojChart
- * @instance
- * @type {function(Event, object)}
- * @default null
- */
-/**
- * Allows dropping on the X axis.
- * @expose
- * @name dnd.drop.xAxis
- * @memberof! oj.ojChart
- * @instance
- * @type {Object}
- */
-/**
- * An array of MIME data types this element can accept. This property is required unless dragEnter, dragOver, and drop callback functions are specified to handle the corresponding events.
- * @expose
- * @name dnd.drop.xAxis.dataTypes
- * @memberof! oj.ojChart
- * @instance
- * @type {string|Array.<string>}
- * @default null
- */
-/**
- * An optional callback function that receives the "dragenter" event and context information as arguments. The context information is as follows: <ul> <li>x {number}: The X axis value at the event position.</li> </ul> This function should call <code class="prettyprint">event.preventDefault()</code> to indicate the dragged data can be accepted. Otherwise, dataTypes will be matched against the drag data types to determine if the data is acceptable.
- * @expose
- * @name dnd.drop.xAxis.dragEnter
- * @memberof! oj.ojChart
- * @instance
- * @type {function(Event, object)}
- * @default null
- */
-/**
- * An optional callback function that receives the "dragover" event and context information as arguments. The context information is as follows: <ul> <li>x {number}: The X axis value at the event position.</li> </ul> This function should call <code class="prettyprint">event.preventDefault()</code> to indicate the dragged data can be accepted. Otherwise, dataTypes will be matched against the drag data types to determine if the data is acceptable.
- * @expose
- * @name dnd.drop.xAxis.dragOver
- * @memberof! oj.ojChart
- * @instance
- * @type {function(Event, object)}
- * @default null
- */
-/**
- * An optional callback function that receives the "dragleave" event and context information as arguments. The context information is as follows: <ul> <li>x {number}: The X axis value at the event position.</li> </ul>
- * @expose
- * @name dnd.drop.xAxis.dragLeave
- * @memberof! oj.ojChart
- * @instance
- * @type {function(Event, object)}
- * @default null
- */
-/**
- * An optional callback function that receives the "drop" event and context information as arguments. The context information is as follows: <ul> <li>x {number}: The X axis value at the event position.</li> </ul> This function should call <code class="prettyprint">event.preventDefault()</code> to indicate the dragged data can be accepted.
- * @expose
- * @name dnd.drop.xAxis.drop
- * @memberof! oj.ojChart
- * @instance
- * @type {function(Event, object)}
- * @default null
- */
-/**
- * Allows dropping on the Y axis.
- * @expose
- * @name dnd.drop.yAxis
- * @memberof! oj.ojChart
- * @instance
- * @type {Object}
- */
-/**
- * An array of MIME data types this element can accept. This property is required unless dragEnter, dragOver, and drop callback functions are specified to handle the corresponding events.
- * @expose
- * @name dnd.drop.yAxis.dataTypes
- * @memberof! oj.ojChart
- * @instance
- * @type {string|Array.<string>}
- * @default null
- */
-/**
- * An optional callback function that receives the "dragenter" event and context information as arguments. The context information is as follows: <ul> <li>y {number}: The Y axis value at the event position.</li> </ul> This function should call <code class="prettyprint">event.preventDefault()</code> to indicate the dragged data can be accepted. Otherwise, dataTypes will be matched against the drag data types to determine if the data is acceptable.
- * @expose
- * @name dnd.drop.yAxis.dragEnter
- * @memberof! oj.ojChart
- * @instance
- * @type {function(Event, object)}
- * @default null
- */
-/**
- * An optional callback function that receives the "dragover" event and context information as arguments. The context information is as follows: <ul> <li>y {number}: The Y axis value at the event position.</li> </ul> This function should call <code class="prettyprint">event.preventDefault()</code> to indicate the dragged data can be accepted. Otherwise, dataTypes will be matched against the drag data types to determine if the data is acceptable.
- * @expose
- * @name dnd.drop.yAxis.dragOver
- * @memberof! oj.ojChart
- * @instance
- * @type {function(Event, object)}
- * @default null
- */
-/**
- * An optional callback function that receives the "dragleave" event and context information as arguments. The context information is as follows: <ul> <li>y {number}: The Y axis value at the event position.</li> </ul>
- * @expose
- * @name dnd.drop.yAxis.dragLeave
- * @memberof! oj.ojChart
- * @instance
- * @type {function(Event, object)}
- * @default null
- */
-/**
- * An optional callback function that receives the "drop" event and context information as arguments. The context information is as follows: <ul> <li>y {number}: The Y axis value at the event position.</li> </ul> This function should call <code class="prettyprint">event.preventDefault()</code> to indicate the dragged data can be accepted.
- * @expose
- * @name dnd.drop.yAxis.drop
- * @memberof! oj.ojChart
- * @instance
- * @type {function(Event, object)}
- * @default null
- */
-/**
- * Allows dropping on the Y2 axis.
- * @expose
- * @name dnd.drop.y2Axis
- * @memberof! oj.ojChart
- * @instance
- * @type {Object}
- */
-/**
- * An array of MIME data types this element can accept. This property is required unless dragEnter, dragOver, and drop callback functions are specified to handle the corresponding events.
- * @expose
- * @name dnd.drop.y2Axis.dataTypes
- * @memberof! oj.ojChart
- * @instance
- * @type {string|Array.<string>}
- * @default null
- */
-/**
- * An optional callback function that receives the "dragenter" event and context information as arguments. The context information is as follows: <ul> <li>y2 {number}: The Y2 axis value at the event position.</li> </ul> This function should call <code class="prettyprint">event.preventDefault()</code> to indicate the dragged data can be accepted. Otherwise, dataTypes will be matched against the drag data types to determine if the data is acceptable.
- * @expose
- * @name dnd.drop.y2Axis.dragEnter
- * @memberof! oj.ojChart
- * @instance
- * @type {function(Event, object)}
- * @default null
- */
-/**
- * An optional callback function that receives the "dragover" event and context information as arguments. The context information is as follows: <ul> <li>y2 {number}: The Y2 axis value at the event position.</li> </ul> This function should call <code class="prettyprint">event.preventDefault()</code> to indicate the dragged data can be accepted. Otherwise, dataTypes will be matched against the drag data types to determine if the data is acceptable.
- * @expose
- * @name dnd.drop.y2Axis.dragOver
- * @memberof! oj.ojChart
- * @instance
- * @type {function(Event, object)}
- * @default null
- */
-/**
- * An optional callback function that receives the "dragleave" event and context information as arguments. The context information is as follows: <ul> <li>y2 {number}: The Y2 axis value at the event position.</li> </ul>
- * @expose
- * @name dnd.drop.y2Axis.dragLeave
- * @memberof! oj.ojChart
- * @instance
- * @type {function(Event, object)}
- * @default null
- */
-/**
- * An optional callback function that receives the "drop" event and context information as arguments. The context information is as follows: <ul> <li>y2 {number}: The Y2 axis value at the event position.</li> </ul> This function should call <code class="prettyprint">event.preventDefault()</code> to indicate the dragged data can be accepted.
- * @expose
- * @name dnd.drop.y2Axis.drop
- * @memberof! oj.ojChart
- * @instance
- * @type {function(Event, object)}
- * @default null
- */
-/**
- * Allows dropping on the legend.
- * @expose
- * @name dnd.drop.legend
- * @memberof! oj.ojChart
- * @instance
- * @type {Object}
- */
-/**
- * An array of MIME data types this element can accept. This property is required unless dragEnter, dragOver, and drop callback functions are specified to handle the corresponding events.
- * @expose
- * @name dnd.drop.legend.dataTypes
- * @memberof! oj.ojChart
- * @instance
- * @type {string|Array.<string>}
- * @default null
- */
-/**
- * An optional callback function that receives the "dragenter" event and empty context information as arguments. This function should call <code class="prettyprint">event.preventDefault()</code> to indicate the dragged data can be accepted. Otherwise, dataTypes will be matched against the drag data types to determine if the data is acceptable.
- * @expose
- * @name dnd.drop.legend.dragEnter
- * @memberof! oj.ojChart
- * @instance
- * @type {function(Event, object)}
- * @default null
- */
-/**
- * An optional callback function that receives the "dragover" event and empty context information as arguments. This function should call <code class="prettyprint">event.preventDefault()</code> to indicate the dragged data can be accepted. Otherwise, dataTypes will be matched against the drag data types to determine if the data is acceptable.
- * @expose
- * @name dnd.drop.legend.dragOver
- * @memberof! oj.ojChart
- * @instance
- * @type {function(Event, object)}
- * @default null
- */
-/**
- * An optional callback function that receives the "dragleave" event and empty context information as arguments.
- * @expose
- * @name dnd.drop.legend.dragLeave
- * @memberof! oj.ojChart
- * @instance
- * @type {function(Event, object)}
- * @default null
- */
-/**
- * An optional callback function that receives the "drop" event and emtpy context information as arguments. This function should call <code class="prettyprint">event.preventDefault()</code> to indicate the dragged data can be accepted.
- * @expose
- * @name dnd.drop.legend.drop
- * @memberof! oj.ojChart
- * @instance
- * @type {function(Event, object)}
- * @default null
- */
-
-/**
  * Object type that defines a chart series.
- * @ignore
  * @typedef {Object} oj.ojChart.Series
- * @property {string} id The id of the series. Defaults to the name or the series index if not specified.
- * @property {string} name The name of the series, displayed in the legend and tooltips.
- * @property {"bar"|"line"|"area"|"lineWithArea"|"candlestick"|"boxPlot"|"auto"} type The type of data objects to display for this series. Only applies to bar, line, area, stock, box plot, and combo charts.
- * @property {string} color The color of the series.
- * @property {string} borderColor The border color of the series.
- * @property {number} borderWidth The border width of the series.
- * @property {string} areaColor The area color of the series. Only applies if series type is area or lineWithArea.
- * @property {string} areaSvgClassNamer The CSS style class to apply if series type is area or lineWithArea. The style class and inline style will override any other styling specified through the properties.
+ * @ojtsignore
+ * @property {string=} id The id of the series. Defaults to the name or the series index if not specified.
+ * @property {string=} name The name of the series, displayed in the legend and tooltips.
+ * @property {("bar"|"line"|"area"|"lineWithArea"|"candlestick"|"boxPlot"|"auto")=} type="auto" The type of data objects to display for this series. Only applies to bar, line, area, stock, box plot, and combo charts.
+ * @property {string=} color The color of the series.
+ * @property {string=} borderColor The border color of the series.
+ * @property {number=} borderWidth The border width of the series.
+ * @property {string=} areaColor The area color of the series. Only applies if series type is area or lineWithArea.
+ * @property {string=} areaSvgClassName The CSS style class to apply if series type is area or lineWithArea. The style class and inline style will override any other styling specified through the properties.
  *            For tooltips and hover interactivity, it's recommended to also pass a representative color to the color attribute.
- * @property {object} areaSvgStyle The inline style to apply if series type is area or lineWithArea. The style class and inline style will override any other styling specified through the properties.
+ * @property {object=} areaSvgStyle The inline style to apply if series type is area or lineWithArea. The style class and inline style will override any other styling specified through the properties.
  *            For tooltips and hover interactivity, it's recommended to also pass a representative color to the color attribute.
- * @property {string} svgClassName The CSS style class to apply to the series. For series of type lineWithArea, this style will only be applied to the line if areaClassName is also specified.
+ * @property {(Array.<oj.ojChart.Items>|Array.<number>)=} items items  An array of values or an array of objects with the following properties that defines the data items for the series.
+ * @property {(Array.<Object>|Array.<number>)=} items.items An array of nested data items to be used for defining the markers for outliers or additional data items of a box plot.
+ * @property {any=} items.id The id of the data item. This id will be provided as part of the context for events on the chart. If the chart is using a data provider then the id type is an object and the row key will be used as the id, otherwise it is a string.
+ * @property {(number|string)=} items.x The x value. Mainly used for scatter and bubble chart and to specify the date for mixed-frequency time axis. For categorical axis, if the x value is not specified, it will default to the item index. For regular time axis, if the x value is not specified, it will default to the group name of the item.
+ * @property {number=} items.y The y value. Also the primary value for charts without a y-Axis, such as pie charts.
+ * @property {number=} items.z The z value. Defines the bubble radius for a bubble chart, as well as the width of a bar or a box plot item.
+ * @property {number=} items.low The low value for range bar/area, stock candlestick, or box plot item. Define 'low' and 'high' instead of 'value' or 'y' to create a range bar/area chart.
+ * @property {number=} items.high The high value for range bar/area, stock candlestick, or box plot item. Define 'low' and 'high' instead of 'value' or 'y' to create a range bar/area chart.
+ * @property {number=} items.open The open value for stock candlestick.
+ * @property {number=} items.close The close value for stock candlestick. When bar, line, or area series type are used on a stock chart, this value is displayed.
+ * @property {number=} items.volume The value for stock volume bar. When this value is provided, the volume bar is displayed on the y2 axis.
+ * @property {number=} items.q1 The first quartile value for box plot.
+ * @property {number=} items.q2 The second quartile (median) value for box plot.
+ * @property {number=} items.q3 The third quartile value for box plot.
+ * @property {string=} items.shortDesc The description of this object. This is used for accessibility and also for customizing the tooltip text.
+ * @property {string=} items.color The color of the data item.
+ * @property {string=} items.borderColor The border color of the data item. For funnel and pyramid charts, it is used for the slice border.
+ * @property {number=} items.borderWidth The border width of the data item. For funnel and pyramid charts, it is used for the slice border.
+ * @property {("largeChecker"|"largeCrosshatch"|"largeDiagonalLeft"|"largeDiagonalRight"|"largeDiamond"|"largeTriangle"|"none"|"smallChecker"|"smallCrosshatch"|"smallDiagonalLeft"|"smallDiagonalRight"|"smallDiamond"|"smallTriangle")=} items.pattern="auto" The pattern used to fill the data item. A solid fill is used by default, unless the seriesEffect is 'pattern'.
+ * @property {string=} items.svgClassName The CSS style class to apply to the data item. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the item color attribute.
+ * @property {Object=} items.svgStyle The inline style to apply to the data item. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the item color attribute.
+ * @property {("on"|"off"|"auto")=} series[].items[].markerDisplayed="auto" Defines whether the data marker is displayed. Only applies to line, area, scatter, and bubble series. If auto, the markers will be displayed whenever the data points are not connected by a line.
+ * @property {("auto"|"circle"|"diamond"|"human"|"plus"|"square"|"star"|"triangleDown"|"triangleUp"|string)=} items.markerShape="auto" The shape of the data markers. In addition to the built-in shapes, it may also take SVG path commands to specify a custom shape. The chart will style the custom shapes the same way as built-in shapes, supporting properties like color and borderColor and applying hover and selection effects. Only 'auto' is supported for range series.
+ * @property {number=} items.markerSize The size of the data markers. Does not apply to bubble charts, which calculate marker size based on the z values.
+ * @property {string=} items.source The URI of the custom image. If specified, it takes precedence over shape.
+ * @property {string=} items.sourceHover The optional URI for the hover state. If not specified, the source image will be used.
+ * @property {string=} items.sourceSelected The optional URI for the selected state. If not specified, the source image will be used.
+ * @property {string=} items.sourceHoverSelected The optional URI for the hover selected state. If not specified, the source image will be used.
+ * @property {(string|Array.<string>)=} items.label The label for the data item. For range series, if an array of two values are provided, the first and second value will apply to the low and high point respectively. Not supported for box plot or candlestick.
+ * @property {("center"|"outsideSlice"|"aboveMarker"|"belowMarker"|"beforeMarker"|"afterMarker"|"insideBarEdge"|"outsideBarEdge"|"none"|"auto")=} items.labelPosition="auto" The position of the data label. For range series, if an array of two values are provided, the first and second value will apply to the low and high point respectively. The 'outsideSlice' value only applies to pie charts. The 'aboveMarker', 'belowMarker', 'beforeMarker', and 'afterMarker' values only apply to line, area, scatter, and bubble series. The 'insideBarEdge' and 'outsideBarEdge' values only apply to non-polar bar series. Stacked bars do not support 'outsideBarEdge'. The chart does not currently adjust layout to fit labels within the plot area or deal with any overlaps between labels.
+ * @property {(Object|Array.<Object>)=} items.labelStyle The CSS style object defining the style of the data label. For range series, if an array of two values are provided, the first and second value will apply to the low and high point respectively.
+ * @property {Array.<string>=} items.categories An optional array of category strings corresponding to this data item. This enables highlighting and filtering of individual data items through interactions with the legend or other visualization elements. If not defined, series categories are used.
+ * @property {number=} items.value The value for this data item. Corresponding to the y value for bar, line, area, and combo charts and the slice values for pie, funnel and pyramid charts. Null can be specified to skip a data point.
+ * @property {number=} items.targetValue The target value for a funnel chart. When this is set, the value attribute defines the filled area within the slice and this represents the value of the whole slice.
+ * @property {("on"|"off"|"inherit")=} items.drilling="inherit" Whether drilling is enabled for the data item. Drillable objects will show a pointer cursor on hover and fire an <code class="prettyprint">ojDrill</code> event on click (double click if selection is enabled). To enable drilling for all data items at once, use the drilling attribute in the top level.
+ * @property {Object=} items.boxPlot An object containing the style properties of the box plot item.
+ * @property {string=} items.boxPlot.q2Color The color of the Q2 segment of the box.
+ * @property {string=} items.boxPlot.q2SvgClassName The CSS style class to apply to the Q2 segment of the box. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the q2Color attribute.
+ * @property {Object=} items.boxPlot.q2SvgStyle The CSS inline style to apply to the Q2 segment of the box. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the q2Color attribute.
+ * @property {Object=} items.boxPlot.q3SvgStyle The CSS inline style to apply to the Q3 segment of the box. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the q3Color attribute.
+ * @property {string=} items.boxPlot.q3SvgClassName The CSS style class to apply to the Q3 segment of the box. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the q3Color attribute.
+ * @property {string=} items.boxPlot.whiskerSvgClassName The CSS style class to apply to the whisker stems.
+ * @property {Object=} items.boxPlot.whiskerSvgStyle The CSS inline style to apply to the whisker stems.
+ * @property {string=} items.boxPlot.whiskerEndSvgClassName The CSS style class to apply to the whisker ends.
+ * @property {Object=} items.boxPlot.whiskerEndSvgStyle The CSS inline style to apply to the whisker ends.
+ * @property {string=} items.boxPlot.whiskerEndLength Specifies the length of the whisker ends in pixels (e.g. '9px') or as a percentage of the box width (e.g. '50%'). The specified length will be rounded down to an odd number of pixels to ensure symmetry.
+ * @property {string=} items.boxPlot.medianSvgClassName Specifies the length of the whisker ends in pixels (e.g. '9px') or as a percentage of the box width (e.g. '50%'). The specified length will be rounded down to an odd number of pixels to ensure symmetry.
+ * @property {Object=} items.boxPlot.medianSvgStyle The CSS inline style to apply to the median line.
+ * @property {string=} svgClassName The CSS style class to apply to the series. For series of type lineWithArea, this style will only be applied to the line if areaClassName is also specified.
  *            The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the color attribute.
- * @property {object} svgStyle The inline style to apply to the series. For series of type lineWithArea, this style will only be applied to the line if areaStyle is also specified.
+ * @property {object=} svgStyle The inline style to apply to the series. For series of type lineWithArea, this style will only be applied to the line if areaStyle is also specified.
  *            The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the color attribute.
- * @property {string} markerSvgClassName The CSS style class to apply to the data markers.The style class and inline style will override any other styling specified through the properties.
+ * @property {string=} markerSvgClassName The CSS style class to apply to the data markers.The style class and inline style will override any other styling specified through the properties.
  *            For tooltips and hover interactivity, it's recommended to also pass a representative color to the marker color attribute.
- * @property {object} markerSvgStyle The inline style to apply to the data markers. The style class and inline style will override any other styling specified through the properties.
+ * @property {object=} markerSvgStyle The inline style to apply to the data markers. The style class and inline style will override any other styling specified through the properties.
  *            For tooltips and hover interactivity, it's recommended to also pass a representative color to the marker color attribute.
- * @property {"smallChecker"|"smallCrosshatch"|"smallDiagonalLeft"|"smallDiagonalRight"|"smallDiamond"|"smallTriangle"|"largeChecker"|"largeCrosshatch"|"largeDiagonalLeft"|"largeDiagonalRight"|"largeDiamond"|"largeTriangle"} pattern
+ * @property {("smallChecker"|"smallCrosshatch"|"smallDiagonalLeft"|"smallDiagonalRight"|"smallDiamond"|"smallTriangle"|"largeChecker"|"largeCrosshatch"|"largeDiagonalLeft"|"largeDiagonalRight"|"largeDiamond"|"largeTriangle")=} pattern="auto"
  *           The pattern used to fill the series. A solid fill is used by default, unless the seriesEffect is 'pattern'.
- * @property {"square"|"circle"|"diamond"|"plus"|"triangleDown"|"triangleUp"|"human"|"star"|"auto"} markerShape The shape of the data markers. In addition to the built-in shapes, it may also take SVG path commands to specify a custom shape.
+ * @property {("auto"|"square"|"circle"|"diamond"|"plus"|"triangleDown"|"triangleUp"|"human"|"star"|string)=} markerShape="auto" The shape of the data markers. In addition to the built-in shapes, it may also take SVG path commands to specify a custom shape.
  *            The chart will style the custom shapes the same way as built-in shapes, supporting properties like color and borderColor and applying hover and selection effects. Only 'auto' is supported for range series.
- * @property {string} markerColor The color of the data markers, if different from the series color.
- * @property {"on"|"off"|"auto"} markerDisplayed Defines whether the data marker is displayed. Only applies to line, area, scatter, and bubble series. If auto, the markers will be displayed whenever the data points are not connected by a line.
- * @property {number} markerSize The size of the data markers.
- * @property {number} lineWidth The width of the data line. Only applies to line, lineWithArea, scatter, and bubble series.
- * @property {"dotted"|"dashed"|"solid"} lineStyle
- * @property {"straight"|"curved"|"stepped"|"centeredStepped"|"segmented"|"centeredSegmented"|"none"|"auto"} lineType
- *           The line type of the data line or area. Only applies to line, area, scatter, and bubble series. centeredStepped and centeredSegmented are not supported for polar, scatter, and bubble charts.
- * @property {string} source The URI of the custom image. If specified, it takes precedence over shape.
- * @property {string} sourceHover The optional URI for the hover state. If not specified, the source image will be used.
- * @property {string} sourceSelected The optional URI for the selected state. If not specified, the source image will be used.
- * @property {string} sourceHoverSelected The optional URI for the hover selected state. If not specified, the source image will be used.
- * @property {number} pieSliceExploded A number from 0 to 1 indicating the amount to explode the pie slice. Only applies to pie charts.
- * @property {"on"|"off"} assignedToY2 Defines whether the series is associated with the y2 axis. Only applies to Cartesian bar, line, area, and combo charts.
- * @property {string} stackCategory In stacked charts, groups series together for stacking. All series without a stackCategory will be assigned to the same stack.
- * @property {"on"|"off"|"auto"} displayInLegend Defines whether the series should be shown in the legend. When set to 'auto', the series will not be displayed in the legend if
+ * @property {string=} markerColor The color of the data markers, if different from the series color.
+ * @property {("on"|"off"|"auto")=} markerDisplayed="auto" Defines whether the data marker is displayed. Only applies to line, area, scatter, and bubble series. If auto, the markers will be displayed whenever the data points are not connected by a line.
+ * @property {number=} markerSize The size of the data markers.
+ * @property {number=} lineWidth The width of the data line. Only applies to line, lineWithArea, scatter, and bubble series.
+ * @property {("dotted"|"dashed"|"solid")=} lineStyle="solid" The line style of the data line. Only applies to line, lineWithArea, scatter, and bubble series.
+ * @property {("straight"|"curved"|"stepped"|"centeredStepped"|"segmented"|"centeredSegmented"|"none"|"auto")=} lineType="auto"  The line type of the data line or area. Only applies to line, area, scatter, and bubble series. centeredStepped and centeredSegmented are not supported for polar, scatter, and bubble charts.
+ * @property {string=} source The URI of the custom image. If specified, it takes precedence over shape.
+ * @property {string=} sourceHover The optional URI for the hover state. If not specified, the source image will be used.
+ * @property {string=} sourceSelected The optional URI for the selected state. If not specified, the source image will be used.
+ * @property {string=} sourceHoverSelected The optional URI for the hover selected state. If not specified, the source image will be used.
+ * @property {number=} pieSliceExploded A number from 0 to 1 indicating the amount to explode the pie slice. Only applies to pie charts.
+ * @property {("on"|"off")=} assignedToY2="off" Defines whether the series is associated with the y2 axis. Only applies to Cartesian bar, line, area, and combo charts.
+ * @property {string=} stackCategory In stacked charts, groups series together for stacking. All series without a stackCategory will be assigned to the same stack.
+ * @property {("on"|"off"|"auto")=} displayInLegend Defines whether the series should be shown in the legend. When set to 'auto', the series will not be displayed in the legend if
  *            it has null data or if it is a stock, funnel, or pyramid series.
- * @property {"on"|"off"|"inherit"} drilling Whether drilling is enabled on the series item. Drillable objects will show a pointer cursor on hover and fire an <code class="prettyprint">ojDrill</code> event on click.
+ * @property {("on"|"off"|"inherit")=} drilling="inherit" Whether drilling is enabled on the series item. Drillable objects will show a pointer cursor on hover and fire an <code class="prettyprint">ojDrill</code> event on click.
  *           To enable drilling for all series items at once, use the drilling attribute in the top level.
- * @property {Array.<string>} categories An optional array of category strings corresponding to this series.
+ * @property {Array.<string>=} categories An optional array of category strings corresponding to this series.
  *           This allows highlighting and filtering of a series through interactions with legend sections. If not defined, the series id is used.
- * @property {string} shortDesc The description of this series. This is used for accessibility and for customizing the tooltip text on the corressponding legend item for the series.
- * @property {oj.ojChart.BoxPlotStyle} boxPlot An object containing the style properties of the box plot series.
+ * @property {string=} shortDesc The description of this series. This is used for accessibility and for customizing the tooltip text on the corressponding legend item for the series.
+ * @property {oj.ojChart.BoxPlotStyle=} boxPlot An object containing the style properties of the box plot series.
+ * @ojsignature [{target: "Type", value: "K", for: "id"},
+ *               {target: "Type", value: "<K>", for: "genericTypeParameters"}]
  */
 
 /**
  * Object type that defines a chart group.
- * @ignore
  * @typedef {Object} oj.ojChart.Group
- * @property {string} id The id of the group. Defaults to the name if not specified.
- * @property {string} name The name of the group
- * @property {object} labelStyle The CSS style object defining the style of the group label text. Supports color,
+ * @ojtsignore
+ * @property {string=} id The id of the group. Defaults to the name if not specified.
+ * @property {string=} name The name of the group
+ * @property {object=} labelStyle The CSS style object defining the style of the group label text. Supports color,
  *                    fontFamily, fontSize, fontStyle, fontWeight, textDecoration, cursor,
  *                    backgroundColor, borderColor, borderRadius, and borderWidth properties.
  *                    Only applies to a categorical axis.
- * @property {string} shortDesc The description of the group. This is used for customizing the tooltip text and only applies to a categorical axis.
- * @property {"on"|"off"|"auto"} drilling Whether drilling is enabled on the group label. Drillable objects will show a pointer cursor on hover and fire an
+ * @property {string=} shortDesc The description of the group. This is used for customizing the tooltip text and only applies to a categorical axis.
+ * @property {("on"|"off"|"auto")=} drilling Whether drilling is enabled on the group label. Drillable objects will show a pointer cursor on hover and fire an
  *                    <code class="prettyprint">ojDrill</code> event on click. To enable drilling for all group labels at once, use the drilling attribute in the top level.
- * @property {Array.<oj.ojChart.Group>} groups An array of nested group obects.
- * @property {Array.<oj.ojChart.DataItem>} items An array of chart data items.
+ * @property {Array.<oj.ojChart.Group>=} groups An array of nested group obects.
+ * @property {Array.<Object>=} items An array of chart data items.
  */
 
 /**
  * Object type that defines a chart data item.
- * @ignore
- * @typedef {Object} oj.ojChart.DataItem
- * @property {Array.<oj.ojChart.DataItem>} items An array of nested data items to be used for defining the markers for outliers or additional data items of a box plot.
+ * @typedef {Object} oj.ojChart.Item
+ * @ojtsignore
+ * @property {(Array.<Object>|Array.<number>)=} items An array of nested data items to be used for defining the markers for outliers or additional data items of a box plot.
  * @property {string} id The id of the data item. This id will be provided as part of the context for events on the chart.
- * @property {number|string} x The x value for a scatter or bubble chart or the date on a time axis.
- * @property {number} y The y value. Also the primary value for charts without a y-Axis, such as pie charts.
- * @property {number} z The z value. Defines the bubble radius for a bubble chart, as well as the width of a bar or a box plot item.
- * @property {number} low The low value for range bar/area, stock candlestick, or box plot item. Define 'low' and 'high' instead of 'value' or 'y' to create a range bar/area chart.
- * @property {number} high The high value for range bar/area, stock candlestick, or box plot item. Define 'low' and 'high' instead of 'value' or 'y' to create a range bar/area chart.
- * @property {number} open The open value for stock candlestick.
- * @property {number} close The close value for stock candlestick. When bar, line, or area series type are used on a stock chart, this value is displayed.
- * @property {number} volume The value for stock volume bar. When this value is provided, the volume bar is displayed on the y2 axis.
- * @property {number} q1 The first quartile value for box plot.
- * @property {number} q2 The second quartile (median) value for box plot.
- * @property {number} q3 The third quartile value for box plot.
- * @property {string} shortDesc The description of this object. This is used for accessibility and also for customizing the tooltip text.
- * @property {string} color The color of the data item.
- * @property {string} borderColor The border color of the data item. For funnel and pyramid charts, it is used for the slice border.
- * @property {number} borderWidth The border width of the data item. For funnel and pyramid charts, it is used for the slice border.
- * @property {"smallChecker"|"smallCrosshatch"|"smallDiagonalLeft"|"smallDiagonalRight"|"smallDiamond"|"smallTriangle"|"largeChecker"|"largeCrosshatch"|"largeDiagonalLeft"|"largeDiagonalRight"|"largeDiamond"|"largeTriangle"} pattern
+ * @property {(number|string)=} x The x value for a scatter or bubble chart or the date on a time axis.
+ * @property {number=} y The y value. Also the primary value for charts without a y-Axis, such as pie charts.
+ * @property {number=} z The z value. Defines the bubble radius for a bubble chart, as well as the width of a bar or a box plot item.
+ * @property {number=} low The low value for range bar/area, stock candlestick, or box plot item. Define 'low' and 'high' instead of 'value' or 'y' to create a range bar/area chart.
+ * @property {number=} high The high value for range bar/area, stock candlestick, or box plot item. Define 'low' and 'high' instead of 'value' or 'y' to create a range bar/area chart.
+ * @property {number=} open The open value for stock candlestick.
+ * @property {number=} close The close value for stock candlestick. When bar, line, or area series type are used on a stock chart, this value is displayed.
+ * @property {number=} volume The value for stock volume bar. When this value is provided, the volume bar is displayed on the y2 axis.
+ * @property {number=} q1 The first quartile value for box plot.
+ * @property {number=} q2 The second quartile (median) value for box plot.
+ * @property {number=} q3 The third quartile value for box plot.
+ * @property {string=} shortDesc The description of this object. This is used for accessibility and also for customizing the tooltip text.
+ * @property {string=} color The color of the data item.
+ * @property {string=} borderColor The border color of the data item. For funnel and pyramid charts, it is used for the slice border.
+ * @property {number=} borderWidth The border width of the data item. For funnel and pyramid charts, it is used for the slice border.
+ * @property {("smallChecker"|"smallCrosshatch"|"smallDiagonalLeft"|"smallDiagonalRight"|"smallDiamond"|"smallTriangle"|"largeChecker"|"largeCrosshatch"|"largeDiagonalLeft"|"largeDiagonalRight"|"largeDiamond"|"largeTriangle")=} pattern="auto"
  *           The pattern used to fill the data item. A solid fill is used by default, unless the seriesEffect is 'pattern'.
- * @property {string} svgClassName The CSS style class to apply to the data item. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the item color attribute.
- * @property {object} svgStyle The inline style to apply to the data item. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the item color attribute.
- * @property {"on"|"off"|"auto"} markerDisplayed Defines whether the data marker is displayed. Only applies to line, area, scatter, and bubble series. If auto, the markers will be displayed whenever the data points are not connected by a line.
- * @property {"square"|"circle"|"diamond"|"plus"|"triangleDown"|"triangleUp"|"human"|"star"|"auto"} markerShape The shape of the data markers. In addition to the built-in shapes, it may also take SVG path commands to specify a custom shape.
+ * @property {string=} svgClassName The CSS style class to apply to the data item. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the item color attribute.
+ * @property {object=} svgStyle The inline style to apply to the data item. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the item color attribute.
+ * @property {("on"|"off"|"auto")=} markerDisplayed="auto" Defines whether the data marker is displayed. Only applies to line, area, scatter, and bubble series. If auto, the markers will be displayed whenever the data points are not connected by a line.
+ * @property {("auto"|"circle"|"diamond"|"human"|"plus"|"square"|"star"|"triangleDown"|"triangleUp"|string)=} markerShape=auto"" The shape of the data markers. In addition to the built-in shapes, it may also take SVG path commands to specify a custom shape.
  *            The chart will style the custom shapes the same way as built-in shapes, supporting properties like color and borderColor and applying hover and selection effects. Only 'auto' is supported for range series.
- * @property {number} markerSize The size of the data markers. Does not apply to bubble charts, which calculate marker size based on the z values.
- * @property {string} source The URI of the custom image. If specified, it takes precedence over shape.
- * @property {string} sourceHover The optional URI for the hover state. If not specified, the source image will be used.
- * @property {string} sourceSelected The optional URI for the selected state. If not specified, the source image will be used.
- * @property {string} sourceHoverSelected The optional URI for the hover selected state. If not specified, the source image will be used.
- * @property {string|Array.<string>} label The label for the data item. For range series, if an array of two values are provided, the first and second value will apply to the low and high point respectively. Not supported for box plot or candlestick.
- * @property {string|Array.<string>} labelPosition The position of the data label. For range series, if an array of two values are provided, the first and second value will apply to the low and high point respectively. The 'outsideSlice' value only applies to pie charts.
- *            The 'aboveMarker', 'belowMarker', 'beforeMarker', and 'afterMarker' values only apply to line, area, scatter, and bubble series. The 'insideBarEdge' and 'outsideBarEdge' values only apply to non-polar bar series. Stacked bars do not support 'outsideBarEdge'.
- *            The chart does not currently adjust layout to fit labels within the plot area or deal with any overlaps between labels.
- * @property {string|Array.<object>} labelStyle The CSS style object defining the style of the data label. For range series, if an array of two values are provided, the first and second value will apply to the low and high point respectively.
- * @property {Array.<string>} categories An optional array of category strings corresponding to this data item. This enables highlighting and filtering of individual data items through interactions with the legend or other visualization elements. If not defined, series categories are used.
- * @property {number} value The value for this data item. Corresponding to the y value for bar, line, area, and combo charts and the slice values for pie, funnel and pyramid charts. Null can be specified to skip a data point.
- * @property {number} targetValue The target value for a funnel chart. When this is set, the value attribute defines the filled area within the slice and this represents the value of the whole slice.
- * @property {"on"|"off"|"drilling"} drilling Whether drilling is enabled for the data item. Drillable objects will show a pointer cursor on hover and fire an <code class="prettyprint">ojDrill</code> event on click (double click if selection is enabled). To enable drilling for all data items at once, use the drilling attribute in the top level.
- * @property {oj.ojChart.BoxPlotStyle} boxPlot An object containing the style properties of the box plot item.
+ * @property {number=} markerSize The size of the data markers. Does not apply to bubble charts, which calculate marker size based on the z values.
+ * @property {string=} source The URI of the custom image. If specified, it takes precedence over shape.
+ * @property {string=} sourceHover The optional URI for the hover state. If not specified, the source image will be used.
+ * @property {string=} sourceSelected The optional URI for the selected state. If not specified, the source image will be used.
+ * @property {string=} sourceHoverSelected The optional URI for the hover selected state. If not specified, the source image will be used.
+ * @property {(string|Array.<string>)=} label The label for the data item. For range series, if an array of two values are provided, the first and second value will apply to the low and high point respectively. Not supported for box plot or candlestick.
+ * @property {("center"|"outsideSlice"|"aboveMarker"|"belowMarker"|"beforeMarker"|"afterMarker"|"insideBarEdge"|"outsideBarEdge"|"none"|"auto")=} items.labelPosition="auto" The position of the data label. For range series, if an array of two values are provided, the first and second value will apply to the low and high point respectively. The 'outsideSlice' value only applies to pie charts. The 'aboveMarker', 'belowMarker', 'beforeMarker', and 'afterMarker' values only apply to line, area, scatter, and bubble series. The 'insideBarEdge' and 'outsideBarEdge' values only apply to non-polar bar series. Stacked bars do not support 'outsideBarEdge'. The chart does not currently adjust layout to fit labels within the plot area or deal with any overlaps between labels.
+ * @property {Object=} labelStyle The CSS style object defining the style of the data label. For range series, if an array of two values are provided, the first and second value will apply to the low and high point respectively.
+ * @property {Array.<string>=} categories An optional array of category strings corresponding to this data item. This enables highlighting and filtering of individual data items through interactions with the legend or other visualization elements. If not defined, series categories are used.
+ * @property {number=} value The value for this data item. Corresponding to the y value for bar, line, area, and combo charts and the slice values for pie, funnel and pyramid charts. Null can be specified to skip a data point.
+ * @property {number=} targetValue The target value for a funnel chart. When this is set, the value attribute defines the filled area within the slice and this represents the value of the whole slice.
+ * @property {("on"|"off"|"drilling")=} drilling="inherit" Whether drilling is enabled for the data item. Drillable objects will show a pointer cursor on hover and fire an <code class="prettyprint">ojDrill</code> event on click (double click if selection is enabled). To enable drilling for all data items at once, use the drilling attribute in the top level.
+ * @property {oj.ojChart.BoxPlotStyle=} boxPlot An object containing the style properties of the box plot item.
  */
 
 /**
  * Object type that defines box plot style properties.
- * @ignore
+ * @ojtsignore
  * @typedef {Object} oj.ojChart.BoxPlotStyle
- * @property {string} q2Color The color of the Q2 segment of the box.
- * @property {string} q2SvgClassName The CSS style class to apply to the Q2 segment of the box. The style class and inline style will override any other styling specified through the properties.
+ * @property {string=} q2Color The color of the Q2 segment of the box.
+ * @property {string=} q2SvgClassName The CSS style class to apply to the Q2 segment of the box. The style class and inline style will override any other styling specified through the properties.
  *            For tooltips and hover interactivity, it's recommended to also pass a representative color to the q2Color attribute.
- * @property {object} q2SvgStyle The CSS inline style to apply to the Q2 segment of the box. The style class and inline style will override any other styling specified through the properties.
+ * @property {object=} q2SvgStyle The CSS inline style to apply to the Q2 segment of the box. The style class and inline style will override any other styling specified through the properties.
  *            For tooltips and hover interactivity, it's recommended to also pass a representative color to the q2Color attribute.
- * @property {string} q3Color The color of the Q3 segment of the box.
- * @property {string} q3SvgClassName The CSS style class to apply to the Q3 segment of the box. The style class and inline style will override any other styling specified through the properties.            For tooltips and hover interactivity, it's recommended to also pass a representative color to the q3Color attribute.
- * @property {string} q3SvgStyle The CSS inline style to apply to the Q3 segment of the box. The style class and inline style will override any other styling specified through the properties.
+ * @property {string=} q3Color The color of the Q3 segment of the box.
+ * @property {string=} q3SvgClassName The CSS style class to apply to the Q3 segment of the box. The style class and inline style will override any other styling specified through the properties.            For tooltips and hover interactivity, it's recommended to also pass a representative color to the q3Color attribute.
+ * @property {string=} q3SvgStyle The CSS inline style to apply to the Q3 segment of the box. The style class and inline style will override any other styling specified through the properties.
  *            For tooltips and hover interactivity, it's recommended to also pass a representative color to the q3Color attribute.
- * @property {string} whiskerSvgClassName The CSS style class to apply to the whisker stems.
- * @property {string} whiskerSvgStyle The CSS inline style to apply to the whisker stems.
- * @property {string} whiskerEndSvgClassName The CSS style class to apply to the whisker ends.
- * @property {string} whiskerEndSvgStyle The CSS inline style to apply to the whisker ends.
- * @property {string} whiskerEndLength Specifies the length of the whisker ends in pixels (e.g. '9px') or as a percentage of the box width (e.g. '50%').
- * @property {string} medianSvgClassName The CSS style class to apply to the median line.
- * @property {string} medianSvgStyle The CSS inline style to apply to the median line.
+ * @property {string=} whiskerSvgClassName The CSS style class to apply to the whisker stems.
+ * @property {string=} whiskerSvgStyle The CSS inline style to apply to the whisker stems.
+ * @property {string=} whiskerEndSvgClassName The CSS style class to apply to the whisker ends.
+ * @property {string=} whiskerEndSvgStyle The CSS inline style to apply to the whisker ends.
+ * @property {string=} whiskerEndLength Specifies the length of the whisker ends in pixels (e.g. '9px') or as a percentage of the box width (e.g. '50%').
+ * @property {string=} medianSvgClassName The CSS style class to apply to the median line.
+ * @property {string=} medianSvgStyle The CSS inline style to apply to the median line.
+ */
+
+ /**
+ * @typedef {Object} oj.ojChart.TooltipContext
+ * @property {Element} parentElement The tooltip element. This can be used to change the tooltip border or background color.
+ * @property {any} id The id of the hovered item.
+ * @property {string} series The id of the series the hovered item belongs to.
+ * @property {string|Array.<string>} group The ids or an array of ids of the group(s) the hovered item belongs to. For hierarchical groups, it will be an array of outermost to innermost group ids.
+ * @property {string} label The data label of the hovered item.
+ * @property {number} value The values of the hovered item.
+ * @property {number|string} x The values of the hovered item.
+ * @property {number} y The values of the hovered item.
+ * @property {number} z The values of the hovered item.
+ * @property {number} low The values of the hovered item.
+ * @property {number} high The values of the hovered item.
+ * @property {number} open The values of the hovered item.
+ * @property {number} close The values of the hovered item.
+ * @property {number} volume The values of the hovered item.
+ * @property {number} targetValue The values of the hovered item.
+ * @property {Object|null} data The data object of the hovered item. For nested items, it will be an array containing the parent item data and nested item data.
+ * @property {Object|null} itemData The row data object for the hovered item. This will only be set if a DataProvider is being used.
+ * @property {Object|null} seriesData The data for the series the hovered item belongs to.
+ * @property {Object|null} groupData An array of data for the group the hovered item belongs to. For hierarchical groups, it will be an array of outermost to innermost group data related to the hovered item.
+ * @property {Element} componentElement The chart element.
+ * @property {string} color The color of the hovered item.
+ */
+
+/**
+ * @typedef {Object} oj.ojChart.PieCenterContext
+ * @property {Object} outerBounds Object containing (x, y, width, height) of the rectangle circumscribing the center area. The x and y coordinates are relative to the top, left corner of the element.
+ * @property {Object} innerBounds Object containing (x, y, width, height) of the rectangle inscribed in the center area. The x and y coordinates are relative to the top, left corner of the element. * @property {Object} labelStyle The CSS style object defining the style of the label.
+ * @property {string} label The pieCenter label.
+ * @property {Element} componentElement The chart element.
+ */
+
+/**
+ * @typedef {Object} oj.ojChart.PieCenterLabelContext
+ * @property {string} subId Sub-id string to identify a particular dom node.
+ */
+
+ /**
+ * @typedef {Object} oj.ojChart.AxisTitleContext
+ * @property {"xAxis"|"yAxis"|"y2Axis"} axis
+ * @property {string} subId Sub-id string to identify a particular dom node.
+ */
+
+ /**
+ * @typedef {Object} oj.ojChart.ReferenceObject
+ * @property {"xAxis"|"yAxis"|"y2Axis"} axis
+ * @property {number} index The index of the reference object for the specified axis.
+ * @property {string} subId Sub-id string to identify a particular dom node.
+ */
+
+ /**
+ * @typedef {Object} oj.ojChart.LegendItemContext
+ * @property {Array} sectionIndexPath The array of numerical indices for the section.
+ * @property {number} itemIndex The index of the item within the specified section.
+ * @property {string} subId Sub-id string to identify a particular dom node.
+ */
+
+  /**
+ * @typedef {Object} oj.ojChart.GroupContext
+ * @property {Array} indexPath The array of indices corresponding to the position of the group in the properties array. The array of numerical indices for the section.
+ * @property {string} subId Sub-id string to identify a particular dom node.
+ */
+
+  /**
+ * @typedef {Object} oj.ojChart.ItemContext
+ * @property {number} seriesIndex The index of the series within the specified section.
+ * @property {number} itemIndex The index of the item within the specified section.
+ * @property {string} subId Sub-id string to identify a particular dom node.
+ */
+
+  /**
+ * @typedef {Object} oj.ojChart.SeriesContext Context for a legend item that represents the series with the specified index.
+ * @property {number} itemIndex The index of the item within the specified section.
+ * @property {string} subId Sub-id string to identify a particular dom node.
+ */
+
+ /**
+ * @typedef {Object} oj.ojChart.DataLabelContext
+ * @property {any} id The id of the data item.
+ * @property {string} series The id of the series the data item belongs to.
+ * @property {string|Array.<string>} group The id or an array of ids of the group(s) the data item belongs to. For hierarchical groups, it will be an array of outermost to innermost group ids.
+ * @property {number} value The values of the data item.
+ * @property {number} targetValue The values of the data item.
+ * @property {number|string} x The values of the data item.
+ * @property {number} y The values of the data item.
+ * @property {number} z The values of the data item.
+ * @property {number} low The values of the data item.
+ * @property {number} high The values of the data item.
+ * @property {number} open The values of the data item.
+ * @property {number} close The values of the data item.
+ * @property {number} volume The values of the data item.
+ * @property {string} label The label for the data item if the dataLabel callback is ignored. The dataLabel callback can concatenate this with another string to easily enhance the default label.
+ * @property {number} totalValue The total of all values in the chart. This will only be included for pie charts.
+ * @property {Object|null} data The data object of the data item. For nested items, it will be an array containing the parent item data and nested item data.
+ * @property {Object|null} itemData The row data object for the data item. This will only be set if a DataProvider is being used.
+ * @property {Object|null} seriesData The data for the series the data item belongs to.
+ * @property {Object|null} groupData An array of data for the group the data item belongs to. For hierarchical groups, it will be an array of outermost to innermost group data related to the data item.
+ * @property {Element} componentElement The chart element.
  */
 
  // Slots
@@ -10603,6 +9669,7 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
  * </ul>
  * @ojstatus preview
  * @ojslot itemTemplate
+ * @ojmaxitems 1
  * @memberof oj.ojChart
  * @property {Element} componentElement The &lt;oj-chart> custom element
  * @property {Object} data The data object for the current item
@@ -10633,6 +9700,7 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
  *
  * @ojstatus preview
  * @ojslot seriesTemplate
+ * @ojmaxitems 1
  * @memberof oj.ojChart
  * @property {Element} componentElement The &lt;oj-chart> custom element
  * @property {number} index The series index
@@ -10660,10 +9728,11 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
  * <ul>
  *   <li>$current - an object that contains information for the current item. (See the table below for a list of properties available on $current) </li>
  *   <li>alias - if as attribute was specified, the value will be used to provide an application-named alias for $current.</li>
- * </ul> 
+ * </ul>
  *
  * @ojstatus preview
  * @ojslot groupTemplate
+ * @ojmaxitems 1
  * @memberof oj.ojChart
  * @property {Element} componentElement The &lt;oj-chart> custom element
  * @property {number} index The group index
@@ -10685,8 +9754,6 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
  *  &lt;/template>
  * &lt;/oj-chart>
  */
-
-
 
 
 // SubId Locators **************************************************************
@@ -10852,7 +9919,7 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
 /**
  * @ojcomponent oj.ojChartGroup
  * @ojslotcomponent
- * @ojtsignore
+ * @ojsignature {target: "Type", value:"class ojChartGroup extends JetElement<ojChartGroupSettableProperties>"}
  * @since 5.1.0
  * @ojstatus preview
  *
@@ -10885,8 +9952,7 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
  * @name name
  * @memberof! oj.ojChartGroup
  * @instance
- * @type {string}
- * @default null
+ * @type {string=}
  */
 /**
  * The CSS style object defining the style of the group label text. Supports color,
@@ -10896,8 +9962,7 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
  * @name labelStyle
  * @memberof! oj.ojChartGroup
  * @instance
- * @type {Object}
- * @default null
+ * @type {Object=}
  */
 /**
  * The description of the group. This is used for customizing the tooltip text and only applies to a categorical axis.
@@ -10905,8 +9970,7 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
  * @name shortDesc
  * @memberof! oj.ojChartGroup
  * @instance
- * @type {string}
- * @default null
+ * @type {string=}
  * @ojtranslatable
  */
 /**
@@ -10915,7 +9979,7 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
  * @name drilling
  * @memberof! oj.ojChartGroup
  * @instance
- * @type {string}
+ * @type {string=}
  * @ojvalue {string} "on"
  * @ojvalue {string} "off"
  * @ojvalue {string} "inherit"
@@ -10924,8 +9988,8 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
 
 /**
  * @ojcomponent oj.ojChartItem
+ * @ojsignature {target: "Type", value:"class ojChartItem extends JetElement<ojChartItemSettableProperties>"}
  * @ojslotcomponent
- * @ojtsignore
  * @since 5.1.0
  * @ojstatus preview
  *
@@ -10956,199 +10020,180 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
 /**
  * An array of nested data items to be used for defining the markers for outliers or additional data items of a box plot.
  * @expose
- * @ojtsignore
  * @name items
  * @memberof! oj.ojChartItem
  * @instance
- * @type {Array.<Object>|Array.<number>}
- * @default null
+ * @type {(Array.<Object>|Array.<number>)=}
+ *
  */
 /**
  * The x value. Mainly used for scatter and bubble chart and to specify the date for mixed-frequency time axis.
  * For categorical axis, if the x value is not specified, it will default to the item index.
  * For regular time axis, if the x value is not specified, it will default to the group name of the item.
  * @expose
- * @ojtsignore
  * @name x
  * @memberof! oj.ojChartItem
  * @instance
- * @type {number|string}
- * @default null
+ * @type {(number|string)=}
+ *
  */
 /**
  * The y value. Also the primary value for charts without a y-Axis, such as pie charts.
  * @expose
- * @ojtsignore
  * @name y
  * @memberof! oj.ojChartItem
  * @instance
- * @type {number}
- * @default null
+ * @type {number=}
+ *
  */
 /**
  * The z value. Defines the bubble radius for a bubble chart, as well as the width of a bar or a box plot item.
  * @expose
- * @ojtsignore
  * @name z
  * @memberof! oj.ojChartItem
  * @instance
- * @type {number}
- * @default null
+ * @type {number=}
+ *
  */
 /**
  * The low value for range bar/area, stock candlestick, or box plot item. Define 'low' and 'high' instead of 'value' or 'y' to create a range bar/area chart.
  * @expose
- * @ojtsignore
  * @name low
  * @memberof! oj.ojChartItem
  * @instance
- * @type {number}
- * @default null
+ * @type {number=}
+ *
  */
 /**
  * The high value for range bar/area, stock candlestick, or box plot item. Define 'low' and 'high' instead of 'value' or 'y' to create a range bar/area chart.
  * @expose
- * @ojtsignore
  * @name high
  * @memberof! oj.ojChartItem
  * @instance
- * @type {number}
- * @default null
+ * @type {number=}
+ *
  */
 /**
  * The open value for stock candlestick.
  * @expose
- * @ojtsignore
  * @name open
  * @memberof! oj.ojChartItem
  * @instance
- * @type {number}
- * @default null
+ * @type {number=}
+ *
  */
 /**
  * The close value for stock candlestick. When bar, line, or area series type are used on a stock chart, this value is displayed.
  * @expose
- * @ojtsignore
  * @name close
  * @memberof! oj.ojChartItem
  * @instance
- * @type {number}
- * @default null
+ * @type {number=}
+ *
  */
 /**
  * The value for stock volume bar. When this value is provided, the volume bar is displayed on the y2 axis.
  * @expose
- * @ojtsignore
  * @name volume
  * @memberof! oj.ojChartItem
  * @instance
- * @type {number}
- * @default null
+ * @type {number=}
+ *
  */
 /**
  * The first quartile value for box plot.
  * @expose
- * @ojtsignore
  * @name q1
  * @memberof! oj.ojChartItem
  * @instance
- * @type {number}
- * @default null
+ * @type {number=}
+ *
  */
 /**
  * The second quartile (median) value for box plot.
  * @expose
- * @ojtsignore
  * @name q2
  * @memberof! oj.ojChartItem
  * @instance
- * @type {number}
- * @default null
+ * @type {number=}
+ *
  */
 /**
  * The third quartile value for box plot.
  * @expose
- * @ojtsignore
  * @name q3
  * @memberof! oj.ojChartItem
  * @instance
- * @type {number}
- * @default null
+ * @type {number=}
+ *
  */
  /**
  * The id for the series the item belongs to.
  * @expose
- * @ojtsignore
  * @ojrequired
  * @name seriesId
  * @memberof! oj.ojChartItem
  * @instance
  * @type {string}
- * @default null
+ *
  */
  /**
  * The array of id(s) for the group(s) the item belongs to. For hierarchical groups, it will be an array of outermost to innermost group ids.
  * @expose
- * @ojtsignore
  * @ojrequired
  * @name groupId
  * @memberof! oj.ojChartItem
  * @instance
  * @type {Array.<string>}
- * @default null
+ *
  */
 /**
  * The description of this object. This is used for accessibility and also for customizing the tooltip text.
  * @expose
- * @ojtsignore
  * @name shortDesc
  * @memberof! oj.ojChartItem
  * @instance
- * @type {string}
- * @default null
+ * @type {string=}
+ *
  * @ojtranslatable
  */
 /**
  * The color of the data item.
  * @expose
- * @ojtsignore
  * @name color
  * @memberof! oj.ojChartItem
  * @instance
- * @type {string}
+ * @type {string=}
  * @ojformat color
- * @default null
+ *
  */
 /**
  * The border color of the data item. For funnel and pyramid charts, it is used for the slice border.
  * @expose
- * @ojtsignore
  * @name borderColor
  * @memberof! oj.ojChartItem
  * @instance
- * @type {string}
+ * @type {string=}
  * @ojformat color
- * @default null
+ *
  */
 /**
  * The border width of the data item. For funnel and pyramid charts, it is used for the slice border.
  * @expose
- * @ojtsignore
  * @name borderWidth
  * @memberof! oj.ojChartItem
  * @instance
- * @type {number}
- * @default null
+ * @type {number=}
+ *
  * @ojunits pixels
  */
 /**
  * The pattern used to fill the data item. A solid fill is used by default, unless the seriesEffect is 'pattern'.
  * @expose
- * @ojtsignore
  * @name pattern
  * @memberof! oj.ojChartItem
  * @instance
- * @type {string}
+ * @type {string=}
  * @ojvalue {string} "smallChecker"
  * @ojvalue {string} "smallCrosshatch"
  * @ojvalue {string} "smallDiagonalLeft"
@@ -11167,31 +10212,28 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
 /**
  * The CSS style class to apply to the data item. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the item color attribute.
  * @expose
- * @ojtsignore
  * @name svgClassName
  * @memberof! oj.ojChartItem
  * @instance
- * @type {string}
- * @default null
+ * @type {string=}
+ *
  */
 /**
  * The inline style to apply to the data item. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the item color attribute.
  * @expose
- * @ojtsignore
  * @name svgStyle
  * @memberof! oj.ojChartItem
  * @instance
- * @type {Object}
- * @default null
+ * @type {Object=}
+ *
  */
 /**
  * Defines whether the data marker is displayed. Only applies to line, area, scatter, and bubble series. If auto, the markers will be displayed whenever the data points are not connected by a line.
  * @expose
- * @ojtsignore
  * @name markerDisplayed
  * @memberof! oj.ojChartItem
  * @instance
- * @type {string}
+ * @type {string=}
  * @ojvalue {string} "on"
  * @ojvalue {string} "off"
  * @ojvalue {string} "auto"
@@ -11200,92 +10242,73 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
 /**
  * The shape of the data markers. In addition to the built-in shapes, it may also take SVG path commands to specify a custom shape. The chart will style the custom shapes the same way as built-in shapes, supporting properties like color and borderColor and applying hover and selection effects. Only 'auto' is supported for range series.
  * @expose
- * @ojtsignore
  * @name markerShape
  * @memberof! oj.ojChartItem
  * @instance
- * @type {string}
- * @ojvalue {string=} "square"
- * @ojvalue {string=} "circle"
- * @ojvalue {string=} "diamond"
- * @ojvalue {string=} "plus"
- * @ojvalue {string=} "triangleDown"
- * @ojvalue {string=} "triangleUp"
- * @ojvalue {string=} "human"
- * @ojvalue {string=} "star"
- * @ojvalue {string=} "auto"
+ * @type {("circle"|"diamond"|"human"|"plus"|"square"|"star"|"triangleDown"|"triangleUp"|"auto"|string)=}
  * @default "auto"
  */
 /**
  * The size of the data markers. Does not apply to bubble charts, which calculate marker size based on the z values.
  * @expose
- * @ojtsignore
  * @name markerSize
  * @memberof! oj.ojChartItem
  * @instance
- * @type {number}
- * @default null
+ * @type {number=}
+ *
  * @ojunits pixels
  */
 /**
  *  The URI of the custom image. If specified, it takes precedence over shape.
  * @expose
- * @ojtsignore
  * @name source
  * @memberof! oj.ojChartItem
  * @instance
- * @type {string}
- * @default null
+ * @type {string=}
+ *
  */
 /**
  *  The optional URI for the hover state. If not specified, the source image will be used.
  * @expose
- * @ojtsignore
  * @name sourceHover
  * @memberof! oj.ojChartItem
  * @instance
- * @type {string}
- * @default null
+ * @type {string=}
+ *
  */
 /**
  * The optional URI for the selected state. If not specified, the source image will be used.
  * @expose
- * @ojtsignore
  * @name sourceSelected
  * @memberof! oj.ojChartItem
  * @instance
- * @type {string}
- * @default null
+ * @type {string=}
  */
 /**
  *  The optional URI for the hover selected state. If not specified, the source image will be used.
  * @expose
- * @ojtsignore
  * @name sourceHoverSelected
  * @memberof! oj.ojChartItem
  * @instance
- * @type {string}
- * @default null
+ * @type {string=}
  */
 /**
  * The label for the data item. For range series, if an array of two values are provided, the first and second value will apply to the low and high point respectively. Not supported for box plot or candlestick.
  * @expose
- * @ojtsignore
  * @name label
  * @memberof! oj.ojChartItem
  * @instance
- * @type {string|Array.<string>}
- * @default null
+ * @type {(string|Array.<string>)=}
+ *
  * @ojtranslatable
  */
 /**
  * The position of the data label. For range series, if an array of two values are provided, the first and second value will apply to the low and high point respectively. The 'outsideSlice' value only applies to pie charts. The 'aboveMarker', 'belowMarker', 'beforeMarker', and 'afterMarker' values only apply to line, area, scatter, and bubble series. The 'insideBarEdge' and 'outsideBarEdge' values only apply to non-polar bar series. Stacked bars do not support 'outsideBarEdge'. The chart does not currently adjust layout to fit labels within the plot area or deal with any overlaps between labels.
  * @expose
- * @ojtsignore
  * @name labelPosition
  * @memberof! oj.ojChartItem
  * @instance
- * @type {string|Array.<string>}
+ * @type {(string|Array.<string>)=}
  * @ojvalue {string} "center"
  * @ojvalue {string} "outsideSlice"
  * @ojvalue {string} "aboveMarker"
@@ -11301,51 +10324,46 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
 /**
  * The CSS style object defining the style of the data label. For range series, if an array of two values are provided, the first and second value will apply to the low and high point respectively.
  * @expose
- * @ojtsignore
  * @name labelStyle
  * @memberof! oj.ojChartItem
  * @instance
- * @type {object|Array.<Object>}
- * @default null
+ * @type {(object|Array.<Object>)=}
+ *
  */
 /**
  * An optional array of category strings corresponding to this data item. This enables highlighting and filtering of individual data items through interactions with the legend or other visualization elements. If not defined, series categories are used.
  * @expose
- * @ojtsignore
  * @name categories
  * @memberof! oj.ojChartItem
  * @instance
- * @type {Array.<string>}
- * @default null
+ * @type {Array.<string>=}
+ *
  */
 /**
  * The value for this data item. Corresponding to the y value for bar, line, area, and combo charts and the slice values for pie, funnel and pyramid charts. Null can be specified to skip a data point.
  * @expose
- * @ojtsignore
  * @name value
  * @memberof! oj.ojChartItem
  * @instance
- * @type {number}
- * @default null
+ * @type {number=}
+ *
  */
 /**
  * The target value for a funnel chart. When this is set, the value attribute defines the filled area within the slice and this represents the value of the whole slice.
  * @expose
- * @ojtsignore
  * @name targetValue
  * @memberof! oj.ojChartItem
  * @instance
- * @type {number}
- * @default null
+ * @type {number=}
+ *
  */
 /**
  *  Whether drilling is enabled for the data item. Drillable objects will show a pointer cursor on hover and fire an <code class="prettyprint">ojDrill</code> event on click (double click if selection is enabled). To enable drilling for all data items at once, use the drilling attribute in the top level.
  * @expose
- * @ojtsignore
  * @name drilling
  * @memberof! oj.ojChartItem
  * @instance
- * @type {string}
+ * @type {string=}
  * @ojvalue {string} "on"
  * @ojvalue {string} "off"
  * @ojvalue {string} "inherit"
@@ -11354,137 +10372,125 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
 /**
  * An object containing the style properties of the box plot item.
  * @expose
- * @ojtsignore
  * @name boxPlot
  * @memberof! oj.ojChartItem
  * @instance
- * @type {Object}
+ * @type {Object=}
  */
 /**
  *  The color of the Q2 segment of the box.
  * @expose
- * @ojtsignore
  * @name boxPlot.q2Color
  * @memberof! oj.ojChartItem
  * @instance
- * @type {string}
+ * @type {string=}
  * @ojformat color
- * @default null
+ *
  */
 /**
  *  The CSS style class to apply to the Q2 segment of the box. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the q2Color attribute.
  * @expose
- * @ojtsignore
  * @name boxPlot.q2SvgClassName
  * @memberof! oj.ojChartItem
  * @instance
- * @type {string}
- * @default null
+ * @type {string=}
+ *
  */
 /**
  *  The CSS inline style to apply to the Q2 segment of the box. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the q2Color attribute.
  * @expose
- * @ojtsignore
  * @name boxPlot.q2SvgStyle
  * @memberof! oj.ojChartItem
  * @instance
- * @type {Object}
- * @default null
+ * @type {Object=}
+ *
  */
 /**
  *  The CSS inline style to apply to the Q3 segment of the box. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the q3Color attribute.
  * @expose
- * @ojtsignore
  * @name boxPlot.q3SvgStyle
  * @memberof! oj.ojChartItem
  * @instance
- * @type {Object}
- * @default null
+ * @type {Object=}
+ *
  */
 /**
  *  The CSS style class to apply to the Q3 segment of the box. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the q3Color attribute.
  * @expose
- * @ojtsignore
  * @name boxPlot.q3SvgClassName
  * @memberof! oj.ojChartItem
  * @instance
- * @type {string}
- * @default null
+ * @type {string=}
+ *
  */
 /**
  * The CSS style class to apply to the whisker stems.
  * @expose
- * @ojtsignore
  * @name boxPlot.whiskerSvgClassName
  * @memberof! oj.ojChartItem
  * @instance
- * @type {string}
- * @default null
+ * @type {string=}
+ *
  */
 /**
  * The CSS inline style to apply to the whisker stems.
  * @expose
- * @ojtsignore
  * @name boxPlot.whiskerSvgStyle
  * @memberof! oj.ojChartItem
  * @instance
- * @type {Object}
- * @default null
+ * @type {Object=}
+ *
  */
 /**
  * The CSS style class to apply to the whisker ends.
  * @expose
- * @ojtsignore
  * @name boxPlot.whiskerEndSvgClassName
  * @memberof! oj.ojChartItem
  * @instance
- * @type {string}
- * @default null
+ * @type {string=}
+ *
  */
 /**
  * The CSS inline style to apply to the whisker ends.
  * @expose
- * @ojtsignore
  * @name boxPlot.whiskerEndSvgStyle
  * @memberof! oj.ojChartItem
  * @instance
- * @type {Object}
- * @default null
+ * @type {Object=}
+ *
  */
 /**
  *  Specifies the length of the whisker ends in pixels (e.g. '9px') or as a percentage of the box width (e.g. '50%'). The specified length will be rounded down to an odd number of pixels to ensure symmetry.
  * @expose
- * @ojtsignore
  * @name boxPlot.whiskerEndLength
  * @memberof! oj.ojChartItem
  * @instance
- * @type {string}
- * @default null
+ * @type {string=}
+ *
  */
 /**
  * The CSS style class to apply to the median line.
  * @expose
- * @ojtsignore
  * @name boxPlot.medianSvgClassName
  * @memberof! oj.ojChartItem
  * @instance
- * @type {string}
- * @default null
+ * @type {string=}
+ *
  */
 /**
  * The CSS inline style to apply to the median line.
  * @expose
- * @ojtsignore
  * @name boxPlot.medianSvgStyle
  * @memberof! oj.ojChartItem
  * @instance
- * @type {Object}
- * @default null
+ * @type {Object=}
+ *
  */
+
 /**
  * @ojcomponent oj.ojChartSeries
  * @ojslotcomponent
- * @ojtsignore
+ * @ojsignature {target: "Type", value:"class ojChartSeries extends JetElement<ojChartSeriesSettableProperties>"}
  * @since 5.1.0
  * @ojstatus preview
  *
@@ -11514,21 +10520,18 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
 /**
  * The name of the series, displayed in the legend and tooltips.
  * @expose
- * @ojtsignore
  * @name name
  * @memberof! oj.ojChartSeries
  * @instance
- * @type {string}
- * @default null
+ * @type {string=}
  */
 /**
  * The type of data objects to display for this series. Only applies to bar, line, area, stock, box plot, and combo charts.
  * @expose
- * @ojtsignore
  * @name type
  * @memberof! oj.ojChartSeries
  * @instance
- * @type {string}
+ * @type {string=}
  * @ojvalue {string} "bar"
  * @ojvalue {string} "line"
  * @ojvalue {string} "area"
@@ -11541,115 +10544,94 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
 /**
  * The color of the series.
  * @expose
- * @ojtsignore
  * @name color
  * @memberof! oj.ojChartSeries
  * @instance
- * @type {string}
+ * @type {string=}
  * @ojformat color
- * @default null
  */
 /**
  * The border color of the series.
  * @expose
- * @ojtsignore
  * @name borderColor
  * @memberof! oj.ojChartSeries
  * @instance
- * @type {string}
+ * @type {string=}
  * @ojformat color
- * @default null
  */
 /**
  * The border width of the series.
  * @expose
- * @ojtsignore
  * @name borderWidth
  * @memberof! oj.ojChartSeries
  * @instance
- * @type {number}
- * @default null
+ * @type {number=}
  * @ojunits pixels
  */
 /**
  * The area color of the series. Only applies if series type is area or lineWithArea.
  * @expose
- * @ojtsignore
  * @name areaColor
  * @memberof! oj.ojChartSeries
  * @instance
- * @type {string}
+ * @type {string=}
  * @ojformat color
- * @default null
  */
 /**
  * The CSS style class to apply if series type is area or lineWithArea. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the color attribute.
  * @expose
- * @ojtsignore
  * @name areaSvgClassName
  * @memberof! oj.ojChartSeries
  * @instance
- * @type {string}
- * @default null
+ * @type {string=}
  */
 /**
  * The inline style to apply if series type is area or lineWithArea. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the color attribute.
  * @expose
- * @ojtsignore
  * @name areaSvgStyle
  * @memberof! oj.ojChartSeries
  * @instance
- * @type {Object}
- * @default null
+ * @type {Object=}
  */
 /**
  * The CSS style class to apply to the series. For series of type lineWithArea, this style will only be applied to the line if areaClassName is also specified. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the color attribute.
  * @expose
- * @ojtsignore
  * @name svgClassName
  * @memberof! oj.ojChartSeries
  * @instance
- * @type {string}
- * @default null
+ * @type {string=}
  */
 /**
  * The inline style to apply to the series. For series of type lineWithArea, this style will only be applied to the line if areaStyle is also specified.The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the color attribute.
  * @expose
- * @ojtsignore
  * @name svgStyle
  * @memberof! oj.ojChartSeries
  * @instance
- * @type {Object}
- * @default null
+ * @type {Object=}
  */
 /**
  * The CSS style class to apply to the data markers.The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the marker color attribute.
  * @expose
- * @ojtsignore
  * @name markerSvgClassName
  * @memberof! oj.ojChartSeries
  * @instance
- * @type {string}
- * @default null
+ * @type {string=}
  */
 /**
  * The inline style to apply to the data markers. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the marker color attribute.
  * @expose
- * @ojtsignore
  * @name markerSvgStyle
  * @memberof! oj.ojChartSeries
  * @instance
- * @type {Object}
- * @default null
+ * @type {Object=}
  */
 /**
  * The pattern used to fill the series. A solid fill is used by default, unless the seriesEffect is 'pattern'.
  * @expose
- * @ojtsignore
  * @name pattern
  * @memberof! oj.ojChartSeries
  * @instance
- * @type {string}
+ * @type {string=}
  * @ojvalue {string} "smallChecker"
  * @ojvalue {string} "smallCrosshatch"
  * @ojvalue {string} "smallDiagonalLeft"
@@ -11668,41 +10650,28 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
 /**
  * The shape of the data markers. In addition to the built-in shapes, it may also take SVG path commands to specify a custom shape. The chart will style the custom shapes the same way as built-in shapes, supporting properties like color and borderColor and applying hover and selection effects. Only 'auto' is supported for range series.
  * @expose
- * @ojtsignore
  * @name markerShape
  * @memberof! oj.ojChartSeries
  * @instance
- * @type {string}
- * @ojvalue {string=} "square"
- * @ojvalue {string=} "circle"
- * @ojvalue {string=} "diamond"
- * @ojvalue {string=} "plus"
- * @ojvalue {string=} "triangleDown"
- * @ojvalue {string=} "triangleUp"
- * @ojvalue {string=} "human"
- * @ojvalue {string=} "star"
- * @ojvalue {string=} "auto"
+ * @type {("circle"|"diamond"|"human"|"plus"|"square"|"star"|"triangleDown"|"triangleUp"|"auto"|string)=}
  * @default "auto"
  */
 /**
  * The color of the data markers, if different from the series color.
  * @expose
- * @ojtsignore
  * @name markerColor
  * @memberof! oj.ojChartSeries
  * @instance
- * @type {string}
+ * @type {string=}
  * @ojformat color
- * @default null
  */
 /**
  * Defines whether the data markers should be displayed. Only applies to line, area, scatter, and bubble series. If auto, the markers will be displayed whenever the data points are not connected by a line.
  * @expose
- * @ojtsignore
  * @name markerDisplayed
  * @memberof! oj.ojChartSeries
  * @instance
- * @type {string}
+ * @type {string=}
  * @ojvalue {string} "on"
  * @ojvalue {string} "off"
  * @ojvalue {string} "auto"
@@ -11711,34 +10680,29 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
 /**
  * The size of the data markers.
  * @expose
- * @ojtsignore
  * @name markerSize
  * @memberof! oj.ojChartSeries
  * @instance
- * @type {number}
- * @default null
+ * @type {number=}
  * @ojunits pixels
  */
 /**
  * The width of the data line. Only applies to line, lineWithArea, scatter, and bubble series.
  * @expose
- * @ojtsignore
  * @name lineWidth
  * @memberof! oj.ojChartSeries
  * @instance
- * @type {number}
- * @default null
+ * @type {number=}
  * @ojunits pixels
  * @ojmin 0
  */
 /**
  * The line style of the data line. Only applies to line, lineWithArea, scatter, and bubble series.
  * @expose
- * @ojtsignore
  * @name lineStyle
  * @memberof! oj.ojChartSeries
  * @instance
- * @type {string}
+ * @type {string=}
  * @ojvalue {string} "dotted"
  * @ojvalue {string} "dashed"
  * @ojvalue {string} "solid"
@@ -11747,11 +10711,10 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
 /**
  * The line type of the data line or area. Only applies to line, area, scatter, and bubble series. centeredStepped and centeredSegmented are not supported for polar, scatter, and bubble charts.
  * @expose
- * @ojtsignore
  * @name lineType
  * @memberof! oj.ojChartSeries
  * @instance
- * @type {string}
+ * @type {string=}
  * @ojvalue {string} "straight"
  * @ojvalue {string} "curved"
  * @ojvalue {string} "stepped"
@@ -11765,51 +10728,42 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
 /**
  *  The URI of the custom image. If specified, it takes precedence over shape.
  * @expose
- * @ojtsignore
  * @name source
  * @memberof! oj.ojChartSeries
  * @instance
- * @type {string}
- * @default null
+ * @type {string=}
  */
 /**
  *  The optional URI for the hover state. If not specified, the source image will be used.
  * @expose
- * @ojtsignore
  * @name sourceHover
  * @memberof! oj.ojChartSeries
  * @instance
- * @type {string}
- * @default null
+ * @type {string=}
  */
 /**
  *  The optional URI for the selected state. If not specified, the source image will be used.
  * @expose
- * @ojtsignore
  * @name sourceSelected
  * @memberof! oj.ojChartSeries
  * @instance
- * @type {string}
- * @default null
+ * @type {string=}
  */
 /**
  *  The optional URI for the hover selected state. If not specified, the source image will be used.
  * @expose
- * @ojtsignore
  * @name sourceHoverSelected
  * @memberof! oj.ojChartSeries
  * @instance
- * @type {string}
- * @default null
+ * @type {string=}
  */
 /**
  * A number from 0 to 1 indicating the amount to explode the pie slice. Only applies to pie charts.
  * @expose
- * @ojtsignore
  * @name pieSliceExplode
  * @memberof! oj.ojChartSeries
  * @instance
- * @type {number}
+ * @type {number=}
  * @default 0
  * @ojmin 0
  * @ojmax 1
@@ -11817,11 +10771,10 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
 /**
  * Defines whether the series is associated with the y2 axis. Only applies to Cartesian bar, line, area, and combo charts.
  * @expose
- * @ojtsignore
  * @name assignedToY2
  * @memberof! oj.ojChartSeries
  * @instance
- * @type {string}
+ * @type {string=}
  * @ojvalue {string} "on"
  * @ojvalue {string} "off"
  * @default "off"
@@ -11829,21 +10782,18 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
 /**
  * In stacked charts, groups series together for stacking. All series without a stackCategory will be assigned to the same stack.
  * @expose
- * @ojtsignore
  * @name stackCategory
  * @memberof! oj.ojChartSeries
  * @instance
- * @type {string}
- * @default null
+ * @type {string=}
  */
 /**
  * Defines whether the series should be shown in the legend. When set to 'auto', the series will not be displayed in the legend if it has null data or if it is a stock, funnel, or pyramid series.
  * @expose
- * @ojtsignore
  * @name displayInLegend
  * @memberof! oj.ojChartSeries
  * @instance
- * @type {string}
+ * @type {string=}
  * @ojvalue {string} "on"
  * @ojvalue {string} "off"
  * @ojvalue {string} "auto"
@@ -11852,11 +10802,10 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
 /**
  *  Whether drilling is enabled on the series item. Drillable objects will show a pointer cursor on hover and fire an <code class="prettyprint">ojDrill</code> event on click. To enable drilling for all series items at once, use the drilling attribute in the top level.
  * @expose
- * @ojtsignore
  * @name drilling
  * @memberof! oj.ojChartSeries
  * @instance
- * @type {string}
+ * @type {string=}
  * @ojvalue {string} "on"
  * @ojvalue {string} "off"
  * @ojvalue {string} "inherit"
@@ -11865,174 +10814,144 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
 /**
  * An optional array of category strings corresponding to this series. This allows highlighting and filtering of a series through interactions with legend sections. If not defined, the series id is used.
  * @expose
- * @ojtsignore
  * @name categories
  * @memberof! oj.ojChartSeries
  * @instance
- * @type {Array.<string>}
- * @default null
+ * @type {Array.<string>=}
  */
 /**
  * The description of this series. This is used for accessibility and for customizing the tooltip text on the corressponding legend item for the series.
  * @expose
- * @ojtsignore
  * @name shortDesc
  * @memberof! oj.ojChartSeries
  * @instance
- * @type {string}
- * @default null
+ * @type {string=}
  * @ojtranslatable
  */
 /**
  * An object containing the style properties of the box plot series.
  * @expose
- * @ojtsignore
  * @name boxPlot
  * @memberof! oj.ojChartSeries
  * @instance
- * @type {Object}
+ * @type {Object=}
  */
 /**
  *  The color of the Q2 segment of the box.
  * @expose
- * @ojtsignore
  * @name boxPlot.q2Color
  * @memberof! oj.ojChartSeries
  * @instance
- * @type {string}
+ * @type {string=}
  * @ojformat color
- * @default null
  */
 /**
  *  The CSS style class to apply to the Q2 segment of the box. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the q2Color attribute.
  * @expose
- * @ojtsignore
  * @name boxPlot.q2SvgClassName
  * @memberof! oj.ojChartSeries
  * @instance
- * @type {string}
- * @default null
+ * @type {string=}
  */
 /**
  *  The CSS inline style to apply to the Q2 segment of the box. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the q2Color attribute.
  * @expose
- * @ojtsignore
  * @name boxPlot.q2SvgStyle
  * @memberof! oj.ojChartSeries
  * @instance
- * @type {Object}
- * @default null
+ * @type {Object=}
  */
 /**
  *  The color of the Q3 segment of the box.
  * @expose
- * @ojtsignore
  * @name boxPlot.q3Color
  * @memberof! oj.ojChartSeries
  * @instance
- * @type {string}
+ * @type {string=}
  * @ojformat color
- * @default null
  */
 /**
  *  The CSS style class to apply to the Q3 segment of the box. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the q3Color attribute.
  * @expose
- * @ojtsignore
  * @name boxPlot.q3SvgClassName
  * @memberof! oj.ojChartSeries
  * @instance
- * @type {string}
- * @default null
+ * @type {string=}
  */
 /**
  *  The CSS inline style to apply to the Q3 segment of the box. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the q3Color attribute.
  * @expose
- * @ojtsignore
  * @name boxPlot.q3SvgStyle
  * @memberof! oj.ojChartSeries
  * @instance
- * @type {Object}
- * @default null
+ * @type {Object=}
  */
 /**
  * The CSS style class to apply to the whisker stems.
  * @expose
- * @ojtsignore
  * @name boxPlot.whiskerSvgClassName
  * @memberof! oj.ojChartSeries
  * @instance
- * @type {string}
- * @default null
+ * @type {string=}
  */
 /**
  * The CSS inline style to apply to the whisker stems.
  * @expose
- * @ojtsignore
  * @name boxPlot.whiskerSvgStyle
  * @memberof! oj.ojChartSeries
  * @instance
- * @type {Object}
- * @default null
+ * @type {Object=}
  */
 /**
  * The CSS style class to apply to the whisker ends.
  * @expose
- * @ojtsignore
  * @name boxPlot.whiskerEndSvgClassName
  * @memberof! oj.ojChartSeries
  * @instance
- * @type {string}
- * @default null
+ * @type {string=}
  */
 /**
  * The CSS inline style to apply to the whisker ends.
  * @expose
- * @ojtsignore
  * @name boxPlot.whiskerEndSvgStyle
  * @memberof! oj.ojChartSeries
  * @instance
- * @type {Object}
- * @default null
+ * @type {Object=}
  */
 /**
  *  Specifies the length of the whisker ends in pixels (e.g. '9px') or as a percentage of the box width (e.g. '50%').
  * @expose
- * @ojtsignore
  * @name boxPlot.whiskerEndLength
  * @memberof! oj.ojChartSeries
  * @instance
- * @type {string}
- * @default null
+ * @type {string=}
  */
 /**
  * The CSS style class to apply to the median line.
  * @expose
- * @ojtsignore
  * @name boxPlot.medianSvgClassName
  * @memberof! oj.ojChartSeries
  * @instance
- * @type {string}
- * @default null
+ * @type {string=}
  */
 /**
  * The CSS inline style to apply to the median line.
  * @expose
- * @ojtsignore
  * @name boxPlot.medianSvgStyle
  * @memberof! oj.ojChartSeries
  * @instance
- * @type {Object}
- * @default null
+ * @type {Object=}
  */
-/* global dvt:false */
- 
+
+/* global dvt:false, KeySet:false */
+
 /**
  * @ojcomponent oj.ojSparkChart
  * @augments oj.dvtBaseComponent
  * @since 0.7
  * @ojshortdesc Displays information graphically, typically highlighting the trend of a data set in a compact form factor.
  * @ojstatus preview
- * @ojtsimport ojdataprovider
+ * @ojtsimport {module: "ojdataprovider", type: "AMD", imported: ["DataProvider"]}
  * @ojrole application
  * @ojsignature [{
  *                target: "Type",
@@ -12167,7 +11086,7 @@ oj.__registerWidget('oj.ojSparkChart', $.oj.dvtBaseComponent,
      * @memberof oj.ojSparkChart
      * @instance
      * @type {Array.<Object>}
-     * @ojsignature {target: "Accessor", value: {GetterType: "Array<oj.ojSparkChart.ReferenceObject>", SetterType: "Array<oj.ojSparkChart.ReferenceObject>"}, jsdocOverride: true}
+     * @ojsignature {target: "type", value: "Array<oj.ojSparkChart.ReferenceObject>", jsdocOverride: true}
      * @default []
      *
      * @example <caption>Initialize the spark chart with the
@@ -12509,7 +11428,7 @@ oj.__registerWidget('oj.ojSparkChart', $.oj.dvtBaseComponent,
      * mySparkChart.animationDuration = 50;
      */
       animationDuration: undefined,
- 
+
     /**
      * Defines the animation that is applied on data changes.
      * @expose
@@ -12682,16 +11601,7 @@ oj.__registerWidget('oj.ojSparkChart', $.oj.dvtBaseComponent,
      * @name markerShape
      * @memberof oj.ojSparkChart
      * @instance
-     * @type {string}
-     * @ojvalue {string=} "square"
-     * @ojvalue {string=} "circle"
-     * @ojvalue {string=} "diamond"
-     * @ojvalue {string=} "plus"
-     * @ojvalue {string=} "triangleDown"
-     * @ojvalue {string=} "triangleUp"
-     * @ojvalue {string=} "human"
-     * @ojvalue {string=} "star"
-     * @ojvalue {string=} "auto"
+     * @type {("auto"|"circle"|"diamond"|"human"|"plus"|"square"|"star"|"triangleDown"|"triangleUp"|string)}
      * @default "auto"
      *
      * @example <caption>Initialize the spark chart with the <code class="prettyprint">marker-shape</code> attribute specified:</caption>
@@ -12750,38 +11660,38 @@ oj.__registerWidget('oj.ojSparkChart', $.oj.dvtBaseComponent,
      */
       barGapRatio: 0.25
     },
- 
+
   //* * @inheritdoc */
     _CreateDvtComponent: function (context, callback, callbackObj) {
       this._focusable({ element: this.element, applyHighlight: true });
       return dvt.SparkChart.newInstance(context, callback, callbackObj);
     },
- 
+
   //* * @inheritdoc */
     _GetComponentStyleClasses: function () {
       var styleClasses = this._super();
       styleClasses.push('oj-sparkchart');
       return styleClasses;
     },
- 
+
   //* * @inheritdoc */
     _GetChildStyleClasses: function () {
       var styleClasses = this._super();
       styleClasses['oj-dvtbase oj-sparkchart'] = { path: 'animationDuration', property: 'ANIM_DUR' };
       return styleClasses;
     },
- 
+
   //* * @inheritdoc */
     _GetTranslationMap: function () {
     // The translations are stored on the options object.
       var translations = this.options.translations;
- 
+
     // Safe to modify super's map because function guarentees a new map is returned
       var ret = this._super();
       ret['DvtUtilBundle.CHART'] = translations.componentName;
       return ret;
     },
- 
+
   //* * @inheritdoc */
     _Render: function () {
     // Display the title of the surrounding div as the tooltip. Remove title from div to avoid browser default tooltip.
@@ -12792,11 +11702,11 @@ oj.__registerWidget('oj.ojSparkChart', $.oj.dvtBaseComponent,
       } else if (this.element.data('title')) {
         this.options.shortDesc = this.element.data('title');
       }
- 
+
     // Call the super to render
       this._super();
     },
- 
+
   /**
    * Returns an object with the following properties for automation testing verification of the data item with
    * the specified item index.
@@ -12815,26 +11725,32 @@ oj.__registerWidget('oj.ojSparkChart', $.oj.dvtBaseComponent,
    */
     getDataItem: function (itemIndex) {
       var ret = this._component.getAutomation().getDataItem(itemIndex);
- 
+
     // : Provide backwards compatibility for getters until 1.2.0.
       this._AddAutomationGetters(ret);
       if (ret) {
         ret.getFloatValue = ret.getLow;
       }
- 
+
       return ret;
     },
- 
+
   //* * @inheritdoc */
     _GetComponentDeferredDataPaths: function () {
       return { root: ['items', 'data'] };
     },
- 
+
   //* * @inheritdoc */
     _GetSimpleDataProviderConfigs: function () {
-      return { data: { templateName: 'itemTemplate', templateElementName: 'oj-spark-chart-item', resultPath: 'items' } };
+      return {
+        data: {
+          templateName: 'itemTemplate',
+          templateElementName: 'oj-spark-chart-item',
+          resultPath: 'items'
+        }
+      };
     },
- 
+
   /**
    * Adds getters for the properties on the specified map.
    * @param {Object|null} map
@@ -12846,7 +11762,7 @@ oj.__registerWidget('oj.ojSparkChart', $.oj.dvtBaseComponent,
       if (!map) {
         return;
       }
- 
+
       // These getters are deprecated in 3.0.0
       var props = {};
       var keys = Object.keys(map);
@@ -12855,7 +11771,7 @@ oj.__registerWidget('oj.ojSparkChart', $.oj.dvtBaseComponent,
       }
       Object.defineProperties(map, props);
     },
- 
+
   /**
    * Adds getter for the specified property on the specified properties map.
    * @param {Object} map
@@ -12872,6 +11788,7 @@ oj.__registerWidget('oj.ojSparkChart', $.oj.dvtBaseComponent,
       props[getterName] = { value: function () { return map[key]; } };
     },
   });
+
 /**
  * <p>This element has no touch interaction.  </p>
  *
@@ -12879,16 +11796,16 @@ oj.__registerWidget('oj.ojSparkChart', $.oj.dvtBaseComponent,
  * @ojfragment touchDoc - Used in touch gesture section of classdesc, and standalone gesture doc
  * @memberof oj.ojSparkChart
  */
- 
+
 /**
  * <p>This element has no keyboard interaction.  </p>
  *
  * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
  * @memberof oj.ojSparkChart
  */
- 
+
 // PROPERTY TYPEDEFS
- 
+
 /**
  * @typedef {Object} oj.ojSparkChart.Item
  * @property {string} borderColor The default border color for the data items.
@@ -12903,9 +11820,9 @@ oj.__registerWidget('oj.ojSparkChart', $.oj.dvtBaseComponent,
  * @property {Object} svgStyle The inline style to apply to the data item. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the item color attribute.
  * @property {number} value The value of the data item.
  */
- 
+
  // Slots
- 
+
 /**
  * <p> The <code class="prettyprint">itemTemplate</code> slot is used to specify the template for creating each item of the spark chart when a DataProvider has been specified with the data attribute. The slot must be a &lt;template> element.
  * <p>When the template is executed for each item, it will have access to the spark chart's binding context and the following properties:</p>
@@ -12920,6 +11837,7 @@ oj.__registerWidget('oj.ojSparkChart', $.oj.dvtBaseComponent,
  *
  * @ojstatus preview
  * @ojslot itemTemplate
+ * @ojmaxitems 1
  * @memberof oj.ojSparkChart
  * @property {Element} componentElement The &lt;oj-spark-chart> custom element.
  * @property {Object} data The data object for the current item.
@@ -12949,16 +11867,16 @@ oj.__registerWidget('oj.ojSparkChart', $.oj.dvtBaseComponent,
  * @property {"area"|"line"=} type="line" The type of reference object being shown.
  * @property {number=} value The value of a reference line.
  */
- 
+
 /**
  * @typedef {Object} oj.ojSparkChart.TooltipContext
  * @property {string} color The color of the chart.
  * @property {Element} componentElement The spark chart element.
  * @property {Element} parentElement The tooltip element. The function can directly modify or append content to this element.
  */
- 
+
 // METHOD TYPEDEFS
- 
+
 /**
  * @typedef {Object} oj.ojSparkChart.ItemContext
  * @property {string} borderColor The border color of the item
@@ -12968,6 +11886,7 @@ oj.__registerWidget('oj.ojSparkChart', $.oj.dvtBaseComponent,
  * @property {number} low The low value for a range item
  * @property {number} value The value of the item
  */
+
 /**
  * @ojcomponent oj.ojSparkChartItem
  * @ojsignature {target: "Type", value:"class ojSparkChartItem extends JetElement<ojSparkChartItemSettableProperties>"}
@@ -13104,19 +12023,10 @@ oj.__registerWidget('oj.ojSparkChart', $.oj.dvtBaseComponent,
  * The shape of the data markers. Can take the name of a built-in shape or the svg path commands for a custom shape. Only applies to line and area spark charts.
  * @expose
  * @name markerShape
- * @type {string}
+ * @type {("auto"|"circle"|"diamond"|"human"|"plus"|"square"|"star"|"triangleDown"|"triangleUp"|string)=}
+ * @default "auto"
  * @memberof! oj.ojSparkChartItem
  * @instance
- * @ojvalue {string=} "auto"
- * @ojvalue {string=} "circle"
- * @ojvalue {string=} "diamond"
- * @ojvalue {string=} "human"
- * @ojvalue {string=} "plus"
- * @ojvalue {string=} "square"
- * @ojvalue {string=} "star"
- * @ojvalue {string=} "triangleDown"
- * @ojvalue {string=} "triangleUp"
- * @default "auto"
  *
  * @example <caption>Initialize the spark chart item with the
  * <code class="prettyprint">marker-shape</code> attribute specified:</caption>
@@ -13200,11 +12110,9 @@ oj.__registerWidget('oj.ojSparkChart', $.oj.dvtBaseComponent,
  * @ignore
  */
 /* global __oj_chart_metadata */
+/* global DvtAttributeUtils */
 (function () {
   __oj_chart_metadata.extension._WIDGET_NAME = 'ojChart';
-  oj.CustomElementBridge.registerMetadata('oj-chart', 'dvtBaseComponent', __oj_chart_metadata);
-  // Get the combined meta of superclass which contains a shape parse function generator
-  var dvtMeta = oj.CustomElementBridge.getMetadata('oj-chart');
   var _CHART_SHAPE_ENUMS = {
     square: true,
     circle: true,
@@ -13216,7 +12124,7 @@ oj.__registerWidget('oj.ojSparkChart', $.oj.dvtBaseComponent,
     star: true,
     auto: true
   };
-  var chartShapeParser = dvtMeta.extension._DVT_PARSE_FUNC({ 'style-defaults.marker-shape': true }, _CHART_SHAPE_ENUMS);
+  var chartShapeParser = DvtAttributeUtils.shapeParseFunction({ 'style-defaults.marker-shape': true }, _CHART_SHAPE_ENUMS);
   var chartParseFunction = function (value, name, metadata, defaultParseFunction) {
     if (metadata.type === 'number|string') {
       return isNaN(value) ? value : Number(value);
@@ -13226,17 +12134,63 @@ oj.__registerWidget('oj.ojSparkChart', $.oj.dvtBaseComponent,
     return chartShapeParser(value, name, metadata, defaultParseFunction);
   };
   oj.CustomElementBridge.register('oj-chart', {
-    metadata: dvtMeta,
+    metadata: __oj_chart_metadata,
     parseFunction: chartParseFunction
   });
 }());
- 
+
+/* global __oj_chart_item_metadata */
+(function () {
+  __oj_chart_item_metadata.extension._CONSTRUCTOR = function () {};
+  var _CHART_ITEM_SHAPE_ENUMS = {
+    square: true,
+    circle: true,
+    diamond: true,
+    plus: true,
+    triangleDown: true,
+    triangleUp: true,
+    human: true,
+    star: true,
+    auto: true
+  };
+  oj.CustomElementBridge.register('oj-chart-item', {
+    metadata: __oj_chart_item_metadata,
+    parseFunction: DvtAttributeUtils.shapeParseFunction({ 'marker-shape': true }, _CHART_ITEM_SHAPE_ENUMS)
+  });
+}());
+
+/* global __oj_chart_series_metadata */
+(function () {
+  __oj_chart_series_metadata.extension._CONSTRUCTOR = function () {};
+  var _CHART_SERIES_SHAPE_ENUMS = {
+    square: true,
+    circle: true,
+    diamond: true,
+    plus: true,
+    triangleDown: true,
+    triangleUp: true,
+    human: true,
+    star: true,
+    auto: true
+  };
+  oj.CustomElementBridge.register('oj-chart-series', {
+    metadata: __oj_chart_series_metadata,
+    parseFunction: DvtAttributeUtils.shapeParseFunction({ 'marker-shape': true },
+                                                             _CHART_SERIES_SHAPE_ENUMS)
+  });
+}());
+
+/* global __oj_chart_group_metadata */
+(function () {
+  __oj_chart_group_metadata.extension._CONSTRUCTOR = function () {};
+  oj.CustomElementBridge.register('oj-chart-group', {
+    metadata: __oj_chart_group_metadata
+  });
+}());
+
 /* global __oj_spark_chart_metadata */
 (function () {
   __oj_spark_chart_metadata.extension._WIDGET_NAME = 'ojSparkChart';
-  oj.CustomElementBridge.registerMetadata('oj-spark-chart', 'dvtBaseComponent', __oj_spark_chart_metadata);
-  // Get the combined meta of superclass which contains a shape parse function generator
-  var dvtMeta = oj.CustomElementBridge.getMetadata('oj-spark-chart');
   var _SPARK_SHAPE_ENUMS = {
     square: true,
     circle: true,
@@ -13249,72 +12203,18 @@ oj.__registerWidget('oj.ojSparkChart', $.oj.dvtBaseComponent,
     auto: true
   };
   oj.CustomElementBridge.register('oj-spark-chart', {
-    metadata: dvtMeta,
-    parseFunction: dvtMeta.extension._DVT_PARSE_FUNC({ 'marker-shape': true }, _SPARK_SHAPE_ENUMS)
+    metadata: __oj_spark_chart_metadata,
+    parseFunction: DvtAttributeUtils.shapeParseFunction({ 'marker-shape': true }, _SPARK_SHAPE_ENUMS)
   });
 }());
- 
-/* global __oj_chart_item_metadata */
-(function () {
-  __oj_chart_item_metadata.extension._CONSTRUCTOR = function () {};
-  oj.CustomElementBridge.registerMetadata('oj-chart-item', null, __oj_chart_item_metadata);
-  var _CHART_ITEM_SHAPE_ENUMS = {
-    square: true,
-    circle: true,
-    diamond: true,
-    plus: true,
-    triangleDown: true,
-    triangleUp: true,
-    human: true,
-    star: true,
-    auto: true
-  };
-  var dvtBaseMetadata = oj.CustomElementBridge.getMetadata('dvtBaseComponent');
-  oj.CustomElementBridge.register('oj-chart-item', {
-    metadata: oj.CustomElementBridge.getMetadata('oj-chart-item'),
-    parseFunction: dvtBaseMetadata.extension._DVT_PARSE_FUNC({ 'marker-shape': true }, _CHART_ITEM_SHAPE_ENUMS)
-  });
-}());
- 
-/* global __oj_chart_series_metadata */
-(function () {
-  __oj_chart_series_metadata.extension._CONSTRUCTOR = function () {};
-  oj.CustomElementBridge.registerMetadata('oj-chart-series', null, __oj_chart_series_metadata);
-  var _CHART_SERIES_SHAPE_ENUMS = {
-    square: true,
-    circle: true,
-    diamond: true,
-    plus: true,
-    triangleDown: true,
-    triangleUp: true,
-    human: true,
-    star: true,
-    auto: true
-  };
-  var dvtBaseMetadata = oj.CustomElementBridge.getMetadata('dvtBaseComponent');
-  oj.CustomElementBridge.register('oj-chart-series', {
-    metadata: oj.CustomElementBridge.getMetadata('oj-chart-series'),
-    parseFunction: dvtBaseMetadata.extension._DVT_PARSE_FUNC({ 'marker-shape': true },
-                                                             _CHART_SERIES_SHAPE_ENUMS)
-  });
-}());
- 
-/* global __oj_chart_group_metadata */
-(function () {
-  __oj_chart_group_metadata.extension._CONSTRUCTOR = function () {};
-  oj.CustomElementBridge.registerMetadata('oj-chart-group', null, __oj_chart_group_metadata);
-  oj.CustomElementBridge.register('oj-chart-group', {
-    metadata: oj.CustomElementBridge.getMetadata('oj-chart-group')
-  });
-}());
- 
+
 /* global __oj_spark_chart_item_metadata */
 (function () {
   __oj_spark_chart_item_metadata.extension._CONSTRUCTOR = function () {};
-  oj.CustomElementBridge.registerMetadata('oj-spark-chart-item', null, __oj_spark_chart_item_metadata);
   oj.CustomElementBridge.register('oj-spark-chart-item', {
-    metadata: oj.CustomElementBridge.getMetadata('oj-spark-chart-item')
+    metadata: __oj_spark_chart_item_metadata
   });
 }());
+
 
 });

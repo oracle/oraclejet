@@ -23,8 +23,8 @@
 @if $includeCollapsibleClasses != false {
   @include module-include-once("alta.android.collapsible") {
     .oj-collapsible-header {
-      @include oj-display-flex-property();
-      @include oj-align-items-property(center);
+      display: flex;
+      align-items: center;
     }
 
     .oj-collapsible-header-icon {

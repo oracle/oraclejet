@@ -447,6 +447,8 @@ dvt.ThematicMap.prototype._render = function(pzcContainer, cpContainer) {
 
   this._pzc.setZoomingEnabled(this._zooming);
   this._pzc.setPanningEnabled(this._panning);
+  if (this.Options['_resources'])
+    this._pzc.setPanCursor(this.Options['_resources']['panCursorUp'], this.Options['_resources']['panCursorDown']);
 };
 
 /**
@@ -5208,7 +5210,7 @@ DvtMapDataLayer.prototype.getSelectedAreas = function(selectedObjs) {
   var selectedAreas = [];
   var areaObjs = this.getAreaObjects();
   var ctx = this._tmap.getCtx();
-  var selectionSet = new ctx.oj.KeySetImpl(selectedObjs);
+  var selectionSet = new ctx.KeySetImpl(selectedObjs);
   for (var j = 0; j < areaObjs.length; j++) {
     if (selectionSet.has(areaObjs[j].getId())) {
       selectedAreas.push(areaObjs[j].getLocation());

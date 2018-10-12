@@ -4,13 +4,13 @@
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
-define(['ojs/ojcore', 'jquery', 'hammerjs', 'promise', 'ojs/ojjquery-hammer', 'ojs/ojcomponentcore'],
+define(['ojs/ojcore', 'jquery', 'hammerjs', 'ojs/ojcontext', 'ojs/ojthemeutils', 'ojs/ojcomponentcore', 'ojs/ojlogger', 'promise', 'ojs/ojjquery-hammer', ],
        /*
         * @param {Object} oj 
         * @param {jQuery} $
         * @param {Object} Hammer
         */
-       function(oj, $, Hammer)
+       function(oj, $, Hammer, Context, ThemeUtils, Components, Logger)
  
 {
 
@@ -19,7 +19,7 @@ define(['ojs/ojcore', 'jquery', 'hammerjs', 'promise', 'ojs/ojjquery-hammer', 'o
  * All rights reserved.
  */
 
-/* global Hammer Promise */
+/* global Hammer, Promise, Components:false, Logger:false, ThemeUtils:false, Context:false */
 
 /**
  * @class oj.OffcanvasUtils
@@ -102,9 +102,13 @@ define(['ojs/ojcore', 'jquery', 'hammerjs', 'promise', 'ojs/ojjquery-hammer', 'o
  * </h3>
  *
  * {@ojinclude "name":"keyboardDoc"}
+ * @ojtsignore
  *
  */
 oj.OffcanvasUtils = {};
+// mapping variable definition, used in a no-require environment. Maps the oj.OffcanvasUtils object to the name used in the require callback.
+// eslint-disable-next-line no-unused-vars
+var OffcanvasUtils = oj.OffcanvasUtils;
 
 oj.OffcanvasUtils._DATA_EDGE_KEY = 'oj-offcanvasEdge';
 oj.OffcanvasUtils._DATA_OFFCANVAS_KEY = 'oj-offcanvas';
@@ -257,7 +261,7 @@ oj.OffcanvasUtils._getDisplayMode = function (offcanvas) {
       displayMode !== oj.OffcanvasUtils.DISPLAY_MODE_PUSH &&
       displayMode !== oj.OffcanvasUtils.DISPLAY_MODE_PIN) {
     // default displayMode in iOS is push and in android and windows are overlay
-    displayMode = (oj.ThemeUtils.parseJSONFromFontFamily('oj-offcanvas-option-defaults') || {}).displayMode;
+    displayMode = (ThemeUtils.parseJSONFromFontFamily('oj-offcanvas-option-defaults') || {}).displayMode;
   }
 
   return displayMode;
@@ -291,11 +295,10 @@ oj.OffcanvasUtils._getAnimateWrapper = function (offcanvas) {
   }
 
   if (offcanvas[oj.OffcanvasUtils.ANIMATE_WRAPPER_KEY]) {
-    return drawer.closest("." + offcanvas[oj.OffcanvasUtils.ANIMATE_WRAPPER_KEY]);
+    return drawer.closest('.' + offcanvas[oj.OffcanvasUtils.ANIMATE_WRAPPER_KEY]);
   }
-  else {
-    return drawer.parent();
-  }
+
+  return drawer.parent();
 };
 
 
@@ -510,7 +513,7 @@ oj.OffcanvasUtils._onTransitionEnd = function (target, handler) {
 oj.OffcanvasUtils._closeWithCatch = function (offcanvas) {
   //  - offcanvas: error occurs when you veto the ojbeforeclose event
   oj.OffcanvasUtils.close(offcanvas).catch(function (reason) {
-    oj.Logger.warn('Offcancas close failed: ' + reason);
+    Logger.warn('Offcancas close failed: ' + reason);
   });
 };
 
@@ -863,8 +866,8 @@ oj.OffcanvasUtils._openPush = function (offcanvas, resolve, reject, edge) {
     } else {
       //  - opening offcanvas automatically scrolls to the top
       //  - perf: fif jank: nav drawer and list view items
-      // Moving the focus before animation works fine with the "start" and "top" drawers, but not 
-      // with the "end" and "bottom" drawers. (There may be a browser bug causing problems) 
+      // Moving the focus before animation works fine with the "start" and "top" drawers, but not
+      // with the "end" and "bottom" drawers. (There may be a browser bug causing problems)
       if (edge === oj.OffcanvasUtils.EDGE_END || edge === oj.OffcanvasUtils.EDGE_BOTTOM) {
         oj.OffcanvasUtils._setFocus(offcanvas);
       }
@@ -927,8 +930,8 @@ oj.OffcanvasUtils._openPush = function (offcanvas, resolve, reject, edge) {
 
   //  - opening offcanvas automatically scrolls to the top
   //  - perf: fif jank: nav drawer and list view items
-  // Moving the focus before animation works fine with the "start" and "top" drawers, but not with 
-  // the "end" and "bottom" drawers. (There may be a browser bug causing problems) 
+  // Moving the focus before animation works fine with the "start" and "top" drawers, but not with
+  // the "end" and "bottom" drawers. (There may be a browser bug causing problems)
   if (edge === oj.OffcanvasUtils.EDGE_START || edge === oj.OffcanvasUtils.EDGE_TOP) {
     oj.OffcanvasUtils._setFocus(offcanvas);
   }
@@ -961,8 +964,8 @@ oj.OffcanvasUtils._openOverlay = function (offcanvas, resolve, reject, edge) {
 
   //  - opening offcanvas automatically scrolls to the top
   //  - perf: fif jank: nav drawer and list view items
-  // Moving the focus before animation works fine with the "start" and "top" drawers, but not with 
-  // the "end" and "bottom" drawers. (There may be a browser bug causing problems) 
+  // Moving the focus before animation works fine with the "start" and "top" drawers, but not with
+  // the "end" and "bottom" drawers. (There may be a browser bug causing problems)
   if (edge === oj.OffcanvasUtils.EDGE_START || edge === oj.OffcanvasUtils.EDGE_TOP) {
     oj.OffcanvasUtils._setFocus(offcanvas);
   }
@@ -975,8 +978,8 @@ oj.OffcanvasUtils._openOverlay = function (offcanvas, resolve, reject, edge) {
 
       //  - opening offcanvas automatically scrolls to the top
       //  - perf: fif jank: nav drawer and list view items
-      // Moving the focus before animation works fine with the "start" and "top" drawers, but not 
-      // with the "end" and "bottom" drawers. (There may be a browser bug causing problems) 
+      // Moving the focus before animation works fine with the "start" and "top" drawers, but not
+      // with the "end" and "bottom" drawers. (There may be a browser bug causing problems)
       if (edge === oj.OffcanvasUtils.EDGE_END || edge === oj.OffcanvasUtils.EDGE_BOTTOM) {
         oj.OffcanvasUtils._setFocus(offcanvas);
       }
@@ -1034,8 +1037,8 @@ oj.OffcanvasUtils._openPin = function(offcanvas, resolve, reject, edge)
 
   //  - opening offcanvas automatically scrolls to the top
   //  - perf: fif jank: nav drawer and list view items
-  // Moving the focus before animation works fine with the "start" and "top" drawers, but not with 
-  // the "end" and "bottom" drawers. (There may be a browser bug causing problems) 
+  // Moving the focus before animation works fine with the "start" and "top" drawers, but not with
+  // the "end" and "bottom" drawers. (There may be a browser bug causing problems)
   if (edge === oj.OffcanvasUtils.EDGE_START || edge === oj.OffcanvasUtils.EDGE_TOP) {
     oj.OffcanvasUtils._setFocus(offcanvas);
   }
@@ -1048,8 +1051,8 @@ oj.OffcanvasUtils._openPin = function(offcanvas, resolve, reject, edge)
 
       //  - opening offcanvas automatically scrolls to the top
       //  - perf: fif jank: nav drawer and list view items
-      // Moving the focus before animation works fine with the "start" and "top" drawers, but not 
-      // with the "end" and "bottom" drawers. (There may be a browser bug causing problems) 
+      // Moving the focus before animation works fine with the "start" and "top" drawers, but not
+      // with the "end" and "bottom" drawers. (There may be a browser bug causing problems)
       if (edge === oj.OffcanvasUtils.EDGE_END || edge === oj.OffcanvasUtils.EDGE_BOTTOM) {
         oj.OffcanvasUtils._setFocus(offcanvas);
       }
@@ -1173,8 +1176,8 @@ oj.OffcanvasUtils._openOldDrawer = function (offcanvas, resolve, reject, edge, d
 
   //  - opening offcanvas automatically scrolls to the top
   //  - perf: fif jank: nav drawer and list view items
-  // Moving the focus before animation works fine with the "start" and "top" drawers, but not with 
-  // the "end" and "bottom" drawers. (There may be a browser bug causing problems) 
+  // Moving the focus before animation works fine with the "start" and "top" drawers, but not with
+  // the "end" and "bottom" drawers. (There may be a browser bug causing problems)
   if (edge === oj.OffcanvasUtils.EDGE_START || edge === oj.OffcanvasUtils.EDGE_TOP) {
     oj.OffcanvasUtils._setFocus(offcanvas);
   }
@@ -1187,8 +1190,8 @@ oj.OffcanvasUtils._openOldDrawer = function (offcanvas, resolve, reject, edge, d
 
       //  - opening offcanvas automatically scrolls to the top
       //  - perf: fif jank: nav drawer and list view items
-      // Moving the focus before animation works fine with the "start" and "top" drawers, but not 
-      // with the "end" and "bottom" drawers. (There may be a browser bug causing problems) 
+      // Moving the focus before animation works fine with the "start" and "top" drawers, but not
+      // with the "end" and "bottom" drawers. (There may be a browser bug causing problems)
       if (edge === oj.OffcanvasUtils.EDGE_END || edge === oj.OffcanvasUtils.EDGE_BOTTOM) {
         oj.OffcanvasUtils._setFocus(offcanvas);
       }
@@ -1355,7 +1358,7 @@ oj.OffcanvasUtils.open = function (offcanvas) {
 
       // Add a busy state for the animation.  The busy state resolver will be invoked
       // when the animation is completed
-      var busyContext = oj.Context.getContext(drawer[0]).getBusyContext();
+      var busyContext = Context.getContext(drawer[0]).getBusyContext();
       resolveBusyState = busyContext.addBusyState(
         { description: "The offcanvas selector ='" +
          offcanvas[oj.OffcanvasUtils.SELECTOR_KEY] + "' doing the open animation." });
@@ -1391,7 +1394,7 @@ oj.OffcanvasUtils.open = function (offcanvas) {
       nOffcanvas[oj.OffcanvasUtils.OPEN_PROMISE_KEY] = promise;
 
       // notify subtree
-      oj.Components.subtreeShown(drawer[0]);
+      Components.subtreeShown(drawer[0]);
     }
   }
 
@@ -1418,7 +1421,8 @@ oj.OffcanvasUtils.open = function (offcanvas) {
  *
  */
 oj.OffcanvasUtils.close = function (offcanvas) {
-  return oj.OffcanvasUtils._close(offcanvas[oj.OffcanvasUtils.SELECTOR_KEY], offcanvas[oj.OffcanvasUtils.ANIMATE_KEY] === undefined ? true : false);
+  return oj.OffcanvasUtils._close(offcanvas[oj.OffcanvasUtils.SELECTOR_KEY],
+                                  offcanvas[oj.OffcanvasUtils.ANIMATE_KEY] === undefined);
 };
 
 oj.OffcanvasUtils._close = function (selector, animation) {
@@ -1458,7 +1462,7 @@ oj.OffcanvasUtils._close = function (selector, animation) {
       // Add a busy state for the animation.  The busy state resolver will be invoked
       // when the animation is completed
       if (animation) {
-        var busyContext = oj.Context.getContext(drawer[0]).getBusyContext();
+        var busyContext = Context.getContext(drawer[0]).getBusyContext();
         resolveBusyState = busyContext.addBusyState(
           { description: "The offcanvas selector ='" +
            offcanvas[oj.OffcanvasUtils.SELECTOR_KEY] + "' doing the close animation." });
@@ -1498,7 +1502,7 @@ oj.OffcanvasUtils._close = function (selector, animation) {
       offcanvas[oj.OffcanvasUtils.CLOSE_PROMISE_KEY] = promise;
 
       // notify subtree
-      oj.Components.subtreeHidden(drawer[0]);
+      Components.subtreeHidden(drawer[0]);
     }
   }
 
@@ -1775,9 +1779,8 @@ oj.OffcanvasUtils.setupPanToReveal = function (_offcanvas) {
       drawer.trigger(evt, ui);
 
       if (!evt.isDefaultPrevented()) {
-        var busyContext = oj.Context.getContext(outerWrapper.get(0)).getBusyContext();
-        busyContext.whenReady().then(function() {
-
+        var busyContext = Context.getContext(outerWrapper.get(0)).getBusyContext();
+        busyContext.whenReady().then(function () {
               // need the size to display the canvas when release
           size = offcanvas.size;
           if (size == null) {
@@ -1867,6 +1870,14 @@ oj.OffcanvasUtils.setupPanToReveal = function (_offcanvas) {
 
         oj.OffcanvasUtils._registerCloseHandler(offcanvas);
 
+        return;
+      }
+
+      // nothing to animate, still need to close the offcanvas and do clean up
+      if (wrapper[0].style.transform === 'translate3d(0px, 0px, 0px)') {
+        oj.OffcanvasUtils._toggleClass(offcanvas, wrapper, false);
+        wrapper.removeClass(oj.OffcanvasUtils.TRANSITION_SELECTOR);
+        drawer.trigger('ojclose', offcanvas);
         return;
       }
 
@@ -2060,23 +2071,23 @@ oj.OffcanvasUtils.tearDownPanToReveal = function (offcanvas) {
  *       <td>Applied to the outer wrapper of the page level offcanvas.</td>
  *     </tr>
  *     <tr>
- *       <td>oj-offcanvas-inner-wrapper<br>
- *       <td>Applied to the inner wrapper of the offcanvas. Deprecated, please remove the inner wrapper.</td>
+ *       <td>oj-offcanvas-inner-wrapper</td>
+ *       <td><span style="color:red">Deprecated</span>. Please remove the inner wrapper.</td>
  *     </tr>
  *     <tr>
- *       <td>oj-offcanvas-start<br>
+ *       <td>oj-offcanvas-start</td>
  *       <td>Applied to the offcanvas on the start edge.</td>
  *     </tr>
  *     <tr>
- *       <td>oj-offcanvas-end<br>
+ *       <td>oj-offcanvas-end</td>
  *       <td>Applied to the offcanvas on the end edge.</td>
  *     </tr>
  *     <tr>
- *       <td>oj-offcanvas-top<br>
+ *       <td>oj-offcanvas-top</td>
  *       <td>Applied to the offcanvas on the top edge.</td>
  *     </tr>
  *     <tr>
- *       <td>oj-offcanvas-bottom<br>
+ *       <td>oj-offcanvas-bottom</td>
  *       <td>Applied to the offcanvas on the bottom edge.</td>
  *     </tr>
  *     <tr>
@@ -2090,4 +2101,5 @@ oj.OffcanvasUtils.tearDownPanToReveal = function (offcanvas) {
  * @memberof oj.OffcanvasUtils
  */
 
+  ;return OffcanvasUtils;
 });

@@ -15,11 +15,11 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojdatasource-common'], function(
  * Copyright (c) 2015, Oracle and/or its affiliates.
  * All rights reserved.
  */
-/*jslint browser: true*/
+/* jslint browser: true*/
 
 
 /**
- * @class oj.Cube 
+ * @class oj.Cube
  * @classdesc Functions implemented by oj.DataColumnCube and oj.DataValueAttributeCube
  * @constructor
  * @export
@@ -29,26 +29,24 @@ define(['ojs/ojcore', 'jquery', 'promise', 'ojs/ojdatasource-common'], function(
  * @since 1.1.0
  * @ojtsignore
  */
- oj.Cube = function(rowset, layout)
-{
-    this.Init();
-    
-    // Wrap the incoming data in the appropriate interface
-    this._rows = rowset;
-    this._layout = /** @type {Array.<{axis,levels}>} */ (layout);
+oj.Cube = function (rowset, layout) {
+  this.Init();
 
-    this.BuildCube();
+  // Wrap the incoming data in the appropriate interface
+  this._rows = rowset;
+  this._layout = /** @type {Array.<{axis,levels}>} */ (layout);
+
+  this.BuildCube();
 };
 
-// Subclass from oj.Object 
-oj.Object.createSubclass(oj.Cube, oj.Object, "oj.Cube");
+// Subclass from oj.Object
+oj.Object.createSubclass(oj.Cube, oj.Object, 'oj.Cube');
 
 /**
  * Initializes instance with the set options
  * @private
  */
-oj.Cube.prototype.Init = function() 
-{
+oj.Cube.prototype.Init = function () {
   oj.Cube.superclass.Init.call(this);
 };
 
@@ -58,23 +56,23 @@ oj.Cube.prototype.Init = function()
  * @memberof oj.Cube
  * @export
  */
-oj.Cube.prototype.getAxes = function() {
-    // Generate axes list as union of subcube axes for particular page + page axes
-    var cube = this._getPinnedCube();
-    var axes = [];
-    Array.prototype.push.apply(axes, cube ? cube.getAxes() : this._axes);
-    // Add on the page axes
-    for (var i = 2; i < this._axes.length; i++) {
-        axes.push(this._axes[i]);
-    }
-    return axes;
+oj.Cube.prototype.getAxes = function () {
+  // Generate axes list as union of subcube axes for particular page + page axes
+  var cube = this._getPinnedCube();
+  var axes = [];
+  Array.prototype.push.apply(axes, cube ? cube.getAxes() : this._axes);
+  // Add on the page axes
+  for (var i = 2; i < this._axes.length; i++) {
+    axes.push(this._axes[i]);
+  }
+  return axes;
 };
 
 /**
  * Get oj.CubeDataValues from this cube.  These represent the values of the data in the "body" of the cube
  *
  * @param {Array.<Object|number>} indices an axis-ordered array of Objects or numbers.  If Objects, each should contain a 'start' property
- * (the zero based start index for the axis) and a 'count' representing the number of data values beginning at 'start' to return on this axis. 
+ * (the zero based start index for the axis) and a 'count' representing the number of data values beginning at 'start' to return on this axis.
  * This format allows the retrieval of a block of data.  Passing an array of numbers alone is equivalent to passing {start:<index>, count:1} and getting a single
  * oj.CubeDataValue
  * @return {Array.<oj.CubeDataValue>|oj.CubeDataValue} either an array of arrays of oj.CubeDataValue, depending on the number of values requested in indices, or a single oj.CubeDataValue
@@ -85,24 +83,24 @@ oj.Cube.prototype.getAxes = function() {
  * @memberof oj.Cube
  * @export
  */
-oj.Cube.prototype.getValues = function(indices) {
-    // Get pinned cube
-    var cube = this._getPinnedCube();
-    
-    // Normalize the argument to be objects with start/count properties
-    var ind = cube._normalizeIndices(indices);
+oj.Cube.prototype.getValues = function (indices) {
+  // Get pinned cube
+  var cube = this._getPinnedCube();
 
-    var origRet = cube._walkIndex(ind, 0, [], []);
-    var val = origRet;
-    // Unpack single values tucked in arrays
-    while (Array.isArray(val) && val.length === 1) {
-        val = val[0];
-        if (!Array.isArray(val)) {
-            // Found an object in the middle--return it
-            return val;
-        }
+  // Normalize the argument to be objects with start/count properties
+  var ind = cube._normalizeIndices(indices);
+
+  var origRet = cube._walkIndex(ind, 0, [], []);
+  var val = origRet;
+  // Unpack single values tucked in arrays
+  while (Array.isArray(val) && val.length === 1) {
+    val = val[0];
+    if (!Array.isArray(val)) {
+      // Found an object in the middle--return it
+      return val;
     }
-    return origRet;
+  }
+  return origRet;
 };
 
 /**
@@ -122,16 +120,15 @@ oj.Cube.prototype.getValues = function(indices) {
  * @memberof oj.Cube
  * @export
  */
-oj.Cube.prototype.setPage = function(pin) {
-    // Make sure it's an array
-    if (pin instanceof Array) {
-        this._pin = pin;
-    }
-    else {
-        this._pin = [pin];
-    }
+oj.Cube.prototype.setPage = function (pin) {
+  // Make sure it's an array
+  if (pin instanceof Array) {
+    this._pin = pin;
+  } else {
+    this._pin = [pin];
+  }
 };
-    
+
 /**
  * Object in setPage pin parameter
  * @typedef oj.Cube.Pin
@@ -140,7 +137,7 @@ oj.Cube.prototype.setPage = function(pin) {
  */
 
 /**
- * 
+ *
  * @param {number} axisFrom the axis from which to move a level
  * @param {number} levelFrom the level within axisFrom to move to axisTo/levelTo (zero is slowest/outermost)
  * @param {number} axisTo the axis to which to move levelFrom
@@ -150,88 +147,85 @@ oj.Cube.prototype.setPage = function(pin) {
  * @memberof oj.Cube
  * @export
  */
-oj.Cube.prototype.pivot = function(axisFrom, levelFrom, axisTo, levelTo, type) {
-    var layout = this._layout;
-    var axisFromObj = this._findAxisInLayout(axisFrom);
-    // No from axis found: can't pivot
-    if (!axisFromObj) {
-        return false;
+oj.Cube.prototype.pivot = function (axisFrom, levelFrom, axisTo, levelTo, type) {
+  var layout = this._layout;
+  var axisFromObj = this._findAxisInLayout(axisFrom);
+  // No from axis found: can't pivot
+  if (!axisFromObj) {
+    return false;
+  }
+  var axisToObj = null;
+  if (axisTo < layout.length) {
+    axisToObj = this._findAxisInLayout(axisTo);
+  } else {
+    // Add a new axis
+    axisToObj = { axis: axisTo, levels: [] };
+    layout.push(axisToObj);
+  }
+  var levelsFrom = axisFromObj.levels;
+  var levelsTo = axisToObj.levels;
+  var levelFromObj = levelFrom < levelsFrom.length ? levelsFrom[levelFrom] : null;
+  // No from level here, can't pivot
+  if (!levelFromObj) {
+    return false;
+  }
+
+  // Find where to move
+  if (levelTo >= levelsTo.length) {
+    // beyond end--just add it.  after, before, swap doesn't matter
+    levelsTo.push(levelFromObj);
+    // Remove it from the old location
+    levelsFrom.splice(levelFrom, 1);
+  } else if (type === oj.Cube.PivotType.SWAP) {
+    // Swap the elements
+    levelsFrom[levelFrom] = levelsTo[levelTo];
+    levelsTo[levelTo] = levelFromObj;
+  } else {
+    if (type === oj.Cube.PivotType.AFTER) {
+      // Splice operates as a "before" loc
+      // eslint-disable-next-line no-param-reassign
+      levelTo += 1;
     }
-    var axisToObj = null;
-    if (axisTo < layout.length) {
-        axisToObj = this._findAxisInLayout(axisTo);
+    // Insert the from obj into the to
+    levelsTo.splice(levelTo, 0, levelFromObj);
+    if (levelsTo === levelsFrom && levelTo < levelFrom) {
+      // Relocate the from location, because the to splice shifted it (the from was in the same axis as the to, and was after the to)
+      // eslint-disable-next-line no-param-reassign
+      levelFrom += 1;
     }
-    else {
-        // Add a new axis
-        axisToObj = {'axis':axisTo, 'levels':[]};
-        layout.push(axisToObj);
-    }
-    var levelsFrom = axisFromObj['levels'];
-    var levelsTo = axisToObj['levels'];
-    var levelFromObj = levelFrom < levelsFrom.length ? levelsFrom[levelFrom] : null;
-    // No from level here, can't pivot
-    if (!levelFromObj) {
-        return false;
-    }
-    
-    // Find where to move 
-    if (levelTo >= levelsTo.length) {
-        // beyond end--just add it.  after, before, swap doesn't matter
-        levelsTo.push(levelFromObj);
-        // Remove it from the old location
-        levelsFrom.splice(levelFrom, 1);
-    }
-    else {
-        if (type === oj.Cube.PivotType['SWAP']) {
-            // Swap the elements
-            levelsFrom[levelFrom] = levelsTo[levelTo];
-            levelsTo[levelTo] = levelFromObj;
-        }
-        else {
-            if (type === oj.Cube.PivotType['AFTER']) {
-                // Splice operates as a "before" loc
-                levelTo++;
-            }
-            // Insert the from obj into the to
-            levelsTo.splice(levelTo, 0, levelFromObj);
-            if (levelsTo === levelsFrom && levelTo < levelFrom) {
-                // Relocate the from location, because the to splice shifted it (the from was in the same axis as the to, and was after the to)
-                levelFrom++;
-            }
-            
-            // On a move, remove the from object from the old axis
-            levelsFrom.splice(levelFrom, 1);
-        }
-    }
-    
-    // Rebuild using the altered layout
-    this.BuildCube();
-    return true;
+
+    // On a move, remove the from object from the old axis
+    levelsFrom.splice(levelFrom, 1);
+  }
+
+  // Rebuild using the altered layout
+  this.BuildCube();
+  return true;
 };
 
 /**
  * Return the entry in the layout arg that represents axis #
  * @private
  */
-oj.Cube.prototype._findAxisInLayout = function(axis) {
-    for (var i = 0; i < this._layout.length; i++) {
-        if (this._layout[i]['axis'] === axis) {
-            return this._layout[i];
-        }
+oj.Cube.prototype._findAxisInLayout = function (axis) {
+  for (var i = 0; i < this._layout.length; i++) {
+    if (this._layout[i].axis === axis) {
+      return this._layout[i];
     }
-    return null;
+  }
+  return null;
 };
-    
+
 /**
  * Return the current layout used to build the cube
- * 
+ *
  * @returns {Array.<Object>} current layout
  * @see oj.Cube
  * @memberof oj.Cube
  * @export
  */
-oj.Cube.prototype.getLayout = function() {
-    return this._layout;
+oj.Cube.prototype.getLayout = function () {
+  return this._layout;
 };
 
 /**
@@ -241,451 +235,471 @@ oj.Cube.prototype.getLayout = function() {
  * @export
  */
 oj.Cube.PivotType = {
-    /**
-     * Move the from location before the to location
-     */
-    'BEFORE' : "before",
-    /**
-     * Move the from location after the to location
-     */
-    'AFTER' : "after",
-    /**
-     * Exchange the from location with the to location
-     */
-    'SWAP' : "swap"    
+  /**
+   * Move the from location before the to location
+   */
+  BEFORE: 'before',
+  /**
+   * Move the from location after the to location
+   */
+  AFTER: 'after',
+  /**
+   * Exchange the from location with the to location
+   */
+  SWAP: 'swap'
 };
 
 /**
  * @private
  */
-oj.Cube.prototype._walkIndex = function(indices, depth, location, returnValue) {
-   if (indices.length === 0) {
-       // Get the current value at location
-       var loc = location.slice(0);
-       //loc.reverse();
-       return this._getValue(loc);
-   }
-   else {
-       var remaining = indices.slice(1);
-       var start = indices[0].start;
-       var count = indices[0].count;
-       for (location[depth] = start; location[depth] < start+count; location[depth]++) {
-           returnValue.push(this._walkIndex(remaining, depth+1, location, []));
-       }
-   }
-   return returnValue;
+oj.Cube.prototype._walkIndex = function (indices, depth, location, returnValue) {
+  if (indices.length === 0) {
+    // Get the current value at location
+    var loc = location.slice(0);
+    // loc.reverse();
+    return this._getValue(loc);
+  }
+
+  var remaining = indices.slice(1);
+  var start = indices[0].start;
+  var count = indices[0].count;
+  // eslint-disable-next-line no-param-reassign
+  for (location[depth] = start; location[depth] < start + count; location[depth]++) {
+    returnValue.push(this._walkIndex(remaining, depth + 1, location, []));
+  }
+
+  return returnValue;
 };
 
 /**
  * Make sure all start/count data is filled in and within range
  * @private
  */
-oj.Cube.prototype._normalizeIndices = function(indices) {
-    var ind = [];
-    if (!indices) {
-        return ind;
-    }
-    var numAxes = Math.min(indices.length, this._axes.length);
-    for (var a = 0; a < numAxes; a++) {        
-        var index = indices[a];
-        if (index instanceof Object && (index.hasOwnProperty('start') || index.hasOwnProperty('count'))) {
-            if (index.hasOwnProperty('start')) {
-                if (index.hasOwnProperty('count')) {
-                    ind.push(this._generateIndex(index.start, index.count, a));
-                }
-                else {
-                    ind.push(this._generateIndex(index.start, 1, a));
-                }
-            }
-            else {
-                // Must have count
-                ind.push(this._generateIndex(0, index.count, a));
-            }
-        }
-        else {
-            // Convert the number to an object
-            ind.push(this._generateIndex(index, 1, a));
-        }
-    }
+oj.Cube.prototype._normalizeIndices = function (indices) {
+  var ind = [];
+  if (!indices) {
     return ind;
-};
-    
-/**
- * @private
- */
-oj.Cube.prototype._generateIndex = function(start, count, axis) {
-    // Get true count
-    var trueCount = this.getAxes()[axis].getExtent();
-    
-    if (start >= trueCount || start < 0) {
-        start = 0;
+  }
+  var numAxes = Math.min(indices.length, this._axes.length);
+  for (var a = 0; a < numAxes; a++) {
+    var index = indices[a];
+    var hasOwnProperty = Object.prototype.hasOwnProperty;
+    if (index instanceof Object &&
+        (hasOwnProperty.call(index, 'start') ||
+         hasOwnProperty.call(index, 'count'))) {
+      if (hasOwnProperty.call(index, 'start')) {
+        if (hasOwnProperty.call(index, 'count')) {
+          ind.push(this._generateIndex(index.start, index.count, a));
+        } else {
+          ind.push(this._generateIndex(index.start, 1, a));
+        }
+      } else {
+        // Must have count
+        ind.push(this._generateIndex(0, index.count, a));
+      }
+    } else {
+      // Convert the number to an object
+      ind.push(this._generateIndex(index, 1, a));
     }
-    count = Math.min(count,trueCount-start);
-            
-    return {start: start, index: start, count: count};
+  }
+  return ind;
 };
 
 /**
  * @private
  */
-oj.Cube.prototype._getValue = function(indices) {
-    // indices is just an axis-ordered array of locations for which to get the value
-    // Should only be one--only one data value here
-    var key = this._createCubeKeys(indices);
-    if (key) {
-        var hash = key.GetHashCodes();
-        if (hash.length > 0) {
-            var obj = this._data[hash[0].key];
-            if (obj) {
-                return new oj.CubeDataValue(obj.value, indices, obj.aggType, obj.rows, obj.square);
-            }
-        }
-    }
-    return new oj.CubeDataValue(null, indices, undefined, []);
-};
-    
-/**
- * @protected
- */
-oj.Cube.prototype.GenerateAxes = function() {    
-    var pageLayout = this._getPageLayout();
-    // If we have pages--only generate those for this cube, and set up the default 0th pin    
-    this._pin = [];
-    for (var i = 0; i < pageLayout.length; i++) {
-        this._getAxis(pageLayout[i]['axis'], pageLayout[i]['levels']);
-        this._pin.push({'axis':pageLayout[i]['axis'], 'index':0});
-    }
-    if (pageLayout.length === 0) {
-        // Do remaining axes if any (row and column)
-        var nonPageLayout = this._getNonPageLayout();
-        for (var i = 0; i < nonPageLayout.length; i++) {
-            this._getAxis(nonPageLayout[i]['axis'], nonPageLayout[i]['levels']);
-        }
-    }
+oj.Cube.prototype._generateIndex = function (start, count, axis) {
+  // Get true count
+  var trueCount = this.getAxes()[axis].getExtent();
+
+  if (start >= trueCount || start < 0) {
+    // eslint-disable-next-line no-param-reassign
+    start = 0;
+  }
+  // eslint-disable-next-line no-param-reassign
+  count = Math.min(count, trueCount - start);
+
+  return { start: start, index: start, count: count };
 };
 
 /**
  * @private
  */
-oj.Cube.prototype._getPageLayout = function() {
-    var pageOnlyLayout = [];
-    for (var i = 0; i < this._layout.length; i++) {
-        var axis = this._layout[i]['axis'];
-        if (axis > 1) {
-            pageOnlyLayout.push(this._layout[i]);
-        }
+oj.Cube.prototype._getValue = function (indices) {
+  // indices is just an axis-ordered array of locations for which to get the value
+  // Should only be one--only one data value here
+  var key = this._createCubeKeys(indices);
+  if (key) {
+    var hash = key.GetHashCodes();
+    if (hash.length > 0) {
+      var obj = this._data[hash[0].key];
+      if (obj) {
+        return new oj.CubeDataValue(obj.value, indices, obj.aggType, obj.rows, obj.square);
+      }
     }
-    return pageOnlyLayout;
-};
-
-/**
- * @private
- */
-oj.Cube.prototype._getNonPageLayout = function() {
-    var nonPageLayout = [];
-    for (var i = 0; i < this._layout.length; i++) {
-        var axis = this._layout[i]['axis'];
-        if (axis < 2) {
-            nonPageLayout.push(this._layout[i]);
-        }
-    }
-    return nonPageLayout;
+  }
+  return new oj.CubeDataValue(null, indices, undefined, []);
 };
 
 /**
  * @protected
  */
-oj.Cube.prototype.BuildCube = function() {
-    this._axes = [];
-    
-    // Associative array for data
-    this._data = [];
-    
-    // Associative array for cubes
-    this._cubes = [];
-    
-    this.GenerateAxes();
-    
-    // Can start a cube with no data--add on from "parent"
-    if (this._rows === null) {
-        return;
+oj.Cube.prototype.GenerateAxes = function () {
+  var pageLayout = this._getPageLayout();
+  var i;
+
+  // If we have pages--only generate those for this cube, and set up the default 0th pin
+  this._pin = [];
+  for (i = 0; i < pageLayout.length; i++) {
+    this._getAxis(pageLayout[i].axis, pageLayout[i].levels);
+    this._pin.push({ axis: pageLayout[i].axis, index: 0 });
+  }
+  if (pageLayout.length === 0) {
+    // Do remaining axes if any (row and column)
+    var nonPageLayout = this._getNonPageLayout();
+    for (i = 0; i < nonPageLayout.length; i++) {
+      this._getAxis(nonPageLayout[i].axis, nonPageLayout[i].levels);
     }
-        
-    // Walk each line of the rowset, and distribute its attributes to the axes and the data store
-    for (var row = 0; row < this._rows.length; row++) {
-        // Generate a "page key"
-        var pageKey = new oj.CubeKeys();
-        for (var axis = 2; axis < this._axes.length; axis++) {
-            pageKey = this._axes[axis].ProcessRow(this._rows[row], pageKey);
-        }
-        // Grab the data value from the page if it's there
-        var pageHashObj = pageKey.GetHashCodes();
-        // See if we have a cubes for these pageKeys
-        for (var ph = 0; ph < pageHashObj.length; ph++) {
-            var pageHash = pageHashObj[ph].key;
-            var cube = this._cubes[pageHash];
-            if (!cube) {
-                // Generate a new one
-                cube = this._cubes[pageHash] = this.GenerateCube(this._getNonPageLayout());
-            }
-            // Send the row through the lower axes
-            var keys = new oj.CubeKeys();
-            var maxAxes = cube._axes.length;
-            for (var axis = 0; axis < maxAxes; axis++) {
-                keys = cube._axes[axis].ProcessRow(this._rows[row], keys);
-            }
-            // Convert the retrieved keys->data into data storage
-            var hash = keys.GetHashCodes();
-            // Must account for data value coming from page, possibly...pass in the hash that has the data
-            var dataHash = hash;
-            if (pageHashObj[ph].dataValue !== undefined) {
-                dataHash = [];
-                // Must be in an array
-                for (var h = 0; h < hash.length; h++) {
-                    dataHash.push(pageHashObj[ph]);
-                }
-            }
-            cube._storeData(hash, dataHash, this._rows[row]);
-        }
-    }
+  }
 };
 
 /**
  * @private
  */
-oj.Cube.prototype._storeData = function(hash, dataHash, row) {
-    for (var i = 0; i < hash.length; i++) {
-        this._data[hash[i].key] = this._aggregate(dataHash[i], this._data[hash[i].key], row);
+oj.Cube.prototype._getPageLayout = function () {
+  var pageOnlyLayout = [];
+  for (var i = 0; i < this._layout.length; i++) {
+    var axis = this._layout[i].axis;
+    if (axis > 1) {
+      pageOnlyLayout.push(this._layout[i]);
     }
+  }
+  return pageOnlyLayout;
 };
-
 
 /**
  * @private
  */
-oj.Cube.prototype._getPinnedCube = function() {
-    return this._cubes[this._getHashFromPin(this._pin)];
+oj.Cube.prototype._getNonPageLayout = function () {
+  var nonPageLayout = [];
+  for (var i = 0; i < this._layout.length; i++) {
+    var axis = this._layout[i].axis;
+    if (axis < 2) {
+      nonPageLayout.push(this._layout[i]);
+    }
+  }
+  return nonPageLayout;
 };
-        
+
 /**
- * @private
+ * @protected
  */
-oj.Cube.prototype._getHashFromPin = function(pin) {
-    var keys = new oj.CubeKeys();
-    if (pin && pin.length > 0) {
-        // Sort by axis attribute
-        pin.sort(function(a,b) {
-            return a['axis'] - b['axis'];
-        });
-        // Translate the axis/index pin to hash key
-        var axes = this._axes;
-        for (var i = 0; i < pin.length; i++) {
-            keys = axes[pin[i]['axis']].GetCubeKeys(pin[i]['index'], keys);
+oj.Cube.prototype.BuildCube = function () {
+  this._axes = [];
+
+  // Associative array for data
+  this._data = [];
+
+  // Associative array for cubes
+  this._cubes = [];
+
+  this.GenerateAxes();
+
+  // Can start a cube with no data--add on from "parent"
+  if (this._rows === null) {
+    return;
+  }
+
+  // Walk each line of the rowset, and distribute its attributes to the axes and the data store
+  for (var row = 0; row < this._rows.length; row++) {
+    // Generate a "page key"
+    var pageKey = new oj.CubeKeys();
+    var axis;
+    for (axis = 2; axis < this._axes.length; axis++) {
+      pageKey = this._axes[axis].ProcessRow(this._rows[row], pageKey);
+    }
+    // Grab the data value from the page if it's there
+    var pageHashObj = pageKey.GetHashCodes();
+    // See if we have a cubes for these pageKeys
+    for (var ph = 0; ph < pageHashObj.length; ph++) {
+      var pageHash = pageHashObj[ph].key;
+      var cube = this._cubes[pageHash];
+      if (!cube) {
+        // Generate a new one
+        cube = this.GenerateCube(this._getNonPageLayout());
+        this._cubes[pageHash] = cube;
+      }
+      // Send the row through the lower axes
+      var keys = new oj.CubeKeys();
+      var maxAxes = cube._axes.length;
+      for (axis = 0; axis < maxAxes; axis++) {
+        keys = cube._axes[axis].ProcessRow(this._rows[row], keys);
+      }
+      // Convert the retrieved keys->data into data storage
+      var hash = keys.GetHashCodes();
+      // Must account for data value coming from page, possibly...pass in the hash that has the data
+      var dataHash = hash;
+      if (pageHashObj[ph].dataValue !== undefined) {
+        dataHash = [];
+        // Must be in an array
+        for (var h = 0; h < hash.length; h++) {
+          dataHash.push(pageHashObj[ph]);
         }
+      }
+      cube._storeData(hash, dataHash, this._rows[row]);
     }
-    return keys.GetHashCodes()[0].key;
-};
-    
-/**
- * @private
- */
-oj.Cube._isValid = function(value) {
-    if (value) {
-        return value.value !== undefined && value.value !== null;
-    }
-    return false;
+  }
 };
 
 /**
  * @private
  */
-oj.Cube.prototype._createAggValue = function(value, aggType, rows, row, props) {
-    rows.push(row);
-    var retObj = {};
-    for (var p in props) {
-        if (props.hasOwnProperty(p)) {
-            retObj[p] = props[p];
-        }
+oj.Cube.prototype._storeData = function (hash, dataHash, row) {
+  for (var i = 0; i < hash.length; i++) {
+    this._data[hash[i].key] = this._aggregate(dataHash[i], this._data[hash[i].key], row);
+  }
+};
+
+
+/**
+ * @private
+ */
+oj.Cube.prototype._getPinnedCube = function () {
+  return this._cubes[this._getHashFromPin(this._pin)];
+};
+
+/**
+ * @private
+ */
+oj.Cube.prototype._getHashFromPin = function (pin) {
+  var keys = new oj.CubeKeys();
+  if (pin && pin.length > 0) {
+    // Sort by axis attribute
+    pin.sort(function (a, b) {
+      return a.axis - b.axis;
+    });
+    // Translate the axis/index pin to hash key
+    var axes = this._axes;
+    for (var i = 0; i < pin.length; i++) {
+      keys = axes[pin[i].axis].GetCubeKeys(pin[i].index, keys);
     }
-    retObj.value = value;
-    retObj.aggType = aggType;
-    retObj.rows = rows;
-    return retObj;
+  }
+  return keys.GetHashCodes()[0].key;
+};
+
+/**
+ * @private
+ */
+oj.Cube._isValid = function (value) {
+  if (value) {
+    return value.value !== undefined && value.value !== null;
+  }
+  return false;
+};
+
+/**
+ * @private
+ */
+oj.Cube.prototype._createAggValue = function (value, aggType, rows, row, props) {
+  rows.push(row);
+  var retObj = {};
+  var keys = Object.keys(props);
+  for (var i = 0; i < keys.length; i++) {
+    var key = keys[i];
+    retObj[key] = props[key];
+  }
+  retObj.value = value;
+  retObj.aggType = aggType;
+  retObj.rows = rows;
+  return retObj;
 };
 
 /**
  * Don't treat strings as numbers, ever
  * @private
  */
-oj.Cube._isNumber = function(value) {
-    if (oj.StringUtils.isString(value.value)) {
-        return false;
-    }
-    // String versions of numbers return false for isNaN--we want to treat them as non numbers always
-    return !isNaN(value.value);
+oj.Cube._isNumber = function (value) {
+  if (oj.StringUtils.isString(value.value)) {
+    return false;
+  }
+  // String versions of numbers return false for isNaN--we want to treat them as non numbers always
+  return !isNaN(value.value);
 };
 
 /**
  * @private
  */
-oj.Cube.prototype._aggregate = function(hash, currValue, row) {
-    var aggObj = this.GetAggType(hash.dataValue);
-    var aggType = /** @type {Object} */(aggObj.aggregation);
-    var validCurr = oj.Cube._isValid(currValue);
-    var validHash = oj.Cube._isValid(hash);
-    var isNumCurr = validCurr && oj.Cube._isNumber(currValue);
-    var isNumHash = validHash && oj.Cube._isNumber(hash);
-    switch (aggType) {
-        case oj.CubeAggType['SUM']:            
-            if (validCurr && validHash) {
-                if (isNumCurr && isNumHash) {
-                    return this._createAggValue(currValue.value + hash.value, aggType, currValue.rows, row, {});
-                }
-                return this._createAggValue(NaN, aggType, currValue.rows, row, {});
-            }
-            if (validHash && !validCurr) {
-                if (isNumHash) {
-                    return this._createAggValue(hash.value, aggType, [], row, {});
-                }
-                return this._createAggValue(NaN, aggType, [], row, {});
-            }
-            return currValue;
-        case oj.CubeAggType['AVERAGE']:
-            if (validCurr && validHash) {
-                if (isNumCurr && isNumHash) {
-                    return this._createAggValue((currValue.sum + hash.value) / (currValue.rows.length+1), aggType, currValue.rows, row, {sum:(currValue.sum + hash.value)});
-                }
-                return this._createAggValue(NaN, aggType, currValue.rows, row, {sum:currValue.sum});
-            }
-            if (validHash && !validCurr) {
-                if (isNumHash) {
-                    return this._createAggValue(hash.value, aggType, [], row, {sum:hash.value});
-                }
-                return this._createAggValue(NaN, aggType, [], row, {sum:NaN});
-            }
-            return currValue;
-        case oj.CubeAggType['VARIANCE']:
-        case oj.CubeAggType['STDDEV']:
-            if (validCurr && validHash) {
-                if (isNumCurr && isNumHash) {
-                    var newCount = currValue.rows.length+1;
-                    var avg = currValue.value + (hash.value - currValue.value) / newCount;
-                    return this._createAggValue(avg, aggType, currValue.rows, row, {square:(currValue.square + (hash.value - currValue.value) * (hash.value - avg))});
-                }
-                return this._createAggValue(NaN, aggType, currValue.rows, row, {square:NaN});
-            }
-            if (validHash && !validCurr) {
-                if (isNumHash) {
-                    return this._createAggValue(hash.value, aggType, [], row, {square:0});
-                }
-                return this._createAggValue(NaN, aggType, [], row, {square:NaN});
-            }
-            return currValue;
-        case oj.CubeAggType['NONE']:
-            return this._createAggValue(null, aggType, validCurr ? currValue.rows : [], row, {});
-        case oj.CubeAggType['FIRST']:
-            if (validCurr) {
-                return this._createAggValue(currValue.value, aggType, currValue.rows, row, {});
-            }
-            if (validHash) {
-                return this._createAggValue(hash.value, aggType, [], row, {});
-            }
-            return currValue;
-        case oj.CubeAggType['MIN']:
-            if (validCurr && validHash) {
-                if (isNumCurr && isNumHash) {
-                    return this._createAggValue(Math.min(currValue.value, hash.value), aggType, currValue.rows, row, {});
-                }
-                return this._createAggValue(NaN, aggType, currValue.rows, row, {});
-            }
-            if (validHash && !validCurr) {       
-                if (isNumHash) {
-                    return this._createAggValue(hash.value, aggType, [], row, {});
-                }
-                return this._createAggValue(NaN, aggType, [], row, {});
-            }
-            return currValue;
-        case oj.CubeAggType['MAX']:
-            if (validCurr && validHash) {
-                if (isNumCurr && isNumHash) {
-                    return this._createAggValue(Math.max(currValue.value, hash.value), aggType, currValue.rows, row, {});
-                }
-                return this._createAggValue(NaN, aggType, currValue.rows, row, {});
-            }
-            if (validHash && !validCurr) {       
-                if (isNumHash) {
-                    return this._createAggValue(hash.value, aggType, [], row, {});
-                }
-                return this._createAggValue(NaN, aggType, [], row, {});
-            }
-            return currValue;
-        case oj.CubeAggType['COUNT']:
-            if (validCurr && validHash) {
-                return this._createAggValue(currValue.value+1, aggType, currValue.rows, row, {});
-            }
-            if (validHash && !validCurr) {
-                return this._createAggValue(1, aggType, [], row, {});
-            }
-            return currValue;
-        case oj.CubeAggType['CUSTOM']:
-            var callback = aggObj.callback;
-            var val = callback.call(this, validCurr ? currValue.value : undefined, validHash ? hash.value : undefined);
-            return this._createAggValue(val, aggType, validCurr ? currValue.rows : [], row, {});
-    }
+oj.Cube.prototype._aggregate = function (hash, currValue, row) {
+  var aggObj = this.GetAggType(hash.dataValue);
+  var aggType = /** @type {Object} */(aggObj.aggregation);
+  var validCurr = oj.Cube._isValid(currValue);
+  var validHash = oj.Cube._isValid(hash);
+  var isNumCurr = validCurr && oj.Cube._isNumber(currValue);
+  var isNumHash = validHash && oj.Cube._isNumber(hash);
+  switch (aggType) {
+    case oj.CubeAggType.SUM:
+      if (validCurr && validHash) {
+        if (isNumCurr && isNumHash) {
+          return this._createAggValue(currValue.value + hash.value
+                                      , aggType, currValue.rows, row, {});
+        }
+        return this._createAggValue(NaN, aggType, currValue.rows, row, {});
+      }
+      if (validHash && !validCurr) {
+        if (isNumHash) {
+          return this._createAggValue(hash.value, aggType, [], row, {});
+        }
+        return this._createAggValue(NaN, aggType, [], row, {});
+      }
+      return currValue;
+    case oj.CubeAggType.AVERAGE:
+      if (validCurr && validHash) {
+        if (isNumCurr && isNumHash) {
+          return this._createAggValue((currValue.sum + hash.value) / (currValue.rows.length + 1),
+                                      aggType, currValue.rows, row,
+                                      { sum: (currValue.sum + hash.value) });
+        }
+        return this._createAggValue(NaN, aggType, currValue.rows, row, { sum: currValue.sum });
+      }
+      if (validHash && !validCurr) {
+        if (isNumHash) {
+          return this._createAggValue(hash.value, aggType, [], row, { sum: hash.value });
+        }
+        return this._createAggValue(NaN, aggType, [], row, { sum: NaN });
+      }
+      return currValue;
+    case oj.CubeAggType.VARIANCE:
+    case oj.CubeAggType.STDDEV:
+      if (validCurr && validHash) {
+        if (isNumCurr && isNumHash) {
+          var newCount = currValue.rows.length + 1;
+          var avg = currValue.value + ((hash.value - currValue.value) / newCount);
+          return this._createAggValue(avg, aggType, currValue.rows, row, {
+            square: (currValue.square + ((hash.value - currValue.value) * (hash.value - avg)))
+          });
+        }
+        return this._createAggValue(NaN, aggType, currValue.rows, row, { square: NaN });
+      }
+      if (validHash && !validCurr) {
+        if (isNumHash) {
+          return this._createAggValue(hash.value, aggType, [], row, { square: 0 });
+        }
+        return this._createAggValue(NaN, aggType, [], row, { square: NaN });
+      }
+      return currValue;
+    case oj.CubeAggType.NONE:
+      return this._createAggValue(null, aggType, validCurr ? currValue.rows : [], row, {});
+    case oj.CubeAggType.FIRST:
+      if (validCurr) {
+        return this._createAggValue(currValue.value, aggType, currValue.rows, row, {});
+      }
+      if (validHash) {
+        return this._createAggValue(hash.value, aggType, [], row, {});
+      }
+      return currValue;
+    case oj.CubeAggType.MIN:
+      if (validCurr && validHash) {
+        if (isNumCurr && isNumHash) {
+          return this._createAggValue(Math.min(currValue.value, hash.value),
+                                      aggType, currValue.rows, row, {});
+        }
+        return this._createAggValue(NaN, aggType, currValue.rows, row, {});
+      }
+      if (validHash && !validCurr) {
+        if (isNumHash) {
+          return this._createAggValue(hash.value, aggType, [], row, {});
+        }
+        return this._createAggValue(NaN, aggType, [], row, {});
+      }
+      return currValue;
+    case oj.CubeAggType.MAX:
+      if (validCurr && validHash) {
+        if (isNumCurr && isNumHash) {
+          return this._createAggValue(Math.max(currValue.value, hash.value),
+                                      aggType, currValue.rows, row, {});
+        }
+        return this._createAggValue(NaN, aggType, currValue.rows, row, {});
+      }
+      if (validHash && !validCurr) {
+        if (isNumHash) {
+          return this._createAggValue(hash.value, aggType, [], row, {});
+        }
+        return this._createAggValue(NaN, aggType, [], row, {});
+      }
+      return currValue;
+    case oj.CubeAggType.COUNT:
+      if (validCurr && validHash) {
+        return this._createAggValue(currValue.value + 1, aggType, currValue.rows, row, {});
+      }
+      if (validHash && !validCurr) {
+        return this._createAggValue(1, aggType, [], row, {});
+      }
+      return currValue;
+    case oj.CubeAggType.CUSTOM:
+      var callback = aggObj.callback;
+      var val = callback.call(this, validCurr ? currValue.value : undefined,
+                              validHash ? hash.value : undefined);
+      return this._createAggValue(val, aggType, validCurr ? currValue.rows : [], row, {});
+    default:
+      return undefined;
+  }
 };
 
 /**
  * Get or create the given axis
  * @private
  */
-oj.Cube.prototype._getAxis = function(axis, levels) {
-    if (axis >= this._axes.length) {
-        // Must add on enough to cover
-        var newElems = new Array(axis-this._axes.length+1);
-        Array.prototype.push.apply(this._axes, newElems);
-    }
+oj.Cube.prototype._getAxis = function (axis, levels) {
+  if (axis >= this._axes.length) {
+    // Must add on enough to cover
+    var newElems = new Array((axis - this._axes.length) + 1);
+    Array.prototype.push.apply(this._axes, newElems);
+  }
 
-    // Initialize it if blank
-    if (!this._axes[axis]) {
-        this._axes[axis] = new oj.CubeAxis(levels, axis, this);
-    }
-    
-    return this._axes[axis];
+  // Initialize it if blank
+  if (!this._axes[axis]) {
+    this._axes[axis] = new oj.CubeAxis(levels, axis, this);
+  }
+
+  return this._axes[axis];
 };
 
 /**
  * Create a key object from an axis-ordered array of slowest-to-fastest arrays of CubeAxisValues
  * @private
  */
-oj.Cube.prototype._createCubeKeys = function(indices) {
-    var axes = this.getAxes();
-    var keys = new oj.CubeKeys();
-    for (var a = 0; a < indices.length; a++) {
-        keys = axes[a].GetCubeKeys(indices[a], keys);
-    }
-    return keys;
+oj.Cube.prototype._createCubeKeys = function (indices) {
+  var axes = this.getAxes();
+  var keys = new oj.CubeKeys();
+  for (var a = 0; a < indices.length; a++) {
+    keys = axes[a].GetCubeKeys(indices[a], keys);
+  }
+  return keys;
 };
-    
-    
+
+
 /**
  * @protected
  */
-oj.Cube.prototype.ProcessLevel = function(levels, levelNum, currNode, row, keys, addKeys) {
-    oj.Assert.failedInAbstractFunction();
+// eslint-disable-next-line no-unused-vars
+oj.Cube.prototype.ProcessLevel = function (levels, levelNum, currNode, row, keys, addKeys) {
+  oj.Assert.failedInAbstractFunction();
 };
 
 /**
  * @protected
  */
-oj.Cube.prototype.GenerateCube = function(layout) {
-    oj.Assert.failedInAbstractFunction();
+// eslint-disable-next-line no-unused-vars
+oj.Cube.prototype.GenerateCube = function (layout) {
+  oj.Assert.failedInAbstractFunction();
 };
 
 /**
  * @protected
  */
-oj.Cube.prototype.GenerateLevel = function(level, axis) {    
-    oj.Assert.failedInAbstractFunction();    
+// eslint-disable-next-line no-unused-vars
+oj.Cube.prototype.GenerateLevel = function (level, axis) {
+  oj.Assert.failedInAbstractFunction();
 };
 
 /**
@@ -693,15 +707,17 @@ oj.Cube.prototype.GenerateLevel = function(level, axis) {
  * @returns {Object}
  * @private
  */
-oj.Cube.prototype.GetAggType = function(dataValue) {
-    oj.Assert.failedInAbstractFunction();
-    return {};
+// eslint-disable-next-line no-unused-vars
+oj.Cube.prototype.GetAggType = function (dataValue) {
+  oj.Assert.failedInAbstractFunction();
+  return {};
 };
+
 /**
  * Copyright (c) 2015, Oracle and/or its affiliates.
  * All rights reserved.
  */
-/*jslint browser: true*/
+/* jslint browser: true*/
 
 /**
  * @class oj.CubeAggType
@@ -712,66 +728,66 @@ oj.Cube.prototype.GetAggType = function(dataValue) {
  * @ojtsignore
  */
 oj.CubeAggType = {
-    /**
-     * Sum the values
-     * @type {string}
-     */
-    'SUM' : "sum",
-    /**
-     * Average the values
-     * @type {string}
-     */
-    'AVERAGE' : "avg",
-    /**
-     * Calculate the standard deviation of the values
-     * @type {string}
-     */
-    'STDDEV' : "stddev",
-    /**
-     * Calculate the variance of the values
-     * @type {string}
-     */
-    'VARIANCE' : "variance",
-    /**
-     * Substitute a null for the value
-     * @type {string}
-     */
-    'NONE' : "none",
-    /**
-     * Substitute the first value encountered
-     * @type {string}
-     */
-    'FIRST' : "first",
-    /**
-     * Calculate the minimum of the values
-     * @type {string}
-     */
-    'MIN' : "min",
-    /**
-     * Calculate the maximum of the values
-     * @type {string}
-     */
-    'MAX' : "max",
-    /**
-     * Count the values
-     * @type {string}
-     */
-    'COUNT' : "count",
-    /**
-     * Specify a custom callback function to do the aggregation
-     * @type {string}
-     */
-    'CUSTOM': "custom"
+  /**
+   * Sum the values
+   * @type {string}
+   */
+  SUM: 'sum',
+  /**
+   * Average the values
+   * @type {string}
+   */
+  AVERAGE: 'avg',
+  /**
+   * Calculate the standard deviation of the values
+   * @type {string}
+   */
+  STDDEV: 'stddev',
+  /**
+   * Calculate the variance of the values
+   * @type {string}
+   */
+  VARIANCE: 'variance',
+  /**
+   * Substitute a null for the value
+   * @type {string}
+   */
+  NONE: 'none',
+  /**
+   * Substitute the first value encountered
+   * @type {string}
+   */
+  FIRST: 'first',
+  /**
+   * Calculate the minimum of the values
+   * @type {string}
+   */
+  MIN: 'min',
+  /**
+   * Calculate the maximum of the values
+   * @type {string}
+   */
+  MAX: 'max',
+  /**
+   * Count the values
+   * @type {string}
+   */
+  COUNT: 'count',
+  /**
+   * Specify a custom callback function to do the aggregation
+   * @type {string}
+   */
+  CUSTOM: 'custom'
 };
- 
+
 /**
  * Copyright (c) 2015, Oracle and/or its affiliates.
  * All rights reserved.
  */
-/*jslint browser: true*/
+/* jslint browser: true*/
 
 /**
- * @class oj.CubeAxisValue 
+ * @class oj.CubeAxisValue
  * @classdesc Represents one value within an axis header
  * @see oj.CubeAxis
  * @since 1.1.0
@@ -780,27 +796,26 @@ oj.CubeAggType = {
  * @hideconstructor
  * @ojtsignore
  */
-oj.CubeAxisValue = function(value, label, level, parent) {
-    this.Init();
-    this._children = [];
-    this._parent = parent;
-    this._cubeLevel = level;
-    this._data = {};    
-    this._data.value = value;
-    this._data.label = label;
+oj.CubeAxisValue = function (value, label, level, parent) {
+  this.Init();
+  this._children = [];
+  this._parent = parent;
+  this._cubeLevel = level;
+  this._data = {};
+  this._data.value = value;
+  this._data.label = label;
 };
- 
-// Subclass from oj.Object 
-oj.Object.createSubclass(oj.CubeAxisValue, oj.Object, "oj.CubeAxisValue");
+
+// Subclass from oj.Object
+oj.Object.createSubclass(oj.CubeAxisValue, oj.Object, 'oj.CubeAxisValue');
 
 /**
  * Initializes instance with the set options
  * @private
  */
-oj.CubeAxisValue.prototype.Init = function() 
-{
+oj.CubeAxisValue.prototype.Init = function () {
   oj.CubeAxisValue.superclass.Init.call(this);
-}; 
+};
 
 /**
  * Get the {@link oj.CubeLevel} of which this value is a member
@@ -808,10 +823,10 @@ oj.CubeAxisValue.prototype.Init = function()
  * @memberof oj.CubeAxisValue
  * @export
  */
-oj.CubeAxisValue.prototype.getLevel = function() {
-    return this._cubeLevel;
+oj.CubeAxisValue.prototype.getLevel = function () {
+  return this._cubeLevel;
 };
- 
+
 /**
  * Get the number of levels this header value spans
  * @return {number} the number of levels this header value spans.  Typically one, but in the future something like a grand total may span all the available levels at a particular
@@ -819,35 +834,35 @@ oj.CubeAxisValue.prototype.getLevel = function() {
  * @memberof oj.CubeAxisValue
  * @export
  */
-oj.CubeAxisValue.prototype.getDepth = function() {
-    return 1;
+oj.CubeAxisValue.prototype.getDepth = function () {
+  return 1;
 };
- 
+
 /**
  * Get the parent oj.CubeAxisValues of this value
  * @return {Array.<oj.CubeAxisValue>} an array of oj.CubeAxisValues--all the slower-varying level axis values under which this value is grouped
  * @memberof oj.CubeAxisValue
  * @export
  */
-oj.CubeAxisValue.prototype.getParents = function() {
-    var parents = [];
-    var parent = this._parent;
+oj.CubeAxisValue.prototype.getParents = function () {
+  var parents = [];
+  var parent = this._parent;
     // Add parents, don't add root
-    while (parent && parent._parent) {
-        parents.unshift(parent);
-        parent = parent._parent;
-    }
-    return parents;
+  while (parent && parent._parent) {
+    parents.unshift(parent);
+    parent = parent._parent;
+  }
+  return parents;
 };
- 
+
 /**
  * Get an ordered list of the child oj.CubeAxisValues of this value, at the next level
  * @return {Array.<oj.CubeAxisValue>} an array of the children of this oj.CubeAxisValue
  * @memberof oj.CubeAxisValue
  * @export
  */
-oj.CubeAxisValue.prototype.getChildren = function() {
-    return this._children;
+oj.CubeAxisValue.prototype.getChildren = function () {
+  return this._children;
 };
 
 /**
@@ -856,47 +871,46 @@ oj.CubeAxisValue.prototype.getChildren = function() {
  * @memberof oj.CubeAxisValue
  * @export
  */
-oj.CubeAxisValue.prototype.getExtent = function() {
-    if (this._extent > -1) {
-        return this._extent;
-    }
-    // Calculate it: add up all my children's extents--if there are none, my extent is one as I'm the innermost level
-    if (!this._children || this._children.length === 0) {
-        this._extent = 1;
-    }
-    else {
-        this._extent = 0;
-        for (var c = 0; c < this.getChildren().length; c++) {
-            this._extent += this.getChildren()[c].getExtent();
-        }
-    }
+oj.CubeAxisValue.prototype.getExtent = function () {
+  if (this._extent > -1) {
     return this._extent;
+  }
+  // Calculate it: add up all my children's extents--if there are none, my extent is one as I'm the innermost level
+  if (!this._children || this._children.length === 0) {
+    this._extent = 1;
+  } else {
+    this._extent = 0;
+    for (var c = 0; c < this.getChildren().length; c++) {
+      this._extent += this.getChildren()[c].getExtent();
+    }
+  }
+  return this._extent;
 };
 
 /**
  * Get the starting index of this value within the axis
- * 
+ *
  * @return {number} the starting index of this value within the axis
  * @memberof oj.CubeAxisValue
  * @export
  */
-oj.CubeAxisValue.prototype.getStart = function() {
-    if (this._start > -1) {
-        return this._start;
-    }
-    if (!this._parent) {
+oj.CubeAxisValue.prototype.getStart = function () {
+  if (this._start > -1) {
+    return this._start;
+  }
+  if (!this._parent) {
         // We're the root
-        return 0;
-    }
+    return 0;
+  }
     // Add up all my earlier siblings' extents plus my parent's start--that's my start
-    var start = this._parent.getStart();
-    var currChild = this._parent._getPrevChild(this);    
-    while (currChild) {
-        start += currChild.getExtent();
-        currChild = this._parent._getPrevChild(currChild);
-    }
-    this._start = start;
-    return start;
+  var start = this._parent.getStart();
+  var currChild = this._parent._getPrevChild(this);
+  while (currChild) {
+    start += currChild.getExtent();
+    currChild = this._parent._getPrevChild(currChild);
+  }
+  this._start = start;
+  return start;
 };
 
 /**
@@ -905,8 +919,8 @@ oj.CubeAxisValue.prototype.getStart = function() {
  * @memberof oj.CubeAxisValue
  * @export
  */
-oj.CubeAxisValue.prototype.getValue = function() {
-    return this._data.value;
+oj.CubeAxisValue.prototype.getValue = function () {
+  return this._data.value;
 };
 
 /**
@@ -917,143 +931,143 @@ oj.CubeAxisValue.prototype.getValue = function() {
  * @ojstatus preview
  * @export
  */
-oj.CubeAxisValue.prototype.getLabel = function() {
-    if (this._data.label) {
-        return this._data.label;
-    }
-    var value = this.getValue();
-    if (value) {
-      return value.toString();
-    }
-    return null;
+oj.CubeAxisValue.prototype.getLabel = function () {
+  if (this._data.label) {
+    return this._data.label;
+  }
+  var value = this.getValue();
+  if (value) {
+    return value.toString();
+  }
+  return null;
 };
 
 /**
  * Return the axis value child with the level/value pair found in key
  * @protected
  */
-oj.CubeAxisValue.prototype.GetChild = function(key) {
-    var childLevel = this._getChildLevel();
-    if (childLevel === null) {
-        return null;
-    }
-    
-    if (childLevel.isDataValue()) {
-        // Special case: the key is the value
-        return this._getDataValueChild(key);
-    }
-    var levelAttr = childLevel['attribute'];
-    // Do we have a key value for this?
-    var val = key[levelAttr];
-    if (val) {
-        // Yes, see if any of the children have this value
-        for (var c = 0; c < this._children.length; c++) {
-            if (this._children[c].getValue() === val) {
-                return this._children[c];
-            }
-        }
-    }
+oj.CubeAxisValue.prototype.GetChild = function (key) {
+  var childLevel = this._getChildLevel();
+  if (childLevel === null) {
     return null;
-};
+  }
 
-/**
- * @private
- */
-oj.CubeAxisValue.prototype._getDataValueChild = function(key) {
+  if (childLevel.isDataValue()) {
+    // Special case: the key is the value
+    return this._getDataValueChild(key);
+  }
+  var levelAttr = childLevel.attribute;
+  // Do we have a key value for this?
+  var val = key[levelAttr];
+  if (val) {
+    // Yes, see if any of the children have this value
     for (var c = 0; c < this._children.length; c++) {
-        var val = this._children[c].getValue();
-        if (key.hasOwnProperty(val) && key[val] === val) {
-            // found it
-            return this._children[c];
-        }
+      if (this._children[c].getValue() === val) {
+        return this._children[c];
+      }
     }
-    return null;
+  }
+  return null;
 };
 
 /**
  * @private
  */
-oj.CubeAxisValue.prototype._getChildLevel = function() {
-    if (this._children && this._children.length > 0) {
-        return this._children[0].getLevel();
+oj.CubeAxisValue.prototype._getDataValueChild = function (key) {
+  for (var c = 0; c < this._children.length; c++) {
+    var val = this._children[c].getValue();
+    if (Object.prototype.hasOwnProperty.call(key, val) && key[val] === val) {
+      // found it
+      return this._children[c];
     }
-    return null;
+  }
+  return null;
+};
+
+/**
+ * @private
+ */
+oj.CubeAxisValue.prototype._getChildLevel = function () {
+  if (this._children && this._children.length > 0) {
+    return this._children[0].getLevel();
+  }
+  return null;
 };
 
 /**
  * Return the axis value child at the given index
  * @protected
  */
-oj.CubeAxisValue.prototype.GetChildAt = function(index) {
+oj.CubeAxisValue.prototype.GetChildAt = function (index) {
   return this._findChild(index, 0, this._children.length - 1);
 };
 
 /**
  * @private
  */
-oj.CubeAxisValue.prototype._findChild = function(index, start, end) {
-    if (start > end) {
-            return null;
-    }
+oj.CubeAxisValue.prototype._findChild = function (index, start, end) {
+  if (start > end) {
+    return null;
+  }
 
-    var mid = Math.floor((start + end) / 2);
-    var value = this._children[mid];
+  var mid = Math.floor((start + end) / 2);
+  var value = this._children[mid];
 
-    var valStart = value.getStart();
-    if (valStart > index) {
-          return this._findChild(index, start, mid-1);
-    }
-    if (valStart + value.getExtent() - 1 < index) {
-        return this._findChild(index, mid+1, end);
-    }
-    return value;
-}
-    
+  var valStart = value.getStart();
+  if (valStart > index) {
+    return this._findChild(index, start, mid - 1);
+  }
+  if (valStart + (value.getExtent() - 1) < index) {
+    return this._findChild(index, mid + 1, end);
+  }
+  return value;
+};
+
 /**
  * Add this value to the node if not already there; return either the new cube axis value or the one where it was found
  * @protected
  */
-oj.CubeAxisValue.prototype.AddNode = function(value, label, level) {
-    // Check if this value is already in the child list
-    for (var c = 0; c < this._children.length; c++) {
-        if (this._children[c].getValue() === value) {
-            // We already have this node: just return it so any other members below its level get put in the right place
-            return this._children[c];
-        }
+oj.CubeAxisValue.prototype.AddNode = function (value, label, level) {
+  // Check if this value is already in the child list
+  for (var c = 0; c < this._children.length; c++) {
+    if (this._children[c].getValue() === value) {
+      // We already have this node: just return it so any other members below its level get put in the right place
+      return this._children[c];
     }
-    // Not found: add a new child
-    var newValue = new oj.CubeAxisValue(value, label, level, this);
-    this._children.push(newValue);
-    return newValue;
+  }
+  // Not found: add a new child
+  var newValue = new oj.CubeAxisValue(value, label, level, this);
+  this._children.push(newValue);
+  return newValue;
 };
 
 /**
  * Get a "hash value" for this axis value.  Format is levelAttr:value
  * @protected
  */
-oj.CubeAxisValue.prototype.GetHashCode = function() {
-    var obj = {};
-    obj[this.getLevel()['attribute']] = this.getValue();
-    return obj;
+oj.CubeAxisValue.prototype.GetHashCode = function () {
+  var obj = {};
+  obj[this.getLevel().attribute] = this.getValue();
+  return obj;
 };
-    
+
 /**
  * Return the child immediately preceding this one
  * @protected
  */
-oj.CubeAxisValue.prototype._getPrevChild = function(currChild) {
-    for (var c = 0; c < this._children.length; c++) {
-        if (this._children[c] === currChild) {
-            // Found this child: see if there's a previous one
-            if (c > 0) {
-                return this._children[c-1];
-            }
-            // First child
-            return null;
-        }
+oj.CubeAxisValue.prototype._getPrevChild = function (currChild) {
+  for (var c = 0; c < this._children.length; c++) {
+    if (this._children[c] === currChild) {
+      // Found this child: see if there's a previous one
+      if (c > 0) {
+        return this._children[c - 1];
+      }
+      // First child
+      return null;
     }
-    // Not found
-    return null;
+  }
+  // Not found
+  return null;
 };
 
 
@@ -1061,7 +1075,7 @@ oj.CubeAxisValue.prototype._getPrevChild = function(currChild) {
  * Copyright (c) 2015, Oracle and/or its affiliates.
  * All rights reserved.
  */
-/*jslint browser: true*/
+/* jslint browser: true*/
 
 /**
  * @class oj.CubeAxis
@@ -1071,33 +1085,32 @@ oj.CubeAxisValue.prototype._getPrevChild = function(currChild) {
  * @param {Array.<Object>} levels array of levels, slowest to fastest, to put in this axis
  * @param {number} axis the number of this axis
  * @param {oj.Cube} cube the cube on which to generate levels
- * 
+ *
  * @constructor
  * @export
  * @hideconstructor
  * @ojtsignore
  */
-oj.CubeAxis = function(levels, axis, cube) {
-    this.Init();
-    this['axis'] = axis;
-    this._levels = [];
-    for (var i = 0; i < levels.length; i++) {
-        this._levels.push(cube.GenerateLevel(levels[i], this));
-    }
-    this._cube = cube;
-    // Set up a root for the tree of axis values
-    this._values = new oj.CubeAxisValue(null, null, null, null);
+oj.CubeAxis = function (levels, axis, cube) {
+  this.Init();
+  this.axis = axis;
+  this._levels = [];
+  for (var i = 0; i < levels.length; i++) {
+    this._levels.push(cube.GenerateLevel(levels[i], this));
+  }
+  this._cube = cube;
+  // Set up a root for the tree of axis values
+  this._values = new oj.CubeAxisValue(null, null, null, null);
 };
- 
-// Subclass from oj.Object 
-oj.Object.createSubclass(oj.CubeAxis, oj.Object, "oj.CubeAxis");
+
+// Subclass from oj.Object
+oj.Object.createSubclass(oj.CubeAxis, oj.Object, 'oj.CubeAxis');
 
 /**
  * Initializes instance with the set options
  * @private
  */
-oj.CubeAxis.prototype.Init = function() 
-{
+oj.CubeAxis.prototype.Init = function () {
   oj.CubeAxis.superclass.Init.call(this);
 };
 
@@ -1108,20 +1121,20 @@ oj.CubeAxis.prototype.Init = function()
  * @memberof oj.CubeAxis
  * @export
  */
-oj.CubeAxis.prototype.getLevels = function() {
-    return this._levels;
+oj.CubeAxis.prototype.getLevels = function () {
+  return this._levels;
 };
- 
+
 /**
  * Gets the total number of indices (data value locations) along this axis
  * @return {number} the total number of indices along the axis
  * @memberof oj.CubeAxis
  * @export
  */
-oj.CubeAxis.prototype.getExtent = function() {
-    return this._values.getExtent();
+oj.CubeAxis.prototype.getExtent = function () {
+  return this._values.getExtent();
 };
- 
+
 /**
  * Get the {@link oj.CubeAxisValue} objects at the given index, one for each level represented at this index within the axis.  Note that the number of oj.CubeAxisValues
  * returned may not match the overall oj.CubeLevel count on the axis
@@ -1130,77 +1143,76 @@ oj.CubeAxis.prototype.getExtent = function() {
  * @memberof oj.CubeAxis
  * @export
  */
-oj.CubeAxis.prototype.getValues = function(index) {
-    var values = [];
-    var node = this._values;
-    while (node) {
-        node = node.GetChildAt(index);
-        if (node) {
-            values.push(node);
-        }
+oj.CubeAxis.prototype.getValues = function (index) {
+  var values = [];
+  var node = this._values;
+  while (node) {
+    node = node.GetChildAt(index);
+    if (node) {
+      values.push(node);
     }
-    return values;
+  }
+  return values;
 };
 
 /**
  * Return the index of the given key within the axis.  Return -1 if not found.
- * 
+ *
  * @param {string} key
  * @returns {number} index of value found using key, -1 if not found
  * @memberof oj.CubeAxis
  * @export
  */
-oj.CubeAxis.prototype.getIndex = function(key) {
-    var keyVal = key ? JSON.parse(key) : {};
-        
-    var node = this._values;
-    var lastNode = null;
-    while (node) {
-        lastNode = node;
-        node = node.GetChild(keyVal);
-    }
-    return lastNode ? lastNode.getStart() : -1;
+oj.CubeAxis.prototype.getIndex = function (key) {
+  var keyVal = key ? JSON.parse(key) : {};
+
+  var node = this._values;
+  var lastNode = null;
+  while (node) {
+    lastNode = node;
+    node = node.GetChild(keyVal);
+  }
+  return lastNode ? lastNode.getStart() : -1;
 };
 
 /**
  * @desc This axis' number
- * 
+ *
  * @type number
  * @memberof oj.CubeAxis
  * @export
  */
-oj.CubeAxis.prototype.axis;
+oj.CubeAxis.prototype.axis = undefined;
 
 
 /**
  * Retrieve the hash code for the values at a given index
  * @protected
  */
-oj.CubeAxis.prototype.GetCubeKeys = function(index, keys) {
-    return this.GetPartialCubeKeys(index, this.getLevels().length-1, keys);
+oj.CubeAxis.prototype.GetCubeKeys = function (index, keys) {
+  return this.GetPartialCubeKeys(index, this.getLevels().length - 1, keys);
 };
 
 /**
  * Get the cube keys down to a particular level
  * @protected
  */
-oj.CubeAxis.prototype.GetPartialCubeKeys = function(index, level, keys) {
-    var values = this.getValues(index);
-    var stopLevel = this.getLevels()[level];
-    for (var v = 0; v < values.length; v++) {
-        var val = values[v];
-        if (val.getLevel().isDataValue()) {
-            keys.AddDataValue(val.getValue());
-        }
-        else {
-            keys.UpdateKeys(val);
-        }
-        // Have we hit the stop level?
-        if (val.getLevel() === stopLevel) {
-            break;
-        }
-    }    
-    return keys;
+oj.CubeAxis.prototype.GetPartialCubeKeys = function (index, level, keys) {
+  var values = this.getValues(index);
+  var stopLevel = this.getLevels()[level];
+  for (var v = 0; v < values.length; v++) {
+    var val = values[v];
+    if (val.getLevel().isDataValue()) {
+      keys.AddDataValue(val.getValue());
+    } else {
+      keys.UpdateKeys(val);
+    }
+    // Have we hit the stop level?
+    if (val.getLevel() === stopLevel) {
+      break;
+    }
+  }
+  return keys;
 };
 
 
@@ -1208,12 +1220,10 @@ oj.CubeAxis.prototype.GetPartialCubeKeys = function(index, level, keys) {
  * Distribute contents of row to this axis according to the layout, etc.
  * @protected
  */
-oj.CubeAxis.prototype.ProcessRow = function(row, keys) {
-    // Go over the levels--obtain a set of keys representing cell locations and data values of those intersections
-    return this._cube.ProcessLevel(this, 0, this._values, row, keys, true);
+oj.CubeAxis.prototype.ProcessRow = function (row, keys) {
+  // Go over the levels--obtain a set of keys representing cell locations and data values of those intersections
+  return this._cube.ProcessLevel(this, 0, this._values, row, keys, true);
 };
-
-
 
 
 /**
@@ -1225,7 +1235,7 @@ oj.CubeAxis.prototype.ProcessRow = function(row, keys) {
  * @class oj.CubeCellSet
  * @classdesc A CellSet represents a collection of cells.  The CellSet is an object returned by the success callback
  * of the fetchCells method on DataGridDataSource.  This implementation of CellSet is used by the
- * cube DataGridDataSource. 
+ * cube DataGridDataSource.
  * @since 1.1.0
  * @constructor
  * @export
@@ -1233,36 +1243,36 @@ oj.CubeAxis.prototype.ProcessRow = function(row, keys) {
  * @ojtsignore
  * @see oj.CubeDataGridDataSource
  */
-oj.CubeCellSet = function(cube, cellRange)
-{
-    // assert startRow/startColumn are number
-    var startRow = cellRange.row ? cellRange.row.start : 0;
-    var rowCount = cellRange.row ? cellRange.row.count : 0;
-    var startColumn = cellRange.column ? cellRange.column.start : 0;
-    var colCount = cellRange.column ? cellRange.column.count : 0;
-    oj.Assert.assertNumber(startRow, null);
-    oj.Assert.assertNumber(rowCount, null);
-    oj.Assert.assertNumber(startColumn, null);
-    oj.Assert.assertNumber(colCount, null);
-    
-    this._cube = cube;
+oj.CubeCellSet = function (cube, cellRange) {
+  // assert startRow/startColumn are number
+  var startRow = cellRange.row ? cellRange.row.start : 0;
+  var rowCount = cellRange.row ? cellRange.row.count : 0;
+  var startColumn = cellRange.column ? cellRange.column.start : 0;
+  var colCount = cellRange.column ? cellRange.column.count : 0;
+  oj.Assert.assertNumber(startRow, null);
+  oj.Assert.assertNumber(rowCount, null);
+  oj.Assert.assertNumber(startColumn, null);
+  oj.Assert.assertNumber(colCount, null);
 
-    this._starts = {'row':startRow,'column':startColumn};
-    
-    // Get the data
-    this._values = this._cube.getValues([{start:startColumn, count:colCount},{start:startRow,count:rowCount}]);
+  this._cube = cube;
 
-    var valArray = Array.isArray(this._values);
-    
-    colCount = valArray ? this._values.length : 1;
-    if (colCount > 0) {
-        rowCount = valArray ? this._values[0].length : 1;
-    }
-    this._counts = {'row':rowCount, 'column':colCount};
+  this._starts = { row: startRow, column: startColumn };
+
+  // Get the data
+  this._values = this._cube.getValues([{ start: startColumn, count: colCount },
+                                       { start: startRow, count: rowCount }]);
+
+  var valArray = Array.isArray(this._values);
+
+  colCount = valArray ? this._values.length : 1;
+  if (colCount > 0) {
+    rowCount = valArray ? this._values[0].length : 1;
+  }
+  this._counts = { row: rowCount, column: colCount };
 };
 
 /**
- * Gets the data of the specified index.  An error is throw when 1) the range is not yet available 
+ * Gets the data of the specified index.  An error is throw when 1) the range is not yet available
  * 2) the index specified is out of bounds. The indices are absolute within the entire data set, not just this cell set
  * @param {Object} indexes the index of each axis in which we want to retrieve the data from.
  * @property {number} indexes.row the index of the row axis.
@@ -1271,83 +1281,81 @@ oj.CubeCellSet = function(cube, cellRange)
  * @memberof oj.CubeCellSet
  * @export
  */
-oj.CubeCellSet.prototype.getData = function(indexes)
-{   
-    var row = indexes['row'];
-    var col = indexes['column'];
-    var cell = Array.isArray(this._values) ? this._values[col-this._starts['column']][row-this._starts['row']] : this._values;
-    if (cell) {
-        return cell.getValue();
-    }
-    return null;
+oj.CubeCellSet.prototype.getData = function (indexes) {
+  var row = indexes.row;
+  var col = indexes.column;
+  var cell = Array.isArray(this._values) ?
+      this._values[col - this._starts.column][row - this._starts.row] :
+      this._values;
+  if (cell) {
+    return cell.getValue();
+  }
+  return null;
 };
 
 /**
- * Gets the metadata of the specified index.  An error is throw when 1) the range is not yet available 
+ * Gets the metadata of the specified index.  An error is throw when 1) the range is not yet available
  * 2) the index specified is out of bounds. The indices are absolute across the entire data set not just within the cell set
  * @param {Object} indexes the index of each axis in which we want to retrieve the metadata from.
  * @property {number} indexes.row the index of the row axis.
  * @property {number} indexes.column the index of the column axis.
- * @return {Object} the metadata object for the specific index.  The metadata that the DataGrid supports are: 
+ * @return {Object} the metadata object for the specific index.  The metadata that the DataGrid supports are:
  *         1) keys - the key (of each axis) of the cell.
  * @memberof oj.CubeCellSet
  * @export
  */
-oj.CubeCellSet.prototype.getMetadata = function(indexes)
-{
-    // Get each axis' key
-    var obj = {};
-    obj['keys'] = {};
-    obj['keys']['row'] = this._getAxisMetadata(indexes, 'row', 2);
-    obj['keys']['column'] = this._getAxisMetadata(indexes, 'column', 1);
-    
-    return obj;
+oj.CubeCellSet.prototype.getMetadata = function (indexes) {
+  // Get each axis' key
+  var obj = {};
+  obj.keys = {};
+  obj.keys.row = this._getAxisMetadata(indexes, 'row', 2);
+  obj.keys.column = this._getAxisMetadata(indexes, 'column', 1);
+
+  return obj;
 };
 
 /**
  * @private
  */
-oj.CubeCellSet.prototype._getAxisMetadata = function(indexes, axis, len) {
-    var axes = this._cube.getAxes();
-    
-    if (indexes[axis] !== undefined && axes.length >= len) {
-        var keys = new oj.CubeKeys();
-        var axisIndex = oj.CubeDataGridDataSource._convertAxes(axis);
-        keys = axes[axisIndex].GetCubeKeys(indexes[axis], keys);
-        return keys.GetHashCodes()[0].key;
-    }
-    return null;
+oj.CubeCellSet.prototype._getAxisMetadata = function (indexes, axis, len) {
+  var axes = this._cube.getAxes();
+
+  if (indexes[axis] !== undefined && axes.length >= len) {
+    var keys = new oj.CubeKeys();
+    var axisIndex = oj.CubeDataGridDataSource._convertAxes(axis);
+    keys = axes[axisIndex].GetCubeKeys(indexes[axis], keys);
+    return keys.GetHashCodes()[0].key;
+  }
+  return null;
 };
 
 /**
  * Gets the start index of the result set for the specified axis.  Valid values are "row" and "column".
  * @param {string} axis the axis in which to inquire the actual count of the result set.
- * @return {number} the start index of the result set for the specified axis.  
+ * @return {number} the start index of the result set for the specified axis.
  * @memberof oj.CubeCellSet
  * @export
  */
-oj.CubeCellSet.prototype.getStart = function(axis)
-{
-    return this._starts[axis];
+oj.CubeCellSet.prototype.getStart = function (axis) {
+  return this._starts[axis];
 };
 
 /**
  * Gets the actual count of the result set for the specified axis.  Valid values are "row" and "column".
  * @param {string} axis the axis in which to inquire the actual count of the result set.
- * @return {number} the actual count of the result set for the specified axis.  
+ * @return {number} the actual count of the result set for the specified axis.
  * @memberof oj.CubeCellSet
  * @export
  */
-oj.CubeCellSet.prototype.getCount = function(axis)
-{
-    return this._counts[axis];
+oj.CubeCellSet.prototype.getCount = function (axis) {
+  return this._counts[axis];
 };
 
 /**
  * Gets the extent of a particular row/column index within the context of the cellSet.
  * Extent is defined as the number of indexes along the appropriate axis spanned by the cell.
  * If the extent extends beyond the start and end of the requested cell range the extent should be trimmed to the edge of the requested cell range and the object for {'more': {'before', 'after'}} should have the value appropriate boolean set.
- * @param {Object} indexes the index of each axis in which we want to retrieve the data from. 
+ * @param {Object} indexes the index of each axis in which we want to retrieve the data from.
  * @property {number} indexes.row the index of the row axis.
  * @property {number} indexes.column the index of the column axis.
  * @return {Object} an object containing two properties row and column. Each of those properties has two sub properties:
@@ -1366,15 +1374,20 @@ oj.CubeCellSet.prototype.getCount = function(axis)
  * @instance
  * @memberof oj.CubeCellSet
  */
-oj.CubeCellSet.prototype.getExtent = function(indexes)
-{
-    return {'row': {'extent':1, 'more': {'before':false, 'after':false}}, 
-            'column': {'extent':1, 'more': {'before':false, 'after':false}}};
+// eslint-disable-next-line no-unused-vars
+oj.CubeCellSet.prototype.getExtent = function (indexes) {
+  return {
+    row: { extent: 1, more: { before: false, after: false } },
+    column: { extent: 1, more: { before: false, after: false } }
+  };
 };
+
 /**
  * Copyright (c) 2015, Oracle and/or its affiliates.
  * All rights reserved.
  */
+
+/* global Promise:false */
 
 /**
  * @class oj.CubeDataGridDataSource
@@ -1387,13 +1400,12 @@ oj.CubeCellSet.prototype.getExtent = function(indexes)
  * @constructor
  * @since 1.1.0
  */
-oj.CubeDataGridDataSource = function(cube)
-{
-    oj.CubeDataGridDataSource.superclass.constructor.call(this, cube);
+oj.CubeDataGridDataSource = function (cube) {
+  oj.CubeDataGridDataSource.superclass.constructor.call(this, cube);
 };
 
 // Subclass CubeDataGridDataSource to DataGridDataSource
-oj.Object.createSubclass(oj.CubeDataGridDataSource, oj.DataGridDataSource, "oj.CubeDataGridDataSource");
+oj.Object.createSubclass(oj.CubeDataGridDataSource, oj.DataGridDataSource, 'oj.CubeDataGridDataSource');
 
 /**
  * Set a new cube on the data source
@@ -1402,9 +1414,9 @@ oj.Object.createSubclass(oj.CubeDataGridDataSource, oj.DataGridDataSource, "oj.C
  * @memberof oj.CubeDataGridDataSource
  * @export
  */
-oj.CubeDataGridDataSource.prototype.setCube = function(cube) {
-    this.data = cube;
-    this._fireRefresh();
+oj.CubeDataGridDataSource.prototype.setCube = function (cube) {
+  this.data = cube;
+  this._fireRefresh();
 };
 
 /**
@@ -1417,9 +1429,9 @@ oj.CubeDataGridDataSource.prototype.setCube = function(cube) {
  *                for: "indices"}
  * @export
  */
-oj.CubeDataGridDataSource.prototype.setPage = function(indices) {
-    this.data.setPage(indices);
-    this._fireRefresh();
+oj.CubeDataGridDataSource.prototype.setPage = function (indices) {
+  this.data.setPage(indices);
+  this._fireRefresh();
 };
 
 /**
@@ -1432,13 +1444,13 @@ oj.CubeDataGridDataSource.prototype.setPage = function(indices) {
 /**
  * @private
  */
-oj.CubeDataGridDataSource.prototype._fireRefresh = function() {
-    var event = {};
-    event['source'] = this;
-    event['operation'] = "refresh";
-    this.handleEvent("change", event);
+oj.CubeDataGridDataSource.prototype._fireRefresh = function () {
+  var event = {};
+  event.source = this;
+  event.operation = 'refresh';
+  this.handleEvent('change', event);
 };
-    
+
 /**
  * Returns the total number of rows or columns.  If the value return is not >= 0 then it is automatically assumed
  * that the total count is unknown.
@@ -1447,19 +1459,18 @@ oj.CubeDataGridDataSource.prototype._fireRefresh = function() {
  * @memberof oj.CubeDataGridDataSource
  * @export
  */
-oj.CubeDataGridDataSource.prototype.getCount = function(axis)
-{
-    var axisObj = this._getAxis(axis);
-    
-    return axisObj ? axisObj.getExtent() : 0;
+oj.CubeDataGridDataSource.prototype.getCount = function (axis) {
+  var axisObj = this._getAxis(axis);
+
+  return axisObj ? axisObj.getExtent() : 0;
 };
 
 
 /**
  * Returns whether the total count returned in getCount function is an actual or an estimate.
- * @param {string} axis the axis in which we inquire whether the total count is an estimate.  Valid values are 
+ * @param {string} axis the axis in which we inquire whether the total count is an estimate.  Valid values are
  *        "row" and "column".
- * @return {string} "exact" if the count returned in getCount function is the actual count, "estimate" if the 
+ * @return {string} "exact" if the count returned in getCount function is the actual count, "estimate" if the
  *         count returned in getCount function is an estimate.  The default value is "exact".
  * @method
  * @name getCountPrecision
@@ -1467,9 +1478,9 @@ oj.CubeDataGridDataSource.prototype.getCount = function(axis)
  * @instance
  * @export
  */
-oj.CubeDataGridDataSource.prototype.getCountPrecision = function(axis)
-{
-    return "exact";
+// eslint-disable-next-line no-unused-vars
+oj.CubeDataGridDataSource.prototype.getCountPrecision = function (axis) {
+  return 'exact';
 };
 
 
@@ -1486,7 +1497,7 @@ oj.CubeDataGridDataSource.prototype.getCountPrecision = function(axis)
  *        The function takes three parameters: HeaderSet object representing start headers, headerRange object passed into the original fetchHeaders call,
  *        and a HeaderSet object representing the end headers along the axis.
  * @property {function({status: Object}):void=} callbacks.error the callback to invoke when fetch cells failed.
- * @param {Object=} callbackObjects the object in which the callback function is invoked on.  This is optional.  
+ * @param {Object=} callbackObjects the object in which the callback function is invoked on.  This is optional.
  *        You can specify the callback object for each callbacks using the "success" and "error" keys.
  * @property {Object=} callbackObjects.success
  * @property {Object=} callbackObjects.error
@@ -1494,17 +1505,20 @@ oj.CubeDataGridDataSource.prototype.getCountPrecision = function(axis)
  * @memberof oj.CubeDataGridDataSource
  * @export
  */
-oj.CubeDataGridDataSource.prototype.fetchHeaders = function(headerRange, callbacks, callbackObjects)
-{
-    
-    var cubeheaders = new oj.CubeHeaderSet(this._getAxis(headerRange['axis']), this.data, headerRange['start'], headerRange['count']);
-    callbacks['success'].call(callbackObjects ? callbackObjects['success'] : undefined, cubeheaders, headerRange);
+oj.CubeDataGridDataSource.prototype.fetchHeaders = function (
+  headerRange, callbacks, callbackObjects
+) {
+  var cubeheaders = new oj.CubeHeaderSet(this._getAxis(headerRange.axis),
+                                         this.data, headerRange.start,
+                                         headerRange.count);
+  callbacks.success.call(callbackObjects ? callbackObjects.success : undefined,
+                         cubeheaders, headerRange);
 };
 
 /**
-  * @param {Array.<Object>} cellRange Information about the cell range.  A cell range is defined by an array 
+  * @param {Array.<Object>} cellRange Information about the cell range.  A cell range is defined by an array
  *        of range info for each axis, where each range contains three properties: axis, start, count.<p>
- *        axis: the axis associated with this range where cells are fetched.  Valid 
+ *        axis: the axis associated with this range where cells are fetched.  Valid
  *        values are "row" and "column".<br>
  *        start: the start index of the range for this axis in which the cells are fetched.<br>
  *        count: count the size of the range for this axis in which the cells are fetched. <br>
@@ -1512,7 +1526,7 @@ oj.CubeDataGridDataSource.prototype.fetchHeaders = function(headerRange, callbac
  *        types are "success" and "error"
  * @property {function({cellSet: Object}, {cellRange: Object}):void=} callbacks.success the callback to invoke when fetch cells completed successfully.  The passed arguments are CellSet and the cellRange
  * @property {function({status: Object}):void=} callbacks.error the callback to invoke when fetch cells failed.
- * @param {Object=} callbackObjects the object in which the callback function is invoked on.  This is optional.  
+ * @param {Object=} callbackObjects the object in which the callback function is invoked on.  This is optional.
  *        You can specify the callback object for each callbacks using the "success" and "error" keys.
  * @property {Object=} callbackObjects.success
  * @property {Object=} callbackObjects.error
@@ -1520,22 +1534,27 @@ oj.CubeDataGridDataSource.prototype.fetchHeaders = function(headerRange, callbac
  * @memberof oj.CubeDataGridDataSource
  * @export
  */
-oj.CubeDataGridDataSource.prototype.fetchCells = function(cellRange, callbacks, callbackObjects)
-{
-    var obj = {};
-    for (var i = 0; i < cellRange.length; i++) {
-        var start = cellRange[i]['start'] === undefined ? 0 : cellRange[i]['start'];
-        if (cellRange[i].axis === 'row') {
-            var count = cellRange[i]['count'] === undefined ? this.data.getAxes()[1].getExtent() : cellRange[i]['count'];
-            obj.row = {start: start, count: count};
-        }
-        if (cellRange[i].axis === 'column') {
-            var count = cellRange[i]['count'] === undefined ? this.data.getAxes()[0].getExtent() : cellRange[i]['count'];
-            obj.column = {start: start, count: count};
-        }
+oj.CubeDataGridDataSource.prototype.fetchCells = function (cellRange, callbacks, callbackObjects) {
+  var obj = {};
+  for (var i = 0; i < cellRange.length; i++) {
+    var start = cellRange[i].start === undefined ? 0 : cellRange[i].start;
+    var count;
+    if (cellRange[i].axis === 'row') {
+      count = cellRange[i].count === undefined ?
+        this.data.getAxes()[1].getExtent() :
+        cellRange[i].count;
+      obj.row = { start: start, count: count };
     }
-    var cubecells = new oj.CubeCellSet(this.data, obj);
-    callbacks['success'].call(callbackObjects ? callbackObjects['success'] : undefined, cubecells, cellRange);
+    if (cellRange[i].axis === 'column') {
+      count = cellRange[i].count === undefined ?
+        this.data.getAxes()[0].getExtent() :
+        cellRange[i].count;
+      obj.column = { start: start, count: count };
+    }
+  }
+  var cubecells = new oj.CubeCellSet(this.data, obj);
+  callbacks.success.call(callbackObjects ? callbackObjects.success : undefined,
+                         cubecells, cellRange);
 };
 
 /**
@@ -1547,26 +1566,26 @@ oj.CubeDataGridDataSource.prototype.fetchCells = function(cellRange, callbacks, 
  * @memberof oj.CubeDataGridDataSource
  * @export
  */
-oj.CubeDataGridDataSource.prototype.keys = function(keys)
-{
-    var retObj = {};
-    retObj = this._getKey(keys, 'row', retObj);
-    retObj = this._getKey(keys, 'column', retObj);
-    return Promise.resolve(retObj);
+oj.CubeDataGridDataSource.prototype.keys = function (keys) {
+  var retObj = {};
+  retObj = this._getKey(keys, 'row', retObj);
+  retObj = this._getKey(keys, 'column', retObj);
+  return Promise.resolve(retObj);
 };
 
-oj.CubeDataGridDataSource.prototype._getKey = function(indexes, axis, retObj) {
-    var axisObj = this._getAxis(axis);
-    var item = indexes[axis];
-    var keys = new oj.CubeKeys();
-    keys = axisObj ? axisObj.GetCubeKeys(item, keys) : "";
-    retObj[axis] = keys.GetHashCodes()[0].key;
-    return retObj;
+oj.CubeDataGridDataSource.prototype._getKey = function (indexes, axis, retObj) {
+  var axisObj = this._getAxis(axis);
+  var item = indexes[axis];
+  var keys = new oj.CubeKeys();
+  keys = axisObj ? axisObj.GetCubeKeys(item, keys) : '';
+  // eslint-disable-next-line no-param-reassign
+  retObj[axis] = keys.GetHashCodes()[0].key;
+  return retObj;
 };
 
 
 /**
- * Returns the keys based on the indexes. 
+ * Returns the keys based on the indexes.
  * @param {Object} indexes the index for each axis
  * @property {number} indexes.row the index for the row axis
  * @property {number} indexes.column the index for the column axis
@@ -1574,21 +1593,21 @@ oj.CubeDataGridDataSource.prototype._getKey = function(indexes, axis, retObj) {
  * @memberof oj.CubeDataGridDataSource
  * @export
  */
-oj.CubeDataGridDataSource.prototype.indexes = function(indexes)
-{
-    var retObj = {};
-    retObj = this._getIndex(indexes, 'row', retObj);
-    retObj = this._getIndex(indexes, 'column', retObj);
+oj.CubeDataGridDataSource.prototype.indexes = function (indexes) {
+  var retObj = {};
+  retObj = this._getIndex(indexes, 'row', retObj);
+  retObj = this._getIndex(indexes, 'column', retObj);
 
-    return Promise.resolve(retObj);
+  return Promise.resolve(retObj);
 };
 
 /**
  * @private
  */
-oj.CubeDataGridDataSource.prototype._getIndex = function(keys, axis, retObj) {
-    retObj[axis] = this._getAxis(axis).getIndex(keys[axis]);
-    return retObj;
+oj.CubeDataGridDataSource.prototype._getIndex = function (keys, axis, retObj) {
+  // eslint-disable-next-line no-param-reassign
+  retObj[axis] = this._getAxis(axis).getIndex(keys[axis]);
+  return retObj;
 };
 
 /**
@@ -1596,83 +1615,86 @@ oj.CubeDataGridDataSource.prototype._getIndex = function(keys, axis, retObj) {
  * @memberof oj.CubeDataGridDataSource
  * @export
  */
-oj.CubeDataGridDataSource.prototype.sort = function(criteria, callbacks, callbackObjects)
-{
-    oj.Assert.failedInAbstractFunction();
+// eslint-disable-next-line no-unused-vars
+oj.CubeDataGridDataSource.prototype.sort = function (criteria, callbacks, callbackObjects) {
+  oj.Assert.failedInAbstractFunction();
 };
 
 /**
  * @ignore
  * @memberof oj.CubeDataGridDataSource
  * @export
- */ 
-oj.CubeDataGridDataSource.prototype.move = function(rowToMove, referenceRow, position, callbacks, callbackObjects)
-{
-    oj.Assert.failedInAbstractFunction();
+ */
+oj.CubeDataGridDataSource.prototype.move = function (
+  // eslint-disable-next-line no-unused-vars
+  rowToMove, referenceRow, position, callbacks, callbackObjects
+) {
+  oj.Assert.failedInAbstractFunction();
 };
 
 /**
  * Checks whether a move operation is valid.
  * @param {any} rowToMove the key of the row to move
- * @param {any} referenceRow the key of the reference row which combined with position are used to determine 
+ * @param {any} referenceRow the key of the reference row which combined with position are used to determine
  *        the destination of where the row should moved to.
- * @param {string} position The position of the moved row relative to the reference row. 
+ * @param {string} position The position of the moved row relative to the reference row.
  *        Valid values are: "before", "after".
  * @return {string} returns "valid" if the move is valid, "invalid" otherwise.
  * @memberof oj.CubeDataGridDataSource
  * @export
- */ 
-oj.CubeDataGridDataSource.prototype.moveOK = function(rowToMove, referenceRow, position)
-{
-    return "invalid";
+ */
+// eslint-disable-next-line no-unused-vars
+oj.CubeDataGridDataSource.prototype.moveOK = function (rowToMove, referenceRow, position) {
+  return 'invalid';
 };
 
 /**
  * Determines whether this DataGridDataSource supports certain feature.
  * @param {string} feature the feature in which its capabilities is inquired.  Currently the only valid feature is "sort".
- * @return {string|null} the name of the feature.  For "sort", the valid return values are: "full", "none", "row", "column".  
- *         For "move", the valid return values are: "row", "none".  
+ * @return {string|null} the name of the feature.  For "sort", the valid return values are: "full", "none", "row", "column".
+ *         For "move", the valid return values are: "row", "none".
  *         Returns null if the feature is not recognized.
  * @memberof oj.CubeDataGridDataSource
  * @export
  */
-oj.CubeDataGridDataSource.prototype.getCapability = function(feature)
-{
-    switch (feature) {
-        case "sort":
-            return "none";
-        case "move":
-            return "none";
-    }
-    return null;
+oj.CubeDataGridDataSource.prototype.getCapability = function (feature) {
+  switch (feature) {
+    case 'sort':
+      return 'none';
+    case 'move':
+      return 'none';
+    default:
+      return null;
+  }
 };
 
 /**
  * @private
  */
-oj.CubeDataGridDataSource._convertAxes = function(axis) {
-    return axis === "row" ? 1 : 0;
+oj.CubeDataGridDataSource._convertAxes = function (axis) {
+  return axis === 'row' ? 1 : 0;
 };
 
 /**
  * @private
  */
-oj.CubeDataGridDataSource.prototype._getAxis = function(axis) {
-    var axisNum = oj.CubeDataGridDataSource._convertAxes(axis);
-    var axes = this.data.getAxes();
-    if (axes.length > axisNum) {
-        return axes[axisNum];
-    }
-    return null;
+oj.CubeDataGridDataSource.prototype._getAxis = function (axis) {
+  var axisNum = oj.CubeDataGridDataSource._convertAxes(axis);
+  var axes = this.data.getAxes();
+  if (axes.length > axisNum) {
+    return axes[axisNum];
+  }
+  return null;
 };
+
 /**
  * Copyright (c) 2015, Oracle and/or its affiliates.
  * All rights reserved.
  */
-/*jslint browser: true*/
+/* jslint browser: true*/
 
 /**
- * @class oj.CubeDataValue 
+ * @class oj.CubeDataValue
  * @see oj.Cube#getValues
  * @since 1.1.0
  * @classdesc Objects returned by oj.Cube.getValues() and representing a single cell within the cube's data body.
@@ -1687,25 +1709,24 @@ oj.CubeDataGridDataSource.prototype._getAxis = function(axis) {
  * @hideconstructor
  * @ojtsignore
  */
-oj.CubeDataValue = function(value, indices, aggType, rows, square) {
-    this.Init();
-    this._data = {};
-    this._data.value = value;
-    this._data.indices = indices;
-    this._data.aggType = aggType;
-    this._data.rows = rows;
-    this._data.square = square;
+oj.CubeDataValue = function (value, indices, aggType, rows, square) {
+  this.Init();
+  this._data = {};
+  this._data.value = value;
+  this._data.indices = indices;
+  this._data.aggType = aggType;
+  this._data.rows = rows;
+  this._data.square = square;
 };
- 
-// Subclass from oj.Object 
-oj.Object.createSubclass(oj.CubeDataValue, oj.Object, "oj.CubeDataValue");
+
+// Subclass from oj.Object
+oj.Object.createSubclass(oj.CubeDataValue, oj.Object, 'oj.CubeDataValue');
 
 /**
  * Initializes instance with the set options
  * @private
  */
-oj.CubeDataValue.prototype.Init = function() 
-{
+oj.CubeDataValue.prototype.Init = function () {
   oj.CubeDataValue.superclass.Init.call(this);
 };
 
@@ -1715,28 +1736,28 @@ oj.CubeDataValue.prototype.Init = function()
  * @memberof oj.CubeDataValue
  * @export
  */
-oj.CubeDataValue.prototype.getValue = function() {
-    // Need a special case for variance/stddev--they need a final computation
-    switch (this._data.aggType) {
-        case oj.CubeAggType['STDDEV']:
-            return Math.sqrt(this._getVariance());
-        case oj.CubeAggType['VARIANCE']:
-            return this._getVariance();
-        default:
-            return this._data.value;
-    }
+oj.CubeDataValue.prototype.getValue = function () {
+  // Need a special case for variance/stddev--they need a final computation
+  switch (this._data.aggType) {
+    case oj.CubeAggType.STDDEV:
+      return Math.sqrt(this._getVariance());
+    case oj.CubeAggType.VARIANCE:
+      return this._getVariance();
+    default:
+      return this._data.value;
+  }
 };
- 
+
 /**
  * Get the indices in axis order of the location of this data cell within the cube data body
  * @return {Array.<number>} an array of numeric indices in axis order
  * @memberof oj.CubeDataValue
  * @export
  */
-oj.CubeDataValue.prototype.getIndices = function() {
-    return this._data.indices;
+oj.CubeDataValue.prototype.getIndices = function () {
+  return this._data.indices;
 };
- 
+
 /**
  * Get the attribute/value pairs of the rows that were aggregated to create this data value.  The result may be a single row's set of attribute/value pairs if
  * no aggregation took place
@@ -1744,40 +1765,40 @@ oj.CubeDataValue.prototype.getIndices = function() {
  * @memberof oj.CubeDataValue
  * @export
  */
-oj.CubeDataValue.prototype.getRows = function() {
-    return this._data.rows;
+oj.CubeDataValue.prototype.getRows = function () {
+  return this._data.rows;
 };
- 
+
 /**
  * Get the aggregation type used to create this data value, if any
  * @return {string|undefined} the aggregation type used for this data value
  * @memberof oj.CubeDataValue
  * @export
  */
-oj.CubeDataValue.prototype.getAggregation = function() {
-    return this._data.aggType;
+oj.CubeDataValue.prototype.getAggregation = function () {
+  return this._data.aggType;
 };
 
 /**
  * @private
  */
-oj.CubeDataValue.prototype._getVariance = function() {
-    if (isNaN(this._data.square)) {
-        return NaN;
-    }
-    var count = this._data.rows.length;
-    return (count > 1) ? this._data.square / (count-1) : 0.0;
+oj.CubeDataValue.prototype._getVariance = function () {
+  if (isNaN(this._data.square)) {
+    return NaN;
+  }
+  var count = this._data.rows.length;
+  return (count > 1) ? this._data.square / (count - 1) : 0.0;
 };
 
 /**
  * Copyright (c) 2015, Oracle and/or its affiliates.
  * All rights reserved.
  */
- 
+
 /**
  * @class oj.CubeHeaderSet
  * @classdesc A HeaderSet represents a collection of headers.  The HeaderSet is an object returned by the success callback
- * of the fetchHeaders method on CubeDataGridDataSource.   
+ * of the fetchHeaders method on CubeDataGridDataSource.
  * @since 1.1.0
  * @constructor
  * @export
@@ -1785,35 +1806,35 @@ oj.CubeDataValue.prototype._getVariance = function() {
  * @ojtsignore
  * @see oj.CubeDataGridDataSource
  */
-oj.CubeHeaderSet = function(axis, cube, start, count)
-{
-    // The oj.Cube
-    this._cube = cube;
-    // The oj.CubeAxis
-    this._axis = axis;    
-    this._start = start === undefined ? 0 : start;
-    this._count = count === undefined ? this._axis.getExtent() : Math.min(count, this._axis.getExtent()-start);
-    this._end = start + count - 1;
+oj.CubeHeaderSet = function (axis, cube, start, count) {
+  // The oj.Cube
+  this._cube = cube;
+  // The oj.CubeAxis
+  this._axis = axis;
+  this._start = start === undefined ? 0 : start;
+  this._count = count === undefined ?
+    this._axis.getExtent() :
+    Math.min(count, this._axis.getExtent() - start);
+  this._end = start + (count - 1);
 };
 
 /**
  * Gets the data of the specified index.  An error is throw when 1) the range is not yet available and
- * 2) the index specified is out of bounds. 
+ * 2) the index specified is out of bounds.
  * @param {number} index the index of the header in which we want to retrieve the header from.  This is an absolute index across the entire axis
  * @param {number} level the level of the header
  * @return {any} the data object for the specific index.
  * @memberof oj.CubeHeaderSet
  * @export
  */
-oj.CubeHeaderSet.prototype.getData = function(index, level)
-{
-    var val = this._getValue(index, level);
-    return val ? val.getLabel() : null;
+oj.CubeHeaderSet.prototype.getData = function (index, level) {
+  var val = this._getValue(index, level);
+  return val ? val.getLabel() : null;
 };
 
 /**
- * Gets the metadata of the specified index.  An error is throw when 1) the range is not yet available and 
- * 2) the index specified is out of bounds. 
+ * Gets the metadata of the specified index.  An error is throw when 1) the range is not yet available and
+ * 2) the index specified is out of bounds.
  * The metadata that the data source can optionally return are:
  *  1) sortDirection - the initial sort direction of the header.  Valid values are "ascending" and "descending".
  *  2) key - the key of the row/column header.
@@ -1823,82 +1844,77 @@ oj.CubeHeaderSet.prototype.getData = function(index, level)
  * @memberof oj.CubeHeaderSet
  * @export
  */
-oj.CubeHeaderSet.prototype.getMetadata = function(index, level)
-{    
-    var keys = new oj.CubeKeys();
-    keys = this._axis.GetPartialCubeKeys(index, level, keys);
-    var hash = keys.GetHashCodes();
-    
-    return hash && hash.length > 0 ? {'key':hash[0].key} : null;
+oj.CubeHeaderSet.prototype.getMetadata = function (index, level) {
+  var keys = new oj.CubeKeys();
+  keys = this._axis.GetPartialCubeKeys(index, level, keys);
+  var hash = keys.GetHashCodes();
+
+  return hash && hash.length > 0 ? { key: hash[0].key } : null;
 };
 
 /**
  * Gets the actual number of levels of the result set for the specified axis.
- * @return {number} the number of levels of the result set for the specified axis. 
+ * @return {number} the number of levels of the result set for the specified axis.
  * @memberof oj.CubeHeaderSet
  * @export
  */
-oj.CubeHeaderSet.prototype.getLevelCount = function()
-{
-    return this._axis.getLevels().length;
+oj.CubeHeaderSet.prototype.getLevelCount = function () {
+  return this._axis.getLevels().length;
 };
- 
+
 /**
  * Gets the extent of an index on a particular level.  This is the extent such as it is within the defined header set, not across the entire
  * axis.  If the header falls across the beginning of the headerset or the end, then its extent should be only that part lying within the header set
  * @param {number} index the index of the header (absolute within the axis)
  * @param {number} level the level of the header
  * @return {Object} an object containing two values. example: {extent:5, more: {'before':false, 'after':true}}
- *              extent: the number of slices of the result set for the specified axis. 
+ *              extent: the number of slices of the result set for the specified axis.
  *              more: object with keys 'before'/'after' and boolean values true/false representing whether
  *                       there may be more rows/columns before or after the headerSet
  * @memberof oj.CubeHeaderSet
  * @export
  */
-oj.CubeHeaderSet.prototype.getExtent = function(index, level)
-{
-    var val = this._getValue(index, level);
-    var extent = val.getExtent();
-    var start = val.getStart();
-    var end = start + extent - 1;
-    var before = index > start;
-    var after = index < start + extent - 1;
-    
-    if (start < this._start) {
-        // Need to subtract this overage from the extent
-        extent -= (this._start-start);
-    }
-    if (end > this._end) {
-        // true extent overruns the header set--adjust it down by that much
-        extent -= (end-this._end);
-    }
-    return {'extent':extent, 'more': {'before':before, 'after':after}};
+oj.CubeHeaderSet.prototype.getExtent = function (index, level) {
+  var val = this._getValue(index, level);
+  var extent = val.getExtent();
+  var start = val.getStart();
+  var end = start + (extent - 1);
+  var before = index > start;
+  var after = index < start + (extent - 1);
+
+  if (start < this._start) {
+    // Need to subtract this overage from the extent
+    extent -= (this._start - start);
+  }
+  if (end > this._end) {
+    // true extent overruns the header set--adjust it down by that much
+    extent -= (end - this._end);
+  }
+  return { extent: extent, more: { before: before, after: after } };
 };
 
 /**
  * Gets the depth of an index starting at a particular level.
  * @param {number} index the index of the header (absolute within the axis)
  * @param {number} level the level of the header
- * @return {number} - the number of levels of the result set for the specified axis. 
+ * @return {number} - the number of levels of the result set for the specified axis.
  * @memberof oj.CubeHeaderSet
  * @export
  */
-oj.CubeHeaderSet.prototype.getDepth = function(index, level)
-{
-    var val = this._getValue(index, level);
-    return val.getDepth();
+oj.CubeHeaderSet.prototype.getDepth = function (index, level) {
+  var val = this._getValue(index, level);
+  return val.getDepth();
 };
 
 /**
  * Gets the actual count of the result set.
  *
- * @return {number} the actual count of the result set.  
+ * @return {number} the actual count of the result set.
  * @memberof oj.CubeHeaderSet
  * @export
  */
-oj.CubeHeaderSet.prototype.getCount = function()
-{
-    return this._count;
+oj.CubeHeaderSet.prototype.getCount = function () {
+  return this._count;
 };
 
 /**
@@ -1907,9 +1923,8 @@ oj.CubeHeaderSet.prototype.getCount = function()
  * @memberof oj.CubeHeaderSet
  * @export
  */
-oj.CubeHeaderSet.prototype.getStart = function()
-{
-    return this._start;
+oj.CubeHeaderSet.prototype.getStart = function () {
+  return this._start;
 };
 
 /**
@@ -1929,40 +1944,42 @@ oj.CubeHeaderSet.prototype.getLabel = function () {
 /**
  * @private
  */
-oj.CubeHeaderSet.prototype._getValue = function(index, level) {
-    if (level === undefined) {
-        level = 0;
-    }
-    var values = this._axis.getValues(index);
-    if (values && values.length > level) {
-        return values[level];
-    }
-    return null;    
+oj.CubeHeaderSet.prototype._getValue = function (index, level) {
+  if (level === undefined) {
+    // eslint-disable-next-line no-param-reassign
+    level = 0;
+  }
+  var values = this._axis.getValues(index);
+  if (values && values.length > level) {
+    return values[level];
+  }
+  return null;
 };
+
 /**
  * Copyright (c) 2015, Oracle and/or its affiliates.
  * All rights reserved.
  */
-/*jslint browser: true*/
+/* jslint browser: true*/
 
 /**
  * @constructor
  * @private
  */
-oj.CubeKeys = function() {
-    // Nodes referencing the data values
-    this._key = [];
-    
-    // List of dataValue name/data value pairs
-    this._data = [];
+oj.CubeKeys = function () {
+  // Nodes referencing the data values
+  this._key = [];
+
+  // List of dataValue name/data value pairs
+  this._data = [];
 };
 
 
 /**
  * @protected
  */
-oj.CubeKeys.prototype.UpdateKeys = function(node) {
-    this._key.push(node);
+oj.CubeKeys.prototype.UpdateKeys = function (node) {
+  this._key.push(node);
 };
 
 /**
@@ -1970,55 +1987,57 @@ oj.CubeKeys.prototype.UpdateKeys = function(node) {
  * @param {Object=} value
  * @private
  */
-oj.CubeKeys.prototype.AddDataValue = function(name, value) {
-    this._data.push({name:name,value:value});
+oj.CubeKeys.prototype.AddDataValue = function (name, value) {
+  this._data.push({ name: name, value: value });
 };
 
 /**
  * @protected
  */
-oj.CubeKeys.prototype.GetHashCodes = function() {
-    var codes = [];
-    
-    var keyHash = this._buildKeyHash();
-    
-    if (this._data.length === 0) {
-        codes.push({key:JSON.stringify(keyHash)});
-    }
-    else {
+oj.CubeKeys.prototype.GetHashCodes = function () {
+  var codes = [];
+
+  var keyHash = this._buildKeyHash();
+
+  if (this._data.length === 0) {
+    codes.push({ key: JSON.stringify(keyHash) });
+  } else {
         // One pairing for each data value
-        for (var d = 0; d < this._data.length; d++) {
-            var copy = $.extend(true, {}, keyHash);
+    for (var d = 0; d < this._data.length; d++) {
+      var copy = $.extend(true, {}, keyHash);
             // This is done for easier lookups when finding child
-            copy[this._data[d].name] = this._data[d].name;
-            codes.push({key:JSON.stringify(copy),dataValue:this._data[d].name,value:this._data[d].value});
-        }
+      copy[this._data[d].name] = this._data[d].name;
+      codes.push({
+        key: JSON.stringify(copy),
+        dataValue: this._data[d].name,
+        value: this._data[d].value
+      });
     }
-    return codes;
+  }
+  return codes;
 };
 
 /**
  * @private
  */
-oj.CubeKeys.prototype._buildKeyHash = function() {
-    var keyHash = {};
-    for (var k = 0; k < this._key.length; k++) {
-        var hc = this._key[k].GetHashCode();
-        for (var p in hc) {
-            if (hc.hasOwnProperty(p)) {
-                keyHash[p] = hc[p];
-            }
-        }
+oj.CubeKeys.prototype._buildKeyHash = function () {
+  var keyHash = {};
+  for (var k = 0; k < this._key.length; k++) {
+    var hc = this._key[k].GetHashCode();
+    var hcKeys = Object.keys(hc);
+    for (var i = 0; i < hcKeys.length; i++) {
+      var p = hcKeys[i];
+      keyHash[p] = hc[p];
     }
-    return keyHash;
+  }
+  return keyHash;
 };
-
 
 /**
  * Copyright (c) 2015, Oracle and/or its affiliates.
  * All rights reserved.
  */
-/*jslint browser: true*/
+/* jslint browser: true*/
 
 /**
  * @class oj.CubeLevel
@@ -2030,25 +2049,24 @@ oj.CubeKeys.prototype._buildKeyHash = function() {
  * @hideconstructor
  * @ojtsignore
  */
- oj.CubeLevel = function(attribute, axis, dataValue) {
-    this.Init();
-    this['attribute'] = attribute;
-    this._axisObj = axis;
-    this['axis'] = axis['axis'];
-    this._dataValue = dataValue;
+ oj.CubeLevel = function (attribute, axis, dataValue) {
+   this.Init();
+   this.attribute = attribute;
+   this._axisObj = axis;
+   this.axis = axis.axis;
+   this._dataValue = dataValue;
  };
- 
- // Subclass from oj.Object 
-oj.Object.createSubclass(oj.CubeLevel, oj.Object, "oj.CubeLevel");
+
+ // Subclass from oj.Object
+ oj.Object.createSubclass(oj.CubeLevel, oj.Object, 'oj.CubeLevel');
 
 /**
  * Initializes instance with the set options
  * @private
  */
-oj.CubeLevel.prototype.Init = function() 
-{
-  oj.CubeLevel.superclass.Init.call(this);
-};
+ oj.CubeLevel.prototype.Init = function () {
+   oj.CubeLevel.superclass.Init.call(this);
+ };
 
 /**
  * The rowset attribute this level represents
@@ -2056,16 +2074,16 @@ oj.CubeLevel.prototype.Init = function()
  * @memberof oj.CubeLevel
  * @export
  */
-oj.CubeLevel.prototype.attribute;
- 
+ oj.CubeLevel.prototype.attribute = undefined;
+
 /**
  * The axis this level is a member of
  * @type {number}
  * @memberof oj.CubeLevel
  * @export
  */
-oj.CubeLevel.prototype.axis;
- 
+ oj.CubeLevel.prototype.axis = undefined;
+
 
 /**
  * Return the oj.CubeAxisValue at the given index within this level
@@ -2074,50 +2092,51 @@ oj.CubeLevel.prototype.axis;
  * @memberof oj.CubeLevel
  * @export
  */
-oj.CubeLevel.prototype.getValue = function(index) {
-    var values = this._axisObj.getValues(index);
-    if (values) {
-        // Find this level within the returned list
-        for (var v = 0; v < values.length; v++) {
-            if (values[v].getLevel() === this) {
-                return values[v];
-            }
-        }
-    }
-    return null;
-};
- 
+ oj.CubeLevel.prototype.getValue = function (index) {
+   var values = this._axisObj.getValues(index);
+   if (values) {
+     // Find this level within the returned list
+     for (var v = 0; v < values.length; v++) {
+       if (values[v].getLevel() === this) {
+         return values[v];
+       }
+     }
+   }
+   return null;
+ };
+
 /**
  * Does this level represent the data values within the cube?
  * @return {boolean} true if this level does represent the data values within the cube; false otherwise
  * @memberof oj.CubeLevel
  * @export
  */
-oj.CubeLevel.prototype.isDataValue = function() {
-    return this._dataValue;
-};
+ oj.CubeLevel.prototype.isDataValue = function () {
+   return this._dataValue;
+ };
 
 /**
  * @type {boolean}
  * @private
  */
-oj.CubeLevel.prototype._dataValue = false;
+ oj.CubeLevel.prototype._dataValue = false;
 
 /**
  * @type {oj.CubeAxis}
  * @private
  */
-oj.CubeLevel.prototype._axisObj = null;
+ oj.CubeLevel.prototype._axisObj = null;
+
 /**
  * Copyright (c) 2015, Oracle and/or its affiliates.
  * All rights reserved.
  */
-/*jslint browser: true*/
+/* jslint browser: true*/
 
 
 /**
  * @class oj.DataColumnCube
- * 
+ *
  * @classdesc Creates an object used to convert rowset data into grouped "cubic" data, where the data values are specified by a single attribute within the rowset
  * (dataValues.labelAttr) and their header values designated by another rowset attribute (dataValues.valueAttr).
  *
@@ -2143,17 +2162,19 @@ oj.CubeLevel.prototype._axisObj = null;
  * @export
  * @ojtsignore
  */
-oj.DataColumnCube = function(rowset, layout, dataValues) {
-    this.Init();
-    this._dataValues = dataValues;
-    this._valueAttr = dataValues['valueAttr'];
-    this._labelAttr = dataValues['labelAttr'];
-    var defAgg = dataValues['defaultAggregation'];
-    this._defaultAggregation = defAgg ? oj.DataColumnCube._getDefaultAgg(defAgg) : {aggregation:oj.CubeAggType['SUM']};
-    this._aggregation = dataValues['aggregation'];
-    this._buildAggTypeLookup();
-    
-    oj.DataColumnCube.superclass.constructor.call(this, rowset, layout);
+oj.DataColumnCube = function (rowset, layout, dataValues) {
+  this.Init();
+  this._dataValues = dataValues;
+  this._valueAttr = dataValues.valueAttr;
+  this._labelAttr = dataValues.labelAttr;
+  var defAgg = dataValues.defaultAggregation;
+  this._defaultAggregation = (defAgg ?
+                              oj.DataColumnCube._getDefaultAgg(defAgg) :
+                              { aggregation: oj.CubeAggType.SUM });
+  this._aggregation = dataValues.aggregation;
+  this._buildAggTypeLookup();
+
+  oj.DataColumnCube.superclass.constructor.call(this, rowset, layout);
 };
 
 /**
@@ -2166,13 +2187,13 @@ oj.DataColumnCube = function(rowset, layout, dataValues) {
  * @typedef {Object} oj.DataColumnCube.LayoutLevels
  * @property {string} attribute
  */
- 
+
 /**
  * @typedef {Object} oj.DataColumnCube.Layout
  * @property {number} axis
  * @property {Array<oj.DataColumnCube.LayoutLevels>} levels
  */
- 
+
 /**
  * @typedef {Object} oj.DataColumnCube.DataValue
  * @property {string} valueAttr
@@ -2181,106 +2202,106 @@ oj.DataColumnCube = function(rowset, layout, dataValues) {
  * @property {Array<oj.DataColumnCube.Aggregation>=} aggregation
  */
 
-// Subclass from oj.Cube 
-oj.Object.createSubclass(oj.DataColumnCube, oj.Cube, "oj.DataColumnCube");
+// Subclass from oj.Cube
+oj.Object.createSubclass(oj.DataColumnCube, oj.Cube, 'oj.DataColumnCube');
 
 /**
  * Initializes instance with the set options
  * @private
  */
-oj.DataColumnCube.prototype.Init = function() 
-{
+oj.DataColumnCube.prototype.Init = function () {
   oj.DataColumnCube.superclass.Init.call(this);
 };
 
 /**
  * @protected
  */
-oj.DataColumnCube.prototype.BuildCube = function() {
-    oj.DataColumnCube.superclass.BuildCube.call(this);
+oj.DataColumnCube.prototype.BuildCube = function () {
+  oj.DataColumnCube.superclass.BuildCube.call(this);
 };
 
 /**
  * @protected
  */
-oj.DataColumnCube.prototype.GetAggType = function(dataValue) {
-    if (this._dataValueAggType[dataValue]) {
-        return this._dataValueAggType[dataValue];
-    }
-    return this._defaultAggregation;
+oj.DataColumnCube.prototype.GetAggType = function (dataValue) {
+  if (this._dataValueAggType[dataValue]) {
+    return this._dataValueAggType[dataValue];
+  }
+  return this._defaultAggregation;
 };
 
 /**
  * @protected
  */
-oj.DataColumnCube.prototype.GenerateCube = function(layout) {
-    return new oj.DataColumnCube(null, layout, this._dataValues);
+oj.DataColumnCube.prototype.GenerateCube = function (layout) {
+  return new oj.DataColumnCube(null, layout, this._dataValues);
 };
 
 /**
  * @protected
  */
-oj.DataColumnCube.prototype.GenerateLevel = function(level, axis) {    
-    if (level['attribute'] === this._labelAttr) {
-        // Data value level
-        return new oj.CubeLevel(level['attribute'], axis, true);
-    }
-    // Regular level
-    return new oj.CubeLevel(level['attribute'], axis, false);
+oj.DataColumnCube.prototype.GenerateLevel = function (level, axis) {
+  if (level.attribute === this._labelAttr) {
+    // Data value level
+    return new oj.CubeLevel(level.attribute, axis, true);
+  }
+  // Regular level
+  return new oj.CubeLevel(level.attribute, axis, false);
 };
 
 /**
  * @protected
  */
-oj.DataColumnCube.prototype.ProcessLevel = function(axis, levelNum, currNode, row, keys, addKeys) {
-    if (levelNum >= axis.getLevels().length) {
-        return keys;
-    }
-    var level = axis.getLevels()[levelNum];
-    
-    // Not the data value: process this and call for the next
-    var value = row[level['attribute']];
-    var node = currNode.AddNode(value, null, level);
-    
-    if (level.isDataValue()) {
-        keys.AddDataValue(value, row[this._valueAttr]);
-    }
-    else {
-        keys.UpdateKeys(node);
-    }    
-    
-    return this.ProcessLevel(axis, levelNum+1, node, row, keys, addKeys);
+oj.DataColumnCube.prototype.ProcessLevel = function (axis, levelNum, currNode, row, keys, addKeys) {
+  if (levelNum >= axis.getLevels().length) {
+    return keys;
+  }
+  var level = axis.getLevels()[levelNum];
+
+  // Not the data value: process this and call for the next
+  var value = row[level.attribute];
+  var node = currNode.AddNode(value, null, level);
+
+  if (level.isDataValue()) {
+    keys.AddDataValue(value, row[this._valueAttr]);
+  } else {
+    keys.UpdateKeys(node);
+  }
+
+  return this.ProcessLevel(axis, levelNum + 1, node, row, keys, addKeys);
 };
 
 /**
  * @private
  */
-oj.DataColumnCube._getDefaultAgg = function(agg) {
-    if (oj.StringUtils.isString(agg)) {
-        return {aggregation:agg};
-    }
-    return {aggregation:agg['aggregation'],callback:agg['callback']};
+oj.DataColumnCube._getDefaultAgg = function (agg) {
+  if (oj.StringUtils.isString(agg)) {
+    return { aggregation: agg };
+  }
+  return { aggregation: agg.aggregation, callback: agg.callback };
 };
-    
+
 /**
  * @private
  */
-oj.DataColumnCube.prototype._buildAggTypeLookup = function() {
-    this._dataValueAggType = [];
-    if (this._aggregation) {
-        for (var i = 0; i < this._aggregation.length; i++) {
-            var dv = this._aggregation[i];
-            var agg = dv['aggregation'];
-            this._dataValueAggType[dv['value']] = agg ? {aggregation:agg, callback:dv['callback']} : this._defaultAggregation;
-        }
+oj.DataColumnCube.prototype._buildAggTypeLookup = function () {
+  this._dataValueAggType = [];
+  if (this._aggregation) {
+    for (var i = 0; i < this._aggregation.length; i++) {
+      var dv = this._aggregation[i];
+      var agg = dv.aggregation;
+      this._dataValueAggType[dv.value] = (agg ?
+                                          { aggregation: agg, callback: dv.callback } :
+                                          this._defaultAggregation);
     }
+  }
 };
+
 /**
  * Copyright (c) 2015, Oracle and/or its affiliates.
  * All rights reserved.
  */
-/*jslint browser: true*/
-
+/* jslint browser: true*/
 
 
 /**
@@ -2305,12 +2326,11 @@ oj.DataColumnCube.prototype._buildAggTypeLookup = function() {
  * @export
  * @ojtsignore
  */
-oj.DataValueAttributeCube = function(rowset, layout, dataValues)
-{
-    this.Init();
-    this._dataValues = dataValues;    
-    this._aggTypeLookup = this._buildAggTypeLookup();
-    oj.DataValueAttributeCube.superclass.constructor.call(this, rowset, layout);
+oj.DataValueAttributeCube = function (rowset, layout, dataValues) {
+  this.Init();
+  this._dataValues = dataValues;
+  this._aggTypeLookup = this._buildAggTypeLookup();
+  oj.DataValueAttributeCube.superclass.constructor.call(this, rowset, layout);
 };
 
 /**
@@ -2324,13 +2344,13 @@ oj.DataValueAttributeCube = function(rowset, layout, dataValues)
  * @property {string=} attribute
  * @property {boolean=} dataValue
  */
- 
+
 /**
  * @typedef {Object} oj.DataValueAttributeCube.Layout
  * @property {number} axis
  * @property {Array<oj.DataValueAttributeCube.LayoutLevels>} levels
  */
- 
+
 /**
  * @typedef {Object} oj.DataValueAttributeCube.DataValue
  * @property {string} attribute
@@ -2338,11 +2358,11 @@ oj.DataValueAttributeCube = function(rowset, layout, dataValues)
  * @property {oj.CubeAggType=} aggregation
  */
 
-// Subclass from oj.Cube 
-oj.Object.createSubclass(oj.DataValueAttributeCube, oj.Cube, "oj.DataValueAttributeCube");
+// Subclass from oj.Cube
+oj.Object.createSubclass(oj.DataValueAttributeCube, oj.Cube, 'oj.DataValueAttributeCube');
 
 /**
- * 
+ *
  * @type {Array.<Object>}
  * @private
  */
@@ -2352,106 +2372,127 @@ oj.DataValueAttributeCube.prototype._rows = null;
  * Initializes instance with the set options
  * @private
  */
-oj.DataValueAttributeCube.prototype.Init = function() 
-{
+oj.DataValueAttributeCube.prototype.Init = function () {
   oj.DataValueAttributeCube.superclass.Init.call(this);
 };
 
 
 /**
- * Construct a cube given the information from the constructor.  Walk each row, assign it to its axis, aggregate values as 
+ * Construct a cube given the information from the constructor.  Walk each row, assign it to its axis, aggregate values as
  * need be
  * @protected
  */
-oj.DataValueAttributeCube.prototype.BuildCube = function() {
-    oj.DataValueAttributeCube.superclass.BuildCube.call(this);
-    
+oj.DataValueAttributeCube.prototype.BuildCube = function () {
+  oj.DataValueAttributeCube.superclass.BuildCube.call(this);
 };
 
 /**
  * @protected
  */
-oj.DataValueAttributeCube.prototype.GetAggType = function(dataValue) {
-    return this._dataValueAggType[dataValue];
+oj.DataValueAttributeCube.prototype.GetAggType = function (dataValue) {
+  return this._dataValueAggType[dataValue];
 };
 
 /**
  * @protected
  */
-oj.DataValueAttributeCube.prototype.GenerateLevel = function(level, axis) {    
-    if (level['dataValue']) {
-        // Data value level
-        return new oj.CubeLevel(null, axis, true);
-    }
-    // Regular level
-    return new oj.CubeLevel(level['attribute'], axis, false);
+oj.DataValueAttributeCube.prototype.GenerateLevel = function (level, axis) {
+  if (level.dataValue) {
+    // Data value level
+    return new oj.CubeLevel(null, axis, true);
+  }
+  // Regular level
+  return new oj.CubeLevel(level.attribute, axis, false);
 };
 
 /**
  * @protected
  */
-oj.DataValueAttributeCube.prototype.GenerateCube = function(layout) {
-    return new oj.DataValueAttributeCube(null, layout, this._dataValues);
+oj.DataValueAttributeCube.prototype.GenerateCube = function (layout) {
+  return new oj.DataValueAttributeCube(null, layout, this._dataValues);
 };
-    
+
 /**
  * @protected
  */
-oj.DataValueAttributeCube.prototype.ProcessLevel = function(axis, levelNum, currNode, row, keys, addKeys) {
-    if (levelNum >= axis.getLevels().length) {
-        return keys;
-    }
-    var level = axis.getLevels()[levelNum];
-    
-    if (level.isDataValue()) {
-        // For each defined data attribute, add a node and then process the rest of the levels under them
-        // This needs to be handled by the cube, because different types of cube data setups require different processing        
-        return this._processDataValue(axis, currNode, row, levelNum, keys);
-    }
-    // Not the data value: process this and call for the next
-    var value = row[level['attribute']];
-    var node = currNode.AddNode(value, null, level);
-    
-    // Gives us control to avoid adding duplicate key sets below each measure coming from one detail row
-    if (addKeys) {
-        keys.UpdateKeys(node);
-    }
-    return this.ProcessLevel(axis, levelNum+1, node, row, keys, addKeys);
+oj.DataValueAttributeCube.prototype.ProcessLevel = function (
+  axis, levelNum, currNode, row, keys, addKeys
+) {
+  if (levelNum >= axis.getLevels().length) {
+    return keys;
+  }
+  var level = axis.getLevels()[levelNum];
+
+  if (level.isDataValue()) {
+    // For each defined data attribute, add a node and then process the rest of the levels under them
+    // This needs to be handled by the cube, because different types of cube data setups require different processing
+    return this._processDataValue(axis, currNode, row, levelNum, keys);
+  }
+  // Not the data value: process this and call for the next
+  var value = row[level.attribute];
+  var node = currNode.AddNode(value, null, level);
+
+  // Gives us control to avoid adding duplicate key sets below each measure coming from one detail row
+  if (addKeys) {
+    keys.UpdateKeys(node);
+  }
+  return this.ProcessLevel(axis, levelNum + 1, node, row, keys, addKeys);
 };
 
 /**
  * Insert the data values into the given node and then process the remaining levels
  * @private
  */
-oj.DataValueAttributeCube.prototype._processDataValue = function(axis, node, row, levelNum, keys) {
-    // Roll over each data value, place an entry for each, and follow up the rest of the levels under that entry
-    var dsKeysAdded = true;
-    for (var d = 0; d < this._dataValues.length; d++) {
-        var dvAttr = this._dataValues[d]['attribute'];
-        var dvLabel = this._dataValues[d]['label'];
-        // Only add a node if this row has an entry for the dataValue
-        if (row.hasOwnProperty(dvAttr)) {
-            var currNode = node.AddNode(dvAttr, dvLabel, axis.getLevels()[levelNum]);
-            keys.AddDataValue(dvAttr, row[dvAttr]);
+oj.DataValueAttributeCube.prototype._processDataValue = function (axis, node, row, levelNum, keys) {
+  // Roll over each data value, place an entry for each, and follow up the rest of the levels under that entry
+  var dsKeysAdded = true;
+  for (var d = 0; d < this._dataValues.length; d++) {
+    var dvAttr = this._dataValues[d].attribute;
+    var dvLabel = this._dataValues[d].label;
+    // Only add a node if this row has an entry for the dataValue
+    if (Object.prototype.hasOwnProperty.call(row, dvAttr)) {
+      var currNode = node.AddNode(dvAttr, dvLabel, axis.getLevels()[levelNum]);
+      keys.AddDataValue(dvAttr, row[dvAttr]);
 
-            // Process the rest of the level.  Only have new nodes added to data storage keys for the first data value we process--don't want to duplicate them
-            this.ProcessLevel(axis, levelNum+1, currNode, row, keys, dsKeysAdded);
-            // Shut off the key adding for future passes
-            dsKeysAdded = false;
-        }
+      // Process the rest of the level.  Only have new nodes added to data storage keys for the first data value we process--don't want to duplicate them
+      this.ProcessLevel(axis, levelNum + 1, currNode, row, keys, dsKeysAdded);
+      // Shut off the key adding for future passes
+      dsKeysAdded = false;
     }
-    return keys;
+  }
+  return keys;
 };
 
 /**
  * @private
  */
-oj.DataValueAttributeCube.prototype._buildAggTypeLookup = function() {
-    this._dataValueAggType = [];
-    for (var i = 0; i < this._dataValues.length; i++) {
-        var dv = this._dataValues[i];
-        var agg = dv['aggregation'];            
-        this._dataValueAggType[dv['attribute']] = agg ? {aggregation:dv['aggregation'], callback:dv['callback']} : {aggregation:oj.CubeAggType['SUM'], callback:dv['callback']};
-    }
+oj.DataValueAttributeCube.prototype._buildAggTypeLookup = function () {
+  this._dataValueAggType = [];
+  for (var i = 0; i < this._dataValues.length; i++) {
+    var dv = this._dataValues[i];
+    var agg = dv.aggregation;
+    this._dataValueAggType[dv.attribute]
+      = (agg ?
+         { aggregation: dv.aggregation, callback: dv.callback } :
+         { aggregation: oj.CubeAggType.SUM, callback: dv.callback });
+  }
 };
+
+/* global Cube:false, CubeAggType:false, CubeAxis:false, CubeAxisValue:false, CubeCellSet:false, CubeDataGridDataSource:false, CubeDataValue:false, CubeHeaderSet:false, CubeLevel:false, DataColumnCube:false, DataValueAttributeCube:false */
+// Define a mapping variable that maps the return value of the module to the name used in the callback function of a require call.
+
+var Cube = {};
+Cube.Cube = oj.Cube;
+Cube.CubeAggType = oj.CubeAggType;
+Cube.CubeAxis = oj.CubeAxis;
+Cube.CubeAxisValue = oj.CubeAxisValue;
+Cube.CubeCellSet = oj.CubeCellSet;
+Cube.CubeDataGridDataSource = oj.CubeDataGridDataSource;
+Cube.CubeDataValue = oj.CubeDataValue;
+Cube.CubeHeaderSet = oj.CubeHeaderSet;
+Cube.CubeLevel = oj.CubeLevel;
+Cube.DataColumnCube = oj.DataColumnCube;
+Cube.DataValueAttributeCube = oj.DataValueAttributeCube;
+
+  return Cube;
 });

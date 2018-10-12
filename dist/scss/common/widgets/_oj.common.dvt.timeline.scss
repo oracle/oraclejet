@@ -20,75 +20,139 @@
     .oj-timeline {
       @include oj-user-select-property(none);
       outline:none;
-      border-color:$dvtTimelineBorderColor;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        border-color: var(--oj-timeline-border-color);
+      } @else {
+        border-color:$dvtTimelineBorderColor;
+      }
     }
 
     .oj-timeline-item {
-      background-color:$dvtTimelineItemBgColor;
-      border-color:$dvtTimelineItemBorderColor;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        background-color: var(--oj-timeline-item-bg-color);
+        border-color: var(--oj-timeline-item-border-color);
+      } @else {
+        background-color:$dvtTimelineItemBgColor;
+        border-color:$dvtTimelineItemBorderColor;
+      }
     }
 
     .oj-timeline-item.oj-hover {
-      border-color:$dvtTimelineItemBorderColorHover;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        border-color: var(--oj-timeline-item-border-color-hover);
+      } @else {
+        border-color:$dvtTimelineItemBorderColorHover;
+      }
     }
 
     .oj-timeline-item.oj-selected {
-      border-color:$dvtTimelineItemBorderColorSelected;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        border-color: var(--oj-timeline-item-border-color-selected);
+      } @else {
+        border-color:$dvtTimelineItemBorderColorSelected;
+      }
     }
 
     .oj-timeline-item-description {
-      color:$dvtTimelineItemDescriptionColor;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        color: var(--oj-timeline-item-description-color);
+        font-size: var(--oj-font-size-sm);
+      } @else {
+        color:$dvtTimelineItemDescriptionColor;
+        font-size:$smallFontSize;
+      }
       white-space:nowrap;
-      font-size:$smallFontSize;
     }
 
     .oj-timeline-item-title {
-      color:$dvtTimelineItemTitleColor;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        color: var(--oj-timeline-item-title-color);
+        font-size: var(--oj-font-size-sm);
+      } @else {
+        color:$dvtTimelineItemTitleColor;
+        font-size:$smallFontSize;
+      }
       white-space:nowrap;
-      font-size:$smallFontSize;
       font-weight:bold;
     }
 
     .oj-timeline-major-axis-label {
-      color:$dvtTimelineMajorAxisLabelColor;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        color: var(--oj-timeline-major-axis-label-color);
+        font-size: var(--oj-font-size);
+      } @else {
+        color:$dvtTimelineMajorAxisLabelColor;
+        font-size:$fontSize;
+      }
       white-space:nowrap;
-      font-size:$fontSize;
       font-weight:bold;
     }
 
     .oj-timeline-major-axis-separator {
-      color:$dvtTimelineMajorAxisSeparatorColor;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        color: var(--oj-timeline-major-axis-separator-color);
+      } @else {
+        color:$dvtTimelineMajorAxisSeparatorColor;
+      }
     }
 
     .oj-timeline-minor-axis {
-      background-color:$dvtTimelineMinorAxisBgColor;
-      border-color:$dvtTimelineMinorAxisBorderColor;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        background-color: var(--oj-timeline-minor-axis-bg-color);
+        border-color: var(--oj-timeline-minor-axis-border-color);
+      } @else {
+        background-color:$dvtTimelineMinorAxisBgColor;
+        border-color:$dvtTimelineMinorAxisBorderColor;
+      }
     }
 
     .oj-timeline-minor-axis-label {
-      color:$dvtTimelineMinorAxisLabelColor;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        color: var(--oj-timeline-minor-axis-label-color);
+        font-size: var(--oj-font-size-sm);
+      } @else {
+        color:$dvtTimelineMinorAxisLabelColor;
+        font-size:$smallFontSize;
+      }
       white-space:nowrap;
-      font-size:$smallFontSize;
     }
 
     .oj-timeline-minor-axis-separator {
-      color:$dvtTimelineMinorAxisSeparatorColor;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        color: var(--oj-timeline-minor-axis-separator-color);
+      } @else {
+        color:$dvtTimelineMinorAxisSeparatorColor;
+      }
     }
 
     .oj-timeline-overview {
-      background-color:$dvtTimelineOverviewBgColor;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        background-color: var(--oj-timeline-overview-bg-color);
+      } @else {
+        background-color:$dvtTimelineOverviewBgColor;
+      }
     }
 
     .oj-timeline-overview-label {
-      color:$dvtTimelineOverviewLabelColor;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        color: var(--oj-timeline-overview-label-color);
+        font-size: var(--oj-font-size-sm);
+      } @else {
+        color:$dvtTimelineOverviewLabelColor;
+        font-size:$smallFontSize;
+      }
       white-space:nowrap;
-      font-size:$smallFontSize;
       font-weight:bold;
     }
 
     .oj-timeline-overview-window {
-      background-color:$dvtTimelineOverviewWindowBgColor;
-      border-color:$dvtTimelineOverviewWindowBorderColor;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        background-color: var(--oj-timeline-overview-window-bg-color);
+        border-color: var(--oj-timeline-overview-window-border-color);
+      } @else {
+        background-color:$dvtTimelineOverviewWindowBgColor;
+        border-color:$dvtTimelineOverviewWindowBorderColor;
+      }
     }
 
     .oj-timeline-overview-window-handle-horizontal {
@@ -100,30 +164,63 @@
     }
 
     .oj-timeline-reference-object {
-      color:$dvtTimelineReferenceObjectColor;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        color: var(--oj-timeline-reference-object-color);
+      } @else {
+        color:$dvtTimelineReferenceObjectColor;
+      }
     }
 
     .oj-timeline-series {
-      background-color: $dvtTimelineSeriesBgColor;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        background-color: var(--oj-timeline-series-bg-color);
+      } @else {
+        background-color: $dvtTimelineSeriesBgColor;
+      }
     }
 
     .oj-timeline-series-label {
-      color:$dvtTimelineSeriesLabelColor;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        color: var(--oj-timeline-series-label-color);
+        font-size: var(--oj-font-size);
+      } @else {
+        color:$dvtTimelineSeriesLabelColor;
+        font-size:$fontSize;
+      }
       white-space:nowrap;
-      font-size:$fontSize;
       font-weight:bold;
     }
 
     .oj-timeline-series-empty-text {
-      color:$dvtTimelineSeriesEmptyTextColor;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        color: var(--oj-timeline-series-empty-text-color);
+        font-size: var(--oj-font-size-sm);
+      } @else {
+        color:$dvtTimelineSeriesEmptyTextColor;
+        font-size:$smallFontSize;
+      }
       white-space:nowrap;
-      font-size:$smallFontSize;
+    }
+
+    .oj-timeline-tooltip-label {
+        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+          font-size: var(--oj-font-size-sm);
+          color: var(--oj-timeline-tooltip-label-color);
+        } @else {
+          font-size: $smallFontSize;
+          color: $formControlLabelColor;
+        }
     }
 
     .oj-timeline-zoomin-icon {
       background-image:oj-common-image-url("dvt/common/func_plus_16_ena.png");
-      background-color:$dvtComponentBgColor;
-      border-color: $dvtPanelBorderColor;
+        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+          background-color: var(--oj-dvt-icon-bg-color);
+          border-color: var(--oj-dvt-icon-border-color);
+        } @else {
+          background-color: $dvtComponentBgColor;
+          border-color: $dvtPanelBorderColor;
+        }
     }
 
     .oj-timeline-zoomin-icon.oj-hover {
@@ -132,6 +229,13 @@
 
     .oj-timeline-zoomin-icon.oj-active {
       background-image:oj-common-image-url("dvt/common/func_plus_16_act.png");
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        background-color: var(--oj-dvt-icon-bg-color-active);
+        border-color: var(--oj-dvt-icon-border-color-active);
+      } @else {
+        background-color:$dvtIconBgColorActive;
+        border-color:$dvtIconBorderColorActive;
+      }
     }
 
     .oj-timeline-zoomin-icon.oj-disabled {
@@ -140,8 +244,13 @@
 
     .oj-timeline-zoomout-icon {
       background-image:oj-common-image-url("dvt/common/func_minus_16_ena.png");
-      background-color:$dvtComponentBgColor;
-      border-color: $dvtPanelBorderColor;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        background-color: var(--oj-dvt-icon-bg-color);
+        border-color: var(--oj-dvt-icon-border-color);
+      } @else {
+        background-color: $dvtComponentBgColor;
+        border-color: $dvtPanelBorderColor;
+      }
     }
 
     .oj-timeline-zoomout-icon.oj-hover {
@@ -150,6 +259,13 @@
 
     .oj-timeline-zoomout-icon.oj-active {
       background-image:oj-common-image-url("dvt/common/func_minus_16_act.png");
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        background-color: var(--oj-dvt-icon-bg-color-active);
+        border-color: var(--oj-dvt-icon-border-color-active);
+      } @else {
+        background-color:$dvtIconBgColorActive;
+        border-color:$dvtIconBorderColorActive;
+      }
     }
 
     .oj-timeline-zoomout-icon.oj-disabled {

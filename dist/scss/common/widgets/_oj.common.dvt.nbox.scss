@@ -8,12 +8,12 @@
 
 @if $includeNBoxClasses != false {
   @include module-include-once("common.nbox") {
-            
+
     // This is to prevent the flash of unstyled content before the html becomes JET components.
     @if $initialVisibility == hidden {
       oj-n-box:not(.oj-complete) {
         visibility: hidden;
-      }      
+      }
     }
 
     oj-n-box {
@@ -29,65 +29,121 @@
 
     .oj-nbox-columns-title,
     .oj-nbox-rows-title {
-      color: $textColor;
-      font-size: $fontSize;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        color: var(--oj-text-color);
+        font-size: var(--oj-font-size);
+      } @else {
+        color: $textColor;
+        font-size: $fontSize;
+      }
     }
 
     .oj-nbox-column-label,
     .oj-nbox-row-label {
-      color: $textColor;
-      font-size: $smallFontSize;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        color: var(--oj-text-color);
+        font-size: var(--oj-font-size-sm);
+      } @else {
+        color: $textColor;
+        font-size: $smallFontSize;
+      }
     }
 
     .oj-nbox-cell {
-      background-color: $dvtNBoxCellBgColor;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        background-color: var(--oj-n-box-cell-bg-color);
+      } @else {
+        background-color: $dvtNBoxCellBgColor;
+      }
     }
 
     .oj-nbox-cell.oj-maximized {
-      background-color: $dvtNBoxCellBgColorMaximized;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        background-color: var(--oj-n-box-cell-bg-color-maximized);
+      } @else {
+        background-color: $dvtNBoxCellBgColorMaximized;
+      }
     }
 
     // Cells are shown in minimized state when any other node is maximized
     .oj-nbox-cell.oj-minimized {
-      background-color: $dvtNBoxCellBgColorMinimized;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        background-color: var(--oj-n-box-cell-bg-color-minimized);
+      } @else {
+        background-color: $dvtNBoxCellBgColorMinimized;
+      }
     }
 
     .oj-nbox-cell-label {
-      color: $textColor;
-      font-size: $fontSize;
-      font-weight: $headerFontWeight;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        color: var(--oj-text-color);
+        font-size: var(--oj-font-size);
+        font-weight: var(--oj-header-4-font-weight);
+      } @else {
+        color: $textColor;
+        font-size: $fontSize;
+        font-weight: $header4FontWeight;
+      }
     }
 
     // Cell node count in the body of the cell.  Shown when nbox is too
     // small to show all of the nodes.
     .oj-nbox-cell-countlabel {
-      color: $textColor;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        color: var(--oj-text-color);
+      } @else {
+        color: $textColor;
+      }
     }
 
     // Cell node count in the header of the cell.  Shown when specified
     // in the nbox options.
     .oj-nbox-cell-countlabel.oj-nbox-cell-header {
-      font-size: $fontSize;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        font-size: var(--oj-font-size);
+      } @else {
+        font-size: $fontSize;
+      }
     }
 
     .oj-nbox-node {
-      background-color: $dvtComponentBgColor;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        background-color: var(--oj-n-box-node-bg-color);
+      } @else {
+        background-color: $dvtComponentBgColor;
+      }
     }
 
     .oj-nbox-node.oj-hover {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+      border-color: var(--oj-dvt-item-inner-border-color-selected);
+      } @else {
       border-color: $dvtBorder2Color;
+      }
     }
 
     .oj-nbox-node.oj-selected {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+      border-color: var(--oj-dvt-item-outer-border-color-selected);
+      } @else {
       border-color: $dvtBorderColor;
+      }
     }
 
     .oj-nbox-node-label {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+      font-size: var(--oj-font-size);
+      } @else {
       font-size: $fontSize;
+      }
     }
 
     .oj-nbox-node-secondarylabel {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+      font-size: var(--oj-font-size-sm);
+      } @else {
       font-size: $smallFontSize;
+      }
     }
 
     // Group node label
@@ -96,20 +152,36 @@
 
     // Dialog is shown when inspecting a group node
     .oj-nbox-dialog {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+      background-color: var(--oj-n-box-cell-bg-color);
+      border-color: var(--oj-n-box-dialog-border-color);
+      } @else {
       background-color: $dvtNBoxCellBgColor;
       border-color: $dvtNBoxDialogBorderColor;
+      }
     }
 
     .oj-nbox-dialog-label {
-      color: $textColor;
-      font-size: $fontSize;
-      font-weight: $headerFontWeight;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        color: var(--oj-text-color);
+        font-size: var(--oj-font-size);
+        font-weight: var(--oj-header-4-font-weight);
+      } @else {
+        color: $textColor;
+        font-size: $fontSize;
+        font-weight: $header4FontWeight;
+      }
     }
 
     // Dialog node count in the header of the dialog.  Shown by default.
     .oj-nbox-dialog-countlabel {
-      font-size: $fontSize;
-      font-weight: $headerFontWeight;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        font-size: var(--oj-font-size);
+        font-weight: var(--oj-header-4-font-weight);
+      } @else {
+        font-size: $fontSize;
+        font-weight: $header4FontWeight;
+      }
     }
   }
 }

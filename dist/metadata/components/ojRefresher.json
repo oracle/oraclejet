@@ -1,7 +1,7 @@
 {
   "name": "oj-refresher",
-  "version": "5.2.0",
-  "jetVersion": "5.2.0",
+  "version": "6.0.0",
+  "jetVersion": "6.0.0",
   "displayName": "Refresher",
   "type": "core",
   "styleClasses": [
@@ -13,46 +13,54 @@
     }
   ],
   "description": "wrapper for attaching pull to refresh functionality to a DOM element",
+  "help": "https://docs.oracle.com/en/middleware/jet/6/reference-api/oj.ojRefresher.html",
   "properties": {
     "refreshContent": {
       "description": "Specifies the refresh function",
       "type": "function",
       "displayName": "Refresh Content",
-      "value": null
+      "value": null,
+      "help": "refreshContent"
     },
     "target": {
       "description": "target element on which to detect a pull down action",
       "type": "Element",
       "displayName": "Target",
-      "value": null
+      "value": null,
+      "help": "target"
     },
     "text": {
       "description": "description text shown in the pull down panel after a pull down",
       "type": "string",
       "displayName": "Text",
-      "value": ""
+      "value": "",
+      "help": "text"
     },
     "threshold": {
-      "description": "minimum amount of pixels needed in the pull down to trigger refreshContent",
+      "description": "minimum amount of pixels needed in the pull down to trigger refreshContent. If none specified or 0, the threshold will be auto set to\nthe height of the pull to refresh loading panel.",
       "type": "number",
       "displayName": "Threshold",
-      "value": 0
+      "value": 0,
+      "help": "threshold"
     },
     "translations": {
       "description": "A collection of translated resources from the translation bundle, or null if this component has no resources.",
       "type": "object|null",
       "displayName": "Translations",
       "value": {},
-      "translatable": true
+      "translatable": true,
+      "help": "translations"
     }
   },
   "methods": {
     "refresh": {
       "description": "Refreshes the component.",
+      "help": "refresh",
       "return": "void"
     },
     "setProperty": {
-      "description": "Sets a property or a single subproperty for complex properties and notifies the component\nof the change, triggering a [property]Changed event.",
+      "description": "Sets a property or a single subproperty for complex properties and notifies the component of the change, triggering a [property]Changed event.",
+      "help": "setProperty",
       "params": [
         {
           "name": "property",
@@ -69,6 +77,7 @@
     },
     "getProperty": {
       "description": "Retrieves a value for a property or a single subproperty for complex properties.",
+      "help": "getProperty",
       "params": [
         {
           "name": "property",
@@ -80,6 +89,7 @@
     },
     "setProperties": {
       "description": "Performs a batch set of properties.",
+      "help": "setProperties",
       "params": [
         {
           "name": "properties",

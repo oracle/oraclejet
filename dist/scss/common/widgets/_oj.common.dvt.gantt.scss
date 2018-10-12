@@ -19,57 +19,96 @@
 
     /* Styling for the gantt widget */
     .oj-gantt {
-      @include oj-animation-duration-property ($dvtAnimationDuration);
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        animation-duration: var(--oj-dvt-animation-duration);
+      } @else {
+        animation-duration: $dvtAnimationDuration;
+      }
       @include oj-user-select-property(none);
       outline: none;
     }
 
     /* Styling for the container (around time axis and databody) */
     .oj-gantt-container {
-      fill: $dvtGanttBgColor;
-      stroke: $dvtGanttBorderColor;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        fill: var(--oj-gantt-bg-color);
+        stroke: var(--oj-gantt-border-color);
+      } @else {
+        fill: $dvtGanttBgColor;
+        stroke: $dvtGanttBorderColor;
+      }
       stroke-width: 1px;
     }
 
     /* Styling for the empty text */
     .oj-gantt-no-data-message {
-      fill: $dvtGanttEmptyTextColor;
-      font-size:$smallFontSize;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        fill: var(--oj-gantt-empty-text-color);
+        font-size: var(--oj-font-size-sm);
+      } @else {
+        fill: $dvtGanttEmptyTextColor;
+        font-size:$smallFontSize;
+      }
     }
 
     /* Styling for horizontal grid lines */
     .oj-gantt-horizontal-gridline
     {
-      stroke: $dvtGanttHorizontalGridlineColor;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        stroke: var(--oj-gantt-horizontal-gridline-color);
+      } @else {
+        stroke: $dvtGanttHorizontalGridlineColor;
+      }
       stroke-width: 1px;
     }
 
     /* Styling for vertical grid lines */
     .oj-gantt-vertical-gridline
     {
-      stroke: $dvtGanttVerticalGridlineColor;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        stroke: var(--oj-gantt-vertical-gridline-color);
+      } @else {
+        stroke: $dvtGanttVerticalGridlineColor;
+      }
       stroke-dasharray: 5,5;
     }
 
     /* Styling for all rows */
     .oj-gantt-row {
-      fill: $dvtGanttRowBgColor;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        fill: var(--oj-gantt-row-bg-color);
+      } @else {
+        fill: $dvtGanttRowBgColor;
+      }
     }
 
     /* Styling related to rows as drop targets */
     .oj-gantt-row.oj-active-drop {
-      fill: $dropTarget1Color;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        fill: var(--oj-drop-target-color-1);
+      } @else {
+        fill: $dropTarget1Color;
+      }
     }
 
     /* Styling for all row labels */
     .oj-gantt-row-label {
-      fill: $headerTextColor;
-      font-size: $fontSize;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        fill: var(--oj-header-text-color);
+        font-size: var(--oj-font-size);
+      } @else {
+        fill: $headerTextColor;
+        font-size: $fontSize;
+      }
     }
 
     /* Styling for all tasks */
     .oj-gantt-task {
-      fill: $dvtGanttTaskBgColor;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        fill: var(--oj-gantt-task-bg-color);
+      } @else {
+        fill: $dvtGanttTaskBgColor;
+      }
       filter: url('#ojGanttTaskTintFilter');
     }
 
@@ -85,22 +124,38 @@
 
     /* Styling for all tasks when selected */
     .oj-gantt-task.oj-selected {
-      stroke: $dvtGanttTaskBorderColorSelected;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        stroke: var(--oj-gantt-task-border-color-selected);
+      } @else {
+        stroke: $dvtGanttTaskBorderColorSelected;
+      }
     }
 
     /* Styling for all task bars */
     .oj-gantt-task-bar {
-      fill: $dvtGanttTaskBgColor;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        fill: var(--oj-gantt-task-bg-color);
+      } @else {
+        fill: $dvtGanttTaskBgColor;
+      }
     }
 
     /* Styling for all milestone tasks */
     .oj-gantt-task-milestone {
-      fill: $dvtGanttMilestoneBgColor;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        fill: var(--oj-gantt-milestone-bg-color);
+      } @else {
+        fill: $dvtGanttMilestoneBgColor;
+      }
     }
 
     /* Styling for all summary tasks */
     .oj-gantt-task-summary {
-      fill: $dvtGanttSummaryBgColor;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        fill: var(--oj-gantt-summary-bg-color);
+      } @else {
+        fill: $dvtGanttSummaryBgColor;
+      }
       filter: none;
     }
 
@@ -113,83 +168,145 @@
 
     .oj-gantt-task-drag-image {
       fill-opacity: 0;
-      stroke: $dvtGanttTaskDragImageBorderColor;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        stroke: var(--oj-gantt-task-drag-image-border-color);
+      } @else {
+        stroke: $dvtGanttTaskDragImageBorderColor;
+      }
       stroke-width: 1px;
       stroke-dasharray: 5,2;
     }
 
     /* Styling for all task labels */
     .oj-gantt-task-label {
-      color: $primaryTextColor;
-      font-size: $smallFontSize;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        color: var(--oj-primary-text-color);
+        font-size: var(--oj-font-size-sm);
+      } @else {
+        color: $primaryTextColor;
+        font-size: $smallFontSize;
+      }
     }
 
     /* Styling for all task progress indicators */
     .oj-gantt-task-progress {
-      fill: $dvtGanttTaskBgColor;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        fill: var(--oj-gantt-task-bg-color);
+      } @else {
+        fill: $dvtGanttTaskBgColor;
+      }
     }
 
     /* Styling for all baseline */
     .oj-gantt-baseline {
-      fill: $dvtGanttTaskBgColor;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        fill: var(--oj-gantt-task-bg-color);
+      } @else {
+        fill: $dvtGanttTaskBgColor;
+      }
       filter: url('#ojGanttTaskShadeFilter');
     }
 
     /* Styling for all baseline bars */
     .oj-gantt-baseline-bar {
-      fill: $dvtGanttTaskBgColor;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        fill: var(--oj-gantt-task-bg-color);
+      } @else {
+        fill: $dvtGanttTaskBgColor;
+      }
     }
 
     /* Styling for all milestone baseline */
     .oj-gantt-baseline-milestone {
-      fill: $dvtGanttMilestoneBgColor;
+        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+          fill: var(--oj-gantt-milestone-bg-color);
+        } @else {
+          fill: $dvtGanttMilestoneBgColor;
+        }
     }
 
     /* Styling for the major time axis */
     .oj-gantt-major-axis {
-      fill: $dvtGanttMajorAxisBgColor;
-      stroke: $dvtGanttMajorAxisBorderColor;
+        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+          fill: var(--oj-gantt-major-axis-bg-color);
+          stroke: var(--oj-gantt-major-axis-border-color);
+        } @else {
+          fill: $dvtGanttMajorAxisBgColor;
+          stroke: $dvtGanttMajorAxisBorderColor;
+        }
     }
 
     /* Styling for the major time axis labels */
     .oj-gantt-major-axis-label {
-      fill: $dvtGanttMajorAxisLabelColor;
-      font-size: $fontSize;
+        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+          fill: var(--oj-gantt-major-axis-label-color);
+          font-size: var(--oj-font-size);
+        } @else {
+          fill: $dvtGanttMajorAxisLabelColor;
+          font-size: $fontSize;
+        }
       font-weight: 500;
     }
 
     /* Styling for the major time axis separators */
     .oj-gantt-major-axis-separator {
-      stroke: $dvtGanttMajorAxisSeparatorColor;
+        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+            stroke: var(--oj-gantt-major-axis-separator-color);
+        } @else {
+            stroke: $dvtGanttMajorAxisSeparatorColor;
+        }
     }
 
     /* Styling for the minor time axis */
     .oj-gantt-minor-axis {
-      fill: $dvtGanttMinorAxisBgColor;
-      stroke: $dvtGanttMinorAxisBorderColor;
+        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+          fill: var(--oj-gantt-minor-axis-bg-color);
+          stroke: var(--oj-gantt-minor-axis-border-color);
+        } @else {
+          fill: $dvtGanttMinorAxisBgColor;
+          stroke: $dvtGanttMinorAxisBorderColor;
+        }
     }
 
     /* Styling for the minor time axis labels */
     .oj-gantt-minor-axis-label {
-      fill: $dvtGanttMinorAxisLabelColor;
-      font-size: $smallFontSize;
+        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+          fill: var(--oj-gantt-minor-axis-label-color);
+          font-size: var(--oj-font-size-sm);
+        } @else {
+          fill: $dvtGanttMinorAxisLabelColor;
+          font-size: $smallFontSize;
+        }
       font-weight: normal;
     }
 
     /* Styling for the minor time axis separators */
     .oj-gantt-minor-axis-separator {
-      stroke: $dvtGanttMinorAxisSeparatorColor;
+        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+          stroke: var(--oj-gantt-minor-axis-separator-color);
+        } @else {
+          stroke: $dvtGanttMinorAxisSeparatorColor;
+        }
     }
 
     /* Styling for reference object */
     .oj-gantt-reference-object {
-      stroke: $dvtTimelineReferenceObjectColor;
+        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+          stroke: var(--oj-gantt-reference-object-color);
+        } @else {
+          stroke: $dvtTimelineReferenceObjectColor;
+        }
     }
 
     /* Styling for the tooltip label */
     .oj-gantt-tooltip-label {
-      font-size: $smallFontSize;
-      color: $formControlLabelColor;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        font-size: var(--oj-font-size-sm);
+        color: var(--oj-gantt-tooltip-label-color);
+      } @else {
+        font-size: $smallFontSize;
+        color: $formControlLabelColor;
+      }
       padding: 0px 2px;
       white-space: nowrap;
 
@@ -203,7 +320,11 @@
 
     /* Styling for the tooltip value */
     .oj-gantt-tooltip-value {
+    @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+      color: var(--oj-text-color);
+    } @else {
       color: $textColor;
+    }
       padding: 0px 2px;
 
       @include oj-ltr() {
@@ -225,8 +346,13 @@
     /* Styling for the zoom in icon */
     .oj-gantt-zoomin-icon {
       background-image:oj-common-image-url("dvt/common/func_plus_16_ena.png");
-      background-color:$dvtComponentBgColor;
-      border-color: $dvtPanelBorderColor;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        background-color: var(--oj-dvt-icon-bg-color);
+        border-color: var(--oj-dvt-icon-border-color);
+      } @else {
+        background-color: $dvtComponentBgColor;
+        border-color: $dvtPanelBorderColor;
+      }
     }
 
     /* Styling for the zoom in icon on hover */
@@ -237,6 +363,13 @@
     /* Styling for the zoom in icon on active */
     .oj-gantt-zoomin-icon.oj-active {
       background-image:oj-common-image-url("dvt/common/func_plus_16_act.png");
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        background-color: var(--oj-dvt-icon-bg-color-active);
+        border-color: var(--oj-dvt-icon-border-color-active);
+      } @else {
+        background-color:$dvtIconBgColorActive;
+        border-color:$dvtIconBorderColorActive;
+      }
     }
 
     /* Styling for the zoom in icon when disabled */
@@ -246,8 +379,13 @@
 
     .oj-gantt-zoomout-icon {
       background-image:oj-common-image-url("dvt/common/func_minus_16_ena.png");
-      background-color:$dvtComponentBgColor;
-      border-color: $dvtPanelBorderColor;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        background-color: var(--oj-dvt-icon-bg-color);
+        border-color: var(--oj-dvt-icon-border-color);
+      } @else {
+        background-color:$dvtComponentBgColor;
+        border-color: $dvtPanelBorderColor;
+      }
     }
 
     .oj-gantt-zoomout-icon.oj-hover {
@@ -256,6 +394,13 @@
 
     .oj-gantt-zoomout-icon.oj-active {
       background-image:oj-common-image-url("dvt/common/func_minus_16_act.png");
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        background-color: var(--oj-dvt-icon-bg-color-active);
+        border-color: var(--oj-dvt-icon-border-color-active);
+      } @else {
+        background-color:$dvtIconBgColorActive;
+        border-color:$dvtIconBorderColorActive;
+      }
     }
 
     .oj-gantt-zoomout-icon.oj-disabled {
@@ -265,7 +410,11 @@
     /* Styling for all dependency lines */
     .oj-gantt-dependency-line {
       fill:none;
-      stroke:$dvtGanttDependencyLineColor;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        stroke: var(--oj-gantt-dependency-line-color);
+      } @else {
+        stroke:$dvtGanttDependencyLineColor;
+      }
       stroke-width:1;
     }
 
@@ -276,8 +425,13 @@
 
     /* Styling for all dependency line connectors */
     .oj-gantt-dependency-line-connector {
-      fill:$dvtGanttDependencyLineColor;
-      stroke:$dvtGanttDependencyLineColor;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        fill: var(--oj-gantt-dependency-line-color);
+        stroke: var(--oj-gantt-dependency-line-color);
+      } @else {
+        fill:$dvtGanttDependencyLineColor;
+        stroke:$dvtGanttDependencyLineColor;
+      }
     }
   }
 }

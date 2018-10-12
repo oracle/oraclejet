@@ -140,7 +140,7 @@ dvt.Obj.defineConstant = function(constValue) {
   return constValue;
 };
 /**
- * Utility to compare two objects which uses JET's oj.Object.compareValues method if provided
+ * Utility to compare two objects which uses JET's oj.KeyUtils.equals method if provided
  * or a strict equality check otherwise.
  * @param {dvt.Context} ctx The context object
  * @param {*} obj1 The first object to compare
@@ -149,7 +149,7 @@ dvt.Obj.defineConstant = function(constValue) {
  */
 dvt.Obj.compareValues = function(ctx, obj1, obj2) {
   if (ctx.oj) {
-    return ctx.oj.Object.compareValues(obj1, obj2);
+    return ctx.oj.KeyUtils.equals(obj1, obj2);
   } else {
     return obj1 === obj2;
   }
@@ -676,8 +676,21 @@ dvt.Context = function(container, id, referenceDiv) {
   this._root = dvt.ToolkitUtils.createSvgDocument(svgId);
   container.appendChild(this._root);//@HTMLUpdateOK
 
+  //  - Fix for flex layout and height inheritance in Chrome and Safari
+  if (dvt.Agent.isBrowserChrome() || dvt.Agent.isBrowserSafari()) {
+  	dvt.ToolkitUtils.setAttrNullNS(this._root, 'style', 'position:absolute;left:0px;top:0px;padding:inherit;');
+	  this._sizingSvg = document.createElementNS(dvt.ToolkitUtils.SVG_NS, 'svg');
+	  dvt.ToolkitUtils.setAttrNullNS(this._sizingSvg, 'style', 'width:100%;height:100%;');
+	  container.appendChild(this._sizingSvg);
+  }
+
   // Save a reference to the svg element's parent div for updating the active descendent needed for accessibility
   this._parentDiv = container;
+
+  // Save any application set aria role so we don't override.
+  // Note that we will only respect this if set before we initially render the component.
+  this._appAriaRole = this._parentDiv.getAttribute('role');
+  this._role = this._appAriaRole;
 
   // Store a reference to the div used for calculating the absolute position of the stage.
   this._referenceDiv = referenceDiv;
@@ -897,6 +910,25 @@ dvt.Context.prototype.getSvgDocument = function() {
   return this._root;
 };
 
+/**
+ * Returns the SVG document used for sizing.
+ * @return {Element}
+ */
+dvt.Context.prototype.getSizingSvg = function() {
+  return this._sizingSvg;
+};
+
+/**
+ * Removes the SVG document used for sizing.
+ */
+dvt.Context.prototype.removeSizingSvg = function() {
+  if (this._sizingSvg) {
+    dvt.ToolkitUtils.removeAttrNullNS(this._root, 'style');
+    this.getContainer().removeChild(this._sizingSvg);
+    this._sizingSvg = null;
+  }
+};
+
 
 /**
  * Specifies the reading direction for the context.  This is used by dvt.Agent.isRightToLeft(context) overriding the
@@ -1069,25 +1101,31 @@ dvt.Context.prototype.getStageAbsolutePosition = function() {
 
 /**
  * Returns true if the SVG for this context is fully offscreen.
+ * @param {boolean} noCache Determines whether the cached value will be used
  * @return {boolean}
  */
-dvt.Context.prototype.isOffscreen = function() {
+dvt.Context.prototype.isOffscreen = function(noCache) {
   // Use the cached value if available, since the calculation can cause reflow.
-  if (this._bOffscreen != null)
+  if (this._bOffscreen != null && !noCache)
     return this._bOffscreen;
 
   var referenceElem = this.getStage().getSVGRoot();
+  var bOffscreen;
   try {
     var rect = referenceElem.getBoundingClientRect();
-    this._bOffscreen = rect.bottom < 0 || rect.right < 0 ||
+    bOffscreen = rect.bottom < 0 || rect.right < 0 ||
         rect.top > (window.innerHeight || document.documentElement.clientHeight) ||
         rect.left > (window.innerWidth || document.documentElement.clientWidth);
   }
   catch (e) {
     //IE11 throws 'Unspecified error' exception, when referenceElem is disconnected from the DOM
-    this._bOffscreen = true;
+    bOffscreen = true;
   }
-  return this._bOffscreen;
+
+  if (!noCache)
+    this._bOffscreen = bOffscreen;
+
+  return bOffscreen;
 };
 
 /**
@@ -1274,12 +1312,14 @@ dvt.Context.prototype.setAriaLabel = function(ariaLabel) {
  * @param {string} role
  */
 dvt.Context.prototype.setAriaRole = function(role) {
-  if (role)
-    this._parentDiv.setAttribute('role', role);
-  else
-    this._parentDiv.removeAttribute('role');
+  if (!this._appAriaRole) {
+    if (role)
+      this._parentDiv.setAttribute('role', role);
+    else
+      this._parentDiv.removeAttribute('role');
 
-  this._role = role;
+    this._role = role;
+  }
 };
 
 /**
@@ -2078,9 +2118,10 @@ DvtScheduled.prototype.ProcessEnd = function()
     this._progress = 1;
     this._state = DvtScheduled._STATE_BEGIN;
   }
-  if (this._onEnd)
+  if (this._onEnd && !this._ended)
   {
     this._onEnd.call(this._onEndObj);
+    this._ended = true;
   }
 };
 
@@ -2484,7 +2525,6 @@ dvt.Playable = function(context)
 
 dvt.Obj.createSubclass(dvt.Playable, dvt.Obj);
 
-
 /**
   * Append a function to the end of the given playable's current onEnd function.
   *
@@ -2507,7 +2547,7 @@ dvt.Playable.appendOnEnd = function(playable, onEnd, onEndObj)
   }
   else
   {
-    var newOnEnd = function() 
+    var newOnEnd = function()
         {
       arOnEnd[0].call(arOnEnd[1]);
       onEnd.call(onEndObj);
@@ -2539,7 +2579,7 @@ dvt.Playable.prependOnEnd = function(playable, onEnd, onEndObj)
   }
   else
   {
-    var newOnEnd = function() 
+    var newOnEnd = function()
         {
       onEnd.call(onEndObj);
       arOnEnd[0].call(arOnEnd[1]);
@@ -2570,7 +2610,7 @@ dvt.Playable.appendOnInit = function(playable, onInit, onInitObj)
   }
   else
   {
-    var newOnInit = function() 
+    var newOnInit = function()
         {
       arOnInit[0].call(arOnInit[1]);
       onInit.call(onInitObj);
@@ -2602,7 +2642,7 @@ dvt.Playable.prependOnInit = function(playable, onInit, onInitObj)
   }
   else
   {
-    var newOnInit = function() 
+    var newOnInit = function()
         {
       onInit.call(onInitObj);
       arOnInit[0].call(arOnInit[1]);
@@ -2643,6 +2683,17 @@ dvt.Playable.prototype.setOnEnd = function(onEnd, onEndObj)
   this.OnEndUpdated();
 };
 
+/**
+ * Makes sure _onEnd does not get called twice.
+ *
+ */
+dvt.Playable.prototype.CallOnEnd  = function (){
+  if (this._onEnd && !this._ended)
+  {
+    this._onEnd.call(this._onEndObj);
+    this._ended = true;
+  }
+}
 
 /**
   * Get the function to call when this playable ends.
@@ -2887,10 +2938,7 @@ dvt.ParallelPlayable.prototype.OnPlayableEnd = function()
   */
 dvt.ParallelPlayable.prototype.DoEnd = function()
 {
-  if (this._onEnd)
-  {
-    this._onEnd.call(this._onEndObj);
-  }
+  this.CallOnEnd();
   this._animationRequestId = null;
 };
 
@@ -3098,10 +3146,7 @@ dvt.SequentialPlayable.prototype.stop = function(bJumpToEnd)
   */
 dvt.SequentialPlayable.prototype.DoEnd = function()
 {
-  if (this._onEnd)
-  {
-    this._onEnd.call(this._onEndObj);
-  }
+  this.CallOnEnd();
   this._animationRequestId = null;
 };
 
@@ -5072,10 +5117,7 @@ dvt.BaseAnimation.prototype.OnAnimEnd = function()
   }
 
   //call external onEnd func after any internal cleanup
-  if (this._onEnd)
-  {
-    this._onEnd.call(this._onEndObj);
-  }
+  this.CallOnEnd();
 };
 
 /**
@@ -15269,21 +15311,19 @@ dvt.PanEvent.prototype.getAnimator = function() {
  * @param {number}  newZoom  new zoom factor
  * @param {number}  oldZoom  old zoom factor
  * @param {dvt.Animator}  animator  optional animator used to animate the zoom
- * @param {dvt.Rectangle}  zoomToFitBounds  bounds to use for zoom-to-fit
  * @param {dvt.Point}  centerPoint  center of zoom
  * @param {number}  tx  the horizontal translation applied after the zoom
  * @param {number}  ty  the vertical translation applied after the zoom
  * @class
  * @constructor
  */
-dvt.ZoomEvent = function(subType, newZoom, oldZoom, animator, zoomToFitBounds, centerPoint, tx, ty) {
+dvt.ZoomEvent = function(subType, newZoom, oldZoom, animator, centerPoint, tx, ty) {
   this.Init(dvt.ZoomEvent.TYPE);
   this.type = this.getType();
   this._subtype = subType;
   this._newZoom = newZoom;
   this._oldZoom = oldZoom;
   this._animator = animator;
-  this._zoomToFitBounds = zoomToFitBounds;
   this._centerPoint = centerPoint;
   this._tx = tx;
   this._ty = ty;
@@ -15314,8 +15354,6 @@ dvt.ZoomEvent.SUBTYPE_DRAG_ZOOM_BEGIN = 'dragZoomBegin';
 dvt.ZoomEvent.SUBTYPE_DRAG_ZOOM_END = 'dragZoomEnd';
 /** @const **/
 dvt.ZoomEvent.SUBTYPE_ZOOM_AND_CENTER = 'zoomAndCenter';
-/** @const **/
-dvt.ZoomEvent.SUBTYPE_ZOOM_TO_FIT_CALC_BOUNDS = 'zoomToFitCalcBounds';
 /** @const **/
 dvt.ZoomEvent.SUBTYPE_ZOOM_TO_FIT_BEGIN = 'zoomToFitBegin';
 /** @const **/
@@ -15361,22 +15399,6 @@ dvt.ZoomEvent.prototype.getOldZoom = function() {
  */
 dvt.ZoomEvent.prototype.getAnimator = function() {
   return this._animator;
-};
-
-/**
- * Sets the bounds of this zoom event
- * @param {dvt.Rectangle} bounds The bounds
- */
-dvt.ZoomEvent.prototype.setZoomToFitBounds = function(bounds) {
-  this._zoomToFitBounds = bounds;
-};
-
-/**
- * Returns the bounds of this zoom event
- * @return {dvt.Rectangle}
- */
-dvt.ZoomEvent.prototype.getZoomToFitBounds = function() {
-  return this._zoomToFitBounds;
 };
 
 /**
@@ -23366,7 +23388,7 @@ dvt.OutputText.prototype.setTextString = function(textString) {
   textString = (textString != null) ? dvt.StringUtils.trim(String(textString)) : '';
 
   // Add zero-width char to force correct alignment in RTL for IE.
-  if (dvt.OutputText.needsTextAnchorAdjustment() && dvt.Agent.isPlatformIE() && textString.charAt(0) != dvt.OutputText.BIDI_ZERO_WIDTH)
+  if (this._needsTextAnchorAdjustment() && dvt.Agent.isPlatformIE() && textString.charAt(0) != dvt.OutputText.BIDI_ZERO_WIDTH)
     textString = dvt.OutputText.BIDI_ZERO_WIDTH + textString;
 
   this._textString = textString;
@@ -23456,7 +23478,7 @@ dvt.OutputText.prototype.setX = function(x) {
  */
 dvt.OutputText.prototype._getIEAlignmentOffset = function() {
   var align = this.getHorizAlignment();
-  var isRTL = dvt.Agent.isRightToLeft();
+  var isRTL = dvt.Agent.isRightToLeft(this.getCtx());
 
   if (align == dvt.OutputText.H_ALIGN_LEFT)
     return isRTL ? dvt.TextUtils.getTextStringWidth(this.getCtx(), this.getTextString(), this.getCSSStyle()) : 0;
@@ -23564,7 +23586,7 @@ dvt.OutputText.prototype.alignLeft = function() {
   else {
     // : When html dir="rtl", Webkit and FF25+ treat the right side of the text as the start, and the left
     // side of the text as end.  Our API always treats the left side as start, so we need to adjust based on agent.
-    var bAdjust = dvt.OutputText.needsTextAnchorAdjustment();
+    var bAdjust = this._needsTextAnchorAdjustment();
     dvt.ToolkitUtils.setAttrNullNS(this.getElem(), 'text-anchor', bAdjust ? 'end' : 'start', 'start');
   }
 };
@@ -23604,7 +23626,7 @@ dvt.OutputText.prototype.alignRight = function() {
   else {
     // : When html dir="rtl", Webkit and FF25+ treat the right side of the text as the start, and the left
     // side of the text as end.  Our API always treats the left side as start, so we need to adjust based on agent.
-    var bAdjust = dvt.OutputText.needsTextAnchorAdjustment();
+    var bAdjust = this._needsTextAnchorAdjustment();
     dvt.ToolkitUtils.setAttrNullNS(this.getElem(), 'text-anchor', bAdjust ? 'start' : 'end', 'start');
   }
 };
@@ -23962,13 +23984,14 @@ dvt.OutputText.prototype.addChild = function(obj) {
 
 /**
  * Returns true if the text anchor needs to be flipped from "start" to "end" and vice versa.
+ * @private
  * @return {boolean}
  */
-dvt.OutputText.needsTextAnchorAdjustment = function() {
+dvt.OutputText.prototype._needsTextAnchorAdjustment = function() {
   // : When html dir="rtl", theright side of the text is treated as the start, and the left as the end. Our
   // API always treats the left side as start, so we need to adjust based on agent.
   // Don't adjust anchor in Batik environment.
-  return dvt.Agent.isRightToLeft() && !dvt.Agent.isEnvironmentBatik();
+  return dvt.Agent.isRightToLeft(this.getCtx()) && !dvt.Agent.isEnvironmentBatik();
 };
 
 // Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
@@ -24342,17 +24365,6 @@ dvt.BackgroundOutputText.prototype.GetElemDimensionsWithStroke = function() {
  */
 dvt.BackgroundOutputText.prototype.copyShape = function() {
   return this.TextInstance.copyShape();
-};
-
-
-/**
- * @this {dvt.BackgroundOutputText}
- * Returns true if the text anchor needs to be flipped from "start" to "end" and vice versa.
- * @param {dvt.Context} context
- * @return {boolean}
- */
-dvt.BackgroundOutputText.needsTextAnchorAdjustment = function(context) {
-  return this.TextInstance.needsTextAnchorAdjustment(context);
 };
 
 /**
@@ -28060,7 +28072,7 @@ dvt.BaseComponentDefaults.prototype.getAnimationDuration = function(options) {
 //    Cache instance for dvt components to use
 //
 //    MODIFIED  (MM/DD/YY)
-//    esefah     04/16/16 - Created
+//         04/16/16 - Created
 
 /**
  * Cache for JSON components.
@@ -31630,7 +31642,7 @@ dvt.SelectionHandler.prototype.processInitialSelections = function(selectedIds, 
   // O(n) time instead of O(n^2) ()
   // This logic is a little convoluted and involves iterating over both the targets + selectedIds due to the
   // lack of a KeyMap, but should still be linear
-  var keySet = new this._context.oj.KeySetImpl(selectedIds);
+  var keySet = new this._context.KeySetImpl(selectedIds);
   var matchedMap = new Map();
   var count = 0;
   for (var i = 0; count !== selectedIds.length && i < targets.length; i++) {
@@ -33680,7 +33692,7 @@ dvt.EventManager.prototype.setContextMenuHandler = function(handler) {
  * a no-op if we are rendering the component on a touch device.
  * @param {dvt.KeyboardHandler} handler The keyboard handler to use.
  */
-dvt.EventManager.prototype.setKeyboardHandler = function(handler) 
+dvt.EventManager.prototype.setKeyboardHandler = function(handler)
 {
   if (!dvt.Agent.isTouchDevice())
     this.KeyboardHandler = handler;
@@ -33784,7 +33796,7 @@ dvt.EventManager.prototype.setFocused = function(isFocused)
  *
  * @return {Boolean}
  */
-dvt.EventManager.prototype.ShowKeyboardFocusByDefault = function() 
+dvt.EventManager.prototype.ShowKeyboardFocusByDefault = function()
 {
   return false;
 };
@@ -34257,7 +34269,7 @@ dvt.EventManager.prototype.ProcessContextMenuPopup = function(event, obj) {
  * @return {Boolean} true if this event manager has consumed the event
  * @protected
  */
-dvt.EventManager.prototype.OnKeyDown = function(event) 
+dvt.EventManager.prototype.OnKeyDown = function(event)
 {
   this._bKeyDown = true;
   var keyCode = event.keyCode;
@@ -34347,7 +34359,7 @@ dvt.EventManager.prototype.hideKeyboardFocusEffect = function()
  * @return {Boolean} true if this event manager has consumed the event
  * @protected
  */
-dvt.EventManager.prototype.ProcessKeyboardEvent = function(event) 
+dvt.EventManager.prototype.ProcessKeyboardEvent = function(event)
 {
   if (!this.KeyboardHandler)
     return false;
@@ -36379,11 +36391,7 @@ dvt.EventManager.prototype.OnDndDragStart = function(event) {
 
   // If selection is enabled and the dragged object isn't selected, we should select the object
   var obj = this.DragSource.getDragObject();
-  var selectionHandler = this.getSelectionHandler(obj);
-  if (selectionHandler) {
-    if (obj.isSelected && !obj.isSelected())
-      selectionHandler.processClick(obj, false);
-  }
+  this.ProcessSelectionEventHelper(obj, false);
 
   if (obj.hideHoverEffect)
     obj.hideHoverEffect();
@@ -37622,7 +37630,7 @@ dvt.HtmlTooltipManager.prototype.showDatatip = function(x, y, text, borderColor,
  * Helper to display a datatip or tooltip.
  * @param {number} x The pageX coordinate at which to display the tooltip.
  * @param {number} y The pageY coordinate at which to display the tooltip.
- * @param {string} text The string to show in the tooltip.
+ * @param {string|node|boolean} text The string or HTML node to show in the tooltip. This can also be the true(boolean), to indicate that the tooltip content shouldn't be modified
  * @param {string} borderColor The border color for the tooltip.
  * @param {boolean} useOffset True if offsets should be applied to the coordinates.
  * @param {string} popupClass The style class to use for the outer tooltip div.
@@ -37632,13 +37640,16 @@ dvt.HtmlTooltipManager.prototype._showTextAtPosition = function(x, y, text, bord
 {
   var tooltipElem;
   var outerElem = this.getTooltipElem();
+  var canModify = text != true; // Check if we are to modify the tooltip contents
+
+  if (canModify) {
+    // Clear out the previous tooltip to make room for the new one.
+    while (outerElem.hasChildNodes())
+      outerElem.removeChild(outerElem.firstChild);
+  }
 
   // Make replacements on the text string as needed
   if (typeof text == 'string') {
-    // Clear out the previous tooltip to make room for the new one. This is done in getCustomTooltip for the custom case
-    while (outerElem.hasChildNodes())
-      outerElem.removeChild(outerElem.firstChild);
-
     // For security, turn HTML brackets into strings to disable tags.
     text = text.replace(/(<|&#60;)/g, '&lt;');
     text = text.replace(/(>|&#62;)/g, '&gt;');
@@ -37665,8 +37676,7 @@ dvt.HtmlTooltipManager.prototype._showTextAtPosition = function(x, y, text, bord
     // Set the text
     tooltipElem.innerHTML = text;//@HtmlUpdateOk
   }
-  // true means that we are not to modify the tooltip contents
-  else if (text != true)
+  else if (canModify)
     tooltipElem = text; // the text is an element to be appended directly
 
   // Apply default class and border color on the outer element only if the user hasn't specified them ( + 21150376)
@@ -37988,10 +37998,6 @@ dvt.HtmlTooltipManager.prototype.positionTip = function(x, y)
  */
 dvt.HtmlTooltipManager.prototype.getCustomTooltip = function(tooltipFunc, dataContext) {
   var tooltipElem = this.getTooltipElem();
-
-  // Clearing out the previous tooltip content in case the app wants to modify the tooltip element themselves
-  while (tooltipElem.hasChildNodes())
-    tooltipElem.removeChild(tooltipElem.firstChild);
 
   dataContext['parentElement'] = tooltipElem;
 
@@ -38601,7 +38607,7 @@ dvt.EventFactory.newChartViewportChangeEvent = function(bComplete, xMin, xMax, s
 };
 
 /**
- * sunburst expand/collapse event
+ * expand/collapse event
  * @param {string} type The event type.
  * @param {string} id The id of the node.
  * @param {object} data The data object of the node.
@@ -38609,7 +38615,7 @@ dvt.EventFactory.newChartViewportChangeEvent = function(bComplete, xMin, xMax, s
  * @param {array} expanded The expanded nodes array.
  * @return {object}
  */
-dvt.EventFactory.newSunburstExpandCollapseEvent = function(type, id, data, component, expanded) {
+dvt.EventFactory.newExpandCollapseEvent = function(type, id, data, component, expanded) {
   var ret = dvt.EventFactory.newEvent(type, id);
   ret['expanded'] = expanded;
   ret['data'] = data;
@@ -38705,6 +38711,19 @@ dvt.EventFactory.newGanttMoveEvent = function(taskContexts, value, start, end, b
   ret['baselineStart'] = baselineStart;
   ret['baselineEnd'] = baselineEnd;
   ret['rowContext'] = rowContext;
+  return ret;
+};
+
+/**
+ * @param {number} y
+ * @param {number} rowIndex
+ * @param {number} offsetY
+ */
+dvt.EventFactory.newGanttScrollPositionChangeEvent = function(y, rowIndex, offsetY) {
+  var ret = dvt.EventFactory.newEvent('scrollPositionChange');
+  ret['y'] = y;
+  ret['rowIndex'] = rowIndex;
+  ret['offsetY'] = offsetY;
   return ret;
 };
 

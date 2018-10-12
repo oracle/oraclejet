@@ -1,21 +1,24 @@
 {
   "name": "oj-progress-list",
-  "version": "5.2.0",
-  "jetVersion": "5.2.0",
+  "version": "6.0.0",
+  "jetVersion": "6.0.0",
   "displayName": "Progress List",
   "type": "core",
   "description": "Displays a ListView where data rows are ProgressItems.",
+  "help": "https://docs.oracle.com/en/middleware/jet/6/reference-api/oj.ojProgressList.html",
   "properties": {
     "data": {
       "description": "Data used by the ProgressList.",
       "type": "oj.DataProvider|oj.TableDataSource|null",
       "displayName": "Data",
-      "value": null
+      "value": null,
+      "help": "data"
     }
   },
   "methods": {
     "setProperty": {
       "description": "Sets a property or a single subproperty for complex properties and notifies the component of the change, triggering a [property]Changed event.",
+      "help": "setProperty",
       "params": [
         {
           "name": "property",
@@ -32,6 +35,7 @@
     },
     "getProperty": {
       "description": "Retrieves a value for a property or a single subproperty for complex properties.",
+      "help": "getProperty",
       "params": [
         {
           "name": "property",
@@ -43,6 +47,7 @@
     },
     "setProperties": {
       "description": "Performs a batch set of properties.",
+      "help": "setProperties",
       "params": [
         {
           "name": "properties",

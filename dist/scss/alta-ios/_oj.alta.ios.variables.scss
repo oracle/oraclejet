@@ -17,9 +17,9 @@ $dateTimePickerSwitcherBgColor:         $neutralColor7 !default;
 $trainConnectorBgColor:                 $neutralColor11 !default;
 $trainContinuousConnectorBgColorSelected:$neutralColor11 !default;
 $trainBgColorActive:                    $brandColorLight3 !default;
-$swipeActionsNeutralActionBgColor:       $neutralColor13 !default;
-$swipeActionsActionTextColor:         $neutralColor1 !default; // text color applied to all action items
-$swipeActionsActionBgColor:           $brandColor !default; // background color applied to all action items
+$swipeActionsNeutralActionBgColor:       $neutralColor13 !default;  //settings: ignore
+$swipeActionsActionTextColor:         $neutralColor1 !default; // text color applied to all action items //settings: ignore
+$swipeActionsActionBgColor:           $brandColor !default; // background color applied to all action items //settings: ignore
 
 $dvtComponentBg2Color:                  $neutralColor8 !default;
 $dvtNBoxCellBgColor:                    $neutralColor5 !default;
@@ -106,10 +106,10 @@ $largeBorderRadius:  5px !default;
 
 // shadow
 //----------------------------------
-$boxShadowColor:  $neutralColor17 !default;
-$smallBoxShadow:  0 0 5px 0 transparentize($boxShadowColor, .80) !default;
-$mediumBoxShadow: 1px 1px 5px 0 transparentize($boxShadowColor, .60) !default;
-$largeBoxShadow:  1px 1px 10px 0 transparentize($boxShadowColor, .55) !default;
+$boxShadowHsl:      0,0%,0% !default;
+$smallBoxShadow:    0 0 5px 0 unquote('hsla(#{$boxShadowHsl},0.2)') !default;
+$mediumBoxShadow:   1px 1px 5px 0 unquote('hsla(#{$boxShadowHsl},0.4)') !default;
+$largeBoxShadow:    1px 1px 10px 0 unquote('hsla(#{$boxShadowHsl},0.45)') !default;
 
 
 // disabled
@@ -154,7 +154,7 @@ $header4FontSize:     $fontSize !default;
 
 // NOTEWINDOW
 //----------------------------------------------------------------
-$noteWindowBoxShadow: $smallBoxShadow !default;
+$popupTailBoxShadow: $smallBoxShadow !default;
 
 
 // MENU
@@ -166,6 +166,9 @@ $menuSheetCancelAffordance: "menuItem" !default;
 
 // horizontal spacing
 //----------------------------------
+
+// applies to menu items in a text-only menu, i.e. a menu where no item has a start icon (but might have a submenu icon) :
+
 
 // Need rems, not ems, since we set icon font size (and if we didn't, app often would).
 
@@ -186,7 +189,7 @@ $menuTextToIconPadding:              oj-px-to-rem(8px, $baseFontSize: 16px) !def
 // to make it look like 10px in UX's screen measuring tool.  That 4px difference probably consists of the same 2px needed for (regular)
 // icon margin, and another 2px for the fact that the submenu caret doesn't extend to the edge of the icon canvas.
 $menuSubmenuIconPadding:             oj-px-to-rem(6px, $baseFontSize: 16px) !default;
-
+$menuTextToEdgePadding:              unquote("calc(16px + (2 * #{$menuSubmenuIconPadding}))") !default; 
 
 // menu parts
 //----------------------------------
@@ -198,7 +201,7 @@ $menuBgColor:                        $popupBgColor !default;
 // menu items (.oj-menu-item) and their anchors
 $menuItemBorderColor:                $neutralColor8 !default;
 $menuItemTextColor:                  $brandColorDark1 !default;
-$menuItemLineHeight:                 43/16 !default; // 43px @16px font
+$menuItemLineHeight:                 43/16+unquote('rem') !default; // 43px @16px font
 
 // disabled menu items and their anchors
 $menuItemTextColorDisabled:          $linkTextColorDisabled !default;
@@ -206,6 +209,7 @@ $menuItemTextColorDisabled:          $linkTextColorDisabled !default;
 // focused menu items (.oj-focus) and their ancestor menu items (.oj-focus-ancestor)
 $menuItemBgColorFocus:               $neutralColor5 !default;
 $menuItemBorderColorFocus:           $neutralColor8 !default;
+$menuIconColorDisabled:              $brandColorLight1 !default;
 
 // menu icons (.oj-menu-item-icon), not submenu icons
 $menuIconColor:                      $menuItemTextColor !default;
@@ -231,7 +235,8 @@ $menuSheetMarginBottom:              12px; // value must be 0, px, or %, e.g. 0,
 // sheet menu items (.oj-menu-item) and their anchors
 $menuSheetItemBorderColor:           $neutralColor5 !default;
 $menuSheetItemBgColor:               $menuBgColor !default;
-$menuSheetItemLineHeight:            56/24 !default; // 56px @24px font, where 24 is 1.5rem @16px font
+$menuSheetItemLineHeight:            56/24+unquote('rem') !default; // 56px @24px font, where 24 is 1.5rem @16px font
+$menuItemBottomBorderWidth:          0 !default;
 
 // focused sheet menu items (.oj-focus) and their ancestor menu items (.oj-focus-ancestor)
 $menuSheetItemBorderColorFocus:      $menuSheetItemBorderColor !default;
@@ -248,6 +253,10 @@ $menuSheetDividerBorderColor:        transparent !default;
 
 // MESSAGES / MESSAGE
 //----------------------------------
+
+$messageComponentInlineBorderRadius:       $largeBorderRadius !default;
+$messageComponentInlineMarginTop:          5px !default;
+$messageComponentInlineBorderTopWidth:     1px !default;
 
 $messagesGeneralOverlayMinWidth:          614px !default;
 $messagesGeneralOverlayMaxWidth:          1639px !default;
@@ -361,7 +370,7 @@ $buttonBgColorSelectedDisabled:       $neutralColor11 !default;
 $buttonBorderColorSelectedDisabled:   $buttonBgColorSelectedDisabled !default;
 // disabled and selected
 // No "selected and disabled" spec, so all handling is arbitrary.
-$buttonConfirmColor:                                $accentColorConfirmation4 !default;
+$buttonConfirmColor:                                $accentColorConfirmation5 !default;
 
 // button chroming
 //----------------------------------
@@ -415,7 +424,7 @@ $buttonHalfChromeIconColorSelectedDisabled:         $buttonHalfChromeTextColorSe
 // half chrome disabled and selected
 
 // outlined
-$buttonOutlinedChromeInternalBorderColor:           null !default;
+$buttonOutlinedChromeInternalBorderColor:           $brandColorDark1 !default;
 $buttonOutlinedChromeInternalBorderColorSelectedDisabled:   $buttonBorderColorDisabled !default;
 // outlined default
 $buttonOutlinedChromeTextColor:               $buttonHalfChromeTextColor !default;
@@ -429,6 +438,7 @@ $buttonOutlinedChromeTextColorActive:         $buttonTextColor !default;
 $buttonOutlinedChromeIconColorActive:         $buttonOutlinedChromeTextColorActive !default;
 $buttonOutlinedChromeBgColorActive:           $brandColorDark2 !default;
 $buttonOutlinedChromeBorderColorActive:       $brandColorDark2 !default;
+$buttonOutlinedChromeInternalBorderColorActive:    $brandColorDark2 !default;
 $buttonOutlinedChromeOpacityActive:           1 !default;
 
 // outlined selected
@@ -484,7 +494,7 @@ $dialogHeaderBgColor:       transparent !default;
 $dialogBodyTextAlign:       center !default;
 
 // Rounded button corners are specific to iOS
-$dialogFooterButtonHeight:       42px !default;
+$dialogFooterButtonHeight:       2.625rem !default;
 $dialogFooterButtonFontWeight:   500 !default;
 $dialogFooterDividerColor:      $neutralColor7 !default;
 $dialogFooterIntegrateButtons:  true !default;
@@ -505,12 +515,12 @@ $formControlTextAlign: end !default;
 
 // form control common
 //----------------------------------
-$formControlBorderRadius:    5px !default;
+$formControlBorderRadius:    0 !default;
 
 // controls the horizontal padding inside an input
 $formControlPaddingHorizontal: 0 !default;
 
-$formControlBorderWidth:   0 !default;
+$formControlBorderWidth: 0 0 0 0 !default;
 
 // form control states
 //----------------------------------
@@ -533,7 +543,7 @@ $formControlPlaceholderColor:         $textColor4 !default;
 //----------------------------------
 // label text color defined above, look for "text colors"
 $formControlLabelFontSize: $smallFontSize !default;
-$formControlLabelRequiredChar: '' !default;
+$formControlLabelRequiredChar: "" !default;
 
 // inline labels
 //----------------------------------
@@ -575,9 +585,8 @@ $inputSearchIconPadding:              0 6px 0 9px !default;
 // INPUT NUMBER
 // the spacing between the input and the buttonset
 $inputNumberInputToButtonMargin: 10px !default;
-//up and down button width
-$inputNumberButtonWidth: 50px;
 
+$inputNumberButtonWidth: 50px;
 
 // RADIOSET AND CHECKBOXSET
 // ios has input rendered as a background image and label comes before image
@@ -627,7 +636,7 @@ $sliderThumbWidthActive:              34px !default;
 $sliderColorPickerThumbWidthActive:   34px !default;
 
 $sliderThumbBorderWidth:        1px !default;
-$sliderThumbBoxShadow:          0 3px 1px transparentize($boxShadowColor, .95), 0 0 8px transparentize($boxShadowColor, .95) !default;
+$sliderThumbBoxShadow:          0 3px 1px unquote('hsla(#{$boxShadowHsl},0.05)'), 0 0 8px unquote('hsla(#{$boxShadowHsl},0.2)') !default;
 
 // colors for enabled state
 $sliderThumbBorderColor:              $neutralColor9 !default;
@@ -668,7 +677,7 @@ $switchThumbBorderWidthReadonly: 1px !default;
 // ENABLED OFF
 $switchThumbHeight: $switchContainerHeight * 0.8387 !default; // 26px
 $switchThumbWidth: $switchThumbHeight !default;
-$switchThumbShadow: 0 3px 1px transparentize($boxShadowColor, .95), 0 0 8px transparentize($boxShadowColor, .95) !default;
+$switchThumbShadow: 0 3px 1px unquote('hsla(#{$boxShadowHsl},0.05)'), 0 0 8px unquote('hsla(#{$boxShadowHsl},0.05)') !default;
 
 // ----- COLORS -----
 $switchTrackBgColor:                     $neutralColor2 !default;
@@ -765,6 +774,13 @@ $switchThumbBorderColorSelectedDisabled: $switchThumbBgColorSelectedDisabled !de
 
 // TRAIN
 //-----------------------------------------------------------------------------
+$trainStepWidth:                          112px !default;
+
+// FILM STRIP
+//-----------------------------------------------------------------------------
+
+//hover
+$filmStripOverflowIndicatorHeight: 1.8125rem !default; // 29px when root is 16px
 
 
 // CONVEYOR BELT
@@ -794,7 +810,7 @@ $navigationListItemContrastLabelColorDisabled:             $navigationListItemCo
 $navigationListItemStartEndPadding:                           oj-px-to-rem(10px, $baseFontSize: 16px) !default;
 $navigationListIconOnlyIconStartEndPadding:                   10px !default;
 $navigationListHorizontalIconOnlyItemMargin:                  0 !default;
-$navigationListHorizontalItemBorderWidth:                     0 0 0 0  !default;
+$navigationListHorizontalItemBorderWidth:                     0  !default;
 $navigationListHorizontalMinHeight:                           oj-px-to-rem(44px, $baseFontSize: 16px)  !default;
 $navigationListHorizontalStackedIconMinHeight:                oj-px-to-rem(49px, $baseFontSize: 16px)  !default;
 $navigationListHorizontalFontSize:                            oj-px-to-rem(10px, $baseFontSize: 16px)  !default;
@@ -811,6 +827,8 @@ $navigationListHorizontalItemLabelColorSelected:           $brandColorDark1 !def
 
 // NAVIGATION TABS
 //----------------------------------------
+$tabBarVerticalItemSeparatorColor:                          $brandColor !default;
+
 $tabBarItemIconColorSelected:                       $neutralColor1 !default;
 //Default
 $tabBarItemLabelColorDefault:                       $linkTextColor !default;
@@ -824,7 +842,8 @@ $tabBarItemIconColorHover:                          $brandColorLight1 !default;
 $tabBarItemBorderColorSelected:                     $brandColor !default;
 $tabBarItemBgColorSelected:                         $brandColor !default;
 $tabBarItemLabelColorSelected:                      $contrastTextColor !default;
-$tabBarItemIconColorSelected:                       $contrastTextColor !default;
+//$tabBarItemIconColorSelected:                       $contrastTextColor !default;
+$tabBarIconOnlyIconColorSelected:                   $neutralColor1 !default;
 //Active
 $tabBarItemBgColorActive:                           $brandColorLight3 !default;
 //Disabled
@@ -839,6 +858,7 @@ $tabBarItemContrastLabelColorDisabled:              $tabBarItemContrastLabelColo
 $tabBarItemStartEndPadding:                         oj-px-to-rem(10px, $baseFontSize: 16px) !default;
 $tabBarVerticalIconOnlyIconStartEndPadding:         10px !default;
 $tabBarItemBorderRadius:                            4px !default;
+
 $tabBarVerticalItemBorderWidth:                     1px !default;
 $tabBarVerticalIconOnlyItemBorderWidth:             1px !default;
 $tabBarVerticalItemMinHeight:                       oj-px-to-rem(28px, $baseFontSize: 16px)  !default;
@@ -852,12 +872,15 @@ $tabBarHorizontalIconOnlyItemMargin:                  0 !default;
 $tabBarHorizontalItemPadding:                         0 $tabBarItemStartEndPadding 0 !default;
 $tabBarHorizontalIconMargin:                          5px 4px 4px;
 
-$tabBarHorizontalItemBorderWidth:                     1px !default;
-$tabBarHorizontalIconOnlyItemBorderWidth:             1px !default;
+$tabBarHorizontalItemBorderWidth:                     1px 1px 1px 1px !default;
+$tabBarHorizontalIconOnlyItemBorderWidth:             1px 1px 1px 1px !default;
 $tabBarHorizontalItemFontSize:                        oj-px-to-rem(13px, $baseFontSize: 16px)  !default;
 $tabBarHorizontalItemStackedIconMinHeight:            oj-px-to-rem(63px, $baseFontSize: 16px)  !default;
 $tabBarHorizontalItemMinHeight:                       oj-px-to-rem(29px, $baseFontSize: 16px)  !default;
 $tabBarHorizontalItemWidthDistribution:               even !default;
+
+$tabBarItemContrastBgColorSelected:                   $brandColor !default;
+$tabBarHorizontalItemContrastBgColorSelected:         $tabBarItemContrastBgColorSelected !default;
 $tabBarHorizontalItemContrastLabelColorSelected:      $neutralColor3 !default;
 // END of NavigationTabs variables
 
@@ -874,9 +897,12 @@ $dvtChartSubtitleTextColor: $secondaryTextColor !default;
 
 // LISTVIEW
 //----------------------------------------------------------------
-$listViewHeaderFontSize:      $header4FontSize !default;
-$listViewHeaderFontWeight:    bold !default;
-$listViewDrillIconColor:      $neutralColor11 !default;
+$listViewHeaderBorderWidth:          0 !default;
+$listViewHeaderBorderWidthCollapsed: 0 0 1px !default;
+$listViewHeaderFontSize:             $header4FontSize !default;
+$listViewHeaderFontWeight:           bold !default;
+$listViewDrillIconColor:             $neutralColor11 !default;
+$listViewItemBorderPosition:         .5rem !default;
 
 // DATAGRID
 //----------------------------------------------------------------
@@ -894,7 +920,7 @@ $collectionHeaderBgColorFocus:                $brandColorLight3 !default;
 $collectionHeaderBgColorSelected:             $brandColorLight2 !default;
 // Cells
 $collectionCellPadding:                       oj-px-to-rem(10px, $baseFontSize: 16px) !default;
-$collectionCellFontSize:                      $fontSize !default;
+$collectionCellFontSize:                      inherit !default;
 $collectionCellJustifyContent:                center !default;
 // Cells - Hover
 $collectionCellBgColorHover:                  $neutralColor3 !default;
@@ -912,9 +938,10 @@ $collectionColumnWidth:                       oj-px-to-rem(68px, $baseFontSize: 
 // INDEXER
 //----------------------------------------------------------------
 // item width
-$indexerItemWidth:      32px !default;
+$indexerItemWidth:      	32px !default;
 // text color of prefix
-$indexerTextColor:      $brandColorDark1 !default;
+$indexerTextColor:      	$brandColorDark1 !default;
+$indexerTextColorDisabled:      $brandColorDark1 !default;
 
 
 

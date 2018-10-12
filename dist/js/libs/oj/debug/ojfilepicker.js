@@ -4,8 +4,8 @@
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
-define(['ojs/ojcore', 'jquery', 'knockout', 'ojs/ojcomponentcore', 'ojs/ojcomposite'], 
-       function(oj, $, ko)
+define(['ojs/ojcore', 'jquery', 'ojs/ojtranslation', 'knockout', 'ojs/ojcomposite', 'ojs/ojlogger', 'ojs/ojcomponentcore'], 
+       function(oj, $, Translations,  ko, Composite, Logger)
 {
 
 var __oj_file_picker_metadata = 
@@ -64,7 +64,7 @@ var __oj_file_picker_metadata =
  * @export
  * @interface FileUploadTransport
  * @memberof oj
- * @ojtsimport ojprogresslist
+ * @ojtsimport {module: "ojprogresslist", type:"AMD", imported: ["ProgressItem"]}
  */
 
 /**
@@ -108,11 +108,10 @@ var __oj_file_picker_metadata =
  * All rights reserved.
  */
 
-/* global ko */
+/* global ko, Logger:false, Translations:false */
 
 /**
  * @ojcomponent oj.ojFilePicker
- * @ojtsimport ojcomposite
  * @since 4.0.0
  * @ojdisplayname File Picker
  * @ojshortdesc Displays a clickable dropzone for selecting files from the device storage.
@@ -389,7 +388,7 @@ function pickerViewModel(context) {
     }
   }
 
-  self.defDropzoneText = oj.Translations.getTranslatedString('oj-ojFilePicker.dropzoneText');
+  self.defDropzoneText = Translations.getTranslatedString('oj-ojFilePicker.dropzoneText');
 
   self.bindingsApplied = function () {
     var $elem = $(element);
@@ -439,11 +438,21 @@ function pickerViewModel(context) {
 
   // delegate the click to the internal input element to select files
   function selectingFiles(event) {
-    selecting = true;
-    //  - form submit event is triggered when the file upload button is clicked
-    event.preventDefault();
-    inputElem.click();
-    return true;
+    //  - within firefox browser cannot tab past filepicker without file selector
+    // window opening
+    // only launching the file picker if click or 'Enter' was pressed
+    if (event.type === 'click' || (event.type === 'keypress' && event.keyCode === 13)) {
+      selecting = true;
+      //  - form submit event is triggered when the file upload button is clicked
+      event.preventDefault();
+
+      //  - unable to upload after clearing file progress list in demo
+      // reset input value so file selection event will fire when selecting the same file
+      inputElem.value = null;
+      inputElem.click();
+      return true;
+    }
+    return false;
   }
 
   function handleFileSelected(event) {
@@ -454,9 +463,6 @@ function pickerViewModel(context) {
     var files = event.target.files;
     if (files.length > 0) {
       handleFilesAdded(files, event);
-      //  - unable to upload after clearing file progress list in demo
-      // reset input value so file selection event will fire when selecting the same file
-      inputElem.value = null;
     }
 
     selecting = false;
@@ -608,23 +614,46 @@ function pickerViewModel(context) {
       // add files to upload queue
       handleFilesAdded(files, event);
     } else {
-      oj.Logger.warn('oj-file-picker: Files ' + getFileNames(files) +
+      Logger.warn('oj-file-picker: Files ' + getFileNames(files) +
                      ' are not acceptable.');
     }
 
     handleDragLeave(event);
   }
 
+  // clone a FileList
+  function createFileList(origList) {
+    var descriptor = {
+      length: { value: origList.length },
+      item: { value: function (index) {
+        return this[index];
+      } }
+    };
+
+    for (var i = 0; i < origList.length; i++) {
+      descriptor[i] = { value: origList[i], enumerable: true };
+    }
+
+    return Object.create(FileList.prototype, descriptor);
+  }
+
   function handleFilesAdded(files, oEvent) {
+    //  - filepicker: filelist cleared after the handler returns
+    // Note: the parameter "files" is a direct reference to the embedded Input element's property
+    // which could be reset or changed.
+    // we need to return a copy of FileList just in case apps hold on to a reference to FileList
+    var list = createFileList(files);
+
     //  - oj_file_picker does not fire ojselect event
     var event = new CustomEvent('ojSelect',
-      { detail: { files: files,
+      { detail: { files: list,
         originalEvent: oEvent } });
     element.dispatchEvent(event);
   }
 }
 /* global __oj_file_picker_metadata */
-oj.Composite.register('oj-file-picker',
+// eslint-disable-next-line no-undef
+Composite.register('oj-file-picker',
   {
     view: pickerView,
     viewModel: pickerViewModel,

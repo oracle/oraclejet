@@ -4,7 +4,8 @@
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
-define(['ojs/ojcore', 'jquery', 'ojL10n!ojtranslations/nls/localeElements', 'ojs/ojvalidation-base'], function(oj, $, ojld)
+define(['ojs/ojcore', 'jquery', 'ojs/ojconfig', 'ojs/ojtranslation', 'ojL10n!ojtranslations/nls/localeElements', 'ojs/ojlocaledata', 'ojs/ojvalidation-base', 'ojs/ojlogger'], 
+function(oj, $, Config, Translations, ojld, LocaleData, __ValidationBase, Logger)
 {
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
@@ -12,63 +13,60 @@ define(['ojs/ojcore', 'jquery', 'ojL10n!ojtranslations/nls/localeElements', 'ojs
  */
 
 /**
- * oj.NumberConverter Contract. 
+ * oj.NumberConverter Contract.
  */
 
 /**
  * @export
  * @constructor
  * @augments oj.Converter
- * @ojsignature {target: "Type", 
- *                value: "class NumberConverter extends Converter<number>"}
- *              
+ * @ojsignature {target: "Type",
+ *                value: "class NumberConverter implements Converter<number>"}
+ *
  * @name oj.NumberConverter
+ * @ojtsimport {module: "ojvalidation-base", type: "AMD", imported:["Converter", "Validator", "Validation"]}
  * @abstract
  * @since 0.6
  */
-oj.NumberConverter = function()
-{
+oj.NumberConverter = function () {
   this.Init();
 };
 
-// Subclass from oj.Object 
-oj.Object.createSubclass(oj.NumberConverter, oj.Converter, "oj.NumberConverter");
+// Subclass from oj.Object
+oj.Object.createSubclass(oj.NumberConverter, oj.Converter, 'oj.NumberConverter');
 
 /**
  * Initializes the number converter instance with the set options.
- * @param {Object=} options an object literal used to provide an optional information to 
+ * @param {Object=} options an object literal used to provide an optional information to
  * initialize the converter.<p>
  * @export
  * @ignore
  */
-oj.NumberConverter.prototype.Init = function(options) 
-{
+oj.NumberConverter.prototype.Init = function (options) {
   oj.NumberConverter.superclass.Init.call(this, options);
 };
 
 /**
  * Formats the Number value using the options provided and returs a String value.
- * 
+ *
  * @param {number} value the value to be formatted for display
  * @return {(string|null)} the localized and formatted value suitable for display
  * @throws {Error} a ConverterError if formatting fails.
  * @export
  */
-oj.NumberConverter.prototype.format = function (value) 
-{
+oj.NumberConverter.prototype.format = function (value) {
   return oj.NumberConverter.superclass.format.call(this, value);
 };
 
 /**
  * Parses the value using the options provided and returns a Number object.
- * 
+ *
  * @param {string} value to parse
- * @return {number} the parsed value as a Number object.
+ * @return {number|null} the parsed value as a Number object.
  * @throws {Error} a ConverterError if parsing fails
  * @export
  */
-oj.NumberConverter.prototype.parse = function (value) 
-{
+oj.NumberConverter.prototype.parse = function (value) {
   return oj.NumberConverter.superclass.parse.call(this, value);
 };
 
@@ -76,687 +74,28 @@ oj.NumberConverter.prototype.parse = function (value)
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
  */
-
-/*global OraNumberConverter:true*/
-/**
- * @export
- * Placeholder here as closure compiler objects to export annotation outside of top level
- */
-
-/**
- * @constructor
- * @classdesc Constructs an immutable instance and initializes it with the options provided. When initialized 
- * with no options, the default options for the current locale are assumed. The converters by 
- * default use the current page locale (returned by oj.Config.getLocale()). There are several ways 
- * to initialize the converter.
- * <p>
- * <ul>
- * <li>Using options defined by the ECMA 402 Specification, these would be the properties style, 
- * currency, currencyDisplay, minimumIntegerDigits, minimumFractionDigits, maximumFractionDigits, 
- * useGrouping. NOTE: minimumSignificantDigits and maximumSignificantDigits are not supported.</li>
- * <li>Using a custom decimal, currency or percent format pattern. specified using the 'pattern' property</li>
- * <li>Using the decimalFormat option to define a compact pattern, such as "1M" and "1 million".</li>
- * <li>Using the currencyFormat option to define a compact pattern, such as "$1M" and "$1 million".</li>
- * <li>Using the roundingMode and roundDuringParse options to round the number HALF_UP, HALF_DOWN, or HALF_EVEN.</li>
- * </ul>
- * <p>
- * 
- * The converter provides leniency when parsing user input value to a number in the following ways:<br/>
- * 
- * <ul>
- * <li>Prefix and suffix that do not match the pattern, are removed. E.g., when pattern is 
- * "#,##0.00%" (suffix is the % character), a value of "abc-123.45xyz", will be leniently parsed to 
- * -123.45</li>
- * <li>When a value includes a symbol but the pattern doesn't require it.  E.g., the options are 
- * {pattern: "###", currency: 'USD'}, then values ($123), (123) and -123 will be leniently parsed as 
- * -123.</li>
- * </ul>
- * <p>
- * Lenient parse can be disabled by setting the property lenientParse to "none". In which case the user input must
- * be an exact match of the expected pattern and all the leniency described above will be disabled.
- * <p>
- * @param {Object=} options - an object literal used to provide optional information to 
- * initialize the converter.
- * 
- * @example <caption>Create a number converter for currencies</caption>
- * var converterFactory = oj.Validation.converterFactory("number");
- * var options = {style: "currency", currency: "USD", minimumIntegerDigits: 2};
- * converter = converterFactory.createConverter(options);
- * converter.format(9); --> "$09.00" if page locale is 'en-US'
- * converter.format(9); --> "09,00 $US" if page locale is 'fr-FR'<br/>
- * 
- * @example <caption>A number converter for percent values using a custom (CLDR) pattern</caption>
- * var converterFactory = oj.Validation.converterFactory("number");
- * var options = {pattern: '#,##0%'};
- * converter = converterFactory.createConverter(options);<br/>
- * 
- * @example <caption>To parse a value as percent but format it without displaying the percent character</caption>
- * var options = {style: 'percent', pattern: '#,##0'};<br/>
- * 
- * @example <caption>To parse a value as currency using a custom (CLDR) pattern</caption>
- * var options = {pattern: '¤#,##0', currency: 'USD'};
- * 
- * @example <caption>To format a value as digital bit unit</caption>
- * var options = {style:'unit', unit:'bit'};
- * converter = converterFactory.createConverter(options);
- * var nb = 1024;
- * converter.format(nb, localeElements, options);--> 1Kb<br/>
- * 
- * @example <caption>To format a value as digital byte unit</caption>
- * var options = {style:'unit', unit:'byte'};
- * converter = converterFactory.createConverter(options);
- * var nb = 1024;
- * converter.format(nb, localeElements, options);--> 1KB<br/>
- *
- * @example <caption>The following decimalFormat examples are in en locale.
- * To format a value as short (default for fraction digits is based on the locale)</caption>
- * var options = {style:’decimal’, decimalFormat:’short’};
- * converter = converterFactory.createConverter(options);
- * converter.format(12345);--> 12.354K<br/>
- * 
- * @example <caption>Same as above for currencyFormat.
- * To format a value as short (default for fraction digits is based on the locale)</caption>
- * var options = {style:'currency', currency: 'USD', currencyFormat:'short'};
- * converter = converterFactory.createConverter(options);
- * converter.format(1234);--> $1.23K<br/>
- * 
- * @example <caption>To format a value as long (default for fraction digits is based on the locale):</caption>
- * var options = {style:’decimal’, decimalFormat:’long’};
- * converter = converterFactory.createConverter(options);
- * converter.format(12345);--> 12.345 thousand<br/>
- * 
- * @example <caption>To format a value as long currency format:</caption>
- * var options = {style:'currency',  currency: 'USD', currencyFormat:'long'};
- * converter = converterFactory.createConverter(options);
- * converter.format(1234);--> $1.23 thousand<br/>
- * 
- * @example <caption>To format a value as short with minimum fraction digits:</caption>
- * options = { style:’decimal’, decimalFormat:’short’, 
- * minimumFractionDigits:4};
- * converter = converterFactory.createConverter(options);
- * converter.format(1234);--> 1.2340K<br/>
- * 
- * @example <caption>To format a value as short with maximum fraction digits:</caption>
- * options = { style:’decimal’, decimalFormat:’short’, 
- * maximumFractionDigits:0};
- * converter = converterFactory.createConverter(options);
- * converter.format(12345);--> 12K<br/>
- * 
- * @example <caption>To format a value as long with minimum and maximum fraction digits:</caption>
- * options = { style:’decimal’, decimalFormat:’long', 
- * minimumFractionDigits:2, maximumFractionDigits:4};
- * converter = converterFactory.createConverter(options);
- * converter.format(12000);--> 12.00 thousand<br/>
- * 
- * @example <caption>To format a value as short with minimum and maximum fraction digits:</caption>
- * options = { style:’decimal’, decimalFormat:’long', 
- * minimumFractionDigits:2, maximumFractionDigits:4};
- * converter = converterFactory.createConverter(options);
- * converter.format(12345678);--> 12.345 million<br/>
- * 
- * @example <caption>decimal style default is standard:</caption>
- * options = { style:’decimal’, decimalFormat:’standard’}; 
- * converter = converterFactory.createConverter(options);
- * converter.format(12345);--> 12,345<br/>
- * 
- * @example <caption>decimal round HALF_DOWN:</caption>
- * options = { style:’decimal’,  maximumFractionDigits:2, roundingMode:'HALF_DOWN'}; 
- * converter = converterFactory.createConverter(options);
- * converter.format(0.225);--> 0.22
- * converter.parse(0.225);-->0.225 //doesn't round during parse by default<br/>
- * 
- * @example <caption>decimal round HALF_UP:</caption>
- * options = { style:’decimal’,  maximumFractionDigits:2, roundingMode:'HALF_UP'}; 
- * converter = converterFactory.createConverter(options);
- * converter.format(0.225);--> 0.23
- * converter.parse(0.225);--> 0.225 //doesn't round during parse by default<br/>
- * 
- * @example <caption>decimal round HALF_EVEN:</caption>
- * options = { style:’decimal’,  maximumFractionDigits:2, roundingMode:'HALF_EVEN'}; 
- * converter = converterFactory.createConverter(options);
- * converter.format(0.225);--> 0.22
- * converter.format(0.235);--> 0.24
- * converter.parse(0.225);--> 0.225 //doesn't round during parse by default
- * converter.parse(0.235);--> 0.235 //doesn't round during parse by default<br/>
- * 
- * @example <caption>decimal round HALF_DOWN and roundDuringParse:</caption>
- * options = { style:’decimal’, maximumFractionDigits:2, 
- *             roundingMode:'HALF_DOWN', roundDuringParse: true}; 
- * converter = converterFactory.createConverter(options);
- * converter.format(0.225);--> 0.22
- * converter.parse(0.225);-->0.22<br/>
- * 
- * @example <caption>decimal round HALF_UP and roundDuringParse:</caption>
- * options = { style:’decimal’,  maximumFractionDigits:2, 
- *             roundingMode:'HALF_UP', roundDuringParse: true}; 
- * converter = converterFactory.createConverter(options);
- * converter.format(0.225);--> 0.23
- * converter.parse(0.225);--> 0.23<br/>
- * 
- * @example <caption>decimal round HALF_EVEN and roundDuringParse:</caption>
- * options = { style:’decimal’,  maximumFractionDigits:2, 
- *             roundingMode:'HALF_EVEN', roundDuringParse: true}; 
- * converter = converterFactory.createConverter(options);
- * converter.format(0.225);--> 0.22
- * converter.format(0.235);--> 0.24
- * converter.parse(0.225);--> 0.22
- * converter.parse(0.235);--> 0.24<br/>
- *
- * @example <caption>Use custom decimal and grouping separators:</caption>
- * options = { style:'decimal', separators: {decimal: ',',  group: '.'}};
- * converter = converterFactory.createConverter(options);
- * var nb = 1234567.89; 
- * converter.format(nb);--> 1.234.567,89
- * converter.parse("1.234.567,89");--> 1234567.89
- * <br/>
- *
- * @example <caption>Disable lenient parse:</caption>
- * options = { style:'decimal',  lenientParse: 'none'}; 
- * converter = converterFactory.createConverter(options);
- * converter.parse("abc-123.45xyz");--> Error: Unparsable number abc-123.45xyz The expected number pattern is #,##0.###
- * <br/>
- * 
- * @export
- * @augments oj.NumberConverter 
- * @name oj.IntlNumberConverter
- * @ojsignature [{target: "Type", 
- *                value: "class IntlNumberConverter extends NumberConverter"},
- *               {target: "Type",
- *                value: "oj.IntlNumberConverter.ConverterOptions",
- *                for: "options", jsdocOverride: true}
- *              ]
- * @since 0.6
- */
-oj.IntlNumberConverter = function(options)
-{
-  this.Init(options);
-};
-
-/**
- * @typedef {object} oj.IntlNumberConverter.ConverterOptions
- * @property {('decimal'|'currency'|'percent'|'unit')=} style - sets the style of number formatting. Allowed values are "decimal" 
- * (the default), "currency", "percent" or "unit". When a number is formatted as a decimal, the decimal 
- * character is replaced with the most appropriate symbol for the locale. In English this is a 
- * decimal point ("."), while in many locales it is a decimal comma (","). If grouping is enabled the 
- * locale dependent grouping separator is also used. These symbols are also used for numbers 
- * formatted as currency or a percentage, where appropriate.
- * @property {string=} currency - specifies the currency that will be used when formatting the 
- * number. The value should be a ISO 4217 alphabetic currency code. If the style is set to currency, 
- * it's required that the currency property also be specified. This is because there is no default 
- * currency associated with the current locale. The user must always specify the currency code 
- * to be shown, otherwise an error will be thrown. The current page locale 
- * (returned by oj.Config.getLocale()) determines the formatting elements of the number 
- * like grouping separator and decimal separator. The currency code tells us which currency to 
- * display in current page locale. JET has translations for currency names.
- * <p>
- * As an example if we want to format 1000.35 EURO and the page locale is "en-US", 
- * we pass {style:'currency', currency:'EUR', currencyDisplay:'symbol'} and we will get "€1,000.35"
- * If the page locale is "fr-FR", with the same options, we will get: "1 000,35 €"
- * </p>
- * @property {('byte'|'bit')=} unit - Mandatory when style is "unit". Allowed values: 
- * "byte" or "bit". It is used for formatting only. It can not be used for parsing.
- * <p> 
- * It is used to format digital units like 10Mb for bit unit or 10MB for byte unit. 
- * There is no need to specify the scale of the unit. We automatically detect it.
- * For example 1024 is formatted as 1KB and ?1048576? as 1MB.
- * The user can also specify 'minimumFractionDigits' and  'maximumFractionDigits' to be displayed, 
- * otherwise we use the locale's default max and min fraction digits.
- * </p> 
- * @property {('code'|'symbol'|'name')=} currencyDisplay - if the number is using currency formatting, specifies 
- * if the currency will be displayed using its "code" (as an ISO 4217 alphabetic currency code), 
- * "symbol" (a localized currency symbol (e.g. $ for US dollars, £ for Great British pounds, and so 
- * on), or "name" (a localized currency name. Allowed values are "code", "symbol" and "name". 
- * The default is "symbol".
- * @property {('standard'|'short'|'long')=} decimalFormat -
- * specifies the decimal format length to use when style is set to "decimal". 
- * Allowed values are : "standard"(default), "short" and "long". 'standard' is equivalent to not 
- * specifying the 'decimalFormat' attribute, in that case the locale’s default decimal pattern 
- * is used for formatting.
- * <p>
- * The user can also specify 'minimumFractionDigits' and  'maximumFractionDigits' to display. 
- * When not present we use the locale's default max and min fraction digits.
- * </p>
- * <p>
- * There is no need to specify the scale; we automatically detect greatest scale that is less or 
- * equal than the input number. For example  1000000 is formatted as "1M" or "1 million" and
- * 1234 is formatted, with zero fractional digits, as "1K" or " 1 thousand" for 
- * short and long formats respectively. The pattern for the short and long number is locale dependent 
- * and uses plural rules for the particular locale.
- * </p>
- * <p>
- * NOTE: Currently this option formats a value (e.g., 2000 -> 2K), but it does not parse a value 
- * (e.g., 2K -> 2000), so it can only be used
- * in a readOnly EditableValue because readOnly EditableValue components do not call
- * the converter's parse function.
- * </p>
- * @property {('standard'|'short'|'long')=} currencyFormat -
- * specifies the currency format length to use when style is set to "currency". 
- * Allowed values are : "standard"(default), "short" and "long". 'standard' is equivalent to not 
- * specifying the 'currencyFormat' attribute, in that case the locale's default currency pattern 
- * is used for formatting.
- * Similar to decimalFormat, currencyFormat can only be used for formatting. It can not be used for parsing.
- * <p>
- * The user can also specify 'minimumFractionDigits' and  'maximumFractionDigits' to display. 
- * When not present we use the locale's default max and min fraction digits.
- * </p>
- * <p>
- * There is no need to specify the scale; we automatically detect greatest scale that is less or 
- * equal than the input number. For example  1000000 is formatted as "$1M" or "1 million dollar" and
- * 1000 is formatted as "$1K" or " 1 thousand dollar" for short and long formats respectively.
- * The pattern for the short and long number is locale dependent and uses plural rules for the particular locale.
- * </p>
- * @property {number=} minimumIntegerDigits - sets the minimum number of digits before the 
- * decimal place (known as integer digits). The number is padded with leading zeros if it would not 
- * otherwise have enough digits. The value must be an integer between 1 and 21.
- * @property {number=} minimumFractionDigits - similar to 'minimumIntegerDigits', except it 
- * deals with the digits after the decimal place (fractional digits). It must be an integer between 
- * 0 and 20. The fractional digits will be padded with trailing zeros if they are less than the minimum.
- * @property {number=} maximumFractionDigits - follows the same rules as 'minimumFractionDigits', 
- * but sets the maximum number of fractional digits that are allowed. The value will be rounded if 
- * there are more digits than the maximum specified.
- * @property {boolean=} useGrouping - when the value is truthy, the locale dependent grouping 
- * separator is used when formatting the number. This is often known as the thousands separator, 
- * although it is up to the locale where it is placed. The ‘useGrouping’ is set to true by default.
- * @property {string=} pattern an optional localized pattern, where the characters used in 
- * pattern are as defined in the Unicode CLDR for numbers, percent or currency formats. When present 
- * this will override the other "options". <p>
- * 
- * &nbsp;&nbsp;- When the pattern represents a currency style the 'currency' property is required to 
- * be set, as not setting this will throw an error. The 'currencyDisplay' is optional. <br/>Example: 
- * {pattern: '¤#,##0', currency: 'USD'}. <p>
- * 
- * &nbsp;&nbsp;- It's not mandatory for the pattern to have the special character '¤' (currency sign) 
- * be present. When not present, values are treated as a currency value, but are not formatted to 
- * show the currency symbol. <br/>Example: {pattern: '#,##0', currency: 'USD'} <p>
- * 
- * &nbsp;&nbsp;- When the pattern represents a percent style, the percent special character ('%') needs to be 
- * explicitly specified in the pattern, e.g., {pattern: "#,##0%"}. If the pattern does not contain 
- * the percent character it's treated as a decimal pattern, unless the style is set to percent, 
- * in which case the value is treated as a percent value, but not formatted to show the percent symbol. 
- * <br/>Example: {style: 'percent', pattern: "#,##0"}. <p>
- * 
- * &nbsp;&nbsp;- A decimal pattern or exponent pattern is specified in the pattern using the CLDR 
- * conventions. <br/>Example: {pattern: "#,##0.00"} or {pattern: "0.##E+0"}. <p>
- * 
- * NOTE: 'pattern' is provided for backwards compatibility with existing apps that may want the 
- * convenience of specifying an explicit format mask. Setting a pattern will override the default 
- * locale specific format. <br/>
- * 
- * @property {('HALF_UP'|'HALF_DOWN'|'HALF_EVEN')=} roundingMode - specifies the rounding behavior. 
- * This follows the Java.Math.RoundingMode behavior.
- * Currently we support the options: HALF_UP, HALF_DOWN, and HALF_EVEN 
- * 
- * @property {boolean=} roundDuringParse - Specifies whether or not to round during
- * parse. Defaults to false; the number converter rounds during format but not during parse.
- * 
- * @property {Object=} separators - An object with 2 fields: 'decimal' and 'group'.
- * It allows the user to provide custom decimal and grouping separators. It is accepted for both
- * format and parse methods. 
- * <br/>
- * 
- * @property {('full'|'none')=} lenientParse - The lenientParse property can be used to enable or disable leninet parsing.
- *  Allowed values: "full" (default), "none". 
- * <p style='padding-left: 5px;'>
- * By default the lenient parse is enabled and the leniency rules descibed above will be used. When lenientParse is
- * set to "none" the lenient parse is disabled and the user input must match the expected input otherwise an exception will 
- * be thrown.<br/><br/>
- */
-oj.Object.createSubclass(oj.IntlNumberConverter, oj.NumberConverter, "oj.IntlNumberConverter");
-
-/**
- * Initializes the number converter instance with the set options.
- * @param {Object=} options an object literal used to provide an optional information to 
- * initialize the converter.<p>
- * @export
- * @ignore
- */
-oj.IntlNumberConverter.prototype.Init = function(options) 
-{
-  oj.IntlNumberConverter.superclass.Init.call(this, options);
-};
-
-
-// Returns the wrapped number converter implementation object.
-oj.IntlNumberConverter.prototype._getWrapped = function ()
-{
-  if (!this._wrapped)
-  {
-    this._wrapped = OraNumberConverter.getInstance();
-  }
-  
-  return this._wrapped;
-};
-
-/**
- * Formats a Number and returns the formatted string, using the options this converter was 
- * initialized with.
- * 
- * @param {number} value to be formatted for display
- * @return {string} the localized and formatted value suitable for display. When the value is 
- * formatted as a percent it's multiplied by 100.
- * 
- * @throws {Error} a ConverterError both when formatting fails, or if the options provided during 
- * initialization cannot be resolved correctly. 
- * 
- * @export
- */
-oj.IntlNumberConverter.prototype.format = function (value) 
-{
-  var converterError;
-  var locale;
-  var localeElements;
-  var resolvedOptions;
-
-  // undefined, null and empty string values all return null. If value is NaN then return "".
-  if (value == null || 
-      (typeof value === "string" && (oj.StringUtils.trim("" + value)).length === 0) ||
-      (typeof value === "number" && isNaN(value))) 
-  {
-    return oj.IntlConverterUtils.__getNullFormattedValue();
-  }
-  
-  locale = oj.Config.getLocale();
-  localeElements = oj.LocaleData.__getBundle();
-  resolvedOptions = this.resolvedOptions();
-
-  
-  try
-  {
-    return this._getWrapped().format(value, localeElements, resolvedOptions, locale);
-  }
-  catch (e)
-  {
-    converterError = this._processConverterError(e, value);
-    throw converterError;
-  }
-};
-
-/**
- * In general, returns hint for the converter. For a IntlNumberConverter returned value is always null.
- * 
- * @return {null} a hint describing the format the value is expected to be in.
- * @export
- */
-oj.IntlNumberConverter.prototype.getHint = function ()
-{
-  // UX does not want any hint for numbers. 
-  // return oj.Translations.getTranslatedString("oj-converter.hint.summary",
-  //        {'exampleValue': this._getHintValue()}); 
-  //return oj.IntlNumberConverter.superclass.getHint.call(this); // this asserts, and we don't want that.
-  return null;
-};
-
-/**
- * Returns the options called with converter initialization.
- * @return {Object} an object of options.
- * @ojsignature {target:"Type", for: "returns",
- *    value: "oj.IntlNumberConverter.ConverterOptions"}
- * @export
- */
-oj.IntlNumberConverter.prototype.getOptions = function () 
-{
-  return oj.IntlNumberConverter.superclass.getOptions.call(this);
-};
-
-/**
- * Parses a string value to return a Number, using the options this converter was initialized with. 
- * 
- * @param {string} value to parse
- * @return {number|null} the parsed number or null if the value was null or an empty string. When 
- * the value is parsed as a percent its 1/100th part is returned.
- * 
- * @throws {Error} a ConverterError both when parsing fails, or if the options provided during 
- * initialization cannot be resolved correctly. 
- *  
- * @export
- */
-oj.IntlNumberConverter.prototype.parse = function (value) 
-{
-  var converterError;
-  var locale; 
-  var localeElements;
-  var resolvedOptions;
-
-  // null and empty string values are ignored and not parsed. It
-  // undefined.
-  if (value == null || value === "") // check for undefined, null and ""
-  {
-    return null;
-  }
-  
-  locale = oj.Config.getLocale(); 
-  localeElements = oj.LocaleData.__getBundle();
-  resolvedOptions = this.resolvedOptions();
-  
-  try
-  {
-    // we want to trim the value for leading spaces before and after
-    return this._getWrapped().parse(oj.StringUtils.trim(value), 
-                                    localeElements, 
-                                    resolvedOptions, 
-                                    locale);
-  }
-  catch (e)
-  {
-    converterError = this._processConverterError(e, value);
-    throw converterError;
-  }
-  
-};
-
-/**
- * Returns an object literal with properties reflecting the number formatting options computed based 
- * on the options parameter. If options (or pattern) is not provided, the properties will be derived 
- * from the locale defaults.
- * 
- * @return {Object} An object literal containing the resolved values for the following options. Some 
- * of these properties may not be present, indicating that the corresponding components will not be 
- * represented in the formatted output.
- * <ul>
- * <li><b>locale</b>: a String value with the language tag of the locale whose localization is used 
- * for formatting.</li>
- * <li><b>style</b>: a String value. One of the allowed values - "decimal", "currency" or "percent".</li>
- * <li><b>currency</b>: a String value.  an ISO 4217 alphabetic currency code. May be present only 
- *  when style is currency.</li>
- * <li><b>currencyDisplay</b>: a String value. One of the allowed values - "code", "symbol", or 
- *  "name".</li>
- * <li><b>numberingSystem</b>: a String value of the numbering system used. E.g. latn</li>
- * <li><b>minimumIntegerDigits</b>: a non-negative integer Number value indicating the minimum 
- *  integer digits to be used.</li>
- * <li><b>minimumFractionDigits</b>: a non-negative integer Number value indicating the minimum 
- *  fraction digits to be used.</li>
- * <li><b>maximumFractionDigits</b>: a non-negative integer Number value indicating the maximum 
- *  fraction digits to be used.</li>
- * <li><b>useGrouping</b>: a Boolean value indicating whether a grouping separator is used.</li>
- * <li><b>lenientParse</b>: specifies if lenient parse is enabled or disabled. Allowed values: "full", "none".
- * default is "full" which means lenient parse is enabled.</li>
- * <li><b>separators</b>: - An object with 2 fields: 'decimal' and 'group'.</li>
- * 
- * @throws a oj.ConverterError when the options that the converter was initialized with are invalid. 
- * @ojsignature {target:"Type", for: "returns",
- *    value: "oj.IntlNumberConverter.ConverterOptions"}
- * @export
- */
-oj.IntlNumberConverter.prototype.resolvedOptions = function()
-{
-  var converterError;
-  var locale = oj.Config.getLocale();
-  var localeElements;
-  
-  // options are resolved and cached for the current locale. when locale changes resolvedOptions 
-  // is reevaluated as it contains locale specific info.
-  if ((locale !== this._locale) || !this._resolvedOptions)
-  {
-    localeElements = oj.LocaleData.__getBundle();
-    try
-    {
-      if (!localeElements)
-      {
-        oj.Logger.error("locale bundle for the current locale %s is unavailable", locale);
-        return {};
-      }
-      
-      // cache if successfully resolved
-      this._resolvedOptions = this._getWrapped().resolvedOptions(localeElements, 
-                                                                 this.getOptions(), 
-                                                                 locale);
-      this._locale = locale;
-    }
-    catch (e)
-    {
-      converterError = this._processConverterError(e);
-      throw converterError;
-    }
-  }
-  
-  return this._resolvedOptions;
-};
-
-/**
- * Processes the error returned by the converter implementation and throws a oj.ConverterError 
- * instance.
- * 
- * @param {Error} e
- * @param {String|string|Number|number|Object=} value
- * @throws an instance of oj.ConverterError
- * @private
- */
-oj.IntlNumberConverter.prototype._processConverterError = function (e, value)
-{
-  var converterError;
-  var errorCode;
-  var errorInfo = e['errorInfo'];
-  var detail;
-  var parameterMap;
-  var propName;
-  var resourceKey;
-  var summary;
-
-  if (errorInfo)
-  {
-    errorCode = errorInfo['errorCode'];
-    parameterMap = errorInfo['parameterMap'];
-    oj.Assert.assertObject(parameterMap);
-    propName = parameterMap['propertyName'];
-    
-    switch (errorCode)
-    {
-      case "optionTypesMismatch":
-      case "optionTypeInvalid":
-        converterError = oj.IntlConverterUtils.__getConverterOptionError(errorCode, parameterMap);
-        break;
-      case "optionOutOfRange":
-        converterError = oj.IntlConverterUtils.__getConverterOptionError(errorCode, parameterMap);
-        break;
-      case "optionValueInvalid":
-        converterError = oj.IntlConverterUtils.__getConverterOptionError(errorCode, parameterMap);
-        break;
-      case "decimalFormatMismatch":
-        // The '{value}' does not match the expected decimal format
-        resourceKey = "oj-converter.number.decimalFormatMismatch.summary";
-        break;
-      case "currencyFormatMismatch":
-        // The {value} does not match the expected currency format
-        resourceKey = "oj-converter.number.currencyFormatMismatch.summary";
-        break;
-      case "percentFormatMismatch":
-        // The {value} does not match the expected currency format
-        resourceKey = "oj-converter.number.percentFormatMismatch.summary";
-        break;  
-      case "unsupportedParseFormat":
-        // TODO: We'll be able to remove this exception when this bug is fixed post V1.1:
-        //  - implement parse() for short number converter
-        //  
-        summary =  oj.Translations.getTranslatedString(
-          "oj-converter.number.shortLongUnsupportedParse.summary");
-        detail = oj.Translations.getTranslatedString(
-          "oj-converter.number.shortLongUnsupportedParse.detail");
-        converterError = new oj.ConverterError(summary, detail);
-    }
-
-    // The formatMismatch errors need a hint
-    if (resourceKey)
-    {
-      summary = oj.Translations.getTranslatedString(resourceKey, 
-        {'value': value || parameterMap['value'],
-         'format': parameterMap['format']});
-
-      // _getHintValue is smart. It uses the converter's 'format' function
-      //  to get the example format to show the end user.
-      detail = oj.Translations.getTranslatedString("oj-converter.hint.detail",
-        {'exampleValue': this._getHintValue()}); 
-
-      converterError = new oj.ConverterError(summary, detail);
-    }
-
-  }
-  
-  if (!converterError)
-  {
-    // An error we are unfamiliar with. Get the message and set as detail
-    summary = e.message; // TODO: What should the summary be when it's missing??
-    detail = e.message;
-    converterError = new oj.ConverterError(summary, detail);
-  }
-  
-  return converterError;
-};
-
-// Returns the hint value. It uses the converter's format function to return a formatted
-// example. For example, if the converter's style is decimal and decimalFormat is short,
-// this.format(12345.98765) returns 12K, and we show 12K in the error message as an example
-// of what they should type in.
-oj.IntlNumberConverter.prototype._getHintValue = function()
-{
-  var value = "";
-  try
-  {
-    // use .format to get a real example to show the user what format they can type in to the field.
-    value =  this.format(12345.98765);
-  }
-  catch (e)
-  {
-    if (e instanceof oj.ConverterError)
-    {
-      // Something went wrong and we don't have a way to retrieve a valid value.    
-      value = "";
-      oj.Logger.error("error retrieving hint value in format");
-    }
-  }
-  finally
-  {
-    // returns the formatted value of 12345.98765
-    return value;
-  }
-};
-
-/**
- * Copyright (c) 2014, Oracle and/or its affiliates.
- * All rights reserved.
- */
-
+/* global __ValidationBase:false, Translations:false */
 /**
  * Constructs a NumberRangeValidator that ensures the value provided is within a given range
  * @param {Object=} options an object literal used to provide the following properties
  * @export
  * @constructor
  * @augments oj.Validator
- * @ojsignature [{target: "Type", 
- *                value: "class NumberRangeValidator extends Validator<string|number>"},
+ * @ojsignature [{target: "Type",
+ *                value: "class NumberRangeValidator implements Validator<string|number>"},
  *               {target: "Type",
  *                value: "oj.NumberRangeValidator.ValidatorOptions",
  *                for: "options", jsdocOverride: true}
  *              ]
  * @since 0.7
- * 
+ *
  */
-oj.NumberRangeValidator = function _NumberRangeValidator(options)
-{
+oj.NumberRangeValidator = function _NumberRangeValidator(options) {
   this.Init(options);
 };
 
-// Subclass from oj.Validator 
-oj.Object.createSubclass(oj.NumberRangeValidator, oj.Validator, "oj.NumberRangeValidator");
+// Subclass from oj.Validator
+oj.Object.createSubclass(oj.NumberRangeValidator, oj.Validator, 'oj.NumberRangeValidator');
 
 /**
  * @typedef {object} oj.NumberRangeValidator.ValidatorOptions
@@ -767,83 +106,83 @@ oj.Object.createSubclass(oj.NumberRangeValidator, oj.Validator, "oj.NumberRangeV
  * @property {Object=} hint - an optional object literal of hints to be used.
  * <p>The hint strings (e.g., hint.min) are  passed as the 'pattern' parameter to
  * [oj.Translations.html#applyParameters]{@link oj.Translations}. As stated in
- * that documentation, if you are using a reserved character, you need to escape it with 
+ * that documentation, if you are using a reserved character, you need to escape it with
  * a dollar character ('$').
- * </p> 
- * @property {string=} hint.max - a hint used to indicate the allowed maximum. When not present, 
- * the default hint is the resource defined with the key 
+ * </p>
+ * @property {string=} hint.max - a hint used to indicate the allowed maximum. When not present,
+ * the default hint is the resource defined with the key
  * <code class="prettyprint">oj-validator.range.number.hint.max</code>.<p>
  * Tokens: <br/>
  * {max} - the maximum<p>
  * Usage: <br/>
  * Enter a number less than or equal to {max}
- * @property {string=} hint.min - a hint used to indicate the allowed minimum. When not present, 
- * the default hint is the resource defined with the key 
+ * @property {string=} hint.min - a hint used to indicate the allowed minimum. When not present,
+ * the default hint is the resource defined with the key
  * <code class="prettyprint">oj-validator.range.number.hint.min</code>.<p>
  * Tokens: <br/>
  * {min} the minimum <p>
  * Usage: <br/>
  * Enter a number greater than or equal to {min}</li>
- * @property {string=} hint.inRange - a hint used to indicate the allowed range. When not 
- * present, the default hint is the resource defined with the key 
+ * @property {string=} hint.inRange - a hint used to indicate the allowed range. When not
+ * present, the default hint is the resource defined with the key
  * <code class="prettyprint">oj-validator.range.number.hint.inRange</code>.<p>
  * Tokens:<br/>
  * {min} the minimum<br/>
  * {max} the maximum<p>
  * Usage: <br/>
  * Enter a number between {min} and {max}
- * @property {string=} hint.exact - a hint used to indicate the allowed value. 
- * This is used when min and max are non-null and are equal to each other.  
- * When not present, the default hint is the resource defined with the key 
+ * @property {string=} hint.exact - a hint used to indicate the allowed value.
+ * This is used when min and max are non-null and are equal to each other.
+ * When not present, the default hint is the resource defined with the key
  * <code class="prettyprint">oj-validator.range.number.hint.exact</code>.<p>
  * Tokens:<br/>
  * {num} the number allowed<br/>
  * Usage: <br/>
  * Enter the number {num}
- * @since 3.0.0 
- * @property {Object=} messageDetail - an optional object literal of custom error messages to 
+ * @since 3.0.0
+ * @property {Object=} messageDetail - an optional object literal of custom error messages to
  * be used.
- * <p>The messageDetail strings (e.g., messageDetail.rangeUnderflow) are  passed as the 'pattern' 
+ * <p>The messageDetail strings (e.g., messageDetail.rangeUnderflow) are  passed as the 'pattern'
  * parameter to [oj.Translations.html#applyParameters]{@link oj.Translations}. As stated in
- * that documentation, if you are using a reserved character, you need to escape it with 
+ * that documentation, if you are using a reserved character, you need to escape it with
  * a dollar character ('$').
- * </p> 
- * @property {string=} messageDetail.rangeUnderflow - the detail error message to be used when 
- * input value is less than the set minimum value. When not present, the default detail message is 
- * the resource defined with the key 
+ * </p>
+ * @property {string=} messageDetail.rangeUnderflow - the detail error message to be used when
+ * input value is less than the set minimum value. When not present, the default detail message is
+ * the resource defined with the key
  * <code class="prettyprint">oj-validator.range.number.messageDetail.rangeUnderflow</code>.<p>
  * Tokens:<br/>
  * {value} - value entered by the user<br/>
  * {min} - the minimum allowed value<p>
  * Usage: <br/>
  * The number must be greater than or equal to {min}.
- * @property {string=} messageDetail.rangeOverflow - the detail error message to be used when 
- * input value exceeds the maximum value set. When not present, the default detail message is 
- * the resource defined with the key 
+ * @property {string=} messageDetail.rangeOverflow - the detail error message to be used when
+ * input value exceeds the maximum value set. When not present, the default detail message is
+ * the resource defined with the key
  * <code class="prettyprint">oj-validator.range.number.messageDetail.rangeOverflow</code>.<p>
  * Tokens:<br/>
  * {value} - value entered by the user<br/>
  * {max} - the maximum allowed value<p>
  * Usage: <br/>
- * The number must be less than or equal to {max}.   
+ * The number must be less than or equal to {max}.
  * @property {string=} messageDetail.exact - the detail error message to be used when the
  * input value is not between min and max when min and max are both non-null and equal.
- *  When not present, the default detail message is the resource defined with the key 
+ *  When not present, the default detail message is the resource defined with the key
  * <code class="prettyprint">oj-validator.range.number.messageDetail.exact</code>.<p>
  * Tokens:<br/>
  * {num} - the allowed value<p>
  * Usage: <br/>
  * The number must be {num}.
- * @since 3.0.0 
- * @property {Object=} messageSummary - optional object literal of custom error summary message 
- * to be used. 
- * @property {string=} messageSummary.rangeUnderflow - the summary of the error message when 
- * input value is less than the set minimum value. When not present, the default message summary is 
- * the resource defined with the key 
+ * @since 3.0.0
+ * @property {Object=} messageSummary - optional object literal of custom error summary message
+ * to be used.
+ * @property {string=} messageSummary.rangeUnderflow - the summary of the error message when
+ * input value is less than the set minimum value. When not present, the default message summary is
+ * the resource defined with the key
  * <code class="prettyprint">oj-validator.range.number.messageSummary.rangeUnderflow</code>.
- * @property {string=} messageSummary.rangeOverflow - the summary of the error message when 
- * input value exceeds the maximum value set.  When not present, the default message summary is 
- * the resource defined with the key 
+ * @property {string=} messageSummary.rangeOverflow - the summary of the error message when
+ * input value exceeds the maximum value set.  When not present, the default message summary is
+ * the resource defined with the key
  * <code class="prettyprint">oj-validator.range.number.messageSummary.rangeOverflow</code>.
  */
 
@@ -855,18 +194,16 @@ oj.Object.createSubclass(oj.NumberRangeValidator, oj.Validator, "oj.NumberRangeV
  * @export
  * @ignore
  */
-oj.NumberRangeValidator.prototype.Init = function (options)
-{
+oj.NumberRangeValidator.prototype.Init = function (options) {
   oj.NumberRangeValidator.superclass.Init.call(this);
 
-  if (options)
-  {
-    this._min = options["min"];
-    this._max = options["max"];
-    this._converter = oj.IntlConverterUtils.getConverterInstance(options['converter']);
-    this._hint = options['hint'] || {};
-    this._customMessageSummary = options['messageSummary'] || {};
-    this._customMessageDetail = options['messageDetail'] || {};
+  if (options) {
+    this._min = options.min;
+    this._max = options.max;
+    this._converter = __ValidationBase.IntlConverterUtils.getConverterInstance(options.converter);
+    this._hint = options.hint || {};
+    this._customMessageSummary = options.messageSummary || {};
+    this._customMessageDetail = options.messageDetail || {};
   }
 };
 
@@ -883,112 +220,89 @@ oj.NumberRangeValidator.prototype.Init = function (options)
  * @instance
  * @export
  */
-oj.NumberRangeValidator.prototype.validate = function (value)
-{
+oj.NumberRangeValidator.prototype.validate = function (value) {
   var string = value ? value.toString() : value;
-  var numberValue = parseFloat(string); 
+  var numberValue = parseFloat(string);
   var customMessageSummary = this._customMessageSummary;
   var customMessageDetail = this._customMessageDetail;
-  var messageDetailRangeOverflow = customMessageDetail["rangeOverflow"]; 
-  var messageDetailRangeUnderflow = customMessageDetail["rangeUnderflow"]; 
-  var messageDetailExact = customMessageDetail["exact"];
-  var messageSummaryRangeOverflow = customMessageSummary["rangeOverflow"];
-  var messageSummaryRangeUnderflow = customMessageSummary["rangeUnderflow"];
-  var min = this._min !== undefined ? parseFloat(this._min) : null; 
-  var max = this._max !== undefined ? parseFloat(this._max) : null; 
-  var minStr = min && this._converter ? this._converter['format'](min) : min;
-  var maxStr = max && this._converter ? this._converter['format'](max) : max;
-  var summary = ""; 
-  var detail = ""; 
+  var messageDetailRangeOverflow = customMessageDetail.rangeOverflow;
+  var messageDetailRangeUnderflow = customMessageDetail.rangeUnderflow;
+  var messageDetailExact = customMessageDetail.exact;
+  var messageSummaryRangeOverflow = customMessageSummary.rangeOverflow;
+  var messageSummaryRangeUnderflow = customMessageSummary.rangeUnderflow;
+  var min = this._min !== undefined ? parseFloat(this._min) : null;
+  var max = this._max !== undefined ? parseFloat(this._max) : null;
+  var minStr = min && this._converter ? this._converter.format(min) : min;
+  var maxStr = max && this._converter ? this._converter.format(max) : max;
+  var summary = '';
+  var detail = '';
   var params = null;
-  var translations = oj.Translations;
-  
-  if(value === null) 
-  {
+  var translations = Translations;
+
+  if (value === null) {
     // request to not throw an error when value being passed is of null
     return value;
   }
-  
-  if (min !== null && max !== null)
-  {
-    //range
-    if ((numberValue >= min && numberValue <= max) || min > max)
-    {
+
+  if (min !== null && max !== null) {
+    // range
+    if ((numberValue >= min && numberValue <= max) || min > max) {
       return string;
     }
-  }
-  else 
-  {
-    //only min
-    if (min !== null)
-    {
-      if (numberValue >= min)
-      {
-        return string;
-      }
-	  
+  } else if (min !== null) {
+    // only min
+    if (numberValue >= min) {
+      return string;
     }
-    //max only or no min or max
-    else 
-    {
-      if (max === null || numberValue <= max)
-      {
-        return string;
-      }
-    }
+  } else if (max === null || numberValue <= max) {
+    // max only or no min or max
+    return string;
   }
-  
+
   // if we haven't returned with an OK, then we need to throw a ValidatorError
-  // 
+  //
   // First check if we have both a max and a min and if they are equal. If so the message will
   // be the messageDetail.exact message, like "Enter the number 1"
-  if (max !== null && min !== null && min === max)
-  {
-    params = {"value": value, "num": maxStr};
-    detail = messageDetailExact ? 
-      translations.applyParameters(messageDetailExact, params) : 
+  if (max !== null && min !== null && min === max) {
+    params = { value: value, num: maxStr };
+    detail = messageDetailExact ?
+      translations.applyParameters(messageDetailExact, params) :
       translations.getTranslatedString('oj-validator.range.number.messageDetail.exact', params);
     // if number is greater than max, the summary may say "The number is too high"
-    if (numberValue > max)
-    {
-      summary = messageSummaryRangeOverflow ? 
-        messageSummaryRangeOverflow : 
-        translations.getTranslatedString('oj-validator.range.number.messageSummary.rangeOverflow');            
-    } 
+    if (numberValue > max) {
+      summary = messageSummaryRangeOverflow ||
+        translations.getTranslatedString('oj-validator.range.number.messageSummary.rangeOverflow');
+    } else if (numberValue < min) {
     // if number is less than min, the summary may say "The number is too low"
-    else if (numberValue < min)
-    {
-      summary = messageSummaryRangeOverflow ? 
-        messageSummaryRangeUnderflow : 
+      summary = messageSummaryRangeOverflow ?
+        messageSummaryRangeUnderflow :
         translations.getTranslatedString('oj-validator.range.number.messageSummary.rangeUnderflow');
     }
-  }
-  // Next check if we have a max, and the number we are validating is greater than the max
-  // throw an error, 
-  // like "The number is too high." and "The number must be less than or equal to {max}"
-  else if (max !== null && numberValue > max)
-  {
-	  params = {"value": value, "max": maxStr};
-    summary = messageSummaryRangeOverflow ?
-      messageSummaryRangeOverflow : 
+  } else if (max !== null && numberValue > max) {
+    // Next check if we have a max, and the number we are validating is greater than the max
+    // throw an error,
+    // like "The number is too high." and "The number must be less than or equal to {max}"
+    params = { value: value, max: maxStr };
+    summary = messageSummaryRangeOverflow ||
       translations.getTranslatedString('oj-validator.range.number.messageSummary.rangeOverflow');
     detail = messageDetailRangeOverflow ?
-      translations.applyParameters(messageDetailRangeOverflow, params) : 
-      translations.getTranslatedString('oj-validator.range.number.messageDetail.rangeOverflow', params);
-  }
-  // 
-  // Else check if we have a min, and the number we are validating is less than the min
-  // throw an error, 
-  // like "The number is too low." and "The number must be greater than or equal to {min}"
-  else if (min !== null && numberValue < min)
-  {
- 	  params = {"value": value, "min": minStr};
-    summary = messageSummaryRangeUnderflow ? 
-      messageSummaryRangeUnderflow : 
+      translations.applyParameters(messageDetailRangeOverflow, params) :
+      translations.getTranslatedString(
+        'oj-validator.range.number.messageDetail.rangeOverflow',
+        params
+      );
+  } else {
+    // Else the number we are validating is less than the min, throw an error,
+    // like "The number is too low." and "The number must be greater than or equal to {min}"
+    params = { value: value, min: minStr };
+    summary = messageSummaryRangeUnderflow ||
       translations.getTranslatedString('oj-validator.range.number.messageSummary.rangeUnderflow');
-    detail = messageDetailRangeUnderflow ? 
-      translations.applyParameters(messageDetailRangeUnderflow, params) : 
-      translations.getTranslatedString('oj-validator.range.number.messageDetail.rangeUnderflow', params);   
+    detail = messageDetailRangeUnderflow ?
+      translations.applyParameters(messageDetailRangeUnderflow, params) :
+      translations.getTranslatedString(
+        'oj-validator.range.number.messageDetail.rangeUnderflow',
+        params
+      );
   }
 
   throw new oj.ValidatorError(summary, detail);
@@ -1002,172 +316,795 @@ oj.NumberRangeValidator.prototype.validate = function (value)
  * @instance
  * @export
  */
-oj.NumberRangeValidator.prototype.getHint = function ()
-{
+oj.NumberRangeValidator.prototype.getHint = function () {
   var hint = null;
-  var hints = this._hint; 
-  var hintInRange = hints["inRange"];
-  var hintExact = hints["exact"];
-  var hintMinimum = hints["min"];
-  var hintMaximum = hints["max"];
-  var translations = oj.Translations;
-  var min = this._min !== undefined ? parseFloat(this._min) : null; 
+  var hints = this._hint;
+  var hintInRange = hints.inRange;
+  var hintExact = hints.exact;
+  var hintMinimum = hints.min;
+  var hintMaximum = hints.max;
+  var translations = Translations;
+  var min = this._min !== undefined ? parseFloat(this._min) : null;
   var max = this._max !== undefined ? parseFloat(this._max) : null;
-  var minStr = min && this._converter ? this._converter['format'](min) : min;
-  var maxStr = max && this._converter ? this._converter['format'](max) : max;
-	 
+  var minStr = min && this._converter ? this._converter.format(min) : min;
+  var maxStr = max && this._converter ? this._converter.format(max) : max;
+
   // if both min and max are specified, the hint may say something like "Enter a value
   // between {min} and {max}".
-  if (min !== null && max !== null) 
-  {
-    if (min !== max)
-    {
-      // if hintInRange is specified (validator's hint.inRange option is set), 
+  if (min !== null && max !== null) {
+    if (min !== max) {
+      // if hintInRange is specified (validator's hint.inRange option is set),
       // use that string, else use the default.
-      hint = hintInRange ?
-              translations.applyParameters(hintInRange, {"min": minStr, "max": maxStr}) : 
-              translations.getTranslatedString('oj-validator.range.number.hint.inRange', 
-                {"min": minStr, "max": maxStr});
-    }
-    else
-    {
-      // if hintExact is specified (validator's hint.exact option is set), 
+      hint = (hintInRange ?
+              translations.applyParameters(hintInRange, { min: minStr, max: maxStr }) :
+              translations.getTranslatedString('oj-validator.range.number.hint.inRange',
+                                               { min: minStr, max: maxStr }));
+    } else {
+      // if hintExact is specified (validator's hint.exact option is set),
       // use that string, else use the default.
-      hint = hintExact ?
-              translations.applyParameters(hintExact, {"num": minStr}) : 
-              translations.getTranslatedString('oj-validator.range.number.hint.exact', 
-                {"num": minStr});
+      hint = (hintExact ?
+              translations.applyParameters(hintExact, { num: minStr }) :
+              translations.getTranslatedString('oj-validator.range.number.hint.exact',
+                                               { num: minStr }));
     }
-  }
-  // else if min is specified, the hint may say something like "Enter a value
-  // greater than or equal to {min}".
-  else if (min !== null)
-  {
-    // if hintMinimum is specified (validator's hint.min option is set), 
+  } else if (min !== null) {
+    // else if min is specified, the hint may say something like "Enter a value
+    // greater than or equal to {min}".
+
+    // if hintMinimum is specified (validator's hint.min option is set),
     // use that string, else use the default.
-    hint = hintMinimum ? 
-             translations.applyParameters(hintMinimum, {"min": minStr}) :
-	           translations.getTranslatedString('oj-validator.range.number.hint.min', {"min": minStr});
-  }
-  // else if max is specified, the hint may say something like "Enter a value
-  // less than or equal to {max}".
-  else if (max !== null)
-  {
-    // if hintMaximum is specified (validator's hint.max option is set), 
+    hint = (hintMinimum ?
+            translations.applyParameters(hintMinimum, { min: minStr }) :
+            translations.getTranslatedString('oj-validator.range.number.hint.min',
+                                             { min: minStr }));
+  } else if (max !== null) {
+    // else if max is specified, the hint may say something like "Enter a value
+    // less than or equal to {max}".
+
+    // if hintMaximum is specified (validator's hint.max option is set),
     // use that string, else use the default.
-    hint = hintMaximum ?  
-            translations.applyParameters(hintMaximum, {"max": maxStr}) :
-            translations.getTranslatedString('oj-validator.range.number.hint.max', {"max": maxStr});
+    hint = (hintMaximum ?
+            translations.applyParameters(hintMaximum, { max: maxStr }) :
+            translations.getTranslatedString('oj-validator.range.number.hint.max',
+                                             { max: maxStr }));
   }
 
   return hint;
 };
+
 /**
- * Copyright (c) 2008, 2013, Oracle and/or its affiliates. 
+ * Copyright (c) 2008, 2013, Oracle and/or its affiliates.
  * All rights reserved.
  */
-
-
-
+/* global __ValidationBase:false */
 /**
- * A factory implementation to create the built-in number converter of type 
- * {@link oj.IntlNumberConverter}. 
- * 
+ * A factory implementation to create the built-in number converter of type
+ * {@link oj.IntlNumberConverter}.
+ *
  * @name oj.NumberConverterFactory
  * @hideconstructor
+ * @ojtsnoexport
+ * @ojtsexportastype
  * @class
- * 
+ *
  * @example <caption>create an instance of the jet datetime converter using the options provided</caption>
- * var ncf = oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_NUMBER); 
+ * var ncf = oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_NUMBER);
  * var salaryOptions = {currency: "EUR" , pattern: "¤#,##0.00;(¤#,##0.00)"};
  * var salaryConverter = ncf.createConverter(salaryOptions);
  * @public
  * @since 0.6
- * 
+ *
  */
-oj.NumberConverterFactory = (function () 
-{
-  
-  function _createNumberConverter(options) 
-  {
+oj.NumberConverterFactory = (function () {
+  function _createNumberConverter(options) {
     return new oj.IntlNumberConverter(options);
   }
-  
+
   return {
     /**
      * Creates an immutable (jet) number converter instance.
-     * 
-     * @param {Object=} options an object literal used to provide optional information to initialize 
-     * the jet number converter with. For details on what to pass for options, refer to 
+     *
+     * @param {Object=} options an object literal used to provide optional information to initialize
+     * the jet number converter with. For details on what to pass for options, refer to
      * {@link oj.IntlNumberConverter}
-     * 
+     *
      * @return {oj.IntlNumberConverter}
      * @memberOf oj.NumberConverterFactory
      * @ojsignature {target: "Type", for: "options", value: "oj.IntlNumberConverter.ConverterOptions"}
      * @instance
      * @public
      */
-    'createConverter': function(options) {
+    createConverter: function (options) {
       return _createNumberConverter(options);
     }
   };
 }()); // notice immediate invocation of anonymous function
 
 /** Register the default factory provider function */
-oj.Validation.__registerDefaultConverterFactory(oj.ConverterFactory.CONVERTER_TYPE_NUMBER, // factory name
-                               oj.NumberConverterFactory);
+__ValidationBase.Validation.__registerDefaultConverterFactory(
+  oj.ConverterFactory.CONVERTER_TYPE_NUMBER, // factory name
+  oj.NumberConverterFactory);
 
 
-// JET VALIDATOR FACTORIES 
-                                        
+// JET VALIDATOR FACTORIES
+
 /**
- * a factory method to create an instance of a built-in numberRange validator of type 
- * {@link oj.NumberRangeValidator}. 
- * 
+ * a factory method to create an instance of a built-in numberRange validator of type
+ * {@link oj.NumberRangeValidator}.
+ *
  * @example <caption>create an instance of the numberRange validator using the factory</caption>
  * var lrvf = oj.Validation.validatorFactory(oj.ValidatorFactory.VALIDATOR_TYPE_NUMBER_RANGE);
  * var options = {hint: {min: 'Enter a value greater than {min}'}, min: 100};
  * var lrValidator = lrvf.createValidator(options);
- * 
+ *
  * @name oj.NumberRangeValidatorFactory
  * @hideconstructor
+ * @ojtsnoexport
+ * @ojtsexportastype
  * @class
  * @public
  * @since 0.6
- * 
+ *
  */
-oj.NumberRangeValidatorFactory = (function () 
-{
-  
-  function _createNumberRangeValidator(options) 
-  {
+oj.NumberRangeValidatorFactory = (function () {
+  function _createNumberRangeValidator(options) {
     return new oj.NumberRangeValidator(options);
   }
-  
+
   return {
     /**
-     * Creates an immutable validator instance of type {@link oj.NumberRangeValidator} that ensures 
+     * Creates an immutable validator instance of type {@link oj.NumberRangeValidator} that ensures
      * that the value provided is within a given range.
-     * 
-     * @param {Object=} options an object literal used to provide the minimum, maximum and other 
+     *
+     * @param {Object=} options an object literal used to provide the minimum, maximum and other
      * optional values. See {@link oj.NumberRangeValidator} for details.<p>
-     * 
+     *
      * @return {oj.NumberRangeValidator}
      * @memberOf oj.NumberRangeValidatorFactory
      * @instance
      * @ojsignature {target: "Type", for: "options", value: "oj.NumberRangeValidator.ValidatorOptions"}
      * @public
      */
-    'createValidator': function(options) {
+    createValidator: function (options) {
       return _createNumberRangeValidator(options);
     }
   };
 }()); // notice immediate invocation of anonymous function
 
 /** Register the default factory provider function */
-oj.Validation.__registerDefaultValidatorFactory(oj.ValidatorFactory.VALIDATOR_TYPE_NUMBERRANGE,
-                                                oj.NumberRangeValidatorFactory);
-    
+__ValidationBase.Validation.__registerDefaultValidatorFactory(
+  oj.ValidatorFactory.VALIDATOR_TYPE_NUMBERRANGE,
+  oj.NumberRangeValidatorFactory);
+
+
+var __ValidationNumber = {};
+__ValidationNumber.NumberConverter = oj.NumberConverter;
+__ValidationNumber.NumberRangeValidator = oj.NumberRangeValidator;
+__ValidationNumber.IntlNumberConverter = oj.IntlNumberConverter;
+
+/**
+ * Copyright (c) 2014, Oracle and/or its affiliates.
+ * All rights reserved.
+ */
+
+/* global OraNumberConverter:false, LocaleData:false, __ValidationBase:false, Logger:false, Config:false, Translations:false */
+/**
+ * @export
+ * Placeholder here as closure compiler objects to export annotation outside of top level
+ */
+
+/**
+ * @constructor
+ * @classdesc Constructs an immutable instance and initializes it with the options provided. When initialized
+ * with no options, the default options for the current locale are assumed. The converters by
+ * default use the current page locale (returned by oj.Config.getLocale()). There are several ways
+ * to initialize the converter.
+ * <p>
+ * <ul>
+ * <li>Using options defined by the ECMA 402 Specification, these would be the properties style,
+ * currency, currencyDisplay, minimumIntegerDigits, minimumFractionDigits, maximumFractionDigits,
+ * useGrouping. NOTE: minimumSignificantDigits and maximumSignificantDigits are not supported.</li>
+ * <li>Using a custom decimal, currency or percent format pattern. specified using the 'pattern' property</li>
+ * <li>Using the decimalFormat option to define a compact pattern, such as "1M" and "1 million".</li>
+ * <li>Using the currencyFormat option to define a compact pattern, such as "$1M" and "$1 million".</li>
+ * <li>Using the roundingMode and roundDuringParse options to round the number HALF_UP, HALF_DOWN, or HALF_EVEN.</li>
+ * </ul>
+ * <p>
+ *
+ * The converter provides leniency when parsing user input value to a number in the following ways:<br/>
+ *
+ * <ul>
+ * <li>Prefix and suffix that do not match the pattern, are removed. E.g., when pattern is
+ * "#,##0.00%" (suffix is the % character), a value of "abc-123.45xyz", will be leniently parsed to
+ * -123.45</li>
+ * <li>When a value includes a symbol but the pattern doesn't require it.  E.g., the options are
+ * {pattern: "###", currency: 'USD'}, then values ($123), (123) and -123 will be leniently parsed as
+ * -123.</li>
+ * </ul>
+ * <p>
+ * Lenient parse can be disabled by setting the property lenientParse to "none". In which case the user input must
+ * be an exact match of the expected pattern and all the leniency described above will be disabled.
+ * <p>
+ * @param {Object=} options - an object literal used to provide optional information to
+ * initialize the converter.
+ *
+ * @example <caption>Create a number converter for currencies</caption>
+ * var converterFactory = oj.Validation.converterFactory("number");
+ * var options = {style: "currency", currency: "USD", minimumIntegerDigits: 2};
+ * converter = converterFactory.createConverter(options);
+ * converter.format(9); --> "$09.00" if page locale is 'en-US'
+ * converter.format(9); --> "09,00 $US" if page locale is 'fr-FR'<br/>
+ *
+ * @example <caption>A number converter for percent values using a custom (CLDR) pattern</caption>
+ * var converterFactory = oj.Validation.converterFactory("number");
+ * var options = {pattern: '#,##0%'};
+ * converter = converterFactory.createConverter(options);<br/>
+ *
+ * @example <caption>To parse a value as percent but format it without displaying the percent character</caption>
+ * var options = {style: 'percent', pattern: '#,##0'};<br/>
+ *
+ * @example <caption>To parse a value as currency using a custom (CLDR) pattern</caption>
+ * var options = {pattern: '¤#,##0', currency: 'USD'};
+ *
+ * @example <caption>To format a value as digital bit unit</caption>
+ * var options = {style:'unit', unit:'bit'};
+ * converter = converterFactory.createConverter(options);
+ * var nb = 1024;
+ * converter.format(nb, localeElements, options);--> 1Kb<br/>
+ *
+ * @example <caption>To format a value as digital byte unit</caption>
+ * var options = {style:'unit', unit:'byte'};
+ * converter = converterFactory.createConverter(options);
+ * var nb = 1024;
+ * converter.format(nb, localeElements, options);--> 1KB<br/>
+ *
+ * @example <caption>The following decimalFormat examples are in en locale.
+ * To format a value as short (default for fraction digits is based on the locale)</caption>
+ * var options = {style:’decimal’, decimalFormat:’short’};
+ * converter = converterFactory.createConverter(options);
+ * converter.format(12345);--> 12.354K<br/>
+ *
+ * @example <caption>Same as above for currencyFormat.
+ * To format a value as short (default for fraction digits is based on the locale)</caption>
+ * var options = {style:'currency', currency: 'USD', currencyFormat:'short'};
+ * converter = converterFactory.createConverter(options);
+ * converter.format(1234);--> $1.23K<br/>
+ *
+ * @example <caption>To format a value as long (default for fraction digits is based on the locale):</caption>
+ * var options = {style:’decimal’, decimalFormat:’long’};
+ * converter = converterFactory.createConverter(options);
+ * converter.format(12345);--> 12.345 thousand<br/>
+ *
+ * @example <caption>To format a value as long currency format:</caption>
+ * var options = {style:'currency',  currency: 'USD', currencyFormat:'long'};
+ * converter = converterFactory.createConverter(options);
+ * converter.format(1234);--> $1.23 thousand<br/>
+ *
+ * @example <caption>To format a value as short with minimum fraction digits:</caption>
+ * options = { style:’decimal’, decimalFormat:’short’,
+ * minimumFractionDigits:4};
+ * converter = converterFactory.createConverter(options);
+ * converter.format(1234);--> 1.2340K<br/>
+ *
+ * @example <caption>To format a value as short with maximum fraction digits:</caption>
+ * options = { style:’decimal’, decimalFormat:’short’,
+ * maximumFractionDigits:0};
+ * converter = converterFactory.createConverter(options);
+ * converter.format(12345);--> 12K<br/>
+ *
+ * @example <caption>To format a value as long with minimum and maximum fraction digits:</caption>
+ * options = { style:’decimal’, decimalFormat:’long',
+ * minimumFractionDigits:2, maximumFractionDigits:4};
+ * converter = converterFactory.createConverter(options);
+ * converter.format(12000);--> 12.00 thousand<br/>
+ *
+ * @example <caption>To format a value as short with minimum and maximum fraction digits:</caption>
+ * options = { style:’decimal’, decimalFormat:’long',
+ * minimumFractionDigits:2, maximumFractionDigits:4};
+ * converter = converterFactory.createConverter(options);
+ * converter.format(12345678);--> 12.345 million<br/>
+ *
+ * @example <caption>decimal style default is standard:</caption>
+ * options = { style:’decimal’, decimalFormat:’standard’};
+ * converter = converterFactory.createConverter(options);
+ * converter.format(12345);--> 12,345<br/>
+ *
+ * @example <caption>decimal round HALF_DOWN:</caption>
+ * options = { style:’decimal’,  maximumFractionDigits:2, roundingMode:'HALF_DOWN'};
+ * converter = converterFactory.createConverter(options);
+ * converter.format(0.225);--> 0.22
+ * converter.parse(0.225);-->0.225 //doesn't round during parse by default<br/>
+ *
+ * @example <caption>decimal round HALF_UP:</caption>
+ * options = { style:’decimal’,  maximumFractionDigits:2, roundingMode:'HALF_UP'};
+ * converter = converterFactory.createConverter(options);
+ * converter.format(0.225);--> 0.23
+ * converter.parse(0.225);--> 0.225 //doesn't round during parse by default<br/>
+ *
+ * @example <caption>decimal round HALF_EVEN:</caption>
+ * options = { style:’decimal’,  maximumFractionDigits:2, roundingMode:'HALF_EVEN'};
+ * converter = converterFactory.createConverter(options);
+ * converter.format(0.225);--> 0.22
+ * converter.format(0.235);--> 0.24
+ * converter.parse(0.225);--> 0.225 //doesn't round during parse by default
+ * converter.parse(0.235);--> 0.235 //doesn't round during parse by default<br/>
+ *
+ * @example <caption>decimal round HALF_DOWN and roundDuringParse:</caption>
+ * options = { style:’decimal’, maximumFractionDigits:2,
+ *             roundingMode:'HALF_DOWN', roundDuringParse: true};
+ * converter = converterFactory.createConverter(options);
+ * converter.format(0.225);--> 0.22
+ * converter.parse(0.225);-->0.22<br/>
+ *
+ * @example <caption>decimal round HALF_UP and roundDuringParse:</caption>
+ * options = { style:’decimal’,  maximumFractionDigits:2,
+ *             roundingMode:'HALF_UP', roundDuringParse: true};
+ * converter = converterFactory.createConverter(options);
+ * converter.format(0.225);--> 0.23
+ * converter.parse(0.225);--> 0.23<br/>
+ *
+ * @example <caption>decimal round HALF_EVEN and roundDuringParse:</caption>
+ * options = { style:’decimal’,  maximumFractionDigits:2,
+ *             roundingMode:'HALF_EVEN', roundDuringParse: true};
+ * converter = converterFactory.createConverter(options);
+ * converter.format(0.225);--> 0.22
+ * converter.format(0.235);--> 0.24
+ * converter.parse(0.225);--> 0.22
+ * converter.parse(0.235);--> 0.24<br/>
+ *
+ * @example <caption>Use custom decimal and grouping separators:</caption>
+ * options = { style:'decimal', separators: {decimal: ',',  group: '.'}};
+ * converter = converterFactory.createConverter(options);
+ * var nb = 1234567.89;
+ * converter.format(nb);--> 1.234.567,89
+ * converter.parse("1.234.567,89");--> 1234567.89
+ * <br/>
+ *
+ * @example <caption>Disable lenient parse:</caption>
+ * options = { style:'decimal',  lenientParse: 'none'};
+ * converter = converterFactory.createConverter(options);
+ * converter.parse("abc-123.45xyz");--> Error: Unparsable number abc-123.45xyz The expected number pattern is #,##0.###
+ * <br/>
+ *
+ * @export
+ * @augments oj.NumberConverter
+ * @name oj.IntlNumberConverter
+ * @ojsignature [{target: "Type",
+ *                value: "class IntlNumberConverter extends NumberConverter"},
+ *               {target: "Type",
+ *                value: "oj.IntlNumberConverter.ConverterOptions",
+ *                for: "options", jsdocOverride: true}
+ *              ]
+ * @since 0.6
+ */
+oj.IntlNumberConverter = function (options) {
+  this.Init(options);
+};
+
+/**
+ * @typedef {object} oj.IntlNumberConverter.ConverterOptions
+ * @property {('decimal'|'currency'|'percent'|'unit')=} style - sets the style of number formatting. Allowed values are "decimal"
+ * (the default), "currency", "percent" or "unit". When a number is formatted as a decimal, the decimal
+ * character is replaced with the most appropriate symbol for the locale. In English this is a
+ * decimal point ("."), while in many locales it is a decimal comma (","). If grouping is enabled the
+ * locale dependent grouping separator is also used. These symbols are also used for numbers
+ * formatted as currency or a percentage, where appropriate.
+ * @property {string=} currency - specifies the currency that will be used when formatting the
+ * number. The value should be a ISO 4217 alphabetic currency code. If the style is set to currency,
+ * it's required that the currency property also be specified. This is because there is no default
+ * currency associated with the current locale. The user must always specify the currency code
+ * to be shown, otherwise an error will be thrown. The current page locale
+ * (returned by oj.Config.getLocale()) determines the formatting elements of the number
+ * like grouping separator and decimal separator. The currency code tells us which currency to
+ * display in current page locale. JET has translations for currency names.
+ * <p>
+ * As an example if we want to format 1000.35 EURO and the page locale is "en-US",
+ * we pass {style:'currency', currency:'EUR', currencyDisplay:'symbol'} and we will get "€1,000.35"
+ * If the page locale is "fr-FR", with the same options, we will get: "1 000,35 €"
+ * </p>
+ * @property {('byte'|'bit')=} unit - Mandatory when style is "unit". Allowed values:
+ * "byte" or "bit". It is used for formatting only. It can not be used for parsing.
+ * <p>
+ * It is used to format digital units like 10Mb for bit unit or 10MB for byte unit.
+ * There is no need to specify the scale of the unit. We automatically detect it.
+ * For example 1024 is formatted as 1KB and ?1048576? as 1MB.
+ * The user can also specify 'minimumFractionDigits' and  'maximumFractionDigits' to be displayed,
+ * otherwise we use the locale's default max and min fraction digits.
+ * </p>
+ * @property {('code'|'symbol'|'name')=} currencyDisplay - if the number is using currency formatting, specifies
+ * if the currency will be displayed using its "code" (as an ISO 4217 alphabetic currency code),
+ * "symbol" (a localized currency symbol (e.g. $ for US dollars, £ for Great British pounds, and so
+ * on), or "name" (a localized currency name. Allowed values are "code", "symbol" and "name".
+ * The default is "symbol".
+ * @property {('standard'|'short'|'long')=} decimalFormat -
+ * specifies the decimal format length to use when style is set to "decimal".
+ * Allowed values are : "standard"(default), "short" and "long". 'standard' is equivalent to not
+ * specifying the 'decimalFormat' attribute, in that case the locale’s default decimal pattern
+ * is used for formatting.
+ * <p>
+ * The user can also specify 'minimumFractionDigits' and  'maximumFractionDigits' to display.
+ * When not present we use the locale's default max and min fraction digits.
+ * </p>
+ * <p>
+ * There is no need to specify the scale; we automatically detect greatest scale that is less or
+ * equal than the input number. For example  1000000 is formatted as "1M" or "1 million" and
+ * 1234 is formatted, with zero fractional digits, as "1K" or " 1 thousand" for
+ * short and long formats respectively. The pattern for the short and long number is locale dependent
+ * and uses plural rules for the particular locale.
+ * </p>
+ * <p>
+ * NOTE: Currently this option formats a value (e.g., 2000 -> 2K), but it does not parse a value
+ * (e.g., 2K -> 2000), so it can only be used
+ * in a readOnly EditableValue because readOnly EditableValue components do not call
+ * the converter's parse function.
+ * </p>
+ * @property {('standard'|'short'|'long')=} currencyFormat -
+ * specifies the currency format length to use when style is set to "currency".
+ * Allowed values are : "standard"(default), "short" and "long". 'standard' is equivalent to not
+ * specifying the 'currencyFormat' attribute, in that case the locale's default currency pattern
+ * is used for formatting.
+ * Similar to decimalFormat, currencyFormat can only be used for formatting. It can not be used for parsing.
+ * <p>
+ * The user can also specify 'minimumFractionDigits' and  'maximumFractionDigits' to display.
+ * When not present we use the locale's default max and min fraction digits.
+ * </p>
+ * <p>
+ * There is no need to specify the scale; we automatically detect greatest scale that is less or
+ * equal than the input number. For example  1000000 is formatted as "$1M" or "1 million dollar" and
+ * 1000 is formatted as "$1K" or " 1 thousand dollar" for short and long formats respectively.
+ * The pattern for the short and long number is locale dependent and uses plural rules for the particular locale.
+ * </p>
+ * @property {number=} minimumIntegerDigits - sets the minimum number of digits before the
+ * decimal place (known as integer digits). The number is padded with leading zeros if it would not
+ * otherwise have enough digits. The value must be an integer between 1 and 21.
+ * @property {number=} minimumFractionDigits - similar to 'minimumIntegerDigits', except it
+ * deals with the digits after the decimal place (fractional digits). It must be an integer between
+ * 0 and 20. The fractional digits will be padded with trailing zeros if they are less than the minimum.
+ * @property {number=} maximumFractionDigits - follows the same rules as 'minimumFractionDigits',
+ * but sets the maximum number of fractional digits that are allowed. The value will be rounded if
+ * there are more digits than the maximum specified.
+ * @property {boolean=} useGrouping - when the value is truthy, the locale dependent grouping
+ * separator is used when formatting the number. This is often known as the thousands separator,
+ * although it is up to the locale where it is placed. The ‘useGrouping’ is set to true by default.
+ * @property {string=} pattern an optional localized pattern, where the characters used in
+ * pattern are as defined in the Unicode CLDR for numbers, percent or currency formats. When present
+ * this will override the other "options". <p>
+ *
+ * &nbsp;&nbsp;- When the pattern represents a currency style the 'currency' property is required to
+ * be set, as not setting this will throw an error. The 'currencyDisplay' is optional. <br/>Example:
+ * {pattern: '¤#,##0', currency: 'USD'}. <p>
+ *
+ * &nbsp;&nbsp;- It's not mandatory for the pattern to have the special character '¤' (currency sign)
+ * be present. When not present, values are treated as a currency value, but are not formatted to
+ * show the currency symbol. <br/>Example: {pattern: '#,##0', currency: 'USD'} <p>
+ *
+ * &nbsp;&nbsp;- When the pattern represents a percent style, the percent special character ('%') needs to be
+ * explicitly specified in the pattern, e.g., {pattern: "#,##0%"}. If the pattern does not contain
+ * the percent character it's treated as a decimal pattern, unless the style is set to percent,
+ * in which case the value is treated as a percent value, but not formatted to show the percent symbol.
+ * <br/>Example: {style: 'percent', pattern: "#,##0"}. <p>
+ *
+ * &nbsp;&nbsp;- A decimal pattern or exponent pattern is specified in the pattern using the CLDR
+ * conventions. <br/>Example: {pattern: "#,##0.00"} or {pattern: "0.##E+0"}. <p>
+ *
+ * NOTE: 'pattern' is provided for backwards compatibility with existing apps that may want the
+ * convenience of specifying an explicit format mask. Setting a pattern will override the default
+ * locale specific format. <br/>
+ *
+ * @property {('HALF_UP'|'HALF_DOWN'|'HALF_EVEN')=} roundingMode - specifies the rounding behavior.
+ * This follows the Java.Math.RoundingMode behavior.
+ * Currently we support the options: HALF_UP, HALF_DOWN, and HALF_EVEN
+ *
+ * @property {boolean=} roundDuringParse - Specifies whether or not to round during
+ * parse. Defaults to false; the number converter rounds during format but not during parse.
+ *
+ * @property {Object=} separators - An object with 2 fields: 'decimal' and 'group'.
+ * It allows the user to provide custom decimal and grouping separators. It is accepted for both
+ * format and parse methods.
+ * <br/>
+ *
+ * @property {('full'|'none')=} lenientParse - The lenientParse property can be used to enable or disable leninet parsing.
+ *  Allowed values: "full" (default), "none".
+ * <p style='padding-left: 5px;'>
+ * By default the lenient parse is enabled and the leniency rules descibed above will be used. When lenientParse is
+ * set to "none" the lenient parse is disabled and the user input must match the expected input otherwise an exception will
+ * be thrown.<br/><br/>
+ */
+oj.Object.createSubclass(oj.IntlNumberConverter, oj.NumberConverter, 'oj.IntlNumberConverter');
+
+/**
+ * Initializes the number converter instance with the set options.
+ * @param {Object=} options an object literal used to provide an optional information to
+ * initialize the converter.<p>
+ * @export
+ * @ignore
+ */
+oj.IntlNumberConverter.prototype.Init = function (options) {
+  oj.IntlNumberConverter.superclass.Init.call(this, options);
+};
+
+
+// Returns the wrapped number converter implementation object.
+oj.IntlNumberConverter.prototype._getWrapped = function () {
+  if (!this._wrapped) {
+    this._wrapped = OraNumberConverter.getInstance();
+  }
+
+  return this._wrapped;
+};
+
+/**
+ * Formats a Number and returns the formatted string, using the options this converter was
+ * initialized with.
+ *
+ * @param {number} value to be formatted for display
+ * @return {string} the localized and formatted value suitable for display. When the value is
+ * formatted as a percent it's multiplied by 100.
+ *
+ * @throws {Error} a ConverterError both when formatting fails, or if the options provided during
+ * initialization cannot be resolved correctly.
+ *
+ * @export
+ */
+oj.IntlNumberConverter.prototype.format = function (value) {
+  // undefined, null and empty string values all return null. If value is NaN then return "".
+  if (value == null ||
+      (typeof value === 'string' && (oj.StringUtils.trim('' + value)).length === 0) ||
+      (typeof value === 'number' && isNaN(value))) {
+    return __ValidationBase.IntlConverterUtils.__getNullFormattedValue();
+  }
+
+  var locale = Config.getLocale();
+  var localeElements = LocaleData.__getBundle();
+  var resolvedOptions = this.resolvedOptions();
+
+
+  try {
+    return this._getWrapped().format(value, localeElements, resolvedOptions, locale);
+  } catch (e) {
+    var converterError = this._processConverterError(e, value);
+    throw converterError;
+  }
+};
+
+/**
+ * In general, returns hint for the converter. For a IntlNumberConverter returned value is always null.
+ *
+ * @return {null} a hint describing the format the value is expected to be in.
+ * @export
+ */
+oj.IntlNumberConverter.prototype.getHint = function () {
+  // UX does not want any hint for numbers.
+  // return oj.Translations.getTranslatedString("oj-converter.hint.summary",
+  //        {'exampleValue': this._getHintValue()});
+  // return oj.IntlNumberConverter.superclass.getHint.call(this); // this asserts, and we don't want that.
+  return null;
+};
+
+/**
+ * Returns the options called with converter initialization.
+ * @return {Object} an object of options.
+ * @ojsignature {target:"Type", for: "returns",
+ *    value: "oj.IntlNumberConverter.ConverterOptions"}
+ * @export
+ */
+oj.IntlNumberConverter.prototype.getOptions = function () {
+  return oj.IntlNumberConverter.superclass.getOptions.call(this);
+};
+
+/**
+ * Parses a string value to return a Number, using the options this converter was initialized with.
+ *
+ * @param {string} value to parse
+ * @return {number|null} the parsed number or null if the value was null or an empty string. When
+ * the value is parsed as a percent its 1/100th part is returned.
+ *
+ * @throws {Error} a ConverterError both when parsing fails, or if the options provided during
+ * initialization cannot be resolved correctly.
+ *
+ * @export
+ */
+oj.IntlNumberConverter.prototype.parse = function (value) {
+  var converterError;
+  var locale;
+  var localeElements;
+  var resolvedOptions;
+
+  // null and empty string values are ignored and not parsed. It
+  // undefined.
+  if (value == null || value === '') { // check for undefined, null and ""
+    return null;
+  }
+
+  locale = Config.getLocale();
+  localeElements = LocaleData.__getBundle();
+  resolvedOptions = this.resolvedOptions();
+
+  try {
+    // we want to trim the value for leading spaces before and after
+    return this._getWrapped().parse(oj.StringUtils.trim(value),
+                                    localeElements,
+                                    resolvedOptions,
+                                    locale);
+  } catch (e) {
+    converterError = this._processConverterError(e, value);
+    throw converterError;
+  }
+};
+
+/**
+ * Returns an object literal with properties reflecting the number formatting options computed based
+ * on the options parameter. If options (or pattern) is not provided, the properties will be derived
+ * from the locale defaults.
+ *
+ * @return {Object} An object literal containing the resolved values for the following options. Some
+ * of these properties may not be present, indicating that the corresponding components will not be
+ * represented in the formatted output.
+ * <ul>
+ * <li><b>locale</b>: a String value with the language tag of the locale whose localization is used
+ * for formatting.</li>
+ * <li><b>style</b>: a String value. One of the allowed values - "decimal", "currency" or "percent".</li>
+ * <li><b>currency</b>: a String value.  an ISO 4217 alphabetic currency code. May be present only
+ *  when style is currency.</li>
+ * <li><b>currencyDisplay</b>: a String value. One of the allowed values - "code", "symbol", or
+ *  "name".</li>
+ * <li><b>numberingSystem</b>: a String value of the numbering system used. E.g. latn</li>
+ * <li><b>minimumIntegerDigits</b>: a non-negative integer Number value indicating the minimum
+ *  integer digits to be used.</li>
+ * <li><b>minimumFractionDigits</b>: a non-negative integer Number value indicating the minimum
+ *  fraction digits to be used.</li>
+ * <li><b>maximumFractionDigits</b>: a non-negative integer Number value indicating the maximum
+ *  fraction digits to be used.</li>
+ * <li><b>useGrouping</b>: a Boolean value indicating whether a grouping separator is used.</li>
+ * <li><b>lenientParse</b>: specifies if lenient parse is enabled or disabled. Allowed values: "full", "none".
+ * default is "full" which means lenient parse is enabled.</li>
+ * <li><b>separators</b>: - An object with 2 fields: 'decimal' and 'group'.</li>
+ *
+ * @throws a oj.ConverterError when the options that the converter was initialized with are invalid.
+ * @ojsignature {target:"Type", for: "returns",
+ *    value: "oj.IntlNumberConverter.ConverterOptions"}
+ * @export
+ */
+oj.IntlNumberConverter.prototype.resolvedOptions = function () {
+  var converterError;
+  var locale = Config.getLocale();
+  var localeElements;
+
+  // options are resolved and cached for the current locale. when locale changes resolvedOptions
+  // is reevaluated as it contains locale specific info.
+  if ((locale !== this._locale) || !this._resolvedOptions) {
+    // leave this line unchanged so that we can test that LocaleData can also be accessed from the oj namespace.
+    localeElements = oj.LocaleData.__getBundle();
+    try {
+      if (!localeElements) {
+        Logger.error('locale bundle for the current locale %s is unavailable', locale);
+        return {};
+      }
+
+      // cache if successfully resolved
+      this._resolvedOptions = this._getWrapped().resolvedOptions(localeElements,
+                                                                 this.getOptions(),
+                                                                 locale);
+      this._locale = locale;
+    } catch (e) {
+      converterError = this._processConverterError(e);
+      throw converterError;
+    }
+  }
+
+  return this._resolvedOptions;
+};
+
+/**
+ * Processes the error returned by the converter implementation and throws a oj.ConverterError
+ * instance.
+ *
+ * @param {Error} e
+ * @param {String|string|Number|number|Object=} value
+ * @throws an instance of oj.ConverterError
+ * @private
+ */
+oj.IntlNumberConverter.prototype._processConverterError = function (e, value) {
+  var converterError;
+  var errorInfo = e.errorInfo;
+  var detail;
+  var resourceKey;
+  var summary;
+
+  if (errorInfo) {
+    var errorCode = errorInfo.errorCode;
+    var parameterMap = errorInfo.parameterMap;
+    oj.Assert.assertObject(parameterMap);
+
+    switch (errorCode) {
+      case 'optionTypesMismatch':
+      case 'optionTypeInvalid':
+        converterError = __ValidationBase.IntlConverterUtils.__getConverterOptionError(
+          errorCode, parameterMap);
+        break;
+      case 'optionOutOfRange':
+        converterError = __ValidationBase.IntlConverterUtils.__getConverterOptionError(
+          errorCode, parameterMap);
+        break;
+      case 'optionValueInvalid':
+        converterError = __ValidationBase.IntlConverterUtils.__getConverterOptionError(
+          errorCode, parameterMap);
+        break;
+      case 'decimalFormatMismatch':
+        // The '{value}' does not match the expected decimal format
+        resourceKey = 'oj-converter.number.decimalFormatMismatch.summary';
+        break;
+      case 'currencyFormatMismatch':
+        // The {value} does not match the expected currency format
+        resourceKey = 'oj-converter.number.currencyFormatMismatch.summary';
+        break;
+      case 'percentFormatMismatch':
+        // The {value} does not match the expected currency format
+        resourceKey = 'oj-converter.number.percentFormatMismatch.summary';
+        break;
+      case 'unsupportedParseFormat':
+        // TODO: We'll be able to remove this exception when this bug is fixed post V1.1:
+        //  - implement parse() for short number converter
+        //
+        summary = Translations.getTranslatedString(
+          'oj-converter.number.shortLongUnsupportedParse.summary'
+        );
+        detail = Translations.getTranslatedString(
+          'oj-converter.number.shortLongUnsupportedParse.detail'
+        );
+        converterError = new oj.ConverterError(summary, detail);
+        break;
+      default:
+        break;
+    }
+
+    // The formatMismatch errors need a hint
+    if (resourceKey) {
+      summary = Translations.getTranslatedString(resourceKey, {
+        value: value || parameterMap.value,
+        format: parameterMap.format
+      });
+
+      // _getHintValue is smart. It uses the converter's 'format' function
+      //  to get the example format to show the end user.
+      detail = Translations.getTranslatedString('oj-converter.hint.detail',
+        { exampleValue: this._getHintValue() });
+
+      converterError = new oj.ConverterError(summary, detail);
+    }
+  }
+
+  if (!converterError) {
+    // An error we are unfamiliar with. Get the message and set as detail
+    summary = e.message; // TODO: What should the summary be when it's missing??
+    detail = e.message;
+    converterError = new oj.ConverterError(summary, detail);
+  }
+
+  return converterError;
+};
+
+// Returns the hint value. It uses the converter's format function to return a formatted
+// example. For example, if the converter's style is decimal and decimalFormat is short,
+// this.format(12345.98765) returns 12K, and we show 12K in the error message as an example
+// of what they should type in.
+oj.IntlNumberConverter.prototype._getHintValue = function () {
+  var value = '';
+  try {
+    // use .format to get a real example to show the user what format they can type in to the field.
+    value = this.format(12345.98765);
+  } catch (e) {
+    if (e instanceof oj.ConverterError) {
+      // Something went wrong and we don't have a way to retrieve a valid value.
+      value = '';
+      Logger.error('error retrieving hint value in format');
+    }
+  }
+
+  // returns the formatted value of 12345.98765
+  return value;
+};
+
 /**
  * Copyright (c) 2016, Oracle and/or its affiliates.
  * All rights reserved.
@@ -1180,21 +1117,21 @@ oj.Validation.__registerDefaultValidatorFactory(oj.ValidatorFactory.VALIDATOR_TY
  * Dual licensed under the MIT or GPL Version 2 licenses.
  * http://jquery.org/license
  */
+/* global Logger:false */
 
-/* eslint-disable */
-
+/* xeslint-disable no-param-reassign */
 /**
  * @constructor
- * 
+ *
  * @classdesc OraNumberConverter object implements number parsing and formatting for
- * decimal, currency, percent and perMill types. It supports ECMA-402 options 
- * and user defined pattern. The user defined pattern is parsed in order to 
+ * decimal, currency, percent and perMill types. It supports ECMA-402 options
+ * and user defined pattern. The user defined pattern is parsed in order to
  * derive the options that can be specified as ECMA options.
  * There are several ways to use the converter.
  * <p>
  * <ul>
- * <li>Using options defined by the ECMA 402 Specification, these would be the properties style, 
- * currency, currencyDisplay, minimumIntegerDigits, minimumFractionDigits, maximumFractionDigits, 
+ * <li>Using options defined by the ECMA 402 Specification, these would be the properties style,
+ * currency, currencyDisplay, minimumIntegerDigits, minimumFractionDigits, maximumFractionDigits,
  * useGrouping. NOTE: minimumSignificantDigits and maximumSignificantDigits are not supported.</li>
  * <li>Using a custom decimal, currency or percent format pattern. specified using the 'pattern' property</li>
  * <li>Using the decimalFormat option to define a compact pattern, such as "1M" and "1 million".</li>
@@ -1202,274 +1139,274 @@ oj.Validation.__registerDefaultValidatorFactory(oj.ValidatorFactory.VALIDATOR_TY
  * <li>Using the roundingMode and roundDuringParse options to round the number HALF_UP, HALF_DOWN, or HALF_EVEN.</li>
  * </ul>
  * <p>
- * 
+ *
  * The converter provides leniency when parsing user input value to a number in the following ways:<br/>
- * 
+ *
  * <ul>
- * <li>Prefix and suffix that do not match the pattern, are removed. E.g., when pattern is 
- * "#,##0.00%" (suffix is the % character), a value of "abc-123.45xyz", will be leniently parsed to 
+ * <li>Prefix and suffix that do not match the pattern, are removed. E.g., when pattern is
+ * "#,##0.00%" (suffix is the % character), a value of "abc-123.45xyz", will be leniently parsed to
  * -123.45</li>
- * <li>When a value includes a symbol but the pattern doesn't require it.  E.g., the options are 
- * {pattern: "###", currency: 'USD'}, then values ($123), (123) and -123 will be leniently parsed as 
+ * <li>When a value includes a symbol but the pattern doesn't require it.  E.g., the options are
+ * {pattern: "###", currency: 'USD'}, then values ($123), (123) and -123 will be leniently parsed as
  * -123.</li>
  * </ul>
  * <p>
  * Lenient parse can be disabled by setting the property lenientParse to "none". In which case the user input must
  * be an exact match of the expected pattern and all the leniency described above will be disabled.
  * <p>
- * @property {Object=} options - an object literal used to provide optional information to 
+ * @property {Object=} options - an object literal used to provide optional information to
  * initialize the converter.
- * @property {string=} options.style - sets the style of number formatting. Allowed values are "decimal" 
- * (the default), "currency", "percent" or "unit". When a number is formatted as a decimal, the decimal 
- * character is replaced with the most appropriate symbol for the locale. In English this is a 
- * decimal point ("."), while in many locales it is a decimal comma (","). If grouping is enabled the 
- * locale dependent grouping separator is also used. These symbols are also used for numbers 
+ * @property {string=} options.style - sets the style of number formatting. Allowed values are "decimal"
+ * (the default), "currency", "percent" or "unit". When a number is formatted as a decimal, the decimal
+ * character is replaced with the most appropriate symbol for the locale. In English this is a
+ * decimal point ("."), while in many locales it is a decimal comma (","). If grouping is enabled the
+ * locale dependent grouping separator is also used. These symbols are also used for numbers
  * formatted as currency or a percentage, where appropriate.
- * @property {string=} options.currency - specifies the currency that will be used when formatting the 
- * number. The value should be a ISO 4217 alphabetic currency code. If the style is set to currency, 
- * it's required that the currency property also be specified. This is because there is no default 
- * currency associated with the current locale. The user must always specify the currency code 
- * to be shown, otherwise an error will be thrown. The current page locale 
- * (returned by oj.Config.getLocale()) determines the formatting elements of the number 
- * like grouping separator and decimal separator. The currency code tells us which currency to 
+ * @property {string=} options.currency - specifies the currency that will be used when formatting the
+ * number. The value should be a ISO 4217 alphabetic currency code. If the style is set to currency,
+ * it's required that the currency property also be specified. This is because there is no default
+ * currency associated with the current locale. The user must always specify the currency code
+ * to be shown, otherwise an error will be thrown. The current page locale
+ * (returned by oj.Config.getLocale()) determines the formatting elements of the number
+ * like grouping separator and decimal separator. The currency code tells us which currency to
  * display in current page locale. JET has translations for currency names.
  * <p>
- * As an example if we want to format 1000.35 EURO and the page locale is "en-US", 
+ * As an example if we want to format 1000.35 EURO and the page locale is "en-US",
  * we pass {style:'currency', currency:'EUR', currencyDisplay:'symbol'} and we will get "€1,000.35"
  * If the page locale is "fr-FR", with the same options, we will get: "1 000,35 €"
  * </p>
- * @property {string=} options.unit - Mandatory when style is "unit". Allowed values: 
+ * @property {string=} options.unit - Mandatory when style is "unit". Allowed values:
  * "byte" or "bit". It is used for formatting only. It can not be used for parsing.
- * <p> 
- * It is used to format digital units like 10Mb for bit unit or 10MB for byte unit. 
+ * <p>
+ * It is used to format digital units like 10Mb for bit unit or 10MB for byte unit.
  * There is no need to specify the scale of the unit. We automatically detect it.
  * For example 1024 is formatted as 1KB and 1048576 as 1MB.
- * The user can also specify 'minimumFractionDigits' and  'maximumFractionDigits' to be displayed, 
+ * The user can also specify 'minimumFractionDigits' and  'maximumFractionDigits' to be displayed,
  * otherwise we use the locale's default max and min fraction digits.
- * </p> 
- * @property {string=} options.currencyDisplay - if the number is using currency formatting, specifies 
- * if the currency will be displayed using its "code" (as an ISO 4217 alphabetic currency code), 
- * "symbol" (a localized currency symbol (e.g. $ for US dollars, £ for Great British pounds, and so 
- * on), or "name" (a localized currency name. Allowed values are "code", "symbol" and "name". 
+ * </p>
+ * @property {string=} options.currencyDisplay - if the number is using currency formatting, specifies
+ * if the currency will be displayed using its "code" (as an ISO 4217 alphabetic currency code),
+ * "symbol" (a localized currency symbol (e.g. $ for US dollars, £ for Great British pounds, and so
+ * on), or "name" (a localized currency name. Allowed values are "code", "symbol" and "name".
  * The default is "symbol".
  * @property {string=} options.decimalFormat -
- * specifies the decimal format length to use when style is set to "decimal". 
- * Allowed values are : "standard"(default), "short" and "long". "standard" is equivalent to not 
- * specifying the 'decimalFormat' attribute, in that case the locale's default decimal pattern 
+ * specifies the decimal format length to use when style is set to "decimal".
+ * Allowed values are : "standard"(default), "short" and "long". "standard" is equivalent to not
+ * specifying the 'decimalFormat' attribute, in that case the locale's default decimal pattern
  * is used for formatting.
  * <p>
- * The user can also specify 'minimumFractionDigits' and  'maximumFractionDigits' to display. 
+ * The user can also specify 'minimumFractionDigits' and  'maximumFractionDigits' to display.
  * When not present we use the locale's default max and min fraction digits.
  * </p>
  * <p>
- * There is no need to specify the scale; we automatically detect greatest scale that is less or 
+ * There is no need to specify the scale; we automatically detect greatest scale that is less or
  * equal than the input number. For example  1000000 is formatted as "1M" or "1 million" and
- * 1234 is formatted, with zero fractional digits, as "1K" or " 1 thousand" for 
- * short and long formats respectively. The pattern for the short and long number is locale dependent 
+ * 1234 is formatted, with zero fractional digits, as "1K" or " 1 thousand" for
+ * short and long formats respectively. The pattern for the short and long number is locale dependent
  * and uses plural rules for the particular locale.
  * </p>
  * <p>
- * NOTE: Currently this option formats a value (e.g., 2000 -> 2K), but it does not parse a value 
+ * NOTE: Currently this option formats a value (e.g., 2000 -> 2K), but it does not parse a value
  * (e.g., 2K -> 2000), so it can only be used
  * in a readOnly EditableValue because readOnly EditableValue components do not call
  * the converter's parse function.
  * </p>
  * @property {string=} options.currencyFormat -
- * specifies the currency format length to use when style is set to "currency". 
- * Allowed values are : "standard"(default), "short" and "long". 'standard' is equivalent to not 
- * specifying the 'currencyFormat' attribute, in that case the locale's default currency pattern 
+ * specifies the currency format length to use when style is set to "currency".
+ * Allowed values are : "standard"(default), "short" and "long". 'standard' is equivalent to not
+ * specifying the 'currencyFormat' attribute, in that case the locale's default currency pattern
  * is used for formatting.
  * Similar to decimalFormat, currencyFormat can only be used for formatting. It can not be used for parsing.
  * <p>
- * The user can also specify 'minimumFractionDigits' and  'maximumFractionDigits' to display. 
+ * The user can also specify 'minimumFractionDigits' and  'maximumFractionDigits' to display.
  * When not present we use the locale's default max and min fraction digits.
  * </p>
  * <p>
- * There is no need to specify the scale; we automatically detect greatest scale that is less or 
+ * There is no need to specify the scale; we automatically detect greatest scale that is less or
  * equal than the input number. For example  1000000 is formatted as "$1M" or "1 million dollar" and
  * 1000 is formatted as "$1K" or " 1 thousand dollar" for short and long formats respectively.
  * The pattern for the short and long number is locale dependent and uses plural rules for the particular locale.
  * </p>
- * @property {number=} options.minimumIntegerDigits - sets the minimum number of digits before the 
- * decimal place (known as integer digits). The number is padded with leading zeros if it would not 
+ * @property {number=} options.minimumIntegerDigits - sets the minimum number of digits before the
+ * decimal place (known as integer digits). The number is padded with leading zeros if it would not
  * otherwise have enough digits. The value must be an integer between 1 and 21.
- * @property {number=} options.minimumFractionDigits - similar to 'minimumIntegerDigits', except it 
- * deals with the digits after the decimal place (fractional digits). It must be an integer between 
+ * @property {number=} options.minimumFractionDigits - similar to 'minimumIntegerDigits', except it
+ * deals with the digits after the decimal place (fractional digits). It must be an integer between
  * 0 and 20. The fractional digits will be padded with trailing zeros if they are less than the minimum.
- * @property {number=} options.maximumFractionDigits - follows the same rules as 'minimumFractionDigits', 
- * but sets the maximum number of fractional digits that are allowed. The value will be rounded if 
+ * @property {number=} options.maximumFractionDigits - follows the same rules as 'minimumFractionDigits',
+ * but sets the maximum number of fractional digits that are allowed. The value will be rounded if
  * there are more digits than the maximum specified.
- * @property {boolean=} options.useGrouping - when the value is truthy, the locale dependent grouping 
- * separator is used when formatting the number. This is often known as the thousands separator, 
+ * @property {boolean=} options.useGrouping - when the value is truthy, the locale dependent grouping
+ * separator is used when formatting the number. This is often known as the thousands separator,
  * although it is up to the locale where it is placed. The 'useGrouping' is set to true by default.
- * @property {string=} options.pattern an optional localized pattern, where the characters used in 
- * pattern are as defined in the Unicode CLDR for numbers, percent or currency formats. When present 
+ * @property {string=} options.pattern an optional localized pattern, where the characters used in
+ * pattern are as defined in the Unicode CLDR for numbers, percent or currency formats. When present
  * this will override the other "options". <p>
- * 
- * &nbsp;&nbsp;- When the pattern represents a currency style the 'currency' property is required to 
- * be set, as not setting this will throw an error. The 'currencyDisplay' is optional. <br/>Example: 
+ *
+ * &nbsp;&nbsp;- When the pattern represents a currency style the 'currency' property is required to
+ * be set, as not setting this will throw an error. The 'currencyDisplay' is optional. <br/>Example:
  * {pattern: '¤#,##0', currency: 'USD'}. <p>
- * 
- * &nbsp;&nbsp;- It's not mandatory for the pattern to have the special character '¤' (currency sign) 
- * be present. When not present, values are treated as a currency value, but are not formatted to 
+ *
+ * &nbsp;&nbsp;- It's not mandatory for the pattern to have the special character '¤' (currency sign)
+ * be present. When not present, values are treated as a currency value, but are not formatted to
  * show the currency symbol. <br/>Example: {pattern: '#,##0', currency: 'USD'} <p>
- * 
- * &nbsp;&nbsp;- When the pattern represents a percent style, the percent special character ('%') needs to be 
- * explicitly specified in the pattern, e.g., {pattern: "#,##0%"}. If the pattern does not contain 
- * the percent character it's treated as a decimal pattern, unless the style is set to percent, 
- * in which case the value is treated as a percent value, but not formatted to show the percent symbol. 
+ *
+ * &nbsp;&nbsp;- When the pattern represents a percent style, the percent special character ('%') needs to be
+ * explicitly specified in the pattern, e.g., {pattern: "#,##0%"}. If the pattern does not contain
+ * the percent character it's treated as a decimal pattern, unless the style is set to percent,
+ * in which case the value is treated as a percent value, but not formatted to show the percent symbol.
  * <br/>Example: {style: 'percent', pattern: "#,##0"}. <p>
- * 
- * &nbsp;&nbsp;- A decimal pattern or exponent pattern is specified in the pattern using the CLDR 
+ *
+ * &nbsp;&nbsp;- A decimal pattern or exponent pattern is specified in the pattern using the CLDR
  * conventions. <br/>Example: {pattern: "#,##0.00"} or {pattern: "0.##E+0"}. <p>
- * 
- * NOTE: 'pattern' is provided for backwards compatibility with existing apps that may want the 
- * convenience of specifying an explicit format mask. Setting a pattern will override the default 
+ *
+ * NOTE: 'pattern' is provided for backwards compatibility with existing apps that may want the
+ * convenience of specifying an explicit format mask. Setting a pattern will override the default
  * locale specific format. <br/>
- * 
- * @property {string=} options.roundingMode - specifies the rounding behavior. 
+ *
+ * @property {string=} options.roundingMode - specifies the rounding behavior.
  * This follows the Java.Math.RoundingMode behavior.
- * Currently we support the options: HALF_UP, HALF_DOWN, and HALF_EVEN 
- * 
+ * Currently we support the options: HALF_UP, HALF_DOWN, and HALF_EVEN
+ *
  * @property {boolean=} options.roundDuringParse - Specifies whether or not to round during
  * parse. Defaults to false; the number converter rounds during format but not during parse.
- * 
+ *
  * @property {Object=} options.separators - An object with 2 fields: 'decimal' and 'group'.
  * It allows the user to override the locale's default decimal and grouping separators. It is accepted for both
- * format and parse methods. 
+ * format and parse methods.
  * <br/>
- * 
+ *
  * @property {string=} options.lenientParse - The lenientParse property can be used to enable or disable leninet parsing.
- *  Allowed values: "full" (default), "none". 
+ *  Allowed values: "full" (default), "none".
  * <p style='padding-left: 5px;'>
  * By default the lenient parse is enabled and the leniency rules descibed above will be used. When lenientParse is
  * set to "none" the lenient parse is disabled and the user input must match the expected input otherwise an exception will
  * be thrown.<br/><br/>
- * 
+ *
  * @example <caption>Create a number converter for currencies</caption>
  * var converter = OraNumberConveter.getInstance();
  * var options = {style: "currency", currency: "USD", minimumIntegerDigits: 2};
  * var localeElements;
  * var nb = 9;
  * converter.format(nb, localeElements, options); --> "$09.00" if page locale is 'en-US'
- * converter.format(nb, localeElements, options); --> "09,00 $US" if page locale is 'fr-FR'<br/>
- * 
+ * converter.format(nb, localeElements, options); --> "09,00 $US" if page locale is 'fr-FR'<br/>
+ *
  * @example <caption>Options for percent values using a custom (CLDR) pattern</caption>
  * var options = {pattern: '#,##0%'};
  *converter = converterFactory.createConverter(options);<br/>
- * 
+ *
  * @example <caption>To parse a value as percent but format it without displaying the percent character</caption>
  * var options = {style: 'percent', pattern: '#,##0'};<br/>
- * 
+ *
  * @example <caption>To parse a value as currency using a custom (CLDR) pattern</caption>
  * var options = {pattern: '¤#,##0', currency: 'USD'};
- * 
+ *
  * @example <caption>To format a value as digital bit unit</caption>
  * var options = {style:'unit', unit:'bit'};
  * var nb = 1024;
  * converter.format(nb, localeElements, options);--> 1Kb<br/>
- * 
+ *
  * @example <caption>To format a value as digital byte unit</caption>
  * var options = {style:'unit', unit:'byte'};
  * var nb = 1024;
  * converter.format(nb, localeElements, options);--> 1KB<br/>
- * 
+ *
  * @example <caption>The following decimalFormat examples are in en locale.
  * To format a value as short (default for fraction digits is based on the locale)</caption>
  * var options = {style:'decimal', decimalFormat:'short'};
  * var nb = 12345
  * converter.format(nb, localeElements, options);--> 12.354K<br/>
- * 
+ *
  * @example <caption>To format a value as long (default for fraction digits is based on the locale):</caption>
  * var options = {style:'decimal', decimalFormat:'long'};
  * var nb = 12345;
  * converter.format(nb, localeElements, options);--> 12.345 thousand<br/>
- * 
+ *
  * @example <caption>To format a value as short with minimum fraction digits:</caption>
  * options = { style:'decimal', decimalFormat:'short', minimumFractionDigits:4};
  * var nb = 1234;
  * converter.format(nb, localeElements, options);--> 1.2340K<br/>
- * 
+ *
  * @example <caption>To format a value as short with maximum fraction digits:</caption>
  * options = { style:'decimal', decimalFormat:'short', maximumFractionDigits:0};
  *  var nb = 1234;
  * converter.format(nb, localeElements, options);--> 12K<br/>
- * 
+ *
  * @example <caption>To format a value as long with minimum and maximum fraction digits:</caption>
- * options = { style:'decimal', decimalFormat:'long', 
+ * options = { style:'decimal', decimalFormat:'long',
  * minimumFractionDigits:2, maximumFractionDigits:4};
  * var nb = 12000;
  * converter.format(nb, localeElements, options);--> 12.00 thousand<br/>
- * 
+ *
  * @example <caption>To format a value as short with minimum and maximum fraction digits:</caption>
- * options = { style:'decimal', decimalFormat:'long', 
+ * options = { style:'decimal', decimalFormat:'long',
  * minimumFractionDigits:2, maximumFractionDigits:4};
  * var nb = 12345678;
  * converter.format(nb, localeElements, options);--> 12.345 million<br/>
- * 
+ *
  * @example <caption>decimal style default is standard:</caption>
- * options = { style:'decimal', decimalFormat:'standard'}; 
+ * options = { style:'decimal', decimalFormat:'standard'};
  * var nb = 12345;
  * converter.format(nb, localeElements, options);--> 12,345<br/>
- * 
+ *
  * @example <caption>decimal round HALF_DOWN:</caption>
- * options = { style:'decimal',  maximumFractionDigits:2, roundingMode:'HALF_DOWN'}; 
+ * options = { style:'decimal',  maximumFractionDigits:2, roundingMode:'HALF_DOWN'};
  * var nb = 0.225;
  * converter.format(nb, localeElements, options);--> 0.22
  * var str = "0.225";
  * converter.parse(str, localeElements, options);-->0.225 //doesn't round during parse by default<br/>
- * 
+ *
  * @example <caption>decimal round HALF_UP:</caption>
- * options = { style:'decimal',  maximumFractionDigits:2, roundingMode:'HALF_UP'}; 
+ * options = { style:'decimal',  maximumFractionDigits:2, roundingMode:'HALF_UP'};
  * var nb = 0.225;
  * converter.format(nb, localeElements, options);--> 0.23
  * var str = "0.225";
  * converter.parse(str, localeElements, options);--> 0.225 //doesn't round during parse by default<br/>
- * 
+ *
  * @example <caption>decimal round HALF_EVEN:</caption>
- * options = { style:'decimal',  maximumFractionDigits:2, roundingMode:'HALF_EVEN'}; 
+ * options = { style:'decimal',  maximumFractionDigits:2, roundingMode:'HALF_EVEN'};
  * converter.format(0.225, localeElements, options);--> 0.22
  * converter.format(0.235, localeElements, options);--> 0.24
  * converter.parse("0.225", localeElements, options);--> 0.225 //doesn't round during parse by default
  * converter.parse("0.235", localeElements, options);--> 0.235 //doesn't round during parse by default<br/>
- * 
+ *
  * @example <caption>decimal round HALF_DOWN and roundDuringParse:</caption>
- * options = { style:'decimal', maximumFractionDigits:2, 
+ * options = { style:'decimal', maximumFractionDigits:2,
  *             roundingMode:'HALF_DOWN', roundDuringParse: true};
- * var nb = 0.225; 
+ * var nb = 0.225;
  * converter.format(nb, localeElements, options);--> 0.22
  * var str = "0.225";
  * converter.parse(str, localeElements, options);-->0.22<br/>
- * 
+ *
  * @example <caption>decimal round HALF_UP and roundDuringParse:</caption>
- * options = { style:'decimal',  maximumFractionDigits:2, 
- *             roundingMode:'HALF_UP', roundDuringParse: true}; 
+ * options = { style:'decimal',  maximumFractionDigits:2,
+ *             roundingMode:'HALF_UP', roundDuringParse: true};
  * var nb = 0.225;
  * converter.format(nb, localeElements, options);--> 0.23
  * var str = "0.225";
  * converter.parse(str, localeElements, options);--> 0.23<br/>
- * 
+ *
  * @example <caption>decimal round HALF_EVEN and roundDuringParse:</caption>
- * options = { style:'decimal',  maximumFractionDigits:2, 
- *             roundingMode:'HALF_EVEN', roundDuringParse: true}; 
+ * options = { style:'decimal',  maximumFractionDigits:2,
+ *             roundingMode:'HALF_EVEN', roundDuringParse: true};
  * converter.format(0.225, localeElements, options);--> 0.22
  * converter.format(0.235, localeElements, options);--> 0.24
  * converter.parse("0.225", localeElements, options);--> 0.22
  * converter.parse("0.235", localeElements, options);--> 0.24<br/>
- * 
+ *
  * @example <caption>Override locale's decimal and grouping separators:</caption>
  * in en-US locale, the decimal separator is '.' and grouping separator is ','. In this example we will swap them.
  * options = { style:'decimal', separators: {decimal: ',',  group: '.'}};
- * var nb = 1234567.89; 
+ * var nb = 1234567.89;
  * converter.format(nb, localeElements, options);--> 1.234.567,89
  * converter.parse("1.234.567,89", localeElements, options);--> 1234567.89
  * <br/>
- * 
+ *
  * @example <caption>Disable lenient parse:</caption>
- * options = { style:'decimal',  lenientParse: 'none'}; 
+ * options = { style:'decimal',  lenientParse: 'none'};
  * converter.parse("abc-123.45xyz", localeElements, options);--> Error: Unparsable number abc-123.45xyz The expected number pattern is #,##0.###
  * <br/>
- * 
+ *
  * @name OraNumberConverter
  * @ignore
  */
@@ -1477,72 +1414,38 @@ oj.Validation.__registerDefaultValidatorFactory(oj.ValidatorFactory.VALIDATOR_TY
 /**
  * @ignore
  */
-var OraNumberConverter;
 
-OraNumberConverter = (function () {
-  var _zeroPad;
-  var _formatNumberImpl;
-  var _parseNumberImpl;
-  var _getLatnDigits;
-  var _getNumberParts;
-  var _throwNaNException;
-  var _applyPatternImpl;
-  var _parseNegativePattern;
-  var _lenientParseNumber;
-  var _parseNegativeExponent;
-  var _getNumberSettings;
-  var _validateNumberOptions;
-  var _getRoundedNumber;
-  var _throwMissingCurrency;
-  var _getNumberingSystemKey;
-  var _getBCP47Lang;
-  var _throwNumberOutOfRange;
-  var _roundNumber;
-  var _decimalAdjust;
-  var _getRoundingMode;
-  var _getNumberOption;
-  var _getNumberingExtension;
-  var _adjustRoundingMode;
-  var _getParsedValue;
-  var _throwUnsupportedParseOption;
-  var _toRawFixed;
-  var _toExponentialPrecision;
-  var _toCompactNumber;
-  var _toDigitalByte;
- var _throwMissingUnit;
+// eslint-disable-next-line no-unused-vars
+var OraNumberConverter = (function () {
   var instance;
-  var _regionMatches;
-  var _expandAffix;
-  var _expandAffixes;
-  var _throwSyntaxError;
-  var _resolveNumberSettings;
-  var _resolveOptions;
 
-  var _REGEX_INFINITY = /^[+\-]?infinity$/i;
-  var _REGEX_PARSE_FLOAT = /^[+\-]?\d*\.?\d*(e[+\-]?\d+)?$/;
-  var _LENIENT_REGEX_PARSE_FLOAT = /([^+-.0-9]*)([+\-]?\d*\.?\d*(E[+\-]?\d+)?).*$/;
-  var _ESCAPE_REGEXP = /([\^\$\.\*\+\?\|\[\]\(\)\{\}])/g;
+  var _REGEX_INFINITY = /^[+-]?infinity$/i;
+  var _REGEX_PARSE_FLOAT = /^[+-]?\d*\.?\d*(e[+-]?\d+)?$/;
+  var _LENIENT_REGEX_PARSE_FLOAT = /([^+-.0-9]*)([+-]?\d*\.?\d*(E[+-]?\d+)?).*$/;
+  // eslint-disable-next-line no-useless-escape
+  var _ESCAPE_REGEXP = /([\^$.*+?|\[\](){}])/g;
   var _REGEX_TRIM_ZEROS = /(^0\.0*)([^0].*$)/;
+  var _REGEX_ONLY_ZEROS = /^0+$/;
 
   var _decimalTypeValues = {
-    'trillion': [100000000000000, 10000000000000, 1000000000000],
-    'billion': [100000000000, 10000000000, 1000000000],
-    'million': [100000000, 10000000, 1000000],
-    'thousand': [100000, 10000, 1000]
+    trillion: [100000000000000, 10000000000000, 1000000000000],
+    billion: [100000000000, 10000000000, 1000000000],
+    million: [100000000, 10000000, 1000000],
+    thousand: [100000, 10000, 1000]
   };
 
   var _decimalTypeValuesMap = {
-    'trillion': 1000000000000,
-    'billion': 1000000000,
-    'million': 1000000,
-    'thousand': 1000
+    trillion: 1000000000000,
+    billion: 1000000000,
+    million: 1000000,
+    thousand: 1000
   };
 
-  //maps roundingMode attributes to Math rounding modes. 
+  // maps roundingMode attributes to Math rounding modes.
   var _roundingModeMap = {
-    'HALF_UP': 'ceil',
-    'HALF_DOWN': 'floor',
-    'DEFAULT': 'round'
+    HALF_UP: 'ceil',
+    HALF_DOWN: 'floor',
+    DEFAULT: 'round'
   };
 
   var _DIGITAL_KILO = 1024;
@@ -1551,34 +1454,35 @@ OraNumberConverter = (function () {
   var _DIGITAL_TERA = 1024 * 1024 * 1024 * 1024;
 
 
-  //prepend or append count zeros to a string.
-  _zeroPad = function (str, count, left) {
+  // prepend or append count zeros to a string.
+  function _zeroPad(str, count, left) {
     var l;
     for (l = str.length; l < count; l += 1) {
-      str = (left ? ("0" + str) : (str + "0"));
+      // eslint-disable-next-line no-param-reassign
+      str = (left ? ('0' + str) : (str + '0'));
     }
     return str;
-  };
+  }
 
-  _throwNumberOutOfRange = function (value, minimum, maximum, property) {
+  function _throwNumberOutOfRange(value, minimum, maximum, property) {
     var msg = value +
-        " is out of range.  Enter a value between " + minimum +
-        " and " + maximum + " for " + property;
+        ' is out of range.  Enter a value between ' + minimum +
+        ' and ' + maximum + ' for ' + property;
     var rangeError = new RangeError(msg);
     var errorInfo = {
-      'errorCode': "numberOptionOutOfRange",
-      'parameterMap': {
-        'value': value,
-        'minValue': minimum,
-        'maxValue': maximum,
-        'propertyName': property
+      errorCode: 'numberOptionOutOfRange',
+      parameterMap: {
+        value: value,
+        minValue: minimum,
+        maxValue: maximum,
+        propertyName: property
       }
     };
-    rangeError['errorInfo'] = errorInfo;
+    rangeError.errorInfo = errorInfo;
     throw rangeError;
-  };
+  }
 
-  _getNumberOption = function (options, property, minimum, maximum, fallback) {
+  function _getNumberOption(options, property, minimum, maximum, fallback) {
     var value = options[property];
     if (value !== undefined) {
       value = Number(value);
@@ -1587,41 +1491,42 @@ OraNumberConverter = (function () {
       }
       return Math.floor(value);
     }
-    else {
-      return fallback;
-    }
-  };
 
-  //get the numbering system key from the locale's unicode extension.
-  //Verify that the locale data has a numbers entry for it, if not return latn as default.
-  _getNumberingSystemKey = function (localeElements, locale) {
-    if (locale === undefined)
+    return fallback;
+  }
+
+  // get the numbering system key from the locale's unicode extension.
+  // Verify that the locale data has a numbers entry for it, if not return latn as default.
+  function _getNumberingSystemKey(localeElements, locale) {
+    if (locale === undefined) {
       return 'latn';
+    }
     var numberingSystemKey = _getNumberingExtension(locale);
-    var symbols = "symbols-numberSystem-" + numberingSystemKey;
-    if (localeElements['numbers'][symbols] === undefined)
+    var symbols = 'symbols-numberSystem-' + numberingSystemKey;
+    if (localeElements.numbers[symbols] === undefined) {
       numberingSystemKey = 'latn';
+    }
     return numberingSystemKey;
-  };
+  }
 
-  //return the language part
-  _getBCP47Lang = function (tag) {
-    var arr = tag.split("-");
+  // return the language part
+  function _getBCP47Lang(tag) {
+    var arr = tag.split('-');
     return arr[0];
-  };
+  }
 
-  //get the unicode numbering system extension.
-  _getNumberingExtension = function (locale) {
-    locale = locale || "en-US";
-    var idx = locale.indexOf("-u-nu-");
+  // get the unicode numbering system extension.
+  function _getNumberingExtension(locale) {
+    var _locale = locale || 'en-US';
+    var idx = _locale.indexOf('-u-nu-');
     var numbering = 'latn';
     if (idx !== -1) {
-      numbering = locale.substr(idx + 6, 4);
+      numbering = _locale.substr(idx + 6, 4);
     }
     return numbering;
-  };
+  }
 
-  /*return the properties for a number such as minimum and maximum fraction 
+  /* return the properties for a number such as minimum and maximum fraction
    *digits, decimal separator, grouping separator.
    *-If no user defined pattern is provided, get the pattern from the locale
    *  data and parse it to extrcat the number properties. If ecma options are
@@ -1630,168 +1535,179 @@ OraNumberConverter = (function () {
    *  properties. Ignore ecma ptions if present.
    */
 
-  _getNumberSettings = function (localeElements, numberSettings,
-      options, locale) {
+  function _getNumberSettings(localeElements, _numberSettings, options, locale) {
+    var numberSettings = _numberSettings;
     var pat;
     var localeElementsMainNode = oj.OraI18nUtils.getLocaleElementsMainNode(localeElements);
     var numberingSystemKey = _getNumberingSystemKey(localeElementsMainNode, locale);
-    numberSettings['numberingSystemKey'] = numberingSystemKey;
-    numberSettings['numberingSystem'] = "symbols-numberSystem-" +
-        numberingSystemKey;
-    var lenient = options['lenientParse'];
-    numberSettings['lenientParse'] = lenient || 'full';
-    numberSettings['style'] = options['style'];
-    //pattern passed in options
-    if (options['pattern'] !== undefined && options['pattern'].length > 0) {
-      pat = options['pattern'];
-    }
-    else
-    {
+    numberSettings.numberingSystemKey = numberingSystemKey;
+    numberSettings.numberingSystem = 'symbols-numberSystem-' +
+      numberingSystemKey;
+    var lenient = options.lenientParse;
+    numberSettings.lenientParse = lenient || 'full';
+    numberSettings.style = options.style;
+    // pattern passed in options
+    if (options.pattern !== undefined && options.pattern.length > 0) {
+      pat = options.pattern;
+    } else {
       var key;
-      switch (numberSettings['style'])
-      {
-        case "decimal" :
-          key = "decimalFormats-numberSystem-";
+      switch (numberSettings.style) {
+        case 'decimal' :
+          key = 'decimalFormats-numberSystem-';
           break;
-        case "currency" :
-          key = "currencyFormats-numberSystem-";
+        case 'currency' :
+          key = 'currencyFormats-numberSystem-';
           break;
-        case "percent" :
-          key = "percentFormats-numberSystem-";
+        case 'percent' :
+          key = 'percentFormats-numberSystem-';
           break;
         default:
-          key = "decimalFormats-numberSystem-";
+          key = 'decimalFormats-numberSystem-';
           break;
       }
-      key += numberSettings['numberingSystemKey'];
-      pat = localeElementsMainNode['numbers'][key]['standard'];
-      //check if decimalFormat is set
-      var decFormatLength = options['decimalFormat'];
-      //if not, check for currencyFormat
-      if (decFormatLength === undefined)
-        decFormatLength = options['currencyFormat'];
-      //if either decimalFormat or currencyFormat is set, save it in number settings
-      if (decFormatLength !== undefined && (numberSettings['style'] === 'decimal' || numberSettings['style'] === 'currency')) {
-        numberSettings['shortDecimalFormat'] = localeElementsMainNode['numbers']['decimalFormats-numberSystem-latn'][decFormatLength]['decimalFormat'];
+      key += numberSettings.numberingSystemKey;
+      pat = localeElementsMainNode.numbers[key].standard;
+      // check if decimalFormat is set
+      var decFormatLength = options.decimalFormat;
+      // if not, check for currencyFormat
+      if (decFormatLength === undefined) {
+        decFormatLength = options.currencyFormat;
+      }
+      // if either decimalFormat or currencyFormat is set, save it in number settings
+      if (decFormatLength !== undefined &&
+          (numberSettings.style === 'decimal' || numberSettings.style === 'currency')) {
+        numberSettings.shortDecimalFormat =
+          localeElementsMainNode.numbers['decimalFormats-numberSystem-latn'][decFormatLength]
+          .decimalFormat;
       }
     }
-    var decimalSeparator = localeElementsMainNode['numbers'][numberSettings['numberingSystem']]['decimal'];
-    var groupSeparator = localeElementsMainNode['numbers'][numberSettings['numberingSystem']]['group'];
-    var separators = options['separators'];
+    var decimalSeparator =
+        localeElementsMainNode.numbers[numberSettings.numberingSystem].decimal;
+    var groupSeparator =
+        localeElementsMainNode.numbers[numberSettings.numberingSystem].group;
+    var separators = options.separators;
     if (separators !== undefined) {
-      numberSettings['separators'] = separators;
-      var dec = separators['decimal'];
-      var grp = separators['group'];
-      if (dec !== undefined && dec !== '')
-        decimalSeparator = separators['decimal'];
-      if (grp !== undefined)
-        groupSeparator = separators['group'];
+      numberSettings.separators = separators;
+      var dec = separators.decimal;
+      var grp = separators.group;
+      if (dec !== undefined && dec !== '') {
+        decimalSeparator = separators.decimal;
+      }
+      if (grp !== undefined) {
+        groupSeparator = separators.group;
+      }
     }
     var mainNodeKey = oj.OraI18nUtils.getLocaleElementsMainNodeKey(localeElements);
     var lang = _getBCP47Lang(mainNodeKey);
-    numberSettings['plurals'] = localeElements['supplemental']['plurals'];
-    numberSettings['lang'] = lang;
-    numberSettings['pat'] = pat;
-    numberSettings['minusSign'] = localeElementsMainNode['numbers']
-    [numberSettings['numberingSystem']]['minusSign'];
-    numberSettings['decimalSeparator'] = decimalSeparator;
-    numberSettings['exponential'] = localeElementsMainNode['numbers']
-    [numberSettings['numberingSystem']]['exponential'];
-    numberSettings['groupingSeparator'] = groupSeparator;
-    numberSettings['currencyDisplay'] = options['currencyDisplay'];
-    if (options['currency'] !== undefined)
-      numberSettings['currencyCode'] = options['currency'].toUpperCase();
-    if (options['unit'] !== undefined)
-      numberSettings['unit'] = options['unit'].toLowerCase();
+    numberSettings.plurals = localeElements.supplemental.plurals;
+    numberSettings.lang = lang;
+    numberSettings.pat = pat;
+    numberSettings.minusSign =
+      localeElementsMainNode.numbers[numberSettings.numberingSystem].minusSign;
+    numberSettings.decimalSeparator = decimalSeparator;
+    numberSettings.exponential =
+      localeElementsMainNode.numbers[numberSettings.numberingSystem].exponential;
+    numberSettings.groupingSeparator = groupSeparator;
+    numberSettings.currencyDisplay = options.currencyDisplay;
+    if (options.currency !== undefined) {
+      numberSettings.currencyCode = options.currency.toUpperCase();
+    }
+    if (options.unit !== undefined) {
+      numberSettings.unit = options.unit.toLowerCase();
+    }
     _applyPatternImpl(options, pat, localeElementsMainNode, numberSettings);
-    if (options['pattern'] === undefined) {
-      numberSettings['minimumIntegerDigits'] = _getNumberOption(options,
-          'minimumIntegerDigits', 1, 21,
-          numberSettings['minimumIntegerDigits']);
-      if (options['maximumFractionDigits'] !== undefined) {
-        numberSettings['maximumFractionDigits'] = _getNumberOption(options,
-            'maximumFractionDigits', 0, 20, numberSettings['maximumFractionDigits']);
-        if (numberSettings['maximumFractionDigits'] < numberSettings['minimumFractionDigits']) {
-          numberSettings['minimumFractionDigits'] = numberSettings['maximumFractionDigits'];
+    if (options.pattern === undefined) {
+      numberSettings.minimumIntegerDigits =
+        _getNumberOption(options,
+                         'minimumIntegerDigits', 1, 21,
+                         numberSettings.minimumIntegerDigits);
+      if (options.maximumFractionDigits !== undefined) {
+        numberSettings.maximumFractionDigits =
+          _getNumberOption(options,
+                           'maximumFractionDigits', 0, 20,
+                           numberSettings.maximumFractionDigits);
+        if (numberSettings.maximumFractionDigits < numberSettings.minimumFractionDigits) {
+          numberSettings.minimumFractionDigits = numberSettings.maximumFractionDigits;
         }
       }
-      if (options['minimumFractionDigits'] !== undefined) {
-        numberSettings['minimumFractionDigits'] = _getNumberOption(options,
-            'minimumFractionDigits', 0, 20,
-            numberSettings['minimumFractionDigits']);
+      if (options.minimumFractionDigits !== undefined) {
+        numberSettings.minimumFractionDigits =
+          _getNumberOption(options,
+                           'minimumFractionDigits', 0, 20,
+                           numberSettings.minimumFractionDigits);
       }
-      if (numberSettings['maximumFractionDigits'] < numberSettings['minimumFractionDigits']) {
-        numberSettings['maximumFractionDigits'] = numberSettings['minimumFractionDigits'];
-        oj.Logger.info("maximumFractionDigits is less than minimumFractionDigits, so maximumFractionDigits will be set to minimumFractionDigits");
+      if (numberSettings.maximumFractionDigits < numberSettings.minimumFractionDigits) {
+        numberSettings.maximumFractionDigits = numberSettings.minimumFractionDigits;
+        Logger.info('maximumFractionDigits is less than minimumFractionDigits, so maximumFractionDigits will be set to minimumFractionDigits');
       }
-      //set currency fractions based on currencyData in root bundle
-      if (numberSettings['style'] === 'currency' && options['minimumFractionDigits'] === undefined) {
-        var currencyFractions =  localeElements['supplemental']['currencyData']['fractions'];
-        var specialCurrency = currencyFractions[options['currency']];
-        if(specialCurrency !== undefined) {
-          var fractionDigits = parseInt(specialCurrency['_digits'], 10);
-          numberSettings['minimumFractionDigits'] = fractionDigits;
-          numberSettings['maximumFractionDigits'] = fractionDigits;
+      // set currency fractions based on currencyData in root bundle
+      if (numberSettings.style === 'currency' && options.minimumFractionDigits === undefined) {
+        var currencyFractions = localeElements.supplemental.currencyData.fractions;
+        var specialCurrency = currencyFractions[options.currency];
+        if (specialCurrency !== undefined) {
+          var fractionDigits = parseInt(specialCurrency._digits, 10);
+          numberSettings.minimumFractionDigits = fractionDigits;
+          numberSettings.maximumFractionDigits = fractionDigits;
         }
       }
     }
-  };
+  }
 
-  _throwMissingCurrency = function (prop) {
+  function _throwMissingCurrency(prop) {
     var typeError = new TypeError('The property "currency" is required when' +
-        ' the property "' + prop + '" is "currency". An accepted value is a ' +
-        'three-letter ISO 4217 currency code.');
+                                  ' the property "' + prop +
+                                  '" is "currency". An accepted value is a ' +
+                                  'three-letter ISO 4217 currency code.');
     var errorInfo = {
-      'errorCode': 'optionTypesMismatch',
-      'parameterMap': {
-        'propertyName': prop, // the driving property
-        'propertyValue': 'currency', // the driving property's value
-        'requiredPropertyName': 'currency', // the required property name
-        'requiredPropertyValueValid': 'a three-letter ISO 4217 currency code'
+      errorCode: 'optionTypesMismatch',
+      parameterMap: {
+        propertyName: prop, // the driving property
+        propertyValue: 'currency', // the driving property's value
+        requiredPropertyName: 'currency', // the required property name
+        requiredPropertyValueValid: 'a three-letter ISO 4217 currency code'
       }
     };
-    typeError['errorInfo'] = errorInfo;
+    typeError.errorInfo = errorInfo;
     throw typeError;
-  };
+  }
 
-  _throwMissingUnit = function (prop) {
+  function _throwMissingUnit(prop) {
     var typeError = new TypeError('The property "unit" is required when' +
-        ' the property "' + prop + '" is "unit". An accepted value is  ' +
-        '"byte" or "bit".');
+                                  ' the property "' + prop +
+                                  '" is "unit". An accepted value is "byte" or "bit".');
     var errorInfo = {
-      'errorCode': 'optionTypesMismatch',
-      'parameterMap': {
-        'propertyName': prop, // the driving property
-        'propertyValue': 'unit', // the driving property's value
-        'requiredPropertyName': 'unit', // the required property name
-        'requiredPropertyValueValid': 'byte or bit'
+      errorCode: 'optionTypesMismatch',
+      parameterMap: {
+        propertyName: prop, // the driving property
+        propertyValue: 'unit', // the driving property's value
+        requiredPropertyName: 'unit', // the required property name
+        requiredPropertyValueValid: 'byte or bit'
       }
     };
-    typeError['errorInfo'] = errorInfo;
+    typeError.errorInfo = errorInfo;
     throw typeError;
-  };
+  }
 
-  _throwUnsupportedParseOption = function (val) {
-    var error, errorInfo;
-    var code = "unsupportedParseFormat";
-    var msg = "long and short " + val + " are not supported for parsing";
-    error = new Error(msg);
-    errorInfo = {
-      'errorCode': code,
-      'parameterMap': {
-        'shortFormats': val
+  function _throwUnsupportedParseOption(val) {
+    var code = 'unsupportedParseFormat';
+    var msg = 'long and short ' + val + ' are not supported for parsing';
+    var error = new Error(msg);
+    var errorInfo = {
+      errorCode: code,
+      parameterMap: {
+        shortFormats: val
       }
     };
-    error['errorInfo'] = errorInfo;
+    error.errorInfo = errorInfo;
     throw error;
-  };
+  }
 
-  //If the user specifies currency as a style, currency option must also be
+  // If the user specifies currency as a style, currency option must also be
   // provided. parse does not support short and long decimalFormat.
-  _validateNumberOptions = function (options, caller) {
+  function _validateNumberOptions(options, caller) {
     var getOption = oj.OraI18nUtils.getGetOption(options, caller);
-    var s = getOption('style', 'string', ['currency', 'decimal', 'percent', 'unit', 'perMill'],
-        'decimal');
+    var s = getOption('style', 'string',
+                      ['currency', 'decimal', 'percent', 'unit', 'perMill'], 'decimal');
     if (s === 'decimal' || s === 'currency') {
       var fmt = (s === 'decimal') ? 'decimalFormat' : 'currencyFormat';
       s = getOption(fmt, 'string', ['standard', 'short', 'long']);
@@ -1801,78 +1717,73 @@ OraNumberConverter = (function () {
     }
     var c = getOption('currency', 'string');
     if (s === 'currency' && c === undefined) {
-      _throwMissingCurrency("style");
+      _throwMissingCurrency('style');
     }
 
     c = getOption('unit', 'string');
     if (s === 'unit' && c === undefined) {
-      _throwMissingUnit("style");
+      _throwMissingUnit('style');
     }
+  }
 
-    var roundingMode = getOption('roundingMode', 'string', ['HALF_UP', 'HALF_DOWN', 'HALF_EVEN'],
-        'DEFAULT');
-    var lenientParse = getOption('lenientParse', 'string', ['none', 'full'], 'full');
-  };
-
-  //_toDigitalByte does compact formatting like 300MB, 300Mb
-  _toDigitalByte = function (number, options, numberSettings, localeElements) {
+  // _toDigitalByte does compact formatting like 300MB, 300Mb
+  function _toDigitalByte(number, options, numberSettings, localeElements) {
     var scale;
     var count;
-    
+
     if (number >= _DIGITAL_TERA) {
-      scale = "digital-tera";
+      scale = 'digital-tera';
       count = number / _DIGITAL_TERA;
-    }
-    else if (number >= _DIGITAL_GIGA) {
-      scale = "digital-giga";
+    } else if (number >= _DIGITAL_GIGA) {
+      scale = 'digital-giga';
       count = number / _DIGITAL_GIGA;
-    }
-    else if (number >= _DIGITAL_MEGA) {
-      scale = "digital-mega";
+    } else if (number >= _DIGITAL_MEGA) {
+      scale = 'digital-mega';
       count = number / _DIGITAL_MEGA;
-    }
-    else if (number >= _DIGITAL_KILO) {
-      scale = "digital-kilo";
+    } else if (number >= _DIGITAL_KILO) {
+      scale = 'digital-kilo';
       count = number / _DIGITAL_KILO;
-    }
-    else {
-      scale = "digital-";
+    } else {
+      scale = 'digital-';
       count = number;
     }
-    //Find the corresponding entry in resource budle under units section
-    //scale -> 'digital-kilo-bit' or 'digital-kilo-byte'
-    scale = scale + numberSettings['unit'];
-    var lang = numberSettings['lang'];
-    //get plural rule: one, many, etc..
-    var plural = numberSettings['plurals'][lang](count);
-    //plural -> 'unitPattern-count-one' or 'unitPattern-count-many'
-    plural = "unitPattern-count-" + plural;
-    //format the number
+    // Find the corresponding entry in resource budle under units section
+    // scale -> 'digital-kilo-bit' or 'digital-kilo-byte'
+    scale += numberSettings.unit;
+    var lang = numberSettings.lang;
+    // get plural rule: one, many, etc..
+    var plural = numberSettings.plurals[lang](count);
+    // plural -> 'unitPattern-count-one' or 'unitPattern-count-many'
+    plural = 'unitPattern-count-' + plural;
+    // format the number
     var fmt = _toRawFixed(count, options, numberSettings);
-    //format the number based on plural rule: "{0} Gb", etc..
-    var entry = localeElements['units']['narrow'][scale][plural];
+    // format the number based on plural rule: "{0} Gb", etc..
+    var entry = localeElements.units.narrow[scale][plural];
     fmt = oj.OraI18nUtils.formatString(entry, [fmt]);
     return fmt;
-  };
+  }
 
-  //_toCompactNumber does compact formatting like 3000->3K for short
-  //and "3 thousand" for long
-  _toCompactNumber = function (number, options, numberSettings) {
-
+  // _toCompactNumber does compact formatting like 3000->3K for short
+  // and "3 thousand" for long
+  function _toCompactNumber(number, options, numberSettings) {
     function _getZerosInPattern(s) {
-      var i = 0, n = 0, idx = 0, prefix = '';
+      var i = 0;
+      var n = 0;
+      var idx = 0;
+      var prefix = '';
       if (s[0] !== '0') {
         while (s[i] !== '0' && i < s.length) {
-          i++;
+          i += 1;
         }
         prefix = s.substr(0, i);
         idx = i;
       }
       for (i = idx; i < s.length; i++) {
-        if (s[i] === '0')
-          n++;
-        else
+        if (s[i] === '0') {
+          n += 1;
+        } else {
           break;
+        }
       }
       return [prefix, n];
     }
@@ -1888,54 +1799,61 @@ OraNumberConverter = (function () {
      *With no fractional digits, that yields "12 K".
      */
     function _matchTypeValue(n) {
-      var i, j, len;
-      for (i in _decimalTypeValues) {
-        len = _decimalTypeValues[i].length;
-        for (j = 0; j < len; j++) {
-          if (_decimalTypeValues[i][j] <= n)
-            return [i, _decimalTypeValues[i][j]];
+      var decimalTypeKeys = Object.keys(_decimalTypeValues);
+      for (var i = 0; i < decimalTypeKeys.length; i++) {
+        var decimalTypeKey = decimalTypeKeys[i];
+        var len = _decimalTypeValues[decimalTypeKey].length;
+        for (var j = 0; j < len; j++) {
+          if (_decimalTypeValues[decimalTypeKey][j] <= n) {
+            return [decimalTypeKey, _decimalTypeValues[decimalTypeKey][j]];
+          }
         }
       }
       return [n, null];
     }
 
-
     var typeVal = _matchTypeValue(number);
     var prefix = '';
+    var decimalFormatType;
+    var tokens;
+    var zeros;
     if (typeVal[1] !== null) {
-      var lang = numberSettings['lang'];
-      var plural = numberSettings['plurals'][lang](Math.floor(number / _decimalTypeValuesMap[typeVal[0]]));
-      var decimalFormatType = "" + typeVal[1] + "-count-" + plural;
-      decimalFormatType = numberSettings['shortDecimalFormat'][decimalFormatType];
+      var lang = numberSettings.lang;
+      var plural =
+          numberSettings.plurals[lang](Math.floor(number / _decimalTypeValuesMap[typeVal[0]]));
+      decimalFormatType = '' + typeVal[1] + '-count-' + plural;
+      decimalFormatType = numberSettings.shortDecimalFormat[decimalFormatType];
       if (decimalFormatType === undefined) {
-        plural = "other";
-        decimalFormatType = "" + typeVal[1] + "-count-" + plural;
-        decimalFormatType = numberSettings['shortDecimalFormat'][decimalFormatType];
+        plural = 'other';
+        decimalFormatType = '' + typeVal[1] + '-count-' + plural;
+        decimalFormatType = numberSettings.shortDecimalFormat[decimalFormatType];
       }
-      var tokens = _getZerosInPattern(decimalFormatType);
-      var zeros = tokens[1];
+      tokens = _getZerosInPattern(decimalFormatType);
+      zeros = tokens[1];
       prefix = tokens[0];
       if (zeros < decimalFormatType.length) {
         var i = (1 * Math.pow(10, zeros));
         i = (typeVal[1] / i) * 10;
-        number = number / i;
+        // eslint-disable-next-line no-param-reassign
+        number /= i;
       }
     }
-    var s = "";
+    var s = '';
     var fmt;
-    if (decimalFormatType !== undefined)
+    if (decimalFormatType !== undefined) {
       s = decimalFormatType.substr(zeros + tokens[0].length);
+    }
     fmt = _toRawFixed(number, options, numberSettings);
     var regExp = /'\.'/g;
-    s = s.replace(regExp, ".");
+    s = s.replace(regExp, '.');
     s = prefix + fmt + s;
     return s;
-  };
+  }
 
-  //_toExponentialPrecision does the formatting when the pattern contain E,
-  //for example #.#E0  
-  _toExponentialPrecision = function (number, numberSettings) {
-    var numStr0 = number + "";
+  // _toExponentialPrecision does the formatting when the pattern contain E,
+  // for example #.#E0
+  function _toExponentialPrecision(number, numberSettings) {
+    var numStr0 = number + '';
     var trimExp = 0;
     var split = numStr0.split(/e/i);
     var numStr = split[0];
@@ -1944,119 +1862,117 @@ OraNumberConverter = (function () {
     if (match !== null) {
       trimExp = match[1].length - 1;
       numStr = match[2];
-    }
-    else {
-      numStr = numStr.replace(".", "");
+    } else {
+      numStr = numStr.replace('.', '');
     }
     var exponent = split.length > 1 ? parseInt(split[1], 10) : 0;
     var numStr1 = parseInt(numStr, 10);
-    var len = numberSettings['minimumIntegerDigits'] + numberSettings['maximumFractionDigits'];
+    var len = numberSettings.minimumIntegerDigits + numberSettings.maximumFractionDigits;
     if (numStr.length > len) {
       len -= numStr.length;
       var factor = Math.pow(10, len);
       numStr1 = Math.round(numStr1 * factor);
     }
-    var padLen = numberSettings['minimumIntegerDigits'] + numberSettings['minimumFractionDigits'];
-    numStr1 = numStr1 + "";
+    var padLen = numberSettings.minimumIntegerDigits + numberSettings.minimumFractionDigits;
+    numStr1 += '';
     numStr1 = _zeroPad(numStr1, padLen, false);
     if (numStr0.indexOf('.') !== -1) {
-      exponent -= numberSettings['minimumIntegerDigits'] - numStr0.indexOf('.') + trimExp;
-    }
-    else {
-      exponent -= padLen - numStr.length - numberSettings['minimumFractionDigits'];
+      exponent -= (numberSettings.minimumIntegerDigits - numStr0.indexOf('.')) + trimExp;
+    } else {
+      exponent -= padLen - numStr.length - numberSettings.minimumFractionDigits;
     }
     var posExp = Math.abs(exponent);
-    posExp = _zeroPad(posExp + "", numberSettings['minExponentDigits'], true);
-    if (exponent < 0)
-      posExp = numberSettings['minusSign'] + posExp;
-    var str1 = numStr1.slice(0, numberSettings['minimumIntegerDigits']);
-    var str2 = numStr1.slice(numberSettings['minimumIntegerDigits']);
-    if (str2.length > 0) {
-      str1 += numberSettings['decimalSeparator'] + numStr1.slice(numberSettings['minimumIntegerDigits']) +
-          numberSettings['exponential'] + posExp;
+    posExp = _zeroPad(posExp + '', numberSettings.minExponentDigits, true);
+    if (exponent < 0) {
+      posExp = numberSettings.minusSign + posExp;
     }
-    else {
-      str1 += numberSettings['exponential'] + posExp;
+    var str1 = numStr1.slice(0, numberSettings.minimumIntegerDigits);
+    var str2 = numStr1.slice(numberSettings.minimumIntegerDigits);
+    if (str2.length > 0) {
+      str1 += numberSettings.decimalSeparator +
+        numStr1.slice(numberSettings.minimumIntegerDigits) +
+        numberSettings.exponential + posExp;
+    } else {
+      str1 += numberSettings.exponential + posExp;
     }
     return str1;
-  };
+  }
 
-  //_toRawFixed does the formatting based on
-  //minimumFractionDigits and maximumFractionDigits.
-  _toRawFixed = function (number, options, numberSettings) {
-    var curSize = numberSettings['groupingSize'];
-    var curSize0 = numberSettings['groupingSize0'];
-    var decimalSeparator = numberSettings['decimalSeparator'];
-    //First round the number based on maximumFractionDigits
-    var numberString = number + "";
+  // _toRawFixed does the formatting based on
+  // minimumFractionDigits and maximumFractionDigits.
+  function _toRawFixed(number, options, numberSettings) {
+    var curSize = numberSettings.groupingSize;
+    var curSize0 = numberSettings.groupingSize0;
+    var decimalSeparator = numberSettings.decimalSeparator;
+    // First round the number based on maximumFractionDigits
+    var numberString = number + '';
     var split = numberString.split(/e/i);
     var exponent = split.length > 1 ? parseInt(split[1], 10) : 0;
-    numberString = split[ 0 ];
+    numberString = split[0];
     split = numberString.split('.');
-    var right = split.length > 1 ? split[ 1 ] : "";
-    var precision;
-    //round the number only if it has decimal points
-    if (split.length > 1 && right.length > exponent)
-    {
-      precision = Math.min(numberSettings['maximumFractionDigits'],
+    var right = split.length > 1 ? split[1] : '';
+    var precision = Math.min(numberSettings.maximumFractionDigits,
           right.length - exponent);
-      var mode = options['roundingMode'] || 'DEFAULT';
+    // round the number only if it has decimal points
+    if (split.length > 1 && right.length > exponent) {
+      var mode = options.roundingMode || 'DEFAULT';
+      // eslint-disable-next-line no-param-reassign
       number = _roundNumber(number, precision, mode);
     }
-    //split the number into integer, fraction and exponent parts.
-    numberString = number + "";
+    // split the number into integer, fraction and exponent parts.
+    numberString = number + '';
     split = numberString.split(/e/i);
     exponent = split.length > 1 ? parseInt(split[1], 10) : 0;
-    numberString = split[ 0 ];
+    numberString = split[0];
     split = numberString.split('.');
-    numberString = split[ 0 ];
-    right = split.length > 1 ? split[ 1 ] : "";
-    //pad zeros based on the exponent value and minimumFractionDigits 
+    numberString = split[0];
+    right = split.length > 1 ? split[1] : '';
+    // pad zeros based on the exponent value and minimumFractionDigits
     if (exponent > 0) {
       right = _zeroPad(right, exponent, false);
       numberString += right.slice(0, exponent);
       right = right.substr(exponent);
-    }
-    else if (exponent < 0) {
+    } else if (exponent < 0) {
       exponent = -exponent;
       numberString = _zeroPad(numberString, exponent + 1, true);
       right = numberString.slice(-exponent, numberString.length) + right;
       numberString = numberString.slice(0, -exponent);
     }
     if (precision > 0 && right.length > 0) {
-      right = decimalSeparator +
-          ((right.length > precision) ? right.slice(0, precision) :
-              _zeroPad(right, precision, false));
-    }
-    else {
-      if (numberSettings['minimumFractionDigits'] > 0) {
-        right = decimalSeparator;
+      right = ((right.length > precision) ? right.slice(0, precision) :
+               _zeroPad(right, precision, false));
+      // if right is only zeros, truncate it to minimumFractionDigits
+      if (_REGEX_ONLY_ZEROS.test(right) === true) {
+        right = right.slice(0, numberSettings.minimumFractionDigits);
       }
-      else {
-        right = "";
-      }
+      right = decimalSeparator + right;
+    } else if (numberSettings.minimumFractionDigits > 0) {
+      right = decimalSeparator;
+    } else {
+      right = '';
     }
-    //insert grouping separator in the integer part based on groupingSize
+    // insert grouping separator in the integer part based on groupingSize
     var padLen = decimalSeparator.length +
-        numberSettings['minimumFractionDigits'];
+        numberSettings.minimumFractionDigits;
     right = _zeroPad(right, padLen, false);
-    var sep = numberSettings['groupingSeparator'],
-        ret = "";
-    if (options['useGrouping'] === false && options['pattern'] === undefined)
+    var sep = numberSettings.groupingSeparator;
+    var ret = '';
+    if (options.useGrouping === false && options.pattern === undefined) {
       sep = '';
+    }
     numberString = _zeroPad(numberString,
-        numberSettings['minimumIntegerDigits'], true);
+                            numberSettings.minimumIntegerDigits, true);
     var stringIndex = numberString.length - 1;
-    right = right.length > 1 ? right : "";
+    right = right.length > 1 ? right : '';
     var rets;
     while (stringIndex >= 0) {
       if (curSize === 0 || curSize > stringIndex) {
         rets = numberString.slice(0, stringIndex + 1) +
-            (ret.length ? (sep + ret + right) : right);
+          (ret.length ? (sep + ret + right) : right);
         return rets;
       }
-      ret = numberString.slice(stringIndex - curSize + 1, stringIndex + 1) +
-          (ret.length ? (sep + ret) : "");
+      ret = numberString.slice((stringIndex - curSize) + 1, stringIndex + 1) +
+        (ret.length ? (sep + ret) : '');
       stringIndex -= curSize;
       if (curSize0 > 0) {
         curSize = curSize0;
@@ -2064,433 +1980,429 @@ OraNumberConverter = (function () {
     }
     rets = numberString.slice(0, stringIndex + 1) + sep + ret + right;
     return rets;
-  };
+  }
 
-  //HALF_DOWN behaves as HALF_UP if the discarded fraction is > 0.5
-  _adjustRoundingMode = function (value, maxDigits, mode) {
+  // HALF_DOWN behaves as HALF_UP if the discarded fraction is > 0.5
+  function _adjustRoundingMode(value, maxDigits, mode) {
     if (mode === 'HALF_DOWN' || mode === 'HALF_EVEN') {
       var n = value.substr(maxDigits);
       n = parseInt(n, 10);
-      if (n > 5)
+      if (n > 5) {
+        // eslint-disable-next-line no-param-reassign
         mode = 'HALF_UP';
+      }
     }
     return mode;
-  };
+  }
 
-  _roundNumber = function (value, scale, mode) {
+  function _roundNumber(value, scale, mode) {
     var parts = value.toString().split('.');
-    if (parts[1] === undefined)
+    if (parts[1] === undefined) {
       return value;
+    }
     if (parts[1][scale] === '5' && mode !== 'DEFAULT') {
       var adjustedMode = _adjustRoundingMode(parts[1], scale, mode);
       adjustedMode = _getRoundingMode(parts, adjustedMode, scale);
       return _decimalAdjust(value, -scale, adjustedMode, parts);
     }
-    else {
-      var factor = Math.pow(10, scale),
-          rounded = Math.round(value * factor) / factor;
-      if (!isFinite(rounded)) {
-        return value;
-      }
-      return rounded;
-    }
-  };
 
-  _getRoundingMode = function (parts, rMode, scale) {
+    var factor = Math.pow(10, scale);
+    var rounded = Math.round(value * factor) / factor;
+    if (!isFinite(rounded)) {
+      return value;
+    }
+    return rounded;
+  }
+
+  function _getRoundingMode(parts, rMode, scale) {
     var mode = _roundingModeMap[rMode];
     if (rMode === 'HALF_EVEN') {
       var c;
       if (scale === 0) {
         var len = parts[0].length;
         c = parseInt(parts[0][len - 1], 10);
-      }
-      else {
+      } else {
         c = parseInt(parts[1][scale - 1], 10);
       }
       if (c % 2 === 0) {
-        mode = _roundingModeMap['HALF_DOWN'];
-      }
-      else {
-        mode = _roundingModeMap['HALF_UP'];
+        mode = _roundingModeMap.HALF_DOWN;
+      } else {
+        mode = _roundingModeMap.HALF_UP;
       }
     }
     return mode;
-  };
+  }
 
   /**
    * This function does the actual rounding of the number based on the rounding
    * mode:
    * value is the number to be rounded.
    * scale is the maximumFractionDigits.
-   * mode is the rounding mode: ceil, floor, round. 
+   * mode is the rounding mode: ceil, floor, round.
    * parts is the integer and fraction parts of the value.
    */
-  _decimalAdjust = function (value, scale, mode, parts) {
+  function _decimalAdjust(value, scale, mode, parts) {
     if (scale === 0) {
       if (parts[1][0] === '5') {
         return Math[mode](value);
       }
-      return Math['round'](value);
+      return Math.round(value);
     }
     var strValue = value.toString().split('e');
     var v0 = strValue[0];
     var v1 = strValue[1];
-    //shift the decimal point based on the scale so that we can apply ceil or floor
-    //scale is a number, no need to parse it, just parse v1.
+    // shift the decimal point based on the scale so that we can apply ceil or floor
+    // scale is a number, no need to parse it, just parse v1.
     var s = v0 + 'e' + (v1 ? (parseInt(v1, 10) - scale) : -scale);
     var num = parseFloat(s);
-    value = Math[mode](num);
-    strValue = value.toString().split('e');
-    //need to extract v0 and v1 again because value has chnaged after applying Math[mode].
+    var _value = Math[mode](num);
+    strValue = _value.toString().split('e');
+    // need to extract v0 and v1 again because value has chnaged after applying Math[mode].
     v0 = strValue[0];
     v1 = strValue[1];
-    //shift the decimal point back to its original position
+    // shift the decimal point back to its original position
     s = v0 + 'e' + (v1 ? (parseInt(v1, 10) + scale) : scale);
     num = parseFloat(s);
     return num;
-  };
+  }
 
-  //first call _toRawFixed then add prefixes and suffixes. Display the 
-  //number using native digits based on the numbering system
-  _formatNumberImpl = function (value, options, localeElements,
-      numberSettings, locale) {
+  // first call _toRawFixed then add prefixes and suffixes. Display the
+  // number using native digits based on the numbering system
+  function _formatNumberImpl(value, options, localeElements,
+    numberSettings, locale) {
     var localeElementsMainNode = oj.OraI18nUtils.getLocaleElementsMainNode(localeElements);
     if (!isFinite(value)) {
       if (value === Infinity) {
-        return localeElementsMainNode['numbers'][numberSettings['numberingSystem']]['infinity'];
+        return localeElementsMainNode.numbers[numberSettings.numberingSystem].infinity;
       }
       if (value === -Infinity) {
-        return localeElementsMainNode['numbers'][numberSettings['numberingSystem']]['infinity'];
+        return localeElementsMainNode.numbers[numberSettings.numberingSystem].infinity;
       }
-      return localeElementsMainNode['numbers'][numberSettings['numberingSystem']]['nan'];
+      return localeElementsMainNode.numbers[numberSettings.numberingSystem].nan;
     }
     var number = Math.abs(value);
-    if (numberSettings['isPercent'] === true ||
-        numberSettings['style'] === 'percent')
+    if (numberSettings.isPercent === true ||
+        numberSettings.style === 'percent') {
       number *= 100;
-    else if (numberSettings['isPerMill'] === true)
+    } else if (numberSettings.isPerMill === true) {
       number *= 1000;
-    //expand the number
-    var formatType = options['decimalFormat'];
-    if (formatType === undefined)
-      formatType = options['currencyFormat'];
-    var optStyle = numberSettings['style'];
+    }
+    // expand the number
+    var formatType = options.decimalFormat;
+    if (formatType === undefined) {
+      formatType = options.currencyFormat;
+    }
+    var optStyle = numberSettings.style;
     if ((optStyle === 'decimal' || optStyle === 'currency')
         && formatType !== undefined
-        && formatType !== 'standard')
+        && formatType !== 'standard') {
       number = _toCompactNumber(number, options, numberSettings);
-    else if (numberSettings['useExponentialNotation'] === true)
+    } else if (numberSettings.useExponentialNotation === true) {
       number = _toExponentialPrecision(number, numberSettings);
-    else if (optStyle === 'unit')
+    } else if (optStyle === 'unit') {
       number = _toDigitalByte(number, options, numberSettings, localeElementsMainNode);
-    else
+    } else {
       number = _toRawFixed(number, options, numberSettings);
-    var ret = "";
-    //add negative prefix and suffix if number is negative
-    //and the new formatted value isn't zero
+    }
+
+    var ret = '';
+    // add negative prefix and suffix if number is negative
+    // and the new formatted value isn't zero
     if (value < 0 && (number - 0 !== 0)) {
-      ret += numberSettings['negativePrefix'] + number +
-          numberSettings['negativeSuffix'];
+      ret += numberSettings.negativePrefix + number + numberSettings.negativeSuffix;
+    } else {
+    // add positive prefix and suffix if number is positive
+      ret += numberSettings.positivePrefix + number + numberSettings.positiveSuffix;
     }
-    //add positive prefix and suffix if number is positive
-    else {
-      ret += numberSettings['positivePrefix'] + number +
-          numberSettings['positiveSuffix'];
-    }
-    //display the digits based on the numbering system
+    // display the digits based on the numbering system
     var numberingSystemKey = _getNumberingExtension(locale);
-    if (oj.OraI18nUtils.numeringSystems[numberingSystemKey] === undefined)
+    if (oj.OraI18nUtils.numeringSystems[numberingSystemKey] === undefined) {
       numberingSystemKey = 'latn';
+    }
     if (numberingSystemKey !== 'latn') {
       var idx;
       var nativeRet = [];
-      for (idx = 0; idx < ret.length; idx++)
-      {
-        if (ret[idx] >= '0' && ret[idx] <= '9')
+      for (idx = 0; idx < ret.length; idx++) {
+        if (ret[idx] >= '0' && ret[idx] <= '9') {
           nativeRet.push(oj.OraI18nUtils.numeringSystems[numberingSystemKey][ret[idx]]);
-        else
+        } else {
           nativeRet.push(ret[idx]);
-
+        }
       }
-      return nativeRet.join("");
+      return nativeRet.join('');
     }
     return ret;
-  };
+  }
 
-  //remove prefix and suffix, return a sign and value. First try to extract
-  //a number using exact match. If it fails try lenient parsing.
-  _parseNegativePattern = function (value, options, numberSettings,
-      localeElements) {
+  // remove prefix and suffix, return a sign and value. First try to extract
+  // a number using exact match. If it fails try lenient parsing.
+  function _parseNegativePattern(value, options, numberSettings,
+    localeElements) {
     var ret;
     var num = oj.OraI18nUtils.trimNumber(value);
-    var sign = "";
+    var sign = '';
     var exactMatch = false;
-    var posSign = localeElements['numbers'][numberSettings['numberingSystem']]['plusSign'];
-    var posSignRegExp = new RegExp("^" + posSign.replace(_ESCAPE_REGEXP, "\\$1"));
-    num = num.replace(posSignRegExp, "");
-    var nbSettingPosPrefix = oj.OraI18nUtils.trimNumber(numberSettings['positivePrefix']),
-        nbSettingPosSuffix = oj.OraI18nUtils.trimNumber(numberSettings['positiveSuffix']),
-        nbSettingNegPrefix = oj.OraI18nUtils.trimNumber(numberSettings['negativePrefix']),
-        nbSettingNegSuffix = oj.OraI18nUtils.trimNumber(numberSettings['negativeSuffix']);
-    //try exact match of negative prefix and suffix
-    var posPrefRegexp = new RegExp("^" + (nbSettingPosPrefix ||
-        "").replace(_ESCAPE_REGEXP, "\\$1"));
-    var posSuffRegexp = new RegExp((nbSettingPosSuffix || "").
-        replace(_ESCAPE_REGEXP, "\\$1") + "$");
-    var negPrefRegexp = new RegExp("^" + (nbSettingNegPrefix ||
-        "").replace(_ESCAPE_REGEXP, "\\$1"));
-    var negSuffRegexp = new RegExp((nbSettingNegSuffix ||
-        "").replace(_ESCAPE_REGEXP, "\\$1") + "$");
+    var posSign = localeElements.numbers[numberSettings.numberingSystem].plusSign;
+    var posSignRegExp = new RegExp('^' + posSign.replace(_ESCAPE_REGEXP, '\\$1'));
+    num = num.replace(posSignRegExp, '');
+    var nbSettingPosPrefix = oj.OraI18nUtils.trimNumber(numberSettings.positivePrefix);
+    var nbSettingPosSuffix = oj.OraI18nUtils.trimNumber(numberSettings.positiveSuffix);
+    var nbSettingNegPrefix = oj.OraI18nUtils.trimNumber(numberSettings.negativePrefix);
+    var nbSettingNegSuffix = oj.OraI18nUtils.trimNumber(numberSettings.negativeSuffix);
+    // try exact match of negative prefix and suffix
+    var posPrefRegexp = new RegExp('^' + (nbSettingPosPrefix || '')
+                                   .replace(_ESCAPE_REGEXP, '\\$1'));
+    var posSuffRegexp = new RegExp((nbSettingPosSuffix || '')
+                                   .replace(_ESCAPE_REGEXP, '\\$1') + '$');
+    var negPrefRegexp = new RegExp('^' + (nbSettingNegPrefix || '')
+                                   .replace(_ESCAPE_REGEXP, '\\$1'));
+    var negSuffRegexp = new RegExp((nbSettingNegSuffix || '')
+                                   .replace(_ESCAPE_REGEXP, '\\$1') + '$');
 
     if (negPrefRegexp.test(num) === true && negSuffRegexp.test(num) === true) {
-      num = num.replace(negPrefRegexp, "");
-      num = num.replace(negSuffRegexp, "");
-      sign = "-";
+      num = num.replace(negPrefRegexp, '');
+      num = num.replace(negSuffRegexp, '');
+      sign = '-';
       exactMatch = true;
-    }
-    //try exact match of positive prefix and suffix
-    else if (posPrefRegexp.test(num) === true && posSuffRegexp.test(num) === true) {
-      num = num.replace(posPrefRegexp, "");
-      num = num.replace(posSuffRegexp, "");
-      sign = "+";
+    } else if (posPrefRegexp.test(num) === true && posSuffRegexp.test(num) === true) {
+      // try exact match of positive prefix and suffix
+      num = num.replace(posPrefRegexp, '');
+      num = num.replace(posSuffRegexp, '');
+      sign = '+';
       exactMatch = true;
-    }
-    //if style is currency, remove currency symbol from prefix and suffix 
-    //and try a match
-    else if (numberSettings['style'] === 'currency') {
-      var code = numberSettings['currencyCode'], symbol = code;
-      var posPrefix, posSuffix, negPrefix, negSuffix, repStr;
-      if (localeElements['numbers']['currencies'][code] !== undefined) {
-        symbol = localeElements['numbers']['currencies'][code]['symbol'];
+    } else if (numberSettings.style === 'currency') {
+      // if style is currency, remove currency symbol from prefix and suffix
+      // and try a match
+      var code = numberSettings.currencyCode;
+      var symbol = code;
+      var repStr;
+      if (localeElements.numbers.currencies[code] !== undefined) {
+        symbol = localeElements.numbers.currencies[code].symbol;
       }
-      if (numberSettings['currencyDisplay'] === undefined ||
-          numberSettings['currencyDisplay'] === "symbol") {
+      if (numberSettings.currencyDisplay === undefined ||
+          numberSettings.currencyDisplay === 'symbol') {
         repStr = symbol;
-      }
-      else if (numberSettings['currencyDisplay'] === "code") {
+      } else if (numberSettings.currencyDisplay === 'code') {
         repStr = code;
       }
       if (repStr !== undefined) {
-        posPrefix = (nbSettingPosPrefix || "").replace(
-            repStr, "");
-        posSuffix = (nbSettingPosSuffix || "").replace(
-            repStr, "");
-        negPrefix = (nbSettingNegPrefix || "").replace(
-            repStr, "");
-        negSuffix = (nbSettingNegSuffix || "").replace(
-            repStr, "");
-        posPrefRegexp = new RegExp(("^" + posPrefix).replace(
-            _ESCAPE_REGEXP, "\\$1"));
+        var posPrefix = (nbSettingPosPrefix || '').replace(repStr, '');
+        var posSuffix = (nbSettingPosSuffix || '').replace(repStr, '');
+        var negPrefix = (nbSettingNegPrefix || '').replace(repStr, '');
+        var negSuffix = (nbSettingNegSuffix || '').replace(repStr, '');
+        posPrefRegexp = new RegExp(('^' + posPrefix).replace(
+            _ESCAPE_REGEXP, '\\$1'));
         posSuffRegexp = new RegExp(posSuffix.replace(
-            _ESCAPE_REGEXP, "\\$1") + "$");
-        negPrefRegexp = new RegExp(("^" + negPrefix).replace(
-            _ESCAPE_REGEXP, "\\$1"));
+            _ESCAPE_REGEXP, '\\$1') + '$');
+        negPrefRegexp = new RegExp(('^' + negPrefix).replace(
+            _ESCAPE_REGEXP, '\\$1'));
         negSuffRegexp = new RegExp(negSuffix.replace(
-            _ESCAPE_REGEXP, "\\$1") + "$");
+            _ESCAPE_REGEXP, '\\$1') + '$');
 
-        //try  match of positive prefix and suffix
+        // try  match of positive prefix and suffix
         if (negPrefRegexp.test(num) === true && negSuffRegexp.test(num) === true) {
-          num = num.replace(negPrefRegexp, "");
-          num = num.replace(negSuffRegexp, "");
-          sign = "-";
+          num = num.replace(negPrefRegexp, '');
+          num = num.replace(negSuffRegexp, '');
+          sign = '-';
           exactMatch = true;
-        }
-        //try exact match of positive prefix and suffix
-        else if (posPrefRegexp.test(num) === true && posSuffRegexp.test(num) === true) {
-          num = num.replace(posPrefRegexp, "");
-          num = num.replace(posSuffRegexp, "");
-          sign = "+";
+        } else if (posPrefRegexp.test(num) === true && posSuffRegexp.test(num) === true) {
+          // try exact match of positive prefix and suffix
+          num = num.replace(posPrefRegexp, '');
+          num = num.replace(posSuffRegexp, '');
+          sign = '+';
           exactMatch = true;
         }
       }
     }
     if (!exactMatch) {
-      if (numberSettings['lenientParse'] === 'full') {
+      if (numberSettings.lenientParse === 'full') {
         ret = _lenientParseNumber(num, numberSettings);
         ret[2] = true;
+      } else {
+        _throwNaNException(numberSettings.style, numberSettings, value);
       }
-      else {
-        _throwNaNException(numberSettings['style'], numberSettings, value)
-      }
-    }
-    else
+    } else {
       ret = [sign, num];
+    }
     return ret;
-  };
+  }
 
-  _lenientParseNumber = function (num, numberSettings) {
+  function _lenientParseNumber(_num, numberSettings) {
     // Try to extract the number accoring to the following pattern:
     // optional +- followed by one or many digits followed by optional
     // fraction part followed by optional exponential.
     // use localized +, -, decimal separator, exponential
     // [+-]?\d+(?:\.\d+)?(?:E[+-]?\d+)?/;
-    //remove grouping deparator from string
-    var groupingSeparator = numberSettings['groupingSeparator'];
-    var decimalSeparator = numberSettings['decimalSeparator'];
-    var localeMinusSign = numberSettings['minusSign'];
-    var plusSign = "+";
-    var minusSign = "-";
-    var sign = "";
-    var dot = "";
+    // remove grouping deparator from string
+    var groupingSeparator = numberSettings.groupingSeparator;
+    var decimalSeparator = numberSettings.decimalSeparator;
+    var localeMinusSign = numberSettings.minusSign;
+    var plusSign = '+';
+    var minusSign = '-';
+    var sign = '';
+    var dot = '';
     var exponential =
-        oj.OraI18nUtils.toUpper(numberSettings['exponential']);
-    num = oj.OraI18nUtils.toUpper(num);
-    num = num.split(exponential).join("E");
-    //remove grouping separator from string
+        oj.OraI18nUtils.toUpper(numberSettings.exponential);
+    var num = oj.OraI18nUtils.toUpper(_num);
+    num = num.split(exponential).join('E');
+    // remove grouping separator from string
     var groupSep = groupingSeparator;
-    num = num.split(groupSep).join("");
-    var altGroupSep = groupSep.replace(/\u00A0/g, " ");
+    num = num.split(groupSep).join('');
+    var altGroupSep = groupSep.replace(/\u00A0/g, ' ');
     if (groupSep !== altGroupSep) {
-      num = num.split(altGroupSep).join("");
+      num = num.split(altGroupSep).join('');
     }
-    num = num.split(decimalSeparator).join(".");
-    if (num.charAt(0) === ".") {
+    num = num.split(decimalSeparator).join('.');
+    if (num.charAt(0) === '.') {
       num = num.substr(1);
-      dot = ".";
+      dot = '.';
     }
-    //replace localized minus with minus
+    // replace localized minus with minus
     num = num.replace(localeMinusSign, minusSign);
     var match = _LENIENT_REGEX_PARSE_FLOAT.exec(num);
     var resNum = dot + match[2];
     if (oj.OraI18nUtils.startsWith(resNum, minusSign)) {
       resNum = resNum.substr(minusSign.length);
-      sign = "-";
-    }
-    else if (oj.OraI18nUtils.startsWith(num, plusSign)) {
+      sign = '-';
+    } else if (oj.OraI18nUtils.startsWith(num, plusSign)) {
       resNum = resNum.substr(plusSign.length);
-      sign = "+";
+      sign = '+';
     }
     return [sign, resNum];
-  };
+  }
 
-  //parse the exponent part of a number
-  _parseNegativeExponent = function (value, numberSettings) {
-    var neg = numberSettings['minusSign'];
-    var pos = numberSettings['plusSign'];
+  // parse the exponent part of a number
+  function _parseNegativeExponent(_value, numberSettings) {
+    var neg = numberSettings.minusSign;
+    var pos = numberSettings.plusSign;
     var ret;
-    value = oj.OraI18nUtils.trimNumber(value);
+    var value = oj.OraI18nUtils.trimNumber(_value);
     neg = oj.OraI18nUtils.trimNumber(neg);
     pos = oj.OraI18nUtils.trimNumber(pos);
     if (oj.OraI18nUtils.startsWith(value, neg)) {
-      ret = ["-", value.substr(neg.length)];
+      ret = ['-', value.substr(neg.length)];
+    } else if (oj.OraI18nUtils.startsWith(value, oj.OraI18nUtils.trimNumber(pos))) {
+      ret = ['+', value.substr(pos.length)];
     }
-    else if (oj.OraI18nUtils.startsWith(value, oj.OraI18nUtils.trimNumber(pos))) {
-      ret = ["+", value.substr(pos.length)];
-    }
-    return ret || ["", value];
-  };
+    return ret || ['', value];
+  }
 
-  _getLatnDigits = function (str, locale) {
+  function _getLatnDigits(str, locale) {
     var numberingSystemKey = _getNumberingExtension(locale);
-    if (oj.OraI18nUtils.numeringSystems[numberingSystemKey] === undefined)
+    if (oj.OraI18nUtils.numeringSystems[numberingSystemKey] === undefined) {
       return str;
+    }
     var idx;
     var latnStr = [];
     for (idx = 0; idx < str.length; idx++) {
       var pos = oj.OraI18nUtils.numeringSystems[numberingSystemKey].indexOf(str[idx]);
-      if (pos !== -1)
+      if (pos !== -1) {
         latnStr.push(pos);
-      else
+      } else {
         latnStr.push(str[idx]);
+      }
     }
-    var ret = latnStr.join("");
+    var ret = latnStr.join('');
     return ret;
-  };
+  }
 
-  //split the number into integer, fraction and exponential parts
-  _getNumberParts = function (num, numberSettings) {
+  // split the number into integer, fraction and exponential parts
+  function _getNumberParts(_num, numberSettings) {
     var parts = {};
-    var decimalSeparator = numberSettings['decimalSeparator'];
-    var groupSep = numberSettings['groupingSeparator'];
-    num = num.replace(/ /g, "");
+    var decimalSeparator = numberSettings.decimalSeparator;
+    var groupSep = numberSettings.groupingSeparator;
+    var num = _num.replace(/ /g, '');
     // determine exponent and number
-    var exponentSymbol = numberSettings['exponential'];
+    var exponentSymbol = numberSettings.exponential;
     var integer;
     var intAndFraction;
     var exponentPos = num.indexOf(exponentSymbol.toLowerCase());
-    if (exponentPos < 0)
+    if (exponentPos < 0) {
       exponentPos = num.indexOf(oj.OraI18nUtils.toUpper(exponentSymbol));
+    }
     if (exponentPos < 0) {
       intAndFraction = num;
-      parts['exponent'] = null;
-    }
-    else {
+      parts.exponent = null;
+    } else {
       intAndFraction = num.substr(0, exponentPos);
-      parts['exponent'] = num.substr(exponentPos + exponentSymbol.length);
+      parts.exponent = num.substr(exponentPos + exponentSymbol.length);
     }
     // determine decimal position
     var decSep = decimalSeparator;
     var decimalPos = intAndFraction.indexOf(decSep);
     if (decimalPos < 0) {
       integer = intAndFraction;
-      parts['fraction'] = null;
-    }
-    else {
+      parts.fraction = null;
+    } else {
       integer = intAndFraction.substr(0, decimalPos);
-      parts['fraction'] = intAndFraction.substr(decimalPos + decSep.length);
+      parts.fraction = intAndFraction.substr(decimalPos + decSep.length);
     }
     // handle groups (e.g. 1,000,000)
-    integer = integer.split(groupSep).join("");
-    var altGroupSep = groupSep.replace(/\u00A0/g, " ");
+    integer = integer.split(groupSep).join('');
+    var altGroupSep = groupSep.replace(/\u00A0/g, ' ');
     if (groupSep !== altGroupSep) {
-      integer = integer.split(altGroupSep).join("");
+      integer = integer.split(altGroupSep).join('');
     }
-    parts['integer'] = integer;
+    parts.integer = integer;
     return parts;
-  };
+  }
 
-  _getParsedValue = function (ret, options, numberSettings, errStr) {
+  function _getParsedValue(ret, options, numberSettings, errStr) {
     if (isNaN(ret)) {
-      _throwNaNException(numberSettings['style'], numberSettings, errStr)
+      _throwNaNException(numberSettings.style, numberSettings, errStr);
     }
-    if (numberSettings['isPercent'] === true || numberSettings['style'] ===
-        'percent')
+    if (numberSettings.isPercent === true || numberSettings.style === 'percent') {
+      // eslint-disable-next-line no-param-reassign
       ret /= 100;
-    else if (numberSettings['isPerMill'] === true)
+    } else if (numberSettings.isPerMill === true) {
+      // eslint-disable-next-line no-param-reassign
       ret /= 1000;
-    var getOption = oj.OraI18nUtils.getGetOption(options, "OraNumberConverter.parse");
+    }
+    var getOption = oj.OraI18nUtils.getGetOption(options, 'OraNumberConverter.parse');
     var roundDuringParse = getOption('roundDuringParse', 'boolean', [true, false], false);
     if (roundDuringParse) {
+      // eslint-disable-next-line no-param-reassign
       ret = _getRoundedNumber(ret, numberSettings, options);
     }
     return ret;
-  };
+  }
 
-  _throwNaNException = function (style, numberSettings, errStr) {
-    var msg, error, errorInfo, code;
-    msg = "Unparsable number " + errStr + " The expected number " +
-        "pattern is " + numberSettings['pat'];
-    switch (style)
-    {
-      case "decimal" :
-        code = "decimalFormatMismatch";
+  function _throwNaNException(style, numberSettings, errStr) {
+    var code;
+    var msg = 'Unparsable number ' + errStr + ' The expected number ' +
+        'pattern is ' + numberSettings.pat;
+    switch (style) {
+      case 'decimal' :
+        code = 'decimalFormatMismatch';
         break;
-      case "currency" :
-        code = "currencyFormatMismatch";
+      case 'currency' :
+        code = 'currencyFormatMismatch';
         break;
-      case "percent" :
-        code = "percentFormatMismatch";
+      case 'percent' :
+        code = 'percentFormatMismatch';
+        break;
+      default:
         break;
     }
-    error = new Error(msg);
-    errorInfo = {
-      'errorCode': code,
-      'parameterMap': {
-        'value': errStr,
-        'format': numberSettings['pat']
+    var error = new Error(msg);
+    var errorInfo = {
+      errorCode: code,
+      parameterMap: {
+        value: errStr,
+        format: numberSettings.pat
       }
     };
-    error['errorInfo'] = errorInfo;
+    error.errorInfo = errorInfo;
     throw error;
-  };
+  }
 
-  _parseNumberImpl = function (str, localeElements, options, locale) {
+  function _parseNumberImpl(str, localeElements, options, locale) {
     var localeElementsMainNode = oj.OraI18nUtils.getLocaleElementsMainNode(localeElements);
     var numberSettings = {};
     var numStr = _getLatnDigits(str, locale);
     _getNumberSettings(localeElements, numberSettings, options, locale);
     var ret = NaN;
-    var value1 = numStr.replace(/ /g, "");
+    var value1 = numStr.replace(/ /g, '');
     // allow infinity or hexidecimal
     if (_REGEX_INFINITY.test(value1)) {
       ret = parseFloat(numStr);
@@ -2498,188 +2410,193 @@ OraNumberConverter = (function () {
     }
     var signInfo = _parseNegativePattern(numStr, options, numberSettings,
         localeElementsMainNode);
-    var sign = signInfo[ 0 ];
-    var num = signInfo[ 1 ];
-    sign = sign || "+";
+    var sign = signInfo[0];
+    var num = signInfo[1];
+    sign = sign || '+';
     if (signInfo[2]) {
       ret = parseFloat(sign + num);
-      return  _getParsedValue(ret, options, numberSettings, str);
+      return _getParsedValue(ret, options, numberSettings, str);
     }
 
     var parts = _getNumberParts(num, numberSettings);
-    var integer = parts['integer'];
-    var fraction = parts['fraction'];
-    var exponent = parts['exponent'];
+    var integer = parts.integer;
+    var fraction = parts.fraction;
+    var exponent = parts.exponent;
 
     // build a natively parsable number string
     var p = sign + integer;
     if (fraction !== null) {
-      p += "." + fraction;
+      p += '.' + fraction;
     }
     if (exponent !== null) {
       // exponent itself may have a number pattern
       var expSignInfo = _parseNegativeExponent(exponent, numberSettings);
-      p += "e" + (expSignInfo[0] || "+") + expSignInfo[ 1 ];
+      p += 'e' + (expSignInfo[0] || '+') + expSignInfo[1];
     }
     if (_REGEX_PARSE_FLOAT.test(p)) {
       ret = parseFloat(p);
+    } else if (numberSettings.lenientParse === 'full') {
+      p = _lenientParseNumber(numStr, numberSettings);
+      ret = parseFloat(p[0] + p[1]);
+    } else {
+      _throwNaNException(numberSettings.style, numberSettings, str);
     }
-    else {
-      if (numberSettings['lenientParse'] === 'full') {
-        p = _lenientParseNumber(numStr, numberSettings);
-        ret = parseFloat(p[0] + p[1]);
-      }
-      else {
-        _throwNaNException(numberSettings['style'], numberSettings, str);
-      }
-    }
-    return  _getParsedValue(ret, options, numberSettings, str);
-  };
+    return _getParsedValue(ret, options, numberSettings, str);
+  }
 
   /* This module handles the  parsing of a number pattern.
-   * It sets prefix, suffix, minimum and maximum farcation digits, 
-   * miimum  integer digits and grouping size. 
+   * It sets prefix, suffix, minimum and maximum farcation digits,
+   * miimum  integer digits and grouping size.
    */
 
-  var _ZERO_DIGIT = '0',
-      _GROUPING_SEPARATOR = ',',
-      _DECIMAL_SEPARATOR = '.',
-      _PERCENT = '%',
-      _PER_MILL = '\u2030',
-      _DIGIT = '#',
-      _SEPARATOR = ';',
-      _EXPONENT = "E",
-      _MINUS = '-',
-      _QUOT = '\'',
-      _CURRENCY = '\u00A4';
+  var _ZERO_DIGIT = '0';
+  var _GROUPING_SEPARATOR = ',';
+  var _DECIMAL_SEPARATOR = '.';
+  var _PERCENT = '%';
+  var _PER_MILL = '\u2030';
+  var _DIGIT = '#';
+  var _SEPARATOR = ';';
+  var _EXPONENT = 'E';
+  var _MINUS = '-';
+  var _QUOT = '\'';
+  var _CURRENCY = '\u00A4';
 
-  var posPrefixPattern,
-      posSuffixPattern,
-      negPrefixPattern,
-      negSuffixPattern;
+  var posPrefixPattern;
+  var posSuffixPattern;
+  var negPrefixPattern;
+  var negSuffixPattern;
 
   var _MAXIMUM_INTEGER_DIGITS = 0x7fffffff;
   var _MAXIMUM_FRACTION_DIGITS = 0x7fffffff;
 
-  _throwSyntaxError = function (pattern) {
-    var msg, syntaxError, errorInfo, samplePattern = "#,##0.###";
-    msg = "Unexpected character(s) encountered in the pattern \"" +
-        pattern + " An example of a valid pattern is \"" + samplePattern +
+  function _throwSyntaxError(pattern) {
+    var samplePattern = '#,##0.###';
+    var msg = 'Unexpected character(s) encountered in the pattern "' +
+        pattern + ' An example of a valid pattern is "' + samplePattern +
         '".';
-    syntaxError = new SyntaxError(msg);
-    errorInfo = {
-      'errorCode': 'optionValueInvalid',
-      'parameterMap': {
-        'propertyName': 'pattern',
-        'propertyValue': pattern,
-        'propertyValueHint': samplePattern
+    var syntaxError = new SyntaxError(msg);
+    var errorInfo = {
+      errorCode: 'optionValueInvalid',
+      parameterMap: {
+        propertyName: 'pattern',
+        propertyValue: pattern,
+        propertyValueHint: samplePattern
       }
     };
-    syntaxError['errorInfo'] = errorInfo;
+    syntaxError.errorInfo = errorInfo;
     throw syntaxError;
-  };
+  }
 
-  _regionMatches = function (str1, offset1, str2) {
+  function _regionMatches(str1, offset1, str2) {
     var sub1 = str1.substr(offset1, str2.length);
-    var regExp = new RegExp(str2, "i");
+    var regExp = new RegExp(str2, 'i');
     return (regExp.exec(sub1) !== null);
-  };
+  }
 
-  _expandAffixes = function (localeElements, numberSettings) {
+  function _expandAffixes(localeElements, _numberSettings) {
+    var numberSettings = _numberSettings;
     var curDisplay = {};
     if (posPrefixPattern !== null) {
-      numberSettings['positivePrefix'] = _expandAffix(posPrefixPattern,
+      numberSettings.positivePrefix = _expandAffix(posPrefixPattern,
           localeElements, numberSettings, curDisplay);
     }
     if (posSuffixPattern !== null) {
-      numberSettings['positiveSuffix'] = _expandAffix(posSuffixPattern,
+      numberSettings.positiveSuffix = _expandAffix(posSuffixPattern,
           localeElements, numberSettings, curDisplay);
     }
     if (negPrefixPattern !== null) {
-      numberSettings['negativePrefix'] = _expandAffix(negPrefixPattern,
+      numberSettings.negativePrefix = _expandAffix(negPrefixPattern,
           localeElements, numberSettings, curDisplay);
     }
     if (negSuffixPattern !== null) {
-      numberSettings['negativeSuffix'] = _expandAffix(negSuffixPattern,
+      numberSettings.negativeSuffix = _expandAffix(negSuffixPattern,
           localeElements, numberSettings, curDisplay);
     }
-    if (curDisplay['name'] !== undefined) {
-      numberSettings['positiveSuffix'] = "\u00a0" + curDisplay['name'];
-      numberSettings['positivePrefix'] = "";
-      if (numberSettings['lang'] === 'ar') {
-        numberSettings['negativeSuffix'] = localeElements['numbers'][numberSettings['numberingSystem']]['minusSign'] + "\u00a0" + curDisplay['name'];
-        numberSettings['negativePrefix'] = "";
-      }
-      else {
-        numberSettings['negativeSuffix'] = "\u00a0" + curDisplay['name'];
-        numberSettings['negativePrefix'] = localeElements['numbers'][numberSettings['numberingSystem']]['minusSign'];
+    if (curDisplay.name !== undefined) {
+      numberSettings.positiveSuffix = '\u00a0' + curDisplay.name;
+      numberSettings.positivePrefix = '';
+      if (numberSettings.lang === 'ar') {
+        numberSettings.negativeSuffix =
+          localeElements.numbers[numberSettings.numberingSystem].minusSign +
+          '\u00a0' + curDisplay.name;
+        numberSettings.negativePrefix = '';
+      } else {
+        numberSettings.negativeSuffix = '\u00a0' + curDisplay.name;
+        numberSettings.negativePrefix =
+          localeElements.numbers[numberSettings.numberingSystem].minusSign;
       }
     }
-  };
+  }
 
-  _expandAffix = function (pattern, localeElements, numberSettings,
-      currencyDisplay) {
-    var buffer = "";
-    for (var i = 0; i < pattern.length; ) {
-      var c = pattern.charAt(i++);
-      if (c === _QUOT)// {
-        continue;
-      //c = pattern.charAt(i++);
-      switch (c) {
-        case _CURRENCY:
-          var code = numberSettings['currencyCode'];
-          var name = code, symbol = code;
-          if (localeElements['numbers']['currencies'][code] !== undefined) {
-            name = localeElements['numbers']['currencies'][code]['displayName'];
-            symbol = localeElements['numbers']['currencies'][code]['symbol'];
-          }
-          if (numberSettings['currencyDisplay'] === undefined ||
-              numberSettings['currencyDisplay'] === "symbol")
-            c = symbol;
-          else if (numberSettings['currencyDisplay'] === "code") {
-            c = code;
-          }
-          else {
-            c = name;
-            currencyDisplay['name'] = c;
-          }
-          break;
-        case _PERCENT:
-          c = localeElements['numbers'][numberSettings['numberingSystem']]['percentSign'];
-          break;
-        case _PER_MILL:
-          c = localeElements['numbers'][numberSettings['numberingSystem']]['perMille'];
-          break;
-        case _MINUS:
-          c = localeElements['numbers'][numberSettings['numberingSystem']]['minusSign'];
-          break;
+  function _expandAffix(pattern, localeElements, numberSettings, currencyDisplay) {
+    var buffer = '';
+    for (var i = 0; i < pattern.length;) {
+      var c = pattern.charAt(i);
+      i += 1;
+      if (c !== _QUOT) {
+        // c = pattern.charAt(i++);
+        switch (c) {
+          case _CURRENCY:
+            var code = numberSettings.currencyCode;
+            var name = code;
+            var symbol = code;
+
+            if (localeElements.numbers.currencies[code] !== undefined) {
+              name = localeElements.numbers.currencies[code].displayName;
+              symbol = localeElements.numbers.currencies[code].symbol;
+            }
+            if (numberSettings.currencyDisplay === undefined ||
+                numberSettings.currencyDisplay === 'symbol') {
+              c = symbol;
+            } else if (numberSettings.currencyDisplay === 'code') {
+              c = code;
+            } else {
+              c = name;
+              // eslint-disable-next-line no-param-reassign
+              currencyDisplay.name = c;
+            }
+            break;
+          case _PERCENT:
+            c = localeElements.numbers[numberSettings.numberingSystem].percentSign;
+            break;
+          case _PER_MILL:
+            c = localeElements.numbers[numberSettings.numberingSystem].perMille;
+            break;
+          case _MINUS:
+            c = localeElements.numbers[numberSettings.numberingSystem].minusSign;
+            break;
+          default:
+            break;
+        }
+        buffer = buffer.concat(c);
       }
-      //}
-      buffer = buffer.concat(c);
     }
     return buffer;
-  };
+  }
 
-  _applyPatternImpl = function (options, pattern, localeElements,
-      numberSettings) {
-
-    var gotNegative = false,
-        useExponentialNotation = false;
+  function _applyPatternImpl(options, pattern, localeElements, _numberSettings) {
+    var numberSettings = _numberSettings;
+    var gotNegative = false;
+    var useExponentialNotation = false;
     var phaseOneLength = 0;
     var start = 0;
     var isPrefix = true;
+    var minExponentDigits;
 
     for (var j = 1; j >= 0 && start < pattern.length; --j) {
       var inQuote = false;
-      var prefix = "";
-      var suffix = "";
+      var prefix = '';
+      var suffix = '';
       var decimalPos = -1;
       var multiplier = 1;
-      var digitLeftCount = 0, zeroDigitCount = 0, digitRightCount = 0,
-          groupingCount = -1, groupingCount0 = -1;
-      var minExponentDigits;
+      var digitLeftCount = 0;
+      var zeroDigitCount = 0;
+      var digitRightCount = 0;
+      var groupingCount = -1;
+      var groupingCount0 = -1;
       var phase = 0;
 
+      /* eslint-disable no-continue */
       isPrefix = true;
       for (var pos = start; pos < pattern.length; ++pos) {
         var ch = pattern.charAt(pos);
@@ -2689,121 +2606,114 @@ OraNumberConverter = (function () {
             // Process the prefix / suffix characters
             if (inQuote) {
               if (ch === _QUOT) {
-                if ((pos + 1) < pattern.length && pattern.charAt(pos + 1) ===
-                    _QUOT) {
-                  ++pos;
-                  if (isPrefix)
+                if ((pos + 1) < pattern.length && pattern.charAt(pos + 1) === _QUOT) {
+                  pos += 1;
+                  if (isPrefix) {
                     prefix = prefix.concat("''");
-                  else
+                  } else {
                     suffix = suffix.concat("''");
-                }
-                else {
+                  }
+                } else {
                   inQuote = false; // 'do'
                 }
                 continue;
               }
-            }
-            else {
+            } else if (ch === _DIGIT ||
+                       ch === _ZERO_DIGIT ||
+                       ch === _GROUPING_SEPARATOR ||
+                       ch === _DECIMAL_SEPARATOR) {
               // Process unquoted characters seen in prefix or suffix phase.
-              if (ch === _DIGIT ||
-                  ch === _ZERO_DIGIT ||
-                  ch === _GROUPING_SEPARATOR ||
-                  ch === _DECIMAL_SEPARATOR) {
-                phase = 1;
-                --pos; // Reprocess this character
-                continue;
+              phase = 1;
+              pos -= 1; // Reprocess this character
+              continue;
+            } else if (ch === _CURRENCY) {
+              if (options.currency === undefined) {
+                _throwMissingCurrency('style');
               }
-              else if (ch === _CURRENCY) {
-                if (options['currency'] === undefined)
-                  _throwMissingCurrency("style");
                 // Use lookahead to determine if the currency sign
                 // is doubled or not.
-                numberSettings['style'] = 'currency';
-                var doubled = (pos + 1) < pattern.length &&
+              numberSettings.style = 'currency';
+              var doubled = (pos + 1) < pattern.length &&
                     pattern.charAt(pos + 1) === _CURRENCY;
-                if (doubled) { // Skip over the doubled character
-                  ++pos;
-                }
-                if (isPrefix)
-                  prefix = prefix.concat(doubled ? "'\u00A4\u00A4" :
-                      "'\u00A4");
-                else
-                  suffix = suffix.concat(doubled ? "'\u00A4\u00A4" :
-                      "'\u00A4");
-                continue;
+              if (doubled) { // Skip over the doubled character
+                pos += 1;
               }
-              else if (ch === _QUOT) {
-                if (ch === _QUOT) {
-                  if ((pos + 1) < pattern.length &&
+              if (isPrefix) {
+                prefix = prefix.concat(doubled ? "'\u00A4\u00A4" : "'\u00A4");
+              } else {
+                suffix = suffix.concat(doubled ? "'\u00A4\u00A4" : "'\u00A4");
+              }
+              continue;
+            } else if (ch === _QUOT) {
+              if (ch === _QUOT) {
+                if ((pos + 1) < pattern.length &&
                       pattern.charAt(pos + 1) === _QUOT) {
-                    ++pos;
-                    if (isPrefix)
-                      prefix = prefix.concat("''");// o''clock
-                    else
-                      suffix = suffix.concat("''");
+                  pos += 1;
+                  if (isPrefix) {
+                    prefix = prefix.concat("''"); // o''clock
+                  } else {
+                    suffix = suffix.concat("''");
                   }
-                  else {
-                    inQuote = true; // 'do'
-                  }
-                  continue;
+                } else {
+                  inQuote = true; // 'do'
                 }
-              }
-              else if (ch === _SEPARATOR) {
-                if (phase === 0 || j === 0) {
-                  _throwSyntaxError(pattern);
-                }
-                start = pos + 1;
-                pos = pattern.length;
                 continue;
               }
-
-              // Next handle characters which are appended directly.
-              else if (ch === _PERCENT) {
-                numberSettings['style'] = 'percent';
-                if (multiplier !== 1) {
-                  _throwSyntaxError(pattern);
-                }
-                numberSettings['isPercent'] = true;
-                multiplier = 100;
-                if (isPrefix)
-                  prefix = prefix.concat("'%");
-                else
-                  suffix = suffix.concat("'%");
-                continue;
+            } else if (ch === _SEPARATOR) {
+              if (phase === 0 || j === 0) {
+                _throwSyntaxError(pattern);
               }
-              else if (ch === _PER_MILL) {
-                if (multiplier !== 1) {
-                  _throwSyntaxError(pattern);
-                }
-                numberSettings['style'] = 'perMill';
-                numberSettings['isPerMill'] = true;
-                multiplier = 1000;
-                if (isPrefix)
-                  prefix = prefix.concat("'\u2030");
-                else
-                  suffix = suffix.concat("'\u2030");
-                continue;
+              start = pos + 1;
+              pos = pattern.length;
+              continue;
+            } else if (ch === _PERCENT) {
+                // Next handle characters which are appended directly.
+              numberSettings.style = 'percent';
+              if (multiplier !== 1) {
+                _throwSyntaxError(pattern);
               }
-              else if (ch === _MINUS) {
-                if (isPrefix)
-                  prefix = prefix.concat("'-");
-                else
-                  suffix = suffix.concat("'-");
-                continue;
+              numberSettings.isPercent = true;
+              multiplier = 100;
+              if (isPrefix) {
+                prefix = prefix.concat("'%");
+              } else {
+                suffix = suffix.concat("'%");
               }
+              continue;
+            } else if (ch === _PER_MILL) {
+              if (multiplier !== 1) {
+                _throwSyntaxError(pattern);
+              }
+              numberSettings.style = 'perMill';
+              numberSettings.isPerMill = true;
+              multiplier = 1000;
+              if (isPrefix) {
+                prefix = prefix.concat("'\u2030");
+              } else {
+                suffix = suffix.concat("'\u2030");
+              }
+              continue;
+            } else if (ch === _MINUS) {
+              if (isPrefix) {
+                prefix = prefix.concat("'-");
+              } else {
+                suffix = suffix.concat("'-");
+              }
+              continue;
             }
-            if (isPrefix)
+            if (isPrefix) {
               prefix = prefix.concat(ch);
-            else
+            } else {
               suffix = suffix.concat(ch);
+            }
             break;
 
           case 1:
             if (j === 1) {
-              ++phaseOneLength;
-            }
-            else {
-              if (--phaseOneLength === 0) {
+              phaseOneLength += 1;
+            } else {
+              phaseOneLength -= 1;
+              if (phaseOneLength === 0) {
                 phase = 2;
                 isPrefix = false;
               }
@@ -2812,47 +2722,41 @@ OraNumberConverter = (function () {
 
             if (ch === _DIGIT) {
               if (zeroDigitCount > 0) {
-                ++digitRightCount;
-              }
-              else {
-                ++digitLeftCount;
+                digitRightCount += 1;
+              } else {
+                digitLeftCount += 1;
               }
               if (groupingCount >= 0 && decimalPos < 0) {
-                ++groupingCount;
+                groupingCount += 1;
               }
-            }
-            else if (ch === _ZERO_DIGIT) {
+            } else if (ch === _ZERO_DIGIT) {
               if (digitRightCount > 0) {
                 _throwSyntaxError(pattern);
               }
-              ++zeroDigitCount;
+              zeroDigitCount += 1;
               if (groupingCount >= 0 && decimalPos < 0) {
-                ++groupingCount;
+                groupingCount += 1;
               }
-            }
-            else if (ch === _GROUPING_SEPARATOR) {
+            } else if (ch === _GROUPING_SEPARATOR) {
               groupingCount0 = groupingCount;
               groupingCount = 0;
-            }
-            else if (ch === _DECIMAL_SEPARATOR) {
+            } else if (ch === _DECIMAL_SEPARATOR) {
               if (decimalPos >= 0) {
                 _throwSyntaxError(pattern);
               }
               decimalPos = digitLeftCount + zeroDigitCount +
                   digitRightCount;
-            }
-            else if (_regionMatches(pattern, pos, _EXPONENT)) {
+            } else if (_regionMatches(pattern, pos, _EXPONENT)) {
               if (useExponentialNotation) {
                 _throwSyntaxError(pattern);
               }
               useExponentialNotation = true;
               minExponentDigits = 0;
-              pos = pos + _EXPONENT.length;
-              while (pos < pattern.length && pattern.charAt(pos) ===
-                  _ZERO_DIGIT) {
-                ++minExponentDigits;
-                ++phaseOneLength;
-                ++pos;
+              pos += _EXPONENT.length;
+              while (pos < pattern.length && pattern.charAt(pos) === _ZERO_DIGIT) {
+                minExponentDigits += 1;
+                phaseOneLength += 1;
+                pos += 1;
               }
 
               if ((digitLeftCount + zeroDigitCount) < 1 ||
@@ -2861,26 +2765,28 @@ OraNumberConverter = (function () {
               }
               phase = 2;
               isPrefix = false;
-              --pos;
+              pos -= 1;
               continue;
-            }
-            else {
+            } else {
               phase = 2;
               isPrefix = false;
-              --pos;
-              --phaseOneLength;
+              pos -= 1;
+              phaseOneLength -= 1;
               continue;
             }
             break;
+          default:
+            break;
         }
       }
+      /* eslint-enable no-continue */
 
 
       if (zeroDigitCount === 0 && digitLeftCount > 0 && decimalPos >= 0) {
         // Handle "###.###" and "###." and ".###"
         var n = decimalPos;
         if (n === 0) { // Handle ".###"
-          ++n;
+          n += 1;
         }
         digitRightCount = digitLeftCount - n;
         digitLeftCount = n - 1;
@@ -2900,27 +2806,27 @@ OraNumberConverter = (function () {
         posSuffixPattern = suffix;
         negPrefixPattern = posPrefixPattern;
         negSuffixPattern = posSuffixPattern;
-        var digitTotalCount = digitLeftCount + zeroDigitCount +
-            digitRightCount;
+        var digitTotalCount = digitLeftCount + zeroDigitCount + digitRightCount;
         // The effectiveDecimalPos is the position the decimal is at or
-        //would be at if there is no decimal. Note that if decimalPos<0,
+        // would be at if there is no decimal. Note that if decimalPos<0,
         // then digitTotalCount == digitLeftCount + zeroDigitCount.
         var effectiveDecimalPos = decimalPos >= 0 ?
             decimalPos : digitTotalCount;
-        numberSettings['minimumIntegerDigits'] = (effectiveDecimalPos -
-            digitLeftCount);
-        numberSettings['maximumIntegerDigits'] = (useExponentialNotation ?
-            digitLeftCount + numberSettings['minimumIntegerDigits'] :
-            _MAXIMUM_INTEGER_DIGITS);
-        numberSettings['maximumFractionDigits'] = (decimalPos >= 0 ?
-            (digitTotalCount - decimalPos) : 0);
-        numberSettings['minimumFractionDigits'] = (decimalPos >= 0 ?
-            (digitLeftCount + zeroDigitCount - decimalPos) : 0);
-        numberSettings['groupingSize'] = (groupingCount > 0) ?
-            groupingCount : 0;
-        numberSettings['groupingSize0'] = groupingCount0;
-      }
-      else {
+        numberSettings.minimumIntegerDigits = (effectiveDecimalPos - digitLeftCount);
+        numberSettings.maximumIntegerDigits =
+          (useExponentialNotation ?
+           digitLeftCount + numberSettings.minimumIntegerDigits :
+           _MAXIMUM_INTEGER_DIGITS);
+        numberSettings.maximumFractionDigits = (decimalPos >= 0 ?
+                                                (digitTotalCount - decimalPos) : 0);
+        numberSettings.minimumFractionDigits =
+          (decimalPos >= 0 ?
+           ((digitLeftCount + zeroDigitCount) - decimalPos) :
+           0);
+        numberSettings.groupingSize =
+          (groupingCount > 0) ? groupingCount : 0;
+        numberSettings.groupingSize0 = groupingCount0;
+      } else {
         negPrefixPattern = prefix;
         negSuffixPattern = suffix;
         gotNegative = true;
@@ -2928,159 +2834,163 @@ OraNumberConverter = (function () {
     }
 
     if (pattern.length === 0) {
-      posPrefixPattern = posSuffixPattern = "";
-      numberSettings['minimumIntegerDigits'] = 0;
-      numberSettings['maximumIntegerDigits'] = _MAXIMUM_INTEGER_DIGITS;
-      numberSettings['minimumFractionDigits'] = 0;
-      numberSettings['maximumFractionDigits'] = _MAXIMUM_FRACTION_DIGITS;
+      posPrefixPattern = '';
+      posSuffixPattern = '';
+      numberSettings.minimumIntegerDigits = 0;
+      numberSettings.maximumIntegerDigits = _MAXIMUM_INTEGER_DIGITS;
+      numberSettings.minimumFractionDigits = 0;
+      numberSettings.maximumFractionDigits = _MAXIMUM_FRACTION_DIGITS;
     }
-    numberSettings['useExponentialNotation'] = useExponentialNotation;
-    numberSettings['minExponentDigits'] = minExponentDigits;
+    numberSettings.useExponentialNotation = useExponentialNotation;
+    numberSettings.minExponentDigits = minExponentDigits;
     // If there was no negative pattern, or if the negative pattern is
     // identical to the positive pattern, then prepend the minus sign to
     // the positive pattern to form the negative pattern.
     if (!gotNegative ||
         ((negPrefixPattern.localeCompare(posPrefixPattern) === 0)
-            && (negSuffixPattern.localeCompare(posSuffixPattern) === 0))) {
-      if (numberSettings['style'] === 'currency' && numberSettings['lang'] === 'ar') {
+         && (negSuffixPattern.localeCompare(posSuffixPattern) === 0))) {
+      if (numberSettings.style === 'currency' && numberSettings.lang === 'ar') {
         negSuffixPattern = posSuffixPattern + "'\u200f-";
         negPrefixPattern = posPrefixPattern;
-      }
-      else {
+      } else {
         negSuffixPattern = posSuffixPattern;
         negPrefixPattern = "'-" + posPrefixPattern;
-
       }
     }
     _expandAffixes(localeElements, numberSettings);
-  };
+  }
 
-  _getRoundedNumber = function (ret, numberSettings, options) {
-    var precision = numberSettings['maximumFractionDigits'];
+  function _getRoundedNumber(ret, numberSettings, options) {
+    var precision = numberSettings.maximumFractionDigits;
     var isNegative = ret < 0;
-    var mode = options['roundingMode'] || 'DEFAULT';
+    var mode = options.roundingMode || 'DEFAULT';
     var roundedNumber = _roundNumber(Math.abs(ret), precision, mode);
     return isNegative ? -roundedNumber : roundedNumber;
-  };
+  }
 
-  _resolveNumberSettings = function (localeElements, options, locale) {
+  function _resolveNumberSettings(localeElements, options, locale) {
     var numberSettings = {};
-    _validateNumberOptions(options, "OraNumberConverter.resolvedOptions");
+    _validateNumberOptions(options, 'OraNumberConverter.resolvedOptions');
     _getNumberSettings(localeElements, numberSettings, options, locale);
-    numberSettings['numberingSystemKey'] = _getNumberingExtension(locale);
-    if (oj.OraI18nUtils.numeringSystems[numberSettings['numberingSystemKey']] ===
-        undefined)
-      numberSettings['numberingSystemKey'] = 'latn';
+    numberSettings.numberingSystemKey = _getNumberingExtension(locale);
+    if (oj.OraI18nUtils.numeringSystems[numberSettings.numberingSystemKey] === undefined) {
+      numberSettings.numberingSystemKey = 'latn';
+    }
     return numberSettings;
-  };
+  }
 
-  _resolveOptions = function (numberSettings, options, locale) {
+  function _resolveOptions(numberSettings, options, locale) {
     var resOptions = {
-      'locale': locale,
-      'style': (numberSettings['style'] === undefined) ? 'decimal' : numberSettings['style'],
-      'useGrouping': (options['useGrouping'] === undefined) ? true : options['useGrouping'],
-      'numberingSystem': numberSettings['numberingSystemKey']
+      locale: locale,
+      style: (numberSettings.style === undefined) ? 'decimal' : numberSettings.style,
+      useGrouping: (options.useGrouping === undefined) ? true : options.useGrouping,
+      numberingSystem: numberSettings.numberingSystemKey
     };
-    resOptions['minimumIntegerDigits'] = numberSettings['minimumIntegerDigits'];
-    resOptions['minimumFractionDigits'] = numberSettings['minimumFractionDigits'];
-    resOptions['maximumFractionDigits'] = numberSettings['maximumFractionDigits'];
-    if (numberSettings['style'] === 'decimal' && options['decimalFormat'] !== undefined) {
-      resOptions['decimalFormat'] = options['decimalFormat'];
+    resOptions.minimumIntegerDigits = numberSettings.minimumIntegerDigits;
+    resOptions.minimumFractionDigits = numberSettings.minimumFractionDigits;
+    resOptions.maximumFractionDigits = numberSettings.maximumFractionDigits;
+    if (numberSettings.style === 'decimal' && options.decimalFormat !== undefined) {
+      resOptions.decimalFormat = options.decimalFormat;
     }
-    if (numberSettings['style'] === 'currency' && options['currencyFormat'] !== undefined) {
-      resOptions['currencyFormat'] = options['currencyFormat'];
+    if (numberSettings.style === 'currency' && options.currencyFormat !== undefined) {
+      resOptions.currencyFormat = options.currencyFormat;
     }
-    if (numberSettings['style'] === 'currency') {
-      resOptions['currency'] = options['currency'];
-      resOptions['currencyDisplay'] = (options['currencyDisplay'] ===
-          undefined) ? 'symbol' : options['currencyDisplay'];
+    if (numberSettings.style === 'currency') {
+      resOptions.currency = options.currency;
+      resOptions.currencyDisplay = (options.currencyDisplay === undefined) ?
+        'symbol' : options.currencyDisplay;
     }
-    if (options['unit'] !== undefined)
-      resOptions['unit'] = options['unit'];
-    if (options['pattern'] !== undefined)
-      resOptions['pattern'] = options['pattern'];
-    var roundingMode = options['roundingMode'];
-    var roundDuringParse = options['roundDuringParse'];
-    if (roundingMode !== undefined)
-      resOptions['roundingMode'] = roundingMode;
-    if (roundDuringParse !== undefined)
-      resOptions['roundDuringParse'] = roundDuringParse;
-    var leneint = numberSettings['lenientParse'];
-    if (leneint !== undefined)
-      resOptions['lenientParse'] = leneint;
-    var sep = numberSettings['separators'];
-    if (sep !== undefined)
-      resOptions['separators'] = sep;
+    if (options.unit !== undefined) {
+      resOptions.unit = options.unit;
+    }
+    if (options.pattern !== undefined) {
+      resOptions.pattern = options.pattern;
+    }
+    var roundingMode = options.roundingMode;
+    var roundDuringParse = options.roundDuringParse;
+    if (roundingMode !== undefined) {
+      resOptions.roundingMode = roundingMode;
+    }
+    if (roundDuringParse !== undefined) {
+      resOptions.roundDuringParse = roundDuringParse;
+    }
+    var leneint = numberSettings.lenientParse;
+    if (leneint !== undefined) {
+      resOptions.lenientParse = leneint;
+    }
+    var sep = numberSettings.separators;
+    if (sep !== undefined) {
+      resOptions.separators = sep;
+    }
     return resOptions;
-  };
+  }
 
-  function _init()
-  {
-
+  function _init() {
     return {
       /**
        * Format a number.
        * @memberOf OraNumberConverter
        * @param {number} value - Number object to be formatted.
-       * @param {Object} localeElements - the instance of LocaleElements  
+       * @param {Object} localeElements - the instance of LocaleElements
        * bundle
        * @param {Object=} options - Containing the following properties:<br>
-       * - <b>style.</b>  is one of the String values "decimal", "currency",  
+       * - <b>style.</b>  is one of the String values "decimal", "currency",
        * "percent" or "unit". The default is "decimal".<br>
-       * - <b>decimalFormat.</b> is used in conjuction with "decimal" style. 
+       * - <b>decimalFormat.</b> is used in conjuction with "decimal" style.
        * It can have one of the string values "short", "long", "standard". "standard"
        * is the default. It is used for compact number formatting. For example 3000 is displayed
        *  as 3K for "short" and 3 thousand for "long". We take into consideration
-       *  the locale's plural rules for the compact pattern.<br> 
-       * - <b>currency.</b> An ISO 4217 alphabetic currency code. Mandatory 
+       *  the locale's plural rules for the compact pattern.<br>
+       * - <b>currency.</b> An ISO 4217 alphabetic currency code. Mandatory
        *  when style is "currency".<br>
-       * - <b>unit.</b> Mandatory when style is "unit". Allowed values are "byte" or "bit".<br> 
-       * - <b>currencyFormat.</b> is used in conjuction with "currency" style. 
+       * - <b>unit.</b> Mandatory when style is "unit". Allowed values are "byte" or "bit".<br>
+       * - <b>currencyFormat.</b> is used in conjuction with "currency" style.
        * It can have one of the string values "short", "long", "standard". "standard"
        * is the default. It is used for compact currency formatting. For example $3000 is displayed
-       *  as $3K for "short" and 3 thousand US Dollar for "long".<br> 
-       * - <b>currencyDisplay.</b> is one of the String values "code", 
-       * "symbol", or "name", specifying whether to display the currency as  
-       * an ISO 4217 alphabetic currency code, 
-       * a localized currency symbol, or a localized currency name if 
-       * formatting with the "currency" style. It is only present when style 
+       *  as $3K for "short" and 3 thousand US Dollar for "long".<br>
+       * - <b>currencyDisplay.</b> is one of the String values "code",
+       * "symbol", or "name", specifying whether to display the currency as
+       * an ISO 4217 alphabetic currency code,
+       * a localized currency symbol, or a localized currency name if
+       * formatting with the "currency" style. It is only present when style
        * has the value "currency". The default is "symbol".<br>
-       * - <b>minimumIntegerDigits.</b> is a non-negative integer Number value 
-       * indicating the minimum integer digits to be used. Numbers will be 
+       * - <b>minimumIntegerDigits.</b> is a non-negative integer Number value
+       * indicating the minimum integer digits to be used. Numbers will be
        * padded with leading zeroes if necessary.<br>
-       * - <b>minimumFractionDigits.</b> a non-negative integer Number value 
-       * indicating the minimum fraction digits to be used. Numbers will be 
+       * - <b>minimumFractionDigits.</b> a non-negative integer Number value
+       * indicating the minimum fraction digits to be used. Numbers will be
        * padded with trailing zeroes if necessary.<br>
-       * - <b>maximumFractionDigits.</b> a non-negative integer Number value 
-       * indicating the maximum fraction digits to be used. Numbers will be 
+       * - <b>maximumFractionDigits.</b> a non-negative integer Number value
+       * indicating the maximum fraction digits to be used. Numbers will be
        * rounded if necessary.<br>
        * - <b>roundingMode.</b> specifies the rounding behavior. This follows the
-       *  Java.Math.RoundingMode behavior. Currently we support the options : 
+       *  Java.Math.RoundingMode behavior. Currently we support the options :
        *  HALF_UP, HALF_DOWN, and HALF_EVEN<br>
-       * - <b>useGrouping.</b> is a Boolean value indicating whether a 
+       * - <b>useGrouping.</b> is a Boolean value indicating whether a
        * grouping separator should be used. The default is true.<br>
        * - <b>separators.</b> - An object with 2 fields: 'decimal' and 'group'.
        * It allows the user to override the locale's default decimal and grouping separators.<br>
-       * - <b>pattern.</b> custom pattern. Will override above options 
+       * - <b>pattern.</b> custom pattern. Will override above options
        * when present.
-       * @param {string=} locale - A BCP47 compliant language tag. it is only 
-       * used to extract the unicode extension keys. 
+       * @param {string=} locale - A BCP47 compliant language tag. it is only
+       * used to extract the unicode extension keys.
        * @return {string} formatted number.
-       * @throws {RangeError} If a property value of the options parameter is 
+       * @throws {RangeError} If a property value of the options parameter is
        * out of range.
-       * @throws {TypeError} If the style is currency and currency code is 
+       * @throws {TypeError} If the style is currency and currency code is
        * missing.
-       * @throws {SyntaxError} If an unexpected character is encountered in 
+       * @throws {SyntaxError} If an unexpected character is encountered in
        * the pattern.
        */
       format: function (value, localeElements, options, locale) {
         if (arguments.length <= 2 || options === undefined) {
+          // eslint-disable-next-line no-param-reassign
           options = {
-            'useGrouping': true,
-            'style': 'decimal'
+            useGrouping: true,
+            style: 'decimal'
           };
         }
-        _validateNumberOptions(options, "OraNumberConverter.format");
+        _validateNumberOptions(options, 'OraNumberConverter.format');
         var numberSettings = {};
         _getNumberSettings(localeElements, numberSettings, options, locale);
         return _formatNumberImpl(value, options, localeElements,
@@ -3090,23 +3000,23 @@ OraNumberConverter = (function () {
        * Parse a number.
        * @memberOf OraNumberConverter
        * @param {string|number} str - string to be parsed.
-       * @param {Object} localeElements - the instance of LocaleElements 
+       * @param {Object} localeElements - the instance of LocaleElements
        * bundle
        * @param {Object=} options - Containing the following properties:<br>
-       * - <b>style.</b>  is one of the String values "decimal", "currency" or 
+       * - <b>style.</b>  is one of the String values "decimal", "currency" or
        * "percent". The default is "decimal".<br>
-       * - <b>currency.</b> An ISO 4217 alphabetic currency code. Mandatory 
+       * - <b>currency.</b> An ISO 4217 alphabetic currency code. Mandatory
        * when style is "currency".<br>
-       * - <b>currencyDisplay.</b> is one of the String values "code", 
-       * "symbol", or "name", specifying whether to display the currency as 
+       * - <b>currencyDisplay.</b> is one of the String values "code",
+       * "symbol", or "name", specifying whether to display the currency as
        * an ISO 4217 alphabetic currency code,
-       *  a localized currency symbol, or a localized currency name if 
-       *  formatting with the "currency" style. It is only considered when 
+       *  a localized currency symbol, or a localized currency name if
+       *  formatting with the "currency" style. It is only considered when
        *  style has the value "currency". The default is "symbol".<br>
-       * - <b>pattern.</b> custom pattern. Will override above options when 
+       * - <b>pattern.</b> custom pattern. Will override above options when
        * present.<br>
        * - <b>roundingMode.</b> specifies the rounding behavior. This follows the
-       *  Java.Math.RoundingMode behavior. Currently we support the options : 
+       *  Java.Math.RoundingMode behavior. Currently we support the options :
        *  HALF_UP, HALF_DOWN, and HALF_EVEN<br>
        *  - <b>roundDuringParse.</b> Boolean value. Specifies whether or not to round during parse.
        *  by default the number converter rounds during format but not during parse.<br>
@@ -3114,78 +3024,81 @@ OraNumberConverter = (function () {
        * It allows the user to override the locale's default decimal and grouping separators.<br>
        *  - <b>lenientParse.</b> specifies if lenient parse is enabled or disabled. Allowed values: "full", "none".
        *  default is "full" which means lenient parse is enabled.<br>
-       * @param {string=} locale - A BCP47 compliant language tag. it is only 
-       * used to extract the unicode extension keys. 
-       * @return {number} a number object parsed from the string. In case of 
+       * @param {string=} locale - A BCP47 compliant language tag. it is only
+       * used to extract the unicode extension keys.
+       * @return {number} a number object parsed from the string. In case of
        * error, returns null.
-       * @throws {RangeError} If a property value of the options parameter is 
+       * @throws {RangeError} If a property value of the options parameter is
        * out of range.
-       * @throws {TypeError} If the style is currency and currency code is 
+       * @throws {TypeError} If the style is currency and currency code is
        * missing.
-       * @throws {SyntaxError} If an unexpected character is encountered in 
+       * @throws {SyntaxError} If an unexpected character is encountered in
        * the pattern.
-       * @throws {Error} If the <i>str</i> parameter does not match the number 
+       * @throws {Error} If the <i>str</i> parameter does not match the number
        * pattern.
        */
       parse: function (str, localeElements, options, locale) {
-        if (typeof str === "number")
+        if (typeof str === 'number') {
           return str;
-        if (Object.prototype.toString.call(str) === '[object Number]')
-          return  Number(str);
+        }
+        if (Object.prototype.toString.call(str) === '[object Number]') {
+          return Number(str);
+        }
         if (arguments.length <= 2 || options === undefined) {
+          // eslint-disable-next-line no-param-reassign
           options = {
-            'useGrouping': true,
-            'style': 'decimal'
+            useGrouping: true,
+            style: 'decimal'
           };
         }
-        _validateNumberOptions(options, "OraNumberConverter.parse");
+        _validateNumberOptions(options, 'OraNumberConverter.parse');
         return _parseNumberImpl(str, localeElements, options, locale);
       },
       /**
        * Resolve options.
-       * Returns a new object with properties reflecting the number formatting 
+       * Returns a new object with properties reflecting the number formatting
        * options computed based on the options parameter.
-       * If options is not provided, the properties will be derived from the 
+       * If options is not provided, the properties will be derived from the
        * locale defaults.
        * @memberOf OraNumberConverter
-       * @param {Object} localeElements - the instance of LocaleElements 
+       * @param {Object} localeElements - the instance of LocaleElements
        * bundle
        * @param {Object=} options containing the following properties:<br>
-       * - <b>style.</b> "decimal", "currency", "percent" or "unit". The default is 
+       * - <b>style.</b> "decimal", "currency", "percent" or "unit". The default is
        * "decimal".<br>
        * - <b>unit.</b> one of the strings "byte" or "bit" when the style is "unit".<br>
        * - <b>decimalFormat.</b> It can have one of the string values "short", "long", "standard".
        * "standard" is the default. It is used for compact number formatting. For example 3000 is displayed
        *  as 3K for "short" and 3 thousand for "long". We take into consideration
-       *  the locale's plural rules for the compact pattern.<br> 
-       * - <b>currency.</b> An ISO 4217 alphabetic currency code. Mandatory 
+       *  the locale's plural rules for the compact pattern.<br>
+       * - <b>currency.</b> An ISO 4217 alphabetic currency code. Mandatory
        * when when style is "currency".<br>
-       * - <b>currencyFormat.</b> is used in conjuction with "currency" style. 
+       * - <b>currencyFormat.</b> is used in conjuction with "currency" style.
        * It can have one of the string values "short", "long", "standard". "standard"
        * is the default. It is used for compact currency formatting. For example $3000 is displayed
-       *  as $3K for "short" and 3 thousand US Dollar for "long".<br> 
-       * - <b>currencyDisplay.</b> is one of the String values "code", 
-       * "symbol", or "name", specifying whether to display the currency as 
+       *  as $3K for "short" and 3 thousand US Dollar for "long".<br>
+       * - <b>currencyDisplay.</b> is one of the String values "code",
+       * "symbol", or "name", specifying whether to display the currency as
        * an ISO 4217 alphabetic currency code,
-       *   a localized currency symbol, or a localized currency name if 
-       *   formatting with the "currency" style. It is only present 
+       *   a localized currency symbol, or a localized currency name if
+       *   formatting with the "currency" style. It is only present
        *   when style has the value "currency". The default is "symbol".<br>
-       * - <b>minimumIntegerDigits.</b> is a non-negative integer Number value 
-       * indicating the minimum integer digits to be used. Numbers will be 
+       * - <b>minimumIntegerDigits.</b> is a non-negative integer Number value
+       * indicating the minimum integer digits to be used. Numbers will be
        * padded with leading zeroes if necessary.<br>
-       * - <b>minimumFractionDigits.</b> a non-negative integer Number value 
-       * indicating the minimum fraction digits to be used. Numbers will be 
+       * - <b>minimumFractionDigits.</b> a non-negative integer Number value
+       * indicating the minimum fraction digits to be used. Numbers will be
        * padded with trailing zeroes if necessary.<br>
-       * - <b>maximumFractionDigits.</b> a non-negative integer Number value 
-       * indicating the maximum fraction digits to be used. Numbers will be 
+       * - <b>maximumFractionDigits.</b> a non-negative integer Number value
+       * indicating the maximum fraction digits to be used. Numbers will be
        * rounded if necessary.<br>
        * - <b>numberingSystem</b>. The numbering system.<br>
-       * - <b>useGrouping.</b> is a Boolean value indicating whether a 
+       * - <b>useGrouping.</b> is a Boolean value indicating whether a
        * grouping separator should be used. The default is true.<br>
-       * - <b>pattern.</b> custom pattern. Will override above options when 
+       * - <b>pattern.</b> custom pattern. Will override above options when
        * present.<br>
        * - <b>roundingMode.</b> specifies the rounding behavior. This follows the
-       *  Java.Math.RoundingMode behavior. Currently we support the options : 
+       *  Java.Math.RoundingMode behavior. Currently we support the options :
        *  HALF_UP, HALF_DOWN, and HALF_EVEN<br>
        *  - <b>roundDuringParse.</b> Boolean value. Specifies whether or not to round during parse.
        *  by default the number converter rounds during format but not during parse.<br>
@@ -3193,22 +3106,24 @@ OraNumberConverter = (function () {
        * It allows the user to override the locale's default decimal and grouping separators.<br>
        *  - <b>lenientParse.</b> specifies if lenient parse is enabled or disabled. Allowed values: "full", "none".
        * default is "full" which means lenient parse is enabled.<br>
-       * @param {string=} locale - A BCP47 compliant language tag. it is only 
-       * used to extract the unicode extension keys. 
+       * @param {string=} locale - A BCP47 compliant language tag. it is only
+       * used to extract the unicode extension keys.
        * @return {Object} Resolved options object.
-       * @throws {RangeError} If a property value of the options parameter is 
+       * @throws {RangeError} If a property value of the options parameter is
        * out of range.
-       * @throws {TypeError} If the style is currency and currency code is 
-       * missing. 
+       * @throws {TypeError} If the style is currency and currency code is
+       * missing.
        */
       resolvedOptions: function (localeElements, options, locale) {
         if (arguments.length < 3 || locale === undefined) {
+          // eslint-disable-next-line no-param-reassign
           locale = oj.OraI18nUtils.getLocaleElementsMainNodeKey(localeElements);
         }
         if (arguments.length < 2 || options === undefined) {
+          // eslint-disable-next-line no-param-reassign
           options = {
-            'useGrouping': true,
-            'style': 'decimal'
+            useGrouping: true,
+            style: 'decimal'
           };
         }
         var numberSettings = _resolveNumberSettings(localeElements, options, locale);
@@ -3220,7 +3135,7 @@ OraNumberConverter = (function () {
   return {
     /**
      * getInstance.
-     * Returns the singleton instance of OraNumberConverter class.  
+     * Returns the singleton instance of OraNumberConverter class.
      * @memberOf OraNumberConverter
      * @return {Object} The singleton OraNumberConverter instance.
      */
@@ -3232,4 +3147,6 @@ OraNumberConverter = (function () {
     }
   };
 }());
+
+  ;return __ValidationNumber;
 });

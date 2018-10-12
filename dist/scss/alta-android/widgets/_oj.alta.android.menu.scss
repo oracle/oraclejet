@@ -27,18 +27,33 @@
     // (or oj-focus-ancestor) class
     .oj-menu-divider.oj-focus,
     .oj-menu-divider.oj-focus-ancestor {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        border-color: var(--oj-menu-item-border-color-focus);
+      } @else {
         // In Android, focused items get a border, and the adjacent divider, if any, serves as that border.
         border-color: $menuItemBorderColorFocus;
+      }
     }
 
     .oj-menu-item > a {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        html:not([dir="rtl"]) & {
+          padding-right: calc(16px + (2 * var(--oj-menu-submenu-icon-padding)));
+        }
+        html[dir="rtl"] & {
+          padding-left: calc(16px + (2 * var(--oj-menu-submenu-icon-padding)));
+        }
+      } @else {
         // leave space for submenu icon (16px) plus spacing before/after it
         @include oj-ltr() {
-            padding-right: calc(16px + #{2*$menuSubmenuIconPadding});
+            padding-right: calc(16px + (2 * #{$menuSubmenuIconPadding}));
         }
         @include oj-rtl() {
-            padding-left: calc(16px + #{2*$menuSubmenuIconPadding});
+            padding-left: calc(16px + (2 * #{$menuSubmenuIconPadding}));
         }
+      }
     }
 
     .oj-menu-submenu-icon { 

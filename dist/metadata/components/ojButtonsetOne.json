@@ -1,7 +1,7 @@
 {
   "name": "oj-buttonset-one",
-  "version": "5.2.0",
-  "jetVersion": "5.2.0",
+  "version": "6.0.0",
+  "jetVersion": "6.0.0",
   "displayName": "Buttonset One",
   "type": "core",
   "styleClasses": [
@@ -19,11 +19,13 @@
     }
   ],
   "description": "A grouping of related buttons where only one button may be selected.",
+  "help": "https://docs.oracle.com/en/middleware/jet/6/reference-api/oj.ojButtonsetOne.html",
   "properties": {
     "chroming": {
       "description": "Indicates in what states the buttonset has chrome (background and border).",
       "type": "string",
       "displayName": "Chroming",
+      "help": "chroming",
       "enumValues": [
         "full",
         "half",
@@ -48,13 +50,15 @@
       "description": "Specifies that the buttonset element should be disabled.",
       "type": "boolean",
       "displayName": "Disabled",
-      "value": false
+      "value": false,
+      "help": "disabled"
     },
     "display": {
       "description": "Specifies whether the buttonset displays label and icons, or just icons.",
       "type": "string",
       "displayName": "Display",
       "value": "all",
+      "help": "display",
       "enumValues": [
         "all",
         "icons"
@@ -75,6 +79,7 @@
       "type": "string",
       "displayName": "Focus Management",
       "value": "oneTabstop",
+      "help": "focusManagement",
       "enumValues": [
         "none",
         "oneTabstop"
@@ -95,23 +100,27 @@
       "type": "object|null",
       "displayName": "Translations",
       "value": {},
-      "translatable": true
+      "translatable": true,
+      "help": "translations"
     },
     "value": {
       "description": "Indicates which oj-option in the buttonset is selected.",
       "type": "any",
       "displayName": "Value",
       "value": null,
-      "writeback": true
+      "writeback": true,
+      "help": "value"
     }
   },
   "methods": {
     "refresh": {
       "description": "Refreshes the component.",
+      "help": "refresh",
       "return": "void"
     },
     "setProperty": {
-      "description": "Sets a property or a single subproperty for complex properties and notifies the component\nof the change, triggering a [property]Changed event.",
+      "description": "Sets a property or a single subproperty for complex properties and notifies the component of the change, triggering a [property]Changed event.",
+      "help": "setProperty",
       "params": [
         {
           "name": "property",
@@ -128,6 +137,7 @@
     },
     "getProperty": {
       "description": "Retrieves a value for a property or a single subproperty for complex properties.",
+      "help": "getProperty",
       "params": [
         {
           "name": "property",
@@ -139,6 +149,7 @@
     },
     "setProperties": {
       "description": "Performs a batch set of properties.",
+      "help": "setProperties",
       "params": [
         {
           "name": "properties",
@@ -151,11 +162,14 @@
   },
   "slots": {
     "": {
-      "description": "The <oj-buttonset-one> element accepts oj-options as children. See the oj-option doc for details about accepted children and slots.",
-      "displayName": "default"
+      "description": "The oj-buttonset-one element accepts oj-option elements as children.",
+      "displayName": "default",
+      "help": "Default"
     },
     "contextMenu": {
-      "description": "The contextMenu slot is set on the oj-menu within this element. \nThis is used to designate the JET Menu that this component should launch as a context menu on right-click, Shift-F10, Press & Hold, or component-specific gesture. \nIf specified, the browser's native context menu will be replaced by the JET Menu specified in this slot.\n\nThe application can register a listener for the Menu's ojBeforeOpen event. The listener can cancel the launch via event.preventDefault(), \nor it can customize the menu contents by editing the menu DOM directly, and then calling refresh() on the Menu.\n\nTo help determine whether it's appropriate to cancel the launch or customize the menu, the ojBeforeOpen listener can use component API's to determine which \ntable cell, chart item, etc., is the target of the context menu. See the JSDoc and demos of the individual components for details. \n\nKeep in mind that any such logic must work whether the context menu was launched via right-click, Shift-F10, Press & Hold, or component-specific touch gesture."
+      "description": "The contextMenu slot is set on the <oj-menu> instance within this element. It designates the JET Menu that this component should launch as a context menu.",
+      "maxItems": 1,
+      "help": "contextMenu"
     }
   }
 }

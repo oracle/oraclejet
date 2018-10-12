@@ -67,11 +67,11 @@ var __oj_label_value_metadata =
  * <code>
  * &lt;oj-form-layout max-columns='2' label-edge='start' label-width="50%">
  *   &lt;oj-label-value>
- *     &lt;my-label slot="label" for="my1">&lt;/my-label> 
+ *     &lt;my-label slot="label" for="my1">&lt;/my-label>
  *     &lt;my-input slot="value" id="my1">&lt;/my-input>
  *   &lt;/oj-label-value>
  *   &lt;oj-label-value>
- *     &lt;my-label slot="label" for="my2">&lt;/my-label> 
+ *     &lt;my-label slot="label" for="my2">&lt;/my-label>
  *   &lt;/oj-label-value>
  *   &lt;oj-label-value>
  *     &lt;my-input slot="value" id="my2">&lt;/my-input>
@@ -189,26 +189,48 @@ var __oj_label_value_metadata =
  * @instance
  */
 
+  /**
+   * <p>The <code class="prettyprint">label</code> slot is used to specify the 'label' part of a label/value form layout item.</p>
+   *
+   * @ojslot label
+   * @memberof oj.ojLabelValue
+   *
+   * @example <caption>Initialize a label/value form layout item:</caption>
+   * &lt;oj-label-value>
+   *   &lt;oj-label for="textWindow" slot="label">Type here&lt;/oj-label>
+   *   &lt;oj-textarea id="textWindow" slot="value" rows="5" style="width: 100%; min-width: 100%">&lt;/oj-textarea>
+   * &lt;/oj-label-value>
+   */
+  /**
+   * <p>The <code class="prettyprint">value</code> slot is used to specify the 'value' part of a label/value form layout item.</p>
+   *
+   * @ojslot value
+   * @memberof oj.ojLabelValue
+   *
+   * @example <caption>Initialize a label/value form layout item:</caption>
+   * &lt;oj-label-value>
+   *   &lt;oj-label for="textWindow" slot="label">Type here&lt;/oj-label>
+   *   &lt;oj-textarea id="textWindow" slot="value" rows="5" style="width: 100%; min-width: 100%">&lt;/oj-textarea>
+   * &lt;/oj-label-value>
+   */
 
 /**
- * The _ojLabelValue constructor function. 
+ * The _ojLabelValue constructor function.
  *
  * @constructor
  * @private
  */
 // eslint-disable-next-line no-unused-vars
 function ojLabelValue(context) {
-  var self = this;
   var element = context.element;
   var labelOjFlexItem;
   var valueOjFlexItem;
 
   this.createDOM = function () {
     element.classList.add('oj-label-value', 'oj-form');
-    var ojFlexDiv;
 
     // Create the flex wrapper div
-    ojFlexDiv = document.createElement('div');
+    var ojFlexDiv = document.createElement('div');
     ojFlexDiv.classList.add('oj-flex');
     ojFlexDiv.setAttribute('data-oj-context', '');
     ojFlexDiv.setAttribute('data-oj-internal', '');
@@ -228,8 +250,7 @@ function ojLabelValue(context) {
     // move the slot children to the appropriate div
     while (element.firstElementChild) {
       var child = element.firstElementChild;
-      switch (child.getAttribute("slot"))
-      {
+      switch (child.getAttribute('slot')) {
         case 'label':
           labelOjFlexItem.appendChild(child); // @HTMLUpdateOK reparenting child nodes
           break;
@@ -257,28 +278,28 @@ function ojLabelValue(context) {
    */
   this.updateDOM = function () {
     var customElementAncestor = _findClosestCustomElementAncestor();
-    
+
     var labelEdge = _getLabelEdge(customElementAncestor);
-    var labelWidth = labelEdge === 'start' ? _getLabelWidth(customElementAncestor) : '100%';    
+    var labelWidth = labelEdge === 'start' ? _getLabelWidth(customElementAncestor) : '100%';
 
     if (labelEdge === 'start') {
-      element.classList.add("oj-formlayout-labels-inline");
+      element.classList.add('oj-formlayout-labels-inline');
     } else {
-      element.classList.remove("oj-formlayout-labels-inline");
+      element.classList.remove('oj-formlayout-labels-inline');
     }
-    
-    labelOjFlexItem.style.webkitFlex = "0 1 "+labelWidth;
-    labelOjFlexItem.style.flex = "0 1 "+labelWidth;
+
+    labelOjFlexItem.style.webkitFlex = '0 1 ' + labelWidth;
+    labelOjFlexItem.style.flex = '0 1 ' + labelWidth;
     labelOjFlexItem.style.maxWidth = labelWidth;
     labelOjFlexItem.style.width = labelWidth;
-    valueOjFlexItem.style.webkitFlex = "1 1 0";
-    valueOjFlexItem.style.flex = "1 1 0";
+    valueOjFlexItem.style.webkitFlex = '1 1 0';
+    valueOjFlexItem.style.flex = '1 1 0';
   };
-  
+
   function _getLabelEdge(customElementAncestor) {
-    var labelEdge = "top"; // default value if "inherit" and ancestor doesn't support labelEdge
-    
-    if (element.labelEdge === "inherit") {
+    var labelEdge = 'top'; // default value if "inherit" and ancestor doesn't support labelEdge
+
+    if (element.labelEdge === 'inherit') {
       // We will inherit from custom element if it supports labelEdge
       if (customElementAncestor && 'labelEdge' in customElementAncestor) {
         labelEdge = customElementAncestor.labelEdge;
@@ -286,14 +307,14 @@ function ojLabelValue(context) {
     } else {
       labelEdge = element.labelEdge;
     }
-    
+
     return labelEdge;
-  };
-  
+  }
+
   function _getLabelWidth(customElementAncestor) {
-    var labelWidth = "33%"; // default value if "inherit" and ancestor doesn't support labelWidth
-    
-    if (element.labelWidth === "inherit") {
+    var labelWidth = '33%'; // default value if "inherit" and ancestor doesn't support labelWidth
+
+    if (element.labelWidth === 'inherit') {
       // We will inherit from custom element if it supports labelWidth
       if (customElementAncestor && 'labelWidth' in customElementAncestor) {
         labelWidth = customElementAncestor.labelWidth;
@@ -301,14 +322,13 @@ function ojLabelValue(context) {
     } else {
       labelWidth = element.labelWidth;
     }
-    
+
     return labelWidth;
-  };
+  }
 
   // searches ancestor elements, until and interesting tag-name is found,
   // returns null if no interesting element is found.
-  function _findClosestCustomElementAncestor()
-  {
+  function _findClosestCustomElementAncestor() {
     var ancestor = element.parentElement;
     // walk up parents until we find the first custom element
     for (; ancestor; ancestor = ancestor.parentElement) {
@@ -319,15 +339,14 @@ function ojLabelValue(context) {
     }
 
     return null; // no custom element ancestor
-  };
+  }
 }
 
 /* global __oj_label_value_metadata:false */
 /* global ojLabelValue */
 (function () {
   __oj_label_value_metadata.extension._CONSTRUCTOR = ojLabelValue;
-  oj.CustomElementBridge.registerMetadata('oj-label-value', null, __oj_label_value_metadata);
-  oj.CustomElementBridge.register('oj-label-value', { metadata: oj.CustomElementBridge.getMetadata('oj-label-value') });
+  oj.CustomElementBridge.register('oj-label-value', { metadata: __oj_label_value_metadata });
 }());
 
 });

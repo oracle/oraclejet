@@ -1,0 +1,75 @@
+{
+  "_from": "@types/knockout@^3.4.0",
+  "_id": "@types/knockout@3.4.59",
+  "_inBundle": false,
+  "_integrity": "sha512-uLVb9AWPnQajGE8QETNVS2qPpxTVzsWOWP9dLwBrqfIkatR3mCOoU3QP8idI4YDwRRxdTlYgfSeMFbUOjENvyw==",
+  "_location": "/@types/knockout",
+  "_phantomChildren": {},
+  "_requested": {
+    "type": "range",
+    "registry": true,
+    "raw": "@types/knockout@^3.4.0",
+    "name": "@types/knockout",
+    "escapedName": "@types%2fknockout",
+    "scope": "@types",
+    "rawSpec": "^3.4.0",
+    "saveSpec": null,
+    "fetchSpec": "^3.4.0"
+  },
+  "_requiredBy": [
+    "#DEV:/"
+  ],
+  "_resolved": "https://registry.npmjs.org/@types/knockout/-/knockout-3.4.59.tgz",
+  "_shasum": "87911eee72222141c76f6fc7c63115815b049fef",
+  "_spec": "@types/knockout@^3.4.0",
+  "_where": "/Users/nolakara/Documents/work/source/jet/tspub/jet/build/scripts/grunt",
+  "bugs": {
+    "url": "https://github.com/DefinitelyTyped/DefinitelyTyped/issues"
+  },
+  "bundleDependencies": false,
+  "contributors": [
+    {
+      "name": "Boris Yankov",
+      "url": "https://github.com/borisyankov"
+    },
+    {
+      "name": "Igor Oleinikov",
+      "url": "https://github.com/Igorbek"
+    },
+    {
+      "name": "Clément Bourgeois",
+      "url": "https://github.com/moonpyk"
+    },
+    {
+      "name": "Matt Brooks",
+      "url": "https://github.com/EnableSoftware"
+    },
+    {
+      "name": "Benjamin Eckardt",
+      "url": "https://github.com/BenjaminEckardt"
+    },
+    {
+      "name": "Mathias Lorenzen",
+      "url": "https://github.com/ffMathy"
+    },
+    {
+      "name": "Leonardo Lombardi",
+      "url": "https://github.com/ltlombardi"
+    }
+  ],
+  "dependencies": {},
+  "deprecated": false,
+  "description": "TypeScript definitions for Knockout",
+  "homepage": "https://github.com/DefinitelyTyped/DefinitelyTyped#readme",
+  "license": "MIT",
+  "main": "",
+  "name": "@types/knockout",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DefinitelyTyped/DefinitelyTyped.git"
+  },
+  "scripts": {},
+  "typeScriptVersion": "2.3",
+  "typesPublisherContentHash": "93504cf13bca508b66d56a0e90ba8279c8d45d2528c15409807743bfd763f6e2",
+  "version": "3.4.59"
+}

@@ -2,8 +2,6 @@
 
 // brand colors
 $brandColor:           #027bc7 !default;
-$neutralHue:           203deg !default;
-$neutralSaturation:    2% !default;
 
 $brandColorLight5:     mix(white, $brandColor, 91) !default;
 $brandColorLight4:     mix(white, $brandColor, 88) !default;
@@ -13,7 +11,11 @@ $brandColorLight1:     mix(white, $brandColor, 46) !default;
 $brandColorDark1:      mix(black, $brandColor, 20) !default;
 $brandColorDark2:      mix(black, $brandColor, 40) !default;
 
-$neutralColor1:   #ffffff !default;
+
+$neutralHue:           203 !default;
+$neutralSaturation:    2% !default;
+
+$neutralColor1:   hsl($neutralHue, $neutralSaturation, 100%) !default;
 $neutralColor2:   hsl($neutralHue, $neutralSaturation, 99%) !default;
 $neutralColor3:   hsl($neutralHue, $neutralSaturation, 98%) !default;
 $neutralColor4:   hsl($neutralHue, $neutralSaturation, 97%) !default;
@@ -29,7 +31,7 @@ $neutralColor13:  hsl($neutralHue, $neutralSaturation, 45%) !default;
 $neutralColor14:  hsl($neutralHue, $neutralSaturation, 30%) !default;
 $neutralColor15:  hsl($neutralHue, $neutralSaturation, 20%) !default;
 $neutralColor16:  hsl($neutralHue, $neutralSaturation, 15%) !default;
-$neutralColor17:  #000000 !default;
+$neutralColor17:  hsl($neutralHue, $neutralSaturation, 0%) !default;
 
 // Accent colors
 $accentColorHighlight1:    #d9f4fa !default;
@@ -72,12 +74,13 @@ $accentColorDvt10:         #a2bf39 !default;
 $accentColorDvt11:         #a75dba !default;
 $accentColorDvt12:         #f7f37b !default;
 
+
 // text colors
-$textColorBase: #000 !default;
-$textColor1: $textColorBase !default;
-$textColor2: rgba($textColorBase, 0.85) !default;
-$textColor3: rgba($textColorBase, 0.8) !default;
-$textColor4: rgba($textColorBase, 0.7) !default;
-$textColor5: rgba($textColorBase, 0.6) !default;
-$textColor6: rgba($textColorBase, 0.55) !default;
-$textColor7: rgba($textColorBase, 0.38) !default;
+$textColorBase: #000;
+$textColor1: hsla(hue($textColorBase), saturation($textColorBase), lightness($textColorBase), 1) !default;
+$textColor2: hsla(hue($textColorBase), saturation($textColorBase), lightness($textColorBase), 0.85) !default;
+$textColor3: hsla(hue($textColorBase), saturation($textColorBase), lightness($textColorBase), 0.8) !default;
+$textColor4: hsla(hue($textColorBase), saturation($textColorBase), lightness($textColorBase), 0.7) !default;
+$textColor5: hsla(hue($textColorBase), saturation($textColorBase), lightness($textColorBase), 0.6) !default;
+$textColor6: hsla(hue($textColorBase), saturation($textColorBase), lightness($textColorBase), 0.55) !default;
+$textColor7: hsla(hue($textColorBase), saturation($textColorBase), lightness($textColorBase), 0.38) !default;

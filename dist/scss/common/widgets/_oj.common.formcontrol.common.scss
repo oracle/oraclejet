@@ -12,26 +12,41 @@
 @if $includeFormControlCommonClasses != false {
   @include module-include-once("common.formcontrolcommon") {
 
+
+    
     /* form-control classes */
+    
     /* --------------------------------------------------------------- */
     
     // bumping up the specificity with the html because 
     // when $includeNormalize is false (compatibility mode) the input will get 
     // a margin of 0 which would override the margin set here
     html .oj-form-control {
-      margin-bottom: $wrappableMarginBottom;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        margin-bottom: var(--oj-wrappable-margin-bottom)
+      } @else {
+        margin-bottom: $wrappableMarginBottom;        
+      }
       vertical-align: middle;
     }
 
     /** for all hints */
     .oj-form-control-hint {
-      color: $textColor;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        color: var(--oj-text-color);
+      } @else {
+        color: $textColor;        
+      }
       padding: 0;
       word-wrap: break-word;  
     };
 
     .oj-form-control-title {
-      color: $textColor;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        color: var(--oj-text-color);
+      } @else {
+        color: $textColor;        
+      }
     }
     
     // The oj-form-control-inherit selector on an ancestor indicates that the form control should

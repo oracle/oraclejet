@@ -1,6 +1,6 @@
 // Copyright (c) 2014, 2018, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
 
-@if $includeCssVarDefinitions != false  {
+@if variable-exists(includeCssVarDefinitions) and $includeCssVarDefinitions != false  {
   @include module-include-once("common.css.variables") {
 
     :root {

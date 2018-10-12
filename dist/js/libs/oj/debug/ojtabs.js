@@ -6,14 +6,14 @@
 "use strict";
 define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojconveyorbelt', 'ojs/ojmenu', 
         'jqueryui-amd/widgets/sortable', 'ojs/ojtouchproxy'], 
-       function(oj, $)
+       function(oj, $, Components)
 {
 
  /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
  */
-
+/* global Components:false */
 /**
  * @preserve Copyright 2013 jQuery Foundation and other contributors
  * Released under the MIT license.
@@ -1454,7 +1454,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojconveyorbelt', 'oj
           toShow.show();
         //  - unable to stretch ojtable in an initially hidden ojtab
           if (toShow.length > 0) {
-            oj.Components.subtreeShown(toShow[0], { initialRender: self._initialRender });
+            Components.subtreeShown(toShow[0], { initialRender: self._initialRender });
           }
           complete();
         }
@@ -1466,7 +1466,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojconveyorbelt', 'oj
         toHide.hide();
       //  - unable to stretch ojtable in an initially hidden ojtab
         if (toHide.length > 0) {
-          oj.Components.subtreeHidden(toHide[0]);
+          Components.subtreeHidden(toHide[0]);
         }
         show();
 

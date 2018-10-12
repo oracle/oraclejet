@@ -49,10 +49,11 @@ var ArrayTreeDataProvider = /** @class */ (function () {
         this._baseDataProvider = new oj['ArrayDataProvider'](treeData, options);
         this._mapKeyToNode = new Map();
         this._mapNodeToKey = new Map();
-        this._nodeSequenceNum = 0;
+        this._mapArrayToSequenceNum = new Map();
+        this._mapKoArrayToSubscriptions = new Map();
         // Subscribe to all children observableArray at the top-level
         if (_rootDataProvider == null) {
-            this._subscribeObservableArray(treeData, []);
+            this._processTreeArray(treeData, []);
         }
     }
     ArrayTreeDataProvider.prototype.containsKeys = function (params) {
@@ -124,7 +125,8 @@ var ArrayTreeDataProvider = /** @class */ (function () {
     };
     ArrayTreeDataProvider.prototype._getChildren = function (node) {
         var childrenAttr = this.options && this.options['childrenAttribute'] ? this.options['childrenAttribute'] : 'children';
-        return this._getVal(node, childrenAttr);
+        // Pass true to _getVal so that we keep observableArray children in the same form 
+        return this._getVal(node, childrenAttr, true);
     };
     ArrayTreeDataProvider.prototype._getRootDataProvider = function () {
         if (this._rootDataProvider) {
@@ -134,40 +136,65 @@ var ArrayTreeDataProvider = /** @class */ (function () {
             return this;
         }
     };
-    ArrayTreeDataProvider.prototype._handleArrayChange = function (changes, treeData, parentKeyPath) {
+    ArrayTreeDataProvider.prototype._subscribeObservableArray = function (treeData, parentKeyPath) {
+        if (!(ko.isObservable(treeData) && !(treeData['destroyAll'] === undefined))) {
+            // we only support Array or ko.observableArray
+            throw new Error('Invalid data type. ArrayTreeDataProvider only supports Array or observableArray.');
+        }
         var self = this;
-        var i, id, dataArray = [], keyArray = [], indexArray = [], metadataArray = [];
-        // first see if we have deletes and adds. If we do then just do a refresh
-        var foundDelete = false;
-        var foundAdd = false;
-        var dispatchRefreshEvent = false;
-        for (i = 0; i < changes.length; i++) {
-            if (changes[i]['status'] === 'deleted') {
-                foundDelete = true;
-                break;
-            }
-        }
-        for (i = 0; i < changes.length; i++) {
-            if (changes[i]['status'] === 'added') {
-                foundAdd = true;
-                break;
-            }
-        }
-        if (foundAdd && foundDelete) {
-            dispatchRefreshEvent = true;
-        }
-        if (foundDelete) {
+        var mutationEvent = null;
+        var subscriptions = new Array(2);
+        // subscribe to observableArray arrayChange event to get individual updates
+        subscriptions[0] = treeData['subscribe'](function (changes) {
+            var i, id, dataArray = [], keyArray = [], indexArray = [], metadataArray = [];
+            var j, index;
+            var updatedIndexes = [];
+            var operationUpdateEventDetail = null;
+            var operationAddEventDetail = null;
+            var operationRemoveEventDetail = null;
+            // squash deletes and adds into updates
+            var removeDuplicate = [];
             for (i = 0; i < changes.length; i++) {
-                if (changes[i]['status'] === 'deleted') {
+                index = changes[i].index;
+                status = changes[i].status;
+                var iKey = self._getId(changes[i].value);
+                if (iKey) {
+                    for (j = 0; j < changes.length; j++) {
+                        if (j != i &&
+                            index === changes[j].index &&
+                            status !== changes[j]['status'] &&
+                            updatedIndexes.indexOf(i) < 0 &&
+                            removeDuplicate.indexOf(i) < 0) {
+                            // Squash delete and add only if they have the same index and same key
+                            var jKey = self._getId(changes[j].value);
+                            if (oj.Object.compareValues(iKey, jKey)) {
+                                if (status === 'deleted') {
+                                    removeDuplicate.push(i);
+                                    updatedIndexes.push(j);
+                                }
+                                else {
+                                    removeDuplicate.push(j);
+                                    updatedIndexes.push(i);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            // Prepare the "remove" event detail
+            for (i = 0; i < changes.length; i++) {
+                if (changes[i]['status'] === 'deleted' &&
+                    updatedIndexes.indexOf(i) < 0 &&
+                    removeDuplicate.indexOf(i) < 0) {
                     var node = changes[i].value;
                     var key = self._getKeyForNode(node);
                     keyArray.push(key);
                     dataArray.push(node);
                     indexArray.push(changes[i].index);
-                    self._deleteMapEntry(key, node);
+                    self._releaseNode(node);
                 }
             }
-            if (keyArray.length > 0 && !dispatchRefreshEvent) {
+            if (keyArray.length > 0) {
                 metadataArray = keyArray.map(function (value) {
                     return { 'key': value };
                 });
@@ -175,91 +202,156 @@ var ArrayTreeDataProvider = /** @class */ (function () {
                 keyArray.map(function (key) {
                     keySet_1.add(key);
                 });
-                var operationEventDetail = { data: dataArray, indexes: indexArray, keys: keySet_1, metadata: metadataArray };
-                var mutationEventDetail = { remove: operationEventDetail };
-                self.dispatchEvent(new oj.DataProviderMutationEvent(mutationEventDetail));
+                operationRemoveEventDetail = { data: dataArray, indexes: indexArray, keys: keySet_1, metadata: metadataArray };
             }
-        }
-        if (foundAdd) {
-            var nodeArray_1 = treeData();
+            // Preprocessing for the "add" and "update" event detail
+            dataArray = [], keyArray = [], indexArray = [], metadataArray = [];
+            var nodeArray = treeData();
+            var updateKeyArray = [], updateDataArray = [], updateIndexArray = [], updateMetadataArray = [];
             for (i = 0; i < changes.length; i++) {
-                if (changes[i]['status'] === 'added') {
+                if (changes[i]['status'] === 'added' &&
+                    removeDuplicate.indexOf(i) < 0) {
                     var node = changes[i].value;
-                    var keyObj = self._createKeyObj(node, parentKeyPath, -1);
-                    self._setMapEntry(keyObj.key, node);
-                    keyArray.push(keyObj.key);
-                    dataArray.push(node);
-                    indexArray.push(changes[i].index);
+                    var keyObj = self._processNode(node, parentKeyPath, treeData);
+                    if (updatedIndexes.indexOf(i) < 0) {
+                        keyArray.push(keyObj.key);
+                        dataArray.push(node);
+                        indexArray.push(changes[i].index);
+                        metadataArray.push({ key: keyObj.key });
+                    }
+                    else {
+                        updateKeyArray.push(keyObj.key);
+                        updateDataArray.push(node);
+                        updateIndexArray.push(changes[i].index);
+                        updateMetadataArray.push({ key: keyObj.key });
+                    }
                 }
             }
-            if (keyArray.length > 0 && !dispatchRefreshEvent) {
-                metadataArray = keyArray.map(function (value) {
-                    return { key: value };
-                });
+            // Prepare the "add" event detail
+            if (keyArray.length > 0) {
                 var keySet_2 = new Set();
                 keyArray.map(function (key) {
                     keySet_2.add(key);
                 });
                 var afterKeySet_1 = new Set();
+                var afterKeyArray_1 = [];
+                var parentKeyArray_1 = [];
+                var parentKey_1;
+                if (self.options && self.options.keyAttributes && self.options.keyAttributesScope !== 'siblings') {
+                    // For global key, the last part of the parentKeyPath is the parent key
+                    parentKey_1 = parentKeyPath.length > 0 ? parentKeyPath[parentKeyPath.length - 1] : null;
+                }
+                else {
+                    // For non-global key, the entire parentKeyPath is the parent key
+                    parentKey_1 = parentKeyPath.length > 0 ? parentKeyPath : null;
+                }
                 indexArray.map(function (addIndex) {
                     var afterKey;
-                    if (addIndex >= nodeArray_1.length - 1) {
+                    if (addIndex >= nodeArray.length - 1) {
                         afterKey = '';
                     }
                     else {
-                        afterKey = self._getKeyForNode(nodeArray_1[addIndex + 1]);
+                        afterKey = self._getKeyForNode(nodeArray[addIndex + 1]);
                     }
                     afterKeySet_1.add(afterKey);
+                    afterKeyArray_1.push(afterKey);
+                    parentKeyArray_1.push(parentKey_1);
                 });
-                var operationEventDetail = { afterKeys: afterKeySet_1, data: dataArray, indexes: indexArray, keys: keySet_2, metadata: metadataArray };
-                var mutationEventDetail = { add: operationEventDetail };
-                self.dispatchEvent(new oj.DataProviderMutationEvent(mutationEventDetail));
+                operationAddEventDetail = { afterKeys: afterKeySet_1, addBeforeKeys: afterKeyArray_1, parentKeys: parentKeyArray_1, data: dataArray, indexes: indexArray, keys: keySet_2, metadata: metadataArray };
             }
-            if (dispatchRefreshEvent) {
+            // Prepare the "update" event detail
+            if (updateKeyArray.length > 0) {
+                var updateKeySet_1 = new Set();
+                updateKeyArray.map(function (key) {
+                    updateKeySet_1.add(key);
+                });
+                operationUpdateEventDetail = { data: updateDataArray, indexes: updateIndexArray, keys: updateKeySet_1, metadata: updateMetadataArray };
+            }
+            mutationEvent = new oj.DataProviderMutationEvent({ add: operationAddEventDetail,
+                remove: operationRemoveEventDetail,
+                update: operationUpdateEventDetail });
+        }, null, 'arrayChange');
+        subscriptions[1] = treeData['subscribe'](function (changes) {
+            if (mutationEvent) {
+                self.dispatchEvent(mutationEvent);
+            }
+            else {
                 self.dispatchEvent(new oj.DataProviderRefreshEvent());
+            }
+            mutationEvent = null;
+        }, null, 'change');
+        this._mapKoArrayToSubscriptions.set(treeData, subscriptions);
+    };
+    ArrayTreeDataProvider.prototype._unsubscribeObservableArray = function (treeData) {
+        if (ko.isObservable(treeData) && !(treeData['destroyAll'] === undefined)) {
+            var subscriptions = this._mapKoArrayToSubscriptions.get(treeData);
+            if (subscriptions) {
+                subscriptions[0].dispose();
+                subscriptions[1].dispose();
+                this._mapKoArrayToSubscriptions.delete(treeData);
             }
         }
     };
     /**
      * If observableArray, then subscribe to it
      */
-    ArrayTreeDataProvider.prototype._subscribeObservableArray = function (treeData, parentKeyPath) {
+    ArrayTreeDataProvider.prototype._processTreeArray = function (treeData, parentKeyPath) {
         var self = this;
         var dataArray;
         if (treeData instanceof Array) {
             dataArray = treeData;
         }
         else {
-            if (!(ko.isObservable(treeData) && !(treeData['destroyAll'] === undefined))) {
-                // we only support Array or ko.observableArray
-                throw new Error('Invalid data type. ArrayTreeDataProvider only supports Array or observableArray.');
-            }
-            // subscribe to observableArray arrayChange event to get individual updates
-            treeData['subscribe'](function (changes) {
-                self._handleArrayChange(changes, treeData, parentKeyPath);
-            }, null, 'arrayChange');
+            this._subscribeObservableArray(treeData, parentKeyPath);
             dataArray = treeData();
         }
         dataArray.forEach(function (node, i) {
-            var keyObj = self._createKeyObj(node, parentKeyPath, i);
-            self._setMapEntry(keyObj.key, node);
-            // Keep track of a sequence number so if any node get added later on,
-            // we won't reuse existing key if there is no keyAttributes and we generate
-            // the id.
-            ++self._nodeSequenceNum;
-            var children = self._getChildren(node);
-            if (children) {
-                self._subscribeObservableArray(children, keyObj.keyPath);
-            }
+            self._processNode(node, parentKeyPath, treeData);
         });
     };
-    ArrayTreeDataProvider.prototype._createKeyObj = function (node, parentKeyPath, idx) {
+    ArrayTreeDataProvider.prototype._releaseTreeArray = function (treeData) {
+        var self = this;
+        var dataArray;
+        if (treeData instanceof Array) {
+            dataArray = treeData;
+        }
+        else {
+            this._unsubscribeObservableArray(treeData);
+            dataArray = treeData();
+        }
+        dataArray.forEach(function (node, i) {
+            self._releaseNode(node);
+        });
+    };
+    ArrayTreeDataProvider.prototype._processNode = function (node, parentKeyPath, treeData) {
+        var self = this;
+        var keyObj = self._createKeyObj(node, parentKeyPath, treeData);
+        self._setMapEntry(keyObj.key, node);
+        var children = self._getChildren(node);
+        if (children) {
+            self._processTreeArray(children, keyObj.keyPath);
+        }
+        return keyObj;
+    };
+    ArrayTreeDataProvider.prototype._releaseNode = function (node) {
+        var self = this;
+        var key = this._getKeyForNode(node);
+        self._deleteMapEntry(key, node);
+        var children = self._getChildren(node);
+        if (children) {
+            self._releaseTreeArray(children);
+        }
+    };
+    ArrayTreeDataProvider.prototype._createKeyObj = function (node, parentKeyPath, treeData) {
         var key = this._getId(node);
         var keyPath = parentKeyPath ? parentKeyPath.slice() : [];
         if (key == null) {
             // _getId returns null if keyAttributes is not specified.  In this case we 
             // use the index path of the node as the key.
-            keyPath.push(idx >= 0 ? idx : this._nodeSequenceNum++);
+            // However, if this is called after initialization, we can't use index
+            // any more because node position can shift, so we need to keep track of
+            // a sequence number.
+            keyPath.push(this._incrementSequenceNum(treeData));
             key = keyPath;
         }
         else {
@@ -302,7 +394,7 @@ var ArrayTreeDataProvider = /** @class */ (function () {
     /**
      * Get value for attribute
      */
-    ArrayTreeDataProvider.prototype._getVal = function (val, attr) {
+    ArrayTreeDataProvider.prototype._getVal = function (val, attr, keepFunc) {
         if (typeof attr == 'string') {
             var dotIndex = attr.indexOf('.');
             if (dotIndex > 0) {
@@ -314,7 +406,9 @@ var ArrayTreeDataProvider = /** @class */ (function () {
                 }
             }
         }
-        if (typeof (val[attr]) == 'function') {
+        // If keepFunc is true, don't resolve any function value.
+        // e.g. Caller may want to preserve any observableArray for other operations.
+        if (keepFunc !== true && typeof (val[attr]) == 'function') {
             return val[attr]();
         }
         return val[attr];
@@ -335,7 +429,7 @@ var ArrayTreeDataProvider = /** @class */ (function () {
     };
     ArrayTreeDataProvider.prototype._getNodeForKey = function (key) {
         var rootDataProvider = this._getRootDataProvider();
-        return rootDataProvider._mapKeyToNode.get(key);
+        return rootDataProvider._mapKeyToNode.get(JSON.stringify(key));
     };
     ArrayTreeDataProvider.prototype._getKeyForNode = function (node) {
         var rootDataProvider = this._getRootDataProvider();
@@ -343,13 +437,20 @@ var ArrayTreeDataProvider = /** @class */ (function () {
     };
     ArrayTreeDataProvider.prototype._setMapEntry = function (key, node) {
         var rootDataProvider = this._getRootDataProvider();
-        rootDataProvider._mapKeyToNode.set(key, node);
+        rootDataProvider._mapKeyToNode.set(JSON.stringify(key), node);
         rootDataProvider._mapNodeToKey.set(node, key);
     };
     ArrayTreeDataProvider.prototype._deleteMapEntry = function (key, node) {
         var rootDataProvider = this._getRootDataProvider();
-        rootDataProvider._mapKeyToNode.delete(key);
+        rootDataProvider._mapKeyToNode.delete(JSON.stringify(key));
         rootDataProvider._mapNodeToKey.delete(node);
+    };
+    ArrayTreeDataProvider.prototype._incrementSequenceNum = function (treeData) {
+        var rootDataProvider = this._getRootDataProvider();
+        var seqNum = rootDataProvider._mapArrayToSequenceNum.get(treeData) || 0;
+        rootDataProvider._mapArrayToSequenceNum.set(treeData, seqNum + 1);
+        // Return the previous sequence number
+        return seqNum;
     };
     return ArrayTreeDataProvider;
 }());
@@ -368,7 +469,7 @@ oj.EventTargetMixin.applyMixin(ArrayTreeDataProvider);
  * http://jquery.org/license
  */
 
-/*jslint browser: true,devel:true*/
+/* jslint browser: true,devel:true*/
 /**
  * @ojstatus preview
  * @since 5.1.0
@@ -376,14 +477,14 @@ oj.EventTargetMixin.applyMixin(ArrayTreeDataProvider);
  * @class oj.ArrayTreeDataProvider
  * @implements oj.TreeDataProvider
  * @classdesc This class implements {@link oj.TreeDataProvider} and is used to represent hierachical data available from an array.<br><br>
- *            Each array element represents a tree node, which can contain nested child object array for its subtree.  
+ *            Each array element represents a tree node, which can contain nested child object array for its subtree.
  *            Array elements can be in any shape and form, but is usually an object with a "children" property.  The name of the "children" property
  *            can optionaly be specified with the "childrenAttribute" option.<br><br>
  *            For nodes that cannot have children, the "children" property should not be set.
  *            For nodes that can but don't have children, the "children" property should be set to an empty array.<br><br>
  *            Data can be passed as a regular array or a Knockout observableArray.  If a Knockout observableArray is
  *            used, any mutation must be performed with observableArray methods.  The events described below will be dispatched to the ArrayTreeDataProvider
- *            with the appropriate event payload.  
+ *            with the appropriate event payload.
  *
  * <h3 id="events-section">
  *   Events
@@ -441,11 +542,17 @@ oj.EventTargetMixin.applyMixin(ArrayTreeDataProvider);
  * @ojsignature [{target: "Type",
  *               value: "class ArrayTreeDataProvider<K, D> implements TreeDataProvider<K, D>"},
  *               {target: "Type",
- *               value: "SortCriterion<D>[]", 
+ *               value: "Array<SortCriterion<D>>",
  *               for: "options.implicitSort"},
  *               {target: "Type",
- *               value: "SortComparators<D>", 
+ *               value: "ArrayDataProvider.SortComparators<D>",
  *               for: "options.sortComparators"}]
+ * @ojtsimport {module: "ojtreedataprovider", type: "AMD", importName: "TreeDataProvider"}
+ * @ojtsimport {module: "ojarraydataprovider", type: "AMD", importName: "ArrayDataProvider"}
+ * @ojtsimport {module: "ojdataprovider", type: "AMD", imported: ["DataProvider", "SortCriterion",
+ *   "FetchByKeysParameters","ContainsKeysResults","FetchByKeysResults","FetchByOffsetParameters", "FetchByOffsetResults",
+ *   "FetchListResult","FetchListParameters"]}
+ * @ojtsmodule
  * @example
  * // First initialize the tree data.  This can be defined locally or read from file.
  * var treeData = [
@@ -489,7 +596,7 @@ oj.EventTargetMixin.applyMixin(ArrayTreeDataProvider);
 
 /**
  * Get a data provider for the children of the row identified by parentKey.
- * 
+ *
  * @ojstatus preview
  * @param {any} parentKey key of the row to get child data provider for.
  * @return {ArrayTreeDataProvider | null} An ArrayTreeDataProvider if the row can (but doesn't have to) have children; or null if the row cannot have children.
@@ -501,7 +608,7 @@ oj.EventTargetMixin.applyMixin(ArrayTreeDataProvider);
  * @method
  * @name getChildDataProvider
  * @ojsignature {target: "Type",
- *               value: "(any): ArrayTreeDataProvider<K, D>"}
+ *               value: "(parentKey: any): ArrayTreeDataProvider<K, D>"}
  */
 
 /**
@@ -541,7 +648,7 @@ oj.EventTargetMixin.applyMixin(ArrayTreeDataProvider);
  * <p>
  * If <code class="prettyprint">params.sortCriteria</code> is specified, the default sorting algorithm used is natural sort.
  * </p>
- * 
+ *
  * @ojstatus preview
  * @param {oj.FetchListParameters=} params Fetch parameters
  * @return {AsyncIterable.<oj.FetchListResult>} AsyncIterable with {@link oj.FetchListResult}
@@ -553,12 +660,12 @@ oj.EventTargetMixin.applyMixin(ArrayTreeDataProvider);
  * @method
  * @name fetchFirst
  * @ojsignature {target: "Type",
- *               value: "<F extends FetchListResult<K, D>>(params?: FetchListParameters<D>): AsyncIterable<F>"}
+ *               value: "(params?: FetchListParameters<D>): AsyncIterable<FetchListResult<K, D>>"}
  */
 
 /**
  * Determines whether this data provider supports certain feature.
- * 
+ *
  * @ojstatus preview
  * @param {string} capabilityName capability name. Supported capability names are:
  *                  "fetchByKeys", "fetchByOffset", and "sort".
@@ -580,7 +687,7 @@ oj.EventTargetMixin.applyMixin(ArrayTreeDataProvider);
 
 /**
  * Return the total number of rows at the top level.
- * 
+ *
  * @ojstatus preview
  * @return {Promise.<number>} Returns a Promise which resolves to the total number of rows. -1 is unknown row count.
  * @export
@@ -593,9 +700,9 @@ oj.EventTargetMixin.applyMixin(ArrayTreeDataProvider);
 
 /**
  * Return a string that indicates if this data provider is empty.
- * 
+ *
  * @ojstatus preview
- * @return {string} a string that indicates if this data provider is empty. Valid values are:
+ * @return {"yes" | "no" | "unknown"} a string that indicates if this data provider is empty. Valid values are:
  *                  "yes": this data provider is empty.
  *                  "no": this data provider is not empty.
  *                  "unknown": it is not known if this data provider is empty until a fetch is made.
@@ -658,4 +765,6 @@ oj.EventTargetMixin.applyMixin(ArrayTreeDataProvider);
 /**
  * End of jsdoc
  */
+
+  return ArrayTreeDataProvider;
 });

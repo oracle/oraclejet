@@ -1,22 +1,25 @@
 {
   "name": "oj-spark-chart",
-  "version": "5.2.0",
-  "jetVersion": "5.2.0",
+  "version": "6.0.0",
+  "jetVersion": "6.0.0",
   "displayName": "Spark Chart",
   "type": "core",
   "description": "Displays information graphically, typically highlighting the trend of a data set in a compact form factor.",
+  "help": "https://docs.oracle.com/en/middleware/jet/6/reference-api/oj.ojSparkChart.html",
   "properties": {
     "animationDuration": {
       "description": "The duration of the animations in milliseconds. The default value comes from the CSS and varies based on theme.",
       "type": "number",
       "displayName": "Animation Duration",
-      "units": "milliseconds"
+      "units": "milliseconds",
+      "help": "animationDuration"
     },
     "animationOnDataChange": {
       "description": "Defines the animation that is applied on data changes.",
       "type": "string",
       "displayName": "Animation On Data Change",
       "value": "none",
+      "help": "animationOnDataChange",
       "enumValues": [
         "auto",
         "none"
@@ -35,6 +38,7 @@
       "type": "string",
       "displayName": "Animation On Display",
       "value": "none",
+      "help": "animationOnDisplay",
       "enumValues": [
         "auto",
         "none"
@@ -53,37 +57,43 @@
       "type": "string",
       "displayName": "Area Color",
       "value": "",
-      "format": "color"
+      "format": "color",
+      "help": "areaColor"
     },
     "areaSvgClassName": {
       "description": "The CSS style class to apply if the type is area or lineWithArea. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the color attribute.",
       "type": "string",
       "displayName": "Area Svg Class Name",
-      "value": ""
+      "value": "",
+      "help": "areaSvgClassName"
     },
     "areaSvgStyle": {
       "description": "The inline style to apply if the type is area or lineWithArea. The style class and inline style will override any other styling specified through the properties. For tooltips and hover interactivity, it's recommended to also pass a representative color to the color attribute.",
       "type": "object",
       "displayName": "Area Svg Style",
-      "value": {}
+      "value": {},
+      "help": "areaSvgStyle"
     },
     "as": {
       "description": "An alias for the $current context variable when referenced inside itemTemplate when using a DataProvider.",
       "type": "string",
       "displayName": "As",
-      "value": ""
+      "value": "",
+      "help": "as"
     },
     "barGapRatio": {
       "description": "Specifies the width of the bar gap as a ratio of the item width. The valid value is a number from 0 to 1.",
       "type": "number",
       "displayName": "Bar Gap Ratio",
-      "value": 0.25
+      "value": 0.25,
+      "help": "barGapRatio"
     },
     "baselineScaling": {
       "description": "Defines whether the axis baseline starts at the minimum value of the data or at zero.",
       "type": "string",
       "displayName": "Baseline Scaling",
       "value": "min",
+      "help": "baselineScaling",
       "enumValues": [
         "min",
         "zero"
@@ -101,33 +111,38 @@
       "description": "The color of the data items. The default value varies based on theme.",
       "type": "string",
       "displayName": "Color",
-      "format": "color"
+      "format": "color",
+      "help": "color"
     },
     "data": {
       "description": "The oj.DataProvider for the spark chart. It should provide rows where each row corresponds to a single spark chart item.",
       "type": "oj.DataProvider|null",
       "displayName": "Data",
-      "value": null
+      "value": null,
+      "help": "data"
     },
     "firstColor": {
       "description": "The color of the first data item.",
       "type": "string",
       "displayName": "First Color",
       "value": "",
-      "format": "color"
+      "format": "color",
+      "help": "firstColor"
     },
     "highColor": {
       "description": "The color of the data item with the greatest value.",
       "type": "string",
       "displayName": "High Color",
       "value": "",
-      "format": "color"
+      "format": "color",
+      "help": "highColor"
     },
     "items": {
       "description": "An array of objects with the following properties that defines the data for the spark chart. Also accepts a Promise for deferred data rendering.",
       "type": "Array<Object>|Array<number>|Promise|null",
       "displayName": "Items",
       "value": null,
+      "help": "items",
       "extension": {
         "vbcs": {
           "itemProperties": {
@@ -186,13 +201,15 @@
       "type": "string",
       "displayName": "Last Color",
       "value": "",
-      "format": "color"
+      "format": "color",
+      "help": "lastColor"
     },
     "lineStyle": {
       "description": "The line style of the data line. Only applies to line spark charts.",
       "type": "string",
       "displayName": "Line Style",
       "value": "solid",
+      "help": "lineStyle",
       "enumValues": [
         "dashed",
         "dotted",
@@ -215,6 +232,7 @@
       "type": "string",
       "displayName": "Line Type",
       "value": "straight",
+      "help": "lineType",
       "enumValues": [
         "centeredSegmented",
         "centeredStepped",
@@ -253,73 +271,38 @@
       "type": "number",
       "displayName": "Line Width",
       "value": 1,
-      "units": "pixels"
+      "units": "pixels",
+      "help": "lineWidth"
     },
     "lowColor": {
       "description": "The color of the data item with the lowest value.",
       "type": "string",
       "displayName": "Low Color",
       "value": "",
-      "format": "color"
+      "format": "color",
+      "help": "lowColor"
     },
     "markerShape": {
       "description": "The shape of the data markers. Can take the name of a built-in shape or the svg path commands for a custom shape. Only applies to line and area spark charts.",
-      "type": "string",
+      "type": "\"auto\"|\"circle\"|\"diamond\"|\"human\"|\"plus\"|\"square\"|\"star\"|\"triangleDown\"|\"triangleUp\"|string",
       "displayName": "Marker Shape",
       "value": "auto",
-      "enumValues": [
-        "auto",
-        "circle",
-        "diamond",
-        "human",
-        "plus",
-        "square",
-        "star",
-        "triangleDown",
-        "triangleUp"
-      ],
-      "propertyEditorValues": {
-        "auto": {
-          "displayName": "Auto"
-        },
-        "circle": {
-          "displayName": "Circle"
-        },
-        "diamond": {
-          "displayName": "Diamond"
-        },
-        "human": {
-          "displayName": "Human"
-        },
-        "plus": {
-          "displayName": "Plus"
-        },
-        "square": {
-          "displayName": "Square"
-        },
-        "star": {
-          "displayName": "Star"
-        },
-        "triangleDown": {
-          "displayName": "Triangle Down"
-        },
-        "triangleUp": {
-          "displayName": "Triangle Up"
-        }
-      }
+      "help": "markerShape"
     },
     "markerSize": {
       "description": "The size of the data markers in pixels. Only applies to line and area spark charts.",
       "type": "number",
       "displayName": "Marker Size",
       "value": 5,
-      "units": "pixels"
+      "units": "pixels",
+      "help": "markerSize"
     },
     "referenceObjects": {
       "description": "An array of objects with the following properties defining the reference objects associated with the y axis of the spark chart.",
       "type": "Array<Object>",
       "displayName": "Reference Objects",
       "value": [],
+      "help": "referenceObjects",
       "extension": {
         "vbcs": {
           "itemProperties": {
@@ -374,24 +357,28 @@
       "description": "The CSS style class to apply to the data items. For type lineWithArea, this style will only be applied to the line if areaClassName is also specified. The style class and inline style will override any other styling specified through the properties. For tooltips, it's recommended to also pass a representative color to the color attribute.",
       "type": "string",
       "displayName": "Svg Class Name",
-      "value": ""
+      "value": "",
+      "help": "svgClassName"
     },
     "svgStyle": {
       "description": "The inline style to apply to the data items. For type lineWithArea, this style will only be applied to the line if areaStyle is also specified. The style class and inline style will override any other styling specified through the properties. For tooltips, it's recommended to also pass a representative color to the color attribute.",
       "type": "object",
       "displayName": "Svg Style",
-      "value": {}
+      "value": {},
+      "help": "svgStyle"
     },
     "tooltip": {
       "description": "An object containing an optional callback function for tooltip customization.",
       "type": "object",
       "displayName": "Tooltip",
+      "help": "tooltip",
       "properties": {
         "renderer": {
           "description": "A function that returns a custom tooltip. The function takes a dataContext argument, provided by the chart, with the following properties: parentElement: The tooltip element. The function can directly modify or append content to this element. color: The color of the chart. componentElement: The spark chart element. The function should return an Object that contains only one of the two properties: insert: HTMLElement | string - An HTML element, which will be appended to the tooltip, or a tooltip string. preventDefault: true - Indicates that the tooltip should not be displayed. It is not necessary to return {preventDefault:false} to display tooltip, since this is a default behavior. ",
           "type": "function",
           "displayName": "Renderer",
           "value": null,
+          "help": "tooltip.renderer",
           "properties": {
             "color": {
               "description": "The color of the chart.",
@@ -414,6 +401,7 @@
       "type": "string",
       "displayName": "Track Resize",
       "value": "on",
+      "help": "trackResize",
       "enumValues": [
         "off",
         "on"
@@ -433,91 +421,109 @@
       "displayName": "Translations",
       "value": {},
       "translatable": true,
+      "help": "translations",
       "properties": {
         "componentName": {
           "description": "Used to describe the data visualization type for accessibility.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "Component Name"
+          "displayName": "Component Name",
+          "help": "translations.componentName"
         },
         "labelAndValue": {
           "description": "Used to display a label and its value.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "Label And Value"
+          "displayName": "Label And Value",
+          "help": "translations.labelAndValue"
         },
         "labelClearSelection": {
           "description": "Text shown for clearing multiple selection on touch devices.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "Label Clear Selection"
+          "displayName": "Label Clear Selection",
+          "help": "translations.labelClearSelection"
         },
         "labelCountWithTotal": {
           "description": "Used to display a count out of a total.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "Label Count With Total"
+          "displayName": "Label Count With Total",
+          "help": "translations.labelCountWithTotal"
         },
         "labelDataVisualization": {
           "description": "Label for data visualizations used for accessibility.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "Label Data Visualization"
+          "displayName": "Label Data Visualization",
+          "help": "translations.labelDataVisualization"
         },
         "labelInvalidData": {
           "description": "Text shown when the component receives invalid data.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "Label Invalid Data"
+          "displayName": "Label Invalid Data",
+          "help": "translations.labelInvalidData"
         },
         "labelNoData": {
           "description": "Text shown when the component receives no data.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "Label No Data"
+          "displayName": "Label No Data",
+          "help": "translations.labelNoData"
         },
         "stateCollapsed": {
           "description": "Used to describe the collapsed state for accessibility.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "State Collapsed"
+          "displayName": "State Collapsed",
+          "help": "translations.stateCollapsed"
         },
         "stateDrillable": {
           "description": "Used to describe a drillable object for accessibility.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "State Drillable"
+          "displayName": "State Drillable",
+          "help": "translations.stateDrillable"
         },
         "stateExpanded": {
           "description": "Used to describe the expanded state for accessibility.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "State Expanded"
+          "displayName": "State Expanded",
+          "help": "translations.stateExpanded"
         },
         "stateHidden": {
           "description": "Used to describe the hidden state for accessibility.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "State Hidden"
+          "displayName": "State Hidden",
+          "help": "translations.stateHidden"
         },
         "stateIsolated": {
           "description": "Used to describe the isolated state for accessibility.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "State Isolated"
+          "displayName": "State Isolated",
+          "help": "translations.stateIsolated"
         },
         "stateMaximized": {
           "description": "Used to describe the maximized state for accessibility.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "State Maximized"
+          "displayName": "State Maximized",
+          "help": "translations.stateMaximized"
         },
         "stateMinimized": {
           "description": "Used to describe the minimized state for accessibility.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "State Minimized"
+          "displayName": "State Minimized",
+          "help": "translations.stateMinimized"
         },
         "stateSelected": {
           "description": "Used to describe the selected state for accessibility.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "State Selected"
+          "displayName": "State Selected",
+          "help": "translations.stateSelected"
         },
         "stateUnselected": {
           "description": "Used to describe the unselected state for accessibility.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "State Unselected"
+          "displayName": "State Unselected",
+          "help": "translations.stateUnselected"
         },
         "stateVisible": {
           "description": "Used to describe the visible state for accessibility.\n\nSee the translations attribute for usage examples.",
           "type": "string",
-          "displayName": "State Visible"
+          "displayName": "State Visible",
+          "help": "translations.stateVisible"
         }
       }
     },
@@ -526,6 +532,7 @@
       "type": "string",
       "displayName": "Type",
       "value": "line",
+      "help": "type",
       "enumValues": [
         "area",
         "bar",
@@ -552,6 +559,7 @@
       "type": "string",
       "displayName": "Visual Effects",
       "value": "auto",
+      "help": "visualEffects",
       "enumValues": [
         "auto",
         "none"
@@ -569,6 +577,7 @@
   "methods": {
     "getDataItem": {
       "description": "Returns an object with the following properties for automation testing verification of the data item with\nthe specified item index.",
+      "help": "getDataItem",
       "params": [
         {
           "name": "itemIndex",
@@ -580,10 +589,12 @@
     },
     "refresh": {
       "description": "Refreshes the component.",
+      "help": "refresh",
       "return": "void"
     },
     "setProperty": {
-      "description": "Sets a property or a single subproperty for complex properties and notifies the component\nof the change, triggering a [property]Changed event.",
+      "description": "Sets a property or a single subproperty for complex properties and notifies the component of the change, triggering a [property]Changed event.",
+      "help": "setProperty",
       "params": [
         {
           "name": "property",
@@ -600,6 +611,7 @@
     },
     "getProperty": {
       "description": "Retrieves a value for a property or a single subproperty for complex properties.",
+      "help": "getProperty",
       "params": [
         {
           "name": "property",
@@ -611,6 +623,7 @@
     },
     "setProperties": {
       "description": "Performs a batch set of properties.",
+      "help": "setProperties",
       "params": [
         {
           "name": "properties",
@@ -623,10 +636,14 @@
   },
   "slots": {
     "contextMenu": {
-      "description": "The contextMenu slot is set on the oj-menu within this element. \nThis is used to designate the JET Menu that this component should launch as a context menu on right-click, Shift-F10, Press & Hold, or component-specific gesture. \nIf specified, the browser's native context menu will be replaced by the JET Menu specified in this slot.\n\nThe application can register a listener for the Menu's ojBeforeOpen event. The listener can cancel the launch via event.preventDefault(), \nor it can customize the menu contents by editing the menu DOM directly, and then calling refresh() on the Menu.\n\nTo help determine whether it's appropriate to cancel the launch or customize the menu, the ojBeforeOpen listener can use component API's to determine which \ntable cell, chart item, etc., is the target of the context menu. See the JSDoc and demos of the individual components for details. \n\nKeep in mind that any such logic must work whether the context menu was launched via right-click, Shift-F10, Press & Hold, or component-specific touch gesture."
+      "description": "The contextMenu slot is set on the <oj-menu> instance within this element. It designates the JET Menu that this component should launch as a context menu.",
+      "maxItems": 1,
+      "help": "contextMenu"
     },
     "itemTemplate": {
       "description": " The itemTemplate slot is used to specify the template for creating each item of the spark chart when a DataProvider has been specified with the data attribute. The slot must be a <template> element.\nWhen the template is executed for each item, it will have access to the spark chart's binding context and the following properties:\n\n$current - an object that contains information for the current item\n\nalias - if as attribute was specified, the value will be used to provide an application-named alias for $current.\n\n\n\nThe content of the template should only be one <oj-spark-chart-item> element. See the [oj-spark-chart-item]ojSparkChartItem doc for more details.",
+      "maxItems": 1,
+      "help": "itemTemplate",
       "data": {
         "componentElement": {
           "description": "The <oj-spark-chart> custom element.",

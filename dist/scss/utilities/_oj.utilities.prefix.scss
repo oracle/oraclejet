@@ -5,118 +5,6 @@
 // prefixes for a particular property.
 
 
-//****************************************************
-// START FLEXBOX PROPERTIES
-// flex syntax: http://the-echoplex.net/flexyboxes
-// ie10 syntax: http://msdn.microsoft.com/en-us/library/ie/dn265027(v=vs.85).aspx
-// prefixes:
-//   -webkit:   syntax for Chrome 21-28, Safari 6.1+
-//   no prefix: syntax for IE11, Chrome 29+, Firefox 22+
-//****************************************************
-@mixin oj-display-flex-property ()
-{
-   display: -webkit-flex;
-   display: flex;
-}
-
-@mixin oj-display-inline-flex-property ()
-{
-   display: -webkit-inline-flex;
-   display: inline-flex;
-}
-
-@mixin oj-flex-property ($flexValue)
-{
-    // IE11 doesn't support flex:initial,
-    // so if they pass in 'initial' set it explicitly to '0 1 auto'
-    // http://www.w3.org/TR/css-flexbox-1/#flex-common
-    @if ($flexValue == initial)
-    {
-      $flexValue: 0 1 auto;
-    }
-    //@else if ($flexValue == auto)
-    //{
-    //  $flexValue: 1 1 auto;
-    //}
-    //@else if (length($flexValue) == 1 and type_of($flexValue) == number)
-    //{
-    //  $flexValue: $flexValue 1 0%;
-    //}
-
-
-    -webkit-flex: $flexValue;
-    flex: $flexValue;
-}
-
-@mixin oj-flex-direction-property($flexDirectionValue) {
-  -webkit-flex-direction: $flexDirectionValue;
-  flex-direction: $flexDirectionValue;
-}
-
-
-@mixin oj-flex-wrap-property($flexWrapValue) {
-  -webkit-flex-wrap: $flexWrapValue;
-  flex-wrap: $flexWrapValue;
-}
-
-@mixin oj-align-items-property($alignItemsValue) {
-
-  -webkit-align-items: $alignItemsValue;
-  align-items: $alignItemsValue;
-}
-
-@mixin oj-align-self-property($alignSelfValue) {
-
-  -webkit-align-self: $alignSelfValue;
-  align-self: $alignSelfValue;
-}
-
-@mixin oj-align-content-property($alignContentValue) {
-
-  -webkit-align-content: $alignContentValue;
-  align-content: $alignContentValue;
-}
-
-
-@mixin oj-justify-content-property($justifyContentValue) {
-  -webkit-justify-content: $justifyContentValue;
-  justify-content: $justifyContentValue;
-}
-
-@mixin oj-order-property($orderValue)
-{
-  -webkit-order: $orderValue;
-  order: $orderValue;
-}
-
-@mixin oj-flex-shrink-property($flexShrinkValue) {
-
-  -webkit-flex-shrink: $flexShrinkValue;
-  flex-shrink: $flexShrinkValue;
-}
-
-@mixin oj-flex-grow-property($flexGrowValue) {
-
-  -webkit-flex-grow: $flexGrowValue;
-  flex-grow: $flexGrowValue;
-}
-
-@mixin oj-flex-basis-property($flexBasisValue) {
-
-  -webkit-flex-basis: $flexBasisValue;
-  flex-basis: $flexBasisValue;
-}
-
-
-//****************************************************
-// END FLEXBOX PROPERTIES
-//****************************************************
-
-@mixin oj-transform-property ($transformValue)
-{
-    -webkit-transform: $transformValue;
-    transform: $transformValue;
-}
 
 @mixin oj-will-change-property ($willChangeValue...)
 {
@@ -129,44 +17,13 @@
   // will-change: $willChangeValue;
 }
 
-@mixin oj-column-width-property ($columnWidthValue)
-{
-  -webkit-column-width: $columnWidthValue;
-     -moz-column-width: $columnWidthValue;
-          column-width: $columnWidthValue;
-}
-
-@mixin oj-column-gap-property ($columnGapValue)
-{
-  -webkit-column-gap: $columnGapValue;
-     -moz-column-gap: $columnGapValue;
-          column-gap: $columnGapValue;
-}
-
 @mixin oj-break-inside-property ($breakInsideValue)
 {
   // -moz-column-break-inside doesn't work on FF 24 on windows
   // try adding page-break-inside as well
      -moz-column-break-inside: $breakInsideValue;
-  -webkit-column-break-inside: $breakInsideValue;
       -ms-column-break-inside: $breakInsideValue;
                  break-inside: $breakInsideValue;
-}
-
-@mixin oj-column-count-property ($columnCountValue)
-{
-  -webkit-column-count: $columnCountValue;
-     -moz-column-count: $columnCountValue;
-          column-count: $columnCountValue;
-}
-
-
-@mixin oj-box-sizing-property ($boxSizingValue)
-{
-    @warn "mixin oj-box-sizing-property deprecated, prefixing box sizing on jet supported browsers not needed, use box-sizing property directly";
-    // supported without -moz in ff 29
-    // -moz-box-sizing: $boxSizingValue;
-    box-sizing: $boxSizingValue;
 }
 
 
@@ -185,22 +42,20 @@
 
 @mixin oj-placeholder ()
 {
-  // tried comma separating these, didn't work, meaning tried this:
-  //    &::-webkit-input-placeholder,
-  //    &::-moz-placeholder,
-  //    &:-ms-input-placeholder{
-  //      @content
-  //    }
-
+  // tried comma separating these, didn't work
   &::-webkit-input-placeholder {
-   @content
-  }
-
-  &::-moz-placeholder{
-   @content
+    @content
   }
 
   &:-ms-input-placeholder {
+   @content
+  }
+ 
+  &::-ms-input-placeholder {
+   @content
+  }
+ 
+  &::placeholder {
    @content
   }
 }
@@ -213,11 +68,6 @@
     user-select:$userSelectValue;
 }
 
-@mixin oj-transition-timing-function-property ($transitionTimingValue)
-{
-	-webkit-transition-timing-function: $transitionTimingValue;
-	transition-timing-function: $transitionTimingValue;
-}
 
 @mixin oj-backface-visibility-property ($backfaceVisibilityValue)
 {
@@ -225,30 +75,114 @@
 	backface-visibility: $backfaceVisibilityValue;
 }
 
-@mixin oj-transition-property ($transitionValue...)
+
+@mixin oj-animation-fill-mode-property ($animationFillModeValue)
 {
-        -webkit-transition: $transitionValue;
-        transition: $transitionValue;
+  -webkit-animation-fill-mode: $animationFillModeValue;
+  animation-fill-mode: $animationFillModeValue;
 }
 
-@mixin oj-perspective-property ($perspectiveValue)
+// All mixins below this line are deprecated
+//----------------------------------------------------
+
+
+//****************************************************
+// START FLEXBOX PROPERTIES
+// flex syntax: http://the-echoplex.net/flexyboxes
+//
+//****************************************************
+
+
+@mixin oj-display-flex-property ()
 {
-	-webkit-perspective: $perspectiveValue;
-	perspective: $perspectiveValue;
+  @warn "mixin oj-display-flex-property is deprecated because vendor prefixing is no longer needed, just set the property directly";
+   display: flex;
 }
 
-@mixin oj-animation-duration-property ($animationDurationValue)
+@mixin oj-display-inline-flex-property ()
 {
-  -webkit-animation-duration: $animationDurationValue;
-  animation-duration: $animationDurationValue;
+  @warn "mixin oj-display-inline-flex-property is deprecated because vendor prefixing is no longer needed, just set the property directly";
+   display: inline-flex;
 }
+
+@mixin oj-flex-property ($flexValue)
+{
+  @warn "mixin oj-flex-property is deprecated because vendor prefixing is no longer needed, just set the property directly. If you were passing in initial use flex: 0 1 auto instead.";
+    // IE11 doesn't support flex:initial,
+    // so if they pass in 'initial' set it explicitly to '0 1 auto'
+    // http://www.w3.org/TR/css-flexbox-1/#flex-common
+    @if ($flexValue == initial)
+    {
+      $flexValue: 0 1 auto;
+    }
+
+    flex: $flexValue;
+}
+
+
+@mixin oj-flex-direction-property($flexDirectionValue) {
+  @warn "mixin oj-flex-direction-property is deprecated because vendor prefixing is no longer needed, just set the property directly";
+  flex-direction: $flexDirectionValue;
+}
+
+
+@mixin oj-flex-wrap-property($flexWrapValue) {
+  @warn "mixin oj-flex-wrap-property is deprecated because vendor prefixing is no longer needed, just set the property directly";
+  flex-wrap: $flexWrapValue;
+}
+
+@mixin oj-align-items-property($alignItemsValue) {
+  @warn "mixin oj-align-items-property is deprecated because vendor prefixing is no longer needed, just set the property directly";
+  align-items: $alignItemsValue;
+}
+
+@mixin oj-align-self-property($alignSelfValue) {
+  @warn "mixin oj-align-self-property is deprecated because vendor prefixing is no longer needed, just set the property directly";
+  align-self: $alignSelfValue;
+}
+
+@mixin oj-align-content-property($alignContentValue) {
+  @warn "mixin oj-align-content-property is deprecated because vendor prefixing is no longer needed, just set the property directly";
+  align-content: $alignContentValue;
+}
+
+
+@mixin oj-justify-content-property($justifyContentValue) {
+  @warn "mixin oj-justify-content-property is deprecated because vendor prefixing is no longer needed, just set the property directly";
+  justify-content: $justifyContentValue;
+}
+
+@mixin oj-order-property($orderValue)
+{
+  @warn "mixin oj-order-property is deprecated because vendor prefixing is no longer needed, just set the property directly";
+  order: $orderValue;
+}
+
+@mixin oj-flex-shrink-property($flexShrinkValue) {
+  @warn "mixin oj-flex-shrink-property is deprecated because vendor prefixing is no longer needed, just set the property directly";
+  flex-shrink: $flexShrinkValue;
+}
+
+@mixin oj-flex-grow-property($flexGrowValue) {
+  @warn "mixin oj-flex-grow-property is deprecated because vendor prefixing is no longer needed, just set the property directly";
+  flex-grow: $flexGrowValue;
+}
+
+@mixin oj-flex-basis-property($flexBasisValue) {
+  @warn "mixin oj-flex-basis-property is deprecated because vendor prefixing is no longer needed, just set the property directly";
+  flex-basis: $flexBasisValue;
+}
+
+
+//****************************************************
+// END FLEXBOX PROPERTIES
+//****************************************************
 
 @mixin oj-keyframes-at-rule ($name)
 {
-  @-webkit-keyframes #{$name} {
-    @content
-  }
-
+  
+  @warn "mixin oj-keyframes-at-rule is deprecated because vendor prefixing is no longer needed, just set the property directly";
+  
   @keyframes #{$name} {
     @content
   }
@@ -256,12 +190,63 @@
 
 @mixin oj-animation-property ($animationValue)
 {
-  -webkit-animation: $animationValue;
-  animation: $animationValue;
+    @warn "mixin oj-animation-property is deprecated because vendor prefixing is no longer needed, just set the property directly";
+    animation: $animationValue;
 }
 
-@mixin oj-animation-fill-mode-property ($animationFillModeValue)
+@mixin oj-column-count-property ($columnCountValue)
 {
-  -webkit-animation-fill-mode: $animationFillModeValue;
-  animation-fill-mode: $animationFillModeValue;
+    @warn "mixin oj-column-count-property is deprecated because vendor prefixing is no longer needed, just set the property directly";
+    column-count: $columnCountValue;
+}
+
+@mixin oj-column-width-property ($columnWidthValue)
+{
+    @warn "mixin oj-column-width-property is deprecated because vendor prefixing is no longer needed, just set the property directly";
+    column-width: $columnWidthValue;
+}
+
+@mixin oj-column-gap-property ($columnGapValue)
+{
+    @warn "mixin oj-column-gap-property is deprecated because vendor prefixing is no longer needed, just set the property directly";
+    column-gap: $columnGapValue;
+}
+
+@mixin oj-transform-property ($transformValue)
+{
+  @warn "mixin oj-transform-property is deprecated because vendor prefixing is no longer needed, just set the property directly";
+  transform: $transformValue;
+}
+
+@mixin oj-transition-property ($transitionValue...)
+{
+  @warn "mixin oj-transition-property is deprecated because vendor prefixing is no longer needed, just set the property directly";
+    transition: $transitionValue;
+}
+
+@mixin oj-transition-timing-function-property ($transitionTimingValue)
+{
+  @warn "mixin oj-transition-timing-function-property is deprecated because vendor prefixing is no longer needed, just set the property directly";
+	transition-timing-function: $transitionTimingValue;
+}
+
+
+@mixin oj-animation-duration-property ($animationDurationValue)
+{
+  @warn "mixin oj-animation-duration-property is deprecated because vendor prefixing is no longer needed, just set the property directly";
+  animation-duration: $animationDurationValue;
+}
+
+@mixin oj-perspective-property ($perspectiveValue)
+{
+  @warn "mixin oj-perspective-property is deprecated because vendor prefixing is no longer needed, just set the property directly";
+	perspective: $perspectiveValue;
+}
+
+@mixin oj-box-sizing-property ($boxSizingValue)
+{
+    @warn "mixin oj-box-sizing-property deprecated, prefixing box sizing on jet supported browsers not needed, use box-sizing property directly";
+    // supported without -moz in ff 29
+    // -moz-box-sizing: $boxSizingValue;
+    box-sizing: $boxSizingValue;
 }

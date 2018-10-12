@@ -4,8 +4,8 @@
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
-define(['ojs/ojcore', 'ojs/ojcomponentcore', 'ojs/ojcomposite'],
-       function(oj)
+define(['ojs/ojcore', 'ojs/ojcomposite', 'ojs/ojcomponentcore'],
+       function(oj, Composite)
 {
 
 var __oj_avatar_metadata = 
@@ -141,7 +141,7 @@ var __oj_avatar_metadata =
  * @ojvalue {string} "xxs" {"description": "extra, extra small avatar", "displayName": "XXS"}
  * @ojvalue {string} "xs" {"description": "extra small avatar", "displayName": "XS"}
  * @ojvalue {string} "sm" {"description": "small avatar", "displayName": "SM"}
- * @ojvalue {string} "md" {"description": "medium avatar, default value", "displayName": "MD"}
+ * @ojvalue {string} "md" {"description": "medium avatar (default, if unspecified)", "displayName": "MD"}
  * @ojvalue {string} "lg" {"description": "large avatar", "displayName": "LG"}
  * @ojvalue {string} "xl" {"description": "extra large avatar", "displayName": "XL"}
  * @ojvalue {string} "xxl" {"description": "extra, extra large avatar", "displayName": "XXL"}
@@ -223,9 +223,9 @@ var __oj_avatar_metadata =
 var view =
   "<div class=\"oj-avatar-outer\" data-bind=\"css: !$properties.initials || $properties.src ? 'oj-avatar-'" +
   "  + $properties.size : 'oj-avatar-has-initials oj-avatar-'+ $properties.size\"aria-hidden=\"true\">" +
-  "  <div class=\"oj-avatar-inner\">" +
-  "    <!-- ko if: $properties.src -->" +
-  "    <div class=\"oj-avatar-background-image\"" +
+  '  <div class="oj-avatar-inner">' +
+  '    <!-- ko if: $properties.src -->' +
+  '    <div class="oj-avatar-background-image"' +
   "         data-bind=\"style:{'background-image':'url(' + $properties.src + ')'}\">" +
   '      <div class="oj-avatar-initials" data-bind="text: $properties.initials"></div>' +
   '    </div>' +
@@ -239,7 +239,8 @@ var view =
   '  </div>' +
   '</div>';
 /* global __oj_avatar_metadata */
-oj.Composite.register('oj-avatar',
+// eslint-disable-next-line no-undef
+Composite.register('oj-avatar',
   {
     view: view,
     metadata: __oj_avatar_metadata

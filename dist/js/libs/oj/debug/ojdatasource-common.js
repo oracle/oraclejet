@@ -22,7 +22,7 @@ define(['ojs/ojcore', 'jquery'], function(oj, $)
  * http://jquery.org/license
  */
 
-/*jslint browser: true*/
+/* jslint browser: true*/
 
 /**
  * @export
@@ -33,19 +33,19 @@ define(['ojs/ojcore', 'jquery'], function(oj, $)
  * @constructor
  * @since 1.0
  * @abstract
+ * @ojdeprecated {since: '5.0.0', description: 'Use DataProvider instead.'}
  * @ojtsignore
  */
-oj.DataSource = function(data)
-{
-    this.data = data;
-    this.Init();
+oj.DataSource = function (data) {
+  this.data = data;
+  this.Init();
 };
 
 /**
- * Subclass from oj.Object 
+ * Subclass from oj.Object
  * @private
  */
-oj.Object.createSubclass(oj.DataSource, oj.EventSource, "oj.DataSource");
+oj.Object.createSubclass(oj.DataSource, oj.EventSource, 'oj.DataSource');
 
 /**
  * Initializes the instance.
@@ -54,9 +54,8 @@ oj.Object.createSubclass(oj.DataSource, oj.EventSource, "oj.DataSource");
  * @return {undefined}
  * @ojtsignore
  */
-oj.DataSource.prototype.Init = function()
-{
-    oj.DataSource.superclass.Init.call(this);
+oj.DataSource.prototype.Init = function () {
+  oj.DataSource.superclass.Init.call(this);
 };
 
 /**
@@ -65,7 +64,7 @@ oj.DataSource.prototype.Init = function()
  * @name getCapability
  * @memberof oj.DataSource
  * @instance
- * @param {string} feature the feature in which its capabilities is inquired. 
+ * @param {string} feature the feature in which its capabilities is inquired.
  * @return {string|null} the capability of the specified feature.  Returns null if the feature is not recognized.
  */
 
@@ -104,21 +103,21 @@ oj.DataSource.prototype.Init = function()
  *   </tbody>
  * </table>
  * <br>Refer to the documentation and demos of individual components for more information on how to use them with the TreeDataSource subclasses.</br><br>
- * In case specialized behavior is needed, new subclass can be created by using [oj.Object.createSubclass]{@link oj.Object#createSubclass}.  New subclass can be based on 
- * TreeDataSource, in which case all methods must be implemented, or it can be based on an existing subclass, in which case only methods that require different behavior need 
+ * In case specialized behavior is needed, new subclass can be created by using [oj.Object.createSubclass]{@link oj.Object#createSubclass}.  New subclass can be based on
+ * TreeDataSource, in which case all methods must be implemented, or it can be based on an existing subclass, in which case only methods that require different behavior need
  * to be overridden.
- *            
+ *
  * @param {Object} data data supported by the component
  * @export
  * @extends oj.DataSource
  * @abstract
  * @constructor
  * @since 1.0
+ * @ojdeprecated {since: '6.0.0', description: 'Use TreeDataProvider instead.'}
  * @ojtsignore
  */
-oj.TreeDataSource = function(data)
-{
-    oj.TreeDataSource.superclass.constructor.call(this, data);
+oj.TreeDataSource = function (data) {
+  oj.TreeDataSource.superclass.constructor.call(this, data);
 };
 
 
@@ -126,7 +125,7 @@ oj.TreeDataSource = function(data)
  * Subclass TreeDataSource to DataSource
  * @private
  */
-oj.Object.createSubclass(oj.TreeDataSource, oj.DataSource, "oj.TreeDataSource");
+oj.Object.createSubclass(oj.TreeDataSource, oj.DataSource, 'oj.TreeDataSource');
 
 /**
  * Returns the number of children for a specified parent.  If the value returned is not >= 0 then it is automatically assumed
@@ -150,7 +149,7 @@ oj.Object.createSubclass(oj.TreeDataSource, oj.DataSource, "oj.TreeDataSource");
  * @property {function(oj.NodeSet)} callbacks.success the callback to invoke when fetch completed successfully.
  * @property {function({status: *})=} callbacks.error the callback to invoke when fetch children failed.
  * @param {Object=} options optional parameters for this operation
- * @property {boolean=} options.queueOnly true if this fetch request is to be queued and not execute yet.  The implementation must maintain 
+ * @property {boolean=} options.queueOnly true if this fetch request is to be queued and not execute yet.  The implementation must maintain
  *        the order of the fetch operations.  When queueOnly is false/null/undefined, any queued fetch operations are then
  *        flushed and executed in the order they are queued.  This flag is ignored if the datasource does not support batching
  * @return {void}
@@ -210,10 +209,10 @@ oj.Object.createSubclass(oj.TreeDataSource, oj.DataSource, "oj.TreeDataSource");
 /**
  * Moves a row from one location to another (different position within the same parent or a completely different parent)
  * @param {any} rowToMove the key of the row to move
- * @param {any} referenceRow the key of the reference row which combined with position are used to determine 
+ * @param {any} referenceRow the key of the reference row which combined with position are used to determine
  *        the destination of where the row should moved to.
- * @param {number|string} position The position of the moved row relative to the reference row.  
- *        This can be a string: "before", "after", "inside", "first", "last", or the zero based index to position 
+ * @param {number|string} position The position of the moved row relative to the reference row.
+ *        This can be a string: "before", "after", "inside", "first", "last", or the zero based index to position
  *        the element at a specific point among the reference row's current children.
  * @param {Object} callbacks the callbacks for the move function
  * @property {function():void} callbacks.success the callback to invoke when the move completed successfully
@@ -223,15 +222,15 @@ oj.Object.createSubclass(oj.TreeDataSource, oj.DataSource, "oj.TreeDataSource");
  * @name move
  * @memberof oj.TreeDataSource
  * @instance
- */ 
+ */
 
 /**
  * Checks whether a move operation is valid.
  * @param {any} rowToMove the key of the row to move
- * @param {any} referenceRow the key of the reference row which combined with position are used to determine 
+ * @param {any} referenceRow the key of the reference row which combined with position are used to determine
  *        the destination of where the row should moved to.
- * @param {number|string} position The position of the moved row relative to the reference row.  
- *        This can be a string: "before", "after", "inside", "first", "last", or the zero based index to position 
+ * @param {number|string} position The position of the moved row relative to the reference row.
+ *        This can be a string: "before", "after", "inside", "first", "last", or the zero based index to position
  *        the element at a specific point among the reference row's current children.
  * @return {string} returns "valid" if the move is valid, "invalid" otherwise.
  * @ojsignature {target: "Type",
@@ -241,17 +240,17 @@ oj.Object.createSubclass(oj.TreeDataSource, oj.DataSource, "oj.TreeDataSource");
  * @name moveOK
  * @memberof oj.TreeDataSource
  * @instance
- */ 
+ */
 
 /**
  * Determines whether this TreeDataSource supports the specified feature.
- * @param {string} feature the feature in which its capabilities is inquired.  Currently the valid features "sort", 
+ * @param {string} feature the feature in which its capabilities is inquired.  Currently the valid features "sort",
  *        "move", "fetchDescendants", "batchFetch"
  * @return {string|null} the name of the feature.  Returns null if the feature is not recognized.
- *         For "sort", the valid return values are: "default", "none".  
- *         For "fetchDescendants", the valid return values are: "enable", "disable", "suboptimal".  
- *         For "move", the valid return values are: "default", "none".  
- *         For "batchFetch", the valid return values are: "enable", "disable".  
+ *         For "sort", the valid return values are: "default", "none".
+ *         For "fetchDescendants", the valid return values are: "enable", "disable", "suboptimal".
+ *         For "move", the valid return values are: "default", "none".
+ *         For "batchFetch", the valid return values are: "enable", "disable".
  * @method
  * @name getCapability
  * @memberof oj.TreeDataSource
@@ -269,7 +268,7 @@ oj.Object.createSubclass(oj.TreeDataSource, oj.DataSource, "oj.TreeDataSource");
  * http://jquery.org/license
  */
 
-/*jslint browser: true,devel:true*/
+/* jslint browser: true,devel:true*/
 
 /**
  * @export
@@ -309,21 +308,20 @@ oj.Object.createSubclass(oj.TreeDataSource, oj.DataSource, "oj.TreeDataSource");
  *   </tbody>
  * </table>
  * <br>Refer to the documentation and demos of individual components for more information on how to use them with the TableDataSource subclasses.</br><br>
- * In case specialized behavior is needed, new subclass can be created by using [oj.Object.createSubclass]{@link oj.Object#createSubclass}.  New subclass can be based on 
- * TableDataSource, in which case all methods must be implemented, or it can be based on an existing subclass, in which case only methods that require different behavior need 
+ * In case specialized behavior is needed, new subclass can be created by using [oj.Object.createSubclass]{@link oj.Object#createSubclass}.  New subclass can be based on
+ * TableDataSource, in which case all methods must be implemented, or it can be based on an existing subclass, in which case only methods that require different behavior need
  * to be overridden.
- *            
+ *
  * @extends oj.DataSource
  * @param {Object} data data supported by the components
  * @param {Object=} options Options for the TableDataSource
  * @constructor
  * @since 1.0
+ * @ojdeprecated {since: '5.0.0', description: 'Use DataProvider instead.'}
  * @ojtsignore
  */
-oj.TableDataSource = function(data, options)
-{
-  if (this.constructor == oj.TableDataSource)
-  {
+oj.TableDataSource = function (data, options) {
+  if (this.constructor === oj.TableDataSource) {
     // This should only be called by the constructors of the subclasses. If you need
     // to initialize a new TableDataSource then call the constructors of the subclasses such
     // as oj.ArrayTableDataSource or oj.CollectionTableDataSource.
@@ -340,10 +338,10 @@ oj.TableDataSource = function(data, options)
 };
 
 /**
- * Subclass from oj.DataSource 
+ * Subclass from oj.DataSource
  * @private
  */
-oj.Object.createSubclass(oj.TableDataSource, oj.DataSource, "oj.TableDataSource");
+oj.Object.createSubclass(oj.TableDataSource, oj.DataSource, 'oj.TableDataSource');
 
 /**
  * Initializes the instance.
@@ -352,8 +350,7 @@ oj.Object.createSubclass(oj.TableDataSource, oj.DataSource, "oj.TableDataSource"
  * @override
  * @protected
  */
-oj.TableDataSource.prototype.Init = function()
-{
+oj.TableDataSource.prototype.Init = function () {
   oj.TableDataSource.superclass.Init.call(this);
 };
 
@@ -363,8 +360,8 @@ oj.TableDataSource.prototype.Init = function()
  * @memberof oj.TableDataSource
  * @desc The sort criteria. Whenever sort() is called with the criteria parameter, that value is copied to this
  * property. If sort() is called with empty sort criteria then the criteria set in this property is used.
- * 
- * @type {Object} 
+ *
+ * @type {Object}
  * @property {any} criteria.key The key that identifies which field to sort
  * @property {'ascending'|'descending'|'none'} criteria.direction the sort direction, valid values are "ascending", "descending", "none" (default)
  */
@@ -372,8 +369,8 @@ oj.TableDataSource.prototype.sortCriteria = null;
 
 /**
  * Return the row data found at the given index.
- * 
- * @param {number} index Index for which to return the row data. 
+ *
+ * @param {number} index Index for which to return the row data.
  * @param {Object=} options Options to control the at.
  * @return {Promise.<null|oj.TableDataSource.RowData>} Promise resolves to a compound object which has the structure below. If the index is out of range, Promise resolves to null.<p>
  * <table>
@@ -402,7 +399,7 @@ oj.TableDataSource.prototype.sortCriteria = null;
  * <tr><td><b>keys</b></td><td>An array of key values for the rows</td></tr>
  * <tr><td><b>startIndex</b></td><td>The startIndex for the returned set of rows</td></tr>
  * </tbody>
- * </table>  
+ * </table>
  * @method
  * @name fetch
  * @memberof oj.TableDataSource
@@ -411,7 +408,7 @@ oj.TableDataSource.prototype.sortCriteria = null;
 
 /**
  * Return the first row data whose id value is the given id
- * @param {string} id ID for which to return the row data, if found. 
+ * @param {string} id ID for which to return the row data, if found.
  * @param {Object=} options Options to control the get.
  * @return {Promise.<null|oj.TableDataSource.RowData>} Promise which resolves to a compound object which has the structure below where the id matches the given id. If none are found, resolves to null.<p>
  * <table>
@@ -430,7 +427,7 @@ oj.TableDataSource.prototype.sortCriteria = null;
 /**
  * Determines whether this TableDataSource supports certain feature.
  * @param {string} feature the feature in which its capabilities is inquired.  Currently the only valid feature is "sort".
- * @return {string|null} the name of the feature.  For "sort", the valid return values are: "full", "none".  
+ * @return {string|null} the name of the feature.  For "sort", the valid return values are: "full", "none".
  *         Returns null if the feature is not recognized.
  * @memberof oj.TableDataSource
  * @instance
@@ -461,26 +458,25 @@ oj.TableDataSource.prototype.sortCriteria = null;
  */
 
 /**
- * Returns the confidence for the totalSize value. 
- * @return {string} "actual" if the totalSize is the time of the fetch is an exact number 
- *                  "estimate" if the totalSize is an estimate 
- *                  "atLeast" if the totalSize is at least a certain number 
+ * Returns the confidence for the totalSize value.
+ * @return {string} "actual" if the totalSize is the time of the fetch is an exact number
+ *                  "estimate" if the totalSize is an estimate
+ *                  "atLeast" if the totalSize is at least a certain number
  *                  "unknown" if the totalSize is unknown
  * @ojsignature {target: "Type", for: "returns", value: "'actual'|'estimate'|'atLeast'|'unknown'"}
  * @export
  * @expose
  * @memberof oj.TableDataSource
- * @instance 
+ * @instance
  */
-oj.TableDataSource.prototype.totalSizeConfidence = function()
-{ 
-  return "actual";
+oj.TableDataSource.prototype.totalSizeConfidence = function () {
+  return 'actual';
 };
 
  /**
  * Row Data returned by methods like, at/get.
  * @typedef {Object} oj.TableDataSource.RowData
- * @property {Object} data The raw row data. 
+ * @property {Object} data The raw row data.
  * @property {number} index The index for the row.
  * @property {any} key The key value for the row.
  */
@@ -488,7 +484,7 @@ oj.TableDataSource.prototype.totalSizeConfidence = function()
  /**
  * Row Datas returned by fetch method.
  * @typedef {Object} oj.TableDataSource.RowDatas
- * @property {Array.<Object>} data An array of raw row data. 
+ * @property {Array.<Object>} data An array of raw row data.
  * @property {Array.<any>} keys An array of key values for the rows.
  * @property {number} startIndex The startIndex for the returned set of rows.
  */
@@ -502,7 +498,7 @@ oj.TableDataSource.prototype.totalSizeConfidence = function()
  * @memberof oj.TableDataSource
  */
 oj.TableDataSource.EventType =
-  {
+{
     /** Triggered when a Row has been added to a TableDataSource<p>
      * The event payload contains:<p>
      * <table cellspacing="0" style="border-collapse: collapse;">
@@ -513,7 +509,7 @@ oj.TableDataSource.EventType =
      * </tbody>
      * </table>
      */
-    'ADD': "add",
+  ADD: 'add',
     /** Triggered when a Row has been removed from a TableDataSource<p>
      * The event payload contains:<p>
      * <table cellspacing="0" style="border-collapse: collapse;">
@@ -524,21 +520,21 @@ oj.TableDataSource.EventType =
      * </tbody>
      * </table>
      */
-    'REMOVE': "remove",
+  REMOVE: 'remove',
     /** Triggered when a TableDataSource has been reset */
-    'RESET': "reset",
+  RESET: 'reset',
     /** Triggered when a TableDataSource has been refreshed */
-    'REFRESH': "refresh",
+  REFRESH: 'refresh',
     /** Triggered when a TableDataSource has been sorted<p>
      * The event payload contains:<p>
      * <table cellspacing="0" style="border-collapse: collapse;">
      * <tbody>
-     * <tr><td><b>header</b></td><td>the key of the header which was sorted on</td></tr>		 
+     * <tr><td><b>header</b></td><td>the key of the header which was sorted on</td></tr>
      * <tr><td><b>direction</b></td><td>the direction of the sort ascending/descending</td></tr>
      * </tbody>
      * </table>
      */
-    'SORT': "sort",
+  SORT: 'sort',
     /** Triggered when a Row's attributes have been changed<p>
      * The event payload contains:<p>
      * <table cellspacing="0" style="border-collapse: collapse;">
@@ -549,7 +545,7 @@ oj.TableDataSource.EventType =
      * </tbody>
      * </table>
      */
-    'CHANGE': "change",
+  CHANGE: 'change',
     /** Triggered when a TableDataSource has sent a fetch request. It is expected that
      * a component using TableDataSource will go into a busy state upon receiving
      * this event.
@@ -560,7 +556,7 @@ oj.TableDataSource.EventType =
      * </tbody>
      * </table>
      */
-    'REQUEST': "request",
+  REQUEST: 'request',
     /** Triggered when a TableDataSource has been updated by a fetch. It is expected that
      * a component using TableDataSource will exit busy state upon completion of rendering
      * after receiving this event.<p>
@@ -573,21 +569,22 @@ oj.TableDataSource.EventType =
      * </tbody>
      * </table>
      */
-    'SYNC': "sync",
+  SYNC: 'sync',
     /** Triggered when an error occurred on the TableDataSource */
-    'ERROR': "error"
-  };
+  ERROR: 'error'
+};
 
 /**
  * @private
  */
 oj.TableDataSource._LOGGER_MSG =
-  {
-    '_ERR_TABLE_DATASOURCE_INSTANTIATED_SUMMARY': 'oj.TableDataSource constructor called.',
-    '_ERR_TABLE_DATASOURCE_INSTANTIATED_DETAIL':  'Please do not instantiate oj.TableDataSource. Please use one of the subclasses instead such as oj.ArrayTableDataSource or oj.CollectionTableDataSource.',
-    '_ERR_DATA_INVALID_TYPE_SUMMARY':             'Invalid data type.',
-    '_ERR_DATA_INVALID_TYPE_DETAIL':              'Please specify the appropriate data type.'
-  };
+{
+  _ERR_TABLE_DATASOURCE_INSTANTIATED_SUMMARY: 'oj.TableDataSource constructor called.',
+  _ERR_TABLE_DATASOURCE_INSTANTIATED_DETAIL: 'Please do not instantiate oj.TableDataSource. Please use one of the subclasses instead such as oj.ArrayTableDataSource or oj.CollectionTableDataSource.',
+  _ERR_DATA_INVALID_TYPE_SUMMARY: 'Invalid data type.',
+  _ERR_DATA_INVALID_TYPE_DETAIL: 'Please specify the appropriate data type.'
+};
+
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
@@ -603,17 +600,16 @@ oj.TableDataSource._LOGGER_MSG =
  * @since 1.0
  * @ojtsignore
  */
-oj.DataGridDataSource = function(data)
-{
-    // oj.DataSource would calls Init
-    oj.DataGridDataSource.superclass.constructor.call(this, data);
+oj.DataGridDataSource = function (data) {
+  // oj.DataSource would calls Init
+  oj.DataGridDataSource.superclass.constructor.call(this, data);
 };
 
 /**
  * Subclass DataGridDataSource to DataSource
  * @private
  */
-oj.Object.createSubclass(oj.DataGridDataSource, oj.DataSource, "oj.DataGridDataSource");
+oj.Object.createSubclass(oj.DataGridDataSource, oj.DataSource, 'oj.DataGridDataSource');
 
 
 /**
@@ -629,7 +625,7 @@ oj.Object.createSubclass(oj.DataGridDataSource, oj.DataSource, "oj.DataGridDataS
 
 /**
  * Returns whether the total count returned in getCount function is an actual or an estimate.
- * @param {string} axis the axis in which we inquire whether the total count is an estimate.  Valid values are 
+ * @param {string} axis the axis in which we inquire whether the total count is an estimate.  Valid values are
  *        "row" and "column".
  * @return {string} "exact" if the count returned in getCount function is the actual count, "estimate" if the
  *         count returned in getCount function is an estimate.  The default value is "exact".
@@ -650,7 +646,7 @@ oj.Object.createSubclass(oj.DataGridDataSource, oj.DataSource, "oj.DataGridDataS
  *        axis, start, count.
  * @property {string} headerRange.axis the axis of the header that are fetched.  Valid values are "row" and "column".
  * @property {number} headerRange.start the start index of the range in which the header data are fetched.
- * @property {number} headerRange.count the size of the range in which the header data are fetched.  
+ * @property {number} headerRange.count the size of the range in which the header data are fetched.
  * @param {Object} callbacks the callbacks to be invoke when fetch headers operation is completed.
  * @property {function({startHeaderSet: Object}, {headerRange: Object}, {endHeaderSet: Object}):undefined} callbacks.success the callback to invoke when fetch headers completed successfully.
  *        The function takes three parameters: HeaderSet object representing start headers, headerRange object passed into the original fetchHeaders call,
@@ -668,12 +664,12 @@ oj.Object.createSubclass(oj.DataGridDataSource, oj.DataSource, "oj.DataGridDataS
  * @name fetchCells
  * @memberof oj.DataGridDataSource
  * @instance
- * @param {Array.<Object>} cellRanges Information about the cell range.  A cell range is defined by an array 
+ * @param {Array.<Object>} cellRanges Information about the cell range.  A cell range is defined by an array
  *        of range info for each axis, where each range contains three properties: axis, start, count.
- * @property {string} cellRanges.axis the axis associated with this range where cells are fetched.  Valid 
+ * @property {string} cellRanges.axis the axis associated with this range where cells are fetched.  Valid
  *        values are "row" and "column".
  * @property {number} cellRanges.start the start index of the range for this axis in which the cells are fetched.
- * @property {number} cellRanges.count the size of the range for this axis in which the cells are fetched. 
+ * @property {number} cellRanges.count the size of the range for this axis in which the cells are fetched.
  * @param {Object} callbacks the callbacks to be invoke when fetch cells operation is completed.
  * @property {function({cellSet: Object}, {cellRanges: Array.<Object>}):undefined} callbacks.success the callback to invoke when fetch cells completed successfully.
  * @property {function({status: Object}):undefined} callbacks.error the callback to invoke when fetch cells failed.
@@ -713,12 +709,12 @@ oj.Object.createSubclass(oj.DataGridDataSource, oj.DataSource, "oj.DataGridDataS
  * @name sort
  * @memberof oj.DataGridDataSource
  * @instance
- * @param {Object|null} criteria the sort criteria. 
+ * @param {Object|null} criteria the sort criteria.
  * @property {string} criteria.axis The axis in which the sort is performed, valid values are "row", "column"
  * @property {any} criteria.key The key that identifies which header to sort
  * @property {string} criteria.direction the sort direction, valid values are "ascending", "descending", "none" (default)
  * @param {Object=} callbacks the callbacks to be invoke upon completion of the sort operation.
- * @property {function():undefined=} callbacks.success the callback to invoke when the sort completed successfully.  
+ * @property {function():undefined=} callbacks.success the callback to invoke when the sort completed successfully.
  * @property {function({status: Object}):undefined=} callbacks.error the callback to invoke when sort failed.
  * @param {Object=} callbackObjects the object in which the callback function is invoked on.
  * @property {Object=} callbackObjects.success
@@ -733,10 +729,10 @@ oj.Object.createSubclass(oj.DataGridDataSource, oj.DataSource, "oj.DataGridDataS
  * @memberof oj.DataGridDataSource
  * @instance
  * @param {any} rowToMove the key of the row to move
- * @param {any} referenceRow the key of the reference row which combined with position are used to determine 
+ * @param {any} referenceRow the key of the reference row which combined with position are used to determine
  *        the destination of where the row should moved to.
- * @param {string} position The position of the moved row relative to the reference row.  
- *        Valid values are: "before", "after" 
+ * @param {string} position The position of the moved row relative to the reference row.
+ *        Valid values are: "before", "after"
  * @param {Object=} callbacks the callbacks to be invoke upon completion of the move operation.
  * @property {function():undefined=} callbacks.success the callback to invoke when the sort completed successfully.
  * @property {function({status: Object}):undefined=} callbacks.error the callback to invoke when sort failed.
@@ -770,11 +766,12 @@ oj.Object.createSubclass(oj.DataGridDataSource, oj.DataSource, "oj.DataGridDataS
  *         For "move", the valid return values are: "row", "none".
  *         Returns null if the feature is not recognized.
  */
+
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
  */
- 
+
 /**
  * @class oj.DiagramDataSource
  * @classdesc Base class for Diagram DataSource.  Implementations must implement all of the functions documented here.
@@ -785,9 +782,8 @@ oj.Object.createSubclass(oj.DataGridDataSource, oj.DataSource, "oj.DataGridDataS
  * @since 3.0
  * @ojtsignore
  */
-oj.DiagramDataSource = function(data)
-{
-    oj.DiagramDataSource.superclass.constructor.call(this, data);
+oj.DiagramDataSource = function (data) {
+  oj.DiagramDataSource.superclass.constructor.call(this, data);
 };
 
 
@@ -795,11 +791,11 @@ oj.DiagramDataSource = function(data)
  * Subclass DiagramDataSource to DataSource
  * @private
  */
-oj.Object.createSubclass(oj.DiagramDataSource, oj.DataSource, "oj.DiagramDataSource");
+oj.Object.createSubclass(oj.DiagramDataSource, oj.DataSource, 'oj.DiagramDataSource');
 
 /**
- * Object that defines diagram node. The object might also have additional custom properties that can be 
- * mapped to node styles (see {@link oj.ojDiagram#nodeProperties}) 
+ * Object that defines diagram node. The object might also have additional custom properties that can be
+ * mapped to node styles (see {@link oj.ojDiagram#nodeProperties})
  * or used during Diagram layout (see {@link oj.DvtDiagramLayoutContextNode#getData}).
  * @typedef {Object} NodeObject
  * @memberof oj.DiagramDataSource
@@ -813,9 +809,9 @@ oj.Object.createSubclass(oj.DiagramDataSource, oj.DataSource, "oj.DiagramDataSou
  * @property {string=} draggable  Specifies whether or not the node will be draggable. Acceptable values are 'off' and 'auto'. Default value is 'auto'
  * @property {string=} shortDesc  The description of the node. This is used for accessibility and also for customizing the tooltip text.
  */
- 
+
 /**
- * Object that defines diagram link. The object might also have additional custom properties that can be 
+ * Object that defines diagram link. The object might also have additional custom properties that can be
  * mapped to link styles (see {@link oj.ojDiagram#linkProperties})
  * or used during Diagram layout (see {@link oj.DvtDiagramLayoutContextLink#getData}).
  * @typedef {Object} LinkObject
@@ -832,7 +828,7 @@ oj.Object.createSubclass(oj.DiagramDataSource, oj.DataSource, "oj.DiagramDataSou
 /**
  * Returns child data for the given parent.
  * The data include all immediate child nodes along with links whose endpoints
- * both descend from the current parent node. 
+ * both descend from the current parent node.
  * If all the links are available upfront, they can be returned as part of the
  * top-level data (since all nodes descend from the diagram root).
  * If lazy-fetching links is desirable, the most
@@ -855,7 +851,7 @@ oj.Object.createSubclass(oj.DiagramDataSource, oj.DataSource, "oj.DiagramDataSou
  * @memberof oj.DiagramDataSource
  * @instance
  */
- 
+
 /**
  * Retrieves number of child nodes
  * @param {Object} nodeData A data object for the node in question.
@@ -869,7 +865,7 @@ oj.Object.createSubclass(oj.DiagramDataSource, oj.DataSource, "oj.DiagramDataSou
  * @memberof oj.DiagramDataSource
  * @instance
  */
- 
+
 /**
  * Indicates whether the specified object contains links
  * that should be discovered in order to display promoted links.
@@ -882,7 +878,7 @@ oj.Object.createSubclass(oj.DiagramDataSource, oj.DataSource, "oj.DiagramDataSou
  * @memberof oj.DiagramDataSource
  * @instance
  */
- 
+
  /**
  * @export
  * Event types
@@ -891,7 +887,7 @@ oj.Object.createSubclass(oj.DiagramDataSource, oj.DataSource, "oj.DiagramDataSou
  */
 oj.DiagramDataSource.EventType =
 {
-  /** 
+  /**
    * Triggered when nodes or links are added to DiagramDataSource.<p>
    * The event payload contains.<p>
    *
@@ -908,7 +904,7 @@ oj.DiagramDataSource.EventType =
    * </tbody>
    * </table>
    */
-  'ADD': "add",
+  ADD: 'add',
   /**
    * Triggered when nodes or links are removed from DiagramDataSource.
    * The event payload contains:<p>
@@ -925,7 +921,7 @@ oj.DiagramDataSource.EventType =
    * </tbody>
    * </table>
    */
-  'REMOVE': "remove",
+  REMOVE: 'remove',
   /**
    * Triggered when nodes or links are removed from DiagramDataSource.
    * The event payload contains:<p>
@@ -941,6 +937,7 @@ oj.DiagramDataSource.EventType =
    * </tbody>
    * </table>
    */
-  'CHANGE': "change"
+  CHANGE: 'change'
 };
+
 });

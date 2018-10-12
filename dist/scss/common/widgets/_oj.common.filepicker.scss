@@ -31,28 +31,46 @@
     }
 
     .oj-filepicker-dropzone {
-      @include oj-display-flex-property();
+      display: flex;
 
       // center containing items
-      @include oj-justify-content-property(center);
+      justify-content: center;
 
       // vertically center containing items
-      @include oj-align-items-property(center);
+      align-items: center;
 
       height: 100px;
       box-sizing: border-box;
-      border-width: $filePickerBorderWidth;
-      border-style: $filePickerBorderStyle;
-      border-color: $filePickerBorderColor;
-      border-radius: $filePickerBorderRadius;
-      background-color: $filePickerBgColor;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        border-width: var(--oj-file-picker-border-width);
+        border-style: var(--oj-file-picker-border-style);
+        border-color: var(--oj-file-picker-border-color);
+        border-radius: var(--oj-file-picker-border-radius);
+        background-color: var(--oj-file-picker-bg-color);
+      }
+      @else {
+        border-width: $filePickerBorderWidth;
+        border-style: $filePickerBorderStyle;
+        border-color: $filePickerBorderColor;
+        border-radius: $filePickerBorderRadius;
+        background-color: $filePickerBgColor;
+      }
+
     }
 
     .oj-filepicker-dropzone.oj-valid-drop,
     .oj-filepicker-dropzone:active { 
       padding: 1px;
-      border-width: $filePickerBorderWidthActive;
-      background-color: $filePickerBgColorActive;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        border-width: var(--oj-file-picker-border-width-active);
+        background-color: var(--oj-file-picker-bg-color-active);
+      }
+      @else {
+        border-width: $filePickerBorderWidthActive;
+        background-color: $filePickerBgColorActive;
+      }
     }
 
     /* 
@@ -63,8 +81,15 @@
     }
 
     .oj-filepicker-text { 
-      font-size: $filePickerTextFontSize;
-      color: $filePickerTextColor;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        font-size: var(--oj-file-picker-text-font-size);
+        color: var(--oj-file-picker-text-color);
+      }
+      @else {
+        font-size: $filePickerTextFontSize;
+        color: $filePickerTextColor;
+      }
       text-align: center;
       padding: 10px;
     }

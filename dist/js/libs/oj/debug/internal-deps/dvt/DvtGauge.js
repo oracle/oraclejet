@@ -112,7 +112,7 @@ DvtGauge.prototype.render = function(options, width, height)
   }
 
   // Update the store width and height if provided
-  if (!isNaN(width) && !isNaN(height)) {
+  if ((typeof width == 'number') && (typeof height == 'number')) {
     // Turn off animation if the gauge is being resized
     if ((this.Width != 0 && this.Width != width) || (this.Height != 0 && this.Height != height))
       this._bResizeRender = true;
@@ -1446,12 +1446,19 @@ DvtGaugeRenderer._formatMetricLabelValue = function(value, gauge, converter, sca
     output = formatter.format(value, converter);
   else if (converter && converter['format'])
     output = formatter.format(value, converter);
-  else if (isPercent)
-    output = Math.round(value * 100);
+  else if (isPercent){
+    var percentConverter = gauge.getCtx().getNumberConverter({'style': 'percent', 'maximumFractionDigits': 0, 'minimumFractionDigits': 0});
+    if (percentConverter && percentConverter['format']) {
+      output = percentConverter['format'](value);
+    }
+    else{
+      output = String(Math.round(value * 100)) + '%';
+    }
+  }
   else
     output = formatter.format(value);
 
-  return isPercent ? String(output) + '%' : output;
+  return output;
 };
 
 
@@ -2690,19 +2697,23 @@ DvtStatusMeterGaugeRenderer._renderShape = function(gauge, container, bounds) {
   // of the possible width that will be used for plotArea and the indicator
   var drawnPlotSize = indicatorSize < 1 ? 1 : indicatorSize;
   var drawnIndicatorSize = indicatorSize > 1 ? 1 : indicatorSize;
+  var delta = Math.min(0.5, (Math.abs(endCoord - baselineCoord) - 0.5)/2); // Indicator should be at least 0.5px
   if (isVert) {
+    var sign = endCoord > baselineCoord ? -1 : 1;
     indicatorX1 = bounds.x + (1 - drawnIndicatorSize) / 2 * bounds.w + .5;
     indicatorX2 = bounds.x + bounds.w * (1 + drawnIndicatorSize) / 2 - .5;
-    indicatorY2 = baselineCoord - .5;
-    indicatorY1 = endCoord + .5;
+    indicatorY2 = baselineCoord - sign*delta;
+    indicatorY1 = endCoord + sign*delta;
     plotX1 = bounds.x + (1 - 1 / drawnPlotSize) / 2 * bounds.w;
     plotX2 = bounds.x + bounds.w * (1 + 1 / drawnPlotSize) / 2;
     plotY1 = bounds.y;
     plotY2 = bounds.y + bounds.h;
   }
   else {
-    indicatorX1 = isRTL ? baselineCoord - .5 : baselineCoord + .5;
-    indicatorX2 = isRTL ? endCoord + .5 : endCoord - .5;
+    var isNegative = isRTL ? endCoord > baselineCoord : endCoord < baselineCoord;
+    var sign = isNegative ? -1 : 1;
+    indicatorX1 = isRTL ? baselineCoord - sign*delta : baselineCoord + sign*delta;
+    indicatorX2 = isRTL ? endCoord + sign*delta : endCoord - sign*delta;
     indicatorY1 = bounds.y + (1 - drawnIndicatorSize) / 2 * bounds.h + .5;
     indicatorY2 = bounds.y + bounds.h * (1 + drawnIndicatorSize) / 2 - .5;
     plotX1 = bounds.x;
@@ -3001,7 +3012,7 @@ DvtStatusMeterGaugeRenderer._renderMetricLabelOutsidePlotArea = function(gauge, 
     var minMetricLabel = DvtGaugeRenderer.getFormattedMetricLabel(options['min'], gauge);
     var maxMetricLabel = DvtGaugeRenderer.getFormattedMetricLabel(options['max'], gauge);
     if (size === undefined && bounds.h < 18) {
-      size = DvtGaugeRenderer.calcMetricLabelFontSize([metricLabelString, minMetricLabel, maxMetricLabel], metricLabel, bounds);
+      size = DvtGaugeRenderer.calcLabelFontSize([metricLabelString, minMetricLabel, maxMetricLabel], metricLabel, bounds);
     }
     size = size ? parseInt(size) : 13;
     metricLabel.setFontSize(size);
@@ -3060,7 +3071,9 @@ DvtStatusMeterGaugeRenderer._renderMetricLabelOutsidePlotArea = function(gauge, 
     metricLabel.alignRight();
 
     // Truncate to fit
-    dvt.TextUtils.fitText(metricLabel, metricLabelSpace, bounds.h, container);
+    // : fire fox reports a bigger height by 1/2px.
+    var maxHeight = dvt.Agent.isPlatformGecko() ? bounds.h + 2 : bounds.h;
+    dvt.TextUtils.fitText(metricLabel, metricLabelSpace, maxHeight, container);
   }
 };
 
@@ -3137,7 +3150,7 @@ DvtStatusMeterGaugeRenderer._renderMetricLabelInsidePlotArea = function(gauge, c
       metricLabelSpace.y = plotArea.y1 + (metricLabelSpace.w / 2);
       vAlignment = 'bottom';
       if (!plotAreaRendered && indicator.y1 > indicator.y2) {
-        metricLabelSpace.h = Math.abs(plotArea.y1 - indicator.y1) - metricLabelSpace.w;
+        metricLabelSpace.h = Math.abs(plotArea.y2 - indicator.y1) - metricLabelSpace.w;
         metricLabelSpace.y = indicator.y1 + (metricLabelSpace.w / 2);
         vAlignment = 'top';
       }

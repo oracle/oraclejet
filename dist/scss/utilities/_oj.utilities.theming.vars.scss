@@ -346,7 +346,6 @@
   $colorList: _oj-theming-add-var($colorList, '$headerBgColorDisabled', $headerBgColorDisabled);
 
   $colorList: _oj-theming-add-var($colorList, '$overlayBgColor', $overlayBgColor);
-  $colorList: _oj-theming-add-var($colorList, '$boxShadowColor', $boxShadowColor);
 
   $colorList: _oj-theming-add-var($colorList, '$windowBgColor', $windowBgColor);
   $colorList: _oj-theming-add-var($colorList, '$windowBorderColor', $windowBorderColor);
@@ -389,12 +388,10 @@
   $colorList: _oj-theming-add-var($colorList, '$navigationListItemContrastLabelColorSelected', $navigationListItemContrastLabelColorSelected);
   $colorList: _oj-theming-add-var($colorList, '$navigationListItemContrastBgColorSelected', $navigationListItemContrastBgColorSelected);
   $colorList: _oj-theming-add-var($colorList, '$navigationListItemContrastLabelColorDisabled', $navigationListItemContrastLabelColorDisabled);
-  $colorList: _oj-theming-add-var($colorList, '$navigationListHorizontalItemBorderColor', $navigationListHorizontalItemBorderColor);
   $colorList: _oj-theming-add-var($colorList, '$navigationListHorizontalItemLabelColorDefault', $navigationListHorizontalItemLabelColorDefault);
   $colorList: _oj-theming-add-var($colorList, '$navigationListHorizontalItemIconColorDefault', $navigationListHorizontalItemIconColorDefault);
   $colorList: _oj-theming-add-var($colorList, '$navigationListHorizontalItemDividerColor', $navigationListHorizontalItemDividerColor);
   $colorList: _oj-theming-add-var($colorList, '$navigationListHorizontalItemBgColorSelected', $navigationListHorizontalItemBgColorSelected);
-  $colorList: _oj-theming-add-var($colorList, '$navigationListHorizontalItemBorderColorSelected', $navigationListHorizontalItemBorderColorSelected);
   $colorList: _oj-theming-add-var($colorList, '$navigationListHorizontalItemLabelColorSelected', $navigationListHorizontalItemLabelColorSelected);
   $colorList: _oj-theming-add-var($colorList, '$navigationListHorizontalItemIconColorSelected', $navigationListHorizontalItemIconColorSelected);
 
@@ -402,6 +399,7 @@
   $colorList: _oj-theming-add-var($colorList, '$tabBarItemLabelColorDefault', $tabBarItemLabelColorDefault);
   $colorList: _oj-theming-add-var($colorList, '$tabBarItemIconColorDefault', $tabBarItemIconColorDefault);
   $colorList: _oj-theming-add-var($colorList, '$tabBarItemBorderColorHover', $tabBarItemBorderColorHover);
+  $colorList: _oj-theming-add-var($colorList, '$tabBarItemLabelColorHover', $tabBarItemLabelColorHover);
   $colorList: _oj-theming-add-var($colorList, '$tabBarItemBgColorHover', $tabBarItemBgColorHover);
   $colorList: _oj-theming-add-var($colorList, '$tabBarItemIconColorHover', $tabBarItemIconColorHover);
   $colorList: _oj-theming-add-var($colorList, '$tabBarItemIconOnlyBgColorHover', $tabBarItemIconOnlyBgColorHover);
@@ -423,12 +421,14 @@
   $colorList: _oj-theming-add-var($colorList, '$tabBarItemContrastLabelColorSelected', $tabBarItemContrastLabelColorSelected);
   $colorList: _oj-theming-add-var($colorList, '$tabBarItemContrastBgColorSelected', $tabBarItemContrastBgColorSelected);
   $colorList: _oj-theming-add-var($colorList, '$tabBarItemContrastLabelColorDisabled', $tabBarItemContrastLabelColorDisabled);
+  $colorList: _oj-theming-add-var($colorList, '$tabBarItemContrastBgColorActive', $tabBarItemContrastBgColorActive);
   $colorList: _oj-theming-add-var($colorList, '$tabBarHorizontalItemBorderColor', $tabBarHorizontalItemBorderColor);
   $colorList: _oj-theming-add-var($colorList, '$tabBarHorizontalItemDividerColor', $tabBarHorizontalItemDividerColor);
   $colorList: _oj-theming-add-var($colorList, '$tabBarHorizontalItemLabelColorSelected', $tabBarHorizontalItemLabelColorSelected);
   $colorList: _oj-theming-add-var($colorList, '$tabBarHorizontalItemIconColorSelected', $tabBarHorizontalItemIconColorSelected);
   $colorList: _oj-theming-add-var($colorList, '$tabBarHorizontalItemBgColorSelected', $tabBarHorizontalItemBgColorSelected);
   $colorList: _oj-theming-add-var($colorList, '$tabBarHorizontalItemBorderColorSelected', $tabBarHorizontalItemBorderColorSelected);
+  $colorList: _oj-theming-add-var($colorList, '$tabBarHorizontalItemLabelColorHover', $tabBarHorizontalItemLabelColorHover);
   $colorList: _oj-theming-add-var($colorList, '$tabBarHorizontalItemBorderColorHover', $tabBarHorizontalItemBorderColorHover);
   $colorList: _oj-theming-add-var($colorList, '$tabBarHorizontalItemContrastBgColorSelected', $tabBarHorizontalItemContrastBgColorSelected);
   $colorList: _oj-theming-add-var($colorList, '$tabBarHorizontalItemContrastLabelColorSelected', $tabBarHorizontalItemContrastLabelColorSelected);
@@ -721,6 +721,8 @@
   $colorList: _oj-theming-add-var($colorList, '$dvtBorderColor', $dvtBorderColor);
   $colorList: _oj-theming-add-var($colorList, '$dvtBorder2Color', $dvtBorder2Color);
   $colorList: _oj-theming-add-var($colorList, '$dvtPanelBorderColor', $dvtPanelBorderColor);
+  $colorList: _oj-theming-add-var($colorList, '$dvtIconBgColorActive', $dvtIconBgColorActive);
+  $colorList: _oj-theming-add-var($colorList, '$dvtIconBorderColorActive', $dvtIconBorderColorActive);
   $colorList: _oj-theming-add-var($colorList, '$dvtAxisTitleTextColor', $dvtAxisTitleTextColor);
   $colorList: _oj-theming-add-var($colorList, '$dvtNBoxCellBgColor', $dvtNBoxCellBgColor);
   $colorList: _oj-theming-add-var($colorList, '$dvtNBoxCellBgColorMinimized', $dvtNBoxCellBgColorMinimized);
@@ -1006,7 +1008,7 @@
   $generalVarsList: _oj-theming-add-var($generalVarsList, '$largeBoxShadow', $largeBoxShadow);
 
   $componentVarsList: ();
-  $componentVarsList: _oj-theming-add-var($componentVarsList, '$noteWindowBoxShadow', $noteWindowBoxShadow);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$popupTailBoxShadow', $popupTailBoxShadow);
   $componentVarsList: _oj-theming-add-var($componentVarsList, '$popupBoxShadow', $popupBoxShadow);
   $componentVarsList: _oj-theming-add-var($componentVarsList, '$menuBoxShadow', $menuBoxShadow);
   $componentVarsList: _oj-theming-add-var($componentVarsList, '$menuSubmenuBoxShadow', $menuSubmenuBoxShadow);
@@ -1075,9 +1077,9 @@
 
   $componentVarsList: ();
 
-  $componentVarsList: _oj-theming-add-var($componentVarsList, '$noteWindowBorderColor', $noteWindowBorderColor);
-  $componentVarsList: _oj-theming-add-var($componentVarsList, '$noteWindowBorderWidth', $noteWindowBorderWidth);
-  $componentVarsList: _oj-theming-add-var($componentVarsList, '$noteWindowBgColor', $noteWindowBgColor);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$popupTailBorderColor', $popupTailBorderColor);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$popupTailBorderWidth', $popupTailBorderWidth);
+  $componentVarsList: _oj-theming-add-var($componentVarsList, '$popupTailBgcolor', $popupTailBgcolor);
   $componentVarsList: _oj-theming-add-var($componentVarsList, '$popupBorderColor', $popupBorderColor);
   $componentVarsList: _oj-theming-add-var($componentVarsList, '$popupBorderWidth', $popupBorderWidth);
   $componentVarsList: _oj-theming-add-var($componentVarsList, '$popupBgColor', $popupBgColor);
@@ -1397,6 +1399,10 @@
   $renamedVarFound: _oj-theming-var-renamed($renamedVarFound, navigationBarPageLevelItemContrastBgColorSelected, navigationTabsHorizontalItemContrastBgColorSelected, $renamedNavBarPageVars);
   $renamedVarFound: _oj-theming-var-renamed($renamedVarFound, navigationBarPageLevelItemContrastLabelColorSelected, navigationTabsHorizontalItemContrastLabelColorSelected, $renamedNavBarPageVars);
 
+  // paging control vars, pagingControlPadding renamed to pagingPadding to remain consistent between all variable names
+  $renamedPagingControlVars: "In your theming files please search for '$pagingControlPadding' and replace it with '$pagingPadding'.";
+  $renamedVarFound: _oj-theming-var-renamed($renamedVarFound, pagingControlPadding, pagingPadding, $renamedPagingControlVars);
+
   //progressbar renamed to progressBar
   $renamedProgressVars: "oj-progressbar has been renamed to oj-progress.  Variables used in only oj-progress bar have been renamed from progressbar to progressBar.  Variables used in both circle and bar oj-progress have been renamed from progressbar to progress.";
   $renamedVarFound: _oj-theming-var-renamed($renamedVarFound, progressbarBgColor, progressBarBgColor, $renamedProgressVars);
@@ -1409,6 +1415,7 @@
 
   // pullToRefresh renamed to refresher
   $renamedPullToRefreshVars: "ALL $pullToRefresh* VARS HAVE BEEN RENAMED. In your theming files please search for '$pullToRefresh' and replace it with '$refresher'.";
+  $renamedVarFound: _oj-theming-var-renamed($renamedVarFound, includePullToRefreshClasses, includeRefresherClasses, $renamedPullToRefreshVars);
   $renamedVarFound: _oj-theming-var-renamed($renamedVarFound, pullToRefreshBgColor, refresherBgColor, $renamedPullToRefreshVars);
   $renamedVarFound: _oj-theming-var-renamed($renamedVarFound, pullToRefreshAnimationDuration, refresherAnimationDuration, $renamedPullToRefreshVars);
   $renamedVarFound: _oj-theming-var-renamed($renamedVarFound, pullToRefreshImageDir, refresherImageDir, $renamedPullToRefreshVars);
@@ -1435,6 +1442,23 @@
   $renamedVarFound: _oj-theming-var-renamed($renamedVarFound, messageInlineBorderColorInfo, messageComponentInlineBorderColorInfo, $renamedInlineMessagingVars);
   $renamedVarFound: _oj-theming-var-renamed($renamedVarFound, messageInlineOpenAnimation, messageComponentInlineOpenAnimation, $renamedInlineMessagingVars);
   $renamedVarFound: _oj-theming-var-renamed($renamedVarFound, messageInlineCloseAnimation, messageComponentInlineCloseAnimation, $renamedInlineMessagingVars);
+
+  // conveyorbelt variable includeConveyerBeltClasses renamed to includeConveyorBeltClasses
+  $renamedConveyerBeltVars: "'$includeConveyerBeltClasses' VAR HAVE BEEN RENAMED. In your theming files please search for '$includeConveyerBeltClasses' and replace it with '$includeConveyorBeltClasses'.";
+  $renamedVarFound: _oj-theming-var-renamed($renamedVarFound, includeConveyerBeltClasses, includeConveyorBeltClasses, $renamedConveyerBeltVars);
+
+  $renamedVarFound: _oj-theming-var-renamed($renamedVarFound, boxShadowColor, boxShadowHsl, "You must provide an hsl value (for example for black it would be '0, 0%, 0%'), see the 6.0 release notes for more information");
+
+  $renamedNoteWindowVars: "ALL $noteWindow* VARS HAVE BEEN RENAMED. In your theming files, first search for '$noteWindowTail' and replace it with '$popupTail'. Next, search for '$noteWindow' replacing with '$popupTail'.";
+  $renamedVarFound: _oj-theming-var-renamed($renamedVarFound, noteWindowTailSimpleHeight, popupTailSimpleHeight, $renamedNoteWindowVars);
+  $renamedVarFound: _oj-theming-var-renamed($renamedVarFound, noteWindowTailSimpleWidth, popupTailSimpleWidth, $renamedNoteWindowVars);
+  $renamedVarFound: _oj-theming-var-renamed($renamedVarFound, noteWindowBorderColor, popupTailBorderColor, $renamedNoteWindowVars);
+  $renamedVarFound: _oj-theming-var-renamed($renamedVarFound, noteWindowBorderWidth, popupTailBorderWidth, $renamedNoteWindowVars);
+  $renamedVarFound: _oj-theming-var-renamed($renamedVarFound, noteWindowBgColor, popupTailBgcolor, $renamedNoteWindowVars);
+  $renamedVarFound: _oj-theming-var-renamed($renamedVarFound, noteWindowBoxShadow, popupTailBoxShadow, $renamedNoteWindowVars);
+  $renamedVarFound: _oj-theming-var-renamed($renamedVarFound, noteWindowOpenAnimation, popupTailOpenAnimation, $renamedNoteWindowVars);
+  $renamedVarFound: _oj-theming-var-renamed($renamedVarFound, noteWindowCloseAnimation, popupTailCloseAnimation, $renamedNoteWindowVars);
+  $renamedVarFound: _oj-theming-var-renamed($renamedVarFound, noteWindowZindex, popupTailZindex, $renamedNoteWindowVars);
 
   @if ($renamedVarFound == true)
   {

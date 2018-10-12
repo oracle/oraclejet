@@ -4,7 +4,9 @@
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
-define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/internal-deps/dvt/DvtTimeAxis', 'ojs/ojvalidation-datetime'], function (oj, $, comp, base, dvt)
+define(['ojs/ojcore', 'jquery', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/internal-deps/dvt/DvtTimeAxis', 'ojs/ojlocaledata', 
+'ojs/ojvalidation-base', 'ojs/ojvalidation-datetime'], 
+  function (oj, $, comp, base, dvt, LocaleData, __ValidationBase)
 {
   
 
@@ -13,7 +15,7 @@ var __oj_time_axis_metadata =
   "properties": {
     "converter": {
       "type": "object",
-      "value": "{\r           \"default\": null,\r           \"seconds\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric', 'minute': '2-digit', 'second': '2-digit'}),\r           \"minutes\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric', 'minute': '2-digit'}),\r           \"hours\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric'}),\r           \"days\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'numeric', 'day': '2-digit'}),\r           \"weeks\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'numeric', 'day': '2-digit'}),\r           \"months\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'long'}),\r           \"quarters\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'long'}),\r           \"years\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'year': 'numeric'})\r         }",
+      "value": "{\"default\": null, \"seconds\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric', 'minute': '2-digit', 'second': '2-digit'}), \"minutes\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric', 'minute': '2-digit'}), \"hours\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric'}), \"days\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'numeric', 'day': '2-digit'}), \"weeks\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'numeric', 'day': '2-digit'}), \"months\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'long'}), \"quarters\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'long'}), \"years\": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'year': 'numeric'})}",
       "properties": {
         "default": {
           "type": "oj.Converter<string>"
@@ -154,6 +156,8 @@ var __oj_time_axis_metadata =
  * All rights reserved.
  */
 
+/* global dvt:false, LocaleData:false, __ValidationBase:false */
+
 /**
  * @ojcomponent oj.ojTimeAxis
  * @augments oj.dvtBaseComponent
@@ -161,8 +165,7 @@ var __oj_time_axis_metadata =
  * @ojstatus preview
  * @ojshortdesc Displays a range of dates based on specified start and end dates and a time scale.
  * @ojrole application
- * @ojtsimport ojvalidation-base
- * @ojtsimport ojvalidation-datetime
+ * @ojtsimport {module: "ojvalidation-base", type: "AMD", imported:["Converter"]}
  *
  * @classdesc
  * <h3 id="TimeAxisOverview-section">
@@ -229,265 +232,282 @@ var __oj_time_axis_metadata =
  *
  * {@ojinclude "name":"rtl"}
  */
-oj.__registerWidget('oj.ojTimeAxis', $['oj']['dvtBaseComponent'],
-{
-  widgetEventPrefix: "oj",
-  options: {
-    /**
-     * A converter (an object literal or instance that duck types {@link oj.Converter}) used to format the labels of the time axis for all 'scale' values, or 
-     * an object literal whose keys are 'scale' values that map specific converters for scale specific formatting. 
-     * See {@link oj.DateTimeConverterFactory} for details on creating built-in datetime converters.
-     * @expose
-     * @name converter
-     * @memberof oj.ojTimeAxis
-     * @instance
-     * @type {Object}
-     * @ojsignature {target: "Type", value: "oj.ojTimeAxis.Converter|oj.Converter<string>", jsdocOverride: true}
-     * @default {
-     *            "default": null,
-     *            "seconds": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric', 'minute': '2-digit', 'second': '2-digit'}),
-     *            "minutes": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric', 'minute': '2-digit'}),
-     *            "hours": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric'}),
-     *            "days": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'numeric', 'day': '2-digit'}),
-     *            "weeks": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'numeric', 'day': '2-digit'}),
-     *            "months": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'long'}),
-     *            "quarters": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'long'}),
-     *            "years": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'year': 'numeric'})
-     *          }
-     * 
-     * @example <caption>Initialize the TimeAxis with the <code class="prettyprint">converter</code> attribute specified:</caption>
-     * &lt;oj-time-axis converter='[[myConverterObject]]'>&lt;/oj-time-axis>
-     *
-     * &lt;oj-time-axis converter.days='[[myConverterDays]]'>&lt;/oj-time-axis>
-     *
-     * @example <caption>Get or set the <code class="prettyprint">converter</code> property after initialization:</caption>
-     * // Get one
-     * var converterDays = myTimeAxis.converter.days;
-     *
-     * // Set one, leaving the others intact.
-     * myTimeAxis.setProperty('converter.days', converterDays);
-     *
-     * // Get all
-     * var converterObject = myTimeAxis.converter;
-     * 
-     * // Set all. Must list every resource key, as those not listed are lost.
-     * myTimeAxis.converter = {
-     *     "default": converterDefault,
-     *     "seconds": converterSeconds,
-     *     "minutes": converterMinutes,
-     *     "hours": converterHours,
-     *     "days": converterDays,
-     *     "weeks": converterWeeks,
-     *     "months": converterMonths,
-     *     "quarters": converterQuarters,
-     *     "years": converterYears
-     * };
-     */
-    converter: {
-      "default": null,
-      "seconds": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric', 'minute': '2-digit', 'second': '2-digit'}),
-      "minutes": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric', 'minute': '2-digit'}),
-      "hours": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric'}),
-      "days": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'numeric', 'day': '2-digit'}),
-      "weeks": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'numeric', 'day': '2-digit'}),
-      "months": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'long'}),
-      "quarters": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'long'}),
-      "years": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'year': 'numeric'})
+oj.__registerWidget('oj.ojTimeAxis', $.oj.dvtBaseComponent,
+  {
+    widgetEventPrefix: 'oj',
+    options: {
+      /**
+       * A converter (an object literal or instance that duck types {@link oj.Converter}) used to format the labels of the time axis for all 'scale' values, or
+       * an object literal whose keys are 'scale' values that map specific converters for scale specific formatting.
+       * See {@link oj.DateTimeConverterFactory} for details on creating built-in datetime converters.
+       * @expose
+       * @name converter
+       * @memberof oj.ojTimeAxis
+       * @instance
+       * @type {Object}
+       * @ojsignature {target: "Type", value: "oj.ojTimeAxis.Converters|oj.Converter<string>", jsdocOverride: true}
+       * @default {"default": null, "seconds": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric', 'minute': '2-digit', 'second': '2-digit'}), "minutes": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric', 'minute': '2-digit'}), "hours": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric'}), "days": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'numeric', 'day': '2-digit'}), "weeks": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'numeric', 'day': '2-digit'}), "months": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'long'}), "quarters": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'month': 'long'}), "years": oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'year': 'numeric'})}
+       *
+       * @example <caption>Initialize the TimeAxis with the <code class="prettyprint">converter</code> attribute specified:</caption>
+       * &lt;oj-time-axis converter='[[myConverterObject]]'>&lt;/oj-time-axis>
+       *
+       * &lt;oj-time-axis converter.days='[[myConverterDays]]'>&lt;/oj-time-axis>
+       *
+       * @example <caption>Get or set the <code class="prettyprint">converter</code> property after initialization:</caption>
+       * // Get one
+       * var converterDays = myTimeAxis.converter.days;
+       *
+       * // Set one, leaving the others intact.
+       * myTimeAxis.setProperty('converter.days', converterDays);
+       *
+       * // Get all
+       * var converterObject = myTimeAxis.converter;
+       *
+       * // Set all. Must list every resource key, as those not listed are lost.
+       * myTimeAxis.converter = {
+       *     "default": converterDefault,
+       *     "seconds": converterSeconds,
+       *     "minutes": converterMinutes,
+       *     "hours": converterHours,
+       *     "days": converterDays,
+       *     "weeks": converterWeeks,
+       *     "months": converterMonths,
+       *     "quarters": converterQuarters,
+       *     "years": converterYears
+       * };
+       */
+      converter: {
+        default: null,
+        seconds: __ValidationBase.Validation.converterFactory(
+          oj.ConverterFactory.CONVERTER_TYPE_DATETIME)
+          .createConverter({ hour: 'numeric', minute: '2-digit', second: '2-digit' }),
+        minutes: __ValidationBase.Validation.converterFactory(
+          oj.ConverterFactory.CONVERTER_TYPE_DATETIME)
+          .createConverter({ hour: 'numeric', minute: '2-digit' }),
+        hours: __ValidationBase.Validation.converterFactory(
+          oj.ConverterFactory.CONVERTER_TYPE_DATETIME)
+          .createConverter({ hour: 'numeric' }),
+        days: __ValidationBase.Validation.converterFactory(
+          oj.ConverterFactory.CONVERTER_TYPE_DATETIME)
+          .createConverter({ month: 'numeric', day: '2-digit' }),
+        weeks: __ValidationBase.Validation.converterFactory(
+          oj.ConverterFactory.CONVERTER_TYPE_DATETIME)
+          .createConverter({ month: 'numeric', day: '2-digit' }),
+        months: __ValidationBase.Validation.converterFactory(
+          oj.ConverterFactory.CONVERTER_TYPE_DATETIME)
+          .createConverter({ month: 'long' }),
+        quarters: __ValidationBase.Validation.converterFactory(
+          oj.ConverterFactory.CONVERTER_TYPE_DATETIME)
+          .createConverter({ month: 'long' }),
+        years: __ValidationBase.Validation.converterFactory(
+          oj.ConverterFactory.CONVERTER_TYPE_DATETIME)
+          .createConverter({ year: 'numeric' })
+      },
+      /**
+       * The start time of the time axis. A valid value is required in order for the time axis to properly render. See <a href="#formats-section">Date and Time Formats</a> for more details on the required string formats.
+       * @expose
+       * @name start
+       * @memberof oj.ojTimeAxis
+       * @instance
+       * @type {string}
+       * @ojformat date-time
+       * @default ""
+       *
+       * @example <caption>Initialize the TimeAxis with the <code class="prettyprint">start</code> attribute specified:</caption>
+       * &lt;oj-time-axis start='2017-01-01T05:00:00.000Z'>&lt;/oj-time-axis>
+       *
+       * @example <caption>Get or set the <code class="prettyprint">start</code> property after initialization:</caption>
+       * // getter
+       * var startValue = myTimeAxis.start;
+       *
+       * // setter
+       * myTimeAxis.start = '2017-01-01T05:00:00.000Z';
+       */
+      start: '',
+      /**
+       * The end time of the time axis. A valid value is required in order for the time axis to properly render. See <a href="#formats-section">Date and Time Formats</a> for more details on the required string formats.
+       * @expose
+       * @name end
+       * @memberof oj.ojTimeAxis
+       * @instance
+       * @type {string}
+       * @ojformat date-time
+       * @default ""
+       *
+       * @example <caption>Initialize the TimeAxis with the <code class="prettyprint">end</code> attribute specified:</caption>
+       * &lt;oj-time-axis end='2017-12-31T05:00:00.000Z'>&lt;/oj-time-axis>
+       *
+       * @example <caption>Get or set the <code class="prettyprint">end</code> property after initialization:</caption>
+       * // getter
+       * var endValue = myTimeAxis.end;
+       *
+       * // setter
+       * myTimeAxis.end = '2017-12-31T05:00:00.000Z';
+       */
+      end: '',
+      /**
+       * The time scale used for the time axis. This is required in order for the time axis to properly render.
+       * @expose
+       * @name scale
+       * @memberof oj.ojTimeAxis
+       * @instance
+       * @type {?string}
+       * @ojvalue {string} "seconds"
+       * @ojvalue {string} "minutes"
+       * @ojvalue {string} "hours"
+       * @ojvalue {string} "days"
+       * @ojvalue {string} "weeks"
+       * @ojvalue {string} "months"
+       * @ojvalue {string} "quarters"
+       * @ojvalue {string} "years"
+       * @default null
+       *
+       * @example <caption>Initialize the TimeAxis with the <code class="prettyprint">scale</code> attribute specified:</caption>
+       * &lt;oj-time-axis scale='weeks'>&lt;/oj-time-axis>
+       *
+       * @example <caption>Get or set the <code class="prettyprint">scale</code> property after initialization:</caption>
+       * // getter
+       * var scaleValue = myTimeAxis.scale;
+       *
+       * // setter
+       * myTimeAxis.scale = 'weeks';
+       */
+      scale: null
     },
-    /**
-     * The start time of the time axis. A valid value is required in order for the time axis to properly render. See <a href="#formats-section">Date and Time Formats</a> for more details on the required string formats.
-     * @expose
-     * @name start
-     * @memberof oj.ojTimeAxis
-     * @instance
-     * @type {string}
-     * @ojformat date-time
-     * @default ""
-     * 
-     * @example <caption>Initialize the TimeAxis with the <code class="prettyprint">start</code> attribute specified:</caption>
-     * &lt;oj-time-axis start='2017-01-01T05:00:00.000Z'>&lt;/oj-time-axis>
-     *
-     * @example <caption>Get or set the <code class="prettyprint">start</code> property after initialization:</caption>
-     * // getter
-     * var startValue = myTimeAxis.start;
-     *
-     * // setter
-     * myTimeAxis.start = '2017-01-01T05:00:00.000Z';
-     */
-    start: "",
-    /**
-     * The end time of the time axis. A valid value is required in order for the time axis to properly render. See <a href="#formats-section">Date and Time Formats</a> for more details on the required string formats.
-     * @expose
-     * @name end
-     * @memberof oj.ojTimeAxis
-     * @instance
-     * @type {string}
-     * @ojformat date-time
-     * @default ""
-     * 
-     * @example <caption>Initialize the TimeAxis with the <code class="prettyprint">end</code> attribute specified:</caption>
-     * &lt;oj-time-axis end='2017-12-31T05:00:00.000Z'>&lt;/oj-time-axis>
-     *
-     * @example <caption>Get or set the <code class="prettyprint">end</code> property after initialization:</caption>
-     * // getter
-     * var endValue = myTimeAxis.end;
-     *
-     * // setter
-     * myTimeAxis.end = '2017-12-31T05:00:00.000Z';
-     */
-    end: "",
-    /**
-     * The time scale used for the time axis. This is required in order for the time axis to properly render.
-     * @expose
-     * @name scale
-     * @memberof oj.ojTimeAxis
-     * @instance
-     * @type {?string}
-     * @ojvalue {string} "seconds"
-     * @ojvalue {string} "minutes"
-     * @ojvalue {string} "hours"
-     * @ojvalue {string} "days"
-     * @ojvalue {string} "weeks"
-     * @ojvalue {string} "months"
-     * @ojvalue {string} "quarters"
-     * @ojvalue {string} "years"
-     * @default null
-     * 
-     * @example <caption>Initialize the TimeAxis with the <code class="prettyprint">scale</code> attribute specified:</caption>
-     * &lt;oj-time-axis scale='weeks'>&lt;/oj-time-axis>
-     *
-     * @example <caption>Get or set the <code class="prettyprint">scale</code> property after initialization:</caption>
-     * // getter
-     * var scaleValue = myTimeAxis.scale;
-     *
-     * // setter
-     * myTimeAxis.scale = 'weeks';
-     */
-    scale: null
-  },
 
-  // @inheritdoc
-  _CreateDvtComponent: function(context, callback, callbackObj)
-  {
-    return dvt.TimeAxis.newInstance(context, callback, callbackObj);
-  },
+    // @inheritdoc
+    _CreateDvtComponent: function (context, callback, callbackObj) {
+      return dvt.TimeAxis.newInstance(context, callback, callbackObj);
+    },
 
-  // @inheritdoc
-  _GetComponentStyleClasses : function() {
-    var styleClasses = this._super();
-    styleClasses.push('oj-timeaxis');
-    return styleClasses;
-  },
+    // @inheritdoc
+    _GetComponentStyleClasses: function () {
+      var styleClasses = this._super();
+      styleClasses.push('oj-timeaxis');
+      return styleClasses;
+    },
 
-  // @inheritdoc
-  _GetChildStyleClasses: function()
-  {
-    var styleClasses = this._super();
-    styleClasses['oj-timeaxis-label'] = {'path': 'labelStyle', 'property': 'TEXT'};
+    // @inheritdoc
+    _GetChildStyleClasses: function () {
+      var styleClasses = this._super();
+      styleClasses['oj-timeaxis-label'] = { path: 'labelStyle', property: 'TEXT' };
 
-    return styleClasses;
-  },
+      return styleClasses;
+    },
 
-  // @inheritdoc
-  _GetEventTypes : function() {
-    return ['optionChange'];
-  },
+    // @inheritdoc
+    _GetEventTypes: function () {
+      return ['optionChange'];
+    },
 
-  // @inheritdoc
-  _GetTranslationMap: function() {
-    // The translations are stored on the options object.
-    var translations = this.options['translations'];
+    // @inheritdoc
+    _GetTranslationMap: function () {
+      // The translations are stored on the options object.
+      var translations = this.options.translations;
 
-    // Safe to modify super's map because function guarentees a new map is returned
-    var ret = this._super();
-    ret['DvtUtilBundle.TIMEAXIS'] = translations['componentName'];
-    return ret;
-  },
-  
-  // @inheritdoc
-  _GetComponentRendererOptions: function() {
-    //the function should be removed if the component will support 'tooltip.renderer' attr
-    return [];
-  },
+      // Safe to modify super's map because function guarentees a new map is returned
+      var ret = this._super();
+      ret['DvtUtilBundle.TIMEAXIS'] = translations.componentName;
+      return ret;
+    },
 
-  // @inheritdoc
-  _ProcessOptions: function() {
-    this._super();
+    // @inheritdoc
+    _GetComponentRendererOptions: function () {
+      // the function should be removed if the component will support 'tooltip.renderer' attr
+      return [];
+    },
 
-    // Date related options support only number | string types
-    // TODO: remove deprecated number type support in favor of ISO String in future release
-    var self = this;
-    var processRootDateOptions = function(key) {
-      var optionType = typeof self.options[key];
-      if (!(optionType === 'number' || optionType === 'string'))
-        self.options[key] = null; // e.g. this will exclude Date object types
-    };
+    // @inheritdoc
+    _ProcessOptions: function () {
+      this._super();
 
-    processRootDateOptions('start');
-    processRootDateOptions('end');
-  },
+      // Date related options support only number | string types
+      // TODO: remove deprecated number type support in favor of ISO String in future release
+      var self = this;
+      var processRootDateOptions = function (key) {
+        var optionType = typeof self.options[key];
+        if (!(optionType === 'number' || optionType === 'string')) {
+          self.options[key] = null;
+        } // e.g. this will exclude Date object types
+      };
 
-  // @inheritdoc
-  _LoadResources: function()
-  {
-    // Ensure the resources object exists
-    if (this.options['_resources'] == null)
-      this.options['_resources'] = {};
+      processRootDateOptions('start');
+      processRootDateOptions('end');
+    },
 
-    var resources = this.options['_resources'];
+    // @inheritdoc
+    _LoadResources: function () {
+      // Ensure the resources object exists
+      if (this.options._resources == null) {
+        this.options._resources = {};
+      }
 
-    // Create default converters
-    var converterFactory = oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME);
-    var secondsConverter = converterFactory.createConverter({'hour': 'numeric', 'minute': '2-digit', 'second': '2-digit'});
-    var minutesConverter = converterFactory.createConverter({'hour': 'numeric', 'minute': '2-digit'});
-    var hoursConverter = converterFactory.createConverter({'hour': 'numeric'});
-    var daysConverter = converterFactory.createConverter({'month': 'numeric', 'day': '2-digit'});
-    var monthsConverter = converterFactory.createConverter({'month': 'long'});
-    var yearsConverter = converterFactory.createConverter({'year': 'numeric'});
+      var resources = this.options._resources;
 
-    var monthsConverterVert = converterFactory.createConverter({'month': 'short'});
-    var yearsConverterVert = converterFactory.createConverter({'year': '2-digit'});
+      // Create default converters
+      var converterFactory =
+        __ValidationBase.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME);
+      var secondsConverter = converterFactory.createConverter({
+        hour: 'numeric',
+        minute: '2-digit',
+        second: '2-digit'
+      });
+      var minutesConverter = converterFactory.createConverter({
+        hour: 'numeric',
+        minute: '2-digit'
+      });
+      var hoursConverter = converterFactory.createConverter({ hour: 'numeric' });
+      var daysConverter = converterFactory.createConverter({
+        month: 'numeric',
+        day: '2-digit'
+      });
+      var monthsConverter = converterFactory.createConverter({ month: 'long' });
+      var yearsConverter = converterFactory.createConverter({ year: 'numeric' });
 
-    var converter = {
-      'seconds': secondsConverter,
-      'minutes': minutesConverter,
-      'hours': hoursConverter,
-      'days': daysConverter,
-      'weeks': daysConverter,
-      'months': monthsConverter,
-      'quarters': monthsConverter,
-      'years': yearsConverter
-    };
-    var converterVert = {
-      'seconds': secondsConverter,
-      'minutes': minutesConverter,
-      'hours': hoursConverter,
-      'days': daysConverter,
-      'weeks': daysConverter,
-      'months': monthsConverterVert,
-      'quarters': monthsConverterVert,
-      'years': yearsConverterVert
-    };
+      var monthsConverterVert = converterFactory.createConverter({ month: 'short' });
+      var yearsConverterVert = converterFactory.createConverter({ year: '2-digit' });
 
-    resources['converterFactory'] = converterFactory;
-    resources['converter'] = converter;
-    resources['converterVert'] = converterVert;
+      var converter = {
+        seconds: secondsConverter,
+        minutes: minutesConverter,
+        hours: hoursConverter,
+        days: daysConverter,
+        weeks: daysConverter,
+        months: monthsConverter,
+        quarters: monthsConverter,
+        years: yearsConverter
+      };
+      var converterVert = {
+        seconds: secondsConverter,
+        minutes: minutesConverter,
+        hours: hoursConverter,
+        days: daysConverter,
+        weeks: daysConverter,
+        months: monthsConverterVert,
+        quarters: monthsConverterVert,
+        years: yearsConverterVert
+      };
 
-    // Class names to be set on appropriate svg elements
-    resources['axisClass'] = 'oj-timeaxis-container';
-    resources['axisLabelClass'] = 'oj-timeaxis-label';
-    resources['axisSeparatorClass'] = 'oj-timeaxis-separator';
+      resources.converterFactory = converterFactory;
+      resources.converter = converter;
+      resources.converterVert = converterVert;
 
-    // default disable all borders
-    resources['borderTopVisible'] = false;
-    resources['borderRightVisible'] = false;
-    resources['borderBottomVisible'] = false;
-    resources['borderLeftVisible'] = false;
+      // Class names to be set on appropriate svg elements
+      resources.axisClass = 'oj-timeaxis-container';
+      resources.axisLabelClass = 'oj-timeaxis-label';
+      resources.axisSeparatorClass = 'oj-timeaxis-separator';
 
-    // first day of week; locale specific
-    resources['firstDayOfWeek'] = oj.LocaleData.getFirstDayOfWeek();
-  }
-});
+      // default disable all borders
+      resources.borderTopVisible = false;
+      resources.borderRightVisible = false;
+      resources.borderBottomVisible = false;
+      resources.borderLeftVisible = false;
+
+      // first day of week; locale specific
+      resources.firstDayOfWeek = LocaleData.getFirstDayOfWeek();
+    }
+  });
+
 /**
  * <p>The Time Axis is intended to be used inside of a JET Table or DataGrid. All touch interactions are the same as those of the root elements. See the <a href="oj.ojTable.html#touch-section">Table</a> and <a href="oj.ojDataGrid.html#touch-section">DataGrid</a> touch doc for more details.</p>
  * @ojfragment touchDoc - Used in touch gesture section of classdesc, and standalone gesture doc
@@ -552,7 +572,7 @@ oj.__registerWidget('oj.ojTimeAxis', $['oj']['dvtBaseComponent'],
 // PROPERTY TYPEDEFS
 
 /**
- * @typedef {Object} oj.ojTimeAxis.Converter
+ * @typedef {Object} oj.ojTimeAxis.Converters
  * @property {oj.Converter.<string>} [default=null] The default converter (an object literal or instance that duck types {@link oj.Converter}) to use for all 'scale' values that do not otherwise have a converter object provided. See {@link oj.DateTimeConverterFactory} for details on creating built-in datetime converters.
  * @property {oj.Converter.<string>} [seconds=oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric', 'minute': '2-digit', 'second': '2-digit'})] The converter (an object literal or instance that duck types {@link oj.Converter}) used for the 'seconds' scale. If not specified, the default converter will be used for this scale. See {@link oj.DateTimeConverterFactory} for details on creating built-in datetime converters.
  * @property {oj.Converter.<string>} [minutes=oj.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME).createConverter({'hour': 'numeric', 'minute': '2-digit'})] The converter (an object literal or instance that duck types {@link oj.Converter}) used for the 'minutes' scale. If not specified, the default converter will be used for this scale. See {@link oj.DateTimeConverterFactory} for details on creating built-in datetime converters.
@@ -571,8 +591,7 @@ oj.__registerWidget('oj.ojTimeAxis', $['oj']['dvtBaseComponent'],
  */
 (function () {
   __oj_time_axis_metadata.extension._WIDGET_NAME = 'ojTimeAxis';
-  oj.CustomElementBridge.registerMetadata('oj-time-axis', 'dvtBaseComponent', __oj_time_axis_metadata);
-  oj.CustomElementBridge.register('oj-time-axis', { metadata: oj.CustomElementBridge.getMetadata('oj-time-axis') });
+  oj.CustomElementBridge.register('oj-time-axis', { metadata: __oj_time_axis_metadata });
 }());
 
 });

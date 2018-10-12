@@ -507,7 +507,7 @@ $testBgColorContentBefore: null;//orange;
         {
           $translatePercent: - percentage((1 - $lowResProportion)/2);
           // scale down the image and then move it to the top left corner 
-          @include oj-transform-property(translate($translatePercent, $translatePercent) scale($lowResProportion));
+          transform: translate($translatePercent, $translatePercent) scale($lowResProportion);
         }
       }
 
@@ -526,7 +526,7 @@ $testBgColorContentBefore: null;//orange;
           {
             $translatePercent: - percentage((1 - $lowResProportion)/2);
             // scale down the image and then move it to the top left corner 
-            @include oj-transform-property(translate($translatePercent, $translatePercent) scale($lowResProportion));
+            transform: translate($translatePercent, $translatePercent) scale($lowResProportion);
           }
         }
       }
@@ -544,7 +544,7 @@ $testBgColorContentBefore: null;//orange;
         {
           content: $iconHiRes;
           // scale down the image and then move it to the top left corner 
-          @include oj-transform-property(translate($translatePercent, $translatePercent) scale($highResProportion));
+          transform: translate($translatePercent, $translatePercent) scale($highResProportion);
           
           @include oj-rtl()
           {
@@ -560,11 +560,11 @@ $testBgColorContentBefore: null;//orange;
             {
               $translatePercent: - percentage((1 - $lowResProportion)/2);
               // scale down the image and then move it to the top left corner 
-              @include oj-transform-property(translate($translatePercent, $translatePercent) scale($lowResProportion));
+              transform: translate($translatePercent, $translatePercent) scale($lowResProportion);
             }
             @else
             {
-              @include oj-transform-property(none);
+              transform: none;
             }
           }
         }
@@ -600,7 +600,7 @@ $testBgColorContentBefore: null;//orange;
         {
           content: $iconHiRes;
           // scale down the image and then move it to the top left corner 
-          @include oj-transform-property(translate($translatePercent, $translatePercent) scale($highResProportion));
+          transform: translate($translatePercent, $translatePercent) scale($highResProportion);
 
           
           @include oj-rtl()
@@ -618,11 +618,11 @@ $testBgColorContentBefore: null;//orange;
             {
               $translatePercent: - percentage((1 - $lowResProportion)/2);
               // scale down the image and then move it to the top left corner 
-              @include oj-transform-property(translate($translatePercent, $translatePercent) scale($lowResProportion));
+              transform: translate($translatePercent, $translatePercent) scale($lowResProportion);
             }
             @else
             {
-              @include oj-transform-property(none);
+              transform: none;
             }
           }
         }
@@ -645,7 +645,7 @@ $testBgColorContentBefore: null;//orange;
       .oj-hicontrast &:before
       {
         content: $iconFontChar;
-        @include oj-transform-property(none);
+        transform: none;
 
         @include oj-rtl()
         {

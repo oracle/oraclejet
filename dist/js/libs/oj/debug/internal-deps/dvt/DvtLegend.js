@@ -206,7 +206,7 @@ dvt.Legend.prototype.processEvent = function(event, source) {
         this.highlight(event['categories']);
 
       for (var i = 0; i < peers.length; i++) {
-        if (peers[i].getId() == event['categories']) {
+        if (dvt.Obj.compareValues(this.getCtx(), peers[i].getId(), event['categories'])) {
           this.container.scrollIntoView(peers[i].getDisplayables()[0]);
           break;
         }
@@ -319,7 +319,7 @@ dvt.Legend.prototype.setKeyboardFocus = function(navigable, isShowingFocusEffect
 
   var peers = this.__getKeyboardObjects();
   for (var i = 0; i < peers.length; i++) {
-    if (peers[i].getId() == navigable.getId()) {
+    if (dvt.Obj.compareValues(this.getCtx(), peers[i].getId(), navigable.getId())) {
       this.EventManager.setFocusObj(peers[i]);
       if (isShowingFocusEffect)
         peers[i].showKeyboardFocusEffect();
@@ -393,7 +393,7 @@ dvt.Legend.prototype._transferVisibilityProperties = function(sections) {
 
     for (var j = 0; j < items.length; j++) {
       var item = items[j];
-      var itemCategory = DvtLegendRenderer.getItemCategory(item);
+      var itemCategory = DvtLegendRenderer.getItemCategory(item, this);
 
       if (item['categoryVisibility'] == 'hidden' && dvt.ArrayUtils.getIndex(hiddenCategories, itemCategory) < 0)
         hiddenCategories.push(itemCategory);
@@ -627,12 +627,17 @@ DvtLegendAutomation.prototype.getTitle = function() {
  * <li>text</li>
  * </ul>
  * @param {String} subIdPath The array of indices in the subId for the desired legend item
- * @return {Object} An object containing data for the legend item
+ * @return {Object|null} An object containing data for the legend item
  */
 DvtLegendAutomation.prototype.getItem = function(subIdPath) {
   var item;
   var index = subIdPath.shift();
   var options = this._options;
+
+  if (!options.sections || options.sections.length === 0) {
+    return null;
+  }
+
   while (index != undefined) {
     if (subIdPath.length > 0)
       options = options['sections'][index];
@@ -660,6 +665,11 @@ DvtLegendAutomation.prototype.getSection = function(subIdPath) {
   var section;
   var index = subIdPath.shift();
   var options = this._options;
+
+  if (!options.sections || options.sections.length === 0) {
+    return null;
+  }
+
   while (index != undefined) {
     if (subIdPath.length > 0)
       options = options['sections'][index];
@@ -1017,15 +1027,28 @@ DvtLegendEventManager.prototype.onCollapseButtonClick = function(event, button) 
 /**
  * Collapses or expands a legend section.
  * @param {dvt.BaseEvent} event
- * @param {Number} sectionIdArray The id of the section.
+ * @param {array} sectionIdArray The array of the id path of the section.
  */
 DvtLegendEventManager.prototype.toggleSectionCollapse = function(event, sectionIdArray) {
+  var options = this._legend.getOptions();
+  var expandedKeySet = options.expanded;
   var section = this._legend.getOptions();
+  var isExpand = null;
   for (var i = 0; i < sectionIdArray.length; i++)
     section = section['sections'][sectionIdArray[i]];
 
   // Expand or collapse the section
-  section['expanded'] = (section['expanded'] == 'off') ? 'on' : 'off';
+  if (expandedKeySet) {
+    if (expandedKeySet.has(section.id)) {
+      options.expanded = expandedKeySet.delete([section.id]);
+      isExpand = false;
+    } else {
+      options.expanded = expandedKeySet.add([section.id]);
+      isExpand = true;
+    }
+  } else {
+    section['expanded'] = (section['expanded'] == 'off') ? 'on' : 'off';
+  }
 
   // Set the keyboard focus on a mouse click
   if (event.type == dvt.MouseEvent.CLICK) {
@@ -1049,6 +1072,17 @@ DvtLegendEventManager.prototype.toggleSectionCollapse = function(event, sectionI
   // Fire resize event
   var bounds = this._legend.getContentDimensions();
   this.FireEvent(new dvt.ResizeEvent(bounds.w, bounds.h, bounds.x, bounds.y), this._legend);
+
+  // Fire expand/collapse event
+  if (isExpand != null) {
+    var event = new dvt.EventFactory.newExpandCollapseEvent(isExpand ? 'expand' : 'collapse', 
+      section.id, 
+      section, 
+      this._legend.getOptions()['_widgetConstructor'], 
+      options.expanded
+    );
+    this.FireEvent(event, this._legend);
+  }
 };
 
 /**
@@ -1264,7 +1298,7 @@ DvtLegendObjPeer.prototype.Init = function(legend, displayables, item, tooltip, 
   this._legend = legend;
   this._displayables = displayables;
   this._item = item;
-  this._category = DvtLegendRenderer.getItemCategory(this._item); // section title is not category
+  this._category = DvtLegendRenderer.getItemCategory(this._item, this._legend); // section title is not category
   this._id = this._category ? this._category : item['title'];
   this._action = item['action'];
   this._drillable = drillable;
@@ -1404,7 +1438,7 @@ DvtLegendObjPeer.prototype.getAriaLabel = function() {
   var data = this.getData();
 
   if (this._displayables[0] instanceof dvt.Button) {
-    states.push(dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, data['expanded'] == 'off' ? 'STATE_COLLAPSED' : 'STATE_EXPANDED'));
+    states.push(dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, DvtLegendRenderer.isSectionCollapsed(data, this._legend) ? 'STATE_COLLAPSED' : 'STATE_EXPANDED'));
     return dvt.Displayable.generateAriaLabel(data['title'], states);
   }
 
@@ -1815,7 +1849,7 @@ DvtLegendRenderer._renderSections = function(legend, container, sections, availS
   var sectionDim;
   for (var i = 0; i < sections.length; i++) {
     var sectionId = id.concat([i]);
-    var gapHeight = (sections[i]['expanded'] == 'off' || sections[i]['expanded'] == false) ? titleGapHeight : sectionGapHeight;
+    var gapHeight = DvtLegendRenderer.isSectionCollapsed(sections[i], legend) ? titleGapHeight : sectionGapHeight;
 
     if (isHoriz) { // horizontal legend
       // first try to render horizontally in the current row
@@ -1941,7 +1975,7 @@ DvtLegendRenderer._renderVerticalSection = function(legend, container, section, 
   if (isCollapsible) {
     var buttonX = isRTL ? sectionSpace.x + sectionSpace.w - DvtLegendRenderer._BUTTON_SIZE : sectionSpace.x;
     if (!options['isLayout']) {
-      var isCollapsed = section['expanded'] == 'off' || section['expanded'] == false;
+      var isCollapsed = DvtLegendRenderer.isSectionCollapsed(section, legend);
       var buttonType = isCollapsed ? 'closed' : 'open';
       var buttonTooltip = dvt.Bundle.getTranslatedString(dvt.Bundle.UTIL_PREFIX, isCollapsed ? 'EXPAND' : 'COLLAPSE', null);
       var em = legend.getEventManager();
@@ -1965,7 +1999,7 @@ DvtLegendRenderer._renderVerticalSection = function(legend, container, section, 
   var sectionDim = buttonDim ? titleDim.getUnion(buttonDim) : titleDim;
 
   // See if this is a section group which contains more legend sections
-  if ((!hasItems && !hasSections) || section['expanded'] == 'off' || section['expanded'] == false)
+  if ((!hasItems && !hasSections) || DvtLegendRenderer.isSectionCollapsed(section, legend))
     return sectionDim;
 
   // Title+button should always be on its own row
@@ -2247,7 +2281,7 @@ DvtLegendRenderer._createLegendItem = function(legend, container, item, availSpa
 
   var peer = DvtLegendObjPeer.associate(displayables, legend, item, text != null ? text.getUntruncatedTextString() : null, item['shortDesc'], DvtLegendRenderer._isItemDrillable(legend, item));
 
-  if (DvtLegendRenderer.isCategoryHidden(DvtLegendRenderer.getItemCategory(item), legend)) {
+  if (DvtLegendRenderer.isCategoryHidden(DvtLegendRenderer.getItemCategory(item, legend), legend)) {
     marker.setHollow(peer.getColor());
     // Don't apply style and className
     marker.setStyle().setClassName();
@@ -2334,7 +2368,7 @@ DvtLegendRenderer._createLegendSymbol = function(legend, x, y, rowHeight, item, 
     symbol = DvtLegendRenderer._createLine(context, x, y, symbolWidth, rowHeight, item);
 
     // only if not found in hiddenCategories
-    if (!DvtLegendRenderer.isCategoryHidden(DvtLegendRenderer.getItemCategory(item), legend))
+    if (!DvtLegendRenderer.isCategoryHidden(DvtLegendRenderer.getItemCategory(item, legend), legend))
       symbol.addChild(DvtLegendRenderer._createMarker(legend, cx, cy, symbolWidth * DvtLegendRenderer._LINE_MARKER_SIZE_FACTOR, symbolHeight * DvtLegendRenderer._LINE_MARKER_SIZE_FACTOR, item));
   }
   else if (symbolType == 'image') {
@@ -2482,13 +2516,15 @@ DvtLegendRenderer._getBoxPlotOptions = function(item, prefix) {
 /**
  * Get the category from a legend item.
  * @param {object} item The legend item
+ * @param {dvt.Legend} legend The legend being rendered.
  * @return {String}
  */
-DvtLegendRenderer.getItemCategory = function(item) {
+DvtLegendRenderer.getItemCategory = function(item, legend) {
   var category = null;
+  var hasDataProvider = legend.getOptions()['data'] != null;
   if (item['categories'] && item['categories'].length > 0)
     category = item['categories'][0];
-  else
+  else if (!hasDataProvider)
     category = item['id'] ? item['id'] : item['text'];
 
   return category;
@@ -2507,6 +2543,17 @@ DvtLegendRenderer.isCategoryHidden = function(category, legend) {
     return false;
 
   return dvt.ArrayUtils.getIndex(hiddenCategories, category) !== -1;
+};
+
+/**
+ * Helper function to check if a section is collapsed
+ * @param {object} section the legend section
+ * @param {dvt.Legend} legend The legend being rendered.
+ * @return {boolean} true if the section is collapsed
+ */
+DvtLegendRenderer.isSectionCollapsed = function(section, legend) {
+  var options = legend.getOptions();
+  return section['expanded'] == 'off' || section['expanded'] == false || (options.expanded && options.expanded.has(section.id) == false);
 };
 
 dvt.exportProperty(dvt, 'Legend', dvt.Legend);
