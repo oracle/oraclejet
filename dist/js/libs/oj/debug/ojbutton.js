@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -320,18 +320,6 @@ var __oj_menu_button_metadata =
  * </h3>
  *
  * {@ojinclude "name":"stylingDoc"}
- *
- *
- * <h3 id="eventHandling-section">
- *   Event Handling
- *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#eventHandling-section"></a>
- * </h3>
- *
- * <p>It's most reliable to register click handlers directly on the button, rather than on an ancestor.  For example, if any of the button's DOM is swapped out in a click
- * handler (e.g. alternating the text and icon between "Play" and "Pause"), the bubbling will stop if the click target was part of the content that was removed in the swap.
- *
- * <p>In lieu of a shared listener on an ancestor, syntax like <code class="prettyprint">$( "#ancestor :oj-button" ).click( myFunc );</code> can be used to set a handler on many
- * buttons at once.
  *
  *
  * <h3 id="perf-section">
@@ -1620,7 +1608,7 @@ var __oj_menu_button_metadata =
           textSpan.textContent = this.options.label; // performs escaping; e.g. if label is <a>foo</a>, then text() replaces the span's contents with a text node containing that literal string (rather than setting innerHtml). @HTMLUpdateOK
         }
 
-        // Due to FF bug (see Bugzilla's Bug 984869), <button> with flex/inline-flex display doesn't work. Workaround by wrapping <button> contents with a <div> and setting the latter display flex/inline-flex
+        // Due to FF bug (see Bugzilla's ), <button> with flex/inline-flex display doesn't work. Workaround by wrapping <button> contents with a <div> and setting the latter display flex/inline-flex
         if (this.type === 'button') {
           var contentContainer = document.createElement('div');
           contentContainer.className = 'oj-button-label';
@@ -2710,7 +2698,7 @@ var __oj_menu_button_metadata =
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#a11y-section"></a>
  * </h3>
  *
- * <p>As shown in the online demos, the application is responsible for applying <code class="prettyprint">aria-label</code> and/or
+ * <p>The application is responsible for applying <code class="prettyprint">aria-label</code> and/or
  * <code class="prettyprint">aria-controls</code> attributes like the following to the buttonset element, if applicable per the instructions that follow:
  *
  * <pre class="prettyprint">
@@ -4178,6 +4166,7 @@ var __oj_menu_button_metadata =
 /* global __oj_button_metadata */
 (function () {
   __oj_button_metadata.extension._WIDGET_NAME = 'ojButton';
+  __oj_button_metadata.extension._GLOBAL_TRANSFER_ATTRS = ['href'];
   oj.CustomElementBridge.register('oj-button', {
     metadata: __oj_button_metadata,
     innerDomFunction: function (element) {
@@ -4189,6 +4178,7 @@ var __oj_menu_button_metadata =
 /* global __oj_menu_button_metadata */
 (function () {
   __oj_menu_button_metadata.extension._WIDGET_NAME = 'ojButton';
+  __oj_menu_button_metadata.extension._GLOBAL_TRANSFER_ATTRS = ['href'];
   oj.CustomElementBridge.register('oj-menu-button', {
     metadata: __oj_menu_button_metadata,
     innerDomFunction: function (element) {

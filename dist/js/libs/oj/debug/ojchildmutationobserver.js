@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -66,12 +66,14 @@ function ChildMutationObserver(element, handler) {
     return filteredMutations;
   };
 
-  var _mutationObserver = new MutationObserver(function (mutations) {
+  var _internalHandler = function (mutations) {
     var filteredMutations = _filterMutations(mutations);
     if (filteredMutations.length > 0) {
       _handler(filteredMutations);
     }
-  });
+  };
+
+  var _mutationObserver = new MutationObserver(_internalHandler);
 
   return {
     /**
@@ -88,9 +90,15 @@ function ChildMutationObserver(element, handler) {
     },
     /**
      * Stop watching for DOM mutations.
+     * Calling disconnect() might trigger child mutations handler
+     * if there are any pending mutations.
      * @ignore
      */
     disconnect: function () {
+      var records = _mutationObserver.takeRecords();
+      if (records && records.length > 0) {
+        _internalHandler(records);
+      }
       _mutationObserver.disconnect();
     }
   };

@@ -1,0 +1,17 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+
+@if $includeAppLayoutClasses != false {
+  @include module-include-once("alta.web.variables.applayout") {
+
+:root {
+  --oj-app-layout-max-width:                         1440px;
+
+  // off canvas
+  --oj-app-layout-offcanvas-width:                   90%;
+  --oj-app-layout-offcanvas-max-width:               320px;
+}
+
+}
+}

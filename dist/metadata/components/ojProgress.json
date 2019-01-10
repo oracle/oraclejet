@@ -1,7 +1,7 @@
 {
   "name": "oj-progress",
-  "version": "6.0.0",
-  "jetVersion": "6.0.0",
+  "version": "6.1.0",
+  "jetVersion": "6.1.0",
   "displayName": "Progress",
   "type": "core",
   "styleClasses": [
@@ -25,7 +25,7 @@
     }
   ],
   "description": "Displays progress of an operation in a rectangular horizontal meter or in a circular meter.",
-  "help": "https://docs.oracle.com/en/middleware/jet/6/reference-api/oj.ojProgress.html",
+  "help": "https://docs.oracle.com/en/middleware/jet/6.1/reference-api/oj.ojProgress.html",
   "properties": {
     "max": {
       "description": "The maximum allowed value.",

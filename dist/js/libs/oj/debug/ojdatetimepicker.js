@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -1947,12 +1947,19 @@ window.addEventListener('resize', resizeLargeScreenChange, false);
 function _getNativePickerDate(converter, isoString) {
   // eslint-disable-next-line no-param-reassign
   isoString = converter.parse(isoString);
-
-  var valueParams = __ValidationBase.IntlConverterUtils._dateTime(isoString, [
-    'date', 'fullYear', 'month', 'hours', 'minutes', 'seconds'
-  ], true);
   var date = new Date();
-
+  var valueParams;
+  try {
+    valueParams = __ValidationBase.IntlConverterUtils._dateTime(isoString,
+      ['date', 'fullYear', 'month', 'hours', 'minutes', 'seconds'], true);
+  } catch (e) {
+    Logger.info('The value of the InputDateTime element should be an ISOString, please use a valid ISOString');
+    date.setHours(0);
+    date.setMinutes(0);
+    date.setSeconds(0);
+    date.setMilliseconds(0);
+    return date;
+  }
   date.setFullYear(valueParams.fullYear);
   date.setDate(valueParams.date);
   date.setMonth(valueParams.month);
@@ -2018,7 +2025,6 @@ function getImplicitDateTimeRangeValidator(options, converter, defaultStyleClass
       }
     }
   }
-
   return oj.Validation.validatorFactory(oj.ValidatorFactory.VALIDATOR_TYPE_DATETIMERANGE)
     .createValidator(dateTimeRangeOptions);
 }
@@ -4117,7 +4123,6 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
    */
   _selectMonthYear: function (select, period) {
     var selected;
-    var converterUtils = __ValidationBase.IntlConverterUtils;
     // TODO: Is value really needed? Does converterUtils._dateTime have side effects?
     // eslint-disable-next-line no-unused-vars
     var value = this._getDateIso();
@@ -4136,14 +4141,10 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
       this._currentMonth = selected;
       this._drawMonth = selected;
       subId = selected + '_';
-      value = converterUtils._dateTime(value, {
-        fullYear: this._currentYear,
-        month: this._currentMonth
-      });
+      value = this._validateDatetime(value, { fullYear: this._currentYear,
+        month: this._currentMonth });
     } else {
-      value = converterUtils._dateTime(value, {
-        fullYear: this._currentYear
-      });
+      value = this._validateDatetime(value, { fullYear: this._currentYear });
     }
 
     // Take care of accessibility. Note that this is using an INTERNAL converter to display only the year portion [no timezone]
@@ -4178,10 +4179,15 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
 
     if (value) {
       // need to preserve the time portion when of ojInputDateTime, so update only year, month, and date
-      value = converterUtils._dateTime(value, {
-        fullYear: tempDate.getFullYear(),
-        month: tempDate.getMonth(),
-        date: tempDate.getDate() });
+      try {
+        value = converterUtils._dateTime(value, {
+          fullYear: tempDate.getFullYear(),
+          month: tempDate.getMonth(),
+          date: tempDate.getDate() });
+      } catch (e) {
+        Logger.info('The value of the InputDateTime element should be an ISOString, please use a valid ISOString');
+        value = converterUtils.dateToLocalIso(tempDate);
+      }
     } else {
       // per discussion when date doesn't exist use local isostring
       value = converterUtils.dateToLocalIso(tempDate);
@@ -4230,9 +4236,8 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
    * @param {string} isoDate
    */
   _setCurrentDate: function (isoDate) {
-    var newDate = __ValidationBase.IntlConverterUtils._dateTime(
-      isoDate || this._getDefaultIsoDate(), ['fullYear', 'month', 'date'], true);
-
+    var newDate;
+    newDate = this._validateDatetime(isoDate || this._getDefaultIsoDate(), ['fullYear', 'month', 'date'], true);
     this._currentDay = newDate.date;
     this._currentMonth = newDate.month;
     if (!this._isMultiMonth()) {
@@ -4242,7 +4247,6 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
 
     this._currentYear = newDate.fullYear;
     this._drawYear = this._currentYear;
-
     this._adjustInstDate();
   },
 
@@ -4571,7 +4575,7 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
     var drawYear = this._drawYear;
     var compareDate = new Date(this._currentYear, this._currentMonth, this._currentDay);
     var valueDateIso = this._getDateIso();
-    var valueDateParams = converterUtils._dateTime(valueDateIso, dateParams, true);
+    var valueDateParams = this._validateDatetime(valueDateIso, dateParams, true);
     var selectedYear = valueDateParams.fullYear;
     var selectedDay = valueDateParams.date;
     var selectedMonth = valueDateParams.month;
@@ -4582,14 +4586,18 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
     if (minDateIso) {
       // convert it to the correct timezone for comparison, since need to display the month, date, year as displayed in isoString
       minDateIso = converter.parse(minDateIso);
-      minDateParams = converterUtils._dateTime(minDateIso, dateParams, true);
+      minDateParams = this._validateDatetime(minDateIso, dateParams, true);
     }
     if (maxDateIso) {
       maxDateIso = converter.parse(maxDateIso);
-      maxDateParams = converterUtils._dateTime(maxDateIso, dateParams, true);
+      maxDateParams = this._validateDatetime(maxDateIso, dateParams, true);
     }
-
-    valueDateIso = converterUtils._clearTime(valueDateIso);
+    try {
+      valueDateIso = converterUtils._clearTime(valueDateIso);
+    } catch (e) {
+      Logger.info('The value of the InputDateTime element should be an ISOString, please use a valid ISOString');
+      valueDateIso = converterUtils._clearTime(this._getDefaultIsoDate());
+    }
 
     // So per discussion calendar will display the year, month, date based on how represented in the isoString
     // meaning 2013-12-01T20:00:00-08:00 and 2013-12-01T20:00:00-04:00 will both display the same content as no
@@ -4769,9 +4777,13 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
         for (var dRow = 0; dRow < numRows; dRow++) {
           // create date picker rows
           calender += "<tr role='row'>";
-
-          var calculatedWeek = this._GetConverter().calculateWeek(
+          var calculatedWeek;
+          try {
+            calculatedWeek = this._GetConverter().calculateWeek(
             converterUtils.dateToLocalIso(printDate));
+          } catch (e) {
+            Logger.info('The value of the InputDateTime element should be an ISOString, please use a valid ISOString');
+          }
           var tbody = (weekDisplay === 'none' ? '' :
                    ("<td class='oj-datepicker-week-col' role='rowheader' aria-label='" +
                     weekText + ' ' + calculatedWeek + "'>" + calculatedWeek + '</td>'));
@@ -5272,7 +5284,6 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
    * @private
    */
   _isInRange: function (date) {
-    var converterUtils = __ValidationBase.IntlConverterUtils;
     var converter = this._GetConverter();
     var minDate;
     var maxDate;
@@ -5299,13 +5310,13 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
       // need to convert it to the same timezone as the value, since the calendar and etc
       // all work by using string manipulation of the isoString
       minDateIso = converter.parse(minDateIso);
-      var minDateParams = converterUtils._dateTime(minDateIso,
+      var minDateParams = this._validateDatetime(minDateIso,
                                                    ['fullYear', 'month', 'date'], true);
       minDate = new Date(minDateParams.fullYear, minDateParams.month, minDateParams.date);
     }
     if (maxDateIso) {
       maxDateIso = converter.parse(maxDateIso);
-      var maxDateParams = converterUtils._dateTime(maxDateIso,
+      var maxDateParams = this._validateDatetime(maxDateIso,
                                                    ['fullYear', 'month', 'date'], true);
       maxDate = new Date(maxDateParams.fullYear, maxDateParams.month, maxDateParams.date);
     }
@@ -5533,7 +5544,7 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
    * @instance
    * @memberof! oj.ojInputDate
    */
-  _GetImplicitValidators: function () {
+  _GetImplicitSyncValidators: function () {
     var ret = this._superApply(arguments);
 
     if (this.options.min != null || this.options.max != null) {
@@ -5627,7 +5638,6 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
     if (this._isDateTimeSwitcher() && this._switcherDateValue) {
       value = this._switcherDateValue;
     }
-
     return value;
   },
 
@@ -5870,11 +5880,10 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
       // The native date picker will preserve the timezone set on the supplied date upon returning,
       // however the returned value has its time part reset to 00:00 when in 'date' mode
       //  - need to copy time over hence
-      var isoString = __ValidationBase.IntlConverterUtils._dateTime(this._getDateIso(), {
+      var isoString = this._validateDatetime(this._getDateIso(), {
         month: date.getMonth(),
         date: date.getDate(),
-        fullYear: date.getFullYear()
-      });
+        fullYear: date.getFullYear() });
       var formattedTime = this._GetConverter().format(isoString);
 
       // _SetValue will inturn call _SetDisplayValue
@@ -5882,6 +5891,28 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
     }
 
     this._onClose(this._ON_CLOSE_REASON_SELECTION);
+  },
+  /**
+   * @protected
+   * @param {string} isoString isoString that may not be a complete isoString
+   * @param {Array|Object} actionParam list of option parameters
+   * @param {boolean=} doParseValue whether one should parseInt the value during the get request
+   * @returns {string} returns a valid isoString or a default isostring
+   * @since 6.1
+   * @ignore
+   * @memberof oj.ojInputDate
+   */
+  _validateDatetime: function (isoString, actionParam, doParseValue) {
+    var valueParams;
+    try {
+      valueParams = __ValidationBase.IntlConverterUtils._dateTime(isoString,
+                    actionParam, doParseValue);
+    } catch (e) {
+      Logger.info('The value of the InputDate element should be an ISOString, please use a valid ISOString');
+      valueParams = __ValidationBase.IntlConverterUtils._dateTime(this._getDefaultIsoDate(),
+                    actionParam, doParseValue);
+    }
+    return valueParams;
   },
 
   /**
@@ -7133,6 +7164,25 @@ oj.__registerWidget('oj.ojInputTime', $.oj.inputBase,
 
       return ret;
     },
+    _validateTime: function (isoString, actionParam, doParseValue) {
+      var valueParams;
+      try {
+        valueParams = __ValidationBase.IntlConverterUtils._dateTime(isoString,
+                    actionParam, doParseValue);
+      } catch (e) {
+        Logger.info('The value of the InputTime element should be an ISOString, please use a valid ISOString');
+        var date = new Date();
+        date.setHours(0);
+        date.setMinutes(0);
+        date.setSeconds(0);
+        date.setMilliseconds(0);
+        var defaultDate = __ValidationBase.IntlConverterUtils.dateToLocalIso(date);
+        valueParams = __ValidationBase.IntlConverterUtils._dateTime(defaultDate,
+                    actionParam, doParseValue);
+      }
+      return valueParams;
+    },
+
 
     /**
      * @protected
@@ -7700,7 +7750,6 @@ oj.__registerWidget('oj.ojInputTime', $.oj.inputBase,
                 seconds: cbDate.getSeconds()
               });
           var formattedTime = self._GetConverter().format(isoString);
-
           // _SetValue will inturn call _SetDisplayValue
           self._SetValue(formattedTime, {});
         }
@@ -7846,6 +7895,7 @@ oj.__registerWidget('oj.ojInputTime', $.oj.inputBase,
           // if the operation is an enter key in the input field (not in the picker), the newValue is not just time, it is date+time. So we
           // need to deal differently
           var converter;
+          var timeSwitcherConverter = $.oj.ojInputTime.prototype.options.converter;
           var datePickerCompWidget = this._datePickerComp.widget;
           if (event && event.target &&
               event.target === this.element[0] &&
@@ -7860,7 +7910,8 @@ oj.__registerWidget('oj.ojInputTime', $.oj.inputBase,
           var dateTimeValue = datePickerCompWidget.getValueForInputTime() ||
               converterUtils.dateToLocalIso(new Date());
 
-          if (parsedNewValue && converter.compareISODates(dateTimeValue, parsedNewValue) === 0) {
+          if (parsedNewValue && timeSwitcherConverter.compareISODates(dateTimeValue,
+                parsedNewValue) === 0) {
           // need to kick out if _SetValue happened due to Blur w/o changing of value
             return false;
           }
@@ -7939,7 +7990,7 @@ oj.__registerWidget('oj.ojInputTime', $.oj.inputBase,
    * @instance
    * @memberof! oj.ojInputTime
    */
-    _GetImplicitValidators: function () {
+    _GetImplicitSyncValidators: function () {
       var ret = this._superApply(arguments);
 
       if ((this.options.min != null || this.options.max != null) &&
@@ -8137,7 +8188,6 @@ oj.__registerWidget('oj.ojInputTime', $.oj.inputBase,
       var factory =
         __ValidationBase.Validation.converterFactory(oj.ConverterFactory.CONVERTER_TYPE_DATETIME);
       var converter = factory.createConverter({ pattern: 'a' });
-
       return [converter.format('2016-01-01T01:00:00Z'),
         converter.format('2016-01-01T13:00:00Z')];
     },
@@ -8163,6 +8213,7 @@ oj.__registerWidget('oj.ojInputTime', $.oj.inputBase,
    */
     _createWheelPickerDom: function (keepHeaderFooter) {
       // No need to do anything if there is no _wheelPicker, which only happens when the component is readonly.
+      var timeDefaultConverter = $.oj.ojInputTime.prototype.options.converter;
       if (this._wheelPicker == null) {
         return;
       }
@@ -8181,7 +8232,8 @@ oj.__registerWidget('oj.ojInputTime', $.oj.inputBase,
       }
 
       var converter = this._GetConverter();
-      var options = $.extend({}, converter.resolvedOptions());
+      var resolvedOption = converter.resolvedOptions();
+      var options = $.extend({}, resolvedOption);
       if (options.isoStrFormat === 'zulu') {
         options.isoStrFormat = 'offset';
         var factory =
@@ -8196,9 +8248,15 @@ oj.__registerWidget('oj.ojInputTime', $.oj.inputBase,
       if (!value) {
         value = __ValidationBase.IntlConverterUtils.dateToLocalIso(date);
       }
-      value = converter.parse(value);  // Convert to proper timezone
+      var isovalue = this._validateTime(value, {
+        month: date.getMonth(),
+        date: date.getDate(),
+        fullYear: date.getFullYear(),
+        hours: date.getHours(),
+        minutes: date.getMinutes(),
+        seconds: date.getSeconds() });
+      value = converter.parse(isovalue);  // Convert to proper timezone
       var valueDate = converterUtils._clearTime(value);
-
       var minDateIso = this._getIsoDateLimit(converter, 'min', valueDate);
       var maxDateIso = this._getIsoDateLimit(converter, 'max', valueDate);
 
@@ -8207,8 +8265,7 @@ oj.__registerWidget('oj.ojInputTime', $.oj.inputBase,
       var timePickerModel = new TimePickerModel(null);
       this._timePickerModel = timePickerModel;
       var wheelPos = ['', '', '', ''];
-
-      var timePositions = converter._getTimePositioning();
+      var timePositions = timeDefaultConverter._getTimePositioning(resolvedOption);
       var positions = Object.keys(timePositions);
       for (var i = 0; i < positions.length; i++) {
         var position = positions[i];
@@ -8217,12 +8274,15 @@ oj.__registerWidget('oj.ojInputTime', $.oj.inputBase,
       timePickerModel.wheelOrder = wheelPos.filter(function (val) {
         return !!val;
       }).join('');
-
       var pattern = options.pattern || options.patternFromOptions;
       if (pattern) {
         timePickerModel.format = pattern;
+      } else {
+        // if options are not defined in custom converter, use the default converter options
+        options = timeDefaultConverter.resolvedOptions();
+        pattern = options.pattern || options.patternFromOptions;
+        timePickerModel.format = pattern;
       }
-
       timePickerModel.ampmStrings = this._getAmPmStrings();
 
       // set increment before setting value so that positions will be calculated correctly
@@ -8234,7 +8294,12 @@ oj.__registerWidget('oj.ojInputTime', $.oj.inputBase,
       }
 
       // set value
-      timePickerModel.isoValue = this._getIsoDateValue(converter);
+      try {
+        timePickerModel.isoValue = this._getIsoDateValue(converter);
+      } catch (e) {
+        timePickerModel.isoValue = timeDefaultConverter.parse(isovalue);
+        Logger.info('The value of the InputTime element should be an ISOString, please use a valid ISOString');
+      }
 
       // set min and max values
       if (minDateIso) {
@@ -10209,7 +10274,7 @@ function WheelModel(parentModel, properties) {
  * All rights reserved.
  */
 
-/* global isPickerNative:false, _getTimePickerConverter:false, splitTimeIncrement:false, __ValidationBase: false */
+/* global isPickerNative:false, _getTimePickerConverter:false,  Logger:false, splitTimeIncrement:false, __ValidationBase: false */
 /**
  * @private
  */
@@ -11073,7 +11138,7 @@ oj.__registerWidget('oj.ojInputDateTime', $.oj.ojInputDate, {
     if (!this._isInLine) {
       $.extend(timePickerOptions, { footerLayout: 'now' });
     }
-
+    var value = this._formatValueWithTimeConverter(this.options.value);
     this._timePicker = this._timePickerElement.ojInputTime(
       $.extend(passObject, {
         converter: this._timeConverter,
@@ -11081,7 +11146,7 @@ oj.__registerWidget('oj.ojInputDateTime', $.oj.ojInputDate, {
         // need to pass the value down as otherwise if the value is null then it might pickup this.element.val() from
         // our frameworks generic if options.value is not defined then pick up from element; however that would be a formatted
         // value from ojInputDateTime
-        value: this.options.value,
+        value: value,
         timePicker: timePickerOptions,
         datePickerComp: { widget: this, inline: this._isInLine }
       }));
@@ -11107,7 +11172,8 @@ oj.__registerWidget('oj.ojInputDateTime', $.oj.ojInputDate, {
 
     if (key === 'value') {
       // if goes through model does it needs to update or should be only used by selection + keydown
-      this._previousValue = this.options.value; // get from this.options["value"] as would be cleaned up by editablevalue
+      var optionsValue = this._formatValueWithTimeConverter(this.options.value);
+      this._previousValue = optionsValue;
     } else if (key === 'readOnly') {
       if (!this._isInLine && !value && this._switcherDiv == null) {
         this._createSwitcherDiv();
@@ -11166,6 +11232,22 @@ oj.__registerWidget('oj.ojInputDateTime', $.oj.ojInputDate, {
 
         this._switcherDiv.remove();
       }
+  },
+  /**
+   * @ignore
+   * @protected
+   * @override
+   * @memberof oj.ojInputDateTime
+   */
+  _formatValueWithTimeConverter: function (optionsValue) {
+    var formattedValue = optionsValue;
+    try {
+      this._getTimePickerConverter(this._GetConverter()).format(optionsValue);
+    } catch (e) {
+      Logger.info('The value of the InputDateTime element should be an ISOString, please use a valid ISOString');
+      formattedValue = this._getDefaultIsoDate();
+    }
+    return formattedValue;
   },
   /**
    * @protected
@@ -11239,9 +11321,17 @@ oj.__registerWidget('oj.ojInputDateTime', $.oj.ojInputDate, {
   _updateSwitcherText: function () {
     var switcherText = '';
     if (this._isShowingDatePickerSwitcher()) {
-      switcherText = dateSwitcherConverter.format(this._switcherDateValue || this._getDateIso());
+      try {
+        switcherText = dateSwitcherConverter.format(this._switcherDateValue || this._getDateIso());
+      } catch (e) {
+        switcherText = dateSwitcherConverter.format(this._getDefaultIsoDate());
+      }
     } else {
-      switcherText = timeSwitcherConverter.format(this._switcherTimeValue || this._getDateIso());
+      try {
+        switcherText = timeSwitcherConverter.format(this._switcherTimeValue || this._getDateIso());
+      } catch (e) {
+        switcherText = timeSwitcherConverter.format(this._getDefaultIsoDate());
+      }
     }
 
     $('.oj-datetimepicker-switcher-text', this._switcherDiv).text(switcherText);
@@ -11311,7 +11401,6 @@ oj.__registerWidget('oj.ojInputDateTime', $.oj.ojInputDate, {
     this._timeConverter = _getTimePickerConverter(converter);
     return this._timeConverter;
   },
-
   /**
    * Handler for when the time is selected. Should be invoked ONLY by the ojInputTime component
    *
@@ -11492,7 +11581,8 @@ oj.__registerWidget('oj.ojInputDateTime', $.oj.ojInputDate, {
     // for iOS and windows, from the current implementation of the native datepicker plugin,
     //  for case when the picker is cancelled, this callback gets called without the parameter
     if (date) {
-      var isoString = __ValidationBase.IntlConverterUtils._dateTime(this._getDateIso(), {
+      var isoString;
+      isoString = this._validateDatetime(this._getDateIso(), {
         month: date.getMonth(),
         date: date.getDate(),
         fullYear: date.getFullYear(),
@@ -11637,7 +11727,6 @@ oj.__registerWidget('oj.ojInputDateTime', $.oj.ojInputDate, {
       this._superApply(arguments) :
       $.oj.ojInputDateTime.prototype.options.converter;
   },
-
   /**
    * Notifies the component that its subtree has been removed from the document programmatically after the component has
    * been created

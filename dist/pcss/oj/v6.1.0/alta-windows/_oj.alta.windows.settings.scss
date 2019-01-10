@@ -1,0 +1,559 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+/**
+ * @license
+ * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ */
+
+
+//$themeName:                                             alta !default;
+//$themeTargetPlatform:                                   windows !default;
+
+
+
+// todo: can we get rid of this
+//$fontFamily: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif !default;
+
+// PATHS
+//----------------------------------
+// these paths should be relative to the generated css file
+// path to images
+//$imageDir:                                              "images/" !default;
+
+// path to (icon) fonts
+//$fontDir: "fonts/" !default;
+
+// path to common images (images shared across themes)
+//$commonImageDir: "../common/images/" !default;
+
+
+// COMPATIBILITY
+//----------------------------------
+// when $allowTagSelectors is true JET directly styles certain tags like
+// <p> <a> <h1>, etc. However for developers trying to mix JET with other
+// technologies styling these tags directly could cause issues on other parts of the page.
+// In that case set $allowTagSelectors: false;.
+// See the "compatibility" section of the theming documentation for more information
+//$allowTagSelectors: true !default;
+
+
+
+// INCLUDES
+//-----------------------------------------------------------------------------
+// Optimize performance by only including the css
+// for what you're using. It's recommended to
+// set $includeAllClasses to false and then set
+// $include[XYZ]Classes to true for each thing you're using.
+// for example:
+//    $includeAllClasses: false;
+//    $includeButtonClasses: true;
+//    $includePanelClasses: true;
+//    etc
+//$includeAllClasses: true !default;
+//$includeNormalize:  ($includeAllClasses and $allowTagSelectors) !default;
+
+// send down value of $responsiveQuery[size] so that these
+// can be used with oj.ResponsiveUtils.getFrameworkQuery();
+//$includeResponsiveMediaQueryClasses: $includeAllClasses !default;
+
+
+
+// group includes
+//----------------------------------
+// whether to include classes for tags like headers, links, etc
+//$includeTagClasses: $includeAllClasses !default;
+
+// whether to include dvt classes
+//$includeDvtClasses: $includeAllClasses !default;
+
+// whether to include form control classes
+//$includeFormControlClasses: $includeAllClasses !default;
+
+
+// widget includes
+//---------------------------------
+// form controls
+//$includeCheckboxsetClasses:      $includeFormControlClasses !default;
+//$includeComboboxClasses:         $includeFormControlClasses !default;
+//$includeInputDateTimeClasses:    $includeFormControlClasses !default;
+//$includeInputNumberClasses:      $includeFormControlClasses !default;
+//$includeInputPasswordClasses:    $includeFormControlClasses !default;
+//$includeInputTextClasses:        $includeFormControlClasses !default;
+//$includeLabelClasses:            $includeFormControlClasses !default;
+//$includeRadiosetClasses:         $includeFormControlClasses !default;
+//$includeSelectClasses:           $includeFormControlClasses !default;
+//$includeSliderClasses:           $includeFormControlClasses !default;
+//$includeSwitchClasses:           $includeFormControlClasses !default;
+//$includeColorPaletteClasses:     $includeFormControlClasses !default;
+//$includeColorSpectrumClasses:    $includeFormControlClasses !default;
+//$includeTextAreaClasses:         $includeFormControlClasses !default;
+//$includeValidationGroupClasses:  $includeFormControlClasses !default;
+// This is used by oj-form-layout custom element
+//$includeFormLayoutElementClasses:$includeFormControlClasses !default;
+// Mostly used by form controls. Need the 'or' to work with
+// both form control and Non form control components
+//$includeOptionClasses:           $includeFormControlClasses or $includeAllClasses !default;
+
+// dvt
+//$includeChartClasses:            $includeDvtClasses !default;
+//$includeDiagramClasses:          $includeDvtClasses !default;
+//$includeGanttClasses:            $includeDvtClasses !default;
+//$includeGaugeClasses:            $includeDvtClasses !default;
+//$includeNBoxClasses:             $includeDvtClasses !default;
+//$includePictoChartClasses:       $includeDvtClasses !default;
+//$includeSunburstClasses:         $includeDvtClasses !default;
+//$includeTagCloudClasses:         $includeDvtClasses !default;
+//$includeThematicMapClasses:      $includeDvtClasses !default;
+//$includeTimeAxisClasses:         $includeDvtClasses !default;
+//$includeTimelineClasses:         $includeDvtClasses !default;
+//$includeTreemapClasses:          $includeDvtClasses !default;
+
+// other
+//$includeAccordionClasses:        $includeAllClasses !default;
+//$includeAnimationClasses:        $includeAllClasses !default;
+//$includeAppLayoutClasses:        $includeAllClasses !default;
+//$includeAppLayoutHybridClasses:  $includeAllClasses !default;
+//$includeAppLayoutWebClasses:     $includeAllClasses !default;
+//$includeAvatarClasses:           $includeAllClasses !default;
+//$includeButtonClasses:           $includeAllClasses !default;
+//$includeButtonsetClasses:        $includeAllClasses !default;
+//$includeCollapsibleClasses:      $includeAllClasses !default;
+//$includeConveyorBeltClasses:     $includeAllClasses !default;
+//$includeDataGridClasses:         $includeAllClasses !default;
+//$includeDialogClasses:           $includeAllClasses !default;
+//$includeFilePickerClasses:       $includeAllClasses !default;
+//$includeFilmStripClasses:        $includeAllClasses !default;
+//$includeFlexClasses:             $includeAllClasses !default;
+//$includeMessageClasses:          $includeAllClasses !default;
+//$includeMessagesClasses:         $includeAllClasses !default;
+// This is used by the CSS based form layout approach
+//$includeFormLayoutClasses:       $includeAllClasses !default;
+//$includeGridClasses:             $includeAllClasses !default;
+//$includeIconCircleClasses:       $includeAllClasses !default;
+//$includeIndexerClasses:          $includeAllClasses !default;
+//$includeListViewClasses:         $includeAllClasses !default;
+//$includeMasonryLayoutClasses:    $includeAllClasses !default;
+//$includeMenuClasses:             $includeAllClasses !default;
+//$includeMenuSelectManyClasses:   $includeAllClasses !default;
+//$includeMessagingClasses:        $includeAllClasses !default;
+//$includeModuleClasses:           $includeAllClasses !default;
+//$includeNavigationListClasses:   $includeAllClasses !default;
+//$includeTabBarClasses:           $includeAllClasses !default;
+//$includeOffcanvasClasses:        $includeAllClasses !default;
+//$includePagingControlClasses:    $includeAllClasses !default;
+//$includePanelClasses:            $includeAllClasses !default;
+//$includePopupClasses:            $includeAllClasses !default;
+//$includeProgressClasses:         $includeAllClasses !default;
+//$includeProgressListClasses:     $includeAllClasses !default;
+//$includeRefresherClasses:        $includeAllClasses !default;
+//$includeResponsiveHelperClasses: $includeAllClasses !default;
+//$includeRowExpanderClasses:      $includeAllClasses !default;
+//$includeSwipeToRevealClasses:    $includeAllClasses !default;
+//$includeSwipeActionsClasses:     $includeAllClasses !default;
+//$includeSwitcherClasses:         $includeAllClasses !default;
+//$includeTableClasses:            $includeAllClasses !default;
+//$includeUtilitiesClasses:        $includeAllClasses !default; // for generic spacing and text classes
+//$includeToolbarClasses:          $includeAllClasses !default;
+//$includeTrainClasses:            $includeAllClasses !default;
+//$includeTreeViewClasses:         $includeAllClasses !default;
+//$includeHelpClasses:             $includeAllClasses !default;
+
+// these components are deprecated
+//$includeInputSearchClasses:      $includeFormControlClasses !default;
+//$includeTabsClasses:             $includeAllClasses !default;
+//$includeTreeClasses:             $includeAllClasses !default;
+
+
+// focus
+//----------------------------------
+// This variable is applicable to components and patterns that use the oj-focus-highlight class
+// and do not have a component- or pattern-specific mechanism for controlling when it is applied.
+//
+// The oj-focus-highlight class applies focus styling that may not be desirable
+// when the focus results from pointer interaction (touch or mouse), but which is
+// needed for accessibility when the focus occurs by a non-pointer mechanism, for
+// example keyboard or initial page load.
+//
+// The 3 valid values of this variable indicate for which focuses the class should be applied:
+//
+// - "nonPointer": the class is applied only for focuses not resulting from pointer
+//   (mouse or touch) interaction.
+// - "all": the class is applied for all focuses.
+// - "none": the class is never applied. This value is not accessible by itself, and is
+//   intended for use when the application wishes to use its own event listener to precisely
+//   control when the class is applied.  The application must ensure the accessibility of the result.
+//$focusHighlightPolicy: nonPointer !default;
+
+// currently browsers may or may not load font
+// weights other than bold and normal and even when
+// they do font weight can be inconsistent across
+// browsers on the same platform. For example
+// using Segoe UI on windows a particular font weight can
+// look different on Chrome, IE, and FF.
+//
+// some known local system fonts like Segoe UI (windows),
+// Helvetica Neue (iOS/mac), and Roboto (Arial on Android)
+// can be normalized using @font-face
+// so that the weights are consistent across
+// browsers running on the same platform.
+//
+// When $fontWeightNormalization is set to true we look at
+// the $fontFamily var to see if one of the known local system
+// fonts might be used and if so attempt to normalize the font weights
+//$fontWeightNormalization: false !default;
+
+
+// animation
+//----------------------------------
+//$animationDurationShort: .25s !default;
+//$animationDurationMedium: .4s !default;
+//$animationDurationLong: .5s !default;
+
+// Default animation types for the oj.ModuleAnimations.navChild, navParent,
+// navSiblingEarlier, and navSiblingLater implementations,
+// which can be specified on the "animation" option of ojModule binding.
+// These variables can be overriden in theme files to provide different
+// animation types.  Valid values are the names of specific animation
+// implementations in oj.ModuleAnimations such as coverStart, coverUp,
+// revealEnd, revealDown, zoomIn, zoomOut.
+//$animationNavChildDefault:           zoomIn     !default;
+//$animationNavParentDefault:          zoomOut    !default;
+//$animationNavSiblingEarlierDefault:  pushEnd    !default;
+//$animationNavSiblingLaterDefault:    pushStart  !default;
+
+
+// wrappable
+//----------------------------------
+// this margin is needed so that if components are laid out
+// next to one another and wrap onto a new line there is
+// some vertical space between the "rows". For example when
+// several buttons are laid out next to each other on a small screen
+// some may wrap onto a new line, this puts some space
+// between these buttons.
+//todo
+//$wrappableMarginBottom:  4px !default;
+
+// responsive screen sizes
+//----------------------------------
+// In some apps it may be preferable to change
+// these values to rems instead of pixels.
+//
+// For pixel values here is some helpful info on device sizes:
+// http://www.mydevice.io/devices/
+//$screenSmallRange:  0, 767px !default;
+//$screenMediumRange: 768px, 1023px !default;
+//$screenLargeRange:  1024px, 1280px !default;
+//$screenXlargeRange: 1281px, null !default;
+
+
+// responsive media queries
+//----------------------------------
+// You will see "print" on some media queries below.
+// By default printing portrait is treated as a medium screen and
+// printing landscape is treated as a large screen.
+
+// the $responsiveQueryXYZ variables can be set to 'none' if
+// you don't want to render a particular set of classes,
+// for example if you don't want xlarge classes you could set:
+//    $screenLargeRange:          1024px, null !default;
+//    $screenXlargeRange:         none;
+//    $responsiveQueryLargeOnly:  none;
+//    $responsiveQueryXlargeUp:   none;
+//$responsiveQuerySmallUp:    "print, screen" !default;
+//$responsiveQuerySmallOnly:  "screen and (max-width: #{upper-bound($screenSmallRange)})" !default;
+
+//$responsiveQueryMediumUp:   "print, screen and (min-width: #{lower-bound($screenMediumRange)})" !default;
+//$responsiveQueryMediumOnly: "print and (orientation: portrait), screen and (min-width: #{lower-bound($screenMediumRange)}) and (max-width: #{upper-bound($screenMediumRange)})" !default;
+//$responsiveQueryMediumDown: "print and (orientation: portrait), screen and (max-width: #{upper-bound($screenMediumRange)})" !default;
+
+//$responsiveQueryLargeUp:    "print and (orientation: landscape), screen and (min-width: #{lower-bound($screenLargeRange)})" !default;
+//$responsiveQueryLargeOnly:  "print and (orientation: landscape), screen and (min-width: #{lower-bound($screenLargeRange)}) and (max-width: #{upper-bound($screenLargeRange)})" !default;
+//$responsiveQueryLargeDown:  "print and (orientation: landscape), screen and (max-width: #{upper-bound($screenLargeRange)})" !default;
+
+//$responsiveQueryXlargeUp:   "screen and (min-width: #{lower-bound($screenXlargeRange)})" !default;
+// by default there is no xxl screen range variable.
+// to add support for an xxl range you can do something like
+// the following in your settings file :
+//
+//     @import "../utilities/oj.utilities.math"; // change the path to where the utilities directory is
+//     $screenXlargeRange:          1281px, 1440px;
+//     $screenXXlargeRange:         1441px, null;
+//     $responsiveQueryXlargeOnly:  "screen and (min-width: #{lower-bound($screenXlargeRange)}) and (max-width: #{upper-bound($screenXlargeRange)})";
+//     $responsiveQueryXlargeDown:  "screen and (max-width: #{upper-bound($screenXlargeRange)})";
+//     $responsiveQueryXXlargeUp:   "screen and (min-width: #{lower-bound($screenXXlargeRange)})";
+//$responsiveQueryXlargeOnly: null !default;
+//$responsiveQueryXlargeDown: null !default;
+//$responsiveQueryXXlargeUp:  null !default;
+
+// by default the print query is set to null,
+// to generate print classes change the value to "print"
+//$responsiveQueryPrint:      null !default;
+
+// the default point at which we consider a screen a high resolution
+// (or retina) display.
+//
+// The value is set to 1.5 because as of 2014 there's a lot
+// of Android devices out there that are half-way between the
+// legacy screen resolutions and retina (aka "xhdpi" in Google's terminology)
+// they use a 1.5 factor so the default device pixel ratio is 1.5
+//
+// NOTE: in order to allow stand alone use of these utility mixins
+// this variable is also defined in _oj.utilities.icons.scss.
+// Because of the !default, the actual value will be the value
+// in the file loaded first.
+//$highResolutionDevicePixelRatio: 1.5 !default;
+
+//$responsiveGenerateHide:                  true !default;
+//$responsiveGenerateSpacing:               true !default;
+//$responsiveGenerateTextAlignEnd:          true !default;
+//$responsiveGenerateFloatStart:            true !default;
+//$responsiveGenerateFloatEnd:              true !default;
+
+// BUTTON
+//-----------------------------------------------------------------------------
+//$buttonChromingOptionDefault: full !default;
+
+// BUTTONSET
+//-----------------------------------------------------------------------------
+//$buttonsetChromingOptionDefault: full !default;
+
+// TOOLBAR
+//-----------------------------------------------------------------------------
+//$toolbarChromingOptionDefault: half !default;
+
+
+// MASONRY LAYOUT
+//-----------------------------------------------------------------------------
+// duration of a masonryLayout animation
+//$masonryLayoutAnimationDuration:      $animationDurationShort !default;
+// duration of a faster masonryLayout animation
+//$masonryLayoutAnimationDurationFast:  $masonryLayoutAnimationDuration * 0.8 !default;
+
+// animation theme variables
+//$masonryLayoutInsertAnimation: ((effect: "zoomIn", duration: $masonryLayoutAnimationDuration, timingFunction: "ease-in-out"), "fadeIn") !default;
+//$masonryLayoutRemoveAnimation: ((effect: "zoomOut", duration: $masonryLayoutAnimationDuration, timingFunction: "ease-in-out"), "fadeOut") !default;
+//$masonryLayoutMoveAnimation: (effect: "addTransition", duration: $masonryLayoutAnimationDuration, timingFunction: "ease-in-out", transitionProperties: ('width', 'height', 'top', 'left', 'right')) !default;
+//$masonryLayoutResizeAnimation: (effect: "addTransition", duration: $masonryLayoutAnimationDuration, timingFunction: "ease-in-out", transitionProperties: ('width', 'height', 'top', 'left', 'right')) !default;
+//$masonryLayoutReorderAnimation: (effect: "addTransition", duration: $masonryLayoutAnimationDurationFast, timingFunction: "ease-in-out", transitionProperties: ('width', 'height', 'top', 'left', 'right')) !default;
+
+
+
+// PROGRESS
+//-----------------------------------------------------------------------------
+//$progressBarIndeterminateOverlayImage:   $imageDir + "animated-overlay.svg" !default;
+//$progressCircleIndeterminateOverlayImage: $imageDir + "spinner_full.gif" !default;
+
+
+// MENU
+//-----------------------------------------------------------------------------
+// menu animation defaults
+//----------------------------------
+
+// dropdown menu
+//$menuDropDownOpenAnimation: (effect: "zoomIn", transformOrigin: "#myPosition", duration: $animationDurationShort) !default;
+//$menuDropDownCloseAnimation: (effect: "none") !default;
+
+// sheet menu
+//$menuSheetOpenAnimation: (effect: "slideIn", direction: "top", duration: $animationDurationShort) !default;
+//$menuSheetCloseAnimation: (effect: "slideOut", direction: "bottom", duration: $animationDurationShort) !default;
+
+// submenu
+//$menuSubmenuOpenAnimation: (effect: "zoomIn", transformOrigin: "#myPosition", duration: $animationDurationShort) !default;
+//$menuSubmenuCloseAnimation: (effect: "none") !default;
+
+// If Menu's "display" option is "auto" (the default), then at or above this screen width
+// the menu displays as a dropDown, and below this screen width the menu displays as a sheet.
+// Accepts px values like 768px or 0
+//$menuDropDownThresholdWidth: #{lower-bound($screenMediumRange)} !default;
+
+// Controls whether sheet menus have a "Cancel" menu item automatically added.
+// Valid values are "none" and "menuItem".
+//$menuSheetCancelAffordance: "none" !default;
+
+// Controls whether "swipe down to dismiss" is supported for sheet menus.
+// Note that this only applies to swipes starting on the menu, since any touch
+// outside the menu will dismiss, regardless of whether it turns into a swipe.
+// Valid values are "dismiss" and "none".
+//$menuSheetSwipeDownBehavior: "none" !default;
+
+// Controls whether a "glass pane" is displayed behind dropDown menus.
+// Valid values are "modal" and "modeless".
+//$menuDropDownModality:                                  "modal" !default;
+
+// Controls whether a "glass pane" is displayed behind sheet menus.
+// Valid values are "modal" and "modeless".
+//$menuSheetModality: "modal" !default;
+
+//$menuSheetMarginBottom:                                 0 !default;
+
+
+// NAVIGATIONLIST
+//-----------------------------------------------------------------------------
+
+// values could be "circle"(alta default) or "none"(for android/windows/ios)
+//$navigationListIconOnlyStyle:                           none !default;
+//$navigationListHorizontalIconOnlyStyle:                 none !default;
+
+//---------------Animations-------------------
+//$navigationListHorizontalAddAnimation:                     ((effect: "expand", direction:"width"), "fadeIn") !default;
+//$navigationListHorizontalRemoveAnimation:                  ((effect: "collapse", direction:"width", persist:"all"), "fadeOut") !default;
+//$navigationListAddAnimation:                               ((effect: "expand"), "fadeIn") !default;
+//$navigationListRemoveAnimation:                            ((effect: "collapse"), "fadeOut") !default;
+//$navigationListUpdateAnimation:                            (effect: "fadeIn") !default;
+//$navigationListExpandAnimation:                            (effect: "expand") !default;
+//$navigationListCollapseAnimation:                          (effect: "collapse") !default;
+//$navigationListSliderExpandAnimation:                      (effect: "slideIn", direction:"start", duration:"400ms") !default;
+//$navigationListSliderCollapseAnimation:                    (effect: "slideIn", direction:"end", duration:"400ms") !default;
+//$navigationListPointerUpAnimation:                         (effect: "none") !default;
+
+//------Options----------------
+//$navigationListHierarchyMenuThresholdOptionDefault:     -1 !default;
+
+
+// TAB BAR
+//-----------------------------------------------------------------------------
+//$tabBarIconOnlyStyle:                                   none !default;
+// values could be "circle"(alta default) or "none"(for android/windows/ios)
+//$tabBarHorizontalIconOnlyStyle:                         none !default;
+//Align label of vertical tab bar, support either null or center
+//$tabBarVerticalItemLabelTextAlign:                      center !default;
+//Valid values are either null or even which ensures equal size for all tabs
+//$tabBarHorizontalItemWidthDistribution:                 null !default;
+
+//----------Animations------------
+//$tabBarHorizontalAddAnimation:                      ((effect: "expand", direction:"width"), "fadeIn") !default;
+//$tabBarHorizontalRemoveAnimation:                   ((effect: "collapse", direction:"width", persist:"all"), "fadeOut") !default;
+//$tabBarAddAnimation:                                ((effect: "expand"), "fadeIn") !default;
+//$tabBarRemoveAnimation:                             ((effect: "collapse"), "fadeOut") !default;
+//$tabBarUpdateAnimation:                             (effect: "fadeIn") !default;
+//$tabBarPointerUpAnimation:                          (effect: "none") !default;
+
+// OFFCANVAS
+//----------------------------------------
+// options
+//$offcanvasDisplayModeOptionDefault:                     overlay !default;
+// Variable to override the default auto-timeout attribute of individual message
+
+// MESSAGE
+//-----------------------------------------------------------------------------
+//$messageAutoTimeoutOptionDefault:                       4000 !default;
+
+// Variables to override the default animation of individual oj-message.
+//$messageGeneralOverlayOpenAnimation:                    (effect: "expand", duration: "300ms") !default;
+//$messageGeneralOverlayCloseAnimation:                   (effect: "collapse", duration: "300ms") !default;
+// Variable to override the default position of oj-messages container
+//$messagesGeneralOverlayPositionOptionDefault:           (my:(horizontal: "center", vertical: "top"), at:(horizontal: "center", vertical: "top"), of: "window", collision: "none") !default;
+//$messageNotificationOverlayOpenAnimation:               (effect: "slideIn", duration: "300ms") !default;
+//$messageNotificationOverlayCloseAnimation:              (effect: "slideOut", duration: "300ms", direction: "end") !default;
+//$messagesNotificationOverlayPositionOptionDefault:      (my:(horizontal: "end", vertical: "top"), at:(horizontal: "end", vertical: "top"), of: "window", collision: "none") !default;
+
+//$messageComponentInlineOpenAnimation:                   (effect: "expand", startMaxHeight: "#oldHeight") !default;
+//$messageComponentInlineCloseAnimation:                  (effect: "collapse", endMaxHeight: "#newHeight") !default;
+
+
+// POPUP
+//-----------------------------------------------------------------------------
+// animation theme defaults
+//$popupOpenAnimation: ((effect: "zoomIn", transformOrigin: "#myPosition"), "fadeIn") !default;
+//$popupCloseAnimation: ((effect: "zoomOut", persist: "all", transformOrigin: "#myPosition"), "fadeOut") !default;
+// Placeholder for theme specific popup modality option override.
+//$popupModalityOptionDefault:                            "modal" !default;
+
+// animation 
+// todo: rename?
+//$popupTailOpenAnimation: (effect: "zoomIn", transformOrigin: "#myPosition") !default;
+//$popupTailCloseAnimation: (effect: "none") !default;
+
+// DIALOG
+//-----------------------------------------------------------------------------
+// animation theme defaults
+//$dialogOpenAnimation: ((effect: "zoomIn"), "fadeIn") !default;
+//$dialogCloseAnimation: ((effect: "zoomOut", persist: "all"), "fadeOut") !default;
+// ojDialog resizeBehavior, cancelBehavior, and dragAffordance options
+// default to the programmatic settings.
+//$dialogResizeBehaviorOptionDefault:                     none !default;
+//$dialogCancelBehaviorOptionDefault:                     none !default;
+//$dialogDragAffordanceOptionDefault:                     none !default;
+
+
+// TABLE
+//-----------------------------------------------------------------------------
+// animations
+//$tableAddAnimation:                         ((effect: "slideIn", direction:"bottom"), "fadeIn") !default;
+//$tableRemoveAnimation:                      ((effect: "slideOut", direction:"top"), "fadeOut") !default;
+//$tableUpdateAnimation:                      (effect: "fadeIn") !default;
+// Table Display Option Default
+//$tableDisplayOptionDefault:            "list" !default;
+
+// loading indicator
+//------------------------------------
+// Duration in ms before showing load indicator
+// Currently this is used by collection components such as datagrid, table, listview
+// but is generally applicable in places where loading indicator is used
+//$loadingIndicatorDelayDuration: "250" !default;
+
+// TREE VIEW
+//-----------------------------------------------------------------------------
+// Treeview animations
+//$treeViewExpandAnimation:             (effect: "expand") !default;
+//$treeViewCollapseAnimation:           (effect: "collapse") !default;
+
+
+// LIST VIEW
+//-----------------------------------------------------------------------------
+// animations
+//$listViewAddAnimation:         ((effect: "expand"), "fadeIn") !default;
+//$listViewRemoveAnimation:      ((effect: "collapse"), "fadeOut") !default;
+//$listViewUpdateAnimation:      (effect: "fadeIn") !default;
+//$listViewExpandAnimation:      (effect: "expand") !default;
+//$listViewCollapseAnimation:    (effect: "collapse") !default;
+//$listViewPointerUpAnimation:   (effect: "none") !default;
+// animation theme defaults
+//$popupTailOpenAnimation: (effect: "zoomIn", transformOrigin: "#myPosition") !default;
+//$popupTailCloseAnimation: (effect: "none") !default;
+//$messageComponentInlineOpenAnimation:                   (effect: "expand", startMaxHeight: "#oldHeight") !default;
+//$messageComponentInlineCloseAnimation:                  (effect: "collapse", endMaxHeight: "#newHeight") !default;
+// wrappable
+//----------------------------------
+// this margin is needed so that if components are laid out
+// next to one another and wrap onto a new line there is
+// some vertical space between the "rows". For example when
+// several buttons are laid out next to each other on a small screen
+// some may wrap onto a new line, this puts some space
+// between these buttons.
+//$wrappableMarginBottom:  4px !default;
+// The label can be rendered before or after the input/image.
+//$radioCheckboxLabelPosition: end !default;
+//$radioCheckboxRowHeight: 2.6rem !default;
+
+//$formControlBorderWidth: 1px 1px 1px 1px !default;
+
+// messaging border
+//$formControlMessagingBorderWidth: 2px 2px 2px 2px !default;
+//$formControlTextAlign: null !default;
+//$formControlInputBorderWidthFocus: $formControlBorderWidth !default;
+
+// INPUT DATE/TIME
+//-----------------------------------------------------------------------------
+//options
+// For option 'renderMode' in ojInputDate / ojInputDateTime / ojInputDate
+//$inputDateTimeRenderModeOptionDefault:                  native !default;
+//$inputDateTimeDatePickerOptionDefault: (footerLayout: 'today') !default;
+
+//$inputDateTimeKeyboardEditOptionDefault:                disabled !default;
+//$inputDateTimeTimePickerOptionDefault:   null     !default;
+
+//$dateTimePickerDropDownThresholdWidth: #{lower-bound($screenMediumRange)} !default;
+
+// RADIO and CHECKBOX
+//-----------------------------------------------------------------------------
+// The input html element can be hidden the radio/checkbox rendered as an image instead
+// values are 'html' and 'backgroundImage'.
+//$radioCheckboxRenderInputAs: backgroundImage !default;
+
+// SELECT
+//-----------------------------------------------------------------------------
+//$selectRenderModeOptionDefault:                         native !default;
+
+
+

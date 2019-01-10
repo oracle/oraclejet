@@ -1,0 +1,122 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the
+//          version in your base theme's directory,
+//          for example alta/widgets/_oj.alta.accordion.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@import "../../utilities/oj.utilities";
+
+@if $includeAccordionClasses != false {
+  @include module-include-once("common.accordion") {
+
+    /* accordion */
+    /* --------------------------------------------------------------- */
+
+    // This is to prevent the flash of unstyled content before the html becomes JET components.
+    @if $initialVisibility == hidden {
+      oj-accordion:not(.oj-complete) {
+        visibility: hidden;
+      }
+    }
+
+    oj-accordion {
+      display: block;
+    }
+
+    /*
+     * applied to the disabled accordion headerd
+     */
+    .oj-accordion-collapsible.oj-disabled > .oj-collapsible-header {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        color: var(--oj-text-color-disabled);
+        background-color: var(--oj-list-view-header-bg-color-disabled);
+      } @else {
+        color: $textColorDisabled;
+        background-color: $headerBgColorDisabled;
+      }
+      background-image: none;
+    }
+
+    /*
+     * need to reset margin (bottom) here because it's being set in collapsible
+     */
+    .oj-collapsible.oj-accordion-collapsible {
+      margin: 0;
+    }
+
+    /*
+     * applied to the accordion header but not to any nested collapsible headers
+     */
+    .oj-accordion-collapsible > .oj-collapsible-header {
+      padding-top: 3px;
+      padding-bottom: 3px;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        border: 0 solid var(--oj-header-border-color);
+        border-width: var(--oj-list-view-header-border-width-expanded);
+        font-size: var(--oj-header-3-font-size);
+        background-color: var(--oj-list-view-header-bg-color);
+        background-image: var(--oj-list-view-header-bg-image);
+      } @else {
+        border: 0 solid $headerBorderColor;
+        border-width: $listViewHeaderBorderWidth;
+        font-size: $header3FontSize;
+        background-color: $headerBgColor;
+        @include oj-background-image($headerBgImage);
+      }
+    }
+
+    /*
+     * need to restore top padding for the first nested collapsible,
+     * because it's being reset in collapsible
+     */
+    .oj-collapsible-content > .oj-accordion-collapsible.oj-collapsible:first-child > .oj-collapsible-header {
+      padding-top: 3px;
+    }
+
+    /*
+     * need to reset margin because it's being set in collapsible to -7px
+     */
+    .oj-accordion-collapsible > .oj-collapsible-header > .oj-collapsible-header-icon {
+      padding: 9px;
+      outline-offset: -9px;
+
+      @include oj-ltr() {
+        margin: 0;
+      }
+      @include oj-rtl() {
+        margin: 0;
+      }
+    }
+
+    /*
+     * applied to the accordion content but not to any nested collapsible contents
+     */
+    .oj-accordion-collapsible > .oj-collapsible-wrapper > .oj-collapsible-content {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+      padding: var(--oj-panel-padding);
+      } @else {
+      padding: $panelPadding;
+      }
+    }
+
+    /*
+     * applied to the accordion header border bottom when collapsed
+     */
+    .oj-accordion-collapsible.oj-collapsed > .oj-collapsible-header {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        border-width: var(--oj-list-view-header-border-width-collapsed);
+      } @else {
+        border-width: $listViewHeaderBorderWidthCollapsed;
+      }
+    }
+
+    /*
+     * applied to the accordion header border for the last child when collapsed
+     */
+    .oj-accordion-collapsible.oj-collapsed:last-child > .oj-collapsible-header {
+      border-bottom-width: 1px;
+    }
+    
+  }
+}

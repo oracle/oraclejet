@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -954,7 +954,10 @@ var __oj_thematic_map_marker_metadata =
  * @ojtsimport {module: "ojdataprovider", type: "AMD", imported: ["DataProvider"]}
  * @ojsignature [{
  *                target: "Type",
- *                value: "class ojThematicMap<K1, K2, K3, D1, D2, D3> extends dvtBaseComponent<ojThematicMapSettableProperties<K1, K2, K3, D1, D2, D3>>"
+ *                value: "class ojThematicMap<K1, K2, K3, D1, D2, D3> extends dvtBaseComponent<ojThematicMapSettableProperties<K1, K2, K3, D1, D2, D3>>",
+ *                genericParameters: [{"name": "K1", "description": "Type of key of the areaData dataprovider"}, {"name": "K2", "description": "Type of key of the linkData dataprovider"},
+ *                 {"name": "K3", "description": "Type of key of the markerData dataprovider"}, {"name": "D1", "description": "Type of data from the areaData dataprovider"},
+ *                 {"name": "D2", "description": "Type of data from the linkData dataprovider"}, {"name": "D3", "description": "Type of data from the markerData dataprovider"}]
  *               },
  *               {
  *                target: "Type",

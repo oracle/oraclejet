@@ -1,11 +1,11 @@
 {
   "name": "oj-n-box-node",
-  "version": "6.0.0",
-  "jetVersion": "6.0.0",
+  "version": "6.1.0",
+  "jetVersion": "6.1.0",
   "displayName": "N Box Node",
   "type": "core",
   "description": "ojNBoxNode",
-  "help": "https://docs.oracle.com/en/middleware/jet/6/reference-api/oj.ojNBoxNode.html",
+  "help": "https://docs.oracle.com/en/middleware/jet/6.1/reference-api/oj.ojNBoxNode.html",
   "properties": {
     "borderColor": {
       "description": "The color of the node border.",

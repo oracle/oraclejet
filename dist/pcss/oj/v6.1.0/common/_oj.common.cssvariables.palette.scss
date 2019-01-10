@@ -1,0 +1,93 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+:root {
+  // brand palette 
+  
+  --oj-brand-color:        #027bc7;
+  
+  // lighter
+  --oj-brand-color-light-5: #e8f3fa; //tint(var(--oj-brand-color), 91%)
+  --oj-brand-color-light-4: #e1eff8; //tint(var(--oj-brand-color), 88%)
+  --oj-brand-color-light-3: #d7eaf6; //tint(var(--oj-brand-color), 84%)
+  --oj-brand-color-light-2: #b3d7ee; //tint(var(--oj-brand-color), 70%)
+  --oj-brand-color-light-1: #76b8e1; //tint(var(--oj-brand-color), 46%)
+
+  // darker
+  --oj-brand-color-dark-1:  #02629f; //shade(var(--oj-brand-color), 20%)
+  --oj-brand-color-dark-2:  #014a77; //shade(var(--oj-brand-color), 40%)
+
+
+  // neutral palette 
+  --oj-neutral-hue: 203;
+  --oj-neutral-saturation: 2%;
+
+  --oj-neutral-color-1: unquote("hsl(var(--oj-neutral-hue), var(--oj-neutral-saturation), 100%)");
+  --oj-neutral-color-2: unquote("hsl(var(--oj-neutral-hue), var(--oj-neutral-saturation), 99%)");
+  --oj-neutral-color-3: unquote("hsl(var(--oj-neutral-hue), var(--oj-neutral-saturation), 98%)");
+  --oj-neutral-color-4: unquote("hsl(var(--oj-neutral-hue), var(--oj-neutral-saturation), 97%)");
+  --oj-neutral-color-5: unquote("hsl(var(--oj-neutral-hue), var(--oj-neutral-saturation), 95%)");
+  --oj-neutral-color-6: unquote("hsl(var(--oj-neutral-hue), var(--oj-neutral-saturation), 93%)");
+  --oj-neutral-color-7: unquote("hsl(var(--oj-neutral-hue), var(--oj-neutral-saturation), 90%)");
+  --oj-neutral-color-8: unquote("hsl(var(--oj-neutral-hue), var(--oj-neutral-saturation), 88%)");
+  --oj-neutral-color-9: unquote("hsl(var(--oj-neutral-hue), var(--oj-neutral-saturation), 80%)");
+  --oj-neutral-color-10: unquote("hsl(var(--oj-neutral-hue), var(--oj-neutral-saturation), 78%)");
+  --oj-neutral-color-11: unquote("hsl(var(--oj-neutral-hue), var(--oj-neutral-saturation), 70%)");
+  --oj-neutral-color-12: unquote("hsl(var(--oj-neutral-hue), var(--oj-neutral-saturation), 55%)");
+  --oj-neutral-color-13: unquote("hsl(var(--oj-neutral-hue), var(--oj-neutral-saturation), 45%)");
+  --oj-neutral-color-14: unquote("hsl(var(--oj-neutral-hue), var(--oj-neutral-saturation), 30%)");
+  --oj-neutral-color-15: unquote("hsl(var(--oj-neutral-hue), var(--oj-neutral-saturation), 20%)");
+  --oj-neutral-color-16: unquote("hsl(var(--oj-neutral-hue), var(--oj-neutral-saturation), 15%)");
+  --oj-neutral-color-17: unquote("hsl(var(--oj-neutral-hue), var(--oj-neutral-saturation), 0%)");;
+
+  // accent palette 
+  --oj-accent-color-highlight-1:    #d9f4fa;
+  --oj-accent-color-highlight-2:    #c2eaf3;
+
+  --oj-accent-color-danger-1:       #FCF3F4;
+  --oj-accent-color-danger-2:       #F8D3D6;
+  --oj-accent-color-danger-3:       #E65A66;
+  --oj-accent-color-danger-4:       #DE2333;
+  --oj-accent-color-danger-5:       #BA0006;
+
+  --oj-accent-color-attention-1:    #FEF5E4;
+  --oj-accent-color-attention-2:    #FCE7C1;
+  --oj-accent-color-attention-3:    #F8CA75;
+  --oj-accent-color-attention-4:    #F6B846;
+  --oj-accent-color-attention-5:    #BF552E;
+
+  --oj-accent-color-info-1:         #E9F4F8;
+  --oj-accent-color-info-2:         #CAE4EF;
+  --oj-accent-color-info-3:         #80BFD9;
+  --oj-accent-color-info-4:         #2B94BF;
+  --oj-accent-color-info-5:         #0574A1;
+
+  --oj-accent-color-confirmation-1: #ECF5E7;
+  --oj-accent-color-confirmation-2: #D9EACF;
+  --oj-accent-color-confirmation-3: #B3D69F;
+  --oj-accent-color-confirmation-4: #81BA5F;
+  --oj-accent-color-confirmation-5: #008230;
+
+  --oj-accent-color-dvt-1:          #237bb1;
+  --oj-accent-color-dvt-2:          #68c182;
+  --oj-accent-color-dvt-3:          #fad55c;
+  --oj-accent-color-dvt-4:          #ed6647;
+  --oj-accent-color-dvt-5:          #8561c8;
+  --oj-accent-color-dvt-6:          #6ddbdb;
+  --oj-accent-color-dvt-7:          #ffb54d;
+  --oj-accent-color-dvt-8:          #e371b2;
+  --oj-accent-color-dvt-9:          #47bdef;
+  --oj-accent-color-dvt-10:         #a2bf39;
+  --oj-accent-color-dvt-11:         #a75dba;
+  --oj-accent-color-dvt-12:         #f7f37b;
+
+  // text color palette 
+  --oj-text-color-base-hsl: 0, 0%, 0%;
+// todo: test whether you can change this var when really using css vars and 
+//     have it affect the text vars. 
+  --oj-text-color-1: unquote("hsla(var(--oj-text-color-base-hsl), 1)");
+  --oj-text-color-2: unquote("hsla(var(--oj-text-color-base-hsl), .85)");
+  --oj-text-color-3: unquote("hsla(var(--oj-text-color-base-hsl), .8)");
+  --oj-text-color-4: unquote("hsla(var(--oj-text-color-base-hsl), .7)");
+  --oj-text-color-5: unquote("hsla(var(--oj-text-color-base-hsl), .6)");
+  --oj-text-color-6: unquote("hsla(var(--oj-text-color-base-hsl), .55)");
+  --oj-text-color-7: unquote("hsla(var(--oj-text-color-base-hsl), .38)");
+}

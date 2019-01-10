@@ -232,6 +232,8 @@ define([], function () {
       writer = self.option("writer");
     } else if (typeof window !== 'undefined' && window.console !== undefined) {
       writer = window.console;
+    } else if (typeof console !== 'undefined') {
+      writer = console;
     }
     return writer;
   };

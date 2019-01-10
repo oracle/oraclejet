@@ -1,0 +1,74 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+$includeMenuVariables: $includeMenuClasses !default;
+
+@if $includeMenuVariables != false {
+  $includePopupVariables: true !global;
+}
+// import dependencies
+@import "oj.alta.ios.popup";
+
+@if $includeMenuVariables != false {
+  @include module-include-once("alta.ios.variables.menu") {
+    :root {
+      // menu
+      // ---------------------------
+    // todo: sass doc says this is top/bottom padding, change var name?
+      --oj-menu-padding:                        0;
+      --oj-menu-border-width:                   1px;
+      --oj-menu-border-radius:                  5px;
+      --oj-menu-font-size:                      var(--oj-font-size);
+      --oj-menu-box-shadow:                     0 2px 5px unquote('hsla(var(--oj-box-shadow-hsl),0.25)');
+      --oj-menu-submenu-box-shadow:             0 3px 7px unquote('hsla(var(--oj-box-shadow-hsl),0.25)');
+      --oj-menu-icon-size:                      24px;
+      --oj-menu-icon-to-edge-padding:           0.625rem;
+      --oj-menu-text-to-icon-padding:           0.5rem;
+      --oj-menu-submenu-icon-padding:           0.375rem;
+      --oj-menu-text-to-edge-padding:           calc(16px + (2 * var(--oj-menu-submenu-icon-padding)));
+      --oj-menu-text-only-text-align:           center; // if center add 16px to above property value;
+      --oj-menu-divider-margin:                 0;
+      --oj-menu-divider-border-width:           2px;
+      --oj-menu-item-line-height:               2.6875rem;
+    
+      --oj-menu-bg-color:                       var(--oj-popup-bg-color);
+      --oj-menu-border-color:                   var(--oj-neutral-color-8);
+      --oj-menu-divider-border-color:           var(--oj-menu-border-color);
+      --oj-menu-item-text-color:                var(--oj-brand-color-dark-1);
+      --oj-menu-item-border-color:              var(--oj-neutral-color-8);
+      --oj-menu-item-border-width:              1px;
+      --oj-menu-item-bg-color-focus:            var(--oj-neutral-color-5);
+      --oj-menu-item-border-color-focus:        var(--oj-menu-item-border-color);
+      --oj-menu-item-text-color-disabled:       var(--oj-brand-color-light-1);
+      --oj-menu-item-last-border-width:         0;
+      --oj-menu-icon-color:                     var(--oj-menu-item-text-color);
+      --oj-menu-icon-color-disabled:            var(--oj-menu-item-text-color-disabled);
+      --oj-menu-icon-opacity-disabled:          var(--oj-opacity-disabled);
+      --oj-menu-submenu-icon-color:             var(--oj-neutral-color-11);
+    
+      // menu sheet
+      --oj-menu-sheet-border-radius:            12px;
+      --oj-menu-sheet-font-size:                1.5rem;
+      --oj-menu-sheet-margin-horizontal:        0.75rem;
+    // todo: sass had $menuSheetMarginBottom
+    //$menuSheetMarginBottom value must be 0, px, or %, e.g. 0, 10px, 5%
+      --oj-menu-sheet-item-line-height:         2.3333333333rem;
+    
+      // groups of sheet menu items separated by group dividers
+      --oj-menu-sheet-item-group-border-radius: 12px;
+      --oj-menu-sheet-divider-border-width:     8px;
+      // cancel menu item (.oj-menu-item-cancel) and its anchor
+      --oj-menu-sheet-item-cancel-font-weight:  bold;
+    
+      --oj-menu-sheet-bg-color:                 transparent;
+      --oj-menu-sheet-item-text-color:          var(--oj-brand-color-dark-1);
+      --oj-menu-sheet-item-bg-color:            var(--oj-neutral-color-1);
+      --oj-menu-sheet-item-border-color:        var(--oj-neutral-color-5);
+      --oj-menu-sheet-item-border-width:        var(--oj-menu-item-border-width);
+      --oj-menu-sheet-item-bg-color-focus:      var(--oj-menu-item-bg-color-focus);
+      --oj-menu-sheet-item-border-color-focus:  var(--oj-menu-item-bg-color-focus);
+      --oj-menu-sheet-item-text-color-disabled: var(--oj-menu-item-text-color-disabled);
+      --oj-menu-sheet-divider-border-color:     transparent;
+    }  
+  }
+}

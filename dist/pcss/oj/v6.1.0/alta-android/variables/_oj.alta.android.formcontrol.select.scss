@@ -1,0 +1,34 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+
+$includeSelectVariables: $includeSelectClasses !default;
+
+@if $includeSelectVariables != false {
+  $includeFormControlVariables: true !global;
+  $includeMessagesVariables: true !global;
+  $includeListboxVariables: true !global;
+  $includeButtonVariables: true !global;
+}
+// import dependencies
+@import "oj.alta.android.formcontrol";
+@import "oj.alta.android.formcontrol.listbox";
+@import "oj.alta.android.messages";
+@import "oj.alta.android.button";
+
+
+@if $includeSelectVariables != false {
+  @include module-include-once("alta.android.variables.select") {
+
+:root {
+  // select
+  // -------------------------
+  --oj-select-arrow-padding-start:     5px;
+  --oj-select-arrow-padding-end:       5px;
+
+  --oj-select-arrow-color:             var(--oj-icon-color-default);
+}
+
+
+  }
+}

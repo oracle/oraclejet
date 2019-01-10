@@ -1,0 +1,117 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+
+$includeNavigationListVariables: $includeNavigationListClasses !default;
+
+@if $includeNavigationListVariables != false {
+  $includeTabBarVariables: true !global;
+  $includeToolbarVariables: true !global;
+  $includeTreeViewVariables: true !global;
+  $includeMenuVariables: true !global;
+  $includePanelVariables: true !global;
+}
+// import dependencies
+@import "oj.alta.web.tabbar";
+@import "oj.alta.web.toolbar";
+@import "oj.alta.web.treeview";
+@import "oj.alta.web.menu";
+@import "oj.alta.web.panel";
+
+@if $includeNavigationListVariables != false {
+  @include module-include-once("alta.web.variables.navigationlist") {
+
+:root {
+  // nav list
+  // ----------------------------
+  --oj-navigation-list-category-divider-color:            var(--oj-neutral-color-8);
+  --oj-navigation-list-icon-only-icon-start-end-padding:  0;
+  --oj-navigation-list-horizontal-icon-margin:             0;
+  --oj-navigation-list-horizontal-font-size:               1rem;
+
+  
+  --oj-navigation-list-icon-to-text-padding:               0.71429rem;
+  --oj-navigation-list-horizontal-icon-to-text-padding:    0.71429rem;
+  
+  
+  --oj-navigation-list-item-min-height:                    3.14286rem;
+  --oj-navigation-list-horizontal-item-min-height:              2.71429rem;
+  
+  --oj-navigation-list-item-label-text-wrap:               nowrap;
+  --oj-navigation-list-item-border-width-top:              0;
+  --oj-navigation-list-item-border-width-right:            0;
+  --oj-navigation-list-item-border-width-bottom:           0;
+  --oj-navigation-list-item-border-width-left:             3px;
+  --oj-navigation-list-item-start-end-padding:             1.07143rem;
+  
+
+  --oj-navigation-list-item-icon-only-border-width-top:    0;
+  --oj-navigation-list-item-icon-only-border-width-right:  0;
+  --oj-navigation-list-item-icon-only-border-width-bottom: 0;
+  --oj-navigation-list-item-icon-only-border-width-left:   0;
+  
+  --oj-navigation-list-item-icon-only-margin:              4px 0 0;
+  --oj-navigation-list-horizontal-item-icon-only-margin:   4px;
+  
+  --oj-navigation-list-horizontal-item-border-width:       0 0 3px 0;
+
+  --oj-navigation-list-horizontal-item-padding:            0.5rem 1.07143rem 4px;
+  --oj-navigation-list-horizontal-item-stacked-min-height: 4.28571rem;
+  --oj-navigation-list-horizontal-item-stacked-padding:    var(--oj-navigation-list-horizontal-item-padding);
+
+
+  // default
+  --oj-navigation-list-item-label-color-default:               var(--oj-link-text-color);
+  --oj-navigation-list-horizontal-item-label-color-default:    var(--oj-text-color-4);
+  --oj-navigation-list-item-icon-color-default:                var(--oj-icon-color-default);
+  --oj-navigation-list-horizontal-item-icon-color-default:     var(--oj-neutral-color-15);
+  --oj-navigation-list-horizontal-item-divider-color:          var(--oj-neutral-color-7);
+  --oj-navigation-list-collapsible-icon-color-default:         var(--oj-icon-color-default);
+
+  // hover
+  --oj-navigation-list-item-bg-color-hover:                    var(--oj-neutral-color-6);
+  --oj-navigation-list-item-border-color-hover:                var(--oj-brand-color-light-1);
+  --oj-navigation-list-item-icon-color-hover:                  var(--oj-icon-color-hover);
+  --oj-navigation-list-item-icon-only-bg-color-hover:          var(--oj-navigation-list-item-bg-color-hover);
+
+  // selected
+  --oj-navigation-list-item-bg-color-selected:                 var(--oj-neutral-color-5);
+  --oj-navigation-list-horizontal-item-bg-color-selected:      transparent;
+  --oj-navigation-list-item-border-color-selected:             var(--oj-brand-color);
+  --oj-navigation-list-item-label-color-selected:              var(--oj-link-text-color);
+  --oj-navigation-list-horizontal-item-label-color-selected:   var(--oj-brand-color-dark-1);
+  --oj-navigation-list-item-icon-color-selected:               var(--oj-icon-color-selected);
+  --oj-navigation-list-horizontal-item-icon-color-selected:    var(--oj-brand-color);
+  --oj-navigation-list-item-icon-only-bg-color-selected:       var(--oj-brand-color);
+  --oj-navigation-list-icon-only-icon-color-selected:          var(--oj-neutral-color-1);
+
+
+  // focus
+  --oj-navigation-list-item-outline-color-focus:               var(--oj-neutral-color-14);
+
+  // disabled
+  --oj-navigation-list-item-label-color-disabled:              var(--oj-link-text-color-disabled);
+  --oj-navigation-list-icon-color-disabled:                    var(--oj-icon-color-disabled);
+
+
+  // contrast default
+  --oj-navigation-list-item-contrast-label-color-default:      var(--oj-neutral-color-11);
+
+  // contrast hover
+  --oj-navigation-list-item-contrast-bg-color-hover:           var(--oj-neutral-color-16);
+  --oj-navigation-list-item-contrast-label-color-hover:        var(--oj-neutral-color-3);
+
+  // contrast selected
+  --oj-navigation-list-item-contrast-bg-color-selected:              var(--oj-neutral-color-16);
+  --oj-navigation-list-horizontal-item-contrast-bg-color-selected:   transparent;
+  --oj-navigation-list-item-contrast-label-color-selected:           var(--oj-neutral-color-3);
+  --oj-navigation-list-horizontal-item-contrast-label-color-selected: var(--oj-navigation-list-item-contrast-label-color-selected);
+
+  // contrast disabled
+  --oj-navigation-list-item-contrast-label-color-disabled:     var(--oj-neutral-color-13);
+
+  
+}
+
+  }
+}

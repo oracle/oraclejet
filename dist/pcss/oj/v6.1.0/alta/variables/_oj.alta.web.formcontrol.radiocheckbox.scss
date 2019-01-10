@@ -1,0 +1,38 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+$includeRadioCheckboxVariables: false !default;
+
+@if $includeRadioCheckboxVariables != false {
+  @include module-include-once("alta.web.variables.radiocheckbox") {
+
+:root {
+
+  // radioset and checkboxset
+  // --------------------------
+
+  --oj-radio-checkbox-width:                     auto;
+  --oj-radio-checkbox-image-size:                16px;
+  --oj-radio-checkbox-row-height:                1.9rem;
+
+  --oj-radio-checkbox-label-to-edge-padding:     0;
+  --oj-radio-checkbox-input-to-label-padding:    0.6rem;
+  --oj-radio-checkbox-input-to-edge-padding:     0;
+  --oj-radio-checkbox-direction-row-inline-padding: 1.5rem;
+
+  --oj-radio-checkbox-label-color:               var(--oj-text-color);
+  --oj-radio-checkbox-label-color-selected:      var(--oj-radio-checkbox-label-color);
+  --oj-radio-checkbox-set-border-width:          0px;
+
+  --oj-radio-checkbox-set-bg-color:              transparent;
+  --oj-radio-checkbox-set-border-color:          transparent;
+  --oj-radio-checkbox-item-divider-color:        transparent;
+
+  --oj-radio-checkbox-item-bg-color-active:      transparent;
+  --oj-radio-checkbox-item-divider-color-active: transparent;
+  --oj-radio-checkbox-set-message-padding:           0.3rem 0.6rem 0.3rem 0.6rem;
+  
+}
+
+  }
+}

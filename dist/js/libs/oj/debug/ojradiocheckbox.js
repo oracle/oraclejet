@@ -1,12 +1,207 @@
 /**
  * @license
- * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
-define(['ojs/ojcore', 'jquery', 'ojs/ojlogger', 'ojs/ojeditablevalue'],
-       function(oj, $, Logger)
+define(['ojs/ojcore', 'jquery', 'ojs/ojlogger', 'ojs/ojcomponentcore', 'ojs/ojeditablevalue'],
+       function(oj, $, Logger, Components)
 {
+
+/**
+ * Copyright (c) 2014, Oracle and/or its affiliates.
+ * All rights reserved.
+ */
+
+/* global Components:false, Symbol:false */
+
+/**
+ * @class oj.RadioCheckboxUtils
+ * @classdesc JET Radio and Checkbox Component Utils
+ * @export
+ * @since 6.1.0
+ * @hideconstructor
+ * @ignore
+ *
+ */
+oj.RadioCheckboxUtils = {};
+
+/**
+ * Render option items from existing data.
+ *
+ * @public
+ * @ignore
+ */
+oj.RadioCheckboxUtils.renderOptions = function () {
+  var optionsDataArray = this._optionsDataArray;
+  var choiceset = this.element[0];
+
+  if (optionsDataArray) {
+    // The wrapper should have been created in _ComponentCreate
+    var wrapperClass = choiceset.tagName === 'OJ-RADIOSET' ?
+                       'oj-radioset-wrapper' : 'oj-checkboxset-wrapper';
+    var wrapper = choiceset.querySelector('.' + wrapperClass);
+    var i;
+
+    // We may need to create the wrapper if it doesn't exist because there
+    // was nothing to wrap in _ComponentCreate.
+    if (wrapper == null) {
+      wrapper = document.createElement('div');
+      wrapper.className = wrapperClass;
+      choiceset.appendChild(wrapper);
+    } else {
+      // Remove all the existing option items
+      var optionItems = wrapper.querySelectorAll('.oj-choice-item');
+      for (i = 0; i < optionItems.length; i++) {
+        var item = optionItems[i];
+        item.parentNode.removeChild(item);
+      }
+    }
+
+    // Determine option renderer
+    var optionRenderer = this.options.optionRenderer;
+    var optionsKeys = this.options.optionsKeys;
+    var valueKey = optionsKeys && optionsKeys.value ? optionsKeys.value : 'value';
+    if (typeof optionRenderer !== 'function') {
+      // Default option renderer
+      optionRenderer = function (optionContext) {
+        var labelKey = optionsKeys && optionsKeys.label ? optionsKeys.label : 'label';
+        var ojOption = document.createElement('oj-option');
+        ojOption.value = optionContext.data[valueKey];
+        ojOption.textContent = optionContext.data[labelKey];
+        return ojOption;
+      };
+    }
+
+    // Create all oj-option from option data
+    for (i = 0; i < optionsDataArray.length; i++) {
+      var optionContext = {
+        component: choiceset,
+        index: i,
+        data: optionsDataArray[i]
+      };
+      var ojOption = optionRenderer(optionContext);
+      if (ojOption && ojOption.tagName === 'OJ-OPTION') {
+        // Need to set data-oj-binding-provider so that the element will be upgraded
+        if (!ojOption.hasAttribute('data-oj-binding-provider')) {
+          ojOption.setAttribute('data-oj-binding-provider', 'none');
+        }
+        if (ojOption.value === null || ojOption.value === undefined) {
+          ojOption.value = optionContext.data[valueKey];
+        }
+        wrapper.appendChild(ojOption);
+        Components.subtreeAttached(ojOption);
+      }
+    }
+
+    // Call refresh, which will set up all oj-option as _ojRadioCheckbox
+    // and update the display value and disabled state.
+    this.refresh();
+  }
+};
+
+/**
+ * Fetch DataProvider data and render option items from it.
+ * This is called when the component is created, when the "options" property changes,
+ * and when the DataProvider data is changed.
+ *
+ * @public
+ * @ignore
+ */
+oj.RadioCheckboxUtils.generateOptionsFromData = function () {
+  var dataProvider = this.options.options;
+
+  // Remove any existing DataProvider listeners
+  oj.RadioCheckboxUtils.removeDataListener.call(this);
+
+  // Nothing else to do here if no DataProvider is used
+  if (!dataProvider || !oj.DataProviderFeatureChecker.isDataProvider(dataProvider)) {
+    return;
+  }
+
+  // Add a busy state
+  var desc = 'The component identified by "' + this.element[0].id + '" is fetching data';
+  var busyStateOptions = { description: desc };
+  var busyContext = oj.Context.getContext(this.element[0]).getBusyContext();
+  var resolveFunc = busyContext.addBusyState(busyStateOptions);
+
+  // Fetch all the option data
+  // eslint-disable-next-line no-param-reassign
+  this._optionsDataArray = [];
+  var i;
+  var asyncIterator = dataProvider.fetchFirst()[Symbol.asyncIterator]();
+  var self = this;
+  var processResults = function (iterResult) {
+    var nextPromise;
+
+    if (iterResult && iterResult.value) {
+      var fetchListResult = iterResult.value;
+      for (i = 0; i < fetchListResult.data.length; i++) {
+        self._optionsDataArray.push(fetchListResult.data[i]);
+      }
+
+      // fetch the next batch if we're not done
+      if (!iterResult.done) {
+        nextPromise = asyncIterator.next().then(processResults);
+      }
+    }
+
+    return nextPromise;
+  };
+
+  var fetchPromise = asyncIterator.next().then(processResults);
+
+  fetchPromise.then(
+    function () {
+      oj.RadioCheckboxUtils.renderOptions.call(self);
+      // Add back DataProvider listeners after the options are rendered
+      oj.RadioCheckboxUtils.addDataListener.call(self);
+      // Resolve busy state
+      resolveFunc();
+    },
+    function () {
+      resolveFunc();
+    });
+};
+
+/**
+ * Add listeners to DataProvider events.
+ *
+ * @public
+ * @ignore
+ */
+oj.RadioCheckboxUtils.addDataListener = function () {
+  // Remove any existing listener first
+  oj.RadioCheckboxUtils.removeDataListener.call(this);
+
+  if (this.options.options &&
+      oj.DataProviderFeatureChecker.isDataProvider(this.options.options)) {
+    // Remember which dataprovider is used because this.options.options can change
+    // eslint-disable-next-line no-param-reassign
+    this._optionsDataProvider = this.options.options;
+    // eslint-disable-next-line no-param-reassign
+    this._optionsDataListener = oj.RadioCheckboxUtils.generateOptionsFromData.bind(this);
+    this._optionsDataProvider.addEventListener('refresh', this._optionsDataListener);
+    this._optionsDataProvider.addEventListener('mutate', this._optionsDataListener);
+  }
+};
+
+/**
+ * Remove listeners from DataProvider events.
+ *
+ * @public
+ * @ignore
+ */
+oj.RadioCheckboxUtils.removeDataListener = function () {
+  if (this._optionsDataListener) {
+    this._optionsDataProvider.removeEventListener('refresh', this._optionsDataListener);
+    this._optionsDataProvider.removeEventListener('mutate', this._optionsDataListener);
+    // eslint-disable-next-line no-param-reassign
+    this._optionsDataProvider = null;
+    // eslint-disable-next-line no-param-reassign
+    this._optionsDataListener = null;
+  }
+};
 
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.

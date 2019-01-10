@@ -1,11 +1,11 @@
 {
   "name": "oj-diagram-node",
-  "version": "6.0.0",
-  "jetVersion": "6.0.0",
+  "version": "6.1.0",
+  "jetVersion": "6.1.0",
   "displayName": "Diagram Node",
   "type": "core",
   "description": "ojDiagramNode",
-  "help": "https://docs.oracle.com/en/middleware/jet/6/reference-api/oj.ojDiagramNode.html",
+  "help": "https://docs.oracle.com/en/middleware/jet/6.1/reference-api/oj.ojDiagramNode.html",
   "properties": {
     "categories": {
       "description": "An array of category strings corresponding to this node. This allows highlighting and filtering of nodes. By default, the label is used as the node category.",

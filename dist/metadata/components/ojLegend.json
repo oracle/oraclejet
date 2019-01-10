@@ -1,11 +1,11 @@
 {
   "name": "oj-legend",
-  "version": "6.0.0",
-  "jetVersion": "6.0.0",
+  "version": "6.1.0",
+  "jetVersion": "6.1.0",
   "displayName": "Legend",
   "type": "core",
   "description": "Displays an interactive description of symbols, colors, etc., used in graphical information representations.",
-  "help": "https://docs.oracle.com/en/middleware/jet/6/reference-api/oj.ojLegend.html",
+  "help": "https://docs.oracle.com/en/middleware/jet/6.1/reference-api/oj.ojLegend.html",
   "properties": {
     "as": {
       "description": "An alias for the $current context variable passed to slot content for the nodeTemplate slot.",

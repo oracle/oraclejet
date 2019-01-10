@@ -1,0 +1,30 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+$includeTableVariables: $includeTableClasses !default;
+
+@if $includeTableVariables != false {
+  $includeCollectionVariables: true !global;
+  $includeMessagesVariables: true !global;
+  $includeFormControlVariables: true !global;
+}
+// import dependencies
+@import "oj.alta.ios.collection";
+@import "oj.alta.ios.formcontrol";
+
+@if $includeTableVariables != false {
+  @include module-include-once("alta.ios.variables.table") {
+
+:root {
+  // table
+  // ----------------------------
+  --oj-table-row-height:          2.75em;
+  --oj-table-header-border-color: var(--oj-neutral-color-7);
+  --oj-table-cell-padding:        1em; //settings: ignore
+
+  
+}
+
+
+  }
+}

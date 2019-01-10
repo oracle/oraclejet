@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -17,6 +17,8 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojconfig', 'ojs/ojtranslation', 'ojL10n!ojt
  */
 
 /**
+ * In most use cases you will use the ConverterFactory to get an instance of a
+ * DateTimeConverter.
  * @class
  * @param {Object=} options an object literal used to provide an optional information to
  * @augments oj.Converter
@@ -28,6 +30,7 @@ define(['ojs/ojcore', 'jquery', 'ojs/ojconfig', 'ojs/ojtranslation', 'ojL10n!ojt
  * @abstract
  * @export
  * @since 0.6
+ * @see oj.ConverterFactory
  */
 oj.DateTimeConverter = function (options) {
   this.Init(options);
@@ -221,7 +224,10 @@ oj.DateTimeConverter.prototype.getAvailableTimeZones = function () {
  */
 /* global __ValidationBase:false, Translations:false */
 /**
- * Constructs a DateRestrictionValidator that ensures the value provided is not in a disabled entry of dayMetaData
+ * Constructs a DateRestrictionValidator that ensures the value provided is
+ * not in a disabled entry of dayMetaData.
+ * In most use cases you will use the ValidatorFactory to get an instance of a
+ * DateRestrictionValidator instead of using the constructor.
  * @param {Object=} options an object literal used to provide the following properties
  * @export
  * @constructor
@@ -233,6 +239,7 @@ oj.DateTimeConverter.prototype.getAvailableTimeZones = function () {
  *                value: "oj.DateRestrictionValidator.ValidatorOptions",
  *                for: "options", jsdocOverride: true}
  *              ]
+ * @see oj.ValidatorFactory
  */
 oj.DateRestrictionValidator = function _DateRestrictionValidator(options) {
   this.Init(options);
@@ -379,7 +386,9 @@ oj.DateRestrictionValidator.prototype.getHint = function () {
  */
 /* global __ValidationBase:false, Translations:false */
 /**
- * Constructs a DateTimeRangeValidator that ensures the value provided is within a given range
+ * Constructs a DateTimeRangeValidator that ensures the value provided is within a given range.
+ * In most use cases you will use the ValidatorFactory to get an instance of a
+ * DateTimeRangeValidator instead of using the constructor.
  * @param {Object=} options an object literal used to provide the following properties
  * @export
  * @constructor
@@ -391,6 +400,7 @@ oj.DateRestrictionValidator.prototype.getHint = function () {
  *                for: "options", jsdocOverride: true}
  *              ]
  * @since 0.6
+ * @see oj.ValidatorFactory
 */
 oj.DateTimeRangeValidator = function _DateTimeRangeValidator(options) {
   this.Init(options);
@@ -2201,9 +2211,15 @@ oj.IntlDateTimeConverter.prototype.getAvailableTimeZones = function () {
  * @export
  * @ignore
  */
-oj.IntlDateTimeConverter.prototype._getTimePositioning = function () {
+oj.IntlDateTimeConverter.prototype._getTimePositioning = function (param) {
+  var resolvedOption;
+  if (param === null) {
+    resolvedOption = this.resolvedOptions();
+  } else {
+    resolvedOption = param;
+  }
   return this._getWrapped().getTimePositioning(LocaleData.__getBundle(),
-                                               this.resolvedOptions(),
+                                               resolvedOption,
                                                Config.getLocale());
 };
 

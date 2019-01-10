@@ -1,0 +1,143 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+
+@include module-include-once("alta.ios.variables.general") {
+
+
+:root {
+
+  --oj-font-family:                     -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;       
+
+  --oj-root-font-size:                  1em;
+  --oj-font-size:                       1rem;
+
+
+  --oj-font-size-xs:                    0.75rem;
+  --oj-font-size-sm:                    0.875rem;
+
+  // header
+  // --------------------------
+
+  --oj-header-1-font-size:              1.75rem;
+  --oj-header-2-font-size:              1.5rem;
+  --oj-header-3-font-size:              1.25rem;
+  --oj-header-4-font-size:              1rem;
+  --oj-header-5-font-size:              0.875rem;
+
+  // todo: get rid of?
+  --oj-header-font-weight:              normal; //settings: ignore
+
+  --oj-header-1-font-weight:            normal;
+  --oj-header-2-font-weight:            normal;
+  --oj-header-3-font-weight:            normal;
+  --oj-header-4-font-weight:            normal;
+  --oj-header-5-font-weight:            normal;
+
+  --oj-header-text-color:               var(--oj-text-color-2);
+  --oj-header-border-color:             var(--oj-neutral-color-7);
+
+
+  --oj-text-color:                      var(--oj-text-color-1);
+  --oj-primary-text-color:              var(--oj-text-color-1);
+//todo: it's weird secondary is 5 and same as tertiary
+  --oj-secondary-text-color:            var(--oj-text-color-5);
+  --oj-tertiary-text-color:             var(--oj-text-color-5);
+  --oj-text-color-disabled:             var(--oj-text-color-7);
+
+
+  // link
+  // --------------------------
+  --oj-link-text-decoration:            none;
+  --oj-link-text-decoration-hover:      none;
+  --oj-link-font-weight-active:         normal;
+  --oj-link-bg-color-active:            var(--oj-neutral-color-8);
+
+  --oj-link-text-color:                 var(--oj-brand-color-dark-1);
+  --oj-link-text-color-active:          var(--oj-link-text-color);
+  --oj-link-text-color-visited:         var(--oj-text-color);
+  --oj-link-text-color-disabled:        var(--oj-brand-color-light-1);
+
+  // icon
+  // --------------------------
+  --oj-icon-color:                      var(--oj-text-color);
+  --oj-icon-color-default:              var(--oj-neutral-color-12);
+  --oj-icon-color-hover:                var(--oj-brand-color-light-1);
+  --oj-icon-color-active:               var(--oj-brand-color);
+  --oj-icon-color-selected:             var(--oj-icon-color-active);
+  --oj-icon-color-disabled:             var(--oj-neutral-color-12);
+
+
+  // these are in general because many components depend on this value
+  --oj-button-height:            2.25rem;
+  --oj-form-control-input-height:           1.9375rem; //settings: ignore
+
+// todo: remove?
+  --oj-contrast-text-color:             var(--oj-neutral-color-1);
+  --oj-contrast-background-1-color:     var(--oj-neutral-color-15); //settings: ignore
+
+
+  --oj-drop-target-color-1:  var(--oj-accent-color-highlight-1);
+  --oj-drop-target-color-2:  var(--oj-accent-color-highlight-2);
+
+  // TODO remove?
+  // todo: this isn't being driven off the color ramp, search for all instances of hsl to see
+  // if there's other places.
+  --oj-box-shadow-hsl:     0, 0%, 0%;
+  --oj-box-shadow-sm:      0 0 5px 0  unquote('hsla(var(--oj-box-shadow-hsl),0.2)');
+  --oj-box-shadow-md:      1px 1px 5px 0 unquote('hsla(var(--oj-box-shadow-hsl),0.4)');
+  --oj-box-shadow-lg:      1px 1px 10px 0 unquote('hsla(var(--oj-box-shadow-hsl),0.45)');
+
+
+  --oj-overlay-bg-color:   unquote('hsl(var(--oj-box-shadow-hsl))');
+  --oj-overlay-opacity: 0.5;
+
+  --oj-spacing-1x:                  5px;
+  --oj-spacing-2x:                  10px;
+  --oj-spacing-3x:                  15px;
+  --oj-spacing-4x:                  20px;
+
+  --oj-opacity-disabled:               0.5;
+
+  --oj-wrappable-margin-bottom:        4px;
+
+  
+  --oj-border-radius-sm:               2px;
+  --oj-border-radius-md:               3px;
+  --oj-border-radius-lg:               5px;
+
+
+
+  --oj-animation-duration-short:       0.25s;
+  --oj-animation-duration-medium:      0.4s;
+  --oj-animation-duration-long:        0.5s;
+
+  
+  --oj-animation-effect-ripple-bg-color: var(--oj-neutral-color-12);
+
+  --oj-default-zindex:                 1;
+  --oj-app-layout-fixed-zindex:        100;
+  --oj-offcanvas-zindex:               200;
+  --oj-resizable-zindex:               900;
+  --oj-popup-zindex:                   1000;
+  --oj-popup-tail-zindex:             1030;
+  --oj-dialog-zindex:                  1050;
+  --oj-messages-zindex:                2000;
+
+
+
+  // body
+  // --------------------------
+  --oj-body-bg-image:                   none;
+  --oj-body-bg-color:                   var(--oj-neutral-color-1);
+  --oj-body-text-color:                 var(--oj-text-color);
+  --oj-body-touch-action:               manipulation;
+
+
+
+
+
+}
+
+
+}

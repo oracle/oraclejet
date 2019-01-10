@@ -1,0 +1,24 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+
+$includeRadiosetVariables: $includeRadiosetClasses !default;
+
+@if $includeRadiosetVariables != false {
+  $includeFormControlVariables: true !global;
+  $includeMessagesVariables: true !global;
+  $includeRadioCheckboxVariables: true !global;
+  $includeFormLayoutVariables: true !global;
+}
+// import dependencies
+@import "oj.alta.android.formcontrol";
+@import "oj.alta.android.messages";
+@import "oj.alta.android.formcontrol.radiocheckbox";
+@import "oj.alta.android.formlayout";
+
+@if $includeRadiosetVariables != false {
+  @include module-include-once("alta.android.variables.radioset") {
+
+
+  }
+}

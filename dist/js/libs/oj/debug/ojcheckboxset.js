@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -84,6 +84,34 @@ var __oj_checkboxset_metadata =
       "type": "Array<Object>",
       "writeback": true,
       "value": []
+    },
+    "optionRenderer": {
+      "type": "function",
+      "properties": {
+        "component": {
+          "type": "Element"
+        },
+        "index": {
+          "type": "number"
+        },
+        "data": {
+          "type": "object"
+        }
+      }
+    },
+    "options": {
+      "type": "oj.DataProvider"
+    },
+    "optionsKeys": {
+      "type": "object",
+      "properties": {
+        "label": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        }
+      }
     },
     "required": {
       "type": "boolean",
@@ -169,14 +197,15 @@ var __oj_checkboxset_metadata =
  * @ojrole checkboxgroup
  * @ojrole option
  * @ojdisplayname Checkbox Set
+ * @ojtsimport {module: "ojdataprovider", type: "AMD", imported: ["DataProvider"]}
  * @ojstatus preview
  * @ojsignature [{
  *                target: "Type",
- *                value: "class ojCheckboxset extends editableValue<Array<any>, ojCheckboxsetSettableProperties>"
+ *                value: "class ojCheckboxset<K, D> extends editableValue<Array<any>, ojCheckboxsetSettableProperties<K, D>>"
  *               },
  *               {
  *                target: "Type",
- *                value: "ojCheckboxsetSettableProperties extends editableValueSettableProperties<Array<any>>",
+ *                value: "ojCheckboxsetSettableProperties<K, D> extends editableValueSettableProperties<Array<any>>",
  *                for: "SettableProperties"
  *               }
  *              ]
@@ -236,7 +265,7 @@ var __oj_checkboxset_metadata =
  * <p>JET Checkboxset takes care of setting <code class="prettyprint">role="group"</code>
  * on the oj-checkboxset element.
  *
- * <p>As shown in the online demos, the application is responsible for applying
+ * <p>The application is responsible for applying
  * <code class="prettyprint">labelled-by</code>
  * to point to an <code class="prettyprint">oj-label</code> element for the oj-checkboxset.
  * <p>Disabled content: JET supports an accessible luminosity contrast ratio,
@@ -347,6 +376,214 @@ var __oj_checkboxset_metadata =
      * @memberof oj.ojCheckboxset
      */
         labelledBy: null,
+
+    /**
+     * @typedef {Object} oj.ojCheckboxset.OptionContext
+     * @property {Element} component A reference to the Checkboxset element.
+     * @property {number} index The index of the option, where 0 is the index of the first option.
+     * @property {Object} data The data object for the option.
+     * @ojsignature [{target:"Type", value:"<D>", for:"genericTypeParameters"},
+     *               {target:"Type", value:"D", for:"data"}]
+     */
+    /**
+     * {@ojinclude "name":"checkboxsetCommonOptionRenderer"}
+     * @name optionRenderer
+     * @ojshortdesc The renderer function that renders the content of each option.
+     * @expose
+     * @memberof oj.ojCheckboxset
+     * @instance
+     * @type {null|function(Object):Object}
+     * @ojsignature { target: "Type",
+     *                value: "?((param0: oj.ojCheckboxset.OptionContext<D>) => Element)|null",
+     *                jsdocOverride: true}
+     * @default null
+     * @example <caption>Initialize the checkboxset with a renderer:</caption>
+     * &lt;oj-checkboxset option-renderer="[[optionRenderer]]">&lt;/oj-checkboxset>
+     * @example var optionRenderer = function(context) {
+     *            var ojOption = document.createElement('oj-option');
+     *            // Set the textContent or append other child nodes
+     *            ojOption.textContent = context.data['FIRST_NAME'] + ' ' + context.data['LAST_NAME'];
+     *            return ojOption;
+     *          };
+     */
+    /**
+     * The renderer function that renders each option.
+     * The function should return an oj-option element.
+     * <p>It is not necessary to set the "value" attribute on the oj-option as it is available from the options data.</p>
+     * <p>
+     * See <a href="#options">options</a>
+     * and <a href="#optionsKeys">options-keys</a> for configuring option label and value.
+     * </p>
+     *
+     * <p>The context parameter passed to the renderer contains the following keys:</p>
+     * <table class="keyboard-table">
+     *   <thead>
+     *     <tr>
+     *       <th>Key</th>
+     *       <th>Description</th>
+     *     </tr>
+     *   </thead>
+     *   <tbody>
+     *     <tr>
+     *       <td><kbd>component</kbd></td>
+     *       <td>A reference to the Checkboxset element.</td>
+     *     </tr>
+     *     <tr>
+     *       <td><kbd>index</kbd></td>
+     *       <td>The index of the option, where 0 is the index of the first option.</td>
+     *     </tr>
+     *     <tr>
+     *       <td><kbd>data</kbd></td>
+     *       <td>The data object for the option.</td>
+     *     </tr>
+     *   </tbody>
+     * </table>
+     *
+     * @expose
+     * @memberof oj.ojCheckboxset
+     * @instance
+     * @ojfragment checkboxsetCommonOptionRenderer
+     */
+        optionRenderer: null,
+
+    /**
+     * @typedef {Object} oj.ojCheckboxset.Option
+     * @property {boolean=} disabled Option item is disabled.
+     * @property {string=} label The display label for the option item. If it's missing, string(value) will be used.
+     * @property {any} value The value of the option item.
+     */
+    /**
+     * {@ojinclude "name":"checkboxsetCommonOptions"}
+     *
+     * @name options
+     * @ojshortdesc The option items for the Checkboxset.
+     * @expose
+     * @access public
+     * @instance
+     * @type {oj.DataProvider|null}
+     * @ojsignature { target: "Type",
+     *                value: "oj.DataProvider<K, D>|null",
+     *                jsdocOverride: true}
+     * @default null
+     * @memberof oj.ojCheckboxset
+     *
+     * @example <caption>Initialize the Checkboxset with a data provider and data mapping:</caption>
+     * &lt;oj-checkboxset options="[[dataProvider]]">&lt;/oj-checkboxset>
+     *
+     * @example <caption>Use simple DataProvider if data has value and label properties.</caption>
+     * var dataArray = [
+     *            {value: 'Id 1', label: 'Name 1'},
+     *            {value: 'Id 2', label: 'Name 2'},
+     *            {value: 'Id 3', label: 'Name 3'}];
+     *
+     * var dataProvider = new oj.ArrayDataProvider(dataArray, {keyAttributes: 'value'});
+     *
+     * @example <caption>Data mapping can be used if data doesn't have value and label properties.</caption>
+     * // actual field names are "id" and "name"
+     * var dataArray = [
+     *            {id: 'Id 1', name: 'Name 1'},
+     *            {id: 'Id 2', name: 'Name 2'},
+     *            {id: 'Id 3', name: 'Name 3'}];
+     *
+     * // In mapfields, map "name" to "label" and "id" to "value"
+     * var mapFields = function(item) {
+     *   var data = item['data'];
+     *   var mappedItem = {};
+     *   mappedItem['data'] = {};
+     *   mappedItem['data']['label'] = data['name'];
+     *   mappedItem['data']['value'] = data['id'];
+     *   mappedItem['metadata'] = {'key': data['id']};
+     *   return mappedItem;
+     * };
+     * var dataMapping = {'mapFields': mapFields};
+     *
+     * var arrayDataProvider = new oj.ArrayDataProvider(dataArray, {keyAttributes: 'id'});
+     * var dataProvider = new oj.ListDataProviderView(arrayDataProvider, {'dataMapping': dataMapping});
+     */
+    /**
+     * A data provider that returns the option items for the Checkboxset.
+     * This attribute can be used instead of providing a list of <code class="prettyprint">oj-option</code> child elements of the Checkboxset element.
+     * <p>This data provider must implement <a href="oj.DataProvider.html">oj.DataProvider</a>.
+     *   <ul>
+     *   <li><code class="prettyprint">value</code> in <code class="prettyprint">oj.ojCheckboxset.Option</code> must be the row key in the data provider.</li>
+     *   <li>All rows will be displayed in the Checkboxset.</li>
+     *   </ul>
+     * </p>
+     *
+     * @expose
+     * @memberof oj.ojCheckboxset
+     * @instance
+     * @ojfragment checkboxsetCommonOptions
+     */
+        options: null,
+
+    /**
+     * @typedef {Object} oj.ojCheckboxset.OptionsKeys
+     * @property {?string=} label The key name for the label.
+     * @property {?string=} value The key name for the value.
+     */
+    /**
+     * {@ojinclude "name":"checkboxsetCommonOptionsKeys"}
+     *
+     * @example <caption>Initialize the Checkboxset with <code class="prettyprint">options-keys</code> specified. This allows the key names to be redefined in the options array.</caption>
+     * &lt;oj-checkboxset options-keys="[[optionsKeys]]">&lt;/oj-checkboxset>
+     * @example var optionsKeys = {value : "state_abbr", label : "state_name"};
+     *
+     * @name optionsKeys
+     * @ojshortdesc Specify the key names to use in the options array.  Depending on options-keys means that the signature of the data does not match what is supported by the options attribute.
+     * @expose
+     * @access public
+     * @instance
+     * @type {?Object}
+     * @ojsignature { target: "Type",
+     *                value: "?oj.ojCheckboxset.OptionsKeys",
+     *                jsdocOverride: true}
+     * @default null
+     * @memberof oj.ojCheckboxset
+     */
+    /**
+     * Specify the key names to use in the options array.
+     * <p>Depending on options-keys means that the signature of the data does not match what is supported by the options attribute. When using Typescript, this would result in a compilation error.</p>
+     * <p>Best practice is to use a <a href="oj.ListDataProviderView.html">oj.ListDataProviderView</a> with data mapping as a replacement.</p>
+     * <p>However, for the app that must fetch data from a REST endpoint where the data fields do not match those that are supported by the options attribute, you may use the options-keys with any dataProvider that implements <a href="oj.DataProvider.html">oj.DataProvider</a> interface.</p>
+     *
+     * @expose
+     * @access public
+     * @instance
+     * @memberof oj.ojCheckboxset
+     * @ojfragment checkboxsetCommonOptionsKeys
+     */
+        optionsKeys: {
+    /**
+     * The key name for the label.
+     *
+     * @name optionsKeys.label
+     * @expose
+     * @public
+     * @instance
+     * @memberof! oj.ojCheckboxset
+     * @type {?string}
+     * @ojsignature { target: "Type",
+     *                value: "?"}
+     * @default null
+     */
+
+    /**
+     * The key name for the value.
+     *
+     * @name optionsKeys.value
+     * @expose
+     * @public
+     * @instance
+     * @memberof! oj.ojCheckboxset
+     * @type {?string}
+     * @ojsignature { target: "Type",
+     *                value: "?"}
+     * @default null
+     */
+
+        },
+
     /**
      * Whether the component is required or optional. When required is set to true, an implicit
      * required validator is created using the validator factory -
@@ -642,6 +879,13 @@ var __oj_checkboxset_metadata =
     // attribute of the rendered chekcboxes, let's make sure the checkboxset
     // has an ID
         element.uniqueId();
+
+        // Async step that generates oj-option if DateProvider is used.
+        // RadioCheckboxUtils will set this._optionsDataProvider, this._optionsDataListener
+        // and this._optionsDataArray.
+        oj.RadioCheckboxUtils.generateOptionsFromData.call(this);
+
+        // Continue processing for the static oj-option case and set up the component itself
         this._processOjOptions();
     // The processOjOptions renders input/label, so we need to go through and
     // get the this.$checkboxes after this is called.
@@ -750,15 +994,6 @@ var __oj_checkboxset_metadata =
    * @private
    */
       _refreshRequired: oj.EditableValueUtils._refreshRequired,
-
-  /**
-   * the validate method from v3.x that returns a boolean
-   * @memberof oj.ojCheckboxset
-   * @instance
-   * @protected
-   * @ignore
-   */
-      _ValidateReturnBoolean: oj.EditableValueUtils._ValidateReturnBoolean,
 
   /**
    * This function processes the oj-option children, sets the custom renderer, and
@@ -1349,6 +1584,13 @@ var __oj_checkboxset_metadata =
         // remove the old one and add the new one
             this._updateLabelledBy(originalValue, value, this.widget());
             break;
+          case 'options':
+            oj.RadioCheckboxUtils.generateOptionsFromData.call(this);
+            break;
+          case 'optionsKeys':
+          case 'optionRenderer':
+            oj.RadioCheckboxUtils.renderOptions.call(this);
+            break;
           default:
             break;
         }
@@ -1461,6 +1703,8 @@ var __oj_checkboxset_metadata =
 
     // remove the dom we added to wrap the children of this.element, but don't remove the children.
         $(wrapperDom).contents().unwrap();
+
+        oj.RadioCheckboxUtils.removeDataListener.call(this);
 
         return ret;
       }

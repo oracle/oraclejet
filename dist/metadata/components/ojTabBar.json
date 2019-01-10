@@ -1,7 +1,7 @@
 {
   "name": "oj-tab-bar",
-  "version": "6.0.0",
-  "jetVersion": "6.0.0",
+  "version": "6.1.0",
+  "jetVersion": "6.1.0",
   "displayName": "Tab Bar",
   "type": "core",
   "styleClasses": [
@@ -91,7 +91,7 @@
     }
   ],
   "description": "Displays tab bar with advanced interactive features.",
-  "help": "https://docs.oracle.com/en/middleware/jet/6/reference-api/oj.ojTabBar.html",
+  "help": "https://docs.oracle.com/en/middleware/jet/6.1/reference-api/oj.ojTabBar.html",
   "properties": {
     "as": {
       "description": "Gets and sets the alias for the current item when referenced inside the item template.",

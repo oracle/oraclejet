@@ -1,0 +1,30 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+$includePagingControlVariables: $includePagingControlClasses !default;
+
+@if $includePagingControlVariables != false {
+  $includeLabelVariables: true !global;
+  $includeButtonVariables: true !global;
+  $includeFormControlVariables: true !global;
+}
+// import dependencies
+@import "oj.alta.android.formcontrol.label";
+@import "oj.alta.android.button";
+@import "oj.alta.android.formcontrol";
+
+@if $includePagingControlVariables != false {
+  @include module-include-once("alta.android.variables.pagingcontrol") {
+
+:root {
+  // paging
+  // ----------------------------
+  --oj-paging-padding:          5px;
+  --oj-paging-dot-size:         7px;
+  --oj-paging-dot-padding:      8px;
+  --oj-paging-border-color:     var(--oj-neutral-color-8);
+
+}
+
+  }
+}

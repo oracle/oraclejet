@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -428,7 +428,10 @@ oj.ModuleBinding._EMPTY_MODULE = 'oj:blank';
                 _invokeOnSubtree(cachedNodeArray,
                                  oj.Components ? oj.Components.subtreeHidden : null);
                 cache[currentCacheKey] = { model: currentViewModel, view: cachedNodeArray };
-              } else if (!(isCustomElement && currentCleanupMode === 'none')) {
+              } else if (isCustomElement && currentCleanupMode === 'none') {
+                _invokeOnSubtree(cachedNodeArray,
+                                 oj.Components ? oj.Components.subtreeDetached : null);
+              } else {
                 disposeAssociatedComponentViewModel();
               }
               currentViewModel = model;
@@ -451,9 +454,11 @@ oj.ModuleBinding._EMPTY_MODULE = 'oj:blank';
 
               var fromCache = cached != null;
 
+              // For upstream or indirect dependency we will still rely components being registered on the oj namespace.
               if (fromCache) {
-                // For upstream or indirect dependency we will still rely components being registered on the oj namespace.
                 _invokeOnSubtree(nodes, oj.Components ? oj.Components.subtreeShown : null);
+              } else if (bindingApplied) {
+                _invokeOnSubtree(nodes, oj.Components ? oj.Components.subtreeAttached : null);
               }
 
               legacyLifecycleListenerFunc(lifecycleListener, 'attached',

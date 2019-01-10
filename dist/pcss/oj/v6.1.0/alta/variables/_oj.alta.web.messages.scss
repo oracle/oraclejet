@@ -1,0 +1,37 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+$includeMessagesVariables: $includeMessagesClasses !default;
+
+@if $includeMessagesVariables != false {
+  $includeMessageVariables: true !global;
+}
+
+// import dependencies
+@import "oj.alta.web.message";
+
+@if $includeMessagesVariables != false {
+  @include module-include-once("alta.web.variables.messages") {
+
+    :root {
+      // Messages
+      // ---------------------------
+
+      --oj-messages-general-overlay-width:             calc(100% - 20px);
+      --oj-messages-general-overlay-max-width:         var(--oj-messages-general-overlay-width);
+      --oj-messages-general-overlay-min-width:         var(--oj-messages-general-overlay-width);
+      --oj-messages-general-overlay-border-width:      1px;
+      --oj-messages-general-overlay-border-color:      var(--oj-neutral-color-9);
+      --oj-messages-general-overlay-border-radius:     var(--oj-border-radius-sm);
+      --oj-messages-general-overlay-box-shadow:        var(--oj-box-shadow-sm);
+
+      --oj-messages-notification-overlay-width:          30vw;
+      --oj-messages-notification-overlay-min-width:      320px;
+      --oj-messages-notification-overlay-max-width:      400px;
+      --oj-messages-notification-overlay-border-width:   0;
+      --oj-messages-notification-overlay-border-color:   initial;
+      --oj-messages-notification-overlay-border-radius:  initial;
+      --oj-messages-notification-overlay-box-shadow:     initial;
+    }
+  }
+}

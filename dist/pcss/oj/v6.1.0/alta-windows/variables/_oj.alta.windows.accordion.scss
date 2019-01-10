@@ -1,0 +1,19 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+$includeAccordionVariables: $includeAccordionClasses !default;
+
+@if $includeAccordionVariables != false {
+  $includePanelVariables: true !global;
+  $includeListViewVariables: true !global;
+}
+
+// import dependencies
+@import "oj.alta.windows.panel";
+@import "oj.alta.windows.listview";
+
+@if $includeAccordionVariables != false {
+  @include module-include-once("alta.windows.variables.accordion") {
+
+  }
+}

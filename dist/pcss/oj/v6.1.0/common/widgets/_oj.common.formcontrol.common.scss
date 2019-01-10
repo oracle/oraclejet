@@ -1,0 +1,74 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the 
+//          version in your base theme's directory, 
+//          for example alta/widgets/_oj.alta.formcontrol.common.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@import "../../utilities/oj.utilities";
+@import "oj.common.formcontrol.mixins";
+
+
+@if $includeFormControlCommonClasses != false {
+  @include module-include-once("common.formcontrolcommon") {
+
+
+    
+    /* form-control classes */
+    
+    /* --------------------------------------------------------------- */
+    
+    // bumping up the specificity with the html because 
+    // when $includeNormalize is false (compatibility mode) the input will get 
+    // a margin of 0 which would override the margin set here
+    html .oj-form-control {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        margin-bottom: var(--oj-wrappable-margin-bottom)
+      } @else {
+        margin-bottom: $wrappableMarginBottom;        
+      }
+      vertical-align: middle;
+    }
+
+    /** for all hints */
+    .oj-form-control-hint {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        color: var(--oj-text-color);
+      } @else {
+        color: $textColor;        
+      }
+      padding: 0;
+      word-wrap: break-word;  
+    };
+
+    .oj-form-control-title {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        color: var(--oj-text-color);
+      } @else {
+        color: $textColor;        
+      }
+    }
+    
+    // The oj-form-control-inherit selector on an ancestor indicates that the form control should
+    // inherit styles, like width/height/borders/colors/text-alignment
+    // -----------------------------------------------------------------------------------------
+    // inherit the height of the container and remove margin-bottom
+    // form controls have min-width/max-width set on their root dom element. 
+    // Allow that to be inherited as well.
+    .oj-form-control-inherit .oj-form-control {
+      height:100%;
+      min-height:100%;
+      margin-bottom: 0;
+      max-width: 100%;
+      min-width: 100%;
+    }
+
+    // suppress the native clear icons in IE
+    .oj-form-control input::-ms-clear {
+      display: none; 
+      width : 0; 
+      height: 0;
+    }
+  }
+}
+

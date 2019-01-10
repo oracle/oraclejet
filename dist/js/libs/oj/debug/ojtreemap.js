@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -597,7 +597,8 @@ var __oj_treemap_node_metadata =
  * @ojtsimport {module: "ojdataprovider", type: "AMD", imported: ["DataProvider"]}
  * @ojsignature [{
  *                target: "Type",
- *                value: "class ojTreemap<K, D> extends dvtBaseComponent<ojTreemapSettableProperties<K, D>>"
+ *                value: "class ojTreemap<K, D> extends dvtBaseComponent<ojTreemapSettableProperties<K, D>>",
+ *                genericParameters: [{"name": "K", "description": "Type of key of the dataprovider"}, {"name": "D", "description": "Type of data from the dataprovider"}]
  *               },
  *               {
  *                target: "Type",
@@ -1361,7 +1362,8 @@ oj.__registerWidget('oj.ojTreemap', $.oj.dvtBaseComponent,
           templateElementName: 'oj-treemap-node',
           resultPath: 'nodes',
           // TODO:  - allow lazy loading of data from tree data provider
-          expandedKeySet: new KeySet.ExpandAllKeySet()
+          expandedKeySet: new KeySet.ExpandAllKeySet(),
+          maxFetchDepth: this.options.displayLevels - 1
         }
       };
     },

@@ -1,11 +1,11 @@
 {
   "name": "oj-spark-chart",
-  "version": "6.0.0",
-  "jetVersion": "6.0.0",
+  "version": "6.1.0",
+  "jetVersion": "6.1.0",
   "displayName": "Spark Chart",
   "type": "core",
   "description": "Displays information graphically, typically highlighting the trend of a data set in a compact form factor.",
-  "help": "https://docs.oracle.com/en/middleware/jet/6/reference-api/oj.ojSparkChart.html",
+  "help": "https://docs.oracle.com/en/middleware/jet/6.1/reference-api/oj.ojSparkChart.html",
   "properties": {
     "animationDuration": {
       "description": "The duration of the animations in milliseconds. The default value comes from the CSS and varies based on theme.",

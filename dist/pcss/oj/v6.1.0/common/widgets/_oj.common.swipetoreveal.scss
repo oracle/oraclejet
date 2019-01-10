@@ -1,0 +1,86 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// !!!
+// WARNING: do not directly import this file, instead import the 
+//          version in your theme's directory, 
+//          for example alta/widgets/_oj.alta.swipetoreveal.scss
+// !!!
+
+@import "../../utilities/oj.utilities";
+
+@if $includeSwipeToRevealClasses != false {
+  @include module-include-once("common.swipetoreveal") {
+
+    /*
+     * Applied to offcanvas when it is in open state 
+     */
+    .oj-swipetoreveal.oj-offcanvas-start.oj-offcanvas-open,
+    .oj-swipetoreveal.oj-offcanvas-end.oj-offcanvas-open {
+      display: flex;
+      overflow: hidden;      
+    }
+
+    /*
+     * Applied to action items 
+     */
+    .oj-swipetoreveal-action {
+      flex: 1;
+      max-width: 100%;
+      text-align:center;
+      vertical-align:middle;
+      height: 100%;
+      overflow: hidden;
+      transition-timing-function: ease-in-out;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+        color: var(--oj-swipe-actions-text-color);
+        transition: max-width var(--oj-swipe-actions-animation-duration);
+        background-color: var(--oj-swipe-actions-default-bg-color);
+        min-width: var(--oj-swipe-actions-item-width);
+      } @else {
+        color: $swipeActionsTextColor;
+        transition: max-width $swipeActionsAnimationDuration;
+        background-color: $swipeActionsDefaultBgColor;
+        min-width: $swipeActionsItemWidth;
+      }
+    }
+
+    /*
+     * Applied to action items that should be hidden when full trigger occurs
+     */
+    .oj-swipetoreveal .oj-swipetoreveal-hide-when-full {
+        max-width: 0;
+    }
+
+    /*
+     * Applied to the more action item
+     */
+    .oj-swipetoreveal .oj-swipetoreveal-more {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+        background-color: var(--oj-swipe-actions-neutral-bg-color);
+      } @else {
+        background-color: $swipeActionsNeutralBgColor;
+      }
+    }
+
+    /*
+     * Applied to the flag action item
+     */
+    .oj-swipetoreveal .oj-swipetoreveal-flag {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+        background-color: var(--oj-swipe-actions-attention-bg-color);
+      } @else {
+        background-color: $swipeActionsAttentionBgColor;
+      }
+    }
+
+    /*
+     * Applied to the alert action item
+     */
+    .oj-swipetoreveal .oj-swipetoreveal-alert {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+        background-color: var(--oj-swipe-actions-danger-bg-color);
+      } @else {
+        background-color: $swipeActionsDangerBgColor;
+      }
+    }
+  }
+}

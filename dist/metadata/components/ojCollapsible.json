@@ -1,11 +1,11 @@
 {
   "name": "oj-collapsible",
-  "version": "6.0.0",
-  "jetVersion": "6.0.0",
+  "version": "6.1.0",
+  "jetVersion": "6.1.0",
   "displayName": "Collapsible",
   "type": "core",
   "description": "Displays a header that can be expanded to show its content.",
-  "help": "https://docs.oracle.com/en/middleware/jet/6/reference-api/oj.ojCollapsible.html",
+  "help": "https://docs.oracle.com/en/middleware/jet/6.1/reference-api/oj.ojCollapsible.html",
   "properties": {
     "disabled": {
       "description": "Disables the collapsible if set to true.",

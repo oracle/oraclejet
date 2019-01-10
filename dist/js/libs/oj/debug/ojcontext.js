@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -413,6 +413,12 @@ oj.BusyContext._values = function (statesMap) {
  *                      logging and handling rejected status. Can be supplied as a Object or a
  *                      function.  If the type is an object the toString function needs to be
  *                      implemented.
+ * @ojsignature [{target: "Type",
+ *                value: "{
+ *                         toString: ()=>string;
+ *                         [propName: string]: any;
+ *                       } | (() => string) | string",
+ *                for: "options.description"}]
  * @returns {function():void} resolve function called by the registrant when the busy state completes.
  *                     The resultant function will throw an error if the busy state is no longer
  *                     registered.

@@ -1,0 +1,182 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+@if $includeProgressClasses != false  {
+  @include module-include-once("common.progress") {
+    /* progress */
+    /* --------------------------------------------------------------- */
+
+    // This is to prevent the flash of unstyled content before the html becomes JET components.
+    @if $initialVisibility == hidden {
+      oj-progress:not(.oj-complete){
+        visibility: hidden;
+      }
+    }
+
+    oj-progress {
+      display:block;
+    }
+
+    .oj-progress-bar {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        height: var(--oj-progress-bar-height);
+        border: 1px var(--oj-progress-bar-border-style) var(--oj-progress-bar-border-color);
+        border-radius: var(--oj-progress-bar-border-radius);
+      }
+      @else
+      {
+        height: $progressBarHeight;
+        border: 1px $progressBarBorderStyle $progressBarBorderColor;
+        @include oj-border-radius($progressBarBorderRadius);
+      }
+      position: relative;
+      box-sizing: border-box;
+      overflow: hidden;
+    }
+
+    .oj-progress-bar::before {
+      content: "";
+      position: absolute;
+      height: 100%;
+      width: 100%;
+      z-index: -1;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        background-color: var(--oj-progress-bar-bg-color);
+        opacity: var(--oj-progress-bar-bg-opacity);
+      }
+      @else
+      {
+        background-color: $progressBarBgColor;
+        opacity: $progressBarBgOpacity;
+      }
+    }
+
+    .oj-progress-bar-value {
+      margin: 0;
+      box-sizing: border-box;
+      height: 100%;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        background: var(--oj-progress-value-bg-color);
+      }
+      @else
+      {
+        background: $progressValueBgColor;
+      }
+    }
+    //.oj-progressbar-start-label, oj-progressbar-end-label are old syntax
+    .oj-progressbar-start-label,
+    .oj-progressbar-end-label,
+    .oj-progress-bar-start-label,
+    .oj-progress-bar-end-label {
+      display: inline-block;
+      margin-top: 8px;
+    }
+
+    .oj-progressbar-end-label,
+    .oj-progress-bar-end-label {
+      @include oj-ltr() {
+        float: right;
+      }
+      @include oj-rtl() {
+        float: left;
+      }
+    }
+    //oj-progressbar-embedded is old syntax
+    .oj-progressbar-embedded,
+    .oj-progress-bar-embedded {
+      height: 3px;
+      width: 100%;
+      border-style: none;
+      background-color: transparent;
+    }
+    .oj-progress-bar-overlay {
+      height: 100%;
+      background: url($progressBarIndeterminateOverlayImage);
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        opacity: var(--oj-progress-bar-indeterminate-overlay-opacity);
+      } @else {
+        opacity: $progressBarIndeterminateOverlayOpacity;
+      }
+      // TODO
+      @include oj-rtl() {
+        transform:scaleX(-1);
+      }
+    }
+
+    // Add border for high contrast mode where the background color can't be seen
+    .oj-hicontrast .oj-progress-bar-value {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        border: 1px dashed var(--oj-progress-bar-border-color);
+      }
+      @else
+      {
+        border: 1px dashed $progressBarBorderColor;
+      }
+    }
+
+
+    /* progress-circle */
+    /* --------------------------------------------------------------- */
+
+    .oj-progress-circle {
+      position: relative;
+      display: inline-block;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        width: var(--oj-progress-circle-size);
+        height: var(--oj-progress-circle-size);
+      }
+      @else
+      {
+        width: $progressCircleSize;
+        height: $progressCircleSize;
+      }
+      max-width: 100%;
+      max-height: 100%;
+    }
+
+    .oj-progress-circle-base {
+      fill: transparent;
+      stroke-width: 10%;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        stroke: var(--oj-progress-circle-bg-color);
+      }
+      @else
+      {
+        stroke: $progressCircleBgColor;
+      }
+    }
+
+    .oj-progress-circle-base:not(.oj-progress-circle-value) {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        stroke-opacity: var(--oj-progress-circle-bg-opacity);
+      }
+      @else
+      {
+        stroke-opacity: $progressCircleBgOpacity;
+      }
+    }
+
+    .oj-progress-circle-value {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        stroke: var(--oj-progress-value-bg-color);
+      }
+      @else
+      {
+        stroke: $progressValueBgColor;
+      }
+    }
+
+    .oj-progress-circle-transform {
+      transform: rotate(-90deg);
+    }
+  }
+}

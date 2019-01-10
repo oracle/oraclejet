@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -949,7 +949,9 @@ var __oj_gantt_task_metadata =
  * @ojtsimport {module: "ojtimeaxis", type: "AMD", imported:["ojTimeAxis"]}
  * @ojsignature [{
  *                target: "Type",
- *                value: "class ojGantt<K1, K2, D1, D2> extends dvtTimeComponent<ojGanttSettableProperties<K1, K2, D1, D2>>"
+ *                value: "class ojGantt<K1, K2, D1, D2> extends dvtTimeComponent<ojGanttSettableProperties<K1, K2, D1, D2>>",
+ *                genericParameters: [{"name": "K1", "description": "Type of key of the dependencyData dataprovider"}, {"name": "K2", "description": "Type of key of the taskData dataprovider"},
+ *                 {"name": "D1", "description": "Type of data from the dependencyData dataprovider"}, {"name": "D2", "description": "Type of data from the taskData dataprovider"}]
  *               },
  *               {
  *                target: "Type",

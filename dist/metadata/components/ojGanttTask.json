@@ -1,11 +1,11 @@
 {
   "name": "oj-gantt-task",
-  "version": "6.0.0",
-  "jetVersion": "6.0.0",
+  "version": "6.1.0",
+  "jetVersion": "6.1.0",
   "displayName": "Gantt Task",
   "type": "core",
   "description": "ojGanttTask",
-  "help": "https://docs.oracle.com/en/middleware/jet/6/reference-api/oj.ojGanttTask.html",
+  "help": "https://docs.oracle.com/en/middleware/jet/6.1/reference-api/oj.ojGanttTask.html",
   "properties": {
     "baseline": {
       "description": "Specifies the baseline of the task.\nWhen only one of 'start' or 'end' value is specified, or when 'start' and 'end' values are equal, the baseline is considered a milestone baseline.",

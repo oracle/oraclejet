@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -2479,7 +2479,7 @@ var __oj_chart_item_metadata =
       "value": "inherit"
     },
     "groupId": {
-      "type": "Array<string>"
+      "type": "Array<(string|number)>"
     },
     "high": {
       "type": "number"
@@ -2560,7 +2560,7 @@ var __oj_chart_item_metadata =
       "type": "number"
     },
     "seriesId": {
-      "type": "string"
+      "type": "string|number"
     },
     "shortDesc": {
       "type": "string"
@@ -3106,7 +3106,7 @@ var __oj_spark_chart_item_metadata =
  * All rights reserved.
  */
 
-/* global Promise:true, Logger:false */
+/* global Logger:false, Map:false */
 
  /**
  * Handler for DataProvider generated content for chart
@@ -3146,11 +3146,9 @@ oj.ChartDataProviderHandler.prototype.Init = function () {
   // item map. key: series+group ids, value: corresponding item
   this._itemMap = {};
   // seriesContexts: conatins series context for each series
-  this._seriesContexts = {};
+  this._seriesContexts = new Map();
   // groupContexts: contains the group context for a each level of each group
-  this._groupContexts = {};
-  // itemContexts: contains the item context for a each item
-  this._itemContexts = {};
+  this._groupContexts = new Map();
 
   var rowData = this._data.data;
   var rowKeys = this._data.keys;
@@ -3162,6 +3160,7 @@ oj.ChartDataProviderHandler.prototype.Init = function () {
   // get top level chart item property names
   var itemTagName = 'oj-chart-item';
   var chartItemProperties = this._component.getElementPropertyNames(itemTagName);
+  var itemPropertyValidator = this._component.getPropertyValidator(this._itemTemplate, itemTagName);
 
   // stamp out chart item templates and collect chart item nodes
   var chartDataItems = [];
@@ -3175,10 +3174,10 @@ oj.ChartDataProviderHandler.prototype.Init = function () {
 
     try {
       var chartDataItem = this._templateEngine.resolveProperties(this._parentElement,
-        this._itemTemplate, itemTagName, chartItemProperties, itemContext, this._alias);
+        this._itemTemplate, itemTagName, chartItemProperties, itemContext, this._alias,
+        itemPropertyValidator);
       chartDataItem.id = rowKey;
       chartDataItem._itemData = rowItem;
-      this._itemContexts[i] = itemContext;
       // only process unique rows. ie item keys not seen yet
       if (!this._itemMap[chartDataItem.seriesId] ||
         !this._itemMap[chartDataItem.seriesId][chartDataItem.groupId]) {
@@ -3188,7 +3187,7 @@ oj.ChartDataProviderHandler.prototype.Init = function () {
 
         // While processing each data row, pull out each seriesId and generate/update seriesContext for that series
         var seriesId = chartDataItem.seriesId;
-        if (!this._seriesContexts[seriesId]) {
+        if (!this._seriesContexts.has(seriesId)) {
           var seriesContext = {};
           seriesContext = {
             componentElement: this._parentElement,
@@ -3196,19 +3195,18 @@ oj.ChartDataProviderHandler.prototype.Init = function () {
             items: [],
             index: numSeries
           };
-          this._seriesContexts[seriesId] = seriesContext;
+          this._seriesContexts.set(seriesId, seriesContext);
           numSeries += 1;
         }
-        this._seriesContexts[seriesId].items.push(itemContext);
+        this._seriesContexts.get(seriesId).items.push(itemContext);
 
         // While processing each data row, pull out each groupId and generate/update groupContext for each group/nested group
         var groupId = chartDataItem.groupId;
         var count = numOuterGroups;
-        if (!this._groupContexts[groupId.slice(0, groupId.length - 1)]) {
+        if (!this._groupContexts.has(groupId.slice(0, groupId.length - 1))) {
           numOuterGroups += 1;
         }
-        this._groupContexts = this._addToGroupContexts(this._groupContexts, itemContext,
-                                                        groupId, 1, count);
+        this._addToGroupContexts(itemContext, groupId, 1, count);
 
         // make a map of series+group ids to their corresponding items
         if (!this._itemMap[chartDataItem.seriesId]) {
@@ -3260,38 +3258,34 @@ oj.ChartDataProviderHandler.prototype.getGroups = function () {
 
 /**
  * Update the groupContext of all groups at each depth in the groupId path, creating new groupContext if we have a new group
- * @param {Object} groupContexts The current groupContexts object
  * @param {Object} itemContext The item context for item to be added to the group context
  * @param {Array} groupId The array of groupIds that correspond to current group/nested group we are updating the context for
  * @param {number} depth The depth of the current group/nested group we are updating the context for
  * @param {number} count The index of the current group/nested group we are updating the context for, in relation to that group's parent
  * @private
  */
-oj.ChartDataProviderHandler.prototype._addToGroupContexts = function (
-  groupContexts, itemContext, groupId, depth, count) {
+oj.ChartDataProviderHandler.prototype._addToGroupContexts = function (itemContext,
+  groupId, depth, count) {
   var groupIndex = depth - 1;
   if (groupIndex < groupId.length) {
     var currentId = groupId[groupIndex]; // id for the group a the current depth
-    var currentContext = groupContexts[currentId];
+    var currentContext = this._groupContexts.get(currentId);
     if (!currentContext) {
       // eslint-disable-next-line no-param-reassign
-      groupContexts[currentId] = {
+      this._groupContexts.set(currentId, {
         ids: groupId,
         componentElement: this._parentElement,
         items: [itemContext],
         depth: depth,
         leaf: depth === groupId.length,
-        index: count };
+        index: count });
     } else {
       // a groupContext will have the data rows and keys for all of its descdendants
       currentContext.items.push(itemContext);
     }
     var _count = currentContext ? currentContext.items.length - 1 : 0;
-    return this._addToGroupContexts(groupContexts, itemContext,
-                                             groupId, depth + 1, _count);
+    this._addToGroupContexts(itemContext, groupId, depth + 1, _count);
   }
-
-  return groupContexts;
 };
 
 /**
@@ -3301,32 +3295,36 @@ oj.ChartDataProviderHandler.prototype._addToGroupContexts = function (
  * @private
  */
 oj.ChartDataProviderHandler.prototype._createSeries = function (chartGroupsData) {
-  var seriesIds = Object.keys(this._seriesContexts);
   // get top level chart series property names
   var seriesTagName = 'oj-chart-series';
   var chartSeriesProperties = this._component.getElementPropertyNames(seriesTagName);
+  var seriesPropertyValidator = this._component.getPropertyValidator(this._seriesTemplate,
+    seriesTagName);
 
   var seriesArray = [];
-  for (var i = 0; i < seriesIds.length; i++) {
-    var seriesId = seriesIds[i];
-    var seriesContext = this._seriesContexts[seriesId];
+  var hasError = false;
+  this._seriesContexts.forEach(function (seriesContext, seriesId) {
     try {
-      var _chartDataSeries;
-      if (this._seriesTemplate) {
-        _chartDataSeries = this._templateEngine.resolveProperties(this._parentElement,
-          this._seriesTemplate, seriesTagName, chartSeriesProperties, seriesContext, this._alias);
-      } else {
-        _chartDataSeries = {};
+      if (!hasError) {
+        var _chartDataSeries;
+        if (this._seriesTemplate) {
+          _chartDataSeries = this._templateEngine.resolveProperties(this._parentElement,
+            this._seriesTemplate, seriesTagName, chartSeriesProperties, seriesContext, this._alias,
+            seriesPropertyValidator);
+        } else {
+          _chartDataSeries = {};
+        }
+        _chartDataSeries.id = seriesId;
+        _chartDataSeries.name = _chartDataSeries.name || (seriesId + '');
+        seriesArray.push(_chartDataSeries);
       }
-      _chartDataSeries.id = seriesId;
-      _chartDataSeries.name = seriesId;
-      seriesArray.push(_chartDataSeries);
     } catch (error) {
       Logger.error(error);
       seriesArray = [];
-      break;
+      hasError = true;
     }
-  }
+  }, this);
+
   this._addItemsToSeries(seriesArray, chartGroupsData);
   return seriesArray;
 };
@@ -3387,35 +3385,40 @@ oj.ChartDataProviderHandler.prototype._createGroups = function (chartDataItems) 
   // get top level chart group property names
   var groupTagName = 'oj-chart-group';
   var chartGroupProperties = this._component.getElementPropertyNames(groupTagName);
+  var groupPropertyValidator = this._component.getPropertyValidator(this._groupTemplate,
+    groupTagName);
 
   var chartGroupItems = {};
   var i;
-  var groupIds = Object.keys(this._groupContexts);
-  for (i = 0; i < groupIds.length; i++) {
-    var currentGroupId = groupIds[i];
-    var groupContext = this._groupContexts[currentGroupId];
+  var hasError = false;
+  this._groupContexts.forEach(function (groupContext, currentGroupId) {
     try {
-      var groupItem;
-      if (this._groupTemplate) {
-        groupItem = this._templateEngine.resolveProperties(this._parentElement,
-          this._groupTemplate, groupTagName, chartGroupProperties, groupContext, this._alias);
-      } else {
-        groupItem = {};
+      if (!hasError) {
+        var groupItem;
+        if (this._groupTemplate) {
+          groupItem = this._templateEngine.resolveProperties(this._parentElement,
+            this._groupTemplate, groupTagName, chartGroupProperties, groupContext, this._alias,
+            groupPropertyValidator);
+        } else {
+          groupItem = {};
+        }
+        groupItem.id = currentGroupId;
+        groupItem.name = groupItem.name || (currentGroupId + '');
+        chartGroupItems[currentGroupId] = groupItem;
       }
-      groupItem.id = currentGroupId;
-      groupItem.name = currentGroupId;
-      chartGroupItems[currentGroupId] = groupItem;
     } catch (error) {
       Logger.error(error);
       chartGroupItems = {};
-      break;
+      hasError = true;
     }
-  }
+  }, this);
 
   var groupsArray = [];
-  for (i = 0; i < chartDataItems.length; i++) {
-    var item = chartDataItems[i];
-    groupsArray = this._addGroupItem(item, item.groupId, groupsArray, chartGroupItems);
+  if (!hasError) {
+    for (i = 0; i < chartDataItems.length; i++) {
+      var item = chartDataItems[i];
+      groupsArray = this._addGroupItem(item, item.groupId, groupsArray, chartGroupItems);
+    }
   }
 
   return groupsArray;
@@ -3474,7 +3477,7 @@ oj.ChartDataProviderHandler.prototype._addGroupItem = function (
 oj.ChartDataProviderHandler.prototype._sortSeries = function (seriesArray) {
   var sortFunction = function (seriesContexts, seriesComparator) {
     return function (a, b) {
-      return seriesComparator(seriesContexts[a.id], seriesContexts[b.id]);
+      return seriesComparator(seriesContexts.get(a.id), seriesContexts.get(b.id));
     };
   };
 
@@ -3482,7 +3485,7 @@ oj.ChartDataProviderHandler.prototype._sortSeries = function (seriesArray) {
   // Update seriesContext indices after sort
   for (var i = 0; i < seriesArray.length; i++) {
     var seriesId = seriesArray[i].id;
-    this._seriesContexts[seriesId].index = i;
+    this._seriesContexts.get(seriesId).index = i;
   }
 };
 
@@ -3496,8 +3499,8 @@ oj.ChartDataProviderHandler.prototype._sortGroups = function (groupsArray) {
     return function (a, b) {
       var id1 = a.id;
       var id2 = b.id;
-      var context1 = groupContexts[id1];
-      var context2 = groupContexts[id2];
+      var context1 = groupContexts.get(id1);
+      var context2 = groupContexts.get(id2);
       return groupComparator(context1, context2);
     };
   };
@@ -3507,7 +3510,7 @@ oj.ChartDataProviderHandler.prototype._sortGroups = function (groupsArray) {
     var groupId = groupsArray[i].id;
 
     // Update group context indices after sorting
-    this._groupContexts[groupId].index = i;
+    this._groupContexts.get(groupId).index = i;
 
     // Sort nested groups if they exist
     if (groupsArray[i].groups) {
@@ -3532,7 +3535,8 @@ oj.ChartDataProviderHandler.prototype._sortGroups = function (groupsArray) {
  * @ojtsimport {module: "ojdataprovider", type: "AMD", imported: ["DataProvider"]}
  * @ojsignature [{
  *                target: "Type",
- *                value: "class ojChart<K, D> extends dvtBaseComponent<ojChartSettableProperties<K, D>>"
+ *                value: "class ojChart<K, D> extends dvtBaseComponent<ojChartSettableProperties<K, D>>",
+ *                genericParameters: [{"name": "K", "description": "Type of key of the dataprovider"}, {"name": "D", "description": "Type of data from the dataprovider"}]
  *               },
  *               {
  *                target: "Type",
@@ -3657,8 +3661,8 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
       /**
        * Triggered during a selection gesture, such as a change in the marquee selection rectangle.
        *
-       * @property {Array} items an array containing the string ids of the selected data items
-       * @property {Array} selectionData an array containing objects describing the selected data items
+       * @property {Array<string>} items an array containing the string ids of the selected data items
+       * @property {Array<Object>} selectionData an array containing objects describing the selected data items
        * @property {object} selectionData.data the data of the item, if one was specified
        * @property {object} selectionData.itemData the row data of the item, if one was specified. This will only be set if a DataProvider is used.
        * @property {Array} selectionData.groupData the group data of the item
@@ -9378,7 +9382,7 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
  * Object type that defines a chart series.
  * @typedef {Object} oj.ojChart.Series
  * @ojtsignore
- * @property {string=} id The id of the series. Defaults to the name or the series index if not specified.
+ * @property {(string|number)=} id The id of the series. Defaults to the name or the series index if not specified.
  * @property {string=} name The name of the series, displayed in the legend and tooltips.
  * @property {("bar"|"line"|"area"|"lineWithArea"|"candlestick"|"boxPlot"|"auto")=} type="auto" The type of data objects to display for this series. Only applies to bar, line, area, stock, box plot, and combo charts.
  * @property {string=} color The color of the series.
@@ -9478,7 +9482,7 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
  * Object type that defines a chart group.
  * @typedef {Object} oj.ojChart.Group
  * @ojtsignore
- * @property {string=} id The id of the group. Defaults to the name if not specified.
+ * @property {(string|number)=} id The id of the group. Defaults to the name if not specified.
  * @property {string=} name The name of the group
  * @property {object=} labelStyle The CSS style object defining the style of the group label text. Supports color,
  *                    fontFamily, fontSize, fontStyle, fontWeight, textDecoration, cursor,
@@ -10134,7 +10138,7 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
  * @name seriesId
  * @memberof! oj.ojChartItem
  * @instance
- * @type {string}
+ * @type {string|number}
  *
  */
  /**
@@ -10144,7 +10148,7 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
  * @name groupId
  * @memberof! oj.ojChartItem
  * @instance
- * @type {Array.<string>}
+ * @type {Array.<string|number>}
  *
  */
 /**
@@ -10955,7 +10959,8 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
  * @ojrole application
  * @ojsignature [{
  *                target: "Type",
- *                value: "class ojSparkChart<K, D> extends dvtBaseComponent<ojSparkChartSettableProperties<K, D>>"
+ *                value: "class ojSparkChart<K, D> extends dvtBaseComponent<ojSparkChartSettableProperties<K, D>>",
+ *                genericParameters: [{"name": "K", "description": "Type of key of the dataprovider"}, {"name": "D", "description": "Type of data from the dataprovider"}]
  *               },
  *               {
  *                target: "Type",

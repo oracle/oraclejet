@@ -1,11 +1,12 @@
 /**
  * @license
- * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
-define(['ojs/ojcore', 'knockout', 'ojs/ojtemplateengine', 'ojs/ojlogger', 'ojs/ojkoshared'], function(oj, ko, templateEngine, Logger)
+define(['ojs/ojcore', 'knockout', 'ojs/ojtemplateengine', 'ojs/ojlogger', 'ojs/ojkoshared'], function(oj, ko, templateEngine, Logger, BindingProviderImpl)
 {
+/* global BindingProviderImpl:false */
 /**
  * @protected
  * @ignore
@@ -62,13 +63,13 @@ define(['ojs/ojcore', 'knockout', 'ojs/ojtemplateengine', 'ojs/ojlogger', 'ojs/o
     return newNodes;
   }
 
-  oj.__KO_CUSTOM_BINDING_PROVIDER_INSTANCE.registerPreprocessor(
+  BindingProviderImpl.registerPreprocessor(
     'oj-bind-slot', _preprocessBindSlot);
 
-  oj.__KO_CUSTOM_BINDING_PROVIDER_INSTANCE.registerPreprocessor(
+  BindingProviderImpl.registerPreprocessor(
     'oj-slot', _preprocessBindSlot);
 
-  oj.__KO_CUSTOM_BINDING_PROVIDER_INSTANCE.registerPreprocessor(
+  BindingProviderImpl.registerPreprocessor(
     'oj-bind-template-slot', function (node) {
       return _preprocessBindSlot(node, true);
     }

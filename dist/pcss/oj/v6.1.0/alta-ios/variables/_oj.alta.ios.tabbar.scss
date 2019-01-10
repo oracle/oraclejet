@@ -1,0 +1,133 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+$includeTabBarVariables: $includeTabBarClasses !default;
+
+@if $includeTabBarVariables != false {
+  $includePanelVariables:      true !global;
+}
+// import dependencies
+@import "oj.alta.ios.panel";
+
+@if $includeTabBarVariables != false {
+  @include module-include-once("alta.ios.variables.tabbar") {
+
+:root {
+
+  // tab bar
+  // ----------------------------
+  --oj-tab-bar-category-divider-color:              var(--oj-neutral-color-8);
+  --oj-tab-bar-border-radius-top-left:              4px;
+  --oj-tab-bar-border-radius-top-right:             4px;
+  --oj-tab-bar-border-radius-bottom-left:           4px;
+  --oj-tab-bar-border-radius-bottom-right:          4px;
+  --oj-tab-bar-icon-only-icon-start-end-padding:    10px;
+  
+  --oj-tab-bar-icon-to-text-padding:                0.625rem;
+  --oj-tab-bar-horizontal-icon-to-text-padding:     2px;
+
+  --oj-tab-bar-horizontal-icon-margin:              5px 4px 4px;
+  
+  //item
+
+  --oj-tab-bar-item-start-end-padding:              0.625rem;
+  --oj-tab-bar-item-label-text-wrap:                nowrap;
+  --oj-tab-bar-item-truncated-label-min-width:      3rem;
+
+
+  --oj-tab-bar-item-icon-only-border-width-top:                 1px;
+  --oj-tab-bar-horizontal-item-icon-only-border-width-top:      1px;
+  --oj-tab-bar-item-icon-only-border-width-right:               1px;
+  --oj-tab-bar-horizontal-item-icon-only-border-width-right:    1px;
+  --oj-tab-bar-item-icon-only-border-width-bottom:              1px;
+  --oj-tab-bar-horizontal-item-icon-only-border-width-bottom:   1px;
+  --oj-tab-bar-item-icon-only-border-width-left:                1px;
+  --oj-tab-bar-horizontal-item-icon-only-border-width-left:     1px;
+
+  --oj-tab-bar-item-icon-only-margin:                 0;
+  --oj-tab-bar-horizontal-item-icon-only-margin:      0;
+  
+  --oj-tab-bar-item-border-width-top:                 1px;
+  --oj-tab-bar-horizontal-item-border-width-top:      1px;
+  --oj-tab-bar-item-border-width-right:               1px;
+  --oj-tab-bar-horizontal-item-border-width-right:    1px;
+  --oj-tab-bar-item-border-width-bottom:              1px;
+  --oj-tab-bar-horizontal-item-border-width-bottom:   1px;
+  --oj-tab-bar-item-border-width-left:                1px;
+  --oj-tab-bar-horizontal-item-border-width-left:     1px;
+
+  --oj-tab-bar-item-min-height:                       1.75rem;
+  --oj-tab-bar-horizontal-item-min-height:            1.8125rem;
+  --oj-tab-bar-horizontal-item-stacked-min-height:    3.9375rem;
+
+  --oj-tab-bar-item-font-size:                        0.8125rem;
+  --oj-tab-bar-horizontal-item-font-size:             0.8125rem;
+  
+ --oj-tab-bar-horizontal-item-padding:                0 0.625rem 0;
+ --oj-tab-bar-horizontal-item-stacked-padding:        0 0.625rem 0;
+
+  // default
+  --oj-tab-bar-item-border-color:                  var(--oj-brand-color);
+  --oj-tab-bar-horizontal-item-border-color:       var(--oj-brand-color);
+  --oj-tab-bar-item-label-color-default:           var(--oj-link-text-color);
+  --oj-tab-bar-item-icon-color-default:            var(--oj-tab-bar-item-label-color-default);
+  --oj-tab-bar-item-divider-color:                 var(--oj-brand-color);
+  --oj-tab-bar-horizontal-item-divider-color:      var(--oj-neutral-color-7);
+
+  // hover
+  --oj-tab-bar-item-label-color-hover:             var(--oj-tab-bar-item-label-color-default);
+  --oj-tab-bar-horizontal-item-label-color-hover:  var(--oj-tab-bar-item-icon-color-hover);
+  --oj-tab-bar-item-bg-color-hover:                var(--oj-neutral-color-7);
+  --oj-tab-bar-item-border-color-hover:            var(--oj-brand-color-light-1);
+  --oj-tab-bar-horizontal-item-border-color-hover: var(--oj-tab-bar-item-border-color-hover);
+  --oj-tab-bar-item-icon-only-bg-color-hover:      var(--oj-tab-bar-item-bg-color-hover);
+  --oj-tab-bar-item-icon-color-hover:              var(--oj-icon-color-hover);
+
+  // active
+  --oj-tab-bar-item-bg-color-active:               var(--oj-brand-color-light-3);
+  --oj-tab-bar-item-border-color-active:           var(--oj-tab-bar-item-border-color-hover);
+
+  // selected
+  --oj-tab-bar-item-font-weight-selected:             normal;
+  --oj-tab-bar-item-label-color-selected:             var(--oj-contrast-text-color);
+  --oj-tab-bar-horizontal-item-label-color-selected:  var(--oj-tab-bar-item-label-color-selected);
+  --oj-tab-bar-item-icon-color-selected:              var(--oj-neutral-color-1);
+  --oj-tab-bar-horizontal-item-icon-color-selected:   var(--oj-tab-bar-item-icon-color-selected);
+  --oj-tab-bar-item-bg-color-selected:                var(--oj-brand-color);
+  --oj-tab-bar-horizontal-item-bg-color-selected:     var(--oj-tab-bar-item-bg-color-selected);
+  --oj-tab-bar-item-border-color-selected:            var(--oj-brand-color);
+  --oj-tab-bar-horizontal-item-border-color-selected: var(--oj-tab-bar-item-border-color-selected);
+  --oj-tab-bar-item-icon-only-bg-color-selected:      var(--oj-brand-color);
+  --oj-tab-bar-icon-only-icon-color-selected:         var(--oj-neutral-color-1);
+
+  //focus
+  --oj-tab-bar-item-outline-color-focus:              var(--oj-neutral-color-14);
+
+  // disabled
+  --oj-tab-bar-item-label-color-disabled:             var(--oj-tab-bar-item-label-color-default);
+  --oj-tab-bar-icon-color-disabled:                   var(--oj-tab-bar-item-label-color-disabled);
+
+
+
+  // contrast default
+  --oj-tab-bar-item-contrast-label-color-default:     var(--oj-neutral-color-9);
+
+  // contrast hover
+  --oj-tab-bar-item-contrast-label-color-hover:       var(--oj-neutral-color-3);
+  --oj-tab-bar-item-contrast-bg-color-hover:          var(--oj-neutral-color-16);
+
+  // contrast selected
+  --oj-tab-bar-item-contrast-label-color-selected:             var(--oj-neutral-color-3);
+  --oj-tab-bar-item-contrast-bg-color-selected:                var(--oj-brand-color);
+  --oj-tab-bar-horizontal-item-contrast-label-color-selected:  var(--oj-neutral-color-3);
+  --oj-tab-bar-horizontal-item-contrast-bg-color-selected:     var(--oj-tab-bar-item-contrast-bg-color-selected);
+
+  // contrast disabled
+  --oj-tab-bar-item-contrast-label-color-disabled:             var(--oj-tab-bar-item-contrast-label-color-default);
+
+  // contrast active
+  --oj-tab-bar-item-contrast-bg-color-active:              var(--oj-neutral-color-16);
+}
+
+  }
+}

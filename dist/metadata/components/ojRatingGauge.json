@@ -1,11 +1,11 @@
 {
   "name": "oj-rating-gauge",
-  "version": "6.0.0",
-  "jetVersion": "6.0.0",
+  "version": "6.1.0",
+  "jetVersion": "6.1.0",
   "displayName": "Rating Gauge",
   "type": "core",
   "description": "Displays information graphically, typically displaying or accepting user feedback on a product or service.",
-  "help": "https://docs.oracle.com/en/middleware/jet/6/reference-api/oj.ojRatingGauge.html",
+  "help": "https://docs.oracle.com/en/middleware/jet/6.1/reference-api/oj.ojRatingGauge.html",
   "properties": {
     "changed": {
       "description": "Whether there has been a value entered by the user.",

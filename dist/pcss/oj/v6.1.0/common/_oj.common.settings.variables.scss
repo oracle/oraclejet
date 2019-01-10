@@ -1,0 +1,209 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+
+//todo: doc needed in file, figure out which vars to expose
+$themeName:           null !default;
+$themeTargetPlatform: null !default;
+
+$outputOnlyCssVars: true;
+$fontFamily: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif !default;
+
+// PATHS
+//----------------------------------
+// these paths should be relative to the generated css file
+// path to images
+$imageDir: "images/" !default;
+
+// path to (icon) fonts
+$fontDir: "fonts/" !default;
+
+// path to common images (images shared across themes)
+$commonImageDir: "../common/images/" !default;
+
+// DIRECTION
+//----------------------------------
+// Accepted values of $textDirection are null, ltr, rtl
+//    - null means ouput for both directions (default)
+//    - ltr means output left to right only
+//    - rtl means output right to left only
+//
+// By default we support right to left without
+// switching out the css file as long as dir="rtl"
+// is set on the html tag. However if you'd prefer
+// to generate one css file per direction you can
+// also set "$textDirection" to either "rtl" or "ltr".
+$textDirection: null !default;
+
+// COMPATIBILITY
+//----------------------------------
+// when $allowTagSelectors is true JET directly styles certain tags like
+// <p> <a> <h1>, etc. However for developers trying to mix JET with other
+// technologies styling these tags directly could cause issues on other parts of the page.
+// In that case set $allowTagSelectors: false;.
+// See the "compatibility" section of the theming documentation for more information
+$allowTagSelectors: true !default;
+
+
+// INITIAL VISIBILITY
+//----------------------------------
+// when $initialVisiblity is hidden then visibility: hidden is set on the dom until the
+// component is initialized. This reduces the unstyled dom seen by the user during page load.
+$initialVisibility: hidden !default;
+
+// INCLUDES
+//-----------------------------------------------------------------------------
+// Optimize performance by only including the css
+// for what you're using. It's recommended to
+// set $includeAllClasses to false and then set
+// $include[XYZ]Classes to true for each thing you're using.
+// for example:
+//    $includeAllClasses: false;
+//    $includeButtonClasses: true;
+//    $includePanelClasses: true;
+//    etc
+$includeAllClasses: true !default;
+$includeNormalize:  ($includeAllClasses and $allowTagSelectors) !default;
+
+// send down value of $responsiveQuery[size] so that these
+// can be used with oj.ResponsiveUtils.getFrameworkQuery();
+$includeResponsiveMediaQueryClasses: $includeAllClasses !default;
+
+
+
+// group includes
+//----------------------------------
+// whether to include classes for tags like headers, links, etc
+$includeTagClasses: $includeAllClasses !default;
+
+// whether to include dvt classes
+$includeDvtClasses: $includeAllClasses !default;
+
+// whether to include form control classes
+$includeFormControlClasses: $includeAllClasses !default;
+
+
+// widget includes
+//---------------------------------
+// form controls
+$includeCheckboxsetClasses:      $includeFormControlClasses !default;
+$includeComboboxClasses:         $includeFormControlClasses !default;
+$includeInputDateTimeClasses:    $includeFormControlClasses !default;
+$includeInputNumberClasses:      $includeFormControlClasses !default;
+$includeInputPasswordClasses:    $includeFormControlClasses !default;
+$includeInputTextClasses:        $includeFormControlClasses !default;
+$includeLabelClasses:            $includeFormControlClasses !default;
+$includeRadiosetClasses:         $includeFormControlClasses !default;
+$includeSelectClasses:           $includeFormControlClasses !default;
+$includeSliderClasses:           $includeFormControlClasses !default;
+$includeSwitchClasses:           $includeFormControlClasses !default;
+$includeColorPaletteClasses:     $includeFormControlClasses !default;
+$includeColorSpectrumClasses:    $includeFormControlClasses !default;
+$includeTextAreaClasses:         $includeFormControlClasses !default;
+$includeValidationGroupClasses:  $includeFormControlClasses !default;
+// This is used by oj-form-layout custom element
+$includeFormLayoutElementClasses:$includeFormControlClasses !default;
+// Mostly used by form controls. Need the 'or' to work with
+// both form control and Non form control components
+$includeOptionClasses:           $includeFormControlClasses or $includeAllClasses !default;
+
+// dvt
+$includeChartClasses:            $includeDvtClasses !default;
+$includeDiagramClasses:          $includeDvtClasses !default;
+$includeGanttClasses:            $includeDvtClasses !default;
+$includeGaugeClasses:            $includeDvtClasses !default;
+$includeNBoxClasses:             $includeDvtClasses !default;
+$includePictoChartClasses:       $includeDvtClasses !default;
+$includeSunburstClasses:         $includeDvtClasses !default;
+$includeTagCloudClasses:         $includeDvtClasses !default;
+$includeThematicMapClasses:      $includeDvtClasses !default;
+$includeTimeAxisClasses:         $includeDvtClasses !default;
+$includeTimelineClasses:         $includeDvtClasses !default;
+$includeTreemapClasses:          $includeDvtClasses !default;
+
+// other
+$includeAccordionClasses:        $includeAllClasses !default;
+$includeAnimationClasses:        $includeAllClasses !default;
+$includeAppLayoutClasses:        $includeAllClasses !default;
+$includeAppLayoutHybridClasses:  $includeAllClasses !default;
+$includeAppLayoutWebClasses:     $includeAllClasses !default;
+$includeAvatarClasses:           $includeAllClasses !default;
+$includeButtonClasses:           $includeAllClasses !default;
+$includeButtonsetClasses:        $includeAllClasses !default;
+$includeCollapsibleClasses:      $includeAllClasses !default;
+$includeConveyorBeltClasses:     $includeAllClasses !default;
+$includeDataGridClasses:         $includeAllClasses !default;
+$includeDialogClasses:           $includeAllClasses !default;
+$includeFilePickerClasses:       $includeAllClasses !default;
+$includeFilmStripClasses:        $includeAllClasses !default;
+$includeFlexClasses:             $includeAllClasses !default;
+$includeMessageClasses:          $includeAllClasses !default;
+$includeMessagesClasses:         $includeAllClasses !default;
+// This is used by the CSS based form layout approach
+$includeFormLayoutClasses:       $includeAllClasses !default;
+$includeGridClasses:             $includeAllClasses !default;
+$includeIconCircleClasses:       $includeAllClasses !default;
+$includeIndexerClasses:          $includeAllClasses !default;
+$includeListViewClasses:         $includeAllClasses !default;
+$includeMasonryLayoutClasses:    $includeAllClasses !default;
+$includeMenuClasses:             $includeAllClasses !default;
+$includeMessagingClasses:        $includeAllClasses !default;
+$includeModuleClasses:           $includeAllClasses !default;
+$includeNavigationListClasses:   $includeAllClasses !default;
+$includeTabBarClasses:           $includeAllClasses !default;
+$includeOffcanvasClasses:        $includeAllClasses !default;
+$includePagingControlClasses:    $includeAllClasses !default;
+$includePanelClasses:            $includeAllClasses !default;
+$includePopupClasses:            $includeAllClasses !default;
+$includeProgressClasses:         $includeAllClasses !default;
+$includeProgressListClasses:     $includeAllClasses !default;
+$includeRefresherClasses:        $includeAllClasses !default;
+$includeResponsiveHelperClasses: $includeAllClasses !default;
+$includeRowExpanderClasses:      $includeAllClasses !default;
+$includeSwipeToRevealClasses:    $includeAllClasses !default;
+$includeSwipeActionsClasses:     $includeAllClasses !default;
+$includeSwitcherClasses:         $includeAllClasses !default;
+$includeTableClasses:            $includeAllClasses !default;
+$includeUtilitiesClasses:        $includeAllClasses !default; // for generic spacing and text classes
+$includeToolbarClasses:          $includeAllClasses !default;
+$includeTrainClasses:            $includeAllClasses !default;
+$includeTreeViewClasses:         $includeAllClasses !default;
+$includeHelpClasses:             $includeAllClasses !default;
+
+
+
+// focus
+//----------------------------------
+// This variable is applicable to components and patterns that use the oj-focus-highlight class
+// and do not have a component- or pattern-specific mechanism for controlling when it is applied.
+//
+// The oj-focus-highlight class applies focus styling that may not be desirable
+// when the focus results from pointer interaction (touch or mouse), but which is
+// needed for accessibility when the focus occurs by a non-pointer mechanism, for
+// example keyboard or initial page load.
+//
+// The 3 valid values of this variable indicate for which focuses the class should be applied:
+//
+// - "nonPointer": the class is applied only for focuses not resulting from pointer
+//   (mouse or touch) interaction.
+// - "all": the class is applied for all focuses.
+// - "none": the class is never applied. This value is not accessible by itself, and is
+//   intended for use when the application wishes to use its own event listener to precisely
+//   control when the class is applied.  The application must ensure the accessibility of the result.
+$focusHighlightPolicy: nonPointer !default;
+
+// currently browsers may or may not load font
+// weights other than bold and normal and even when
+// they do font weight can be inconsistent across
+// browsers on the same platform. For example
+// using Segoe UI on windows a particular font weight can
+// look different on Chrome, IE, and FF.
+//
+// some known local system fonts like Segoe UI (windows),
+// Helvetica Neue (iOS/mac), and Roboto (Arial on Android)
+// can be normalized using @font-face
+// so that the weights are consistent across
+// browsers running on the same platform.
+//
+// When $fontWeightNormalization is set to true we look at
+// the $fontFamily var to see if one of the known local system
+// fonts might be used and if so attempt to normalize the font weights
+$fontWeightNormalization: false !default;

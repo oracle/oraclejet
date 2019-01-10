@@ -6967,9 +6967,12 @@ oj-message:not(.oj-complete) {
 
 .oj-message-close {
   float: right;
-  display: none; }
+  display: block; }
   html[dir="rtl"] .oj-message-close {
     float: left; }
+
+.oj-message-auto-timeout-close {
+  display: none; }
 
 .oj-message-close .oj-button {
   margin-bottom: 0; }
@@ -6977,7 +6980,7 @@ oj-message:not(.oj-complete) {
 .oj-message-option-defaults {
   font-family: '{"autoTimeout":4000}'; }
 
-.oj-message-summary {
+.oj-message-body .oj-message-summary {
   padding-bottom: 3px; }
 
 /* popup */
@@ -7195,7 +7198,8 @@ oj-messages {
   border-radius: initial;
   box-shadow: initial; }
 
-oj-messages:not(.oj-messages-inline) .oj-messages-container {
+.oj-messages-general .oj-messages-container,
+.oj-messages-notification .oj-messages-container {
   margin: 10px; }
 
 .oj-messages-general .oj-message-header {
@@ -7263,7 +7267,6 @@ oj-messages:not(.oj-messages-inline) .oj-messages-container {
   font-family: '{"general":{"animation":{"open":{"effect":"expand","duration":"300ms"},"close":{"effect":"collapse","duration":"300ms"}},"position":{"my":{"horizontal":"center","vertical":"top"},"at":{"horizontal":"center","vertical":"top"},"of":"window","collision":"none"}},"notification":{"animation":{"open":{"effect":"slideIn","duration":"300ms"},"close":{"effect":"slideOut","duration":"300ms","direction":"end"}},"position":{"my":{"horizontal":"end","vertical":"top"},"at":{"horizontal":"end","vertical":"top"},"of":"window","collision":"none"}}}'; }
 
 .oj-messages-inline .oj-message-header {
-  justify-content: flex-start;
   padding: 14px 12px 4px 12px; }
 
 html:not([dir="rtl"]) .oj-messages-inline .oj-message-body {
@@ -7290,10 +7293,14 @@ html:not([dir="rtl"]) .oj-messages-notification .oj-message-body {
 html[dir="rtl"] .oj-messages-notification .oj-message-body {
   padding: 0px 52px 21px 16px; }
 
-oj-messages:not(.oj-messages-notification) .oj-message-category {
+.oj-messages-general .oj-message-category,
+.oj-messages-inline .oj-message-category,
+.oj-messages-general .oj-message-header .oj-message-summary,
+.oj-messages-inline .oj-message-header .oj-message-summary {
   padding: 0px 12px; }
 
-.oj-messages-notification .oj-message-category {
+.oj-messages-notification .oj-message-category,
+.oj-messages-notification .oj-message-header .oj-message-summary {
   padding: 0px 16px; }
 
 @media screen and (max-width: 767px) {
@@ -11667,13 +11674,16 @@ oj-label:not(.oj-complete) {
 .oj-label-help-icon-anchor:not(.oj-focus-highlight).oj-focus {
   outline: none; }
 
-.oj-label.oj-label-nowrap {
+.oj-label.oj-label-nowrap,
+.oj-label-nocomp.oj-label-nowrap {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis; }
-  html:not([dir="rtl"]) .oj-label.oj-label-nowrap {
+  html:not([dir="rtl"]) .oj-label.oj-label-nowrap, html:not([dir="rtl"])
+  .oj-label-nocomp.oj-label-nowrap {
     padding-right: 1.33333rem; }
-  html[dir="rtl"] .oj-label.oj-label-nowrap {
+  html[dir="rtl"] .oj-label.oj-label-nowrap, html[dir="rtl"]
+  .oj-label-nocomp.oj-label-nowrap {
     padding-left: 1.33333rem; }
 
 .oj-label.oj-label-nowrap .oj-label-group {
@@ -14083,6 +14093,35 @@ oj-combobox:not(.oj-complete) {
     opacity: 1;
     font-style: normal; }
 
+/* Styling for readonly mode */
+.oj-combobox.oj-read-only .oj-combobox-choice,
+.oj-combobox.oj-read-only .oj-combobox-choices {
+  background-color: transparent;
+  border-color: transparent;
+  outline: none; }
+
+/* apply to the selected entries */
+.oj-combobox.oj-read-only .oj-combobox-input,
+.oj-combobox.oj-read-only .oj-combobox-selected-choice {
+  outline: none;
+  background-color: transparent;
+  border-color: transparent;
+  border-left-width: 0;
+  border-right-width: 0;
+  color: black;
+  font-size: 1rem;
+  font-weight: bold; }
+
+/* don't show dropdown trigger */
+.oj-combobox.oj-read-only .oj-combobox-arrow,
+.oj-combobox.oj-read-only .oj-combobox-divider {
+  display: none; }
+
+/* don't show clear entry trigger and search field button */
+.oj-combobox.oj-read-only .oj-combobox-clear-entry,
+.oj-combobox.oj-read-only .oj-combobox-search-field {
+  display: none; }
+
 /* Styling for text-align */
 .oj-form-control-text-align-right .oj-combobox .oj-combobox-input {
   text-align: right; }
@@ -14435,6 +14474,33 @@ oj-select:not(.oj-complete) {
   html[dir="rtl"] .oj-select-choice {
     padding-left: 0;
     padding-right: 5px; }
+
+/* Styling for readonly mode */
+.oj-select.oj-read-only .oj-select-choice,
+.oj-select.oj-read-only .oj-select-choices {
+  background-color: transparent;
+  border-color: transparent;
+  outline: none; }
+
+/* apply to the selected entries */
+.oj-select.oj-read-only .oj-select-chosen,
+.oj-select.oj-read-only .oj-select-selected-choice {
+  outline: none;
+  background-color: transparent;
+  border-color: transparent;
+  border-left-width: 0;
+  border-right-width: 0;
+  color: black;
+  font-size: 1rem;
+  font-weight: bold; }
+
+/* don't show dropdown trigger */
+.oj-select.oj-read-only .oj-select-arrow {
+  display: none; }
+
+/* don't show clear entry trigger */
+.oj-select.oj-read-only .oj-select-clear-entry {
+  display: none; }
 
 /* Styling for text-align */
 .oj-form-control-text-align-right .oj-select .oj-select-choice {
@@ -14809,7 +14875,7 @@ select.oj-select-select.oj-select-default:not([multiple]) {
 .oj-select-select:not(.oj-focus-highlight):focus {
   outline: none; }
 
-.oj-select-jet.oj-enabled .oj-select-choice:active,
+.oj-select-jet:not(.oj-read-only).oj-enabled .oj-select-choice:active,
 .oj-select-native.oj-enabled .oj-select-select:active {
   background-color: #e0e1e1; }
 
@@ -15103,13 +15169,14 @@ oj-switch:not(.oj-complete) {
   height: 2.13333rem;
   width: 3.143675088rem; }
 
-html:not([dir="rtl"]) .oj-switch .oj-switch-thumb {
-  left: 0;
-  right: auto; }
-
-html[dir="rtl"] .oj-switch .oj-switch-thumb {
-  left: auto;
-  right: 0; }
+.oj-switch .oj-switch-thumb {
+  box-sizing: content-box; }
+  html:not([dir="rtl"]) .oj-switch .oj-switch-thumb {
+    left: 0;
+    right: auto; }
+  html[dir="rtl"] .oj-switch .oj-switch-thumb {
+    left: auto;
+    right: 0; }
 
 html:not([dir="rtl"]) .oj-switch.oj-selected .oj-switch-thumb {
   left: auto;

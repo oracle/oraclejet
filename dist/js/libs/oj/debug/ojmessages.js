@@ -1,14 +1,13 @@
 /**
  * @license
- * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
-define(['ojs/ojcore', 'jquery', 'ojs/ojthemeutils', 'ojs/ojtranslation', 'knockout', 'ojs/ojcomposite', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojs/ojlogger', 'ojs/ojknockout', 
+define(['ojs/ojcore', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeutils', 'ojs/ojtranslation', 'knockout', 'ojs/ojcomposite', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojs/ojlogger', 'ojs/ojknockout', 
         'promise', 'ojs/ojpopupcore', 'ojs/ojmessage', 'ojs/ojdataprovider'], 
-       function(oj, $, ThemeUtils, Translations, ko, Composite, Components, AnimationUtils, Logger)
+       function(oj, $, Context, ThemeUtils, Translations, ko, Composite, Components, AnimationUtils, Logger)
 {
- 
 
 var __oj_messages_metadata = 
 {
@@ -20,6 +19,20 @@ var __oj_messages_metadata =
         "notification"
       ],
       "value": "general"
+    },
+    "displayOptions": {
+      "type": "object",
+      "properties": {
+        "category": {
+          "type": "string",
+          "enumValues": [
+            "auto",
+            "header",
+            "none"
+          ],
+          "value": "auto"
+        }
+      }
     },
     "messages": {
       "type": "Array<Object>|oj.DataProvider"
@@ -141,7 +154,7 @@ var __oj_messages_metadata =
  ** Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
  */
 
-/* global ko:false, Components:false, Logger:false, Translations:false, ThemeUtils:false */
+/* global ko:false, Components:false, Logger:false, Translations:false, ThemeUtils:false, Context:false */
 /**
  * @ojcomponent oj.ojMessages
  * @since 5.0.0
@@ -605,6 +618,73 @@ var __oj_messages_metadata =
  */
 
 /**
+ * <p>Specifies the display options for contents of all the messages specified for the
+ * {@link oj.ojMessages#messages} attribute.
+ *
+ * @expose
+ * @member
+ * @name displayOptions
+ * @memberof! oj.ojMessages
+ * @instance
+ * @since 6.1.0
+ * @type {Object}
+ * @ojsignature { target: "Type",
+ *                value: "oj.ojMessage.DisplayOptions",
+ *                jsdocOverride: true}
+ *
+ * @example <caption>Initialize the element with <code class="prettyprint">display-options</code>
+ * attribute:</caption>
+ * &lt;!-- Binding display-options attribute to a structured object -->
+ * &lt;oj-messages display-options="[[myMessageDisplayOptions]]">&lt;/oj-message>
+ *
+ * &lt;!-- Setting display-options using JSON notation -->
+ * &lt;oj-messages display-options='{"category": "none"}' message.summary="Some summary" message.detail="Some detail">&lt;/oj-messages>
+ *
+ * &lt;!-- Setting the display-options sub-attributes -->
+ * &lt;oj-messages display-options.category="none" message.summary="Some summary" message.detail="Some detail">&lt;/oj-messages>
+ *
+ * @example <caption>Get or set the <code class="prettyprint">displayOptions</code> property after initialization:</caption>
+ * // getter
+ * var displayOptions = myMessages.displayOptions;
+ *
+ * // setter
+ * myMessages.displayOptions = {
+ *     category: "none"
+ * };
+ */
+
+/**
+ *<p>Specifies display option for {@link oj.ojMessage#message.category} text in all the messages
+ * specified for the {@link oj.ojMessages#messages} attribute.
+ *
+ * @example <caption>Initialize the element with <code class="prettyprint">display-options.category</code> attribute:</caption>
+ * &lt;oj-messages display-options.category="none" message.summary="Some summary" message.detail="Some detail">&lt;/oj-messages>
+ *
+ * @example <caption>Get or set the <code class="prettyprint">displayOptions.category</code> property after initialization:</caption>
+ * // getter
+ * var categoryOption = myMessages.getProperty("displayOptions.category");
+ *
+ * // setter
+ * myMessages.setProperty("displayOptions.category", "none");
+ *
+ * @expose
+ * @type {string}
+ * @name displayOptions.category
+ * @ojvalue {string} "header" if the {@link oj.ojMessage#message.category} property is specified,
+ *  its value will be displayed in the header region of the message next to message icon. If
+ *  {@link oj.ojMessage#message.category} property is not specified, a translated text corresponding
+ *  to the value of the {@link oj.ojMessage#message.severity} property will be displayed.
+ * @ojvalue {string} "auto" the component decides whether and where the
+ *  {@link oj.ojMessage#message.category} text is displayed. The behavior is same as 'header'
+ *  option, but may change in future releases.
+ * @ojvalue {string} "none" the {@link oj.ojMessage#message.category} text will not be displayed
+ * @default "auto"
+ * @instance
+ * @access public
+ * @memberof! oj.ojMessages
+ */
+
+/**
  * <p>A collection of translated resources from the translation bundle, or <code class="prettyprint">null</code> if this
  * component has no resources.  Resources may be accessed and overridden individually or collectively, as seen in the examples.
  *
@@ -664,12 +744,9 @@ var __oj_messages_metadata =
  * @memberof! oj.ojMessages
  * @instance
  * @since 5.0.0
- * @param {Object} associated message instance of type {@link oj.ojMessage#message}
+ * @param {Object} message the message to be closed
  * @return {void}
- * @ojsignature { target: "Type",
- *                value: "oj.ojMessage.Message",
- *                for: "message",
- *                jsdocOverride: true}
+ * @ojsignature {target:"Type", value:"oj.ojMessage.Message", for:"message", jsdocOverride: true}
  *
  * @example <caption>Invoke the <code class="prettyprint">close</code> method:</caption>
  * myMessages.close(myMessage.message);
@@ -812,16 +889,18 @@ var _MESSAGES_VIEW =
   '<div role="presentation" :id="[[containerId]]" :class="[[containerSelectors]]" ' +
   '     on-oj-open="[[handleOpen]]" on-oj-close="[[handleClose]]" ' +
   '     on-oj-animate-start="[[handleAnimateStart]]">' +
-  '  <oj-bind-slot>' +
-  '  </oj-bind-slot>' +
+  '  <oj-bind-if test="[[!$props.messages]]">' +
+  '    <oj-bind-slot>' +
+  '    </oj-bind-slot>' +
+  '  </oj-bind-if>' +
   '  <oj-bind-if test="[[$props.messages]]">' +
   '    <oj-bind-for-each data="[[$props.messages]]" >' +
   '      <template>' +
-  '        <oj-message message="{{$current.data}}">' +
+  '        <oj-message message="[[$current.data]]" display-options="[[$props.displayOptions]]">' +
   '        </oj-message>' +
   '      </template>' +
   '    </oj-bind-for-each>' +
-  '  <oj-bind-if>' +
+  '  </oj-bind-if>' +
   '</div>';
 
 function MessagesViewModel(context) {
@@ -851,9 +930,50 @@ MessagesViewModel.prototype._bindingsApplied = function () {
   var messagesContainerDiv = document.getElementById(this._messagesContainerId);
   messagesContainerDiv.addEventListener('ojFocus', this._navigationEventListener.bind(this), false);
 
-  // Shows the message container before animation of the first disclosed message.  The ojOpen
-  // event is fired after animation.
-  messagesContainerDiv.addEventListener('ojBeforeOpen', this._handleBeforeOpen.bind(this), false);
+  // If 'messages' property is specified, we will not have inlined oj-message children.
+  if (this._properties.messages) {
+    // Defer showing messages until the first stamped oj-message child is created and ready to show.
+    //  This is dealt with in beforeOpen handler. Animation override is dealt with in the
+    //  animateStart listener.
+    messagesContainerDiv.addEventListener('ojBeforeOpen', this._handleBeforeOpen.bind(this), false);
+    return;
+  }
+
+  // If we had inlined oj-message children in the default slot, they are all created before the
+  //  parent oj-messages is created, so oj-messages does not receive events from the inlined
+  //  children. Deal with animate overriding open action for those messages here.
+  var inlinedMessageChildren = this._getDefaultSlotMessageElements();
+  if (inlinedMessageChildren.length !== 0) {
+    // Add a busy state before we start animating open action for all inlined oj-message children
+    var busyContext = Context.getContext(this._composite).getBusyContext();
+    this._inlinedMessagesOpenBusyStateResolve =
+      busyContext.addBusyState({ description: 'oj-messages is busy opening inlined messages' });
+
+    this._showMessagesContainer();
+    for (var i = 0; i < inlinedMessageChildren.length; i++) {
+      this._animateMessageAction(
+        inlinedMessageChildren[i].firstChild,
+        'open',
+        this._resolveInlinedMessagesOpenBusyState(
+          inlinedMessageChildren[i].getProperty('message'),
+          inlinedMessageChildren.length));
+    }
+  }
+};
+
+MessagesViewModel.prototype._resolveInlinedMessagesOpenBusyState = function (
+  message,
+  numInlinedChildren) {
+  this._updateLiveRegionAndContainer(message);
+
+  this._numInlinedChildrenAnimated =
+    this._numInlinedChildrenAnimated ? this._numInlinedChildrenAnimated + 1 : 1;
+
+  if (this._numInlinedChildrenAnimated === numInlinedChildren) {
+    this._numInlinedChildrenAnimated = 0;
+    // Now that we are done open animating all inlined children, resolve the busy context
+    this._inlinedMessagesOpenBusyStateResolve();
+  }
 };
 
 MessagesViewModel.prototype._disconnected = function () {
@@ -950,11 +1070,15 @@ MessagesViewModel.prototype._isEventPertaining = function (event) {
 
 MessagesViewModel.prototype._handleBeforeOpen = function (event) {
   if (!event.defaultPrevented && this._isEventPertaining(event) && !this._isMessagesShown()) {
-    if (!this._isPresentationInline()) {
-      this._openOverlay();
-    } else {
-      this._showMessages();
-    }
+    this._showMessagesContainer();
+  }
+};
+
+MessagesViewModel.prototype._showMessagesContainer = function () {
+  if (!this._isPresentationInline()) {
+    this._openOverlay();
+  } else {
+    this._showMessages();
   }
 };
 
@@ -964,10 +1088,10 @@ MessagesViewModel.prototype._handleOpen = function (event) {
     return;
   }
 
-  /** @type {{icon: string, category: string, severity:string, timestamp:string, summary:string,
-      detail:string, autoTimeout:number, closeAffordance: string, sound: string}} */
-  var message = event.detail.message;
+  this._updateLiveRegionAndContainer(event.detail.message);
+};
 
+MessagesViewModel.prototype._updateLiveRegionAndContainer = function (message) {
   var translations = Translations.getComponentTranslations('oj-ojMessage').categories;
 
   // oj.Message has 'fatal' severity which is no different from 'error', oj-message does not support
@@ -1069,16 +1193,15 @@ MessagesViewModel.prototype._handleAnimateStart = function (event) {
   // event.stopPropagation();
 
   // override animation
-  var messageElement = event.detail.element;
-  var action = event.detail.action;
+  this._animateMessageAction(event.detail.element, event.detail.action, event.detail.endCallback);
+};
+
+MessagesViewModel.prototype._animateMessageAction = function (messageElement, action, endCallback) {
   var display = this._isPresentationInline() ? 'general' : this._computeDisplay();
   var options = this._getThemedAnimateOptions(display, action);
-  // var component = this._composite;
-  var endCallback = event.detail.endCallback;
 
   // oj-messages doesn't publish animateStart/animateEnd so use the simpler syntax for now and allow
   // the event to bubble.
-  //
   // oj.AnimationUtils.startAnimation(messageElement, action, options, component).then(endCallback);
   // eslint-disable-next-line no-undef
   AnimationUtils[options.effect](messageElement, options).then(endCallback);

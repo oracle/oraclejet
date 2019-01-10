@@ -1,11 +1,11 @@
 {
   "name": "oj-chart-item",
-  "version": "6.0.0",
-  "jetVersion": "6.0.0",
+  "version": "6.1.0",
+  "jetVersion": "6.1.0",
   "displayName": "Chart Item",
   "type": "core",
   "description": "ojChartItem",
-  "help": "https://docs.oracle.com/en/middleware/jet/6/reference-api/oj.ojChartItem.html",
+  "help": "https://docs.oracle.com/en/middleware/jet/6.1/reference-api/oj.ojChartItem.html",
   "properties": {
     "borderColor": {
       "description": "The border color of the data item. For funnel and pyramid charts, it is used for the slice border.",
@@ -146,7 +146,7 @@
     },
     "groupId": {
       "description": "The array of id(s) for the group(s) the item belongs to. For hierarchical groups, it will be an array of outermost to innermost group ids.",
-      "type": "Array<string>",
+      "type": "Array<(string|number)>",
       "displayName": "Group Id",
       "required": true,
       "help": "groupId"
@@ -359,7 +359,7 @@
     },
     "seriesId": {
       "description": "The id for the series the item belongs to.",
-      "type": "string",
+      "type": "string|number",
       "displayName": "Series Id",
       "required": true,
       "help": "seriesId"

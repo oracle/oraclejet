@@ -1,0 +1,30 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+
+$includePanelVariables: $includePanelClasses !default;
+
+@if $includePanelVariables != false {
+  @include module-include-once("alta.web.variables.panel") {
+
+:root {
+
+
+  // panel
+  // --------------------------
+// todo: are we keeping panel?
+  --oj-panel-padding:                   0.85714rem; //settings: ignore
+  --oj-panel-border-radius:             var(--oj-border-radius-sm); //settings: ignore
+
+  --oj-panel-bg-color:                  var(--oj-neutral-color-1); //settings: ignore
+  --oj-panel-border-color:              var(--oj-neutral-color-8); //settings: ignore
+  --oj-panel-border-color-selected:     var(--oj-brand-color); //settings: ignore
+
+  --oj-panel-1-bg-color:                var(--oj-neutral-color-5); //settings: ignore
+  --oj-panel-1-border-color:            var(--oj-neutral-color-8); //settings: ignore
+
+}
+
+
+  }
+}

@@ -1,11 +1,11 @@
 {
   "name": "oj-timeline",
-  "version": "6.0.0",
-  "jetVersion": "6.0.0",
+  "version": "6.1.0",
+  "jetVersion": "6.1.0",
   "displayName": "Timeline",
   "type": "core",
   "description": "An interactive data visualization that displays a series of events in chronological order.",
-  "help": "https://docs.oracle.com/en/middleware/jet/6/reference-api/oj.ojTimeline.html",
+  "help": "https://docs.oracle.com/en/middleware/jet/6.1/reference-api/oj.ojTimeline.html",
   "properties": {
     "animationOnDataChange": {
       "description": "Defines the animation that is applied on data changes.",

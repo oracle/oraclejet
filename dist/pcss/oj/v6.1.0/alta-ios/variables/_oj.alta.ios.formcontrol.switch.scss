@@ -1,0 +1,122 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+$includeSwitchVariables: $includeSwitchClasses !default;
+
+@if $includeSwitchVariables != false {
+  $includeFormControlVariables: true !global;
+}
+// import dependencies
+@import "oj.alta.ios.formcontrol";
+
+@if $includeSwitchVariables != false {
+  @include module-include-once("alta.ios.variables.switch") {
+
+:root {
+
+  // switch
+  // ------------------------------
+
+  --oj-switch-container-width:                      3.1251875rem;
+  --oj-switch-container-height:                     1.9375rem;
+
+  --oj-switch-track-height:                         1.87491875rem;
+  --oj-switch-track-width:                          3.187575rem;
+
+
+  // off
+  --oj-switch-track-bg-color:                       var(--oj-neutral-color-2);
+  --oj-switch-track-border-color:                   var(--oj-neutral-color-7);
+  --oj-switch-track-border-width:                   2px;
+  --oj-switch-thumb-bg-color:                       var(--oj-neutral-color-1);
+  --oj-switch-thumb-border-color:                   var(--oj-neutral-color-9);
+  --oj-switch-thumb-height:                         1.62498125rem;
+  --oj-switch-thumb-width:                          1.62498125rem;
+  --oj-switch-thumb-border-width:                   1px;
+  --oj-switch-thumb-box-shadow:                     0 3px 1px unquote('hsla(var(--oj-box-shadow-hsl),0.05)'), 0 0 8px unquote('hsla(var(--oj-box-shadow-hsl),0.05)');
+
+  // on
+  --oj-switch-track-bg-color-selected:              var(--oj-brand-color);
+  --oj-switch-track-border-color-selected:          var(--oj-brand-color);
+  --oj-switch-thumb-bg-color-selected:              var(--oj-neutral-color-1);
+  --oj-switch-thumb-border-color-selected:          var(--oj-brand-color);
+  --oj-switch-thumb-height-selected:                1.62498125rem;
+  --oj-switch-thumb-width-selected:                 1.62498125rem;
+  --oj-switch-thumb-box-shadow-selected:            0 3px 1px unquote('hsla(var(--oj-box-shadow-hsl),0.05)'), 0 0 8px unquote('hsla(var(--oj-box-shadow-hsl),0.05)');
+
+  // off hover
+  --oj-switch-track-bg-color-hover:                 var(--oj-neutral-color-2);
+  --oj-switch-track-border-color-hover:             var(--oj-neutral-color-7);
+  --oj-switch-thumb-bg-color-hover:                 var(--oj-brand-color-light-5);
+  --oj-switch-thumb-border-color-hover:             var(--oj-brand-color-light-2);
+  --oj-switch-thumb-height-hover:                   2.12505rem;
+  --oj-switch-thumb-width-hover:                    2.12505rem;
+  --oj-switch-thumb-border-width-hover:             1px;
+
+  // on hover
+  --oj-switch-track-bg-color-selected-hover:        var(--oj-brand-color);
+  --oj-switch-track-border-color-selected-hover:    var(--oj-brand-color);
+  --oj-switch-thumb-bg-color-selected-hover:        var(--oj-brand-color-light-5);
+  --oj-switch-thumb-border-color-selected-hover:    var(--oj-brand-color-light-2);
+  --oj-switch-thumb-height-selected-hover:          2.12505rem;
+  --oj-switch-thumb-width-selected-hover:           2.12505rem;
+  --oj-switch-thumb-border-width-selected-hover:    1px;
+
+  // off active
+  --oj-switch-track-bg-color-active:                var(--oj-neutral-color-2);
+  --oj-switch-track-border-color-active:            var(--oj-neutral-color-7);
+  --oj-switch-thumb-bg-color-active:                var(--oj-brand-color-light-5);
+  --oj-switch-thumb-border-color-active:            var(--oj-brand-color-light-2);
+  --oj-switch-thumb-height-active:                  2.12505rem;
+  --oj-switch-thumb-width-active:                   2.12505rem;
+  --oj-switch-thumb-border-width-active:            1px;
+
+  // on active
+  --oj-switch-track-bg-color-selected-active:       var(--oj-brand-color);
+  --oj-switch-track-border-color-selected-active:   var(--oj-brand-color);
+  --oj-switch-thumb-bg-color-selected-active:       var(--oj-brand-color-light-5);
+  --oj-switch-thumb-border-color-selected-active:   var(--oj-brand-color-light-2);
+  --oj-switch-thumb-height-selected-active:         2.12505rem;
+  --oj-switch-thumb-width-selected-active:          2.12505rem;
+  --oj-switch-thumb-border-width-selected-active:   1px;
+
+  // readonly off
+  --oj-switch-track-bg-color-readonly:              var(--oj-neutral-color-2);
+  --oj-switch-track-border-color-readonly:          var(--oj-neutral-color-17);
+  --oj-switch-track-border-width-readonly:          2px;
+  --oj-switch-thumb-bg-color-readonly:              var(--oj-neutral-color-1);
+  --oj-switch-thumb-border-color-readonly:          var(--oj-neutral-color-17);
+  --oj-switch-thumb-height-readonly:                1.62498125rem;
+  --oj-switch-thumb-width-readonly:                 1.62498125rem;
+  --oj-switch-thumb-border-width-readonly:          1px;
+
+  // readonly on
+  --oj-switch-track-bg-color-selected-readonly:     var(--oj-neutral-color-17);
+  --oj-switch-track-border-color-selected-readonly: var(--oj-neutral-color-17);
+  --oj-switch-thumb-bg-color-selected-readonly:     var(--oj-neutral-color-1);
+  --oj-switch-thumb-border-color-selected-readonly: var(--oj-neutral-color-1);
+  --oj-switch-thumb-height-selected-readonly:       1.62498125rem;
+  --oj-switch-thumb-width-selected-readonly:        1.62498125rem;
+
+  // disabled off
+  --oj-switch-track-bg-color-disabled:              var(--oj-neutral-color-2);
+  --oj-switch-track-border-color-disabled:          var(--oj-neutral-color-7);
+  --oj-switch-thumb-bg-color-disabled:              var(--oj-neutral-color-1);
+  --oj-switch-thumb-border-color-disabled:          var(--oj-neutral-color-9);
+  --oj-switch-thumb-height-disabled:                1.62498125rem;
+  --oj-switch-thumb-width-disabled:                 1.62498125rem;
+
+  // disabled on
+  --oj-switch-track-bg-color-selected-disabled:     var(--oj-brand-color);
+  --oj-switch-track-border-color-selected-disabled: var(--oj-brand-color);
+  --oj-switch-thumb-bg-color-selected-disabled:     var(--oj-neutral-color-1);
+  --oj-switch-thumb-border-color-selected-disabled: var(--oj-neutral-color-1);
+  --oj-switch-thumb-height-selected-disabled:       1.62498125rem;
+  --oj-switch-thumb-width-selected-disabled:        1.62498125rem;
+
+
+}
+
+
+  }
+}

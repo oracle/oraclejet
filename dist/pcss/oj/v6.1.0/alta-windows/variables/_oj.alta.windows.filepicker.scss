@@ -1,0 +1,32 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+$includeFilePickerVariables: $includeFilePickerClasses !default;
+
+@if $includeFilePickerVariables != false {
+  $includeFormControlVariables: true !global;
+}
+
+// import dependencies
+@import "oj.alta.windows.formcontrol";
+
+
+@if $includeFilePickerVariables != false {
+  @include module-include-once("alta.windows.variables.filepicker") {
+:root {
+  // file picker
+  --oj-file-picker-bg-color:                  var(--oj-form-control-bg-color);
+  --oj-file-picker-border-color:              var(--oj-form-control-border-color);
+  --oj-file-picker-border-width:              2px;
+
+  --oj-file-picker-border-radius:             0;
+  --oj-file-picker-border-style:              dashed;
+  --oj-file-picker-text-color:                var(--oj-link-text-color);
+  --oj-file-picker-text-font-size:            1.28571rem;
+
+  --oj-file-picker-bg-color-active:           var(--oj-brand-color-light-4);
+  --oj-file-picker-border-width-active:       1px;
+}
+
+  }
+}

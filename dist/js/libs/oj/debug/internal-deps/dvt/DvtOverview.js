@@ -1360,7 +1360,7 @@ dvt.Overview.prototype.endDragPan = function()
   if (this._moveDrawable != null && this._isDragPanning == true)
   {
     if (this._moveDrawable.getId() == 'window')
-      this.finishWindowDrag(0, 0);
+      this.handleWindowDrag(dvt.OverviewEvent.SUBTYPE_SCROLL_END);
     else if (this.isHandle(this._moveDrawable))
     {
       this.finishHandleDrag(0, 0);
@@ -1407,7 +1407,7 @@ dvt.Overview.prototype.contDragPan = function(event, compX, compY)
     this._initY = compY;
 
     if (this._moveDrawable.getId() == 'window')
-      this.handleWindowDragPositioning(event, diffX, diffY);
+      this.handleWindowDrag(dvt.OverviewEvent.SUBTYPE_SCROLL_POS, diffX, diffY);
     else if (this._moveDrawable.getId() == 'lh' || this._moveDrawable.getId() == 'lhb')
       this.handleLeftOrRightHandleDragPositioning(event, diffX, true);
     else if (this._moveDrawable.getId() == 'rh' || this._moveDrawable.getId() == 'rhb')
@@ -1512,91 +1512,118 @@ dvt.Overview.prototype.stopDragAction = function()
 
 
 /***************************** window scrolling and resizing *********************************************/
-dvt.Overview.prototype.handleWindowDragPositioning = function(event, deltaX, deltaY)
-{
-  this.fireScrollEvent(dvt.OverviewEvent.SUBTYPE_SCROLL_POS, deltaX, deltaY);
-};
-
-dvt.Overview.prototype.finishWindowDrag = function(deltaX, deltaY)
-{
-  this.fireScrollEvent(dvt.OverviewEvent.SUBTYPE_SCROLL_END, deltaX, deltaY);
-};
-
-dvt.Overview.prototype.fireScrollEvent = function(type, deltaX, deltaY)
+dvt.Overview.prototype.handleWindowDrag = function(type, deltaX, deltaY)
 {
   var slidingWindow = this.getSlidingWindow();
 
+  var triggerEvent = false;
+  var posX = this.getSlidingWindowPosX(slidingWindow);
+  var posY = this.getSlidingWindowPosY(slidingWindow);
+  var width = slidingWindow.getWidth();
+  var height = slidingWindow.getHeight();
+
+  if (type === dvt.OverviewEvent.SUBTYPE_SCROLL_POS)
+  {
+    if (this.isHorizontalScrollingEnabled() && deltaX !== 0)
+    {
+      var minPosX = this.getMinimumPositionX();
+      var maxPosX = this.getMaximumPositionX();
+      if ((posX + deltaX) <= minPosX)
+      {
+        // hit the left side
+        this.setSlidingWindowPosX(slidingWindow, minPosX);
+      }
+      else if (posX + width + deltaX >= maxPosX)
+      {
+        // hit the bottom
+        this.setSlidingWindowPosX(slidingWindow, maxPosX - width);
+      }
+      else
+      {
+        this.setSlidingWindowPosX(slidingWindow, posX + deltaX);
+      }
+      var newPosX = this.getSlidingWindowPosX(slidingWindow);
+      if (newPosX !== posX)
+      {
+        posX = newPosX;
+        triggerEvent = true;
+      }
+    }
+    if (this.isVerticalScrollingEnabled() && deltaY !== 0)
+    {
+      var minPosY = this.getMinimumPositionY();
+      var maxPosY = this.getMaximumPositionY();
+      if ((posY + deltaY) <= minPosY)
+      {
+        // hit the left side
+        this.setSlidingWindowPosY(slidingWindow, minPosY);
+      }
+      else if (posY + height + deltaY >= maxPosY)
+      {
+        // hit the bottom
+        this.setSlidingWindowPosY(slidingWindow, maxPosY - height);
+      }
+      else
+      {
+        this.setSlidingWindowPosY(slidingWindow, posY + deltaY);
+      }
+      var newPosY = this.getSlidingWindowPosY(slidingWindow);
+      if (newPosY !== posY)
+      {
+        posY = newPosY;
+        triggerEvent = true;
+      }
+    }
+    if (triggerEvent)
+    {
+      // update sliding window borders if there was a position update
+      DvtOverviewRenderer._updateBorderAroundSlidingWindow(this);
+    }
+  }
+  // fire a scroll event if the window drag deltas caused a position update, or if the drag is ending
+  if (triggerEvent || type === dvt.OverviewEvent.SUBTYPE_SCROLL_END)
+  {
+    var newX1;
+    var newX2;
+    var newY1;
+    var newY2;
+    if (this.isHorizontalScrollingEnabled())
+    {
+      if (this.isRTL())
+      {
+        newX1 = this.getXPositionDate(this.Width - (posX + width));
+        newX2 = this.getXPositionDate(this.Width - posX);
+      }
+      else
+      {
+        newX1 = this.getXPositionDate(posX);
+        newX2 = this.getXPositionDate(posX + width);
+      }
+    }
+    if (this.isVerticalScrollingEnabled())
+    {
+      newY1 = this.getYPositionDate(posY);
+      newY2 = this.getYPositionDate(posY + height);
+    }
+    this.fireScrollEvent(type, newX1, newX2, newY1, newY2);
+  }
+};
+
+dvt.Overview.prototype.fireScrollEvent = function(type, newX1, newX2, newY1, newY2)
+{
   // scroll timeline
   var evt = new dvt.OverviewEvent(type);
-  var triggerEvent = false;
-
-  if (this.isHorizontalScrollingEnabled() && deltaX != 0)
+  if (this.isHorizontalScrollingEnabled())
   {
-    var posX = this.getSlidingWindowPosX(slidingWindow);
-    var width = slidingWindow.getWidth();
-    var minPosX = this.getMinimumPositionX();
-    var maxPosX = this.getMaximumPositionX();
-
-    if ((posX + deltaX) <= minPosX)
-    {
-      // hit the left side
-      this.setSlidingWindowPosX(slidingWindow, minPosX);
-    }
-    else if (posX + width + deltaX >= maxPosX)
-    {
-      // hit the bottom
-      this.setSlidingWindowPosX(slidingWindow, maxPosX - width);
-    }
-    else
-    {
-      this.setSlidingWindowPosX(slidingWindow, posX + deltaX);
-    }
-
-    if (this.isRTL())
-    {
-      var newX1 = this.getXPositionDate(this.Width - (posX + width));
-      var newX2 = this.getXPositionDate(this.Width - posX);
-    }
-    else
-    {
-      newX1 = this.getXPositionDate(posX);
-      newX2 = this.getXPositionDate(posX + width);
-    }
     evt.setNewX1(newX1);
     evt.setNewX2(newX2);
-    triggerEvent = true;
   }
-  if (this.isVerticalScrollingEnabled() && deltaY != 0)
+  if (this.isVerticalScrollingEnabled())
   {
-    var posY = this.getSlidingWindowPosY(slidingWindow);
-    var height = slidingWindow.getHeight();
-    var minPosY = this.getMinimumPositionY();
-    var maxPosY = this.getMaximumPositionY();
-
-    if ((posY + deltaY) <= minPosY)
-    {
-      // hit the left side
-      this.setSlidingWindowPosY(slidingWindow, minPosY);
-    }
-    else if (posY + height + deltaY >= maxPosY)
-    {
-      // hit the bottom
-      this.setSlidingWindowPosY(slidingWindow, maxPosY - height);
-    }
-    else
-    {
-      this.setSlidingWindowPosY(slidingWindow, posY + deltaY);
-    }
-    evt.setNewY1(this.getYPositionDate(posY));
-    evt.setNewY2(this.getYPositionDate(posY + height));
-    triggerEvent = true;
+    evt.setNewY1(newY1);
+    evt.setNewY2(newY2);
   }
-
-  if (triggerEvent)
-  {
-    DvtOverviewRenderer._updateBorderAroundSlidingWindow(this);
-    this.dispatchEvent(evt);
-  }
+  this.dispatchEvent(evt);
 };
 
 dvt.Overview.prototype.handleLeftOrRightHandleDragPositioning = function(event, delta, isLeft)

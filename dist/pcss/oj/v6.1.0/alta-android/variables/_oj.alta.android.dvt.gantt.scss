@@ -1,0 +1,51 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+
+$includeGanttVariables: $includeGanttClasses !default;
+
+@if $includeGanttVariables != false {
+  $includeCollectionVariables: true !global;
+}
+
+// import dependencies
+@import "oj.alta.android.collection";
+
+@if $includeGanttVariables != false {
+  @include module-include-once("alta.android.variables.gantt") {
+
+:root {
+  
+    // gantt
+    // ----------------------------
+    --oj-gantt-bg-color:                                 var(--oj-collection-bg-color);              
+    --oj-gantt-border-color:                             var(--oj-collection-border-color);              
+    --oj-gantt-empty-text-color:                         var(--oj-text-color);              
+    --oj-gantt-horizontal-gridline-color:                var(--oj-collection-cell-border-color);           
+    --oj-gantt-vertical-gridline-color:                  var(--oj-neutral-color-10);        
+    --oj-gantt-dependency-line-color:                    var(--oj-neutral-color-14);           
+    --oj-gantt-summary-bg-color:                         var(--oj-neutral-color-12);
+    --oj-gantt-milestone-bg-color:                       var(--oj-neutral-color-13);    
+    --oj-gantt-row-bg-color:                             var(--oj-collection-cell-bg-color);    
+    --oj-gantt-reference-object-color:                   var(--oj-accent-color-dvt-4);
+
+    --oj-gantt-task-bg-color:                            var(--oj-accent-color-dvt-1);             
+    --oj-gantt-task-border-color-selected:               var(--oj-dvt-item-outer-border-color-selected); 
+    --oj-gantt-task-drag-image-border-color:             var(--oj-neutral-color-15); 
+              
+    --oj-gantt-major-axis-bg-color:                      var(--oj-collection-header-bg-color);              
+    --oj-gantt-major-axis-border-color:                  var(--oj-collection-header-border-color);              
+    --oj-gantt-major-axis-label-color:                   var(--oj-collection-header-text-color);              
+    --oj-gantt-major-axis-separator-color:               var(--oj-collection-header-border-color);  
+              
+    --oj-gantt-minor-axis-bg-color:                      var(--oj-gantt-major-axis-bg-color);              
+    --oj-gantt-minor-axis-border-color:                  var(--oj-gantt-major-axis-border-color);              
+    --oj-gantt-minor-axis-label-color:                   var(--oj-collection-cell-text-color);              
+    --oj-gantt-minor-axis-separator-color:               var(--oj-gantt-major-axis-separator-color); 
+
+    --oj-gantt-tooltip-label-color:                      var(--oj-text-color-3);
+}
+
+
+  }
+}

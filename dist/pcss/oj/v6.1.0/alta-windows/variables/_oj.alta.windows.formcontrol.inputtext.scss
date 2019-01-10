@@ -1,0 +1,25 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+$includeInputTextVariables: $includeInputTextClasses !default;
+
+@if $includeInputTextVariables != false {
+  $includeFormControlVariables: true !global;
+  $includeMessagesVariables: true !global;
+  $includeTextAreaVariables: true !global;
+}
+// import dependencies
+@import "oj.alta.windows.formcontrol";
+@import "oj.alta.windows.messages";
+@import "oj.alta.windows.formcontrol.textarea";
+
+@if $includeInputTextVariables != false {
+  @include module-include-once("alta.windows.variables.inputtext") {
+
+:root {
+  --oj-input-text-text-align: left; //settings: ignore
+  --oj-input-text-text-align-rtl: right; //settings: ignore
+}
+
+  }
+}

@@ -1,21 +1,22 @@
 /**
  * @license
- * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
-define([], function()
+define(['ojs/ojmap'], function(ojMap)
 {
 
 /**
  * Copyright (c) 2018, Oracle and/or its affiliates.
  * All rights reserved.
  */
+/* global ojMap:false */
 
 /**
  * @class
  * @name oj.DiagramUtils
- * @ojtsignore
+ * @ojtsmodule
  *
  * @classdesc
  * <h3>Diagram Layout Utilities</h3>
@@ -48,6 +49,7 @@ define([], function()
  * var layoutFunc = oj.DiagramUtils.getLayout(data);
  * </code></pre>
  * @export
+ * @hideconstructor
  * @constructor
  * @since 3.0
  */
@@ -62,7 +64,7 @@ var DiagramUtils = function () {
  * @property {number} y y-coordinate for the label
  * @property {number} rotationPointX x-coordinate for label rotation point
  * @property {number} rotationPointY y-coordinate for label rotation point
- * @property {number} number angle of rotation for the labelLayout
+ * @property {number} angle rotation angle for the label
  * @property {string} halign horizontal alignment for the label. Valid values are "left", "right" or "center"
  * @property {string} valign vertical alignment for the label. Valid values are "top", "middle", "bottom" or "baseline".
  *                           The default value is <code class="prettyprint">"top"</code>
@@ -72,13 +74,15 @@ var DiagramUtils = function () {
  * A function that generates the layout callback function for the ojDiagram component.
  * @param {Object} obj JSON object that defines positions of nodes, links paths and label layouts. The object supports the following properties.
  * @property {Array<Object>} obj.nodes An array of objects with the following properties that describe a position for the diagram node and a layout for the node's label
+ * @property {any} obj.nodes.id id for the node
  * @property {number} obj.nodes.x x-coordinate for the node
  * @property {number} obj.nodes.y y-coordinate for the node
  * @property {Object} obj.nodes.labelLayout An object that defines label layout for the node. See {@link oj.DiagramUtils.LabelLayout} object.
  *                                          The object defines absolute coordinates for label position.
  * @property {Array<Object>} obj.links An array of objects with the following properties that describe a path for the diagram link and a layout for the link's label.
+ * @property {any} obj.links.id id for the link
  * @property {string} obj.links.path A string that represents an SVG path for the link.
- * @property {string} obj.links.coordinateSpace The coordinate container id for the. If specified the link points will be applied relative to that container.
+ * @property {any} obj.links.coordinateSpace The coordinate container id for the link. If specified the link points will be applied relative to that container.
  *                                              If the value is not set, the link points are in the global coordinate space.
  * @property {Object} obj.links.labelLayout An object that defines label layout for the link. See {@link oj.DiagramUtils.LabelLayout} object.
  *
@@ -120,6 +124,12 @@ var DiagramUtils = function () {
  * @property {number} obj.viewport.w width
  * @property {number} obj.viewport.h height
  * @returns {Function} layout callback function
+ * @ojsignature {target: "Type", value: "oj.DiagramUtils.LabelLayout", for: "obj.nodes.labelLayout"}
+ * @ojsignature {target: "Type", value: "oj.DiagramUtils.LabelLayout", for: "obj.links.labelLayout"}
+ * @ojsignature {target: "Type", value: "oj.DiagramUtils.LabelLayout|function(DvtDiagramLayoutContext,DvtDiagramLayoutContextNode):oj.DiagramUtils.LabelLayout", for: "obj.nodeDefaults.labelLayout"}
+ * @ojsignature {target: "Type", value: "function(DvtDiagramLayoutContext,DvtDiagramLayoutContextLink):string", for: "obj.linkDefaults.path"}
+ * @ojsignature {target: "Type", value: "function(DvtDiagramLayoutContext,DvtDiagramLayoutContextLink):oj.DiagramUtils.LabelLayout", for: "obj.linkDefaults.labelLayout"}
+ * @ojsignature {target: "Type", value: "function(DvtDiagramLayoutContext):void", for: "returns"}
  * @export
  * @method getLayout
  * @memberof oj.DiagramUtils
@@ -135,7 +145,7 @@ DiagramUtils.getLayout = function (obj) {
 
       for (var ni = 0; ni < layoutContext.getNodeCount(); ni++) {
         var node = layoutContext.getNodeByIndex(ni);
-        var nodeData = nodesDataMap[node.getId()];
+        var nodeData = nodesDataMap.get(node.getId());
         DiagramUtils._positionChildNodes(node.getChildNodes(),
                                             nodeData ? nodeData.nodes : null,
                                             layoutContext,
@@ -152,7 +162,7 @@ DiagramUtils.getLayout = function (obj) {
         && obj.linkDefaults.labelLayout ? obj.linkDefaults.labelLayout : null;
       for (var li = 0; li < layoutContext.getLinkCount(); li++) {
         var link = layoutContext.getLinkByIndex(li);
-        var linkData = linksDataMap[link.getId()];
+        var linkData = linksDataMap.get(link.getId());
         if (linkData && linkData.path) {
           link.setPoints(linkData.path);
         } else if (defaultPath && defaultPath instanceof Function) {
@@ -190,10 +200,11 @@ DiagramUtils.getLayout = function (obj) {
  * @memberof oj.DiagramUtils
  */
 DiagramUtils._dataArrayToMap = function (dataArray) {
-  var m = {};
+  // eslint-disable-next-line new-cap
+  var m = new ojMap();
   if (dataArray) {
     for (var i = 0; i < dataArray.length; i++) {
-      m[dataArray[i].id] = dataArray[i];
+      m.set(dataArray[i].id, dataArray[i]);
     }
   }
   return m;
@@ -214,7 +225,7 @@ DiagramUtils._positionChildNodes = function (
     var nodesDataMap = DiagramUtils._dataArrayToMap(nodesData);
     for (var ni = 0; ni < nodes.length; ni++) {
       var node = nodes[ni];
-      var nodeData = nodesDataMap[node.getId()];
+      var nodeData = nodesDataMap.get(node.getId());
       DiagramUtils._positionChildNodes(node.getChildNodes(),
                                           nodeData ? nodeData.nodes : null,
                                           layoutContext,

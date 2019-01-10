@@ -1,7 +1,7 @@
 {
   "name": "oj-list-view",
-  "version": "6.0.0",
-  "jetVersion": "6.0.0",
+  "version": "6.1.0",
+  "jetVersion": "6.1.0",
   "displayName": "List View",
   "type": "core",
   "styleClasses": [
@@ -31,7 +31,7 @@
     }
   ],
   "description": "Displays data items as a list or a grid with highly interactive features.",
-  "help": "https://docs.oracle.com/en/middleware/jet/6/reference-api/oj.ojListView.html",
+  "help": "https://docs.oracle.com/en/middleware/jet/6.1/reference-api/oj.ojListView.html",
   "properties": {
     "as": {
       "description": "Gets and sets the alias for the current item when referenced inside the item template.",
@@ -655,20 +655,17 @@
             {
               "name": "key",
               "description": "The key of the item. If both index and key are specified, then key takes precedence.",
-              "type": "any",
-              "optional": true
+              "type": "any"
             },
             {
               "name": "index",
               "description": "The index of the item relative to its parent.",
-              "type": "number",
-              "optional": true
+              "type": "number"
             },
             {
               "name": "parent",
               "description": "The parent node, not required if parent is the root.",
-              "type": "Element",
-              "optional": true
+              "type": "Element"
             }
           ]
         }

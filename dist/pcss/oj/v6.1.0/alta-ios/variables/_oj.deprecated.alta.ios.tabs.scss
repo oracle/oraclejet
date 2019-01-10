@@ -1,0 +1,30 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+$includeDeprecatedTabsVariables: $includeTabsClasses !default;
+
+@if $includeDeprecatedTabsVariables != false {
+  $includePanelVariables: true !global;
+}
+
+// import dependencies
+@import "oj.alta.ios.panel";
+
+
+@if $includeDeprecatedTabsVariables != false {
+  @include module-include-once("alta.ios.variables.tabs") {
+
+// Tabs are deprecated
+:root {
+  --oj-tabs-panel-bg-color:                           var(--oj-neutral-color-1); //settings: ignore
+  --oj-tabs-panel-border-color:                       var(--oj-neutral-color-8); //settings: ignore
+
+  --oj-tabs-nav-text-color:                           var(--oj-link-text-color); //settings: ignore
+  --oj-tabs-nav-border-color-selected:                var(--oj-neutral-color-9); //settings: ignore
+  --oj-tabs-nav-accent-border-color-selected:         var(--oj-brand-color); //settings: ignore
+  --oj-tabs-nav-border-radius:                        0; //settings: ignore
+  --oj-tabs-nav-accent-border-width-selected:         3px; //settings: ignore
+
+}
+ }
+}

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -747,7 +747,7 @@ var __oj_color_spectrum_metadata =
           if (ui.option === 'rawValue') {
             this._SetRawValue(newColor, e);
           } else if (ui.option === 'value') {
-            this._SetValueReturnBoolean(newColor, e);
+            this._SetValue(newColor, e);
           }
         }
         this._setColorVals(newColor);
@@ -964,7 +964,7 @@ var __oj_color_spectrum_metadata =
         //  Fire value optionChange event.
         var oNewColor = new Color({ h: hue, s: sat, l: lum, a: this._alphaVal });
         this._SetRawValue(oNewColor, e);
-        this._SetValueReturnBoolean(oNewColor, e);
+        this._SetValue(oNewColor, e);
 
         this._setAriaText(hue, sat, lum, this._alphaVal);
         this._value = oNewColor;
@@ -1053,7 +1053,7 @@ var __oj_color_spectrum_metadata =
 
         //  Fire the completing "value" event
         var newVal = this.options[this._transientValueName];
-        this._SetValueReturnBoolean(newVal, e);
+        this._SetValue(newVal, e);
       },
 
 
@@ -1177,7 +1177,7 @@ var __oj_color_spectrum_metadata =
         this._SetRawValue(color, e);
 
         if (e.type === 'dragstop') {
-          this._SetValueReturnBoolean(color, e.originalEvent);
+          this._SetValue(color, e.originalEvent);
           aria = true;
         }
 

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -160,7 +160,8 @@ oj['DeferredDataProvider'] = DeferredDataProvider;
  * @param {Promise.<oj.DataProvider>} dataProvider A promise that resolves to an oj.DataProvider
  * @param {Function} capabilityFunc An function that implements {@link oj.DataProvider#getCapability}.
  * @ojsignature [{target: "Type",
- *               value: "class DeferredDataProvider<K, D> implements DataProvider<K, D>"},
+ *               value: "class DeferredDataProvider<K, D> implements DataProvider<K, D>",
+ *               genericParameters: [{"name": "K", "description": "Type of Key"}, {"name": "D", "description": "Type of Data"}]},
  *               {target: "Type",
  *               value: "Promise<oj.DataProvider<K, D>>",
  *               for: "dataProvider"},

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";define([],function(){var n={};function e(){}return e.prototype.getPromise=function(){},e.prototype.clear=function(){},n.getTimer=function(e){return new n._TimerImpl(e)},n._TimerImpl=function(n){var e,t,i;function o(n){i=null,t(n)}this.getPromise=function(){return e},this.clear=function(){window.clearTimeout(i),i=null,o(!1)},e="undefined"==typeof window?Promise.reject():new Promise(function(e){t=e,i=window.setTimeout(o.bind(null,!0),n)})},n});

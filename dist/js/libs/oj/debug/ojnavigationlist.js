@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -1589,8 +1589,14 @@ oj.SlidingNavListHandler.prototype._slideAnimation =
   function (item, isMovingNext, focusableElement, event, animationResolve) {
     var self = this;
     var listRoot = this.m_widget.getRootElement();
-    var hasFocusAncestor = this.m_widget.getRootElement().hasClass('oj-focus-ancestor');
+    var hasFocusAncestor = listRoot.hasClass('oj-focus-ancestor');
 
+    // After loading child items, listview tries to move focus to first visible
+    // element, if there is no active element set. So, temporarily removing focus ancestor and
+    // setting focus to first element after animation. This will avoid jittering in animation.
+    if (hasFocusAncestor && isMovingNext) {
+      listRoot.removeClass('oj-focus-ancestor');
+    }
 
     var action = isMovingNext ? 'sliderExpand' : 'sliderCollapse';
     var promise = this.m_widget.StartAnimation(
@@ -3908,7 +3914,8 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
    * @ojtsimport {module: "ojkeyset", type: "AMD", imported:["KeySet"]}
    * @ojsignature [{
    *                target: "Type",
-   *                value: "class ojNavigationList<K, D> extends baseComponent<ojNavigationListSettableProperties<K,D>>"
+   *                value: "class ojNavigationList<K, D> extends baseComponent<ojNavigationListSettableProperties<K,D>>",
+   *                genericParameters: [{"name": "K", "description": "Type of key of the dataprovider"}, {"name": "D", "description": "Type of data from the dataprovider"}]
    *               },
    *               {
    *                target: "Type",
@@ -5652,7 +5659,8 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
    * @ojrole tablist
    * @ojsignature [{
    *                target: "Type",
-   *                value: "class ojTabBar<K, D> extends baseComponent<ojTabBarSettableProperties<K,D>>"
+   *                value: "class ojTabBar<K, D> extends baseComponent<ojTabBarSettableProperties<K,D>>",
+   *                genericParameters: [{"name": "K", "description": "Type of key of the dataprovider"}, {"name": "D", "description": "Type of data from the dataprovider"}]
    *               },
    *               {
    *                target: "Type",

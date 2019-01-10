@@ -1,0 +1,24 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+
+$includeRadiosetVariables: $includeRadiosetClasses !default;
+
+@if $includeRadiosetVariables != false {
+  $includeFormControlVariables: true !global;
+  $includeMessagesVariables: true !global;
+  $includeRadioCheckboxVariables: true !global;
+  $includeFormLayoutVariables: true !global;
+}
+// import dependencies
+@import "oj.alta.web.formcontrol";
+@import "oj.alta.web.messages";
+@import "oj.alta.web.formcontrol.radiocheckbox";
+@import "oj.alta.web.formlayout";
+
+@if $includeRadiosetVariables != false {
+  @include module-include-once("alta.web.variables.radioset") {
+
+
+  }
+}

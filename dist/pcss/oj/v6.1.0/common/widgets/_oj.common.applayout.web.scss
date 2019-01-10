@@ -1,0 +1,514 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the
+//          version in your base theme's directory,
+//          for example alta/widgets/_oj.alta.applayout.web.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@import "../../utilities/oj.utilities";
+
+@mixin oj-web-padding($selectorPrefix)
+{
+  @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+  {
+    .#{$selectorPrefix}-web-padding-horizontal {
+        padding-left: var(--oj-app-layout-web-padding);
+        padding-right: var(--oj-app-layout-web-padding);
+      }
+  
+  
+    .#{$selectorPrefix}-web-padding-start {
+        @include oj-ltr() {
+          padding-left: var(--oj-app-layout-web-padding);
+        }
+        @include oj-rtl() {
+          padding-right: var(--oj-app-layout-web-padding);
+        }
+    }
+  
+    .#{$selectorPrefix}-web-padding-end {
+        @include oj-ltr() {
+          padding-right: var(--oj-app-layout-web-padding);
+        }
+        @include oj-rtl() {
+          padding-left: var(--oj-app-layout-web-padding);
+        }
+    }
+  
+    .#{$selectorPrefix}-web-padding-top,
+    .#{$selectorPrefix}-web-padding-vertical {
+      padding-top: calc(var(--oj-app-layout-web-padding) / 2);
+    }
+  
+    .#{$selectorPrefix}-web-padding-bottom,
+    .#{$selectorPrefix}-web-padding-vertical {
+      padding-bottom: calc(var(--oj-app-layout-web-padding) / 2);
+    }
+  
+  }
+  @else {
+    .#{$selectorPrefix}-web-padding-horizontal {
+        padding-left: $appLayoutWebPadding;
+        padding-right: $appLayoutWebPadding;
+      }
+  
+  
+    .#{$selectorPrefix}-web-padding-start {
+        @include oj-ltr() {
+          padding-left: $appLayoutWebPadding;
+        }
+        @include oj-rtl() {
+          padding-right: $appLayoutWebPadding;
+        }
+    }
+  
+    .#{$selectorPrefix}-web-padding-end {
+        @include oj-ltr() {
+          padding-right: $appLayoutWebPadding;
+        }
+        @include oj-rtl() {
+          padding-left: $appLayoutWebPadding;
+        }
+    }
+  
+    .#{$selectorPrefix}-web-padding-top,
+    .#{$selectorPrefix}-web-padding-vertical {
+      padding-top: calc(#{$appLayoutWebPadding} / 2);
+    }
+  
+    .#{$selectorPrefix}-web-padding-bottom,
+    .#{$selectorPrefix}-web-padding-vertical {
+      padding-bottom: calc(#{$appLayoutWebPadding} / 2);
+    }
+  }
+
+}
+
+@if $includeAppLayoutWebClasses != false {
+  @include module-include-once("common.applayout.web") {
+
+    // BODY CLASSES
+    .oj-web-applayout-body {
+      // We want scrollbars to always be present on the page so header doesn't jump for desktop so always set overflow-y: scroll.
+      overflow-y: scroll;
+    }
+
+    // OFFCANVAS
+    .oj-web-applayout-offcanvas {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        width: var(--oj-app-layout-offcanvas-width);
+        max-width: var(--oj-app-layout-offcanvas-max-width);
+        background-color: var(--oj-app-layout-web-offcanvas-bg-color);
+        color: var(--oj-contrast-text-color);
+      }
+      @else {
+        width: $appLayoutOffcanvasWidth;
+        max-width: $appLayoutOffcanvasMaxWidth;
+        background-color: $appLayoutWebOffcanvasBgColor;
+        color: $contrastTextColor;
+      }
+    }
+    .oj-web-applayout-offcanvas-icon {
+      @extend .oj-fwk-icon;
+      @extend .oj-fwk-icon-hamburger;
+      font-size: 24px;
+    }
+
+    // PAGE LAYOUT
+    .oj-web-applayout-page {
+      display: flex;
+      flex-direction: column;
+      box-sizing: border-box;
+      min-height: 100vh;
+    }
+    // Match IE11+
+    @media screen and (-ms-high-contrast: active), (-ms-high-contrast: none) {
+       .oj-web-applayout-page {
+        // IE11 doesn't support min-height: 100vh with flex column layout, but Edge does.
+        height: 100vh;
+        min-height: 0;
+      }
+    }
+    // Special case Edge
+    _:-ms-lang(x), _:-webkit-full-screen .oj-web-applayout-page {
+      height: auto;
+      min-height: 100vh;
+    }
+
+    // The following classes adhere to the max app content width
+    .oj-web-applayout-max-width {
+      margin-left: auto;
+      margin-right: auto;
+      width: 100%;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        max-width: var(--oj-app-layout-max-width);
+      }
+      @else {
+        max-width: $appLayoutMaxWidth;        
+      }
+      box-sizing: border-box;
+    }
+    // The following classes have flex none so they are sized correctly in the
+    // page layout
+    .oj-web-applayout-header,
+    .oj-web-applayout-footer,
+    .oj-web-applayout-navbar,
+    .oj-web-applayout-header + .oj-progress-bar-embedded {
+      flex: 0 0 auto;
+    }
+
+    // HEADER
+    .oj-web-applayout-header {
+      // need to bump up the z-index so that colored panels under the header
+      // don't hide the shadow.
+      z-index: 1;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        background-color: var(--oj-app-layout-web-header-bg-color);
+        box-shadow: var(--oj-app-layout-web-header-box-shadow);
+      }
+      @else {
+        background-color: $appLayoutWebHeaderBgColor;
+        @include oj-box-shadow($appLayoutWebHeaderBoxShadow);
+      }
+    }
+    // Add padding between the start and title containers
+    // Add padding to bar-start instead of title because the web pattern sometimes hides bar-start
+    .oj-web-applayout-header .oj-flex-bar-start {
+      @include oj-ltr() {
+        padding-right: 10px;
+      }
+      @include oj-rtl() {
+        padding-left: -10px;
+      }
+    }
+    .oj-slow-boxshadow .oj-web-applayout-header {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        border-bottom: 1px solid var(--oj-app-layout-web-header-border-color);
+      }
+      @else {
+        // Use a border color if not using a shadow
+        border-bottom: 1px solid $appLayoutWebHeaderBorderColor;        
+      }
+    }
+    .oj-web-applayout-header .oj-button,
+    .oj-web-applayout-header .oj-button-button {
+      // for vertical alignment of header elements
+      margin-bottom: 0;
+    }
+    .oj-web-applayout-header > div:first-child {
+      box-sizing: border-box;
+    }
+    .oj-web-applayout-header > div:first-child::before {
+      // To workaround IE11 min-height and flex bug
+      content: "";
+      display: inline-block;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        min-height: var(--oj-app-layout-web-header-min-height);
+      }
+      @else {
+        min-height: $appLayoutWebHeaderMinHeight;        
+      }
+      visibility: hidden;
+    }
+    .oj-web-applayout-header > div,
+    .oj-web-applayout-footer > div {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        padding-left: var(--oj-app-layout-web-padding);
+        padding-right: var(--oj-app-layout-web-padding);
+      }
+      @else {
+        padding-left: $appLayoutWebPadding;
+        padding-right: $appLayoutWebPadding;
+      }
+    }
+    .oj-web-applayout-header .oj-flex-bar-start > .oj-button:first-child {
+      // negative margins so we can align button image with content padding
+      @include oj-ltr() {
+        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+        {
+          margin-left: calc(0px - var(--oj-button-icon-only-padding));
+        }
+        @else {
+          margin-left: calc(0px - #{$buttonIconOnlyPadding});
+        }
+      }
+      @include oj-rtl() {
+        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+        {
+          margin-right: calc(0px - var(--oj-button-icon-only-padding));
+        }
+        @else {
+          margin-right: calc(0px - #{$buttonIconOnlyPadding});
+        }
+      }
+    }
+    .oj-web-applayout-header .oj-flex-bar-start > .oj-button.oj-button-lg:first-child {
+      // negative margins so we can align button image with content padding
+      @include oj-ltr() {
+        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+        {
+          margin-left: calc(0px - var(--oj-button-lg-icon-only-padding));
+        }
+        @else {
+          margin-left: calc(0px - #{$buttonLargeIconOnlyPadding});
+        }
+      }
+      @include oj-rtl() {
+        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+        {
+          margin-right: calc(0px - var(--oj-button-lg-icon-only-padding));
+        }
+        @else {
+          margin-right: calc(0px - #{$buttonLargeIconOnlyPadding});
+        }
+      }
+    }
+    .oj-web-applayout-header .oj-flex-bar-end > .oj-button:last-child,
+    .oj-web-applayout-header .oj-flex-bar-end > .oj-toolbar:last-child {
+      // negative margins so we can align button image with content padding
+      @include oj-ltr() {
+        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+        {
+          margin-right: calc(0px - var(--oj-button-icon-only-padding));
+        }
+        @else {
+          margin-right: calc(0px - #{$buttonIconOnlyPadding});
+        }
+      }
+      @include oj-rtl() {
+        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+        {
+          margin-left: calc(0px - var(--oj-button-icon-only-padding));
+        }
+        @else {
+          margin-left: calc(0px - #{$buttonIconOnlyPadding});
+        }
+      }
+    }
+    .oj-web-applayout-header-title {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        font-size: var(--oj-app-layout-web-header-title-font-size);
+        font-weight: var(--oj-app-layout-web-header-title-font-weight);
+        color: var(--oj-app-layout-web-header-title-text-color);
+      }
+      @else {
+        font-size: $appLayoutWebHeaderTitleFontSize;
+        font-weight: $appLayoutWebHeaderTitleFontWeight;
+        color: $appLayoutWebHeaderTextColor;
+      }
+      font-weight: normal;
+      // Because we baseline algin the logo and application name we can't easily
+      // vertically center aligned them to other elements like an offcanvas toggle
+      // button so we discount the height of the text by setting line-height to 0
+      line-height: 0;
+      padding: 0;
+      margin: 0;
+    }
+
+    // NAV BAR
+    .oj-web-applayout-navbar .oj-navigationlist-icon-only {
+      padding-bottom: 3px;
+    }
+
+    // CONTENT
+
+    // default of small
+    @include oj-web-padding("oj-sm");
+
+
+    @if $responsiveQueryMediumUp and $responsiveQueryMediumUp != none {
+
+      @if $responsiveQuerySmallOnly and $responsiveQuerySmallOnly != none {
+        @media #{$responsiveQuerySmallOnly} {
+          @include oj-web-padding("oj-sm-only");
+        }
+      }
+
+
+      @media #{$responsiveQueryMediumUp} {
+        @include oj-web-padding("oj-md");
+      }
+    }
+
+    @if $responsiveQueryLargeUp and $responsiveQueryLargeUp != none {
+
+      @if $responsiveQueryMediumOnly and $responsiveQueryMediumOnly != none {
+        @media #{$responsiveQueryMediumOnly} {
+          @include oj-web-padding("oj-md-only");
+        }
+      }
+
+      @if $responsiveQueryMediumDown and $responsiveQueryMediumDown != none {
+        @media #{$responsiveQueryMediumDown} {
+          @include oj-web-padding("oj-md-down");
+        }
+      }
+
+
+      @media #{$responsiveQueryLargeUp} {
+        @include oj-web-padding("oj-lg");
+      }
+    }
+
+    @if $responsiveQueryXlargeUp and $responsiveQueryXlargeUp != none {
+
+      @if $responsiveQueryLargeOnly and $responsiveQueryLargeOnly != none {
+        @media #{$responsiveQueryLargeOnly} {
+          @include oj-web-padding("oj-lg-only");
+        }
+      }
+
+      @if $responsiveQueryLargeDown and $responsiveQueryLargeDown != none {
+        @media #{$responsiveQueryLargeDown} {
+          @include oj-web-padding("oj-lg-down");
+        }
+      }
+
+
+      @media #{$responsiveQueryXlargeUp} {
+        @include oj-web-padding("oj-xl");
+      }
+
+      @if $responsiveQueryXXlargeUp and $responsiveQueryXXlargeUp != none {
+
+        @if $responsiveQueryXlargeOnly and $responsiveQueryXlargeOnly != none {
+          @media #{$responsiveQueryXlargeOnly} {
+            @include oj-web-padding("oj-xl-only");
+          }
+        }
+
+        @if $responsiveQueryXlargeDown and $responsiveQueryXlargeDown != none {
+          @media #{$responsiveQueryXlargeDown} {
+            @include oj-web-padding("oj-xl-down");
+          }
+        }
+
+        @media #{$responsiveQueryXXlargeUp} {
+          @include oj-web-padding("oj-xxl");
+        }
+      }
+
+    }
+
+
+
+
+    .oj-web-padding {
+      @extend .oj-sm-web-padding-vertical;
+      @extend .oj-sm-web-padding-horizontal;
+    }
+
+    .oj-web-applayout-content-nopad {
+      flex: 1 0 auto;
+    }
+
+    .oj-web-applayout-content {
+      @extend .oj-web-applayout-content-nopad;
+      @extend .oj-sm-web-padding-vertical;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        padding-left: calc(var(--oj-app-layout-web-padding) - (2 * var(--oj-spacing-1x)));
+        padding-right: calc(var(--oj-app-layout-web-padding) - (2 * var(--oj-spacing-1x)));
+      }
+      @else {
+        // We expect content area to use a flex layout with padding so we need to subtract
+        // half of the column gutter from the padding of the content area so
+        // that its contents will align with header and footer
+        padding-left: calc(#{$appLayoutWebPadding} - (2 * #{$spacingSmall}));
+        padding-right: calc(#{$appLayoutWebPadding} - (2 * #{$spacingSmall}));
+      }
+    }
+
+
+    // FOOTER
+    .oj-web-applayout-footer {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        min-height: var(--oj-app-layout-web-footer-min-height);
+        border-top: 1px solid var(--oj-app-layout-web-footer-border-color);
+        background-color: var(--oj-app-layout-web-footer-bg-color);
+      }
+      @else {
+        min-height: $appLayoutWebFooterMinHeight;
+        border-top: 1px solid $appLayoutWebFooterBorderColor;
+        background-color: $appLayoutWebFooterBgColor;
+      }
+      box-sizing: border-box;
+      padding-top: 10px;
+      padding-bottom: 10px;
+    }
+
+    .oj-web-applayout-footer-item {
+      box-sizing: border-box;
+      display: flex;
+      flex-wrap: wrap;
+      flex: 0 1 auto;
+    }
+    // TODO media query
+    // For phone
+    @if $responsiveQuerySmallOnly and $responsiveQuerySmallOnly != none {
+      @media #{$responsiveQuerySmallOnly} {
+        .oj-web-applayout-footer-item {
+          justify-content: center;
+          text-align: center;
+        }
+      }
+    }
+    .oj-web-applayout-footer ul {
+      margin: 0;
+      @include oj-ltr() {
+        padding-left: 0;
+      }
+      @include oj-rtl() {
+        padding-right: 0;
+      }
+    }
+    .oj-web-applayout-footer li {
+      list-style: none;
+      display: inline-block;
+      @include oj-ltr() {
+        margin-right: 10px;
+        margin-left: 0;
+        padding-right: 10px;
+        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+        {
+          border-right: 1px solid var(--oj-app-layout-web-footer-border-color);
+        }
+        @else {
+          border-right: 1px solid $appLayoutWebFooterBorderColor;          
+        }
+      }
+      @include oj-rtl() {
+        margin-left: 5px;
+        margin-right: 0;
+        padding-left: 5px;
+        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+        {
+          border-left: 1px solid var(--oj-app-layout-web-footer-border-color);
+        }
+        @else {
+          border-left: 1px solid $appLayoutWebFooterBorderColor;
+        }
+      }
+    }
+    .oj-web-applayout-footer li:last-child {
+      @include oj-ltr() {
+        margin-right: 0;
+        padding-right: 0;
+        border-right: none;
+      }
+      @include oj-rtl() {
+        margin-left: 0;
+        padding-left: 0;
+        border-left: none;
+      }
+    }
+  }
+}

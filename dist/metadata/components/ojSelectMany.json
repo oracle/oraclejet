@@ -1,7 +1,7 @@
 {
   "name": "oj-select-many",
-  "version": "6.0.0",
-  "jetVersion": "6.0.0",
+  "version": "6.1.0",
+  "jetVersion": "6.1.0",
   "displayName": "Multi Select",
   "type": "core",
   "styleClasses": [
@@ -25,7 +25,7 @@
     }
   ],
   "description": "A dropdown list that supports multiple selections and search filtering.",
-  "help": "https://docs.oracle.com/en/middleware/jet/6/reference-api/oj.ojSelectMany.html",
+  "help": "https://docs.oracle.com/en/middleware/jet/6.1/reference-api/oj.ojSelectMany.html",
   "properties": {
     "describedBy": {
       "description": "described the relationship between this component and another element.",
@@ -302,6 +302,13 @@
       "displayName": "Placeholder",
       "value": null,
       "help": "placeholder"
+    },
+    "readonly": {
+      "description": "Specifies whether a value is readonly",
+      "type": "boolean",
+      "displayName": "Read Only",
+      "value": false,
+      "help": "readOnly"
     },
     "renderMode": {
       "description": "Specifies whether to render select in JET or as a HTML Select tag.",

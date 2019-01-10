@@ -1,0 +1,25 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+$includeGaugeVariables: $includeGaugeClasses !default;
+
+@if $includeGaugeVariables != false {
+  $includeDvtBaseVariables: true !global;
+}
+// import dependencies
+@import "oj.alta.web.dvt";
+
+@if $includeGaugeVariables != false {
+  @include module-include-once("alta.web.variables.gauge") {
+
+:root {
+    // gauge
+    // ----------------------------
+    --oj-gauge-threshold-color-1:           var(--oj-accent-color-dvt-4);
+    --oj-gauge-threshold-color-2:           var(--oj-accent-color-dvt-3);
+    --oj-gauge-threshold-color-3:           var(--oj-accent-color-dvt-2); 
+}
+
+
+  }
+}

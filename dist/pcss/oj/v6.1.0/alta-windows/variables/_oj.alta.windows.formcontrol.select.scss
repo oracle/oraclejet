@@ -1,0 +1,34 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+
+$includeSelectVariables: $includeSelectClasses !default;
+
+@if $includeSelectVariables != false {
+  $includeListboxVariables: true !global;
+  $includeFormControlVariables: true !global;
+  $includeMessagesVariables: true !global;
+  $includeButtonVariables: true !global;
+}
+// import dependencies
+@import "oj.alta.windows.formcontrol";
+@import "oj.alta.windows.formcontrol.listbox";
+@import "oj.alta.windows.messages";
+@import "oj.alta.windows.button";
+
+
+@if $includeSelectVariables != false {
+  @include module-include-once("alta.windows.variables.select") {
+
+:root {
+  // select
+  // -------------------------
+  --oj-select-arrow-padding-start:     3px;
+  --oj-select-arrow-padding-end:       7px;
+
+  --oj-select-arrow-color:             var(--oj-neutral-color-17);
+}
+
+
+  }
+}

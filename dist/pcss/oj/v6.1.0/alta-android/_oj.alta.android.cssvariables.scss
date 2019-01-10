@@ -1,0 +1,78 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../common/oj.common.cssvariables.palette";
+@import "variables/oj.alta.android.general";
+
+
+@import "variables/oj.alta.android.accordion";
+@import "variables/oj.alta.android.avatar";
+@import "variables/oj.alta.android.button";
+@import "variables/oj.alta.android.buttonset";
+@import "variables/oj.alta.android.collapsible";
+@import "variables/oj.alta.android.conveyorbelt";
+@import "variables/oj.alta.android.datagrid";
+@import "variables/oj.alta.android.dialog";
+@import "variables/oj.alta.android.filepicker";
+@import "variables/oj.alta.android.filmstrip";
+@import "variables/oj.alta.android.iconcircle";
+@import "variables/oj.alta.android.indexer";
+@import "variables/oj.alta.android.listview";
+@import "variables/oj.alta.android.masonrylayout";
+@import "variables/oj.alta.android.menu";
+@import "variables/oj.alta.android.menuselectmany";
+@import "variables/oj.alta.android.message";
+@import "variables/oj.alta.android.messages";
+@import "variables/oj.alta.android.navigationlist";
+@import "variables/oj.alta.android.pagingcontrol";
+@import "variables/oj.alta.android.panel";
+@import "variables/oj.alta.android.popup";
+@import "variables/oj.alta.android.progress";
+@import "variables/oj.alta.android.progresslist";
+@import "variables/oj.alta.android.refresher";
+@import "variables/oj.alta.android.rowexpander";
+@import "variables/oj.alta.android.swipeactions";
+@import "variables/oj.alta.android.tabbar";
+@import "variables/oj.alta.android.table";
+@import "variables/oj.alta.android.toolbar";
+@import "variables/oj.alta.android.train";
+@import "variables/oj.alta.android.treeview";
+
+//forms
+@import "variables/oj.alta.android.formcontrol.label";
+@import "variables/oj.alta.android.formcontrol.checkboxset";
+@import "variables/oj.alta.android.formcontrol.colorpalette";
+@import "variables/oj.alta.android.formcontrol.colorspectrum";
+@import "variables/oj.alta.android.formcontrol.combobox";
+@import "variables/oj.alta.android.formcontrol.inputdatetime";
+@import "variables/oj.alta.android.formcontrol.inputnumber";
+@import "variables/oj.alta.android.formcontrol.inputtext";
+@import "variables/oj.alta.android.formcontrol.radioset";
+@import "variables/oj.alta.android.formcontrol.select";
+@import "variables/oj.alta.android.formcontrol.slider";
+@import "variables/oj.alta.android.formcontrol.switch";
+@import "variables/oj.alta.android.formcontrol.textarea";
+@import "variables/oj.alta.android.formlayout";
+
+//dvt
+@import "variables/oj.alta.android.dvt.chart";
+@import "variables/oj.alta.android.dvt.diagram";
+@import "variables/oj.alta.android.dvt.gantt";
+@import "variables/oj.alta.android.dvt.gauge";
+@import "variables/oj.alta.android.dvt.nbox";
+@import "variables/oj.alta.android.dvt.pictochart";
+@import "variables/oj.alta.android.dvt.sunburst";
+@import "variables/oj.alta.android.dvt.tagcloud";
+@import "variables/oj.alta.android.dvt.thematicmap";
+@import "variables/oj.alta.android.dvt.timeaxis";
+@import "variables/oj.alta.android.dvt.timeline";
+@import "variables/oj.alta.android.dvt.treemap";
+
+
+// preview components
+@import "variables/oj.alta.android.applayout";
+@import "variables/oj.alta.android.applayout.hybrid";
+@import "variables/oj.alta.android.applayout.web";
+
+// deprecated components
+@import "variables/oj.deprecated.alta.android.formcontrol.inputsearch";
+@import "variables/oj.deprecated.alta.android.tabs";
+@import "variables/oj.deprecated.alta.android.tree";

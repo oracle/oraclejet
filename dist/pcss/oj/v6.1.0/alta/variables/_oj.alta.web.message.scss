@@ -1,0 +1,65 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+// Form control classes are included based on $includeMessagingClasses, and are also dependent on
+//  ''--oj-message-component-inline-*' custom properties defined here. We could consider removing
+//  '$includeMessagingClasses' when we cut over validation messages to use oj-message/s.
+$includeMessageVariables: $includeMessageClasses or $includeMessagingClasses !default;
+
+@if $includeMessageVariables != false {
+  @include module-include-once("alta.web.variables.message") {
+
+    :root {
+      // Message
+      // ---------------------------
+      
+      --oj-message-header-height:                   36px;
+      --oj-message-category-text-color:             var(--oj-text-color-5);
+      --oj-message-category-font-size:              0.78571rem;
+      --oj-message-summary-font-weight:             500;
+      --oj-message-summary-text-color:              var(--oj-primary-text-color);
+      --oj-message-summary-font-size:               inherit;
+      --oj-message-summary-line-height:             1.3;
+      --oj-message-detail-text-color:               var(--oj-text-color);
+      --oj-message-detail-font-size:                inherit;
+      --oj-message-detail-line-height:              1.1;
+      --oj-message-time-text-color:                 var(--oj-text-color);
+      --oj-message-time-font-size:                  inherit;
+      --oj-message-close-icon-display:              block;
+      --oj-message-auto-timeout-close-icon-display: block;
+
+      --oj-message-general-inline-border-width: 0 0 1px 0;
+      --oj-message-general-inline-border-color: var(--oj-neutral-color-9);
+
+      --oj-message-component-inline-bg-color-error:            var(--oj-accent-color-danger-1);
+      --oj-message-component-inline-border-color-error:        var(--oj-accent-color-danger-2);
+      --oj-message-component-inline-bg-color-warning:          var(--oj-accent-color-attention-1);
+      --oj-message-component-inline-border-color-warning:      var(--oj-accent-color-attention-2);
+      --oj-message-component-inline-bg-color-info:             var(--oj-accent-color-info-1);
+      --oj-message-component-inline-border-color-info:         var(--oj-accent-color-info-2);
+      --oj-message-component-inline-bg-color-confirmation:     var(--oj-accent-color-confirmation-1);
+      --oj-message-component-inline-border-color-confirmation: var(--oj-accent-color-confirmation-2);
+      --oj-message-component-inline-margin-top:                0;
+      --oj-message-component-inline-border-top-width:          0;
+      --oj-message-component-inline-border-radius:             0;
+      --oj-message-radiocheckbox-inline-margin-top:            5px;
+      --oj-message-radiocheckbox-inline-border-top-width:      1px;
+      
+      --oj-message-general-overlay-border-width:        0 0 1px 0;
+      --oj-message-general-overlay-border-color:        var(--oj-messages-general-overlay-border-color);
+      --oj-message-general-overlay-border-radius:       var(--oj-border-radius-sm);
+      --oj-message-general-overlay-box-shadow:          var(--oj-box-shadow-sm);
+      --oj-message-general-overlay-header-bg-color:     var(--oj-neutral-color-1);
+      --oj-message-general-overlay-body-bg-color:       var(--oj-neutral-color-1);
+      --oj-message-general-overlay-separator-margin:    0;
+
+      --oj-message-notification-overlay-header-bg-color:  var(--oj-neutral-color-1);
+      --oj-message-notification-overlay-body-bg-color:    var(--oj-neutral-color-1);
+      --oj-message-notification-overlay-border-width:     1px;
+      --oj-message-notification-overlay-border-color:     var(--oj-neutral-color-9);
+      --oj-message-notification-overlay-border-radius:    var(--oj-border-radius-sm);
+      --oj-message-notification-overlay-box-shadow:       var(--oj-box-shadow-sm);
+      --oj-message-notification-overlay-separator-margin: 10px;
+    }
+  }
+}

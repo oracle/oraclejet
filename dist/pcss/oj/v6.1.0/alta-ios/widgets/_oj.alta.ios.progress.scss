@@ -1,0 +1,19 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+
+@import "../../common/helpers/oj.common.helpers";
+@import "../../common/widgets/oj.common.progress";
+
+@if $includeProgressClasses != false  {
+  @include module-include-once("alta.ios.progress") {
+    .oj-progress-bar-overlay {
+      background-size: 100% 100%;
+    }
+
+    .oj-progress-circle-overlay {
+      background-size: cover;
+      background-image: url($progressCircleIndeterminateOverlayImage);
+    }
+  }
+}

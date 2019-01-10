@@ -1,0 +1,70 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+$includeInputDateTimeVariables: $includeInputDateTimeClasses !default;
+
+@if $includeInputDateTimeVariables != false {
+  $includeListboxVariables: true !global;
+  $includeFormControlVariables: true !global;
+  $includeMessagesVariables: true !global;
+}
+// import dependencies
+@import "oj.alta.ios.formcontrol.listbox";
+@import "oj.alta.ios.formcontrol";
+@import "oj.alta.ios.messages";
+
+
+@if $includeInputDateTimeVariables != false {
+  @include module-include-once("alta.ios.variables.inputdatetime") {
+
+:root {
+
+
+  // Common values for datepicker and timepicker
+  // --------------------------
+  --oj-date-time-picker-width:                  275px;
+  --oj-date-time-picker-padding:                15px;
+  --oj-date-time-picker-switcher-padding:       5px var(--oj-date-time-picker-padding);
+  --oj-date-time-picker-switcher-bg-color:      var(--oj-neutral-color-7);
+
+
+  // datepicker
+  // --------------------------
+  --oj-datepicker-button-text-color:            var(--oj-link-text-color);
+  --oj-datepicker-button-text-color-hover:      var(--oj-brand-color-light-1);
+  --oj-datepicker-button-text-color-active:     var(--oj-link-text-color);
+  --oj-datepicker-header-text-color:            var(--oj-text-color-6);
+  --oj-datepicker-week-of-year-header-bg-color: var(--oj-neutral-color-3);
+  --oj-datepicker-week-of-year-cell-bg-color:   var(--oj-neutral-color-6);
+
+
+  --oj-datepicker-bg-color-hover:               var(--oj-brand-color-light-1);
+  --oj-datepicker-text-color-hover:             var(--oj-neutral-color-1);
+
+  --oj-datepicker-bg-color-selected:            var(--oj-link-text-color);
+  --oj-datepicker-text-color-selected:          var(--oj-neutral-color-1);
+
+  --oj-datepicker-bg-color-today:               var(--oj-neutral-color-5);
+  --oj-datepicker-border-color-today:           var(--oj-neutral-color-9);
+
+  --oj-datepicker-border-color-focus:           var(--oj-brand-color-light-1);
+
+
+
+  // timepicker
+  // --------------------------
+  --oj-timepicker-text-color:                   var(--oj-brand-color);
+  --oj-timepicker-text-color-hover:             var(--oj-brand-color-light-1);
+  --oj-timepicker-text-color-active:            var(--oj-brand-color);
+  --oj-timepicker-item-bg-color-focus:          var(--oj-brand-color-light-5);
+  
+  --oj-datepicker-inline-bg-color:              var(--oj-neutral-color-1); //settings: ignore
+  --oj-datepicker-inline-border-color:          var(--oj-neutral-color-8); //settings: ignore
+
+ 
+  
+}
+
+
+  }
+}

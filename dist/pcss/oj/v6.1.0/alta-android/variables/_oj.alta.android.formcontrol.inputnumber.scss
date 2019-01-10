@@ -1,0 +1,44 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+$includeInputNumberVariables: $includeInputNumberClasses !default;
+
+@if $includeInputNumberVariables != false {
+  $includeFormControlVariables: true !global;
+  $includeMessagesVariables: true !global;
+}
+// import dependencies
+@import "oj.alta.android.formcontrol";
+@import "oj.alta.android.messages";
+
+
+@if $includeInputNumberVariables != false {
+  @include module-include-once("alta.android.variables.inputnumber") {
+
+:root {
+
+  // input number
+  // -------------------------
+  // TODO  this is not enough, use sass for this? us js to pickup the margin and add a class to the root if there's zero margin
+  --oj-input-number-input-to-button-margin: 16px;
+  --oj-input-number-input-to-button-border-width: var(--oj-form-control-border-right-width);
+  --oj-input-number-input-to-button-border-width-focus: var(--oj-form-control-input-border-right-width-focus);
+  --oj-input-number-input-to-button-messaging-border-width: var(--oj-form-control-messaging-border-right-width);
+  --oj-input-number-input-to-button-border-radius: 0;
+  --oj-input-number-button-width: 50px;
+  --oj-input-number-button-border-radius: var(--oj-button-border-radius);
+  // Button border is somewhat dependant on the input-to-button-margin.  If the margin is 0, then the button border
+  // width will usually be 0.  Otherwise, since the button border for oj-button-button is hard coded to 1px, 
+  // we will have to use 1px here as well.
+  --oj-input-number-button-border-width: 1px;
+  // The buttonset can be part of the border if the input-to-button-margin is set to 0 and the border goes all the way
+  // around.  Otherwise, it should be set to zero.  For most cases, you can just set what ever the form control
+  // border-top-width is set to as that is usually zero when the input-to-button-margin is non-zero.
+  --oj-input-number-buttonset-border-width: var(--oj-form-control-border-top-width);
+  --oj-input-number-buttonset-border-width-focus: var(--oj-form-control-input-border-top-width-focus);
+  --oj-input-number-buttonset-messaging-border-width: var(--oj-form-control-messaging-border-top-width);
+}
+
+
+  }
+}

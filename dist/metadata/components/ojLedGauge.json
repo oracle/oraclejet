@@ -1,11 +1,11 @@
 {
   "name": "oj-led-gauge",
-  "version": "6.0.0",
-  "jetVersion": "6.0.0",
+  "version": "6.1.0",
+  "jetVersion": "6.1.0",
   "displayName": "Led Gauge",
   "type": "core",
   "description": "Displays information graphically, highlighting a specific metric value in relation to its thresholds.",
-  "help": "https://docs.oracle.com/en/middleware/jet/6/reference-api/oj.ojLedGauge.html",
+  "help": "https://docs.oracle.com/en/middleware/jet/6.1/reference-api/oj.ojLedGauge.html",
   "properties": {
     "borderColor": {
       "description": "The border color of the gauge. Only applies when thresholds are not defined. The default value varies based on theme.",

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -86,7 +86,8 @@ oj.CollectionDataProvider = CollectionDataProvider;
  * @ojtsimport {module: "ojmodel", type: "AMD", imported: ["Collection"]}
  * @ojtsmodule
  * @ojsignature [{target: "Type",
- *               value: "class CollectionDataProvider<K, D> implements DataProvider<K, D>"}]
+ *               value: "class CollectionDataProvider<K, D> implements DataProvider<K, D>",
+ *               genericParameters: [{"name": "K", "description": "Type of Key"}, {"name": "D", "description": "Type of Data"}]}]
  */
 
 /**

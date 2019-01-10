@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -21,6 +21,7 @@ var ArrayDataProvider = /** @class */ (function () {
         this._ADDBEFOREKEYS = 'addBeforeKeys';
         this._DIRECTION = 'direction';
         this._ATTRIBUTE = 'attribute';
+        this._ATTRIBUTES = 'attributes';
         this._SORT = 'sort';
         this._SORTCRITERIA = 'sortCriteria';
         this._DATA = 'data';
@@ -43,6 +44,9 @@ var ArrayDataProvider = /** @class */ (function () {
         this._ADD = 'add';
         this._REMOVE = 'remove';
         this._UPDATE = 'update';
+        this._DETAIL = 'detail';
+        this._FETCHLISTRESULT = 'fetchListResult';
+        this._ATDEFAULT = '@default';
         this.Item = /** @class */ (function () {
             function class_1(_parent, metadata, data) {
                 this._parent = _parent;
@@ -94,12 +98,14 @@ var ArrayDataProvider = /** @class */ (function () {
             return class_5;
         }());
         this.FetchListParameters = /** @class */ (function () {
-            function class_6(_parent, size, sortCriteria) {
+            function class_6(_parent, size, sortCriteria, attributes) {
                 this._parent = _parent;
                 this.size = size;
                 this.sortCriteria = sortCriteria;
+                this.attributes = attributes;
                 this[_parent._SIZE] = size;
                 this[_parent._SORTCRITERIA] = sortCriteria;
+                this[_parent._ATTRIBUTES] = attributes;
             }
             return class_6;
         }());
@@ -219,8 +225,9 @@ var ArrayDataProvider = /** @class */ (function () {
         this._generateKeysIfNeeded();
         var results = new Map();
         var keys = this._getKeys();
+        var fetchAttributes = params != null ? params[this._ATTRIBUTES] : null;
         var findKeyIndex, i = 0;
-        params[this._KEYS].forEach(function (searchKey) {
+        params[self._KEYS].forEach(function (searchKey) {
             findKeyIndex = null;
             for (i = 0; i < keys.length; i++) {
                 if (oj.Object.compareValues(keys[i], searchKey)) {
@@ -230,18 +237,23 @@ var ArrayDataProvider = /** @class */ (function () {
             }
             if (findKeyIndex != null &&
                 findKeyIndex >= 0) {
-                results.set(searchKey, new self.Item(self, new self.ItemMetadata(self, searchKey), self._getRowData()[findKeyIndex]));
+                var rowData = self._getRowData()[findKeyIndex];
+                if (fetchAttributes && fetchAttributes.length > 0) {
+                    rowData = self._filterRowAttributes(fetchAttributes, rowData);
+                }
+                results.set(searchKey, new self.Item(self, new self.ItemMetadata(self, searchKey), rowData));
             }
         });
-        return Promise.resolve(new this.FetchByKeysResults(this, params, results));
+        return Promise.resolve(new self.FetchByKeysResults(self, params, results));
     };
     ArrayDataProvider.prototype.fetchByOffset = function (params) {
         var self = this;
         var size = params != null ? params[this._SIZE] : -1;
         var sortCriteria = params != null ? params[this._SORTCRITERIA] : null;
         var offset = params != null ? params[this._OFFSET] > 0 ? params[this._OFFSET] : 0 : 0;
+        var fetchAttributes = params != null ? params[this._ATTRIBUTES] : null;
         this._generateKeysIfNeeded();
-        var fetchParams = new this.FetchListParameters(this, size, sortCriteria);
+        var fetchParams = new this.FetchListParameters(this, size, sortCriteria, fetchAttributes);
         var iteratorResults = this._fetchFrom(fetchParams, offset);
         var value = iteratorResults[this._VALUE];
         var done = iteratorResults[this._DONE];
@@ -278,6 +290,18 @@ var ArrayDataProvider = /** @class */ (function () {
         else if (capabilityName == 'fetchByOffset') {
             return { implementation: 'randomAccess' };
         }
+        else if (capabilityName == 'fetchCapability') {
+            var exclusionFeature = new Set();
+            exclusionFeature.add('exclusion');
+            return { attributeFilter: {
+                    expansion: {},
+                    ordering: {},
+                    defaultShape: {
+                        features: exclusionFeature
+                    }
+                }
+            };
+        }
         return null;
     };
     ArrayDataProvider.prototype.getTotalSize = function () {
@@ -304,6 +328,20 @@ var ArrayDataProvider = /** @class */ (function () {
             return this._keys();
         }
         return this._keys;
+    };
+    /**
+     * Return the index of a key, or -1 if the key is not found.
+     */
+    ArrayDataProvider.prototype._indexOfKey = function (searchKey) {
+        var keys = this._getKeys();
+        var keyIndex = -1;
+        for (var i = 0; i < keys.length; i++) {
+            if (oj.Object.compareValues(keys[i], searchKey)) {
+                keyIndex = i;
+                break;
+            }
+        }
+        return keyIndex;
     };
     /**
      * If observableArray, then subscribe to it
@@ -380,7 +418,7 @@ var ArrayDataProvider = /** @class */ (function () {
                 }
                 if (keyArray.length > 0) {
                     keyArray.map(function (key) {
-                        var keyIndex = self._getKeys().indexOf(key);
+                        var keyIndex = self._indexOfKey(key);
                         self._keys.splice(keyIndex, 1);
                     });
                 }
@@ -408,7 +446,7 @@ var ArrayDataProvider = /** @class */ (function () {
                             id = self._sequenceNum++;
                             self._keys.splice(changes[i].index, 0, id);
                         }
-                        if (self._getKeys().indexOf(id) == -1) {
+                        if (self._indexOfKey(id) == -1) {
                             self._keys.splice(changes[i].index, 0, id);
                         }
                         keyArray.push(id);
@@ -525,11 +563,16 @@ var ArrayDataProvider = /** @class */ (function () {
      */
     ArrayDataProvider.prototype._fetchFrom = function (params, offset) {
         var self = this;
+        var fetchAttributes = params != null ? params[this._ATTRIBUTES] : null;
         this._generateKeysIfNeeded();
         var sortCriteria = params != null ? params[this._SORTCRITERIA] : null;
         var indexMap = this._getCachedIndexMap(sortCriteria);
         var mappedData = indexMap.map(function (index) {
-            return self._getRowData()[index];
+            var rowData = self._getRowData()[index];
+            if (fetchAttributes && fetchAttributes.length > 0) {
+                rowData = self._filterRowAttributes(fetchAttributes, rowData);
+            }
+            return rowData;
         });
         var mappedKeys = indexMap.map(function (index) {
             return self._getKeys()[index];
@@ -645,6 +688,90 @@ var ArrayDataProvider = /** @class */ (function () {
             return sortCriteria;
         }
     };
+    ArrayDataProvider.prototype._filterRowAttributes = function (fetchAttribute, data) {
+        var self = this;
+        var updatedData = null;
+        if (Array.isArray(fetchAttribute)) {
+            updatedData = {};
+            // first see if we want all attributes
+            var fetchAllAttributes_1 = false;
+            fetchAttribute.forEach(function (key) {
+                if (key == self._ATDEFAULT || key.name == self._ATDEFAULT) {
+                    fetchAllAttributes_1 = true;
+                }
+            });
+            var i_1;
+            Object.keys(data).forEach(function (dataAttr) {
+                if (fetchAllAttributes_1) {
+                    var excludeAttribute = false;
+                    var fetchAttr = dataAttr;
+                    var attribute = void 0;
+                    for (i_1 = 0; i_1 < fetchAttribute.length; i_1++) {
+                        if (fetchAttribute[i_1] instanceof Object) {
+                            attribute = fetchAttribute[i_1]['name'];
+                        }
+                        else {
+                            attribute = fetchAttribute[i_1];
+                        }
+                        if (attribute.startsWith('!')) {
+                            attribute = attribute.substr(1, attribute.length - 1);
+                            if (attribute == dataAttr) {
+                                // if it's excluded then set the exclusion flag and break
+                                excludeAttribute = true;
+                                break;
+                            }
+                        }
+                        else if (attribute == dataAttr) {
+                            // if there is a fetch attribute with the same name then use that
+                            fetchAttr = fetchAttribute[i_1];
+                            break;
+                        }
+                    }
+                    if (!excludeAttribute) {
+                        updatedData[dataAttr] = self._filterRowAttributes(fetchAttr, data);
+                    }
+                }
+                else {
+                    fetchAttribute.forEach(function (fetchAttr) {
+                        var attribute;
+                        if (fetchAttr instanceof Object) {
+                            attribute = fetchAttr['name'];
+                        }
+                        else {
+                            attribute = fetchAttr;
+                        }
+                        if (!attribute.startsWith('!') &&
+                            attribute == dataAttr) {
+                            updatedData[attribute] = self._filterRowAttributes(fetchAttr, data);
+                        }
+                    });
+                }
+            });
+        }
+        else if (fetchAttribute instanceof Object) {
+            var name_1 = fetchAttribute['name'];
+            var attributes_1 = fetchAttribute['attributes'];
+            if (name_1 && !name_1.startsWith('!')) {
+                if (data[name_1] instanceof Object &&
+                    !Array.isArray(data[name_1])) {
+                    updatedData = self._filterRowAttributes(attributes_1, data[name_1]);
+                }
+                else if (Array.isArray(data[name_1])) {
+                    updatedData = [];
+                    data[name_1].forEach(function (arrVal, index) {
+                        updatedData[index] = self._filterRowAttributes(attributes_1, arrVal);
+                    });
+                }
+                else {
+                    updatedData = data[name_1];
+                }
+            }
+        }
+        else {
+            updatedData = data[fetchAttribute];
+        }
+        return updatedData;
+    };
     return ArrayDataProvider;
 }());
 oj['ArrayDataProvider'] = ArrayDataProvider;
@@ -721,7 +848,8 @@ oj.EventTargetMixin.applyMixin(ArrayDataProvider);
  *                                                  of strings for multiple key attributes. Please note that the ids in ArrayDataProvider must always be unique. Please do not introduce duplicate ids, even during temporary mutation operations. @index causes ArrayDataProvider to use index as key and @value will cause ArrayDataProvider to
  *                                                  use all attributes as key. @index is the default.
  * @ojsignature [{target: "Type",
- *               value: "class ArrayDataProvider<K, D> implements DataProvider<K, D>"},
+ *               value: "class ArrayDataProvider<K, D> implements DataProvider<K, D>",
+ *               genericParameters: [{"name": "K", "description": "Type of Key"}, {"name": "D", "description": "Type of Data"}]},
  *               {target: "Type",
  *               value: "Array<SortCriterion<D>>",
  *               for: "options.implicitSort"},
@@ -933,7 +1061,8 @@ oj.EventTargetMixin.applyMixin(ArrayDataProvider);
  * @interface oj.SortComparators
  * @ojtsnamespace ArrayDataProvider
  * @ojsignature {target: "Type",
- *               value: "interface SortComparators<D>"}
+ *               value: "interface SortComparators<D>",
+ *               genericParameters: [{"name": "D", "description": "Type of Data"}]}
  */
 
 

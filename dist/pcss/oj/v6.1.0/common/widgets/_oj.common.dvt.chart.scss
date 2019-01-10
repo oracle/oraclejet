@@ -1,0 +1,175 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// !!!
+// WARNING: do not directly import this file, instead import the
+//          version in your theme's directory,
+//          for example alta/widgets/_oj.alta.dvt.chart.scss
+// !!!
+
+@import "../../utilities/oj.utilities";
+
+@if $includeChartClasses != false {
+  @include module-include-once("common.chart") {
+    
+    // This is to prevent the flash of unstyled content before the html becomes JET components.
+    @if $initialVisibility == hidden {
+      oj-chart:not(.oj-complete) {
+        visibility: hidden;
+      }
+    }
+
+    oj-chart {
+      display: block;
+    }
+
+    .oj-chart {
+      @include oj-user-select-property(none);
+      width:400px;
+      height:300px;
+    }
+
+    .oj-chart-select-icon {
+      background-image: oj-common-image-url("dvt/chart/marquee-up.png");
+    }
+
+    .oj-chart-select-icon.oj-active {
+      background-image: oj-common-image-url("dvt/chart/marquee-down.png");
+    }
+    
+    .oj-chart-select-icon.oj-hover {
+      background-image: oj-common-image-url("dvt/chart/marquee-hover.png");
+    }
+
+    .oj-chart-pan-icon {
+      background-image: oj-common-image-url("dvt/chart/pan-up.png");
+    }
+
+    .oj-chart-pan-icon.oj-active {
+      background-image: oj-common-image-url("dvt/chart/pan-down.png");
+    }
+    
+    .oj-chart-pan-icon.oj-hover {
+      background-image: oj-common-image-url("dvt/chart/pan-hover.png");
+    }
+
+    .oj-chart-zoom-icon {
+      background-image: oj-common-image-url("dvt/chart/zoom-up.png");
+    }
+
+    .oj-chart-zoom-icon.oj-active {
+      background-image: oj-common-image-url("dvt/chart/zoom-down.png");
+    }
+    
+    .oj-chart-zoom-icon.oj-hover {
+      background-image: oj-common-image-url("dvt/chart/zoom-hover.png");
+    }
+
+    .oj-chart-data-label {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        font-size: var(--oj-font-size-sm);
+      } @else {
+        font-size: $smallFontSize;
+      }
+    }
+
+    .oj-chart-data-cursor-line {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        color: var(--oj-text-color);
+      } @else {
+        color: $textColor;
+      }
+    }
+    
+    .oj-chart-stock-falling {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        background-color: var(--oj-chart-stock-falling-bg-color);
+      } @else {
+        background-color: $dvtChartStockFallingBgColor;
+      }
+    }
+
+    .oj-chart-stock-range {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        background-color: var(--oj-chart-stock-range-bg-color);
+      } @else {
+        background-color: $dvtChartStockRangeBgColor;
+      }
+    }
+
+    .oj-chart-stock-rising {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        background-color: var(--oj-chart-stock-rising-bg-color);
+      } @else {
+        background-color: $dvtChartStockRisingBgColor;
+      }
+    }
+    
+    .oj-chart-stack-label{
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        font-size: var(--oj-font-size-sm);
+      } @else {
+        font-size: $smallFontSize;
+      }
+      font-weight: bold;
+    }
+
+    .oj-chart-pie-center-label,
+    .oj-chart-xaxis-title,
+    .oj-chart-yaxis-title,
+    .oj-chart-y2axis-title {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+          font-size: var(--oj-font-size);
+          color: var(--oj-chart-axis-title-textcolor);
+      } @else {
+          font-size: $fontSize;
+          color: $dvtAxisTitleTextColor;
+      }
+    }
+
+    .oj-chart-tooltip-label {
+        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+          font-size: var(--oj-font-size-sm);
+          color:var(--oj-chart-tooltip-label-color);
+        } @else {
+          font-size: $smallFontSize;
+          color: $formControlLabelColor;
+        }
+    }
+
+    .oj-chart-xaxis-tick-label,
+    .oj-chart-yaxis-tick-label,
+    .oj-chart-y2axis-tick-label {
+        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+          font-size: var(--oj-font-size-sm);
+          color: var(--oj-text-color);
+        } @else {
+          font-size: $smallFontSize;
+          color: $textColor;
+        }
+    }
+
+    // This is to prevent the flash of unstyled content before the html becomes JET components.
+    @if $initialVisibility == hidden {
+      oj-spark-chart:not(.oj-complete) {
+        visibility: hidden;
+      }
+    }
+
+    oj-spark-chart {
+      display: block;
+    }
+
+    .oj-sparkchart {
+      width:100px;
+      height:18px;
+    }
+
+    .oj-sparkchart.oj-focus-highlight {
+        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+          outline: dotted 1px var(--oj-primary-text-color);
+          outline: -webkit-focus-ring-color auto;
+        } @else {
+          @include oj-browser-focus-outline-approximation($primaryTextColor);
+        }
+    }
+  }
+}

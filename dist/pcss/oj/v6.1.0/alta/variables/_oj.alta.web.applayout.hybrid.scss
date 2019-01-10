@@ -1,0 +1,42 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+$includeAppLayoutHybridVariables: $includeAppLayoutHybridClasses !default;
+
+@if $includeAppLayoutHybridVariables != false {
+  $includeButtonVariables: true !global;
+  $includeAppLayoutClasses: true !global;
+}
+
+// import dependencies
+@import "oj.alta.web.button";
+@import "oj.alta.web.applayout";
+
+@if $includeAppLayoutHybridVariables != false {
+  @include module-include-once("alta.web.variables.applayout.hybrid") {
+
+
+:root {
+  // app layout hybrid
+  --oj-app-layout-hybrid-offcanvas-bg-color:         var(--oj-contrast-background-1-color);
+  --oj-app-layout-hybrid-padding:                    0.625rem;
+
+  --oj-app-layout-hybrid-header-min-height:          44px;
+  --oj-app-layout-hybrid-header-bg-color:            var(--oj-neutral-color-5);
+  --oj-app-layout-hybrid-header-border-color:        var(--oj-neutral-color-7); 
+  --oj-app-layout-hybrid-header-border-bottom-width: 1px;
+  --oj-app-layout-hybrid-header-title-text-color:    var(--oj-text-color);
+  --oj-app-layout-hybrid-header-title-font-weight:   normal;
+  --oj-app-layout-hybrid-header-title-font-size:     1.125rem;
+  --oj-app-layout-hybrid-header-box-shadow:          none;
+
+  --oj-app-layout-hybrid-footer-min-height:          48px;
+  --oj-app-layout-hybrid-footer-bg-color:            var(--oj-app-layout-hybrid-header-bg-color);
+  --oj-app-layout-hybrid-footer-border-color:        var(--oj-app-layout-hybrid-header-border-color); 
+  --oj-app-layout-hybrid-footer-border-top-width:    1px;
+  --oj-app-layout-hybrid-nav-bar-box-shadow:         none;
+}
+
+
+}
+}

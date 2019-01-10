@@ -1,0 +1,30 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+
+$includeTextAreaVariables: $includeTextAreaClasses !default;
+
+@if $includeTextAreaVariables != false {
+  $includeFormControlVariables: true !global;
+  $includeMessagesVariables: true !global;
+}
+// import dependencies
+@import "oj.alta.android.formcontrol";
+@import "oj.alta.android.messages";
+
+
+@if $includeTextAreaVariables != false {
+  @include module-include-once("alta.android.variables.textarea") {
+
+:root {
+  // text area
+  //--------------------------
+// todo: not sure what to put here. https://codepen.io/gabrielle/pen/LmGJOK
+  --oj-text-area-line-height: 1.5rem; //settings: ignore
+
+  
+}
+
+
+  }
+}

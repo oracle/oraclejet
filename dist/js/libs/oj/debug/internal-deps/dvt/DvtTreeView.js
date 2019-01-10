@@ -61,8 +61,7 @@ DvtTreeView.prototype.SetOptions = function(options) {
   if (options) {
     this.Options = this.Defaults.calcOptions(options);
 
-    // Disable animation for canvas and xml
-    if (!dvt.Agent.isEnvironmentBrowser()) {
+    if (dvt.Agent.isEnvironmentTest()) {
       this.Options['animationOnDisplay'] = 'none';
       this.Options['animationOnDataChange'] = 'none';
     }
@@ -961,7 +960,7 @@ DvtTreeView.prototype._processNodes = function() {
     }
 
     // Create the actual node and set the children
-    var props = {'value': size, bArtificialRoot: true};
+    var props = {'value': size, bArtificialRoot: true, 'id' : this._id};
     var artificialRoot = this.CreateNode(props);
     artificialRoot.setChildNodes(rootNodes);
     return artificialRoot;
@@ -6182,9 +6181,10 @@ dvt.Sunburst.prototype.Init = function(context, callback, callbackObj) {
 
   // Initialize the angle extent, which may be changed during animation
   this._angleExtent = 2 * Math.PI;
+  this.setId('sunburst'); // this is needed for animation purposes
 };
 
-/**
+/***
  * @override
  */
 dvt.Sunburst.prototype.ApplyParsedProperties = function(props) {
@@ -6587,7 +6587,7 @@ dvt.Sunburst.prototype.__showDropSiteFeedback = function(node) {
  * Returns true if Sunburst rotation is enabled
  * @return {Boolean} true if rotation is enabled, false otherwise
  */
-dvt.Sunburst.prototype.__isRotationEnabled = function() 
+dvt.Sunburst.prototype.__isRotationEnabled = function()
 {
   return this.getOptions()['rotation'] != 'off';
 };

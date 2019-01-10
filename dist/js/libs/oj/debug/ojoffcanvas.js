@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -22,24 +22,15 @@ define(['ojs/ojcore', 'jquery', 'hammerjs', 'ojs/ojcontext', 'ojs/ojthemeutils',
 /* global Hammer, Promise, Components:false, Logger:false, ThemeUtils:false, Context:false */
 
 /**
- * @class oj.OffcanvasUtils
+ * @namespace oj.OffcanvasUtils
  * @since 1.1.0
  * @export
+ * @ojtsmodule
+ * @hideconstructor
  * @ojstatus preview
  *
  * @classdesc
- * This class provides functions used for controlling offcanvas regions.  Offcanvas regions can be used in either static (simply displaying and hiding in response to user interactions) or responsive (using media queries to dynamically move application content between the main viewport and offcanvas regions) contexts.  The open, close and toggle methods can be used to directly control the display of an offcanvas region in both the static and responsive cases.  The setupResponsive and tearDownResponsive methods are only needed for responsive usages and are used to add and remove listeners that use the specified media queries to configure the offcanvas in response to changes in browser size.
- * The setupPanToReveal and tearDownPanToReveal methods are used to add and remove listeners neccessary to reveal the offcanvas as user pans on the outer wrapper.
- *
- * <ul>
- * <li>open: show the offcanvas by sliding it into the viewport.</li>
- * <li>close: hide the offcanvas by sliding it out of the viewport.</li>
- * <li>toggle: toggle the offcanvas in or out of the viewport.</li>
- * <li>setupResponsive: setup offcanvas for the responsive layout.</li>
- * <li>tearDownResponsive: remove listeners that were added in setupResponsive.</li>
- * <li>setupPanToReveal: setup offcanvas for pan to reveal.</li>
- * <li>tearDownPantoReveal: remove listeners that were added in setupPanToReveal.</li><br>
- * </ul>
+ * This class provides functions used for controlling offcanvas regions.  Offcanvas regions can be used in either static (simply displaying and hiding in response to user interactions) or responsive (using media queries to dynamically move application content between the main viewport and offcanvas regions) contexts.  The OffcanvasUtils methods can be used to directly control the display of an offcanvas region in both the static and responsive cases.
  *
  * <p>Note for performance reasons, if the Offcanvas content is expensive to render, you should wrap it in an <code class="prettyprint">oj-defer</code> element (API doc {@link oj.ojDefer}) to defer the rendering of that content.<br/>
  * See the <a href="../jetCookbook.html?component=offcanvas&demo=deferredRendering">Offcanvas - Deferred Rendering</a> demo for an example.</p>
@@ -102,7 +93,6 @@ define(['ojs/ojcore', 'jquery', 'hammerjs', 'ojs/ojcontext', 'ojs/ojthemeutils',
  * </h3>
  *
  * {@ojinclude "name":"keyboardDoc"}
- * @ojtsignore
  *
  */
 oj.OffcanvasUtils = {};
@@ -110,135 +100,207 @@ oj.OffcanvasUtils = {};
 // eslint-disable-next-line no-unused-vars
 var OffcanvasUtils = oj.OffcanvasUtils;
 
+/**
+ * @memberof oj.OffcanvasUtils
+ * @private
+ */
 oj.OffcanvasUtils._DATA_EDGE_KEY = 'oj-offcanvasEdge';
+/**
+ * @memberof oj.OffcanvasUtils
+ * @private
+ */
 oj.OffcanvasUtils._DATA_OFFCANVAS_KEY = 'oj-offcanvas';
+/**
+ * @memberof oj.OffcanvasUtils
+ * @private
+ */
 oj.OffcanvasUtils._DATA_MEDIA_QUERY_KEY = 'oj-mediaQueryListener';
+/**
+ * @memberof oj.OffcanvasUtils
+ * @private
+ */
 oj.OffcanvasUtils._DATA_HAMMER_KEY = 'oj-offcanvasHammer';
+/**
+ * @memberof oj.OffcanvasUtils
+ * @private
+ */
 oj.OffcanvasUtils._DATA_STYLE_KEY = 'oj-offcanvasStyle';
 
 /**
+ * @memberof oj.OffcanvasUtils
  * @private
  */
 oj.OffcanvasUtils.SELECTOR_KEY = 'selector';
+/**
+ * @memberof oj.OffcanvasUtils
+ * @private
+ */
 oj.OffcanvasUtils.CONTENT_KEY = 'content';
 
+/**
+ * @memberof oj.OffcanvasUtils
+ * @private
+ */
 oj.OffcanvasUtils.EDGE_START = 'start';
+/**
+ * @memberof oj.OffcanvasUtils
+ * @private
+ */
 oj.OffcanvasUtils.EDGE_END = 'end';
+/**
+ * @memberof oj.OffcanvasUtils
+ * @private
+ */
 oj.OffcanvasUtils.EDGE_TOP = 'top';
+/**
+ * @memberof oj.OffcanvasUtils
+ * @private
+ */
 oj.OffcanvasUtils.EDGE_BOTTOM = 'bottom';
 
 
 /**
+ * @memberof oj.OffcanvasUtils
  * @private
  */
 oj.OffcanvasUtils.DISPLAY_MODE_KEY = 'displayMode';
 /**
+ * @memberof oj.OffcanvasUtils
  * @private
  */
 oj.OffcanvasUtils.DISPLAY_MODE_PUSH = 'push';
 /**
+ * @memberof oj.OffcanvasUtils
  * @private
  */
 oj.OffcanvasUtils.DISPLAY_MODE_OVERLAY = 'overlay';
 /**
+ * @memberof oj.OffcanvasUtils
  * @private
  */
 oj.OffcanvasUtils.DISPLAY_MODE_PIN = 'pin';
 
 /**
+ * @memberof oj.OffcanvasUtils
  * @private
  */
 oj.OffcanvasUtils.MODALITY_KEY = 'modality';
 /**
+ * @memberof oj.OffcanvasUtils
  * @private
  */
 oj.OffcanvasUtils.MODALITY_NONE = 'none';
 /**
+ * @memberof oj.OffcanvasUtils
  * @private
  */
 oj.OffcanvasUtils.MODALITY_MODAL = 'modal';
 
 
 /**
+ * @memberof oj.OffcanvasUtils
  * @private
  */
 oj.OffcanvasUtils.DISMISS_HANDLER_KEY = '_dismissHandler';
 
 /**
+ * @memberof oj.OffcanvasUtils
  * @private
  */
 oj.OffcanvasUtils.OPEN_PROMISE_KEY = '_openPromise';
 
 /**
+ * @memberof oj.OffcanvasUtils
  * @private
  */
 oj.OffcanvasUtils.CLOSE_PROMISE_KEY = '_closePromise';
 
 /**
+ * @memberof oj.OffcanvasUtils
  * @private
  */
 oj.OffcanvasUtils.GLASS_PANE_KEY = '_glassPane';
 
 /**
+ * @memberof oj.OffcanvasUtils
  * @private
  */
 oj.OffcanvasUtils.SURROGATE_KEY = '_surrogate';
 
 /**
+ * @memberof oj.OffcanvasUtils
  * @private
  */
 oj.OffcanvasUtils.ANIMATE_WRAPPER_KEY = '_animateWrapper';
 
 /**
+ * @memberof oj.OffcanvasUtils
  * @private
  */
 oj.OffcanvasUtils.ANIMATE_KEY = '_animate';
 
 /**
+ * @memberof oj.OffcanvasUtils
  * @private
  */
 oj.OffcanvasUtils.SURROGATE_ATTR = 'data-oj-offcanvas-surrogate-id';
 
 /**
+ * @memberof oj.OffcanvasUtils
  * @private
  */
 oj.OffcanvasUtils.OUTER_WRAPPER_SELECTOR = 'oj-offcanvas-outer-wrapper';
 
 /**
+ * @memberof oj.OffcanvasUtils
  * @private
  */
 oj.OffcanvasUtils.OPEN_SELECTOR = 'oj-offcanvas-open';
 
 /**
+ * @memberof oj.OffcanvasUtils
  * @private
  */
 oj.OffcanvasUtils.TRANSITION_SELECTOR = 'oj-offcanvas-transition';
 
 /**
+ * @memberof oj.OffcanvasUtils
  * @private
  */
 oj.OffcanvasUtils.PIN_WRAPPER_SELECTOR = 'oj-offcanvas-pin';
 /**
+ * @memberof oj.OffcanvasUtils
  * @private
  */
 oj.OffcanvasUtils.PIN_TRANSITION_SELECTOR = 'oj-offcanvas-pin-transition';
 
 /**
+ * @memberof oj.OffcanvasUtils
  * @private
  */
 oj.OffcanvasUtils.GLASSPANE_SELECTOR = 'oj-offcanvas-glasspane';
 
 /**
+ * @memberof oj.OffcanvasUtils
  * @private
  */
 oj.OffcanvasUtils.GLASSPANE_DIM_SELECTOR = 'oj-offcanvas-glasspane-dim';
 
 /**
+ * @memberof oj.OffcanvasUtils
  * @private
  */
 oj.OffcanvasUtils.VETO_BEFOREOPEN_MSG = 'ojbeforeopen veto';
+/**
+ * @memberof oj.OffcanvasUtils
+ * @private
+ */
 oj.OffcanvasUtils.VETO_BEFORECLOSE_MSG = 'ojbeforeclose veto';
 
+/**
+ * @memberof oj.OffcanvasUtils
+ * @private
+ */
 oj.OffcanvasUtils._shiftSelector =
 {
   start: 'oj-offcanvas-shift-start',
@@ -247,6 +309,10 @@ oj.OffcanvasUtils._shiftSelector =
   bottom: 'oj-offcanvas-shift-up'
 };
 
+/**
+ * @memberof oj.OffcanvasUtils
+ * @private
+ */
 oj.OffcanvasUtils._drawerSelector =
 {
   start: 'oj-offcanvas-start',
@@ -255,6 +321,10 @@ oj.OffcanvasUtils._drawerSelector =
   bottom: 'oj-offcanvas-bottom'
 };
 
+/**
+ * @memberof oj.OffcanvasUtils
+ * @private
+ */
 oj.OffcanvasUtils._getDisplayMode = function (offcanvas) {
   var displayMode = offcanvas[oj.OffcanvasUtils.DISPLAY_MODE_KEY];
   if (displayMode !== oj.OffcanvasUtils.DISPLAY_MODE_OVERLAY &&
@@ -267,26 +337,45 @@ oj.OffcanvasUtils._getDisplayMode = function (offcanvas) {
   return displayMode;
 };
 
+/**
+ * @memberof oj.OffcanvasUtils
+ * @private
+ */
 oj.OffcanvasUtils._getDrawer = function (offcanvas) {
   return $(offcanvas[oj.OffcanvasUtils.SELECTOR_KEY]);
 };
 
+/**
+ * @memberof oj.OffcanvasUtils
+ * @private
+ */
 oj.OffcanvasUtils._isModal = function (offcanvas) {
   return offcanvas[oj.OffcanvasUtils.MODALITY_KEY] === oj.OffcanvasUtils.MODALITY_MODAL;
 };
 
-
-// Returns whether the drawer is currently open.
+/**
+ * Returns whether the drawer is currently open.
+ * @memberof oj.OffcanvasUtils
+ * @private
+ */
 oj.OffcanvasUtils._isOpen = function (drawer) {
   return drawer.hasClass(oj.OffcanvasUtils.OPEN_SELECTOR);
 };
 
+/**
+ * @memberof oj.OffcanvasUtils
+ * @private
+ */
 oj.OffcanvasUtils._getOuterWrapper = function (drawer) {
   return drawer.closest('.' + oj.OffcanvasUtils.OUTER_WRAPPER_SELECTOR);
 };
 
 // selector
 // displayMode
+/**
+ * @memberof oj.OffcanvasUtils
+ * @private
+ */
 oj.OffcanvasUtils._getAnimateWrapper = function (offcanvas) {
   var drawer = oj.OffcanvasUtils._getDrawer(offcanvas);
   if (oj.OffcanvasUtils._noInnerWrapper(offcanvas) ||
@@ -302,6 +391,10 @@ oj.OffcanvasUtils._getAnimateWrapper = function (offcanvas) {
 };
 
 
+/**
+ * @memberof oj.OffcanvasUtils
+ * @private
+ */
 oj.OffcanvasUtils._getShiftSelector = function (edge) {
   var selector = oj.OffcanvasUtils._shiftSelector[edge];
   if (!selector) {
@@ -311,11 +404,18 @@ oj.OffcanvasUtils._getShiftSelector = function (edge) {
   return selector;
 };
 
+/**
+ * @memberof oj.OffcanvasUtils
+ * @private
+ */
 oj.OffcanvasUtils._isRTL = function () {
   return oj.DomUtils.getReadingDirection() === 'rtl';
 };
 
-
+/**
+ * @memberof oj.OffcanvasUtils
+ * @private
+ */
 oj.OffcanvasUtils._setTransform = function (wrapper, transform) {
   wrapper.css({
     '-webkit-transform': transform,
@@ -323,6 +423,10 @@ oj.OffcanvasUtils._setTransform = function (wrapper, transform) {
   });
 };
 
+/**
+ * @memberof oj.OffcanvasUtils
+ * @private
+ */
 oj.OffcanvasUtils._getTranslationX = function (edge, width, negate) {
   var minus = (edge === oj.OffcanvasUtils.EDGE_END);
   if (oj.OffcanvasUtils._isRTL() || negate) {
@@ -332,24 +436,44 @@ oj.OffcanvasUtils._getTranslationX = function (edge, width, negate) {
   return 'translate3d(' + (minus ? '-' : '') + width + ', 0, 0)';
 };
 
+/**
+ * @memberof oj.OffcanvasUtils
+ * @private
+ */
 oj.OffcanvasUtils._setTranslationX = function (wrapper, edge, width) {
   oj.OffcanvasUtils._setTransform(wrapper, oj.OffcanvasUtils._getTranslationX(edge, width, false));
 };
 
+/**
+ * @memberof oj.OffcanvasUtils
+ * @private
+ */
 oj.OffcanvasUtils._getTranslationY = function (edge, height) {
   var minus = (edge === oj.OffcanvasUtils.EDGE_BOTTOM) ? '-' : '';
   return 'translate3d(0, ' + minus + height + ', 0)';
 };
 
+/**
+ * @memberof oj.OffcanvasUtils
+ * @private
+ */
 oj.OffcanvasUtils._setTranslationY = function (wrapper, edge, height) {
   oj.OffcanvasUtils._setTransform(wrapper, oj.OffcanvasUtils._getTranslationY(edge, height));
 };
 
+/**
+ * @memberof oj.OffcanvasUtils
+ * @private
+ */
 oj.OffcanvasUtils._getTranslationY2 = function (height, negate) {
   var minus = negate ? '-' : '';
   return 'translate3d(0, ' + minus + height + ', 0)';
 };
 
+/**
+ * @memberof oj.OffcanvasUtils
+ * @private
+ */
 oj.OffcanvasUtils._setAnimateClass = function (offcanvas, drawer, $main,
   dtranslation, mtranslation) {
   drawer.addClass(oj.OffcanvasUtils.TRANSITION_SELECTOR);
@@ -358,7 +482,10 @@ oj.OffcanvasUtils._setAnimateClass = function (offcanvas, drawer, $main,
   oj.OffcanvasUtils._setTransform($main, mtranslation);
 };
 
-
+/**
+ * @memberof oj.OffcanvasUtils
+ * @private
+ */
 oj.OffcanvasUtils._saveEdge = function (offcanvas) {
   var edge = offcanvas.edge;
   var drawer = oj.OffcanvasUtils._getDrawer(offcanvas);
@@ -382,15 +509,24 @@ oj.OffcanvasUtils._saveEdge = function (offcanvas) {
   return edge;
 };
 
+/**
+ * @memberof oj.OffcanvasUtils
+ * @private
+ */
 oj.OffcanvasUtils._getEdge = function (drawer) {
   return $.data(drawer[0], oj.OffcanvasUtils._DATA_EDGE_KEY);
 };
 
 
-// This method is called right before open and after close animation
+//
 // selector
 // edge
 // displayMode
+/**
+ * This method is called right before open and after close animation
+ * @memberof oj.OffcanvasUtils
+ * @private
+ */
 oj.OffcanvasUtils._toggleClass = function (offcanvas, wrapper, isOpen) {
   var displayMode = offcanvas[oj.OffcanvasUtils.DISPLAY_MODE_KEY];
   var drawer = oj.OffcanvasUtils._getDrawer(offcanvas);
@@ -427,10 +563,15 @@ oj.OffcanvasUtils._toggleClass = function (offcanvas, wrapper, isOpen) {
   }
 };
 
-// Focus is automatically moved to the first item that matches the following:
-// The first element within the offcanvas with the autofocus attribute
-// The first :tabbable element inside the offcanvas
-// The offcanvas itself
+/**
+ * Focus is automatically moved to the first item that matches the following:
+ * The first element within the offcanvas with the autofocus attribute
+ * The first :tabbable element inside the offcanvas
+ * The offcanvas itself
+ *
+ * @memberof oj.OffcanvasUtils
+ * @private
+ */
 oj.OffcanvasUtils._setFocus = function (_offcanvas) {
   var offcanvas = _offcanvas;
   var drawer = oj.OffcanvasUtils._getDrawer(offcanvas);
@@ -463,10 +604,18 @@ oj.OffcanvasUtils._setFocus = function (_offcanvas) {
   oj.FocusUtils.focusElement(focusNode);
 };
 
+/**
+ * @memberof oj.OffcanvasUtils
+ * @private
+ */
 oj.OffcanvasUtils._isAutoDismiss = function (offcanvas) {
   return offcanvas.autoDismiss !== 'none';
 };
 
+/**
+ * @memberof oj.OffcanvasUtils
+ * @private
+ */
 oj.OffcanvasUtils._calcTransitionTime = function ($elem) {
   var propertyArray = $elem.css('transitionProperty').split(',');
   var delayArray = $elem.css('transitionDelay').split(',');
@@ -487,6 +636,10 @@ oj.OffcanvasUtils._calcTransitionTime = function ($elem) {
   return maxTime + 100;
 };
 
+/**
+ * @memberof oj.OffcanvasUtils
+ * @private
+ */
 oj.OffcanvasUtils._onTransitionEnd = function (target, handler) {
   var endEvents = 'transitionend.oc webkitTransitionEnd.oc';
   var transitionTimer;
@@ -509,7 +662,10 @@ oj.OffcanvasUtils._onTransitionEnd = function (target, handler) {
     setTimeout(listener, oj.OffcanvasUtils._calcTransitionTime(target));
 };
 
-
+/**
+ * @memberof oj.OffcanvasUtils
+ * @private
+ */
 oj.OffcanvasUtils._closeWithCatch = function (offcanvas) {
   //  - offcanvas: error occurs when you veto the ojbeforeclose event
   oj.OffcanvasUtils.close(offcanvas).catch(function (reason) {
@@ -519,6 +675,10 @@ oj.OffcanvasUtils._closeWithCatch = function (offcanvas) {
 
 // check offcanvas.autoDismiss
 // update offcanvas.dismisHandler
+/**
+ * @memberof oj.OffcanvasUtils
+ * @private
+ */
 oj.OffcanvasUtils._registerCloseHandler = function (_offcanvas) {
   var offcanvas = _offcanvas;
   // unregister the old handler if exists
@@ -567,6 +727,10 @@ oj.OffcanvasUtils._registerCloseHandler = function (_offcanvas) {
 
 // check offcanvas.autoDismiss
 // update offcanvas.dismisHandler
+/**
+ * @memberof oj.OffcanvasUtils
+ * @private
+ */
 oj.OffcanvasUtils._unregisterCloseHandler = function (_offcanvas) {
   var offcanvas = _offcanvas;
   var dismisHandler = offcanvas[oj.OffcanvasUtils.DISMISS_HANDLER_KEY];
@@ -588,6 +752,10 @@ oj.OffcanvasUtils._unregisterCloseHandler = function (_offcanvas) {
   oj.OffcanvasUtils._unregisterSwipeHandler(offcanvas);
 };
 
+/**
+ * @memberof oj.OffcanvasUtils
+ * @private
+ */
 oj.OffcanvasUtils._registerSwipeHandler = function (_offcanvas) {
   if (oj.DomUtils.isTouchSupported()) {
     var offcanvas = _offcanvas;
@@ -647,6 +815,10 @@ oj.OffcanvasUtils._registerSwipeHandler = function (_offcanvas) {
   }
 };
 
+/**
+ * @memberof oj.OffcanvasUtils
+ * @private
+ */
 oj.OffcanvasUtils._unregisterSwipeHandler = function (offcanvas) {
   var drawer = oj.OffcanvasUtils._getDrawer(offcanvas);
   if (drawer.length > 0) {
@@ -657,20 +829,36 @@ oj.OffcanvasUtils._unregisterSwipeHandler = function (offcanvas) {
   }
 };
 
+/**
+ * @memberof oj.OffcanvasUtils
+ * @private
+ */
 oj.OffcanvasUtils._isFixed = function (drawer) {
   return oj.OffcanvasUtils._getOuterWrapper(drawer).hasClass('oj-offcanvas-page');
 };
 
+/**
+ * @memberof oj.OffcanvasUtils
+ * @private
+ */
 oj.OffcanvasUtils._isPin = function (offcanvas) {
   return (offcanvas[oj.OffcanvasUtils.DISPLAY_MODE_KEY] === oj.OffcanvasUtils.DISPLAY_MODE_PIN);
 };
 
+/**
+ * @memberof oj.OffcanvasUtils
+ * @private
+ */
 oj.OffcanvasUtils._noInnerWrapper = function (offcanvas) {
   return (offcanvas[oj.OffcanvasUtils.CONTENT_KEY] ||
           oj.OffcanvasUtils._isFixed(oj.OffcanvasUtils._getDrawer(offcanvas)) ||
           oj.OffcanvasUtils._isPin(offcanvas));
 };
 
+/**
+ * @memberof oj.OffcanvasUtils
+ * @private
+ */
 oj.OffcanvasUtils._saveStyles = function (drawer) {
   var style = drawer.attr('style');
   if (style !== undefined) {
@@ -678,6 +866,10 @@ oj.OffcanvasUtils._saveStyles = function (drawer) {
   }
 };
 
+/**
+ * @memberof oj.OffcanvasUtils
+ * @private
+ */
 oj.OffcanvasUtils._restoreStyles = function (drawer) {
   var style = $.data(drawer[0], oj.OffcanvasUtils._DATA_STYLE_KEY);
   if (style) {
@@ -687,6 +879,10 @@ oj.OffcanvasUtils._restoreStyles = function (drawer) {
   }
 };
 
+/**
+ * @memberof oj.OffcanvasUtils
+ * @private
+ */
 oj.OffcanvasUtils._toggleOuterWrapper = function (offcanvas, drawer, test) {
   var edge = oj.OffcanvasUtils._getEdge(drawer);
   var shiftSelector = oj.OffcanvasUtils._getShiftSelector(edge);
@@ -702,6 +898,10 @@ oj.OffcanvasUtils._toggleOuterWrapper = function (offcanvas, drawer, test) {
   return isOpen;
 };
 
+/**
+ * @memberof oj.OffcanvasUtils
+ * @private
+ */
 oj.OffcanvasUtils._afterCloseHandler = function (offcanvas) {
   var wrapper = oj.OffcanvasUtils._getAnimateWrapper(offcanvas);
   // bail if pan to reveal is in progress
@@ -751,7 +951,11 @@ oj.OffcanvasUtils._afterCloseHandler = function (offcanvas) {
   $.removeData(drawer[0], oj.OffcanvasUtils._DATA_OFFCANVAS_KEY);
 };
 
-// Set whether the offcanvas is fixed inside the viewport
+/**
+ * Set whether the offcanvas is fixed inside the viewport
+ * @memberof oj.OffcanvasUtils
+ * @private
+ */
 oj.OffcanvasUtils._setVisible = function (selector, _visible, edge) {
   var drawer = $(selector);
   var visible = !!_visible;
@@ -776,9 +980,10 @@ oj.OffcanvasUtils._setVisible = function (selector, _visible, edge) {
  * @export
  * @param {Object} offcanvas An Object contains the properties in the following table.
  * @property {string} offcanvas.selector JQ selector identifying the offcanvas
- * @property {string} offcanvas.edge the edge of the offcanvas, valid values are start, end, top, bottom. This property is optional if the offcanvas element has a "oj-offcanvas-" + <edge> class specified.
- * @property {string} offcanvas.query the media query determine when the offcanvas is fixed inside the viewport.
+ * @property {('start'|'end'|'top'|'bottom')=} offcanvas.edge the edge of the offcanvas, valid values are start, end, top, bottom. This property is optional if the offcanvas element has a "oj-offcanvas-" + <edge> class specified.
+ * @property {string|null} offcanvas.query the media query determine when the offcanvas is fixed inside the viewport.
  * @return {void}
+ * @memberof oj.OffcanvasUtils
  *
  * @see #tearDownResponsive
  *
@@ -823,6 +1028,7 @@ oj.OffcanvasUtils.setupResponsive = function (offcanvas) {
  * @param {Object} offcanvas An Object contains the properties in the following table.
  * @property {string} offcanvas.selector JQ selector identifying the offcanvas
  * @return {void}
+ * @memberof oj.OffcanvasUtils
  *
  * @see #setupResponsive
  *
@@ -843,7 +1049,10 @@ oj.OffcanvasUtils.tearDownResponsive = function (offcanvas) {
   }
 };
 
-
+/**
+ * @memberof oj.OffcanvasUtils
+ * @private
+ */
 oj.OffcanvasUtils._openPush = function (offcanvas, resolve, reject, edge) {
   var drawer = oj.OffcanvasUtils._getDrawer(offcanvas);
   var $main = $(offcanvas[oj.OffcanvasUtils.CONTENT_KEY]);
@@ -937,6 +1146,10 @@ oj.OffcanvasUtils._openPush = function (offcanvas, resolve, reject, edge) {
   }
 };
 
+/**
+ * @memberof oj.OffcanvasUtils
+ * @private
+ */
 oj.OffcanvasUtils._openOverlay = function (offcanvas, resolve, reject, edge) {
   var drawer = oj.OffcanvasUtils._getDrawer(offcanvas);
 
@@ -1070,6 +1283,10 @@ oj.OffcanvasUtils._openPin = function(offcanvas, resolve, reject, edge)
 };
 */
 
+/**
+ * @memberof oj.OffcanvasUtils
+ * @private
+ */
 oj.OffcanvasUtils._closePush = function (offcanvas, resolve, reject, drawer, animation) {
   var $main = $(offcanvas[oj.OffcanvasUtils.CONTENT_KEY]);
   // since drawer and main are animated seperately,
@@ -1113,6 +1330,10 @@ oj.OffcanvasUtils._closePush = function (offcanvas, resolve, reject, drawer, ani
   }
 };
 
+/**
+ * @memberof oj.OffcanvasUtils
+ * @private
+ */
 oj.OffcanvasUtils._closeOverlay = function (offcanvas, resolve, reject, drawer, animation) {
   var endHandler = function () {
     oj.OffcanvasUtils._afterCloseHandler(offcanvas);
@@ -1139,6 +1360,10 @@ oj.OffcanvasUtils._closeOverlay = function (offcanvas, resolve, reject, drawer, 
 };
 
 
+/**
+ * @memberof oj.OffcanvasUtils
+ * @private
+ */
 oj.OffcanvasUtils._openOldDrawer = function (offcanvas, resolve, reject, edge, displayMode) {
   var drawer = oj.OffcanvasUtils._getDrawer(offcanvas);
   var wrapper = oj.OffcanvasUtils._getAnimateWrapper(offcanvas);
@@ -1237,6 +1462,10 @@ oj.OffcanvasUtils._closePin = function(offcanvas, resolve, reject, drawer, anima
 };
 */
 
+/**
+ * @memberof oj.OffcanvasUtils
+ * @private
+ */
 oj.OffcanvasUtils._closeOldDrawer = function (offcanvas, resolve, reject, drawer, animation) {
   var displayMode = offcanvas[oj.OffcanvasUtils.DISPLAY_MODE_KEY];
   var wrapper = oj.OffcanvasUtils._getAnimateWrapper(offcanvas);
@@ -1284,14 +1513,16 @@ oj.OffcanvasUtils._closeOldDrawer = function (offcanvas, resolve, reject, drawer
  * @param {Object} offcanvas An Object contains the properties in the following table.
  * @property {string} offcanvas.selector JQ selector identifying the offcanvas.
  * @property {string} offcanvas.content JQ selector identifying the main content.
- * @property {string} offcanvas.edge the edge of the offcanvas, valid values are start, end, top, bottom. This property is optional if the offcanvas element has a "oj-offcanvas-" + <edge> class specified.
- * @property {string} offcanvas.displayMode how to show the offcanvas, valid values are push or overlay. Default: defined by theme.
- * @property {string} offcanvas.autoDismiss close behavior, valid values are focusLoss and none. If autoDismiss is default(focusLoss) then any click outside the offcanvas will close it.
- * @property {string} offcanvas.size size width or height of the offcanvas: width if edge is start or end and height if edge is to and bottom. Default to the computed width or height of the offcanvas.
- * @property {string} offcanvas.modality The modality of the offcanvas. Valid values are modal and modeless. Default: modeless. If the offcanvas is modal, interaction with the main content area is disabled like in a modal dialog.
- * @returns {Promise} A promise that is resolved when all transitions have completed. The promise is rejected if the ojbeforeopen event is vetoed.
+ * @property {('start'|'end'|'top'|'bottom')=} offcanvas.edge the edge of the offcanvas, valid values are start, end, top, bottom. This property is optional if the offcanvas element has a "oj-offcanvas-" + <edge> class specified.
+ * @property {('push'|'overlay')=} offcanvas.displayMode how to show the offcanvas, valid values are push or overlay. Default: defined by theme.
+ * @property {('focusLoss'|'none')=} offcanvas.autoDismiss close behavior, valid values are focusLoss and none. If autoDismiss is default(focusLoss) then any click outside the offcanvas will close it.
+ * @property {string=} offcanvas.size size width or height of the offcanvas: width if edge is start or end and height if edge is to and bottom. Default to the computed width or height of the offcanvas.
+ * @property {('modal'|'modeless')=} offcanvas.modality The modality of the offcanvas. Valid values are modal and modeless. Default: modeless. If the offcanvas is modal, interaction with the main content area is disabled like in a modal dialog.
+ * @return {Promise.<boolean>} A promise that is resolved to boolean true when all transitions have completed. The promise is rejected if the ojbeforeopen event is vetoed.
  * @see #close
  * @see #toggle
+ *
+ * @memberof oj.OffcanvasUtils
  *
  * @example <caption>Slide the offcanvas into the viewport:</caption>
  *    var offcanvas = {
@@ -1398,7 +1629,7 @@ oj.OffcanvasUtils.open = function (offcanvas) {
     }
   }
 
-  return /** @type{Promise} */ (promise);
+  return /** @type{Promise.<boolean>} */ (promise);
 };
 
 /**
@@ -1407,10 +1638,11 @@ oj.OffcanvasUtils.open = function (offcanvas) {
  * @export
  * @param {Object} offcanvas An Object contains the properties in the following table.
  * @property {string} offcanvas.selector JQ selector identifying the offcanvas
- *
- * @returns {Promise} A promise that is resolved when all transitions have completed. The promise is rejected if the ojbeforeclose event is vetoed.
+ * @return {Promise.<boolean>} A promise that is resolved to boolean true when all transitions have completed. The promise is rejected if the ojbeforeclose event is vetoed.
  * @see #open
  * @see #toggle
+ *
+ * @memberof oj.OffcanvasUtils
  *
  * @example <caption>Slide the offcanvas out of the viewport:</caption>
  *    var offcanvas = {
@@ -1425,6 +1657,10 @@ oj.OffcanvasUtils.close = function (offcanvas) {
                                   offcanvas[oj.OffcanvasUtils.ANIMATE_KEY] === undefined);
 };
 
+/**
+ * @memberof oj.OffcanvasUtils
+ * @private
+ */
 oj.OffcanvasUtils._close = function (selector, animation) {
   var drawer = $(selector);
 
@@ -1506,7 +1742,7 @@ oj.OffcanvasUtils._close = function (selector, animation) {
     }
   }
 
-  return /** @type{Promise} */ (promise);
+  return /** @type{Promise.<boolean>} */ (promise);
 };
 
 /**
@@ -1516,14 +1752,16 @@ oj.OffcanvasUtils._close = function (selector, animation) {
  * @param {Object} offcanvas An Object contains the properties in the following table.
  * @property {string} offcanvas.selector JQ selector identifying the offcanvas.
  * @property {string} offcanvas.content JQ selector identifying the main content.
- * @property {string} offcanvas.edge the edge of the offcanvas, valid values are start, end, top, bottom. This property is optional if the offcanvas element has a "oj-offcanvas-" + <edge> class specified.
- * @property {string} offcanvas.displayMode how to show the offcanvas, valid values are push or overlay. Default: defined by theme.
- * @property {string} offcanvas.autoDismiss close behavior, valid values are focusLoss and none. If autoDismiss is default(focusLoss) then any click outside the offcanvas will close it.
- * @property {string} offcanvas.size size width or height of the offcanvas: width if edge is start or end and height if edge is to and bottom. Default to the computed width or height of the offcanvas.
- * @property {string} offcanvas.modality The modality of the offcanvas. Valid values are modal and modeless. Default: modeless. If the offcanvas is modal, interaction with the main content area is disabled like in a modal dialog.
- * @returns {Promise} A promise that is resolved when all transitions have completed
+ * @property {('start'|'end'|'top'|'bottom')=} offcanvas.edge the edge of the offcanvas, valid values are start, end, top, bottom. This property is optional if the offcanvas element has a "oj-offcanvas-" + <edge> class specified.
+ * @property {('push'|'overlay')=} offcanvas.displayMode how to show the offcanvas, valid values are push or overlay. Default: defined by theme.
+ * @property {('focusLoss'|'none')=} offcanvas.autoDismiss close behavior, valid values are focusLoss and none. If autoDismiss is default(focusLoss) then any click outside the offcanvas will close it.
+ * @property {string=} offcanvas.size size width or height of the offcanvas: width if edge is start or end and height if edge is to and bottom. Default to the computed width or height of the offcanvas.
+ * @property {('modal'|'modeless')=} offcanvas.modality The modality of the offcanvas. Valid values are modal and modeless. Default: modeless. If the offcanvas is modal, interaction with the main content area is disabled like in a modal dialog.
+ * @return {Promise.<boolean>} A promise that is resolved to boolean true when all transitions have completed
  * @see #open
  * @see #close
+ *
+ * @memberof oj.OffcanvasUtils
  *
  * @example <caption>Toggle the offcanvas in or out of the viewport:</caption>
  *    var offcanvas = {
@@ -1552,6 +1790,7 @@ oj.OffcanvasUtils.toggle = function (offcanvas) {
  * append to the end of the drawer's container
  * @param {!jQuery} drawer the drawer
  * @return {jQuery} the overlay div
+ * @memberof oj.OffcanvasUtils
  * @private
  */
 oj.OffcanvasUtils._addGlassPane = function (drawer) {
@@ -1577,6 +1816,7 @@ oj.OffcanvasUtils._addGlassPane = function (drawer) {
  *
  * @param {!jQuery} layer stacking context
  * @return {jQuery}
+ * @memberof oj.OffcanvasUtils
  * @private
  */
 oj.OffcanvasUtils._createSurrogate = function (layer) {
@@ -1605,6 +1845,7 @@ oj.OffcanvasUtils._createSurrogate = function (layer) {
 /**
  * bring the drawer to the front to keep this order:  mainContent, glassPane, drawer
  * so we don't need to use z-index
+ * @memberof oj.OffcanvasUtils
  * @private
  */
 oj.OffcanvasUtils._swapOrder = function (_offcanvas, drawer) {
@@ -1618,6 +1859,7 @@ oj.OffcanvasUtils._swapOrder = function (_offcanvas, drawer) {
 
 /**
  * restore the order before _swapOrder
+ * @memberof oj.OffcanvasUtils
  * @private
  */
 oj.OffcanvasUtils._restoreOrder = function (offcanvas) {
@@ -1637,6 +1879,7 @@ oj.OffcanvasUtils._restoreOrder = function (offcanvas) {
  * Apply modality
  * If offcanvas is modal, add a glasspane and keep the dom structure in the following order:
  * mainContent, glassPane and drawer so we don't need to apply z-index
+ * @memberof oj.OffcanvasUtils
  * @private
  */
 oj.OffcanvasUtils._applyModality = function (_offcanvas, drawer) {
@@ -1663,6 +1906,7 @@ oj.OffcanvasUtils._applyModality = function (_offcanvas, drawer) {
 /**
  * Remove modality
  * If offcanvas is modal, remove glasspane and restore the dom element orders
+ * @memberof oj.OffcanvasUtils
  * @private
  */
 oj.OffcanvasUtils._removeModality = function (offcanvas) {
@@ -1690,9 +1934,12 @@ oj.OffcanvasUtils._removeModality = function (offcanvas) {
  * @export
  * @param {Object} offcanvas An Object contains the properties in the following table.
  * @property {string} offcanvas.selector JQ selector identifying the offcanvas
- * @property {string=} offcanvas.edge the edge of the offcanvas, valid values are start, end. This property is optional if the offcanvas element has a "oj-offcanvas-" + <edge> class specified.
+ * @property {('start'|'end'|'top'|'bottom')=} offcanvas.edge the edge of the offcanvas, valid values are start, end. This property is optional if the offcanvas element has a "oj-offcanvas-" + <edge> class specified.
  * @property {string=} offcanvas.size size width of the offcanvas.  Default to the computed width of the offcanvas.
  * @return {void}
+ *
+ * @memberof oj.OffcanvasUtils
+ * @ojtsignore
  *
  * @see #tearDownPanToReveal
  *
@@ -1906,6 +2153,10 @@ oj.OffcanvasUtils.setupPanToReveal = function (_offcanvas) {
 };
 
 // animate both the wrapper and drawer at the same time
+/**
+ * @memberof oj.OffcanvasUtils
+ * @private
+ */
 oj.OffcanvasUtils._animateWrapperAndDrawer = function (wrapper, drawer, edge, size, offcanvas) {
   var tt = 400;
   var fps = 60;
@@ -1986,6 +2237,9 @@ oj.OffcanvasUtils._animateWrapperAndDrawer = function (wrapper, drawer, edge, si
  * @property {string} offcanvas.selector JQ selector identifying the offcanvas
  * @return {void}
  * @see #setupPanToReveal
+ *
+ * @memberof oj.OffcanvasUtils
+ * @ojtsignore
  *
  * @example <caption>TearDown the offcanvas:</caption>
  *    var offcanvas = {

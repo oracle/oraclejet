@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -524,7 +524,7 @@ var __oj_swipe_actions_metadata =
           if (offcanvas.classList.contains('oj-offcanvas-end')) {
             var startLink = this.element[0].querySelector('a.oj-swipeactions-accessible-link');
             if (startLink != null) {
-              link.style.marginLeft = (startLink.offsetWidth + 5) + 'px';
+              link.style.right = '0px';
             }
           }
 

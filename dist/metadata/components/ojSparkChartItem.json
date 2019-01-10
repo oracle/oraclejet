@@ -1,11 +1,11 @@
 {
   "name": "oj-spark-chart-item",
-  "version": "6.0.0",
-  "jetVersion": "6.0.0",
+  "version": "6.1.0",
+  "jetVersion": "6.1.0",
   "displayName": "Spark Chart Item",
   "type": "core",
   "description": "ojSparkChartItem",
-  "help": "https://docs.oracle.com/en/middleware/jet/6/reference-api/oj.ojSparkChartItem.html",
+  "help": "https://docs.oracle.com/en/middleware/jet/6.1/reference-api/oj.ojSparkChartItem.html",
   "properties": {
     "borderColor": {
       "description": "The default border color for the data items.",

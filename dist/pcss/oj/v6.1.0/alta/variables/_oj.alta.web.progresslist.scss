@@ -1,0 +1,16 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+
+$includeProgressListVariables: $includeProgressListClasses !default;
+
+@if $includeProgressListVariables != false {
+  @include module-include-once("alta.web.variables.progresslist") {
+
+:root {
+  --oj-progress-list-text-color-error: var(--oj-accent-color-danger-5); //settings: ignore
+}
+
+
+  }
+}

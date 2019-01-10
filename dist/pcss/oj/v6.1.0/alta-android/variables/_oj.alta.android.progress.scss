@@ -1,0 +1,36 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+$includeProgressVariables: $includeProgressClasses !default;
+
+@if $includeProgressVariables != false {
+  @include module-include-once("alta.android.variables.progress") {
+
+:root {
+  // progress
+  // ----------------------------
+  --oj-progress-value-bg-color:                    var(--oj-brand-color);
+
+  // bar
+  --oj-progress-bar-height:                        8px;
+  --oj-progress-bar-bg-color:                      var(--oj-brand-color-light-2);
+  --oj-progress-bar-bg-opacity:                    1;
+  --oj-progress-bar-border-style:                  none;
+  --oj-progress-bar-border-color:                  var(--oj-neutral-color-7);
+  --oj-progress-bar-border-radius:                 0;
+  --oj-progress-bar-indeterminate-overlay-opacity: 1;
+  --oj-progress-bar-indeterminate-animation-duration: 1s;
+
+
+  // progress circle
+  --oj-progress-circle-size:                       32px;
+  --oj-progress-circle-bg-color:                   var(--oj-progress-bar-bg-color);
+  --oj-progress-circle-bg-opacity:                 var(--oj-progress-bar-bg-opacity);
+  --oj-progress-circle-indeterminate-overlay-size: auto;
+  --oj-progress-circle-indeterminate-animation-duration: 1s;
+
+}
+
+
+  }
+}

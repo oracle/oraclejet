@@ -1222,32 +1222,23 @@ dvt.Context.prototype.getRootAttribute = function(attrName) {
 
 
 /**
- * Clears all unique seeds used for filter, clip path, gradient, and af component id generation.
- * Should only be called by Junit tests.
+ * Clears all unique seeds used for filter, clip path, gradient id generation.
+ * Should only be called by puppeteer tests.
  */
 dvt.Context.resetUniqueSeeds = function() {
-  if (dvt.Agent.isEnvironmentBrowser())
-    return;
-
-  if (typeof dvt.AfComponent != 'undefined')
-    dvt.AfComponent._uniqueSeed = 0;
   DvtSvgFilterUtils._counter = 0;
   dvt.ClipPath._uniqueSeed = 0;
   dvt.SvgShapeUtils._uniqueSeed = 0;
   dvt.Mask._uniqueSeed = 0;
+  dvt.Use._uniqueSeed = 0;
   dvt.Agent._bInitialized = false;
 };
 
 /**
- * Clears all caches used for text and af components.
- * Should only be called by Junit tests.
+ * Clears all caches used for text.
+ * Should only be called by puppeteer tests.
  */
 dvt.Context.resetCaches = function() {
-  if (dvt.Agent.isEnvironmentBrowser())
-    return;
-
-  if (typeof dvt.AfComponent != 'undefined')
-    dvt.AfStyleUtils.resetStyles();
   dvt.TextUtils.clearCaches();
 
   if (dvt.LedGaugeRenderer)
@@ -1259,30 +1250,19 @@ dvt.Context.resetCaches = function() {
  * @param {dvt.Displayable} displayable The new active displayable.
  */
 dvt.Context.prototype.setActiveElement = function(displayable) {
-  if (!dvt.Agent.isEnvironmentBrowser())
-    return;
-
   // Clear the id of the current active element.  This field is only set if a temp id was applied earlier.
   if (this._activeElement) {
     dvt.ToolkitUtils.removeAttrNullNS(this._activeElement.getElem(), 'id');
     this._activeElement = null;
   }
 
-  // Get the ID of the elem. If it doesn't have an ID, create one for it.
+  // Get the DOM ID of the elem. If it doesn't have an ID, create one for it.
   var elem = displayable.getElem();
   var id = dvt.ToolkitUtils.getAttrNullNS(elem, 'id');
   if (!id) {
-    id = displayable.getActiveElementId();
-    if (id) {
-      // Apply the existing id
-      dvt.ToolkitUtils.setAttrNullNS(elem, 'id', id);
-    }
-    else {
-      // Generate a temporary id
-      id = dvt.EventManager._getActiveElementId();
-      dvt.ToolkitUtils.setAttrNullNS(elem, 'id', id);
-      this._activeElement = displayable;
-    }
+    id = dvt.Context._generateActiveElementId(displayable);
+    dvt.ToolkitUtils.setAttrNullNS(elem, 'id', id);
+    this._activeElement = displayable;
   }
 
   // Ensure that aria properties have been written to the DOM
@@ -1292,6 +1272,18 @@ dvt.Context.prototype.setActiveElement = function(displayable) {
   if (this._role == 'application')
     this._parentDiv.setAttribute('aria-activedescendant', id);
 };
+
+dvt.Context._generateActiveElementId = function(displayable) {
+  var randomizedPrefix = '_dvtActiveElement' + (dvt.Agent.isEnvironmentTest() ? '' : Math.floor(Math.random() * 1000000000));//@RandomNumberOk;
+  var dispId = displayable.getId();
+  // Use the displayable ID as a suffix if it's a string or a number
+  if (typeof dispId ==='string' || dispId instanceof String || typeof dispId === 'number' || dispId instanceof Number) {
+    return randomizedPrefix + '_' + dispId;
+  }
+  else {
+    return randomizedPrefix;
+  }
+}
 
 /**
  * Sets the wai-aria label property on the containing div.
@@ -3380,7 +3372,7 @@ dvt.DataAnimationHandler.prototype.constructAnimation = function(oldList, newLis
           continue;
 
         var newId = newItem.getId();
-        if ((oldId === newId) || (oldId && oldId.equals && oldId.equals(newId))) {
+        if (dvt.Obj.compareValues(this._context, oldId, newId) || (oldId && oldId.equals && oldId.equals(newId))) {
           // Match found, remove the item from the new list since it's handled
           newItem.animateUpdate(this, oldItem);
           newList.splice(newIndex, 1);
@@ -8613,21 +8605,9 @@ dvt.ColorUtils.fixColorForPlatform = function(color, alpha) {
     color = dvt.ColorUtils.getRGBA(color);
   }
   var colorObj = {};
-  // rgba is not supported in batik environment.
-  if (dvt.Agent.isEnvironmentBatik() && color.indexOf('rgba') !== - 1) {
-    colorObj['color'] = dvt.ColorUtils.getRGB(color);
-
-    // Apply alpha in rgba value as a multiplier to the alpha set on the object as this is what svg does.
-    if (alpha != null)
-      colorObj['alpha'] = dvt.ColorUtils.getAlpha(color) * alpha;
-    else
-      colorObj['alpha'] = dvt.ColorUtils.getAlpha(color);
-  }
-  else {
-    colorObj['color'] = color;
-    if (alpha != null)
-      colorObj['alpha'] = alpha;
-  }
+  colorObj['color'] = color;
+  if (alpha != null)
+    colorObj['alpha'] = alpha;
   return colorObj;
 };
 
@@ -15710,7 +15690,7 @@ dvt.PathUtils.SPLINE_TYPE_CARDINAL = 'c';
  * @return the moveTo path command
  */
 dvt.PathUtils.moveTo = function(x,y) {
-  return 'M' + dvt.ToolkitUtils.roundDecimal(x) + ',' + dvt.ToolkitUtils.roundDecimal(y);
+  return 'M' + x + ',' + y;
 };
 
 
@@ -15721,12 +15701,12 @@ dvt.PathUtils.moveTo = function(x,y) {
  * @return the lineTo path command
  */
 dvt.PathUtils.lineTo = function(x,y) {
-  return 'L' + dvt.ToolkitUtils.roundDecimal(x) + ',' + dvt.ToolkitUtils.roundDecimal(y);
+  return 'L' + x + ',' + y;
 };
 
 dvt.PathUtils.quadTo = function(x1,y1,x,y) {
-  return 'Q' + dvt.ToolkitUtils.roundDecimal(x1) + ',' + dvt.ToolkitUtils.roundDecimal(y1) + ',' +
-      dvt.ToolkitUtils.roundDecimal(x) + ',' + dvt.ToolkitUtils.roundDecimal(y);
+  return 'Q' + x1 + ',' + y1 + ',' +
+      x + ',' + y;
 };
 
 /**
@@ -15735,7 +15715,7 @@ dvt.PathUtils.quadTo = function(x1,y1,x,y) {
  * @return {string} the horizontal line path command
  */
 dvt.PathUtils.horizontalLineTo = function(x) {
-  return 'H' + dvt.ToolkitUtils.roundDecimal(x);
+  return 'H' + x;
 };
 
 /**
@@ -15744,13 +15724,13 @@ dvt.PathUtils.horizontalLineTo = function(x) {
  * @return {string} the vertical line path command
  */
 dvt.PathUtils.verticalLineTo = function(y) {
-  return 'V' + dvt.ToolkitUtils.roundDecimal(y);
+  return 'V' + y;
 };
 
 dvt.PathUtils.cubicTo = function(x1,y1,x2,y2,x,y) {
-  return 'C' + dvt.ToolkitUtils.roundDecimal(x1) + ',' + dvt.ToolkitUtils.roundDecimal(y1) + ',' +
-      dvt.ToolkitUtils.roundDecimal(x2) + ',' + dvt.ToolkitUtils.roundDecimal(y2) + ',' +
-          dvt.ToolkitUtils.roundDecimal(x) + ',' + dvt.ToolkitUtils.roundDecimal(y);
+  return 'C' + x1 + ',' + y1 + ',' +
+      x2 + ',' + y2 + ',' +
+          x + ',' + y;
 };
 
 
@@ -15764,14 +15744,14 @@ dvt.PathUtils.cubicTo = function(x1,y1,x2,y2,x,y) {
  * @param y the ending y coordinate
  */
 dvt.PathUtils.arcTo = function(rx, ry, angleExtent, direction, x, y) {
-  var cmd = 'A' + dvt.ToolkitUtils.roundDecimal(rx) + ',' + dvt.ToolkitUtils.roundDecimal(ry) + ',0,';
+  var cmd = 'A' + rx + ',' + ry + ',0,';
   if (angleExtent > Math.PI) {
     cmd += '1,';
   }
   else {
     cmd += '0,';
   }
-  cmd += (direction + ',' + dvt.ToolkitUtils.roundDecimal(x) + ',' + dvt.ToolkitUtils.roundDecimal(y));
+  cmd += (direction + ',' + x + ',' + y);
   return cmd;
 };
 
@@ -16279,13 +16259,13 @@ dvt.PathUtils.transformPath = function(arCmds, x, y, sx, sy)
 
       for (var j = 0; j < args.length; j += 7)            // loop to support multi-arc
       {
-        scaledPath += (dvt.ToolkitUtils.roundDecimal(parseFloat(args[j]) * sx) + ' ');                      // rx
-        scaledPath += (dvt.ToolkitUtils.roundDecimal(parseFloat(args[j + 1]) * sy) + ' ');                    // ry
-        scaledPath += (dvt.ToolkitUtils.roundDecimal(args[j + 2]) + ' ');                                     // x-axis-rotation
-        scaledPath += (dvt.ToolkitUtils.roundDecimal(args[j + 3]) + ' ');                                     // large-arc-flag
-        scaledPath += (dvt.ToolkitUtils.roundDecimal(args[j + 4]) + ' ');                                     // sweep-flag
-        scaledPath += (dvt.ToolkitUtils.roundDecimal(parseFloat(args[j + 5]) * sx + (absCmd ? x : 0)) + ' ');   // x
-        scaledPath += (dvt.ToolkitUtils.roundDecimal(parseFloat(args[j + 6]) * sy + (absCmd ? y : 0)) + ' ');   // y
+        scaledPath += ((parseFloat(args[j]) * sx) + ' ');                      // rx
+        scaledPath += ((parseFloat(args[j + 1]) * sy) + ' ');                    // ry
+        scaledPath += (args[j + 2] + ' ');                                     // x-axis-rotation
+        scaledPath += (args[j + 3] + ' ');                                     // large-arc-flag
+        scaledPath += (args[j + 4] + ' ');                                     // sweep-flag
+        scaledPath += ((parseFloat(args[j + 5]) * sx + (absCmd ? x : 0)) + ' ');   // x
+        scaledPath += ((parseFloat(args[j + 6]) * sy + (absCmd ? y : 0)) + ' ');   // y
       }
     }
     else
@@ -16321,7 +16301,7 @@ dvt.PathUtils.transformPath = function(arCmds, x, y, sx, sy)
         var s = scales[j % scales.length];
         var t = translates[j % translates.length];
 
-        scaledPath += (dvt.ToolkitUtils.roundDecimal(parseFloat(args[j]) * s + t) + ' ');  // scale and translate
+        scaledPath += ((parseFloat(args[j]) * s + t) + ' ');  // scale and translate
       }
     }
   }         // end for
@@ -16993,12 +16973,30 @@ dvt.TextUtils._getCanvasTextWidth = function(context, text, cssStyle) {
   if (!isNaN(fontSize))
     fontSize += 'px';
 
-  // IE and Edge canvases have issues processing '-apple-system' fonts.
-  if (dvt.Agent.isPlatformIE())
-    fontFamily = fontFamily.replace(/-apple-system(-\w+)*,?/g, '');
-
-  dvt.TextUtils._canvasCtx.font = fontStyle + ' ' + fontVariant + ' ' + fontWeight + ' ' + fontSize + ' ' + fontFamily;
+  var font = fontStyle + ' ' + fontVariant + ' ' + fontWeight + ' ' + fontSize + ' ' + fontFamily;
+  dvt.TextUtils._configureCanvas(context, font);
   return dvt.TextUtils._canvasCtx.measureText(text).width;
+};
+
+/**
+ * Configures the canvas for text measurements.
+ * @param {dvt.Context} context
+ * @param {string} font
+ * @private
+ */
+dvt.TextUtils._configureCanvas = function(context, font) {
+  // IE and Edge canvases have issues processing '-apple-system' fonts. 
+  if (dvt.Agent.isPlatformIE()) {
+    font = font.replace(/-apple-system(-\w+)*,?/g, '');
+
+    // Also, it's relative font units only work if canvas is attached to DOM
+    if (!dvt.TextUtils._canvasCtx.canvas.parentNode) {
+      dvt.TextUtils._canvasCtx.canvas.style.display = "none";
+      context.getContainer().appendChild(dvt.TextUtils._canvasCtx.canvas);
+    }
+  }
+
+  dvt.TextUtils._canvasCtx.font = font;
 };
 
 /**
@@ -17271,7 +17269,7 @@ dvt.SvgShapeUtils.convertPointsArray = function(arPoints) {
     if (i > 0) {
       s += ' ';
     }
-    s += dvt.ToolkitUtils.roundDecimal(arPoints[i]);
+    s += arPoints[i];
   }
   return s;
 };
@@ -17630,9 +17628,6 @@ dvt.Displayable.prototype.GetSvgDimensions = function() {
     var bbox = this.getElem().getBBox();
   }
   catch (e) {
-    if (dvt.Agent.isEnvironmentTest())
-      print('Error in dvt.Displayable.prototype.GetSvgDimensions: ' + e);
-
     return null;
   }
   //don't return bbox directly because we don't want calling code
@@ -17791,10 +17786,6 @@ dvt.Displayable.prototype.setCSSStyle = function(style) {
 dvt.Displayable.prototype.setCursor = function(cursorType) {
   this._cursor = cursorType;
 
-  // Batik has trouble with certain cursor syntax.
-  if (dvt.Agent.isEnvironmentBatik())
-    return;
-
   // Update the DOM
   if (cursorType)
     dvt.ToolkitUtils.setAttrNullNS(this.getElem(), 'cursor', cursorType);
@@ -17899,15 +17890,6 @@ dvt.Displayable.prototype._setAriaRole = function(role) {
     dvt.ToolkitUtils.setAttrNullNS(elem, 'role', role);
   else
     dvt.ToolkitUtils.removeAttrNullNS(elem, 'role');
-};
-
-/**
- * Returns the active element id of this displayable.
- * Allows subclasses to return its own active element id if needed
- * @return {string} Active element id
- */
-dvt.Displayable.prototype.getActiveElementId = function() {
-  return this.getId();
 };
 
 /**
@@ -18601,6 +18583,49 @@ dvt.Displayable.prototype._getListener = function(useCapture) {
   }
 };
 
+/**
+ *  Moving an object in the dom for IE/Edge causes mouse over/out events to fire if the moved item is under the mouse
+ *  Ensure events are not repeatedly called in such a case
+ *  @param {object} event the DOM event
+ *  @param {boolean} useCapture
+ */
+dvt.Displayable.prototype._shouldIgnoreEvent = function(event, useCapture) {
+  var hoverItem = useCapture ? this._captureHoverItem : this._bubbleHoverItem;
+  if (hoverItem) {
+    if (event.type === dvt.MouseEvent.MOUSEOVER) {
+      // mouse is going from relatedTarget to target
+      return hoverItem === event.target;
+    }
+    if (event.type === dvt.MouseEvent.MOUSEOUT) {
+      // mouse is going from target to relatedTarget
+      return hoverItem === event.relatedTarget;
+    }
+  }
+  return false;
+};
+
+/**
+ *  After firing a mouseover event, DOM reparenting can cause IE/Edge to sometimes fire:
+ *  a) a mouseover on a different element, without an intervening mouseout or
+ *  b) a mouseout on a different element, usually a parent
+ *  In either case,  we want to make sure a mouseout is handled on the original element to allow cleanup (e.g. hideHoverEffect) to occur
+ *  @param {object} event the DOM event
+ *  @param {boolean} useCapture
+ */
+dvt.Displayable.prototype._fireMissedEvent = function(event, useCapture) {
+  if (event.type === dvt.MouseEvent.MOUSEOVER || dvt.MouseEvent.MOUSEOUT) {
+    var hoverItem = useCapture ? this._captureHoverItem : this._bubbleHoverItem;
+    if (hoverItem) {
+      if (hoverItem !== event.target) {
+        var dvtEvent = dvt.DomEventFactory.newEvent(event, this.getCtx());
+        //: Set the event as MOUSEOUT event, target as hoverItem, relatedTarget as event.target
+        //This is equivalent to firing new MOUSEOUT event for hoverItem
+        dvtEvent.modifyEventForIE(dvt.MouseEvent.MOUSEOUT, hoverItem);
+        this.FireListener(dvtEvent, useCapture);
+      }
+    }
+  }
+};
 
 /**
  * The event listener that is called by the implementation object's bubble phase listeners.
@@ -18611,27 +18636,11 @@ dvt.Displayable.prototype._getListener = function(useCapture) {
  */
 dvt.Displayable.prototype._bubbleListener = function(event) {
   if (dvt.Agent.isPlatformIE()) {
-    // Moving an object in the dom for IE causes mouse over events to fire if the moved item is under the mouse
-    // Ensure mouse over is not repeatedly called in such a case
+    if (this._shouldIgnoreEvent(event, false)) {
+      return;
+    }
+    this._fireMissedEvent(event, false);
     if (event.type == dvt.MouseEvent.MOUSEOVER) {
-      if (this._bubbleHoverItem) {
-        if (this._bubbleHoverItem == event.target) {
-          // Prevent infinite loop
-          return;
-        }
-        else {
-          //MOUSEOVER event on a DOM element stores the element in _bubbleHoverItem and MOUSEOUT event clears _bubbleHoverItem.
-          //If a MOUSEOVER event is not followed by MOUSEOUT event, _bubbleHoverItem won't be cleared.
-          //During the subsequent MOUSEOVER event if the event target is different than _bubbleHoverItem,
-          //that indicates the browser have missed to fire MOUSEOUT event for previous DOM element stored in _bubbleHoverItem.
-          //So building a new MOUSEOUT event for _bubbleHoverItem.
-          var dvtEvent = dvt.DomEventFactory.newEvent(event, this.getCtx());
-          //: Set the event as MOUSEOUT event, target as _bubbleHoverItem, relatedTarget as event.target
-          //This is equivalent to firing new MOUSEOUT event for _bubbleHoverItem
-          dvtEvent.modifyEventForIE(dvt.MouseEvent.MOUSEOUT, this._bubbleHoverItem);
-          this.FireListener(dvtEvent, false);
-        }
-      }
       this._bubbleHoverItem = event.target;
     }
     else if (event.type == dvt.MouseEvent.MOUSEOUT) {
@@ -18653,27 +18662,11 @@ dvt.Displayable.prototype._bubbleListener = function(event) {
  */
 dvt.Displayable.prototype._captureListener = function(event) {
   if (dvt.Agent.isPlatformIE()) {
-    // Moving an object in the dom for IE causes mouse over events to fire if the moved item is under the mouse
-    // Ensure mouse over is not repeatedly called in such a case
+    if (this._shouldIgnoreEvent(event, true)) {
+      return;
+    }
+    this._fireMissedEvent(event, true);
     if (event.type == dvt.MouseEvent.MOUSEOVER) {
-      if (this._captureHoverItem) {
-        if (this._captureHoverItem == event.target) {
-          // Prevent infinite loop
-          return;
-        }
-        else {
-          //MOUSEOVER event on a DOM element stores the element in _captureHoverItem and MOUSEOUT event clears _captureHoverItem.
-          //If a MOUSEOVER event is not followed by MOUSEOUT event, _captureHoverItem won't be cleared.
-          //During the subsequent MOUSEOVER event if the event target is different than _captureHoverItem,
-          //that indicates the browser have missed to fire MOUSEOUT event for previous DOM element stored in _captureHoverItem.
-          //So building a new MOUSEOUT event for _captureHoverItem.
-          var dvtEvent = dvt.DomEventFactory.newEvent(event, this.getCtx());
-          //: Set the event as MOUSEOUT event, target as _captureHoverItem, relatedTarget as event.target
-          //This is equivalent to firing new MOUSEOUT event for _captureHoverItem
-          dvtEvent.modifyEventForIE(dvt.MouseEvent.MOUSEOUT, this._captureHoverItem);
-          this.FireListener(dvtEvent, true);
-        }
-      }
       this._captureHoverItem = event.target;
     }
     else if (event.type == dvt.MouseEvent.MOUSEOUT) {
@@ -19116,9 +19109,9 @@ dvt.Displayable.prototype.setMatrix = function(mat) {
     this._matrix = mat;
     //apply the new matrix if it's non-null
     if (mat) {
-      var sMat = 'matrix(' + dvt.ToolkitUtils.roundDecimal(mat.getA()) + ',' + dvt.ToolkitUtils.roundDecimal(mat.getC()) +
-          ',' + dvt.ToolkitUtils.roundDecimal(mat.getB()) + ',' + dvt.ToolkitUtils.roundDecimal(mat.getD()) + ','
-                  + dvt.ToolkitUtils.roundDecimal(mat.getTx()) + ',' + dvt.ToolkitUtils.roundDecimal(mat.getTy()) + ')';
+      var sMat = 'matrix(' + mat.getA() + ',' + mat.getC() +
+          ',' + mat.getB() + ',' + mat.getD() + ','
+                  + mat.getTx() + ',' + mat.getTy() + ')';
 
       //set the transform attribute on the outer SVG element of this shape
       dvt.ToolkitUtils.setAttrNullNS(this.getElem(), 'transform', sMat, 'matrix(1,0,0,1,0,0)');
@@ -19621,10 +19614,6 @@ dvt.Container.prototype.CreateChildGroupElem = function(rmChildren, forced) {
     if (this._elem._obj) {
       this._childGroupElem._obj = this._elem._obj;
     }
-
-    // Track the number of child group elements created, so that we can move away from this pattern
-    if (dvt.Agent.isEnvironmentTest())
-      document.shapeContainerCount++;
   }
   else if (rmChildren) {
     this.removeChildren();
@@ -20550,9 +20539,9 @@ dvt.Arc.prototype._createArc = function() {
 
   var nLargeArc = (Math.abs(this._ae) > 180) ? '1' : '0';
   var nSweepFlag = (this._ae > 0) ? '0' : '1';// 0 == svg +ve angle
-  var path = 'M ' + dvt.ToolkitUtils.roundDecimal(x1) + ' ' + dvt.ToolkitUtils.roundDecimal(y1) + ' A ' +
-      dvt.ToolkitUtils.roundDecimal(this._rx) + ',' + dvt.ToolkitUtils.roundDecimal(this._ry) + ' ' + '0' + ' ' +
-              nLargeArc + ',' + nSweepFlag + ' ' + dvt.ToolkitUtils.roundDecimal(x2) + ',' + dvt.ToolkitUtils.roundDecimal(y2);
+  var path = 'M ' + x1 + ' ' + y1 + ' A ' +
+      this._rx + ',' + this._ry + ' ' + '0' + ' ' +
+              nLargeArc + ',' + nSweepFlag + ' ' + x2 + ',' + y2;
   path = this._addClosure(path);
 
   dvt.ToolkitUtils.setAttrNullNS(this._elem, 'd', path);
@@ -20993,12 +20982,6 @@ dvt.Image.prototype.setSrc = function(src) {
   if (src !== this._src) {
     var uri = src;
     this._src = src;
-    if (dvt.Agent.isEnvironmentBatik()) {
-      var imageInfo = dvt.JavaImageLoader.getImageInfo(src);
-      if (imageInfo) {
-        uri = imageInfo.uri;
-      }
-    }
 
     dvt.ToolkitUtils.setHref(this._elem, uri);
   }
@@ -22343,12 +22326,6 @@ dvt.ImageMarker.prototype.setHeight = function(height, bDefer) {
  * @private
  */
 dvt.ImageMarker.prototype._setSource = function(src) {
-  if (dvt.Agent.isEnvironmentBatik()) {
-    var imageInfo = dvt.JavaImageLoader.getImageInfo(src);
-    if (imageInfo)
-      src = imageInfo.uri;
-  }
-
   dvt.ToolkitUtils.setHref(this._elem, src);
 };
 
@@ -23969,20 +23946,6 @@ dvt.OutputText.prototype.copyShape = function() {
 
 
 /**
- * @override
- */
-dvt.OutputText.prototype.addChild = function(obj) {
-  // Prevent this class from being used as a shape container.  It's bad practice and doesn't make sense.  Placeholder
-  // until the shape container APIs are removed altogether.
-  if (dvt.Agent.isEnvironmentTest()) {
-    print('dvt.OutputText.prototype.addChild: Text should not be used as a shape container.');
-    var nullObj = null;
-    nullObj.errorShouldOccurDueToInvalidAddChild();
-  }
-};
-
-
-/**
  * Returns true if the text anchor needs to be flipped from "start" to "end" and vice versa.
  * @private
  * @return {boolean}
@@ -23990,8 +23953,7 @@ dvt.OutputText.prototype.addChild = function(obj) {
 dvt.OutputText.prototype._needsTextAnchorAdjustment = function() {
   // : When html dir="rtl", theright side of the text is treated as the start, and the left as the end. Our
   // API always treats the left side as start, so we need to adjust based on agent.
-  // Don't adjust anchor in Batik environment.
-  return dvt.Agent.isRightToLeft(this.getCtx()) && !dvt.Agent.isEnvironmentBatik();
+  return dvt.Agent.isRightToLeft(this.getCtx());
 };
 
 // Copyright (c) 2008, 2017, Oracle and/or its affiliates. All rights reserved.
@@ -24423,7 +24385,7 @@ dvt.BackgroundOutputText.prototype._realignBackground = function() {
     fontSize = 0;
   var yAdjustment = 0; // fudge factor for specific alignments in certain browsers
 
-  if ((dvt.Agent.isBrowserChrome() || dvt.Agent.isEnvironmentTest()) && vAlign == dvt.OutputText.V_ALIGN_MIDDLE)
+  if (dvt.Agent.isBrowserChrome() && vAlign == dvt.OutputText.V_ALIGN_MIDDLE)
     yAdjustment = fontSize * 0.12; // Chrome, vALign = middle, rect must be shifted up a bit
   else if (dvt.Agent.isPlatformIE() && vAlign == dvt.OutputText.V_ALIGN_BOTTOM)
     yAdjustment = -fontSize * 0.4; // IE, vAlign = bottom, rect must be shifted down a bit
@@ -30749,24 +30711,6 @@ dvt.Agent.isEnvironmentTest = function() {
 
 
 /**
- * Returns whether the current environment is batik
- * @return {boolean}
- */
-dvt.Agent.isEnvironmentBatik = function() {
-  return dvt.Agent._environment == 'batik';
-};
-
-
-/**
- * Returns whether the current environment is browser
- * @return {boolean}
- */
-dvt.Agent.isEnvironmentBrowser = function() {
-  return !dvt.Agent.isEnvironmentTest() && !dvt.Agent.isEnvironmentBatik();
-};
-
-
-/**
  * Sets the whether the current environment is rendering in high contrast mode
  * @param {boolean} bHighContrast Whether to render in high contrast mode
  */
@@ -30992,7 +30936,7 @@ dvt.Agent.getFocusColor = function() {
   dvt.Agent._initialize();
   if (!dvt.Agent._focusColor) {
     var focusColor;
-    if (dvt.Agent.isPlatformWebkit() && !dvt.Agent.isEnvironmentTest()) {
+    if (dvt.Agent.isPlatformWebkit()) {
       var body = document.getElementsByTagName('body')[0];
       var tempDiv = document.createElement('div');
       body.appendChild(tempDiv);//@HTMLUpdateOK
@@ -33456,10 +33400,6 @@ dvt.EventManager.prototype.associate = function(displayable, obj, bReplace) {
 
     // Add this logical object and event manager mapping
     displayable._logicalObjects.push({logicalObject: obj, eventManager: this});
-
-    // Tooltip support for XML renderer
-    if (!dvt.Agent.isEnvironmentBrowser() && displayable.getImpl().setLogicalObj)
-      displayable.getImpl().setLogicalObj(obj);
   }
 };
 
@@ -35716,18 +35656,6 @@ dvt.EventManager.prototype.IsDragCandidate = function(obj) {
   return true;
 };
 
-
-/**
- * Generates a random ARIA active element ID
- * @return {String}
- * @private
- */
-dvt.EventManager._getActiveElementId = function() {
-  var ariaIdPrefix = '_dvtActiveElement';
-  return ariaIdPrefix + Math.floor(Math.random() * 1000000000);//@RandomNumberOk
-};
-
-
 /**
  * Fires an active element change event in order to add aria-activedescendant attribute to the outer div.
  * This is needed by accessibility client in order to determine active SVG element
@@ -37640,7 +37568,7 @@ dvt.HtmlTooltipManager.prototype._showTextAtPosition = function(x, y, text, bord
 {
   var tooltipElem;
   var outerElem = this.getTooltipElem();
-  var canModify = text != true; // Check if we are to modify the tooltip contents
+  var canModify = text !== true; // Check if we are to modify the tooltip contents
 
   if (canModify) {
     // Clear out the previous tooltip to make room for the new one.
@@ -39047,18 +38975,6 @@ dvt.ToolkitUtils.getLinkCallback = function(target, dest) {
 };
 
 /**
- * Rounds decimal values to the 3rd decimal for junit tests
- * @param {number} value The value to round
- * @return {number}
- */
-dvt.ToolkitUtils.roundDecimal = function(value) {
-  if (dvt.Agent.isEnvironmentTest())
-    return Math.round(value * 1000) / 1000;
-  else
-    return value;
-};
-
-/**
  * Constructs a URL path based on the ID in the SVG definition.
  * @param {string} id The ID in the SVG definition.
  * @return {string} URL path.
@@ -39425,7 +39341,7 @@ dvt.SvgDocumentUtils.cancelDomEvent = function(e)
 dvt.SvgDocumentUtils.addDragListeners = function(displayable, dragStartCallback, dragMoveCallback, dragEndCallback, callbackObj, bPreventClick) {
   var isTouch = dvt.Agent.isTouchDevice();
   var context = displayable.getCtx();
-  var bodyStyle = dvt.Agent.isEnvironmentBrowser() ? document.body.style : {};
+  var bodyStyle = document.body.style;
 
   var clickStaticCallback = function(event) {
     // Prevent click from occurring (e.g. to prevent clearing selection)
@@ -39769,10 +39685,7 @@ DvtSvgImplFactory.prototype.newDefs = function() {
  * @override
  */
 DvtSvgImplFactory.prototype.getImageLoader = function() {
-  if (dvt.Agent.isEnvironmentBrowser())
-    return DvtSvgImageLoader;
-  else
-    return dvt.JavaImageLoader;
+  return DvtSvgImageLoader;
 };
 
 
@@ -39788,10 +39701,7 @@ DvtSvgImplFactory.prototype.getDocumentUtils = function() {
  * @override
  */
 DvtSvgImplFactory.prototype.newParser = function() {
-  if (dvt.Agent.isEnvironmentBrowser())
-    return new DvtDomXmlParser();
-  else
-    return new DvtJavaXmlParser();
+  return new DvtDomXmlParser();
 };
 
 
@@ -40043,7 +39953,7 @@ DvtSvgGradientUtils.createElem = function(grad, id)
     if (color) {
       var alpha = arAlphas[i];
       // Workaround for Safari where versions < 5.1 show rgba values as black
-      if ((dvt.Agent.isEnvironmentBatik() || dvt.Agent.isBrowserSafari()) && color.indexOf('rgba') !== - 1) {
+      if (dvt.Agent.isBrowserSafari() && color.indexOf('rgba') !== - 1) {
         dvt.ToolkitUtils.setAttrNullNS(elem, 'stop-color', dvt.ColorUtils.getRGB(color));
         // Use alpa in rgba value as a multiplier to the alpha set on the object as this is what svg does.
         if (alpha != null)
@@ -40103,7 +40013,7 @@ DvtSvgGradientUtils.createElem = function(grad, id)
       }
       else if (angle !== 0) {
         angle = -angle;
-        dvt.ToolkitUtils.setAttrNullNS(elemGrad, 'gradientTransform', 'rotate(' + dvt.ToolkitUtils.roundDecimal(angle) + ' ' + '.5 .5)');
+        dvt.ToolkitUtils.setAttrNullNS(elemGrad, 'gradientTransform', 'rotate(' + angle + ' ' + '.5 .5)');
         setGradientVector = false;  // no need to change the default gradient vector, since we are rotating the
         // gradient via gradientTransform
       }
@@ -40135,9 +40045,9 @@ DvtSvgGradientUtils.createElem = function(grad, id)
       var translateY = arBounds[1];
 
       angle = -angle;
-      var rotateTransformStr = 'rotate(' + dvt.ToolkitUtils.roundDecimal(angle) + ' ' + '.5 .5)';
-      var scaleTransformStr = 'scale(' + dvt.ToolkitUtils.roundDecimal(scaleX) + ' ' + dvt.ToolkitUtils.roundDecimal(scaleY) + ')';
-      var translateTransformStr = 'translate(' + dvt.ToolkitUtils.roundDecimal(translateX) + ' ' + dvt.ToolkitUtils.roundDecimal(translateY) + ')';
+      var rotateTransformStr = 'rotate(' + angle + ' ' + '.5 .5)';
+      var scaleTransformStr = 'scale(' + scaleX + ' ' + scaleY + ')';
+      var translateTransformStr = 'translate(' + translateX + ' ' + translateY + ')';
       var boundingBoxTransformStr = scaleTransformStr + ' ' + rotateTransformStr;
 
       if (translateX != 0 || translateY != 0) {

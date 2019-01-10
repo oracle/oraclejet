@@ -1,0 +1,14 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+@if $includeSwitcherClasses != false  {
+  @include module-include-once("alta.switcher") {
+
+    @if $initialVisibility == hidden {
+      oj-switcher:not(.oj-complete) {
+        visibility: hidden;
+      }
+    }
+  }
+}
+

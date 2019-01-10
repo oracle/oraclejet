@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -1124,7 +1124,7 @@ var __oj_menu_metadata =
        * <p>Triggered before this menu is launched via the <a href="#open">open</a> method or via menu button or context menu functionality.
        * The launch can be cancelled by calling <code class="prettyprint">event.preventDefault()</code>.
        *
-       * <p>The <code class="prettyprint">ui.openOptions</code> payload field contains the settings being used for this menu launch,
+       * <p>The <code class="prettyprint">event.detail.openOptions</code> payload field contains the settings being used for this menu launch,
        * resulting from merging the <code class="prettyprint">openOptions</code> passed to <code class="prettyprint">open()</code>, if any,
        * with the <code class="prettyprint">openOptions</code> component option.
        *
@@ -1141,6 +1141,7 @@ var __oj_menu_metadata =
        * @instance
        * @ojcancelable
        * @ojbubbles
+       * @property {oj.ojMenu.OpenOptions} openOptions effecting the open operation
        */
       beforeOpen: null,
 
@@ -1271,6 +1272,7 @@ var __oj_menu_metadata =
       if (!this._IsCustomElement()) {
         this._createAsTopLevelMenu();
       } else {
+        this.element.hide();  // insist menu is initially hidden
         // fixup the position option if custom element menu or submenu
         var options = this.options;
         options.openOptions.position = oj.PositionUtils.coerceToJet(options.openOptions.position);
@@ -2147,8 +2149,15 @@ var __oj_menu_metadata =
     },
 
     _reposition: function () {
+      function isMenuLargerThanViewport(domElement) {
+        var rect = domElement.getBoundingClientRect();
+        return rect.width > document.documentElement.clientWidth ||
+               rect.height > document.documentElement.clientHeight;
+      }
+
       var element = this.element;
-      if (!element.is(':visible')) {
+      if (!element.is(':visible') || isMenuLargerThanViewport(element[0])) {
+        // skip if the menu is hidden or larger than the viewport
         return;
       }
 
@@ -2364,14 +2373,17 @@ var __oj_menu_metadata =
      * @param {!jQuery} item - The menu item to focus.  Its containing submenu, if any, must already be expanded. Must not be null or length 0.
      */
     _focus: function (event, item) { // Private, not an override (not in base class).  Method name unquoted so will be safely optimized (renamed) by GCC as desired.
+      var previousItem = this.active ? this.active : $();
+      if (item.is(previousItem)) {
+        return; // if item already has focus do nothing
+      }
+
       // JQUI called blur() here.  This "if blah clear timer" is the only thing from that call that we (presumably) still want to do here.
       if (!(event && event.type === 'focus')) {
         if (this._clearTimer) {
           this._clearTimer();
         }
       }
-
-      var previousItem = this.active ? this.active : $();
 
       // eslint-disable-next-line no-param-reassign
       item = item.first(); // li.  Length 1.
@@ -2412,6 +2424,12 @@ var __oj_menu_metadata =
      * param item length-1 JQ object containing the <li> to focus
      */
     _makeActive: function (item, event) { // Private, not an override (not in base class).  Method name unquoted so will be safely optimized (renamed) by GCC as desired.
+      function isClippedInViewport(domElement) {
+        var rect = domElement.getBoundingClientRect();
+        return rect.top < 0 || rect.bottom > document.documentElement.clientHeight ||
+               rect.left < 0 || rect.right > document.documentElement.clientWidth;
+      }
+
       // don't need to check for "both items null/empty", and don't need to null-check item, since item required to be length-1 JQ object
       var same = item.is(this.active);
       if (same) {
@@ -2435,6 +2453,11 @@ var __oj_menu_metadata =
         item: item,
         privateNotice: 'The _activeItem event is private.  Do not use.'
       });
+
+      if (event && /^key/.test(event.type) && isClippedInViewport(anchor[0])) {
+        // if the event is a key event, force the target menu item to scroll into view if it is clipped in the viewport
+        anchor[0].scrollIntoView();
+      }
     },
 
     /*
@@ -3010,19 +3033,13 @@ var __oj_menu_metadata =
 
       rootElement.show();
       rootElement.position(position);
-
-      // establish focus before open animation so mouseover is not negated by initial focus after the
-      // menu is fully open.
+      // establish this._focusSkipLink, if iOS or Android
       this._initVoiceOverAssist(initialFocus);
-      if (initialFocus === 'firstItem' || initialFocus === 'menu') {
-        this.element.focus();
-      }
-
       if (initialFocus === 'firstItem') {
+        // Establish "logical" focus ( aria-activedescendant) before open animation so mouseover
+        // is not negated by initial focus after the menu is fully open.
         var firstItem = this._getFirstItem();
         this._focus(event, firstItem);
-      } else if (this._focusSkipLink) {
-        this._focusSkipLink.getLink().focus();
       }
 
       if (!this._isAnimationDisabled()) {
@@ -3053,6 +3070,7 @@ var __oj_menu_metadata =
       var event = context.event;
       var launcher = context.launcher;
       var isDropDown = context.isDropDown;
+      var initialFocus = context.initialFocus;
 
       // store launcher so we can return focus to it, e.g. if Esc pressed.  Ivar is non-null iff
       // menu is currently open.
@@ -3061,6 +3079,31 @@ var __oj_menu_metadata =
 
       // Add current menu to openPopupMenus so that it will be closed on focus lost/click away.
       _openPopupMenus.push(this);
+
+      if (initialFocus === 'firstItem' || initialFocus === 'menu') {
+        var focusElement;
+        if (this._focusSkipLink && initialFocus === 'menu') {
+          // iOS and Android VO support.  Focus is not switched unless the aria-activedescendant
+          // is set (aka 'firstItem') or dom focus is to an anchor tag.
+          focusElement = this._focusSkipLink.getLink();
+        } else {
+          focusElement = this.element;
+        }
+
+        // Delay stealing focus "next-tick" so if the event triggering the menu to open has time
+        // to finish the normal sequence on the launcher.  Otherwise, a rogue event could be
+        // dispatched to the menu outside the normal sequence. For example, if the menu was open on
+        // mousedown, the mouseup and click could be fired on the menu.  Or, open on keydown and
+        // keypress and keyup targeted at the menu instead of the launcher.
+        if (this._IsCustomElement()) {
+          window.setImmediate(function () {
+            focusElement.focus();
+          });
+        } else {
+          // For jquery ui components, move immediate focus.  The synchronous button qunit tests expect this behavior.
+          focusElement.focus();
+        }
+      }
 
       this._trigger('open', event, {});
     },

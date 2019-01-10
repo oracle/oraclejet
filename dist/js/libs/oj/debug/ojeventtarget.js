@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -43,7 +43,9 @@ var EventTargetMixin = /** @class */ (function () {
             var eventListeners = this._eventListeners.slice(0);
             for (i = 0; i < eventListeners.length; i++) {
                 var eventListener = eventListeners[i];
-                if (eventListener['type'] == evt.type) {
+                if (evt &&
+                    evt.type &&
+                    eventListener['type'] == evt.type.toLowerCase()) {
                     returnValue = eventListener['listener'].apply(this, [evt]);
                     if (returnValue === false) {
                         // event cancelled

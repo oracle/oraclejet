@@ -1,7 +1,7 @@
 {
   "name": "oj-table",
-  "version": "6.0.0",
-  "jetVersion": "6.0.0",
+  "version": "6.1.0",
+  "jetVersion": "6.1.0",
   "displayName": "Table",
   "type": "core",
   "styleClasses": [
@@ -25,7 +25,7 @@
     }
   ],
   "description": "Displays data items in a tabular format with highly interactive features.",
-  "help": "https://docs.oracle.com/en/middleware/jet/6/reference-api/oj.ojTable.html",
+  "help": "https://docs.oracle.com/en/middleware/jet/6.1/reference-api/oj.ojTable.html",
   "properties": {
     "accessibility": {
       "description": "Accessibility attributes.",

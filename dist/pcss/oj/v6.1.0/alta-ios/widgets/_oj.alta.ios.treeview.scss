@@ -1,0 +1,35 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";  
+
+
+
+// ----- start dependencies ---------
+
+// set up include variables before importing dependencies
+@if $includeTreeViewClasses != false {
+  $includeIconClasses: true !global;
+}
+
+// import dependencies
+@import "../../common/helpers/oj.common.helpers"; 
+@import "oj.alta.ios.icons";
+
+// ----- end dependencies ---------
+
+
+// import classes defined in the common directory
+@import "../../common/widgets/oj.common.treeview";
+
+@if $includeTreeViewClasses != false  {
+  @include module-include-once("alta.ios.treeview") {
+    /* Styling for a collapsed icon */
+    .oj-collapsed > .oj-treeview-disclosure-icon {
+      @extend .oj-fwk-icon-arrow03-end;
+    }
+
+    /* Styling for an expanded icon */
+    .oj-expanded > .oj-treeview-disclosure-icon {
+      @extend .oj-fwk-icon-arrow03-s-end;
+    }
+  }
+}

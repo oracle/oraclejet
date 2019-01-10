@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -1329,6 +1329,7 @@ oj.__registerWidget('oj.inputBase', $.oj.editableValue,
 //    }
 
       this._defaultRegExpValidator = {};
+      this._defaultRegExpAsyncValidator = {};
       this._eventHandlers = null;
       return ret;
     },
@@ -1715,7 +1716,7 @@ oj.__registerWidget('oj.inputBase', $.oj.editableValue,
     },
 
     /**
-     * Invoked when keydown is triggered of the this.element
+     * Invoked when keyup is triggered of the this.element
      *
      * When of keyCode is of Enter, invoke _SetValue on it
      *
@@ -1884,26 +1885,46 @@ oj.__registerWidget('oj.inputBase', $.oj.editableValue,
     },
 
     /**
-     * Sets up the default regExp validator.
+     * Sets up a default synchronous regexp validator if pattern is set and the
+     * app has not overridden the async regexp validator that JET registered.
+     * If the validator is created, it is added to the
+     * this._defaultRegExpValidator type->validator instance map
      *
      * @ignore
      * @protected
      * @override
      * @instance
      * @memberof! oj.inputBase
+     * @return {Object} returns the implicit sync validators map, where the key is the sync
+     * validator type, e.g., 'regexp'.
      */
-    _GetImplicitValidators: function () {
+    _GetImplicitSyncValidators: function () {
       var ret = this._superApply(arguments);
 
       // register a default RegExp validator if we have a valid pattern
       if (this.options.pattern) {
-        // add validator to the special internalValidators list. These are validators created by
-        // the framework. We don't want these cleared using the option - 'validators'
         this._defaultRegExpValidator[oj.ValidatorFactory.VALIDATOR_TYPE_REGEXP] =
-          this._getImplicitRegExpValidator();
+        this._getImplicitRegExpValidator();
       }
-
       return $.extend(this._defaultRegExpValidator, ret);
+    },
+    /**
+     * Sets up a asynchronous regexp validator if pattern is set and the
+     * app has overridden the async regexp validator that JET registered.
+     * If the validator is created, it is added to the
+     * this._defaultRegExpAsyncValidator type->validator instance map
+     *
+     * @ignore
+     * @protected
+     * @override
+     * @instance
+     * @memberof! oj.inputBase
+     * @return {Object} returns the implicit async validators map, where the key is the async
+     * validator type, e.g., 'async-regexp'.
+     */
+    _GetImplicitAsyncValidators: function () {
+      var ret = this._superApply(arguments);
+      return $.extend(this._defaultRegExpAsyncValidator, ret);
     },
     /**
      * Whether the a value can be set on the component. For example, if the component is
@@ -2794,7 +2815,7 @@ oj.__registerWidget('oj.ojInputText', $.oj.inputBase,
             val = this.options.value;
           }
 
-          if (val !== '') {
+          if (val && val !== '') {
             wrapperElem.classList.remove('oj-form-control-empty-clearicon');
           } else {
             wrapperElem.classList.add('oj-form-control-empty-clearicon');
@@ -3299,6 +3320,22 @@ oj.__registerWidget('oj.ojTextArea', $.oj.inputBase,
      */
     _GetTranslationsSectionName: function () {
       return 'oj-inputBase';
+    },
+
+    /**
+     * Invoked when keyup is triggered of the this.element
+     *
+     * When of keyCode is of Enter, oj-text-area should do nothing as
+     * the enter key is just user entered data.
+     *
+     * @ignore
+     * @protected
+     * @override
+     * @memberof! oj.ojTextArea
+     * @param {Event} event
+     */
+    // eslint-disable-next-line no-unused-vars
+    _onKeyUpHandler: function (event) {
     }
 
   });

@@ -5329,15 +5329,7 @@ DvtGanttDependencyNode.prototype.getGantt = function()
  */
 DvtGanttDependencyNode.prototype.getId = function()
 {
-  return this._props['id'];
-};
-
-/**
- * @override
- */
-DvtGanttDependencyNode.prototype.getActiveElementId = function()
-{
-  return null; // Let a temporary id be generated if active element
+  return this._dependencyObj['id'];
 };
 
 /**
@@ -9488,14 +9480,6 @@ DvtGanttTaskNode.prototype.Init = function(gantt)
 DvtGanttTaskNode.prototype.getId = function()
 {
   return this._taskObj['id'];
-};
-
-/**
- * @override
- */
-DvtGanttTaskNode.prototype.getActiveElementId = function()
-{
-  return null; // Let a temporary id be generated if active element
 };
 
 /**

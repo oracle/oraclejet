@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -1500,12 +1500,13 @@ oj.__registerWidget('oj.dvtBaseComponent', $.oj.baseComponent, {
    * @param {object} dataProvider The data provider
    * @param {object} postprocessor The call back functon that should return a promise that resolves into row data of the shape {data: , key: }
    * @param {object} parentKey The parent key if the dataProvider is a child dataProvider
+   * @param {number} fetchDepth The current fetch depth
    * @return {Promise} Returns a promise that resolves into the fully fetched data from the data provider.
    * @protected
    * @instance
    * @memberof oj.dvtBaseComponent
    */
-  _FetchCollection: function (dataProvider, postprocessor, parentKey) {
+  _FetchCollection: function (dataProvider, postprocessor, parentKey, fetchDepth) {
     var self = this;
     var finalData = { data: [], keys: [] };
     var iterator = dataProvider.fetchFirst({ size: -1 })[Symbol.asyncIterator]();
@@ -1516,7 +1517,7 @@ oj.__registerWidget('oj.dvtBaseComponent', $.oj.baseComponent, {
       var nodePromises = [];
       for (var i = 0; i < result.value.data.length; i++) {
         var nodePromise = postprocessor({ data: result.value.data[i],
-          key: result.value.metadata[i].key });
+          key: result.value.metadata[i].key }, fetchDepth);
         nodePromises.push(nodePromise);
       }
       var chunkPromise = Promise.all(nodePromises).then(function (values) {
@@ -1557,15 +1558,21 @@ oj.__registerWidget('oj.dvtBaseComponent', $.oj.baseComponent, {
     var self = this;
     var configs = self._GetSimpleDataProviderConfigs()[dataProperty];
     var expandedKeySet = configs.expandedKeySet;
+    var maxFetchDepth = configs.maxFetchDepth == null ? Number.MAX_VALUE : configs.maxFetchDepth;
+
+    if (maxFetchDepth === -1) {
+      return Promise.resolve({ data: [], keys: [] });
+    }
+
     var isTreeDataProvider = oj.DataProviderFeatureChecker.isTreeDataProvider(dataProvider);
-    var treeDPPostProcessor = function (row) {
+    var treeDPPostProcessor = function (row, fetchDepth) {
       var data = { value: row.data };
       var key = { value: row.key };
-      if (expandedKeySet && expandedKeySet.has(key.value)) {
+      if (fetchDepth < maxFetchDepth && expandedKeySet && expandedKeySet.has(key.value)) {
         var childDataProvider = dataProvider.getChildDataProvider(key.value);
         if (childDataProvider) {
-          return self._FetchCollection(childDataProvider, treeDPPostProcessor, key.value).then(
-            function (children) {
+          return self._FetchCollection(childDataProvider, treeDPPostProcessor,
+            key.value, fetchDepth + 1).then(function (children) {
               data.children = children.data;
               key.children = children.keys;
               return { data: data, key: key };
@@ -1579,7 +1586,7 @@ oj.__registerWidget('oj.dvtBaseComponent', $.oj.baseComponent, {
       return Promise.resolve(value);
     };
     return self._FetchCollection(dataProvider,
-      isTreeDataProvider ? treeDPPostProcessor : flatDPPostProcessor);
+      isTreeDataProvider ? treeDPPostProcessor : flatDPPostProcessor, null, 0);
   },
 
   /**
@@ -1642,6 +1649,48 @@ oj.__registerWidget('oj.dvtBaseComponent', $.oj.baseComponent, {
   },
 
   /**
+   * Returns a function that validates the value for a property for a given element.
+   * @param {node} element The template element name
+   * @param {string} elementName The custom element name
+   * @return {Function} A function that validates the value for a property. It takes in the property path and the value of the topmost property
+   * @public
+   * @ignore
+   * @instance
+   * @memberof oj.dvtBaseComponent
+   */
+  getPropertyValidator: function (element, elementName) {
+    if (!element) {
+      return null;
+    }
+
+    var propsMetadata = oj.CustomElementBridge.getMetadata(elementName);
+    var templateElement = element.content ? element.content.children[0] : element.childNodes[1];
+    var metadataCache = {};
+    return function (propertyPath, value) {
+      var property = propertyPath.join('.');
+      var metadata = metadataCache[property];
+      if (!metadata) {
+        metadata = propsMetadata;
+        // Get sub property metadata if needed
+        for (var i = 0; i < propertyPath.length; i++) {
+          metadata = metadata.properties[propertyPath[i]];
+        }
+        metadataCache[property] = metadata;
+      }
+
+      oj.BaseCustomElementBridge.checkEnumValues(templateElement, property,
+        value, metadata);
+
+      // TODO support checking for null values once we generate metadata from jsDoc and have accurate info
+      // about component support for undefined/null
+      if (value != null) {
+        oj.BaseCustomElementBridge.checkType(templateElement, property,
+          value, metadata);
+      }
+    };
+  },
+
+  /**
    * Processes the templates using the data provider's data and returns a map of values to options to be updated.
    * To use the default behaviour the component should override the _GetSimpleDataProviderConfigs.
    * The returns data has a _itemData that has the data for that item from the data provider.
@@ -1674,24 +1723,24 @@ oj.__registerWidget('oj.dvtBaseComponent', $.oj.baseComponent, {
       var processChildrenData = config.processChildrenData;
       var processOptionData = config.processOptionData ||
         function (optionData) { return optionData; };
+      var dataValueValidatorMap = {};
 
       if (getTemplateName && getTemplateElementName && resultPath) {
         // read attributes off nodes corresponding to the nodeKey
         var templatePropertyMap = {};
 
-        var processDatum = function (nodeData, nodeKey, context, templateName,
-          templateElementName) {
+        var processDatum = function (nodeData, nodeKey, context, template,
+          templateElementName, dataValueValidator) {
           var templateTopProperties = templatePropertyMap[templateElementName];
           if (!templateTopProperties) {
             templateTopProperties = self.getElementPropertyNames(templateElementName);
             templatePropertyMap[templateElementName] = templateTopProperties;
           }
           var processedDatum;
-          var template = templates[templateName];
           try {
             if (template) {
               processedDatum = templateEngine.resolveProperties(parentElement, template[0],
-                templateElementName, templateTopProperties, context, alias);
+                templateElementName, templateTopProperties, context, alias, dataValueValidator);
               if (getAliasedPropertyNames) {
                 var aliasedPropertyMap = getAliasedPropertyNames(templateElementName);
                 var aliasedProperties = Object.keys(aliasedPropertyMap);
@@ -1731,8 +1780,17 @@ oj.__registerWidget('oj.dvtBaseComponent', $.oj.baseComponent, {
               context.parentKey = parentKey;
             }
 
+            var templateName = getTemplateName(_data[i]);
+            var templateElementName = getTemplateElementName(_data[i]);
+            var template = templates[templateName];
+            var dataValueValidator = dataValueValidatorMap[templateElementName];
+            if (!dataValueValidator && template) {
+              dataValueValidator = self.getPropertyValidator(template[0], templateElementName);
+              dataValueValidatorMap[templateElementName] = dataValueValidator;
+            }
+
             var processedDatum = processDatum(nodeData, nodeKey, context,
-              getTemplateName(_data[i]), getTemplateElementName(_data[i]));
+              template, templateElementName, dataValueValidator);
             if (_data[i].children) { // more complex for legend need to mutate the data itself
               var newParentData = parentData.slice(0);
               newParentData.push(nodeData);
@@ -1758,10 +1816,10 @@ oj.__registerWidget('oj.dvtBaseComponent', $.oj.baseComponent, {
   },
 
   /**
-   * Returns an object keyed by the data API name with templateName, templateElementName, resultPath, getAliasedPropertyNames, processChildrenData and processOptionData which are used to process dataProvider data with templates.
+   * Returns an object keyed by the data API name with templateName, templateElementName, resultPath, getAliasedPropertyNames, processChildrenData, processOptionData and maxFetchDepth which are used to process dataProvider data with templates.
    * The only required fields are templateName, templateElementName and resultPath
    * todo: add descriptions for parameters and return values for fields
-   * @return {object} Object keyed by data API names, and objects of shape {templateName: string|fxn, templateElementName: string|fxn, resultPath: string, expandedKeySet: object, getAliasedPropertyNames: fxn, processChildrenData: fxn, processOptionData: fxn} as values
+   * @return {object} Object keyed by data API names, and objects of shape {templateName: string|fxn, templateElementName: string|fxn, resultPath: string, expandedKeySet: object, getAliasedPropertyNames: fxn, processChildrenData: fxn, processOptionData: fxn, maxFetchDepth: number} as values
    * @protected
    * @instance
    * @memberof oj.dvtBaseComponent

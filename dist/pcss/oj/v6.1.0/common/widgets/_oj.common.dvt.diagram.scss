@@ -1,0 +1,176 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// !!!
+// WARNING: do not directly import this file, instead import the
+//          version in your theme's directory,
+//          for example alta/widgets/_oj.alta.dvt.diagram.scss
+// !!!
+@import "../../utilities/oj.utilities";
+
+@if $includeDiagramClasses != false {
+  @include module-include-once("common.diagram") {
+
+    // This is to prevent the flash of unstyled content before the html becomes JET components.
+    @if $initialVisibility == hidden {
+      oj-diagram:not(.oj-complete) {
+        visibility: hidden;
+      }
+    }
+
+    oj-diagram {
+      display: block;
+    }
+
+    // top level diagram styles
+    .oj-diagram {
+      @include oj-user-select-property(none);
+      width:100%;
+      height:400px;
+    }
+
+    // diagram node
+    .oj-diagram-node {
+    }
+
+    // applied to the diagram node on hover
+    // border-top-color - used to create outer border
+    // border-bottom-color - used to create inner border
+    .oj-diagram-node.oj-hover {
+        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+            border-top-color: var(--oj-diagram-node-border-color-hover);
+            border-bottom-color: var(--oj-dvt-item-inner-border-color-selected);
+        } @else {
+            border-top-color:$dvtDiagramNodeBorderColorHover;
+            border-bottom-color: $dvtBorder2Color;
+        }
+    }
+
+    // applied to the selected diagram node
+    .oj-diagram-node.oj-selected {
+        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+            border-color: var(--oj-dvt-item-outer-border-color-selected);
+        } @else {
+            border-color: $dvtBorderColor;
+        }
+    }
+
+    // applied to the diagram node label
+    .oj-diagram-node-label {
+        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+            font-size: var(--oj-font-size);
+            color: var(--oj-text-color);
+        } @else {
+            font-size: $fontSize;
+            color: $textColor;
+        }
+    }
+
+    // diagram link
+    .oj-diagram-link {
+        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+            color: var(--oj-diagram-link-color);
+        } @else {
+            color: $dvtDiagramLinkColor;
+        }
+    }
+
+    // applied to the diagram link on hover
+    // border-top-color - used to create outer border
+    // border-bottom-color - used to create inner border
+    .oj-diagram-link.oj-hover {
+        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+            border-top-color: var(--oj-diagram-link-border-color-hover);
+            border-bottom-color: var(--oj-dvt-item-inner-border-color-selected);
+        } @else {
+            border-top-color:$dvtDiagramLinkBorderColorHover;
+            border-bottom-color: $dvtBorder2Color;
+        }
+    }
+
+    // applied to the selected diagram link
+    .oj-diagram-link.oj-selected {
+        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+            border-color: var(--oj-dvt-item-outer-border-color-selected);
+        } @else {
+            border-color: $dvtBorderColor;
+        }
+    }
+
+    // applied to the diagram link label
+    .oj-diagram-link-label {
+        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+            font-size: var(--oj-font-size);
+            color: var(--oj-text-color);
+        } @else {
+            font-size: $fontSize;
+            color: $textColor;
+        }
+    }
+    .oj-diagram-node.oj-draggable {
+    }
+    .oj-diagram .oj-active-drop {
+        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+            fill: var(--oj-drop-target-color-1);
+        } @else {
+            fill: $dropTarget1Color;
+        }
+      fill-opacity: .75;
+    }
+    .oj-diagram .oj-invalid-drop {
+      cursor: no-drop;
+    }
+    .oj-diagram-node.oj-active-drop {
+        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+            fill: var(--oj-drop-target-color-1);
+        } @else {
+            fill: $dropTarget1Color;
+        }
+      fill-opacity: .75;
+    }
+    .oj-diagram-node.oj-invalid-drop {
+      cursor: no-drop;
+    }
+    .oj-diagram-link.oj-active-drop {
+        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+            stroke: var(--oj-drop-target-color-1);
+        } @else {
+            stroke: $dropTarget1Color;
+        }
+      stroke-opacity: .75;
+    }
+    .oj-diagram-link.oj-invalid-drop {
+      cursor: no-drop;
+    }
+    
+    .oj-diagram-overview {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        background-color: var(--oj-diagram-overview-bg-color);
+      } @else {
+        background-color:$dvtDiagramOverviewBgColor;
+      }
+    }
+    .oj-diagram-overview-viewport {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        background-color: var(--oj-diagram-overview-window-bg-color);
+        border-color: var(--oj-diagram-overview-window-border-color);
+      } @else {
+        background-color:$dvtDiagramOverviewWindowBgColor;
+        border-color:$dvtDiagramOverviewWindowBorderColor;
+      }
+    }
+    .oj-diagram-overview-node {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        fill: var(--oj-diagram-overview-node-bg-color);
+      } @else {
+        fill:$dvtDiagramOverviewNodeBgColor;
+      }
+    }
+    .oj-diagram-overview-container-node {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        fill: var(--oj-diagram-overview-node-bg-color);
+      } @else {
+        fill:$dvtDiagramOverviewNodeBgColor;
+      }
+      fill-opacity:.25;
+    }
+  }
+}

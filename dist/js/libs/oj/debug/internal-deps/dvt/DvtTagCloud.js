@@ -230,8 +230,7 @@ dvt.TagCloud.prototype.SetOptions = function(options) {
   // Pass to event handler
   this.EventManager.setSelectionHandler(this.SelectionHandler);
 
-  // Disable animation for png
-  if (!dvt.Agent.isEnvironmentBrowser()) {
+  if (dvt.Agent.isEnvironmentTest()) {
     this.Options['animationOnDisplay'] = 'none';
     this.Options['animationOnDataChange'] = 'none';
   }
@@ -566,8 +565,8 @@ DvtTagCloudAutomation.prototype.getItemCount = function() {
  * @param {object=} itemStyle The optional style to be applied directly to the item text
  * @param {string=} styleClass The optional class to be applied directly to the item text
  */
-var DvtTagCloudItem = function(tagCloud, context, textStr, x, y, style, itemStyle, styleClass) {
-  this.Init(tagCloud, context, textStr, x, y, style, itemStyle, styleClass);
+var DvtTagCloudItem = function(tagCloud, context, textStr, x, y, style, itemStyle, styleClass, id) {
+  this.Init(tagCloud, context, textStr, x, y, style, itemStyle, styleClass, id);
 };
 
 dvt.Obj.createSubclass(DvtTagCloudItem, dvt.BackgroundOutputText);
@@ -609,8 +608,8 @@ DvtTagCloudItem.ANIMATION_INSERT_PRIORITY = 2;
  * @param {string=} styleClass The optional class to be applied directly to the item text
  * @protected
  */
-DvtTagCloudItem.prototype.Init = function(tagCloud, context, textStr, x, y, style, itemStyle, styleClass) {
-  DvtTagCloudItem.superclass.Init.call(this, context, textStr, x, y, style);
+DvtTagCloudItem.prototype.Init = function(tagCloud, context, textStr, x, y, style, itemStyle, styleClass, id) {
+  DvtTagCloudItem.superclass.Init.call(this, context, textStr, x, y, style, id);
   this._tagCloud = tagCloud;
   this.alignAuto();
 
@@ -1322,7 +1321,7 @@ DvtTagCloudRenderer._renderItems = function(tagCloud, container, availSpace) {
     style.setStyle(dvt.CSSStyle.FONT_SIZE, fontSizeFunction.call(null, data['value']).toString());
 
     var className = data['svgClassName'] || data['className'];
-    var item = new DvtTagCloudItem(tagCloud, tagCloud.getCtx(), data['label'], 0, 0, style, itemStyle, className);
+    var item = new DvtTagCloudItem(tagCloud, tagCloud.getCtx(), data['label'], 0, 0, style, itemStyle, className, data['id']);
     var peer = new DvtTagCloudObjPeer(tagCloud, item, data);
     tagCloud.EventManager.associate(item, peer);
     tagCloud.registerObject(peer, i);

@@ -1957,7 +1957,7 @@ dvt.BaseDiagram.prototype.getBottomPane = function() {
  */
 dvt.BaseDiagram.prototype.CreateEmptyLayoutContext = function() {
   var layoutContext = new DvtDiagramLayoutContext(this.getCtx());
-  //BUG FIX #13458034: inform layout of reading direction
+  //: inform layout of reading direction
   layoutContext.setLocaleR2L(dvt.Agent.isRightToLeft(this.getCtx()));
   layoutContext.setComponentSize(new dvt.DiagramRectangle(0, 0, this.getWidth(), this.getHeight()));
   return layoutContext;
@@ -1974,7 +1974,7 @@ dvt.BaseDiagram.prototype.CreateEmptyLayoutContext = function() {
 dvt.BaseDiagram.prototype.CreateLayoutContextNode = function(node, layout, bRenderAfter, layoutContext) {
   var nc = new DvtDiagramLayoutContextNode();
   nc.setId(node.getId ? node.getId() : node.getData().getId());
-  //BUG FIX #13381683: set both the content bounds and the overall bounds of
+  //: set both the content bounds and the overall bounds of
   //the node on the layout context
   nc.setBounds(dvt.DiagramLayoutUtils.convertRectToDiagramRect(node.getLayoutBounds()));
   nc.setContentBounds(dvt.DiagramLayoutUtils.convertRectToDiagramRect(node.getContentBounds()));
@@ -3599,7 +3599,7 @@ dvt.BaseDiagramLink.prototype.CreateConnector = function(points, connectorType, 
   var connector = dvt.DiagramLinkConnectorUtils.CreateConnectorShape(this.getCtx(), connectorType, connectorTemplate, stroke, this);
 
   if (connector) {
-    //BUG FIX #14813637: add connectors as children of shape so that selection feedback affects them
+    //: add connectors as children of shape so that selection feedback affects them
     this._shape.addChild(connector);
     dvt.DiagramLinkConnectorUtils.TransformConnector(connector, connectorType, connectorTemplate, points, connectorPos);
   }
@@ -5257,6 +5257,7 @@ DvtDiagramOverviewUtils.CreateOverviewWindow = function(diagram) {
   var topRect = new dvt.Rect(diagram.getCtx(), 0, 0, ovWidth, ovHeight);
   topRect.setInvisibleFill();
   topRect.setStroke(new dvt.SolidStroke(styleMap.overview.backgroundColor, 1, 1));
+  topRect.setMouseEnabled(false);
   ovContainer.addChild(topRect);
 
   return overview;
@@ -5995,6 +5996,7 @@ dvt.Diagram.prototype.Init = function(context, callback, callbackObj) {
   this._allNodeIdsMap = new context.ojMap();
   this._unresolvedNodeIds = []; // used to discover end-point nodes for promoted links
   this._nodesToResolve = []; // used for resolving container nodes during breadth-first search
+  this.setId('diagram'); // this is needed for animation purposes.
 };
 
 /**
@@ -6180,11 +6182,11 @@ dvt.Diagram.prototype._renderDeferredData = function(renderCount, dataSource, no
 dvt.Diagram.prototype._findUnresolvedLinks = function(data, deepWalk) {
   // do nothing if the component does not display promoted links
   // or if data came from data provider and promoted link behavior is 'lazy'
-  if (this.getOptions()['promotedLinkBehavior'] === 'none' || 
+  if (this.getOptions()['promotedLinkBehavior'] === 'none' ||
       (this.isDataProviderMode() && this.getOptions()['promotedLinkBehavior'] === 'lazy')) {
     return;
   }
-  
+
   var mapAllNodes = function(data, allNodeIdsMap) {
     if (Array.isArray(data['nodes'])) {
       data['nodes'].forEach(function(node) {
@@ -6196,7 +6198,7 @@ dvt.Diagram.prototype._findUnresolvedLinks = function(data, deepWalk) {
     }
   };
   mapAllNodes(data, this._allNodeIdsMap);
-  
+
   //update existing unresolved array - delete entries if nodes are found
   for (var i = this._unresolvedNodeIds.length - 1; i >= 0; i--) {
     if (this._allNodeIdsMap.has(this._unresolvedNodeIds[i])) {
@@ -6280,41 +6282,41 @@ dvt.Diagram.prototype.removeDataSourceEventListeners = function() {
 
 /**
  * Fetches additional data - nodes and links - from data provider when necessary.
- * The additional data are needed when 'promotedLinkBehavior' option is set to 'full' and 
+ * The additional data are needed when 'promotedLinkBehavior' option is set to 'full' and
  * the component had to search for nodes in order to display promoted links.
  * When all nodes are discovered, the method calls RenderComponentInternal().
  * @param {Object} rootDataProvider root data provider for the diagram
  * @param {array} nodesArray an array of nodes used for searching
- * @private 
+ * @private
  */
 dvt.Diagram.prototype._fetchDataProviderData = function(rootDataProvider, nodesArray) {
-  
+
   var collapsedContainers = this.isTreeDataProvider() ? DvtDiagramDataUtils.GetCollapsedContainers(rootDataProvider, nodesArray, []) : [];
-  
+
   if (collapsedContainers.length > 0) {
     var thisRef = this;
-    
+
     var containerChildDataPromises = collapsedContainers.map(function (containerNode) {
       return thisRef.Options._fetchDataHandler(rootDataProvider, thisRef._context.KeySetImpl([containerNode.id]), containerNode, containerNode.id);
     });
-    
+
     var renderCount = this._renderCount;
     Promise.all(containerChildDataPromises).then(function(values){
       if (renderCount === thisRef._renderCount && thisRef.getCtx().isReadyToRender()) {
         // prepare for another round of collapsed containers search
         nodesArray = [];
-        
+
         values.forEach(function(value){
           var childData = value.nodes;
-          
+
           if (Array.isArray(childData)) {
             childData.forEach(function(childNode){
               thisRef._allNodeIdsMap.set(childNode.id, true);
-              nodesArray.push(childNode); 
+              nodesArray.push(childNode);
             });
           }
         });
-        
+
         for (var i = thisRef._unresolvedNodeIds.length - 1; i >= 0; i--) {
           if (thisRef._allNodeIdsMap.has(thisRef._unresolvedNodeIds[i])) {
             thisRef._unresolvedNodeIds.splice(i, 1);
@@ -6342,8 +6344,8 @@ dvt.Diagram.prototype.isDataProviderMode = function() {
   return !!this.getOptions()['nodeData'];
 };
 
-/** 
- * Check if tree data provider is used for the nodes 
+/**
+ * Check if tree data provider is used for the nodes
  * @return {boolean} return true for tree data provider
  */
 dvt.Diagram.prototype.isTreeDataProvider = function() {
@@ -6453,7 +6455,7 @@ dvt.Diagram.prototype._processContent = function(bEmptyDiagram) {
     if (this.Options['_resources'])
       pzc.setPanCursor(this.Options['_resources']['panCursorUp'], this.Options['_resources']['panCursorDown']);
   }
-  
+
   // add overview window
   if (!this.Overview  && this.Options.overview && this.Options.overview.rendered == 'on') {
     this.Overview = DvtDiagramOverviewUtils.CreateOverviewWindow(this);
@@ -6694,7 +6696,7 @@ dvt.Diagram.prototype.renderLinks = function(linksData) {
         var linkData = dvt.JsonUtils.merge(promotedLink, promotedLinkDefaults);
         var link = DvtDiagramLink.newInstance(thisRef, linkData, true);
         var linkId = link.getId();
-        
+
         var startNode = thisRef.getNodeById(link.getStartId());
         var endNode = thisRef.getNodeById(link.getEndId());
         startNode.addOutLinkId(linkId);
@@ -7117,15 +7119,15 @@ dvt.Diagram.prototype._updateAlphas = function(bHighlight, highlightedObjects) {
       // keep highlighted objects in place - move other objects to the faded bottom pane
       var bottomPane = this.getBottomPane();
       bottomPane.setAlpha(highlightAlpha);
-      
+
       this._links.forEach(function(link, id, map){
         var highlighted = highlightedObjects.get(id);
-        if (!highlighted && bHighlight) 
+        if (!highlighted && bHighlight)
           bottomPane.addChild(link);
         else if (!highlighted)
           linksPane.addChild(link);
       });
-      
+
       this._nodes.forEach(function(node, id, map){
         var highlighted = highlightedObjects.get(id);
         if (!highlighted && bHighlight)
@@ -7133,13 +7135,13 @@ dvt.Diagram.prototype._updateAlphas = function(bHighlight, highlightedObjects) {
         else if (!highlighted)
           nodesPane.addChild(node);
       });
-    } 
+    }
     else {
       var topPane = this.getTopPane();
       //update alphas on link and node panes
       linksPane.setAlpha(highlightAlpha);
       nodesPane.setAlpha(highlightAlpha);
-      
+
       // Then just reparent the interesting links and nodes
       var highlightedLinksArray = [];
       var highlightedNodesArray = [];
@@ -7151,7 +7153,7 @@ dvt.Diagram.prototype._updateAlphas = function(bHighlight, highlightedObjects) {
       });
 
       for (var elt = 0; elt < highlightedLinksArray.length; elt++) {
-        if (bHighlight) 
+        if (bHighlight)
           topPane.addChild(highlightedLinksArray[elt]);
         else
           linksPane.addChild(highlightedLinksArray[elt]);
@@ -7434,7 +7436,7 @@ dvt.Diagram.prototype.expand = function(nodeId) {
     var node = this.getNodeById(nodeId);
     if (this.isDataProviderMode() && !node.getData()['nodes']) {
       var nodeOption = DvtDiagramDataUtils.GetNodeOption(this, node);
-      
+
       // fetch data from data provider
       var thisRef = this;
       var renderCount = this._renderCount;
@@ -7608,7 +7610,7 @@ dvt.Diagram.prototype._isLinkPromoted = function(linkData) {
   if (!this._promotedLinksMap)
     this._promotedLinksMap = new (this.getCtx()).ojMap();
   if (!this._promotedLinksMap.has(linkId)) {
-    this._promotedLinksMap.set(linkId, 
+    this._promotedLinksMap.set(linkId,
       { 'id': linkId,
         'startNode' : startPromotedId,
         'endNode' : endPromotedId,
@@ -7785,7 +7787,7 @@ dvt.Diagram.prototype.handleDataSourceChangeEvent = function(type, event) {
             if (nodeArr[i].nodes)
               updateDisclosed(nodeArr[i].nodes);
             }
-          }    
+          }
         updateDisclosed(nodes);
       }
     }
@@ -9461,20 +9463,6 @@ DvtDiagramLink.prototype.getId = function() {
 };
 
 /**
- * @override
- */
-DvtDiagramLink.prototype.getActiveElementId = function() {
-  //Bug fix 25300184 - JET DIAGRAMER WITH CUSTOM SVG USING NODE ID WHEN MOUSE HOVER
-  //If custom renderer is used to render the link, then the application might use the linkId to render links.
-  //DvtEventManager sets the linkId on active elements on mouse over/focus for accessibility.
-  //So if linkId is used in custom renderer, that will conflict with active element id set by event manager.
-  //Hence generate an unique id for active link element.
-  if (!this._activeElementId)
-    this._activeElementId = this.getId() + Math.floor(Math.random() * 1000000000);//@RandomNumber
-  return this._activeElementId;
-};
-
-/**
  * Gets the node id
  * @return {string} node id
  */
@@ -9680,14 +9668,14 @@ DvtDiagramLink._renderLinkLabels = function(diagram, linkData, container) {
     var halign = bMultiline ? (rtl ? dvt.MultilineText.H_ALIGN_RIGHT : dvt.MultilineText.H_ALIGN_LEFT) : (rtl ? dvt.OutputText.H_ALIGN_RIGHT : dvt.OutputText.H_ALIGN_LEFT);
     var valign =  bMultiline ? dvt.MultilineText.V_ALIGN_TOP : dvt.OutputText.V_ALIGN_TOP;
     var label = DvtDiagramLink.createText(diagram.getCtx(), labelString, linkData['labelStyle'], halign, valign, bMultiline);
-    
+
     var maxWidth = linkData['labelStyle'].getMaxWidth() || linkData['labelStyle'].getWidth();
     var labelWidth = dvt.CSSStyle.toNumber(maxWidth);
-    
+
     if (!maxWidth) {
       container.addChild(label);
       container._labelObj = label;
-    } 
+    }
     else if (labelWidth > 0 && dvt.TextUtils.fitText(label, labelWidth, Infinity, container)) {
       container._labelObj = label;
     }
@@ -9719,7 +9707,7 @@ DvtDiagramLink.createText = function(ctx, strText, style, halign, valign, bMulti
     text = bMultiline ? new dvt.MultilineText(ctx, strText, 0, 0, null, true) : new dvt.OutputText(ctx, strText, 0, 0);
     text.setCSSStyle(style);
   }
-  
+
   text.setHorizAlignment(halign);
   text.setVertAlignment(valign);
   return text;
@@ -9944,7 +9932,7 @@ DvtDiagramLink.prototype.UpdateAriaLabel = function() {
 /**
  * @override
  */
-DvtDiagramLink.prototype.getNextNavigable = function(event) 
+DvtDiagramLink.prototype.getNextNavigable = function(event)
 {
   if (event.keyCode == dvt.KeyboardEvent.SPACE && event.ctrlKey) {
     // multi-select node with current focus; so we navigate to ourself and then let the selection handler take
@@ -10172,7 +10160,7 @@ DvtDiagramLink.prototype.setLabelAlignments = function(halign, valign) {
   var isMultiline = this._labelObj instanceof dvt.MultilineText || this._labelObj instanceof dvt.BackgroundMultilineText;
   if (valign == 'baseline')
     valign = isMultiline ? dvt.MultilineText.V_ALIGN_TOP : dvt.OutputText.V_ALIGN_AUTO;
-    
+
   this._labelObj.setHorizAlignment(halign);
   this._labelObj.setVertAlignment(valign);
 };
@@ -10390,20 +10378,6 @@ DvtDiagramNode.prototype.setData = function(data) {
  */
 DvtDiagramNode.prototype.getId = function() {
   return this._data['id'];
-};
-
-/**
- * @override
- */
-DvtDiagramNode.prototype.getActiveElementId = function() {
-  //Bug fix 25300184 - JET DIAGRAMER WITH CUSTOM SVG USING NODE ID WHEN MOUSE HOVER
-  //If custom renderer is used to render the node, then the application might use the nodeId to render node elements.
-  //DvtEventManager sets the nodeId on active elements on mouse over/focus for accessibility.
-  //So if nodeId is used in custom renderer, that will conflict with active element id set by event manager.
-  //Hence generate an unique id for active node element.
-  if (!this._activeElementId)
-    this._activeElementId = this.getId() + Math.floor(Math.random() * 1000000000);//@RandomNumber
-  return this._activeElementId;
 };
 
 /**
@@ -10741,14 +10715,14 @@ DvtDiagramNode._renderNodeLabels = function(diagram, nodeData, container) {
     var halign = bMultiline ? (rtl ? dvt.MultilineText.H_ALIGN_RIGHT : dvt.MultilineText.H_ALIGN_LEFT) : (rtl ? dvt.OutputText.H_ALIGN_RIGHT : dvt.OutputText.H_ALIGN_LEFT);
     var valign =  bMultiline ? dvt.MultilineText.V_ALIGN_TOP : dvt.OutputText.V_ALIGN_TOP;
     var label = DvtDiagramNode.createText(diagram.getCtx(), labelString, nodeData['labelStyle'], halign, valign, bMultiline);
-    
+
     var maxWidth = nodeData['labelStyle'].getMaxWidth() || nodeData['labelStyle'].getWidth();
     var labelWidth = dvt.CSSStyle.toNumber(maxWidth);
 
     if (!maxWidth) {
       container.addChild(label);
       container._labelObj = label;
-    } 
+    }
     else if (labelWidth > 0 && dvt.TextUtils.fitText(label, labelWidth, Infinity, container)) {
       container._labelObj = label;
     }
@@ -10780,7 +10754,7 @@ DvtDiagramNode.createText = function(ctx, strText, style, halign, valign, bMulti
     text = bMultiline ? new dvt.MultilineText(ctx, strText, 0, 0, null, true) : new dvt.OutputText(ctx, strText, 0, 0);
     text.setCSSStyle(style);
   }
-  
+
   text.setHorizAlignment(halign);
   text.setVertAlignment(valign);
   return text;
@@ -11432,7 +11406,7 @@ DvtDiagramNode.prototype.highlight = function(bHighlight) {
   if (this._isHighlighted !== bHighlight) {
     this._isHighlighted = bHighlight;
     var highlightAlpha = bHighlight ? 1.0 : this._diagram.getOptions()['styleDefaults']['_highlightAlpha'];
-   
+
     if (!this._customNodeContent && this.isDisclosed()) {
       // update parts of a standard container
       this._containerShape && this._containerShape.setAlpha(highlightAlpha);
@@ -11454,7 +11428,7 @@ DvtDiagramNode.prototype.setLabelAlignments = function(halign, valign) {
   var isMultiline = this._labelObj instanceof dvt.MultilineText || this._labelObj instanceof dvt.BackgroundMultilineText;
   if (valign == 'baseline')
     valign = isMultiline ? dvt.MultilineText.V_ALIGN_TOP : dvt.OutputText.V_ALIGN_AUTO;
-    
+
   this._labelObj.setHorizAlignment(halign);
   this._labelObj.setVertAlignment(valign);
 };

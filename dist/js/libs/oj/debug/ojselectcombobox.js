@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -189,6 +189,10 @@ var __oj_combobox_many_metadata =
       "type": "string",
       "writeback": true,
       "readOnly": true
+    },
+    "readonly": {
+      "type": "boolean",
+      "value": false
     },
     "required": {
       "type": "boolean",
@@ -459,6 +463,10 @@ var __oj_combobox_one_metadata =
       "writeback": true,
       "readOnly": true
     },
+    "readonly": {
+      "type": "boolean",
+      "value": false
+    },
     "required": {
       "type": "boolean",
       "value": false
@@ -709,6 +717,10 @@ var __oj_select_many_metadata =
     "placeholder": {
       "type": "string"
     },
+    "readonly": {
+      "type": "boolean",
+      "value": false
+    },
     "renderMode": {
       "type": "string",
       "enumValues": [
@@ -953,6 +965,10 @@ var __oj_select_one_metadata =
     },
     "placeholder": {
       "type": "string"
+    },
+    "readonly": {
+      "type": "boolean",
+      "value": false
     },
     "renderMode": {
       "type": "string",
@@ -1676,7 +1692,7 @@ var __oj_select_one_metadata =
           }
         } else if (valueOptions) {
           // value not specified
-          _ComboUtils.syncValueWithValueOptions(ojContext, valueOptions, value);
+          _ComboUtils.syncValueWithValueOptions(ojContext, valueOptions, value, null);
         }
       } else {
         // single
@@ -1695,7 +1711,7 @@ var __oj_select_one_metadata =
           }
         } else if (valueOption) {
           // value not specified
-          _ComboUtils.syncValueWithValueOption(ojContext, valueOption, value);
+          _ComboUtils.syncValueWithValueOption(ojContext, valueOption, value, null);
         }
       }
 
@@ -1703,29 +1719,53 @@ var __oj_select_one_metadata =
     },
 
     // single selection: keep value in sync with valueOption
-    syncValueWithValueOption: function (ojContext, valueOption, value) {
+    // param nativeRender can be either null or boolean
+    // null: don't update display label
+    // true: update display label in native mode
+    // false: update display label in jet mode
+    syncValueWithValueOption: function (ojContext, valueOption, value, nativeRender) {
       var newVal;
+      var updateLabel = true;
       //  - resetting value when value-option and placeholder are set throws exception
       if (_ComboUtils.isValueOptionsForPlaceholder(false, valueOption)) {
         if (_ComboUtils.isValueForPlaceholder(false, value)) {
           newVal = value;
+          updateLabel = false;
         } else {
           newVal = null;
         }
       } else {
         newVal = valueOption ? valueOption.value : null;
       }
-      if (!oj.Object.compareValues(newVal, value)) {
+      if (oj.Object.compareValues(newVal, value)) {
+        //  - lov does not show the value-option label when it's updated later
+        // if the value is the same, we still need to update display label
+        if (nativeRender === true) {
+          var selElem = ojContext.element[0];
+          $(selElem.options[selElem.selectedIndex]).text(_ComboUtils.getLabel(valueOption));
+        } else if (nativeRender === false) {
+          var context = ojContext.select || ojContext.combobox;
+          if (context && updateLabel) {
+            context._updateSelection(valueOption);
+          }
+        }
+      } else {
         _ComboUtils._forceSetValue(ojContext, newVal);
       }
     },
 
     // multiple selection: keep value in sync with valueOptions
-    syncValueWithValueOptions: function (ojContext, valueOptions, value) {
+    // param nativeRender can be either null or boolean
+    // null: don't update display label
+    // true: update display label in native mode
+    // false: update display label in jet mode
+    syncValueWithValueOptions: function (ojContext, valueOptions, value, nativeRender) {
       var newVal;
+      var updateLabel = true;
       if (_ComboUtils.isValueOptionsForPlaceholder(true, valueOptions)) {
         if (_ComboUtils.isValueForPlaceholder(true, value)) {
           newVal = value;
+          updateLabel = false;
         } else {
           newVal = _ComboUtils.getValueForPlaceholder(true);
         }
@@ -1738,7 +1778,28 @@ var __oj_select_one_metadata =
           newVal.push(valueOptions[i].value);
         }
 
-        if (!oj.Object.compareValues(newVal, value)) {
+        if (oj.Object.compareValues(newVal, value)) {
+          //  - lov does not show the value-option label when it's updated later
+          // if the value is the same, we still need to update display label
+          if (nativeRender === true) {
+            var s = 0;
+            ojContext.element.find('option').each(function () {
+              if (this.selected) {
+                var label = _ComboUtils.getLabel(valueOptions[s]);
+                // eslint-disable-next-line eqeqeq
+                if (this.text != label) {
+                  $(this).text(label);
+                }
+                s += 1;
+              }
+            });
+          } else if (nativeRender === false) {
+            var context = ojContext.select || ojContext.combobox;
+            if (context && updateLabel) {
+              context._updateSelection(valueOptions);
+            }
+          }
+        } else {
           _ComboUtils._forceSetValue(ojContext, newVal);
         }
       }
@@ -1763,14 +1824,36 @@ var __oj_select_one_metadata =
       }
     },
 
-    //  - resetting value when value-option and placeholder are set throws exception
-    getValueOptionsForPlaceholder: function (multiple) {
-      return multiple ? [] : {};
+    // whether placeholder is specified
+    isPlaceholderSpecified: function (options) {
+      return typeof options.placeholder === 'string';
     },
 
+    //  - resetting value when value-option and placeholder are set throws exception
+    getFixupValueOptionsForPlaceholder: function (multiple) {
+      return multiple ? [] : { value: null, label: null };
+    },
+
+    // if placeholder is specified, in addition to the normalized valueOptions format
+    // (multiple: [], single: {value: null, label: null}, the valueOption(s) recognized in
+    // this method also can be used in init or set
+    // multiple: null, undefiend and []
+    // single: null, undefined, {}, {value:null} and {value: null, label: null}
     isValueOptionsForPlaceholder: function (multiple, valOpts) {
-      return (valOpts == null) || oj.Object.compareValues(valOpts,
-             _ComboUtils.getValueOptionsForPlaceholder(multiple));
+      return (valOpts == null) || (!multiple && valOpts.value == null) ||
+        oj.Object.compareValues(valOpts, _ComboUtils.getFixupValueOptionsForPlaceholder(multiple));
+    },
+
+    // return normalized valueOption(s) if placeholder is selected
+    // otherwise return @parm valOpts
+    getValueOptionsForPlaceholder: function (ojContext, valOpts) {
+      var multiple = ojContext.multiple;
+      if (ojContext._IsCustomElement() && _ComboUtils.isPlaceholderSpecified(ojContext.options) &&
+          _ComboUtils.isValueOptionsForPlaceholder(multiple, valOpts)) {
+        // eslint-disable-next-line no-param-reassign
+        valOpts = _ComboUtils.getFixupValueOptionsForPlaceholder(multiple);
+      }
+      return valOpts;
     },
 
     getValueForPlaceholder: function (multiple) {
@@ -2415,6 +2498,11 @@ var __oj_select_one_metadata =
     },
 
     // _ComboUtils
+    // Readonly support for the custom element only
+    isReadonly: function (widget) {
+      return widget._IsCustomElement() && widget.options.readOnly;
+    },
+
     /*
      * Produces a query function that works with a remote data
      */
@@ -2754,16 +2842,16 @@ var __oj_select_one_metadata =
           }
           this._initSelection(valOpts);
         }
-        var disabled = opts.element.prop('disabled');
-        if (disabled === undefined) {
-          disabled = false;
-        }
-        this._enable(!disabled);
         var readonly = opts.element.prop('readonly');
         if (readonly === undefined) {
           readonly = false;
         }
         this._readonly(readonly);
+        var disabled = opts.element.prop('disabled');
+        if (disabled === undefined) {
+          disabled = false;
+        }
+        this._enable(!disabled);
         // Calculate size of scrollbar
         _ComboUtils.scrollBarDimensions = _ComboUtils.scrollBarDimensions ||
                                           _ComboUtils.measureScrollbar();
@@ -2774,6 +2862,54 @@ var __oj_select_one_metadata =
         }
 
         _ComboUtils.addDataProviderEventListeners(opts.ojContext);
+
+        // Readonly support
+        this.applyReadonlyState();
+      },
+
+      // _AbstractOjChoice
+      // Readonly support
+      applyReadonlyState: function () {
+        var $content = this.ojContext._GetContentElement();
+        if (_ComboUtils.isReadonly(this.ojContext)) {
+          this.container.addClass('oj-read-only');
+          if (this._classNm === 'oj-combobox') {
+            if (this.ojContext.multiple) {
+              $content = null;
+              this.selection.attr('tabindex', '0');
+              this.selection.attr('aria-labelledby',
+                oj.EditableValueUtils.getOjLabelId($(this.ojContext.OuterWrapper),
+                                                   this.ojContext.uuid));
+            } else {
+              $content.attr('readonly', true);
+            }
+          } else if (this._classNm === 'oj-select') {
+            $content.attr('aria-readonly', 'true');
+          }
+          if ($content) {
+            $content.removeAttr('role');
+            $content.removeAttr('aria-expanded');
+          }
+        } else {
+          this.container.removeClass('oj-read-only');
+          if (this._classNm === 'oj-combobox') {
+            if (this.ojContext.multiple) {
+              $content = null;
+              this.selection.removeAttr('tabindex');
+              this.selection.removeAttr('aria-labelledby');
+            } else {
+              $content.removeAttr('readonly', true);
+            }
+          } else if (this._classNm === 'oj-select') {
+            $content.removeAttr('aria-readonly');
+          }
+          if ($content) {
+            $content.attr('role', 'combobox');
+            $content.attr('aria-expanded', 'false');
+          }
+        }
+
+        this._enableInterface();
       },
 
       // _AbstractOjChoice
@@ -3035,9 +3171,26 @@ var __oj_select_one_metadata =
                 // cannot be non-function
                 optionRenderer = null;
               }
-              if (this.opts.ojContext._WrapCustomElementRenderer) {
+
+              if (this.opts.ojContext._IsCustomElement() && optionRenderer) {
                 // update renderer for custom element format
-                optionRenderer = this.opts.ojContext._WrapCustomElementRenderer(optionRenderer);
+                var origRenderer = optionRenderer;
+                optionRenderer = function (context) {
+                  var obj = origRenderer(context);
+
+                  // New interface is for the renderer to return oj-option or oj-optgroup element
+                  if (obj && (obj.tagName === 'OJ-OPTION' || obj.tagName === 'OJ-OPTGROUP')) {
+                    // Add the data-oj-binding-provider attribute if it doesn't have one so that it will be upgraded
+                    if (!obj.hasAttribute('data-oj-binding-provider')) {
+                      obj.setAttribute('data-oj-binding-provider', 'none');
+                    }
+
+                    return obj;
+                  }
+
+                  // Maintain backward compatibility with old interface
+                  return obj && obj.insert ? obj.insert : null;
+                };
               }
 
               populate = function (resultsParent, results, container, depth, showPlaceholder) {
@@ -3123,6 +3276,7 @@ var __oj_select_one_metadata =
                 };
 
                 var createLabelContent = function (labelNode, _result) {
+                  var contentNode;
                   if (optionRenderer) {
                     var context = {
                       index: i,
@@ -3147,6 +3301,7 @@ var __oj_select_one_metadata =
                       if (content.parentNode === null
                         || content.parentNode instanceof DocumentFragment) {
                         labelNode.get(0).appendChild(content); // @HTMLUpdateOK
+                        contentNode = content;
                       }
                     }
                   } else {
@@ -3158,6 +3313,8 @@ var __oj_select_one_metadata =
                   }
 
                   highlightLabelNode(labelNode);
+
+                  return contentNode;
                 };
 
                 //  - ojselect does not show placeholder text when data option is specified
@@ -3232,8 +3389,25 @@ var __oj_select_one_metadata =
 
                     // append label to node
                     if (!isList) {
-                      createLabelContent(label, result);
+                      var content = createLabelContent(label, result);
                       node.append(label); // @HTMLUpdateOK
+
+                      if (content && ((content.tagName === 'OJ-OPTION') || (content.tagName === 'OJ-OPTGROUP'))) {
+                        // Update the disabled state on ancestors
+                        if (content.getAttribute('disabled')) {
+                          node.removeClass('oj-listbox-result-selectable');
+                          node.addClass('oj-listbox-result-unselectable oj-disabled');
+                          label.attr('aria-disabled', 'true');
+                        }
+
+                        // Create text for oj-optgroup
+                        if (content.tagName === 'OJ-OPTGROUP' && content.hasAttribute('label')) {
+                          // Insert a text node for the label attribute
+                          var labelText = content.getAttribute('label');
+                          var textNode = document.createTextNode(labelText);
+                          content.insertBefore(textNode, content.firstChild);
+                        }
+                      }
                     }
 
                     // process children
@@ -3520,14 +3694,18 @@ var __oj_select_one_metadata =
 
       // _AbstractOjChoice
       _enableInterface: function () {
-        var enabled = this._enabled && !this._readonly;
-        var disabled = !enabled;
+        // Readonly support
+        var enabled = this._enabled &&
+            !(_ComboUtils.isReadonly(this.ojContext) || this._readonly);
 
         if (enabled === this.enabledInterface) {
           return false;
         }
 
-        this.container.toggleClass('oj-disabled', disabled);
+        // Readonly support
+        if (!_ComboUtils.isReadonly(this.ojContext)) {
+          this.container.toggleClass('oj-disabled', !enabled);
+        }
         this.close();
         this.enabledInterface = enabled;
 
@@ -3545,7 +3723,8 @@ var __oj_select_one_metadata =
         }
         this._enabled = enabled;
 
-        this.opts.element.prop('disabled', !enabled);
+        this.opts.element.prop('disabled', !(enabled || _ComboUtils.isReadonly(this.ojContext)));
+
         this.container.toggleClass('oj-enabled', enabled);
 
         this._enableInterface();
@@ -3643,7 +3822,9 @@ var __oj_select_one_metadata =
         if (this._opened()) {
           return false;
         }
-        if (this._enabled === false || this._readonly === true) {
+        // Readonly support
+        if (this._enabled === false || _ComboUtils.isReadonly(this.ojContext) ||
+            this._readonly === true) {
           return false;
         }
 
@@ -4418,7 +4599,7 @@ var __oj_select_one_metadata =
         if (!this._skipSetValueOptions) {
           //  - resetting value when value-option and placeholder are set throws exception
           if (_ComboUtils.isValueForPlaceholder(multiple, val) && this._getPlaceholder() !== null) {
-            this.setValOpts(_ComboUtils.getValueOptionsForPlaceholder(multiple));
+            this.setValOpts(_ComboUtils.getFixupValueOptionsForPlaceholder(multiple));
           } else {
             var queryResult = _ComboUtils.getLastQueryResult(this);
             var match;
@@ -4466,15 +4647,21 @@ var __oj_select_one_metadata =
       setValOpts: function (valOpts) {
         var ojContext = this.ojContext;
         var multiple = ojContext.multiple;
+        var fixupValOpts = _ComboUtils.getFixupValueOptionsForPlaceholder(multiple);
+        var oldValOpts = multiple ? ojContext.options.valueOptions : ojContext.options.valueOption;
 
-        //  -reseting value when value-option and placeholder are set throws exception
+        // dont fire option change event if the valueOption(s) already represents a placeholder
         if (_ComboUtils.isValueOptionsForPlaceholder(multiple, valOpts) &&
-            this._getPlaceholder() !== null) {
-          // eslint-disable-next-line no-param-reassign
-          valOpts = _ComboUtils.getValueOptionsForPlaceholder(multiple);
+            _ComboUtils.isValueOptionsForPlaceholder(multiple, oldValOpts) &&
+            _ComboUtils.isPlaceholderSpecified(ojContext.options)) {
+          if (multiple) {
+            ojContext.options.valueOptions = fixupValOpts;
+          } else {
+            ojContext.options.valueOption = fixupValOpts;
+          }
+        } else if (!oj.Object.compareValues(valOpts, this.getValOpts())) {
+          _ComboUtils.setValueOptions(ojContext, valOpts);
         }
-        _ComboUtils.setValueOptions(ojContext, valOpts);
-
         if (multiple) {
           this.opts.valueOptions = valOpts;
         } else {
@@ -4638,7 +4825,7 @@ var _AbstractSingleChoice = _ComboUtils.clazz(_AbstractOjChoice,
     // _AbstractSingleChoice
     _enableInterface: function () {
       if (_AbstractSingleChoice.superclass._enableInterface.apply(this, arguments)) {
-        this.search.prop('disabled', !this._isInterfaceEnabled());
+        this.search.prop('disabled', !(this._isInterfaceEnabled() || _ComboUtils.isReadonly(this.ojContext)));
       }
     },
 
@@ -5241,8 +5428,8 @@ var _AbstractSingleChoice = _ComboUtils.clazz(_AbstractOjChoice,
       var val;
       var valopt = data;
       if (this.id(data).length === 0) {
-        val = this.ojContext._IsCustomElement() ? '' : [];
-        valopt = [];
+        val = this.ojContext._IsCustomElement() ? _ComboUtils.getValueForPlaceholder(false) : [];
+        valopt = _ComboUtils.getFixupValueOptionsForPlaceholder(false);
       } else {
         val = this.id(data);
       }
@@ -5370,9 +5557,7 @@ var _AbstractSingleChoice = _ComboUtils.clazz(_AbstractOjChoice,
           value = data.label ? data.label : '';
         }
 
-        // validate the value
-        var parsed = this.ojContext._Validate(value, null, null);
-        if (parsed === undefined || !this.ojContext.isValid()) {
+        if (!this.ojContext.isValid()) {
           return;
         }
 
@@ -5855,8 +6040,10 @@ var _OjSingleSelect = _ComboUtils.clazz(_AbstractSingleChoice,
       if (this.text.text() === '') {
         // In the case when the selected option or oj-option has empty text for label
         // but has valid value, we don't want to clear the value out -- see 
-        if (this.datalist && this.selection.data(this._elemNm)
-            && this.selection.data(this._elemNm).value) {
+        //  - lov does not show the value-option label when it's updated later
+        if ((this.datalist && this.selection.data(this._elemNm)
+             && this.selection.data(this._elemNm).value) ||
+            !_ComboUtils.isValueForPlaceholder(false, this.ojContext.options.value)) {
           return false;
         }
 
@@ -6441,7 +6628,7 @@ var _AbstractMultiChoice = _ComboUtils.clazz(_AbstractOjChoice,
 
     _enableInterface: function () {
       if (_AbstractMultiChoice.superclass._enableInterface.apply(this, arguments)) {
-        this.search.prop('disabled', !this._isInterfaceEnabled());
+        this.search.prop('disabled', !(this._isInterfaceEnabled() || _ComboUtils.isReadonly(this.ojContext)));
       }
     },
 
@@ -6615,9 +6802,14 @@ var _AbstractMultiChoice = _ComboUtils.clazz(_AbstractOjChoice,
 
       formatted = this.opts.formatSelection(data);
       if (formatted !== undefined) {
+        var selectedLabelId = this._classNm + '-selected-choice-label-' + _ComboUtils.nextUid();
         choice.find('div').addClass(this._classNm + '-selected-choice-label').text(formatted);
         choice.find('.' + this._classNm + '-clear-entry').attr('aria-label', formatted + ' remove');
         choice.attr('valueText', formatted);
+        var describedById = this._contentElement.attr('aria-describedBy');
+        if (this._classNm === 'oj-combobox') {
+          this.selection.attr('aria-describedBy', (describedById ? describedById + ' ' : '') + selectedLabelId);
+        }
       }
       if (enableChoice) {
         choice.find('.' + this._classNm + '-clear-entry')
@@ -7181,8 +7373,8 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
         // only 'label' will be present in the data object.
         value = data.label ? data.label : [];
       }
-
-      var parsed = this.ojContext._Validate(value, event, options);
+      // inputSearch is a widget component, and only has synchronous validation
+      var parsed = this.ojContext._AsyncValidate(value, event, options);
       if (parsed === undefined || !this.ojContext.isValid()) {
         return;
       }
@@ -7347,7 +7539,7 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
  * All rights reserved.
  */
 
-/* global _ComboUtils:false, _OjMultiCombobox:false, _OjSingleCombobox:false */
+/* global _ComboUtils:false, _OjMultiCombobox:false, _OjSingleCombobox:false, Promise:false */
 
   /**
    * @ojcomponent oj.ojComboboxOne
@@ -7358,7 +7550,8 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
    * @ojrole combobox
    * @ojsignature [{
    *                target: "Type",
-   *                value: "class ojComboboxOne<K, D> extends ojCombobox<any, ojComboboxOneSettableProperties<K, D>, any, string>"
+   *                value: "class ojComboboxOne<K, D> extends ojCombobox<any, ojComboboxOneSettableProperties<K, D>, any, string>",
+   *                genericParameters: [{"name": "K", "description": "Type of key of the dataprovider"}, {"name": "D", "description": "Type of data from the dataprovider"}]
    *               },
    *               {
    *                target: "Type",
@@ -7431,7 +7624,8 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
    * @ojrole combobox
    * @ojsignature [{
    *                target: "Type",
-   *                value: "class ojComboboxMany<K, D> extends ojCombobox<Array<any>|null, ojComboboxManySettableProperties<K, D>, Array<any>|null, string>"
+   *                value: "class ojComboboxMany<K, D> extends ojCombobox<Array<any>|null, ojComboboxManySettableProperties<K, D>, Array<any>|null, string>",
+   *                genericParameters: [{"name": "K", "description": "Type of key of the dataprovider"}, {"name": "D", "description": "Type of data from the dataprovider"}]
    *               },
    *               {
    *                target: "Type",
@@ -8317,13 +8511,16 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
        * @instance
        * @type {null|function(Object):Object}
        * @ojsignature { target: "Type",
-       *                value: "?((param0: oj.ojCombobox.OptionContext) => {insert: Element}|undefined)|null",
+       *                value: "?((param0: oj.ojCombobox.OptionContext) => Element)|null",
        *                jsdocOverride: true}
        * @default null
        * @example <caption>Initialize the Combobox with a renderer:</caption>
        * &lt;oj-combobox-one option-renderer="[[optionRenderer]]">&lt;/oj-combobox-one>
-       * @example var optionRenderer = function(optionContext) {
-       *            return optionContext['data']['FIRST_NAME'];
+       * @example var optionRenderer = function(context) {
+       *            var ojOption = document.createElement('oj-option');
+       *            // Set the textContent or append other child nodes
+       *            ojOption.textContent = context.data['FIRST_NAME'] + ' ' + context.data['LAST_NAME'];
+       *            return ojOption;
        *          };
        */
       /**
@@ -8335,24 +8532,32 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
        * @instance
        * @type {null|function(Object):Object}
        * @ojsignature { target: "Type",
-       *                value: "?((param0: oj.ojCombobox.OptionContext) => {insert: Element}|undefined)|null",
+       *                value: "?((param0: oj.ojCombobox.OptionContext) => Element)|null",
        *                jsdocOverride: true}
        * @default null
        * @example <caption>Initialize the Combobox with a renderer:</caption>
        * &lt;oj-combobox-many option-renderer="[[optionRenderer]]">&lt;/oj-combobox-many>
-       * @example var optionRenderer = function(optionContext) {
-       *            return optionContext['data']['FIRST_NAME'];
+       * @example var optionRenderer = function(context) {
+       *            var ojOption = document.createElement('oj-option');
+       *            // Set the textContent or append other child nodes
+       *            ojOption.textContent = context.data['FIRST_NAME'] + ' ' + context.data['LAST_NAME'];
+       *            return ojOption;
        *          };
        */
       /**
-       * The renderer function that renders the content of an each option.
-       * The function should return one of the following:
+       * The renderer function that renders the content of each option.
+       * The function should return an oj-option element (for leaf option) or an oj-optgroup element (for group option).
+       * <p>It is not necessary to set the "value" attribute on the oj-option as it is available from the options data.</p>
+       * <p><b>
+       * Note: Prior to version 6.1.0, the function could also return one of the following:
        * <ul>
        *   <li>An Object with the following property:
        *     <ul><li>insert: HTMLElement - A DOM element representing the content of the option.</li></ul>
        *   </li>
        *   <li>undefined: If the developer chooses to manipulate the option content directly, the function should return undefined.</li>
        * </ul>
+       * This is deprecated and support may be removed in the future.
+       * </b></p>
        *
        * <p>The <code class="prettyprint">option-renderer</code> decides only
        * how the options' content has to be rendered in the drop down.
@@ -8624,6 +8829,54 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
       * @ojfragment comboboxCommonRequired
       */
         required: false,
+
+     /**
+       * Dictates element's readonly state.
+       *
+       * @example <caption>Initialize the combobox with the <code class="prettyprint">readonly</code> attribute:</caption>
+       * &lt;oj-some-element readonly>&lt;/oj-some-element>
+       *
+       * @example <caption>Get or set the <code class="prettyprint">readonly</code> property after initialization:</caption>
+       * // getter
+       * var ro = myComp.readonly;
+       *
+       * // setter
+       * myComp.readonly = false;
+       *
+       * @name readOnly
+       * @alias readonly
+       * @expose
+       * @ojshortdesc Specifies whether a value is readonly
+       * @access public
+       * @instance
+       * @memberof oj.ojComboboxOne
+       * @type {boolean}
+       * @default false
+       */
+      /**
+       * Dictates element's readonly state.
+       *
+       * @example <caption>Initialize the combobox with the <code class="prettyprint">readonly</code> attribute:</caption>
+       * &lt;oj-some-element readonly>&lt;/oj-some-element>
+       *
+       * @example <caption>Get or set the <code class="prettyprint">readonly</code> property after initialization:</caption>
+       * // getter
+       * var ro = myComp.readonly;
+       *
+       * // setter
+       * myComp.readonly = false;
+       *
+       * @name readOnly
+       * @alias readonly
+       * @expose
+       * @ojshortdesc Specifies whether a value is readonly
+       * @access public
+       * @instance
+       * @memberof oj.ojComboboxMany
+       * @type {boolean}
+       * @default false
+       */
+        readOnly: false,
 
      /**
       * {@ojinclude "name":"comboboxCommonValidators"}
@@ -9170,12 +9423,24 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
 
       _setup: function () {
         var opts = {};
+        var multi = this.multiple;
 
         opts.element = this.element;
         opts.ojContext = this;
+
+        // fixup valueOption(s) if placeholder is selected
+        if (_ComboUtils.isValueForPlaceholder(multi, this.options.value)) {
+          if (multi) {
+            this.options.valueOptions =
+              _ComboUtils.getValueOptionsForPlaceholder(this, this.options.valueOptions);
+          } else {
+            this.options.valueOption =
+              _ComboUtils.getValueOptionsForPlaceholder(this, this.options.valueOption);
+          }
+        }
         opts = $.extend(this.options, opts);
 
-        this.combobox = this.multiple ? new _OjMultiCombobox() : new _OjSingleCombobox();
+        this.combobox = multi ? new _OjMultiCombobox() : new _OjSingleCombobox();
 
         this.combobox._init(opts);
         this._refreshRequired(this.options.required);
@@ -9266,7 +9531,7 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
               ((value == null || (value && value.length === 0)) ||
                (this._IsCustomElement() && _ComboUtils.isValueForPlaceholder(multi, value)))) {
             _ComboUtils.setValueOptions(this,
-                                        _ComboUtils.getValueOptionsForPlaceholder(multi));
+                                        _ComboUtils.getFixupValueOptionsForPlaceholder(multi));
             this._super(key, value, flags);
             return;
           }
@@ -9276,24 +9541,24 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
         if (key === 'options') {
           _ComboUtils.removeDataProviderEventListeners(this);
           _ComboUtils.clearDataProviderWrapper(this);
-        } else if ((key === 'valueOption' && multi !== true) ||
-                   (key === 'valueOptions' && multi === true)) {
-          //  - resetting value when value-option and placeholder are set throws exception
-          this.combobox.setValOpts(null);
+        } else if (key === 'valueOption' && multi !== true) {
+          // fixup valueOption
+          value = _ComboUtils.getValueOptionsForPlaceholder(this, value);
+          //  - unable to clear values on lov value-option, to get the placeholder to show
+          this.combobox.opts.valueOption = value;
+        } else if ((key === 'valueOptions' && multi === true)) {
+          // fixup valueOptions
+          value = _ComboUtils.getValueOptionsForPlaceholder(this, value);
+          //  - unable to clear values on lov value-option, to get the placeholder to show
+          this.combobox.opts.valueOptions = value;
         }
         this._super(key, value, flags);
 
         //  - need to be able to specify the initial value of select components bound to dprv
         if (key === 'valueOption' && multi !== true) {
-          if (this.combobox) {
-            this.combobox.opts.valueOption = value;
-          }
-          _ComboUtils.syncValueWithValueOption(this, value, this.options.value);
+          _ComboUtils.syncValueWithValueOption(this, value, this.options.value, false);
         } else if (key === 'valueOptions' && multi === true) {
-          if (this.combobox) {
-            this.combobox.opts.valueOptions = value;
-          }
-          _ComboUtils.syncValueWithValueOptions(this, value, this.options.value);
+          _ComboUtils.syncValueWithValueOptions(this, value, this.options.value, false);
         } else if (key === 'value') {
           // update valueOptions
           _ComboUtils.updateValueOptions(this.combobox);
@@ -9311,6 +9576,9 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
           } else {
             this.combobox._enable();
           }
+          // Readonly support
+        } else if (key === 'readOnly') {
+          this.combobox.applyReadonlyState();
         }
       },
       /**
@@ -9406,45 +9674,6 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
       },
 
     /**
-     * <ol>
-     * <li>All messages are cleared, including custom messages added by the app. </li>
-     * <li>If no converter is present then processing continues to next step. If a converter is
-     * present, the UI value is first converted (i.e., parsed). If there is a parse error then
-     * the messages are shown.</li>
-     * <li>If there are no validators setup for the component the <code class="prettyprint">value</code>
-     * option is updated using the display value. Otherwise all
-     * validators are run in sequence using the parsed value from the previous step. The implicit
-     * required validator is run first if the component is marked required. When a validation error is
-     * encountered it is remembered and the next validator in the sequence is run. </li>
-     * <li>At the end of validation if there are errors, the messages are shown.
-     * If there were no errors, then the
-     * <code class="prettyprint">value</code> option is updated.</li>
-     * </ol>
-     *
-     * @example <caption>Validate component using its current value.</caption>
-     * myComp.validate();
-     *
-     * @example <caption>Validate component and use the Promise's resolved state.</caption>
-     * myComp.validate().then(
-     *  function(result) {
-     *    if(result === "valid")
-     *    {
-     *      submitForm();
-     *    }
-     *  });
-     * @return {Promise} Promise resolves to "valid" if there were no converter parse errors and
-     * the component passed all validations.
-     * The Promise resolves to "invalid" if there were converter parse errors or
-     * if there were validation errors.
-     * @method
-     * @access public
-     * @expose
-     * @instance
-     * @memberof oj.ojCombobox
-     * @ojstatus preview
-     */
-      validate: oj.EditableValueUtils.validate,
-      /**
        * Parses the value using the converter set and returns the parsed value. If parsing fails the
        * error is written into the element
        *
@@ -9537,37 +9766,61 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
       },
 
     /**
-     * Returns true if validation passes, false otherwise
+     * <ol>
+     * <li>All messages are cleared, including custom messages added by the app. </li>
+     * <li>If no converter is present then processing continues to next step. If a converter is
+     * present, the UI value is first converted (i.e., parsed). If there is a parse error then
+     * the messages are shown.</li>
+     * <li>If there are no validators setup for the component the <code class="prettyprint">value</code>
+     * option is updated using the display value. Otherwise all
+     * validators are run in sequence using the parsed value from the previous step. The implicit
+     * required validator is run first if the component is marked required. When a validation error is
+     * encountered it is remembered and the next validator in the sequence is run. </li>
+     * <li>At the end of validation if there are errors, the messages are shown.
+     * If there were no errors, then the
+     * <code class="prettyprint">value</code> option is updated.</li>
+     * </ol>
      *
-     * @return {boolean} true if validation passes, false otherwise
-     * @memberof! oj.ojCombobox
-     * @override
-     * @protected
-     * @instance
-     * @ignore
-     */
-      _ValidateReturnBoolean: function () {
-        var displayValueForSetValue = this._getDisplayValueForSetValue();
-
-        return this._SetValueReturnBoolean(displayValueForSetValue, null,
-          this._VALIDATE_METHOD_OPTIONS);
-      },
-
-    /**
-     * Returns Promise that resolves to "valid" if validation passes, "invalid" otherwise
+     * @example <caption>Validate component using its current value.</caption>
+     * myComp.validate();
      *
-     * @return {Promise} that resolves to "valid" if validation passes, "invalid" otherwise
-     * @memberof! oj.ojCombobox
-     * @override
-     * @protected
+     * @example <caption>Validate component and use the Promise's resolved state.</caption>
+     * myComp.validate().then(
+     *  function(result) {
+     *    if(result === "valid")
+     *    {
+     *      submitForm();
+     *    }
+     *  });
+     * @return {Promise} Promise resolves to "valid" if there were no converter parse errors and
+     * the component passed all validations.
+     * The Promise resolves to "invalid" if there were converter parse errors or
+     * if there were validation errors.
+     * @method
+     * @access public
+     * @expose
      * @instance
-     * @ignore
+     * @memberof oj.ojCombobox
+     * @ojstatus preview
      */
-      _ValidateReturnPromise: function () {
+      validate: function () {
         var displayValueForSetValue = this._getDisplayValueForSetValue();
+        var returnValue;
 
-        return this._SetValueReturnPromise(displayValueForSetValue, null,
+        // returns Promise that resolves to true|false or boolean
+        returnValue = this._SetValue(displayValueForSetValue, null,
           this._VALIDATE_METHOD_OPTIONS);
+
+        if (this._IsCustomElement()) {
+          if (!(returnValue instanceof Promise)) {
+            returnValue = Promise.resolve(returnValue ? 'valid' : 'invalid');
+          } else {
+            returnValue = returnValue.then(function (booleanSetValueReturn) {
+              return Promise.resolve(booleanSetValueReturn ? 'valid' : 'invalid');
+            });
+          }
+        }
+        return returnValue;
       },
 
       /**
@@ -9622,11 +9875,6 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
         }
         return newValue;
       },
-
-      // TODO: Jeanne. Need a _ValidateReturnPromise function as well. And I need a test, because
-      // right now we should have a test that fails, but ojcombobox tests all pass, and so do
-      // ojformcontrols. so we must not have a test.
-
 
       _getDropdown: function () {
         if (this.combobox && this.combobox._opened()) {
@@ -11119,7 +11367,7 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
           newValue = [displayValue];
         }
 
-        return this._SetValueReturnBoolean(newValue, null, this._VALIDATE_METHOD_OPTIONS);
+        return this._SetValue(newValue, null, this._VALIDATE_METHOD_OPTIONS);
       },
 
     /**
@@ -11461,7 +11709,7 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
  * All rights reserved.
  */
 
-/* global _ComboUtils:false, _OjMultiSelect:false, _OjSingleSelect:false, Components:false, Logger:false, ThemeUtils:false */
+/* global _ComboUtils:false, _OjMultiSelect:false, _OjSingleSelect:false, Components:false, Logger:false, ThemeUtils:false, Promise:false */
 
   /**
    * @ojcomponent oj.ojSelectOne
@@ -11472,7 +11720,8 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
    * @ojrole combobox
    * @ojsignature [{
    *                target: "Type",
-   *                value: "class ojSelectOne<K, D> extends ojSelect<any, ojSelectOneSettableProperties<K, D>>"
+   *                value: "class ojSelectOne<K, D> extends ojSelect<any, ojSelectOneSettableProperties<K, D>>",
+   *                genericParameters: [{"name": "K", "description": "Type of key of the dataprovider"}, {"name": "D", "description": "Type of data from the dataprovider"}]
    *               },
    *               {
    *                target: "Type",
@@ -11547,7 +11796,8 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
    * @ojrole combobox
    * @ojsignature [{
    *                target: "Type",
-   *                value: "class ojSelectMany<K, D> extends ojSelect<Array<any>|null, ojSelectManySettableProperties<K, D>>"
+   *                value: "class ojSelectMany<K, D> extends ojSelect<Array<any>|null, ojSelectManySettableProperties<K, D>>",
+   *                genericParameters: [{"name": "K", "description": "Type of key of the dataprovider"}, {"name": "D", "description": "Type of data from the dataprovider"}]
    *               },
    *               {
    *                target: "Type",
@@ -11793,13 +12043,16 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
        * @instance
        * @type {null|function(Object):Object}
        * @ojsignature { target: "Type",
-       *                value: "?((param0: oj.ojSelect.OptionContext) => {insert: Element}|undefined)|null",
+       *                value: "?((param0: oj.ojSelect.OptionContext) => Element)|null",
        *                jsdocOverride: true}
        * @default null
        * @example <caption>Initialize the select with a renderer:</caption>
        * &lt;oj-select-one option-renderer="[[optionRenderer]]">&lt;/oj-select-one>
-       * @example var optionRenderer = function(optionContext) {
-       *            return optionContext['data']['FIRST_NAME'];
+       * @example var optionRenderer = function(context) {
+       *            var ojOption = document.createElement('oj-option');
+       *            // Set the textContent or append other child nodes
+       *            ojOption.textContent = context.data['FIRST_NAME'] + ' ' + context.data['LAST_NAME'];
+       *            return ojOption;
        *          };
        */
       /**
@@ -11811,24 +12064,32 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
        * @instance
        * @type {null|function(Object):Object}
        * @ojsignature { target: "Type",
-       *                value: "?((param0: oj.ojSelect.OptionContext) => {insert: Element}|undefined)|null",
+       *                value: "?((param0: oj.ojSelect.OptionContext) => Element)|null",
        *                jsdocOverride: true}
        * @default null
        * @example <caption>Initialize the Select with a renderer:</caption>
        * &lt;oj-select-many option-renderer="[[optionRenderer]]">&lt;/oj-select-many>
-       * @example var optionRenderer = function(optionContext) {
-       *            return optionContext['data']['FIRST_NAME'];
+       * @example var optionRenderer = function(context) {
+       *            var ojOption = document.createElement('oj-option');
+       *            // Set the textContent or append other child nodes
+       *            ojOption.textContent = context.data['FIRST_NAME'] + ' ' + context.data['LAST_NAME'];
+       *            return ojOption;
        *          };
        */
       /**
        * The renderer function that renders the content of each option.
-       * The function should return one of the following:
+       * The function should return an oj-option element (for leaf option) or an oj-optgroup element (for group option).
+       * <p>It is not necessary to set the "value" attribute on the oj-option as it is available from the options data.</p>
+       * <p><b>
+       * Note: Prior to version 6.1.0, the function could also return one of the following:
        * <ul>
        *   <li>An Object with the following property:
        *     <ul><li>insert: HTMLElement - A DOM element representing the content of the option.</li></ul>
        *   </li>
        *   <li>undefined: If the developer chooses to manipulate the option content directly, the function should return undefined.</li>
        * </ul>
+       * This is deprecated and support may be removed in the future.
+       * </b></p>
        *
        * <p>The <code class="prettyprint">option-renderer</code> decides only
        * how the options' content has to be rendered in the drop down.
@@ -12353,6 +12614,54 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
         required: false,
 
       /**
+       * Dictates element's readonly state.
+       *
+       * @example <caption>Initialize the select with the <code class="prettyprint">readonly</code> attribute:</caption>
+       * &lt;oj-some-element readonly>&lt;/oj-some-element>
+       *
+       * @example <caption>Get or set the <code class="prettyprint">readonly</code> property after initialization:</caption>
+       * // getter
+       * var ro = myComp.readonly;
+       *
+       * // setter
+       * myComp.readonly = false;
+       *
+       * @name readOnly
+       * @alias readonly
+       * @expose
+       * @ojshortdesc Specifies whether a value is readonly
+       * @access public
+       * @instance
+       * @memberof oj.ojSelectOne
+       * @type {boolean}
+       * @default false
+       */
+      /**
+       * Dictates element's readonly state.
+       *
+       * @example <caption>Initialize the select with <code class="prettyprint">readonly</code> attribute:</caption>
+       * &lt;oj-some-element readonly>&lt;/oj-some-element>
+       *
+       * @example <caption>Get or set the <code class="prettyprint">readonly</code> property after initialization:</caption>
+       * // getter
+       * var ro = myComp.readonly;
+       *
+       * // setter
+       * myComp.readonly = false;
+       *
+       * @name readOnly
+       * @alias readonly
+       * @expose
+       * @ojshortdesc Specifies whether a value is readonly
+       * @access public
+       * @instance
+       * @memberof oj.ojSelectMany
+       * @type {boolean}
+       * @default false
+       */
+        readOnly: false,
+
+      /**
        * {@ojinclude "name":"selectCommonRenderMode"}
        * @example <caption>Set the <code class="prettyprint">render-mode</code> attribute:</caption>
        * &lt;oj-select-one render-mode="native">&lt;/oj-select-one>
@@ -12604,7 +12913,8 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
         if (this._IsCustomElement()) {
           var defaultLabelId = this.uuid + '_Label';
           var labelId = oj.EditableValueUtils.getOjLabelId($(this.OuterWrapper), defaultLabelId);
-          if (labelId) {
+          // Readonly support
+          if (labelId && (!this.multiple || !_ComboUtils.isReadonly(this))) {
             this._GetContentElement().attr('aria-labelledby', labelId);
           }
         }
@@ -12708,11 +13018,11 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
 
         // - ie11 multiple select with keyboard fails
         if (!this._IsCustomElement() || this.multiple === true) {
-          this._SetValueReturnBoolean(arr, event, { doValueChangeCheck: false,
+          this._SetValue(arr, event, { doValueChangeCheck: false,
             _context: { internalSet: true } });
           _ComboUtils.setValueOptions(this, arrValOpts);
         } else {
-          this._SetValueReturnBoolean(arr[0], event, { doValueChangeCheck: false,
+          this._SetValue(arr[0], event, { doValueChangeCheck: false,
             _context: { internalSet: true } });
           _ComboUtils.setValueOptions(this, arrValOpts[0]);
         }
@@ -12799,7 +13109,11 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
 
                       //  - select component binding broken in mobile
                       // need update the selected value property
-                      self.element[0].value = cval;
+                      // Note: setting multiple selected values causing
+                      // the selection to be cleared
+                      if (!self.multiple || cval.length === 1) {
+                        self.element[0].value = cval;
+                      }
                     }
                   }
                 }
@@ -12905,7 +13219,7 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
           selected = selectedVal;
         }
 
-        this._SetValueReturnBoolean(selected,
+        this._SetValue(selected,
                      null, { doValueChangeCheck: false,
                        _context: { internalSet: true, writeback: true },
                        changed: true,
@@ -12914,6 +13228,16 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
 
       // ojselect
       _setup: function () {
+        // fixup valueOption(s) if placeholder is selected
+        if (_ComboUtils.isValueForPlaceholder(this.multiple, this.options.value)) {
+          if (this.multiple) {
+            this.options.valueOptions =
+              _ComboUtils.getValueOptionsForPlaceholder(this, this.options.valueOptions);
+          } else {
+            this.options.valueOption =
+              _ComboUtils.getValueOptionsForPlaceholder(this, this.options.valueOption);
+          }
+        }
         //  - need to be able to specify the initial value of select components bound to dprv
         this._resolveValueOptionsLater = _ComboUtils.mergeValueAndValueOptions(this);
         if (this._isNative()) {
@@ -13061,7 +13385,7 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
      */
       _HasPlaceholderSet: function () {
       //  - an empty placeholder shows up if data changed after first binding
-        return typeof this.options.placeholder === 'string';
+        return _ComboUtils.isPlaceholderSpecified(this.options);
       },
 
     /**
@@ -13117,6 +13441,76 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
       },
 
     /**
+     * Updates display value.
+     * @override
+     * @protected
+     * @memberof! oj.ojSelect
+     */
+      _SetDisplayValue: function (displayValue) {
+      // native renderMode
+        if (this.select) {
+        //  - need to be able to specify the initial value of select components bound to dprv
+          if (!_ComboUtils.applyValueOptions(this.select, this.options)) {
+            this.select._initSelection();
+          }
+          this._resolveValueOptionsLater = false;
+        } else {
+          // if displayValue is null, let it default to 1st option or placeholder
+          // see demo pages: disable and placeholder
+          var opts;
+          if (displayValue == null) {
+            if (this._HasPlaceholderSet()) {
+              this.element[0].selectedIndex = 0;
+              this.element.addClass('oj-select-default');
+            }
+            // update valueOptions
+            if (this._resolveValueOptionsLater) {
+              //  - reseting value when value-option and placeholder are set
+              // throws exception
+              _ComboUtils.setValueOptions(this,
+                _ComboUtils.getFixupValueOptionsForPlaceholder(this.multiple));
+            }
+          } else {
+            //  - oj-select-one throws exception for mobile when selectedindex = -1 on refresh
+            var label = this._nativeFindLabel(displayValue);
+            if (label === null && !this.multiple) {
+              Logger.warn('JET select: selected value not found');
+              // default to 1st option if exists
+              if (this.element[0].options && this.element[0].options.length > 0) {
+                this.element[0].selectedIndex = 0;
+                // eslint-disable-next-line no-param-reassign
+                displayValue = this.element[0].value;
+                label = this.element[0].text;
+              } else {
+                label = String(displayValue);
+                this.element.val(displayValue);
+              }
+            } else {
+              this.element.val(displayValue);
+            }
+            // update valueOptions
+            if (this._resolveValueOptionsLater) {
+              if (this.multiple) {
+                // collect the selected values and labels
+                var s = 0;
+                opts = [];
+                this.element.find('option').each(function () {
+                  if (this.selected) {
+                    opts.push({ value: displayValue[s], label: this.text });
+                    s += 1;
+                  }
+                });
+              } else {
+                opts = { value: displayValue, label: label };
+              }
+              _ComboUtils.setValueOptions(this, opts);
+            }
+          }
+          this._resolveValueOptionsLater = false;
+        }
+      },
+
+    /**
      * <ol>
      * <li>All messages are cleared, including custom messages added by the app. </li>
      * <li>The implicit required validator is run first if the component
@@ -13146,85 +13540,9 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
      * @memberof oj.ojSelect
      * @ojstatus preview
      */
-      validate: oj.EditableValueUtils.validate,
+      validate: function () {
+        var returnValue;
 
-     /**
-     * Updates display value.
-     * @override
-     * @protected
-     * @memberof! oj.ojSelect
-     */
-      _SetDisplayValue: function (displayValue) {
-      // native renderMode
-        if (this.select) {
-        //  - need to be able to specify the initial value of select components bound to dprv
-          if (!_ComboUtils.applyValueOptions(this.select, this.options)) {
-            this.select._initSelection();
-          }
-          this._resolveValueOptionsLater = false;
-        } else {
-          // if displayValue is null, let it default to 1st option or placeholder
-          // see demo pages: disable and placeholder
-          var opts;
-          if (displayValue == null) {
-            if (this._HasPlaceholderSet()) {
-              this.element[0].selectedIndex = 0;
-              this.element.addClass('oj-select-default');
-            }
-            // update valueOptions
-            if (this._resolveValueOptionsLater) {
-              //  - reseting value when value-option and placeholder are set
-              // throws exception
-              _ComboUtils.setValueOptions(this,
-                _ComboUtils.getValueOptionsForPlaceholder(this.multiple));
-            }
-          } else {
-            //  - oj-select-one throws exception for mobile when selectedindex = -1 on refresh
-            var label = this._nativeFindLabel(displayValue);
-            if (label === null && !this.multiple) {
-              Logger.warn('JET select: selected value not found');
-              // default to 1st option if exists
-              if (this.element[0].options && this.element[0].options.length > 0) {
-                this.element[0].selectedIndex = 0;
-                // eslint-disable-next-line no-param-reassign
-                displayValue = this.element[0].value;
-                label = this.element[0].text;
-              } else {
-                label = String(displayValue);
-                this.element.val(displayValue);
-              }
-            } else {
-              this.element.val(displayValue);
-            }
-            // update valueOptions
-            if (this._resolveValueOptionsLater) {
-              if (this.multiple) {
-                var options = this.element[0].selectedOptions;
-                opts = [];
-                for (var i = 0; i < options.length; i++) {
-                  opts.push({ value: displayValue[i], label: options[i].text });
-                }
-              } else {
-                opts = { value: displayValue, label: label };
-              }
-              _ComboUtils.setValueOptions(this, opts);
-            }
-          }
-          this._resolveValueOptionsLater = false;
-        }
-      },
-
-    /**
-     * Returns true if validation passes, false otherwise
-     *
-     * @return {boolean} true if validation passes, false otherwise
-     * @memberof! oj.ojSelect
-     * @override
-     * @protected
-     * @instance
-     * @ignore
-     */
-      _ValidateReturnBoolean: function () {
         if (this.multiple === true) {
           var displayValue = this.select.search.val();
           var existingValue = [];
@@ -13239,38 +13557,24 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
             existingValue.push(displayValue);
             newValue = existingValue;
           }
-          return this._SetValueReturnBoolean(newValue, null, this._VALIDATE_METHOD_OPTIONS);
+          // _SetValue returns boolean when there is no async validator or
+          // converter, else it returns a Promise. Since ojselect has no validator or
+          // converter, this will always return true or false. validate needs to
+          // return a Promise if customElement.
+          returnValue = this._SetValue(newValue, null, this._VALIDATE_METHOD_OPTIONS);
         }
 
         //  - select needs implementation fixes...
         if (this.select) {
-          return this._SetValueReturnBoolean(
+          returnValue = this._SetValue(
           this.select.getVal(), null, this._VALIDATE_METHOD_OPTIONS);
         }
-
-        return true;
-      },
-
-    /**
-     * Returns a Promise that resolves to "valid" if validation passes, "invalid" otherwise
-     * jmw TODO: ojselect doesn't have validators or asyncValidators, so this will never be
-     * called. But what should I do about it?
-     * 1. set to oj.EVU's function. not so good an idea because we may miss a bug where it's
-     * being called when really it should never be called. An ok idea because code coverage
-     * would never be hit otherwise.
-     * 3. call _ValidateReturnBoolean wrapped in a Promise, and doc that this should never
-     *  be called and log a warning if it is called.
-     * 4. Assert, this should never be called. that's probably a good idea.
-     * @return {Promise} resolves to "valid" if validation passes, "invalid" otherwise
-     * @memberof! oj.ojSelect
-     * @override
-     * @protected
-     * @instance
-     * @ignore
-     */
-      _ValidateReturnPromise: function () {
-        oj.Assert.assert(false, 'ojselect\'s _ValidateReturnPromise should never be called since it ' +
-        'doesn\'t have async-validators or validators options');
+        // for widget components, validate() returns boolean. Else it returns a Promise
+        // that resolves to 'valid' or 'invalid'
+        if (this._IsCustomElement()) {
+          returnValue = Promise.resolve(returnValue ? 'valid' : 'invalid');
+        }
+        return returnValue;
       },
 
       /**
@@ -13300,6 +13604,12 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
       _nativeFindFirstEnabledOptionValue: function () {
         var enaOptions = this.element.children('option:not(:disabled)');
         if (enaOptions.length > 0) {
+          if (this._IsCustomElement()) {
+            // send the value as it is for custom element
+            //  - oj-select-one writes initial value as array in native rendering mode
+            return $(enaOptions[0]).attr('value');
+          }
+          // send the value in an array for widget
           return [$(enaOptions[0]).attr('value')];
         }
 
@@ -13406,7 +13716,7 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
              (this._IsCustomElement() && _ComboUtils.isValueForPlaceholder(multi, value)))) {
             //  - placeholder is not displayed after removing selections from select many
             _ComboUtils.setValueOptions(this,
-                                        _ComboUtils.getValueOptionsForPlaceholder(multi));
+                                        _ComboUtils.getFixupValueOptionsForPlaceholder(multi));
             this._super(key, value, flags);
             return;
           }
@@ -13535,6 +13845,18 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
         if (key === 'options') {
           _ComboUtils.removeDataProviderEventListeners(this);
           _ComboUtils.clearDataProviderWrapper(this);
+        } else if (key === 'valueOption' && multi !== true) {
+          // fixup valueOption
+          value = _ComboUtils.getValueOptionsForPlaceholder(this, value);
+          if (this.select) {
+            this.select.opts.valueOption = value;
+          }
+        } else if (key === 'valueOptions' && multi === true) {
+          // fixup valueOptions
+          value = _ComboUtils.getValueOptionsForPlaceholder(this, value);
+          if (this.select) {
+            this.select.opts.valueOptions = value;
+          }
         }
         this._super(key, value, flags);
 
@@ -13548,17 +13870,19 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
           } else {
             this._nativeSetDisabled(value);
           }
+          // Readonly support
+        } else if (key === 'readOnly') {
+          if (this.select) {
+            this.select.applyReadonlyState();
+          }
+          if (this.options.renderMode === 'native') {
+            this.refresh();
+          }
         } else if (key === 'valueOption' && multi !== true) {
-          if (this.select) {
-            this.select.opts.valueOption = value;
-          }
           //  - need to be able to specify the initial value of select components bound to dprv
-          _ComboUtils.syncValueWithValueOption(this, value, this.options.value);
+          _ComboUtils.syncValueWithValueOption(this, value, this.options.value, this._isNative());
         } else if (key === 'valueOptions' && multi === true) {
-          if (this.select) {
-            this.select.opts.valueOptions = value;
-          }
-          _ComboUtils.syncValueWithValueOptions(this, value, this.options.value);
+          _ComboUtils.syncValueWithValueOptions(this, value, this.options.value, this._isNative());
         } else if (key === 'options') {
           // if options is a new data provider
           // wrap it with LVDP if it doesn't implement FetchByKeys
@@ -13686,14 +14010,14 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
 
       // native renderMode
       _isNative: function () {
-        return this.options.renderMode === 'native';
+        // Readonly support
+        return this.options.renderMode === 'native' && !_ComboUtils.isReadonly(this);
       },
 
       // native renderMode
       _cleanup: function () {
-        var isNative = this._isNative();
-
-        if (isNative && this.element.parent().hasClass('oj-select-native')) {
+        // Readonly support
+        if (this.element.parent().hasClass('oj-select-native')) {
           // remove the change listner
           this.element.off('change');
 
@@ -13712,7 +14036,8 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
           this.element.attr({
             'aria-labelledby': ''
           });
-        } else if (!isNative && this.select) {
+        // Readonly support
+        } else if (this.select) {
           this.select._destroy();
           this.select = undefined;
         }
@@ -14285,6 +14610,7 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
 (function () {
   __oj_combobox_one_metadata.extension._WIDGET_NAME = 'ojCombobox';
   __oj_combobox_one_metadata.extension._INNER_ELEM = 'input';
+  __oj_combobox_one_metadata.extension._ALIASED_PROPS = { readonly: 'readOnly' };
   oj.CustomElementBridge.register('oj-combobox-one', { metadata: __oj_combobox_one_metadata });
 }());
 
@@ -14292,6 +14618,7 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
 (function () {
   __oj_combobox_many_metadata.extension._WIDGET_NAME = 'ojCombobox';
   __oj_combobox_many_metadata.extension._INNER_ELEM = 'input';
+  __oj_combobox_many_metadata.extension._ALIASED_PROPS = { readonly: 'readOnly' };
   oj.CustomElementBridge.register('oj-combobox-many', { metadata: __oj_combobox_many_metadata });
 }());
 
@@ -14299,6 +14626,7 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
 (function () {
   __oj_select_one_metadata.extension._WIDGET_NAME = 'ojSelect';
   __oj_select_one_metadata.extension._INNER_ELEM = 'select';
+  __oj_select_one_metadata.extension._ALIASED_PROPS = { readonly: 'readOnly' };
   oj.CustomElementBridge.register('oj-select-one', { metadata: __oj_select_one_metadata });
 }());
 
@@ -14306,6 +14634,7 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
 (function () {
   __oj_select_many_metadata.extension._WIDGET_NAME = 'ojSelect';
   __oj_select_many_metadata.extension._INNER_ELEM = 'select';
+  __oj_select_many_metadata.extension._ALIASED_PROPS = { readonly: 'readOnly' };
   oj.CustomElementBridge.register('oj-select-many', { metadata: __oj_select_many_metadata });
 }());
 

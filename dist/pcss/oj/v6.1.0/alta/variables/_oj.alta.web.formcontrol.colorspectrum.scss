@@ -1,0 +1,38 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+$includeColorSpectrumVariables: $includeColorSpectrumClasses !default;
+
+@if $includeColorSpectrumVariables != false {
+  $includeFormControlVariables: true !global;
+  $includeMessagesVariables: true !global;
+}
+// import dependencies
+@import "oj.alta.web.formcontrol";
+@import "oj.alta.web.messages";
+
+
+@if $includeColorSpectrumVariables != false {
+  @include module-include-once("alta.web.variables.colorspectrum") {
+
+:root {
+  // color spectrum
+  // ---------------------------
+
+  // Spectrum saturation/luminosity rectangle
+  --oj-color-spectrum-size:                        230px;
+  --oj-color-spectrum-border-color:                var(--oj-neutral-color-8);
+
+  // Spectrum Thumb
+  --oj-color-spectrum-thumb-size:                  var(--oj-slider-color-picker-thumb-width);
+  --oj-color-spectrum-thumb-border-width:          var(--oj-slider-color-picker-thumb-border-width);
+  --oj-color-spectrum-thumb-border-color:          var(--oj-slider-color-picker-thumb-border-color);
+  --oj-color-spectrum-thumb-border-color-disabled: var(--oj-slider-thumb-border-color-disabled);
+  --oj-color-spectrum-thumb-box-shadow:            var(--oj-slider-color-picker-thumb-box-shadow);
+
+  
+}
+
+
+  }
+}

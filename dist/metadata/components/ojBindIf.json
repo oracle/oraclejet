@@ -1,11 +1,11 @@
 {
   "name": "oj-bind-if",
-  "version": "6.0.0",
-  "jetVersion": "6.0.0",
+  "version": "6.1.0",
+  "jetVersion": "6.1.0",
   "displayName": "Bind If",
   "type": "core",
   "description": "Conditionally render its contents only if a provided test returns true.",
-  "help": "https://docs.oracle.com/en/middleware/jet/6/reference-api/oj.ojBindIf.html",
+  "help": "https://docs.oracle.com/en/middleware/jet/6.1/reference-api/oj.ojBindIf.html",
   "properties": {
     "test": {
       "description": "The test condition for the if clause. The children of the element will\nonly be rendered if the test is true.",

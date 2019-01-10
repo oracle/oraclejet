@@ -1,0 +1,49 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+//-------------------------------------------------------------------------------------------------
+// Create masonryLayout tile size style classes.
+//
+// The $maxColSpan and $maxRowSpan arguments are optional.  If specified, classes
+// will be created for spans from 1x1 up to and including $maxColSpan x
+// $maxRowSpan.  If not specified, by default, classes will be created for spans
+// from 1x1 up to and including 3x2 and 2x3.
+// 
+// $baseTileWidth:  The width of a 1x1 tile.
+// $baseTileHeight:  The height of a 1x1 tile.
+// $margin:  The margin around a tile.
+// $maxColSpan: Optional maximum column span of a tile.
+// $maxRowSpan: Optional maximum row span of a tile.
+//-------------------------------------------------------------------------------------------------
+@mixin oj-masonrylayout-tile-sizes($baseTileWidth, $baseTileHeight, $margin, $maxColSpan: null, $maxRowSpan: null) {
+  // if max column span and max row span is not specified, use the default span limit of 2x3 and 3x2
+  $useDefault: ($maxColSpan == null and $maxRowSpan == null);
+  @if ($maxColSpan == null) {
+    $maxColSpan: 3;
+  } 
+  @if ($maxRowSpan == null) {
+    $maxRowSpan: 3;
+  } 
+  @for $c from 1 through $maxColSpan {
+    @for $r from 1 through $maxRowSpan {
+      @if (($useDefault == false) or ($useDefault == true and not($c == 3 and $r == 3))) {
+        @include oj-masonrylayout-tile-size($colSpan: $c, $rowSpan: $r, $baseTileWidth: $baseTileWidth, $baseTileHeight: $baseTileHeight, $margin: $margin);
+      }
+    }
+  }
+}
+
+//-------------------------------------------------------------------------------------------------
+// Create a masonryLayout tile size style class for one size.
+//
+// $colSpan:  The number of columns to span.
+// $rowSpan:  The number of rows to span.
+// $baseTileWidth:  The width of a 1x1 tile.
+// $baseTileHeight:  The height of a 1x1 tile.
+// $margin:  The margin around a tile.
+//-------------------------------------------------------------------------------------------------
+@mixin oj-masonrylayout-tile-size($colSpan, $rowSpan, $baseTileWidth, $baseTileHeight, $margin) {
+  .oj-masonrylayout-tile-#{$colSpan}x#{$rowSpan} {
+    margin: $margin;
+    width: calc(#{$colSpan} * #{$baseTileWidth} + (#{$colSpan} - 1) * 2 * #{$margin});
+    height: calc(#{$rowSpan} * #{$baseTileHeight} + (#{$rowSpan} - 1) * 2 * #{$margin});
+  }
+}

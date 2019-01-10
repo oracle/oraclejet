@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -22,6 +22,9 @@ var __oj_dialog_metadata =
         "none"
       ],
       "value": "icon"
+    },
+    "dialogTitle": {
+      "type": "string"
     },
     "dragAffordance": {
       "type": "string",
@@ -453,7 +456,7 @@ var __oj_dialog_metadata =
    *
    * <pre class="prettyprint">
    * <code>
-   * &lt;oj-dialog id="dialogWithFooter" title="Dialog with Footer" style="width: 400px; min-width: 100px; max-width 500px;"&gt;
+   * &lt;oj-dialog id="dialogWithFooter" dialog-title="Dialog with Footer" style="width: 400px; min-width: 100px; max-width 500px;"&gt;
    *    &lt;div slot="body"&gt;
    *       &lt;p&gt; Dialog Text
    *    &lt;/div&gt;
@@ -470,7 +473,7 @@ var __oj_dialog_metadata =
    *
    * <pre class="prettyprint">
    * <code>
-   * &lt;oj-dialog id="dialog" title="Dialog Title"&gt;
+   * &lt;oj-dialog id="dialog" dialog-title="Dialog Title"&gt;
    *    &lt;div slot="header"&gt;
    *       &lt;span id="dialog-title-id" class="oj-dialog-title"&gt; User Defined Header&lt;/span&gt;
    *    &lt;/div&gt;
@@ -854,13 +857,33 @@ var __oj_dialog_metadata =
          * Specify the title of the dialog. null is the default.
          *
          * @expose
+         * @memberof oj.ojDialog
+         * @instance
+         * @type {string|null}
+         *
+         * @example <caption>Initialize the <code class="prettyprint">dialogTitle</code> property.</caption>
+         * &lt;oj-dialog dialog-title="Title of Dialog" &gt;&lt;/oj-dialog&gt;
+         *
+         * @example <caption>Get or set the <code class="prettyprint">dialogTitle</code> property, after initialization:</caption>
+         * // getter
+         * var dialogTitle = myDialog.dialogTitle;
+         *
+         * // setter
+         * myDialog.dialogTitle = "Title of Dialog";
+         */
+      dialogTitle: null,
+        /**
+         *
+         * Specify the title of the dialog. null is the default.
+         *
+         * @expose
          * @ignore
          * @memberof oj.ojDialog
          * @instance
          * @type {string|null}
          *
          * @example <caption>Initialize the dialog to a specific title <code class="prettyprint">title</code></caption>
-         * &lt;oj-dialog title="Title of Dialog" &gt;&lt;/oj-dialog&gt;
+         * &lt;oj-dialog dialog-title="Title of Dialog" &gt;&lt;/oj-dialog&gt;
          *
          * @example <caption>Get or set the <code class="prettyprint">title</code> property, after initialization:</caption>
          * // getter
@@ -2078,10 +2101,13 @@ var __oj_dialog_metadata =
         }
         title.textContent = this.options.title;
       } else if (this._IsCustomElement()) {
-        if (!this.element.attr('title')) {
+        if (this.options.dialogTitle) {
+          title.textContent = this.options.dialogTitle;
+        } else if (this.element.attr('title')) {
+          title.textContent = this.element.attr('title');
+        } else {
           title.innerHTML = '&#160;';  // @HTMLUpdateOK
         }
-        title.textContent = this.element.attr('title');
       }
     },
 
@@ -2247,14 +2273,13 @@ var __oj_dialog_metadata =
           break;
 
         case 'title':
-
+        case 'dialogTitle':
           if (this.userDefinedDialogHeader) {
             this._title(this._userDefinedHeaderDiv.querySelector(OJD_TITLE_CLASS));
           } else {
             this._title(this._uiDialogTitlebarDiv.querySelector(OJD_TITLE_CLASS));
           }
           break;
-
         case 'role':
           this.element.attr('role', value);
           break;

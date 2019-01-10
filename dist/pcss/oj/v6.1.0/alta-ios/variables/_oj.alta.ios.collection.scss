@@ -1,0 +1,87 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+$includeCollectionVariables: false !default;
+
+@if $includeCollectionVariables != false {
+  @include module-include-once("alta.ios.variables.collection") {
+
+:root {
+
+  // collections (used by components like table, data grid, list view)
+  // ----------------------------
+
+  --oj-collection-bg-color:                                var(--oj-neutral-color-1);
+  --oj-collection-border-color:                            var(--oj-neutral-color-7);
+  --oj-collection-status-bg-color:                         var(--oj-neutral-color-1);
+  --oj-collection-selection-affordance-border-color:       var(--oj-brand-color);
+
+  // in old syntax would be the max of var(--oj-form-control-input-height) and this value but not allowed to max in new syntax
+  // if modifying for control height to be greater than this var must also be updated.
+  --oj-collection-column-width:                            4.25rem;
+  --oj-collection-row-height:                              2.6875rem;
+
+  // header
+  --oj-collection-header-font-size:                        var(--oj-font-size-sm);
+  --oj-collection-header-font-weight:                      normal;
+  --oj-collection-header-bg-color:                         var(--oj-neutral-color-1);
+  --oj-collection-header-border-color:                     var(--oj-collection-border-color);
+  --oj-collection-header-text-color:                       var(--oj-header-text-color);
+  --oj-collection-header-height:                           var(--oj-collection-row-height);
+  --oj-collection-column-header-justify-content:           center;
+  --oj-collection-column-header-align-items:               center;
+  --oj-collection-row-header-justify-content:              flex-start;
+  --oj-collection-row-header-align-items:                  center;
+
+  // header hover
+  --oj-collection-header-bg-color-hover:                   var(--oj-neutral-color-4);
+
+  // header selected
+  --oj-collection-header-bg-color-selected:                var(--oj-brand-color-light-2);
+
+  // header selected inactive (selected but focus outside the component)
+// todo: I thought now the selected and selected inactive colors were supposed to match?
+  --oj-collection-header-bg-color-selected-inactive:       var(--oj-neutral-color-5);
+
+  // header drag
+  --oj-collection-header-bg-color-drag:                    var(--oj-brand-color-light-4);
+  --oj-collection-header-drag-image-border-color:          var(--oj-brand-color);
+
+  // cell
+  --oj-collection-cell-align-items:                        center;
+  --oj-collection-cell-justify-content:                    center;
+  --oj-collection-cell-align-text:                         center;
+  --oj-collection-cell-align-text-rtl:                     center;
+  --oj-collection-cell-font-size:                          inherit;
+  --oj-collection-cell-text-color:                         var(--oj-text-color);
+  --oj-collection-cell-bg-color:                           var(--oj-neutral-color-1);
+  --oj-collection-cell-border-color:                       var(--oj-neutral-color-8);
+  --oj-collection-cell-banded-bg-color:                    var(--oj-neutral-color-3);
+  --oj-collection-cell-padding:                            0.625rem;
+
+  // cell focus
+  --oj-collection-cell-border-color-focus:                 var(--oj-collection-cell-border-color);
+  --oj-collection-editable-cell-border-color-focus:        var(--oj-neutral-color-17);
+
+  // cell hover
+  --oj-collection-cell-bg-color-hover:                     var(--oj-neutral-color-3);
+  --oj-collection-cell-border-color-hover:                 var(--oj-collection-cell-border-color);
+
+  // cell selected
+  --oj-collection-cell-bg-color-selected:                  var(--oj-neutral-color-8);
+  --oj-collection-cell-border-color-selected:              var(--oj-neutral-color-11);
+
+  // cell selected inactive (selected but focus outside the component)
+  --oj-collection-cell-bg-color-selected-inactive:         var(--oj-collection-cell-bg-color-selected);
+  --oj-collection-cell-border-color-selected-inactive:     var(--oj-collection-cell-border-color-selected);
+
+  // cell readonly
+  --oj-collection-editable-cell-bg-color-read-only:        var(--oj-neutral-color-5);
+
+  // cell drag
+  --oj-collection-cell-bg-color-drag:                      var(--oj-brand-color-light-5);
+  --oj-collection-cell-drag-image-border-color:            transparent;
+}
+
+  }
+}

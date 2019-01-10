@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -327,6 +327,7 @@ function ojFormLayout(context) {
   var unresolvedChildren;
   var labelWidth;
   var labelFlexItemWidth;
+  var updatePending = false;
 
   // Our version of GCC has a bug where the second param of MutationObserver.observe must be of
   // type MutationObserverInit which isn't a real class that we can instantiate. Work around is to
@@ -404,70 +405,86 @@ function ojFormLayout(context) {
    * @private
    */
   this.updateDOM = function () {
-    _notReady();
+    function doUpdate() {
+      _notReady();
 
-    unresolvedChildren = []; // start with an empty list
+      unresolvedChildren = []; // start with an empty list
 
-    labelFlexItemWidth = null;
-    labelWidth = element.labelEdge === 'start' ? element.labelWidth : '100%';
+      labelFlexItemWidth = null;
+      labelWidth = element.labelEdge === 'start' ? element.labelWidth : '100%';
 
 
-    // Wait until child elements have finished upgrading before performing DOM
-    // manipulations so we can access child properties, like label-hint and help-hints.
-    // The new oj-form div element has a data-oj-context attribute so we can get
-    // the correctly scoped busy context  for the oj-form div subtree. When custom
-    // elements are reparented, they reregister their busy state if they haven't
-    // finished upgrading. Also, if the oj-form itself is being rendered, wait for
-    // that as well.
-    var busyContext = Context.getContext(ojForm).getBusyContext();
-    busyContext.whenReady().then(function () {
-      // add a busy state for the oj-form div so we don't have multiple threads
-      // modifying the oj-form div at the same time.
-      _ojFormNotReady();
-      // we don't want the observer being called when we are making modifications to dom subtree elements.
-      self._rootElementMutationObserver.disconnect();
+      // Wait until child elements have finished upgrading before performing DOM
+      // manipulations so we can access child properties, like label-hint and help-hints.
+      // The new oj-form div element has a data-oj-context attribute so we can get
+      // the correctly scoped busy context  for the oj-form div subtree. When custom
+      // elements are reparented, they reregister their busy state if they haven't
+      // finished upgrading. Also, if the oj-form itself is being rendered, wait for
+      // that as well.
+      var busyContext = Context.getContext(ojForm).getBusyContext();
+      busyContext.whenReady().then(function () {
+        // add a busy state for the oj-form div so we don't have multiple threads
+        // modifying the oj-form div at the same time.
+        _ojFormNotReady();
+        // we don't want the observer being called when we are making modifications to dom subtree elements.
+        self._rootElementMutationObserver.disconnect();
 
-      _updateOjFormDiv();
+        _updateOjFormDiv();
 
-      if (!isInitialRender) {
-        _removeAllBonusDomElements();
-      }
+        if (!isInitialRender) {
+          _removeAllBonusDomElements();
+        }
 
-      _addLabelsFromHints();
-      _addAllFlexDivs();
+        _addLabelsFromHints();
+        _addAllFlexDivs();
 
-      // We are done making modifications to dom subtree elements so we should start paying attention
-      // to mutations of the oj-form DIV subtree.  The mutations we care about are added elements and
-      // removed elements. For the added elements, we should only see them added next to an existing
-      // original child element, which is always a child of a bonus dom DIV element, so we ignore all
-      // other added elements. For removed elements, we only care about removed original children.
-      // All other removed elements are ignored by the observer.
-      //
-      // We also need to track custom element upgrade status. We do this by observing attribute
-      // mutations and if the 'class' attribute gets "oj-complete" added, we know the custom element
-      // is finished upgrading.
-      // We need to grab the busyContext again here and only listen again after busyContext is resolved
-      // because some of the previous dom subtree modifications can cause asynchronous dom mutations which
-      // we don't want to end up listening on.
-      Context.getContext(ojForm).getBusyContext().whenReady().then(function () {
-        // Also make sure the busy context of the oj-form-layout element is resolved too if data-oj-context is set
-        if (element.hasAttribute('data-oj-context')) {
-          Context.getContext(element).getBusyContext().whenReady().then(function () {
-            self._rootElementMutationObserver
-              .observe(element, { childList: true, subtree: true, attributes: true });
-          });
-        } else {
-          self._rootElementMutationObserver
-            .observe(element, { childList: true, subtree: true, attributes: true });
+        // We are done making modifications to dom subtree elements so we should start paying attention
+        // to mutations of the oj-form DIV subtree.  The mutations we care about are added elements and
+        // removed elements. For the added elements, we should only see them added next to an existing
+        // original child element, which is always a child of a bonus dom DIV element, so we ignore all
+        // other added elements. For removed elements, we only care about removed original children.
+        // All other removed elements are ignored by the observer.
+        //
+        // We also need to track custom element upgrade status. We do this by observing attribute
+        // mutations and if the 'class' attribute gets "oj-complete" added, we know the custom element
+        // is finished upgrading.
+        self._rootElementMutationObserver
+          .observe(element, { childList: true, subtree: true, attributes: true });
+        _ojFormMakeReady();
+        _makeReady();
+
+        if (isInitialRender) {
+          isInitialRender = false;
         }
       });
-      _ojFormMakeReady();
-      _makeReady();
+    }
 
-      if (isInitialRender) {
-        isInitialRender = false;
+    // Dynamic form could set the busy state on the oj-form-layout element
+    // when it's inserting children to oj-form-layout.  In this case we want
+    // to delay the update until the busy state is clear.
+    // The only other time the oj-form-layout can be busy when updateDOM is called is
+    // during initial render, when busy state is set by DefinitionalElementBridge.
+    // In that case we don't want to delay the update.
+    // No need to do anything if an update is already pending.
+    if (!updatePending) {
+      var delayUpdate;
+      var outerBusyContext;
+      if (!isInitialRender && element.hasAttribute('data-oj-context')) {
+        outerBusyContext = Context.getContext(element).getBusyContext();
+        delayUpdate = !outerBusyContext.isReady();
+      } else {
+        delayUpdate = false;
       }
-    });
+      if (delayUpdate) {
+        updatePending = true;
+        outerBusyContext.whenReady().then(function () {
+          updatePending = false;
+          doUpdate();
+        });
+      } else {
+        doUpdate();
+      }
+    }
   };
 
   /*
@@ -700,6 +717,7 @@ function ojFormLayout(context) {
    * @private
    */
   function _createOjLabelAndInitialize(editableElem) {
+    var tagName = editableElem.tagName.toLowerCase();
     var ojLabel = document.createElement('oj-label');
     ojLabel.setAttribute(BONUS_DOM_ATTR, '');
     ojLabel.setAttribute('data-oj-internal', '');
@@ -708,6 +726,12 @@ function ojFormLayout(context) {
     // needs this attribute to signal the component should be created.
     ojLabel.setAttribute('data-oj-binding-provider', 'none');
     ojLabel.setAttribute('data-oj-context', '');
+
+    // for alignment purposes, we need to add label alignment classes for labels of
+    // oj-checkboxset and oj-radioset. These are for inline labels only.
+    if (element.labelEdge === 'start' && (tagName === 'oj-checkboxset' || tagName === 'oj-radioset')) {
+      ojLabel.classList.add(tagName + '-label');
+    }
 
     // Note: the hint might be null, but that is fine, we still want a label for this case to hang the required and help icons off of
     // and allow for programatic changes to label-hint, help-hints, required.

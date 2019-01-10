@@ -1,11 +1,11 @@
 {
   "name": "oj-status-meter-gauge",
-  "version": "6.0.0",
-  "jetVersion": "6.0.0",
+  "version": "6.1.0",
+  "jetVersion": "6.1.0",
   "displayName": "Status Meter Gauge",
   "type": "core",
   "description": "Displays information graphically, highlighting a specific metric value's progress in relation to its thresholds.  Horizontal, vertical, and circular formats are supported.",
-  "help": "https://docs.oracle.com/en/middleware/jet/6/reference-api/oj.ojStatusMeterGauge.html",
+  "help": "https://docs.oracle.com/en/middleware/jet/6.1/reference-api/oj.ojStatusMeterGauge.html",
   "properties": {
     "angleExtent": {
       "description": "Specifies the angle extent of a gauge with circular orientation. Value should be provided in degrees.",

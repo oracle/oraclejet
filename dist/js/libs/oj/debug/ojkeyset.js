@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -22,7 +22,7 @@ define(['ojs/ojcore', 'ojs/ojkeysetimpl'], function(oj, KeySetImpl)
  * @hideconstructor
  * @abstract
  * @since 4.1.0
- * @ojsignature {target: "Type", value: "abstract class KeySet<K>"}
+ * @ojsignature {target: "Type", value: "abstract class KeySet<K>", genericParameters: [{"name": "K", "description": "Type of Key"}]}
  */
 var KeySet = function () {};
 
@@ -224,7 +224,7 @@ KeySetImpl.call(KeySet.prototype);
  * @extends {KeySet}
  * @constructor
  * @since 4.1.0
- * @ojsignature [{target: "Type", value: "class ExpandedKeySet<K> extends KeySet<K>"},
+ * @ojsignature [{target: "Type", value: "class ExpandedKeySet<K> extends KeySet<K>", genericParameters: [{"name": "K", "description": "Type of Key"}]},
  *               {target: "Type", value: "Set<K>|Array<K>", for:"keys"}]
  * @example <caption>Creates a new ExpandedKeySet with an initial set of keys to expand:</caption>
  * require(['ojs/ojkeyset'],
@@ -358,7 +358,8 @@ ExpandedKeySet.prototype.values = function () {
  * @extends {KeySet}
  * @constructor
  * @since 4.1.0
- * @ojsignature {target: "Type", value: "class ExpandAllKeySet<K> extends KeySet<K>"}
+ * @ojsignature {target: "Type", value: "class ExpandAllKeySet<K> extends KeySet<K>",
+ *               genericParameters: [{"name": "K", "description": "Type of Key"}]}
  * @example <caption>Creates a new ExpandAllKeySet to expand all keys</caption>
  * require(['ojs/ojkeyset'],
  *   function(keySet) {

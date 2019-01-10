@@ -1,0 +1,106 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the 
+//          version in your base theme's directory, 
+//          for example alta/widgets/_oj.alta.masonrylayout.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@import "../../utilities/oj.utilities";
+
+@if $includeMasonryLayoutClasses != false  {
+  @include module-include-once("common.masonrylayout") {
+    
+    /* masonrylayout */
+    /* --------------------------------------------------------------- */
+    
+    // This is to prevent the flash of unstyled content before the html becomes JET components.
+    @if $initialVisibility == hidden {
+      oj-masonry-layout:not(.oj-complete) {
+        visibility: hidden;
+      }
+    }
+    
+    oj-masonry-layout {
+      display: block;
+    }
+
+    //applied to the root element
+    .oj-masonrylayout {
+        //specify min size so that it's always greater than 0 and the component
+        //can get notified of resizes
+        min-height: 1px;
+        min-width: 1px;
+        position: relative;
+    }
+    
+    /* masonry tile */
+    
+    .oj-masonrylayout-tile {
+        box-sizing: border-box;
+        position: absolute;
+    }
+    .oj-masonrylayout-tile.oj-drop {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+        background-color: var(--oj-drop-target-color-1);
+        border: 1px solid var(--oj-drop-target-color-2);
+      } @else {
+        background-color: $dropTarget1Color;
+        border: 1px solid $dropTarget2Color;
+      }
+        opacity: .75;
+    }
+    .oj-masonrylayout-tile.oj-drag {
+        opacity: .75;
+    }
+    
+    //transition start state applied before tile is inserted
+    .oj-masonrylayout-tile-transition-show-from {
+        opacity: 0;
+    }
+    
+    //generate the default tile size classes
+    @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+    {
+      @include oj-masonrylayout-tile-sizes($baseTileWidth: var(--oj-masonry-layout-tile-width), $baseTileHeight: var(--oj-masonry-layout-tile-height), $margin: var(--oj-masonry-layout-tile-margin));
+    }
+    @else {
+      @include oj-masonrylayout-tile-sizes($baseTileWidth: $masonryLayoutTileWidth, $baseTileHeight: $masonryLayoutTileHeight, $margin: $masonryLayoutTileMargin);
+    }
+    
+    // animation defaults
+    $masonryLayoutAnimationDefaults: ();
+ 
+    @if ($masonryLayoutInsertAnimation) {
+      $masonryLayoutAnimationDefaults: map-merge($masonryLayoutAnimationDefaults, (insert: $masonryLayoutInsertAnimation));
+    }
+ 
+    @if ($masonryLayoutRemoveAnimation) {
+      $masonryLayoutAnimationDefaults: map-merge($masonryLayoutAnimationDefaults, (remove: $masonryLayoutRemoveAnimation));
+    }
+
+    @if ($masonryLayoutMoveAnimation) {
+      $masonryLayoutAnimationDefaults: map-merge($masonryLayoutAnimationDefaults, (move: $masonryLayoutMoveAnimation));
+    }
+
+    @if ($masonryLayoutResizeAnimation) {
+      $masonryLayoutAnimationDefaults: map-merge($masonryLayoutAnimationDefaults, (resize: $masonryLayoutResizeAnimation));
+    }
+
+    @if ($masonryLayoutReorderAnimation) {
+      $masonryLayoutAnimationDefaults: map-merge($masonryLayoutAnimationDefaults, (reorder: $masonryLayoutReorderAnimation));
+    }
+
+    // option defaults
+    $masonryLayoutDefaultOptions: ();
+ 
+    @if ($masonryLayoutAnimationDefaults) {
+      $masonryLayoutDefaultOptions: map-merge($masonryLayoutDefaultOptions, (animation: $masonryLayoutAnimationDefaults));
+    }
+
+    // component default options selector 
+    .oj-masonrylayout-option-defaults {
+      font-family: oj-json-from-map($masonryLayoutDefaultOptions);
+    }
+
+  }
+}

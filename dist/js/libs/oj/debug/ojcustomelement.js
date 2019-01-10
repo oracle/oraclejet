@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -141,12 +141,7 @@ oj.BaseCustomElementBridge.proto =
   HandleBindingsApplied: function (element, bindingContext) {},
 
   // eslint-disable-next-line no-unused-vars
-  HandleDetached: function (element) {
-    this._bConnected = false;
-    if (!this._complete) {
-      this._resolveBusyState(element);
-    }
-  },
+  HandleDetached: function (element) {},
 
   // eslint-disable-next-line no-unused-vars
   HandleReattached: function (element) {},
@@ -316,12 +311,12 @@ oj.BaseCustomElementBridge.proto =
       this.throwError(element, "Read-only property '" + property + "' cannot be set.");
     }
 
-    oj.BaseCustomElementBridge.__CheckEnumValues(element, property, value, propMeta);
+    oj.BaseCustomElementBridge.checkEnumValues(element, property, value, propMeta);
 
     // TODO support checking for null values once we generate metadata from jsDoc and have accurate info
     // about component support for undefined/null
     if (value != null) {
-      return oj.BaseCustomElementBridge.__CheckType(element, property, value, propMeta);
+      return oj.BaseCustomElementBridge.checkType(element, property, value, propMeta);
     }
 
     return value;
@@ -397,12 +392,11 @@ oj.BaseCustomElementBridge.proto =
       }
 
       this._whenCreatedPromise = preCreatePromise.then(createComponentCallback);
-    } else {
-      // If the component had been previosly disconnected, and the 'ready'
+    } else if (!this._complete) {
+      // If the component had been previously disconnected, and the 'ready'
       // promise is still not resolved, we need to re-register the busy state
-      if (!this._complete) {
-        this._registerBusyState(element);
-      }
+      this._registerBusyState(element);
+    } else {
       this.HandleReattached(element);
     }
   },
@@ -414,7 +408,12 @@ oj.BaseCustomElementBridge.proto =
 
   _detachedCallback: function () {
     var bridge = oj.BaseCustomElementBridge.getInstance(this);
-    bridge.HandleDetached(this);
+    bridge._bConnected = false;
+    if (!bridge._complete) {
+      bridge._resolveBusyState(this);
+    } else {
+      bridge.HandleDetached(this);
+    }
   },
 
   // This wrapper does not provide any additional functionality to event listener functions
@@ -786,6 +785,23 @@ oj.BaseCustomElementBridge.getSlotMap = function (element, isComposite) {
 };
 
 /**
+ * @ignore
+ */
+oj.BaseCustomElementBridge.isPromiseType = function (element, propName) {
+  var bridge = oj.BaseCustomElementBridge.getInstance(element);
+  if (!bridge._PROMISE_TYPE_MAP) {
+    bridge._PROMISE_TYPE_MAP = {};
+    var promiseProps = _getPromiseProperties(bridge.METADATA);
+    if (promiseProps) {
+      for (var i = 0; i < promiseProps.length; i++) {
+        bridge._PROMISE_TYPE_MAP[promiseProps[i]] = true;
+      }
+    }
+  }
+  return bridge._PROMISE_TYPE_MAP[propName] === true;
+};
+
+/**
  * Returns true if an element is slot assignable.
  * @param {Element} node The element to check
  * @return {boolean}
@@ -854,14 +870,14 @@ oj.BaseCustomElementBridge._verifyMetadata = function (tagName, metadata) {
 };
 
 /**
- * Checks to see whether a value is valid for an element property and throws an error if not.
+ * Checks to see whether a value is valid for an element property's enum and throws an error if not.
  * @param  {Element}  element The custom element
  * @param  {string}  property The property to check
  * @param  {string}  value The property value
  * @param  {Object}  metadata The property metadata
  * @ignore
  */
-oj.BaseCustomElementBridge.__CheckEnumValues = function (element, property, value, metadata) {
+oj.BaseCustomElementBridge.checkEnumValues = function (element, property, value, metadata) {
   // Only check enum values for string types
   if (typeof value === 'string' && metadata) {
     var enums = metadata.enumValues;
@@ -875,9 +891,14 @@ oj.BaseCustomElementBridge.__CheckEnumValues = function (element, property, valu
 
 
 /**
+ * Checks to see whether a value is valid for an element property and throws an error if not.
+ * @param  {Element}  element The custom element
+ * @param  {string}  property The property to check
+ * @param  {string}  value The property value
+ * @param  {Object}  metadata The property metadata
  * @ignore
  */
-oj.BaseCustomElementBridge.__CheckType = function (element, property, value, metadata) {
+oj.BaseCustomElementBridge.checkType = function (element, property, value, metadata) {
   // We currently support checking of single typed properties of type: string, number,
   // boolean, Array, Object OR properties w/ two possible types where
   // the value can either be of type string|Array, string|Object, string|function, Array|Promise.
@@ -1041,9 +1062,51 @@ oj.BaseCustomElementBridge.__InitProperties = function (element, componentProps)
         }
       }
     }
+    // Handle special ResolvablePromise type by creating the Promise up front
+    // and setting it on the property. The component should pass us an array of
+    // properties that support the promise types so we avoid iterating all properties
+    // for all custome elements.
+    var promiseProps = _getPromiseProperties(bridge.METADATA);
+    if (promiseProps) {
+      // Assume all these properties are at the top level only
+      for (var j = 0; j < promiseProps.length; j++) {
+        var prop = promiseProps[j];
+        // eslint-disable-next-line no-param-reassign
+        componentProps[prop] = _createResolvablePromise();
+      }
+    }
   }
   bridge.__INITIALIZING_PROPS = false;
 };
+
+/**
+ * @private
+ */
+function _getPromiseProperties(metadata) {
+  var ext = metadata.extension;
+  if (ext) {
+    var dynExt = ext['oj-dynamic'];
+    if (dynExt) {
+      return dynExt.promiseProperties;
+    }
+  }
+  return null;
+}
+
+/**
+ * @private
+ */
+function _createResolvablePromise() {
+  var resolveCallback;
+  var rejectCallback;
+  var promise = new Promise(function (resolve, reject) {
+    resolveCallback = resolve;
+    rejectCallback = reject;
+  });
+  Object.defineProperty(promise, 'resolve', { value: resolveCallback });
+  Object.defineProperty(promise, 'reject', { value: rejectCallback });
+  return promise;
+}
 
 /**
  * @ignore
@@ -1345,7 +1408,7 @@ oj.BaseCustomElementBridge.__DelayedPromise = function () {
 };
 
 /**
- * @ojoverviewdoc CustomElementOverview - JET Components
+ * @ojoverviewdoc CustomElementOverview - [2]JET Web Components
  * @classdesc
  * {@ojinclude "name":"customElementOverviewDoc"}
  */
@@ -1355,8 +1418,8 @@ oj.BaseCustomElementBridge.__DelayedPromise = function () {
  *   Overview<a class="bookmarkable-link" title="Bookmarkable Link" href="#ce-overview-section"></a>
  * </h2>
  * <p>
- *   JET components and <a href="CompositeOverview.html">custom components</a> are implemented as
- *   <a href="https://developer.mozilla.org/en-US/docs/Web/Web_Components/Custom_Elements">custom HTML elements</a>
+ *   JET components and <a href="CompositeOverview.html">custom components</a>, collectively referred to as <b>JET Web Components</b>,
+ *   are implemented as <a href="https://developer.mozilla.org/en-US/docs/Web/Web_Components/Custom_Elements">custom HTML elements</a>
  *   and extend the HTMLElement interface. This means that JET custom elements automatically inherit
  *   <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes">global attributes</a>
  *   and programmatic access to these components is similar to interacting with native HTML elements.

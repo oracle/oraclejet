@@ -1,0 +1,55 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+
+// ----- start dependencies ---------
+
+// set up include variables before importing dependencies
+@if $includeInputNumberClasses != false {
+  $includeIconClasses:              true !global;
+  $includePopupClasses:             true !global;
+  $includeButtonClasses:            true !global;
+  $includeLabelClasses:             true !global;
+  $includeMessagingClasses:         true !global;
+  $includeFormControlCommonClasses: true !global;
+}
+
+// import dependencies
+@import "../../common/helpers/oj.common.helpers"; 
+@import "oj.alta.icons";
+@import "oj.alta.button";
+@import "oj.alta.messaging";
+@import "oj.alta.popup";
+@import "oj.alta.formcontrol.label";
+@import "oj.alta.formcontrol.common";
+
+// ----- end dependencies ---------
+
+
+// most of the styling in common file
+@import "../../common/widgets/oj.common.formcontrol.inputnumber";
+
+@if $includeInputNumberClasses != false {
+  @include module-include-once("alta.inputnumber") {
+    // icons
+    //------------------------------------------
+    // The up button looks like it is 1px lower than the down button when
+    // they are perfectly aligned, so UX team wants the up button 1px higher,
+    // so the visual perception is that they are aligned.
+    .oj-inputnumber-up-icon {
+      @extend .oj-fwk-icon-caret-n;
+      margin-bottom: 1px;
+    }
+
+    .oj-inputnumber-down-icon {
+      @extend .oj-fwk-icon-caret-s;
+    } 
+
+    // change the font-size to change the icon font size. If you want the caret bigger, make the
+    // font-size bigger, since we use icon fonts.
+    .oj-inputnumber .oj-inputnumber-down-icon,
+    .oj-inputnumber .oj-inputnumber-up-icon {
+      font-size: 12px;
+    }
+  }
+}

@@ -1,0 +1,29 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+$includeTreemapVariables: $includeTreemapClasses !default;
+
+@if $includeTreemapVariables != false {
+  $includeDvtBaseVariables: true !global;
+}
+
+// import dependencies
+@import "oj.alta.web.dvt";
+
+@if $includeTreemapVariables != false {
+  @include module-include-once("alta.web.variables.treemap") {
+:root {
+  // treemap
+  // ----------------------------                        
+  --oj-treemap-node-border-color-hover:                var(--oj-neutral-color-6);  
+  --oj-treemap-node-header-bg-color:                   var(--oj-neutral-color-1);             
+  --oj-treemap-node-header-bg-color-selected:          var(--oj-brand-color-light-3);             
+  --oj-treemap-node-header-border-color:               var(--oj-neutral-color-7);              
+  --oj-treemap-node-header-border-color-hover:         var(--oj-neutral-color-8);    
+  --oj-treemap-drill-text-color:                       var(--oj-link-text-color);
+  --oj-treemap-legend-label-color:                     var(--oj-text-color-5);
+           
+}
+
+  }
+}

@@ -1,0 +1,106 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the 
+//          version in your base theme's directory, 
+//          for example alta/widgets/_oj.alta.indexer.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@if $includeIndexerClasses != false {
+  @include module-include-once("common.indexer") {
+    
+    // This is to prevent the flash of unstyled content before the html becomes JET components.
+    @if $initialVisibility == hidden {
+      oj-indexer:not(.oj-complete) {
+        visibility: hidden;
+      }
+    }
+
+    /* Styling for the indexer widget container */
+    .oj-indexer {
+      display: flex;
+      align-items: center;
+        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+          width: var(--oj-indexer-item-width);
+        } @else {
+          width: $indexerItemWidth;
+        }
+    }
+
+    /* Styling to remove focus ring border on indexer */
+    .oj-indexer ul:focus {
+      outline: none; 
+    }
+
+    /* styling for the indexer root element */
+    .oj-indexer ul {
+      list-style-type: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    /* styling on each item */
+    .oj-indexer li {
+      text-align: center;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+        height: var(--oj-indexer-item-height);
+        width: var(--oj-indexer-item-width);
+        line-height: var(--oj-indexer-item-height);
+        color: var(--oj-indexer-text-color);
+        text-decoration: var(--oj-indexer-text-decoration);
+        font-weight: var(--oj-indexer-font-weight);
+        font-size: var(--oj-font-size-xs);
+      } @else {
+        height: $indexerItemHeight;
+        width: $indexerItemWidth;
+        line-height: $indexerItemHeight;
+        color: $indexerTextColor;
+        text-decoration: $indexerTextDecoration;
+        font-weight: $indexerFontWeight;
+        font-size: $smallestFontSize;
+      }
+      vertical-align: middle;
+    }
+
+    /* styling on each item that does not have a corresponding group header */
+    .oj-indexer li.oj-disabled {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+        opacity: var(--oj-opacity-disabled);
+        color: var(--oj-indexer-text-color-disabled);
+      } @else {
+        opacity: $opacityDisabled;
+        color: $indexerTextColorDisabled;
+      }
+    }
+
+    /* styling on hovered item */
+    .oj-indexer li:hover {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+        text-decoration: var(--oj-indexer-text-decoration-hover);
+      } @else {
+        text-decoration: $indexerTextDecorationHover;
+      }
+      cursor: default;
+    }
+
+    /* styling on focused item */
+    .oj-indexer.oj-focus-ancestor li.oj-focus-highlight {
+      outline-width: 1px;
+      outline-style: dotted;
+      outline-offset: -1px;
+    }
+
+    /* styling on each item when indexer is abbreviated */
+    .oj-indexer.oj-indexer-abbr li {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+        height: var(--oj-indexer-abbr-item-height);
+      } @else {
+        height: $indexerAbbrItemHeight;
+      }
+    }
+
+    /* styling for the ellipsis between two characters */ 
+    .oj-indexer-ellipsis:after {
+      content: "\25CF";
+    }
+  }
+}

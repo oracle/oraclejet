@@ -1,0 +1,100 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+$includeFormControlVariables: false !default;
+
+@if $includeFormControlVariables != false {
+  @include module-include-once("alta.ios.variables.formcontrolcommon") {
+
+:root {
+
+
+    // common form controls
+    //--------------------------
+
+    --oj-form-control-lg-max-width:    100%;
+  // todo: can we get rid of oj-form-control-md-max-width? the only one that uses it is input number, what is the new spec?
+    --oj-form-control-md-max-width:   100%;
+    --oj-form-control-min-width:          8em;
+
+    
+    --oj-form-control-border-radius:       0;
+    --oj-form-control-border-top-width:    0;
+    --oj-form-control-border-right-width:  0;
+    --oj-form-control-border-bottom-width: 0;
+    --oj-form-control-border-left-width:   0;
+
+
+    // controls the horizontal padding inside an input
+    --oj-form-control-padding-horizontal: 0;
+
+    // todo: why do we need text align again? when is it not left?
+    // todo: if we do need it for some reason I think we should remove the ltr, so it should be
+    // --oj-form-control-text-align and --oj-form-control-text-align-rtl
+    // because eventually the var can be changed from left to start and we can get rid of the -rtl var
+    --oj-form-control-text-align: right;
+    --oj-form-control-text-align-rtl: left;
+
+    // oj-form-control-input variables apply to
+    // input style form controls, like input text, password, etc
+    // --oj-form-control-input-height: the --oj-form-control-input-height variable is defined in the general file 
+    // because many components depend on the value
+    --oj-form-control-input-font-size:        1.0625rem;
+    --oj-form-control-input-font-size-adjust: 100%;
+
+    // $oj-form-control-trigger variables apply to form controls 
+    // that trigger some type of picker, like a select
+    --oj-form-control-trigger-height:            var(--oj-form-control-input-height);
+    --oj-form-control-trigger-font-size:         1rem;
+    --oj-form-control-trigger-font-size-adjust:  var(--oj-form-control-input-font-size-adjust);
+    
+
+    // messaging
+    --oj-form-control-messaging-border-top-width: 0;
+    --oj-form-control-messaging-border-right-width: 0;
+    --oj-form-control-messaging-border-bottom-width: 2px;
+    --oj-form-control-messaging-border-left-width: 0;
+    --oj-form-control-border-color-invalid:   var(--oj-accent-color-danger-3);
+    --oj-form-control-border-color-warning:   var(--oj-accent-color-attention-3);
+
+    // enabled
+    --oj-form-control-bg-color:               transparent;
+    --oj-form-control-border-color:           var(--oj-brand-color);
+    --oj-form-control-placeholder-color:      var(--oj-text-color-4);
+    --oj-form-control-placeholder-font-style: normal;
+    // oj-form-control-input variables apply to
+    // input style form controls, like input text, password, etc
+    --oj-form-control-input-value-color:      var(--oj-text-color);
+    // $oj-form-control-trigger variables apply to form controls 
+    // that trigger some type of picker, like a select
+    --oj-form-control-trigger-value-color:       var(--oj-link-text-color);
+
+    // active
+    // $oj-form-control-trigger variables apply to form controls 
+    // that trigger some type of picker, like a select
+    --oj-form-control-trigger-bg-color-active:   var(--oj-brand-color-light-5);
+
+    // disabled
+    --oj-form-control-bg-color-disabled:      var(--oj-form-control-bg-color);
+    --oj-form-control-border-color-disabled:  var(--oj-form-control-border-color);
+    --oj-form-control-value-color-disabled:   var(--oj-form-control-input-value-color);
+    --oj-form-control-opacity-disabled:       var(--oj-opacity-disabled);
+    --oj-form-control-input-border-style-disabled:    solid;
+
+    // readonly
+    --oj-form-control-value-color-read-only:  var(--oj-text-color);
+    --oj-form-control-font-size-read-only:    var(--oj-form-control-input-font-size);
+    --oj-form-control-font-weight-read-only:  bold;
+
+    // focus
+    // oj-form-control-input variables apply to
+    // input style form controls, like input text, password, date, etc
+    --oj-form-control-input-border-color-focus: var(--oj-form-control-border-color);
+    // todo: do we really need this? what does the new design look like?
+    --oj-form-control-input-border-top-width-focus:    var(--oj-form-control-border-top-width);
+    --oj-form-control-input-border-right-width-focus:  var(--oj-form-control-border-right-width);
+    --oj-form-control-input-border-bottom-width-focus: var(--oj-form-control-border-bottom-width);
+    --oj-form-control-input-border-left-width-focus:   var(--oj-form-control-border-left-width);
+    }
+  }
+}

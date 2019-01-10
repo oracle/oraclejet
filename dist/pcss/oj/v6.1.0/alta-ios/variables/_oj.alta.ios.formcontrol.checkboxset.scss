@@ -1,0 +1,21 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+$includeCheckboxsetVariables: $includeCheckboxsetClasses !default;
+
+@if $includeCheckboxsetVariables != false {
+  $includeFormControlVariables: true !global;
+  $includeMessagesVariables: true !global;
+  $includeRadioCheckboxVariables: true !global;
+}
+// import dependencies
+@import "oj.alta.ios.formcontrol";
+@import "oj.alta.ios.messages";
+@import "oj.alta.ios.formcontrol.radiocheckbox";
+
+@if $includeCheckboxsetVariables != false {
+  @include module-include-once("alta.ios.variables.checkboxset") {
+
+
+  }
+}

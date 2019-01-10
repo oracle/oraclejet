@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -271,7 +271,8 @@ var __oj_input_number_metadata =
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
  */
-/* global __ValidationBase:false, Logger:false */
+
+/* global __ValidationBase:false, Logger:false, Promise:false */
 
 /**
  * @preserve Copyright 2013 jQuery Foundation and other contributors
@@ -1219,9 +1220,9 @@ var __oj_input_number_metadata =
       /**
        * <p>Decrements the value by the specified number of steps.
        * Without the parameter, a single step is decremented.</p>
-       <p>If the resulting value is above the max, below the min,
-       or results in a step mismatch, the value will be adjusted to the closest valid value.</p>
-       * @param {number=} steps - Number of steps to decrement, defaults to 1.
+       * <p>If the resulting value is above the max, below the min,
+       * or results in a step mismatch, the value will be adjusted to the closest valid value.</p>
+       * @param {number=} steps - Number of steps to decrement, defaults to 1.  Null is treated as 0.
        * @return {void}
        * @expose
        * @instance
@@ -1231,13 +1232,16 @@ var __oj_input_number_metadata =
        * myComp.stepDown();
        */
       stepDown: function (steps) {
-        this._step(steps, false);
+        var step = this.options.step;
+        step = (step != null) ? step : 1;
+        var realStep = (steps !== undefined ? steps : 1) * step * -1;
+        this._step(realStep);
       },
       /**
        * <p>Increments the value by the specified number of steps.
        * Without the parameter, a single step is incremented.</p>
-       <p>If the resulting value is above the max, below the min,
-       or results in a step mismatch, the value will be adjusted to the closest valid value.</p>
+       * <p>If the resulting value is above the max, below the min,
+       * or results in a step mismatch, the value will be adjusted to the closest valid value.</p>
        * @param {number=} steps - Number of steps to increment, defaults to 1.
        * @return {void}
        * @expose
@@ -1248,7 +1252,10 @@ var __oj_input_number_metadata =
        * myComp.stepUp();
        */
       stepUp: function (steps) {
-        this._step(steps, true);
+        var step = this.options.step;
+        step = (step != null) ? step : 1;
+        var realStep = (steps !== undefined ? steps : 1) * step;
+        this._step(realStep);
       },
 
       /**
@@ -1336,8 +1343,8 @@ var __oj_input_number_metadata =
             });
         }
 
-        // The custom element bridge framework coerces the options according to the type in the
-        // metadata file (componentRegister.js), so there is no need to do the coercion in _InitOptions
+        // The custom element bridge framework coerces the options according to the options
+        // @type, so there is no need to do the coercion in _InitOptions
         // for custom elements like we do above for non-custom-elements.
         // Check the 'step' to make sure it's in the correct range.
         if (this._IsCustomElement()) {
@@ -1349,7 +1356,6 @@ var __oj_input_number_metadata =
             self._parseStep(optValue);
           }
         }
-
 
         if (opts.value === undefined) {
           throw new Error('ojInputNumber has no value');
@@ -1378,6 +1384,7 @@ var __oj_input_number_metadata =
         this._draw();
 
         this._inputNumberDefaultValidators = {};
+        this._inputNumberDefaultAsyncValidators = {};
         this._setup();
         // I want everything set up before I turn on events, since the events affect the component,
         // like keydown will update the value and update the buttons.
@@ -1395,17 +1402,14 @@ var __oj_input_number_metadata =
        * @return {void}
        */
       _AfterCreate: function () {
-        var valuenow;
-
         this._super();
-        // initialize it to 0 if value is not set.
-        valuenow = this.options.value || 0;
-        // disables or enables both the up and down buttons depending upon what the value
-        // is on the screen after conversion plus what min/max are set to.
-        this._updateButtons(valuenow);
-        this._refreshAriaValueNowText(valuenow);
         this._refreshAriaMinMax();
+        // buttons and aria-valuenow and aria-valuetext are updated in _Refresh for value which
+        // is called from EditableValue's _AfterCreate.
+        this.stepQueue = [];
+        this._blurEnterSetValueCounter = 0;
       },
+
       /**
        * Performs post processing after _SetOption() is called. Different options when changed perform
        * different tasks. See _AfterSetOption[OptionName] method for details.
@@ -1501,7 +1505,7 @@ var __oj_input_number_metadata =
         if (!isUIValueChange) {
           // value option can be updated directly (i.e., programmatically or through user interaction)
           // or updated indirectly as a result of some other option changing - e.g., converter,
-          // validators, required etc. See _updateValueAsync() method for details.
+          // validators, required etc.
           // When value changes directly due to programatic intervention (usually page author does this)
           // then update this.initialValue.
           if (!doNotClearMessages) {
@@ -1612,6 +1616,24 @@ var __oj_input_number_metadata =
        */
       _ResetConverter: oj.EditableValueUtils._ResetConverter,
 
+    /**
+     * EditableValue caches the validators to be run, within this._allValidators variable.
+     * This is great; however when the implicit validator needs to be reset [i.e. min + max changing]
+     * or the validators option changes, then the cached this._allValidators needs to be cleared.
+     * This method also updates the messaging strategies as hints associated with validators could
+     * have changed.
+     *
+     * @memberof oj.ojInputNumber
+     * @instance
+     * @protected
+     */
+      _ResetAllValidators: function () {
+        this._inputNumberDefaultValidators = {};
+        this._inputNumberDefaultAsyncValidators = {};
+
+        this._superApply(arguments);
+      },
+
       // *********** END WIDGET FACTORY METHODS **********
       /**
        * Need to override since we allow users to set the converter to null, undefined, and etc and when
@@ -1688,8 +1710,8 @@ var __oj_input_number_metadata =
 
         if (key === 'max' || key === 'min') {
           // since validators are immutable, they will contain min + max as local values.
-          // Because of this will need to recreate
-          this._createRangeValidator();
+          // Because of this will need to recreate the Implicit NumberRange validators.
+          // This resets validators and async-validators and runs validation
           this._AfterSetOptionValidators();
         }
 
@@ -1707,7 +1729,6 @@ var __oj_input_number_metadata =
 
           // Create the buttonset if readOnly is false and there is no buttonset
           if (!readOnly && this.buttonSet == null) {
-            // jmw var valuenow = this._getConvertedDisplayValue();
             var valuenow = this.options.value || 0;
             this._createOjButtonset();
             this._updateButtons(valuenow);
@@ -1809,8 +1830,8 @@ var __oj_input_number_metadata =
             valuenow = this.options.value || 0;
             // this gets called after value option changes, so no need to convert
             // the display value.
-            this._updateButtons(valuenow);
-            this._refreshAriaValueNowText(valuenow);
+            this._updateButtonsAria(valuenow);
+
             break;
 
           case 'disabled':
@@ -1829,15 +1850,17 @@ var __oj_input_number_metadata =
             // values, so need to use the converted display value instead of this.options.value
             // which is the last valid value. This way the buttons will be disabled if
             // the converted display value is invalid and valuenow is undefined.
-            valuenow = this._getConvertedDisplayValue();
+            this._refreshAriaMinMax();
+            valuenow = this._getDisplayValueParsed();
             // disables or enables both the up and down buttons depending upon what the value
             // is on the screen after conversion plus what min/max are set to.
             this._updateButtons(valuenow);
-            this._refreshAriaMinMax();
+
             break;
 
           case 'converter':
-            valuenow = this._getConvertedDisplayValue();
+            // we refresh the display value in super.
+            valuenow = this.options.value;
             this._refreshAriaText(valuenow);
             break;
 
@@ -1859,21 +1882,53 @@ var __oj_input_number_metadata =
 
 
       /**
-       * Sets up the default numberRange validators if there is a min or max.
+       * Sets up a synchronous numberRange validator if min and max is set and the
+       * app has NOT overridden the async number range validator that JET registered
+       *
+       * If the validator is created, it is added to the
+       * this._inputNumberDefaultValidators type->validator instance map
        *
        * @ignore
        * @protected
        * @override
        * @instance
        * @memberof oj.ojInputNumber
+       * @return {Object} returns the implicit sync validators map, where the key is the sync
+       * validator type, e.g., 'numberRange'.
        */
-      _GetImplicitValidators: function () {
+      _GetImplicitSyncValidators: function () {
         var ret = this._superApply(arguments);
-        if (this.options.min != null || this.options.max != null) {
-          this._createRangeValidator();
-        }
+        var numberRangeValidatorOptions;
+        // var asyncRangeValidator;
 
+        if (this.options.min != null || this.options.max != null) {
+          numberRangeValidatorOptions = this._createRangeValidatorOptions();
+          var syncRangeValidator =
+          __ValidationBase.Validation.validatorFactory(
+            oj.ValidatorFactory.VALIDATOR_TYPE_NUMBERRANGE)
+            .createValidator(numberRangeValidatorOptions);
+          this._inputNumberDefaultValidators[oj.ValidatorFactory.VALIDATOR_TYPE_NUMBERRANGE] =
+            syncRangeValidator;
+        }
         return $.extend(this._inputNumberDefaultValidators, ret);
+      },
+      /**
+       * Sets up a asynchronous numberRange validator if min and max is set and the
+       * app has overridden the async number range validator that JET registered
+       * If the validator is created, it is added to the
+       * this._inputNumberDefaultAsyncValidators type->validator instance map
+       *
+       * @ignore
+       * @protected
+       * @override
+       * @instance
+       * @memberof oj.ojInputNumber
+       * @return {Object} returns the implicit async validators map, where the key is the async
+       * validator type, e.g., 'async-numberRange'.
+       */
+      _GetImplicitAsyncValidators: function () {
+        var ret = this._superApply(arguments);
+        return $.extend(this._inputNumberDefaultAsyncValidators, ret);
       },
       /**
        * Returns the default styleclass for the component.
@@ -1911,7 +1966,17 @@ var __oj_input_number_metadata =
           }
         },
         keyup: function (event) {
-          this._stop(event);
+          var keyCode = $.ui.keyCode;
+
+          switch (event.keyCode) {
+            case keyCode.UP:
+            case keyCode.DOWN:
+              this._stop();
+              break;
+            default:
+              this._stop();
+              break;
+          }
         },
         blur: function (event) {
           this._blurEnterSetValue(event);
@@ -2120,15 +2185,6 @@ var __oj_input_number_metadata =
        * @private
        * @memberof oj.ojInputNumber
        */
-      _uiInputNumberHtml: function () {
-        // need to wrap the input+buttons with a span so that inline messaging
-        // can come after this span, and we can position popups on this span.
-        return "<span class='oj-inputnumber-wrapper'></span>";
-      },
-      /**
-       * @private
-       * @memberof oj.ojInputNumber
-       */
       _createButtonset: function () {
         var buttonSet = document.createElement('div');
         buttonSet.className = 'oj-buttonset-width-auto';
@@ -2154,18 +2210,30 @@ var __oj_input_number_metadata =
         return true;
       },
       /**
-       * Calls _spin to increment or decrement the number. It is called in a loop until
-       * this.timer is cleared (see this._stop(event) or min/max is reached.
+       * This is called when the user has clicked up or down, or held down up or down.
+       * If the user is holding down, this means he wants to spin up or down the value until he sees
+       * the value he wants, then he lets up. If the user clicks and doesn't hold down, it
+       * will step up or down in the direction.
+       * @param {Number} i - time to wait before recursively calling _repeat again. Defaults
+       *   to 500.
+       * @param {Number} direction - > 0 steps up, else steps down.
+       * @param {Object=} event an optional event if this was a result of ui interaction.
+       * @param {boolean=} spinning true if we are calling _repeat recursively while the user is holding
+       * down the up/down key or button.
        * @private
        * @memberof oj.ojInputNumber
        */
-      _repeat: function (i, steps, event) {
+      _repeat: function (i, direction, event, spinning) {
         var stopRepeat = false;
+        var domElem;
+        var busyContext;
+        var self = this;
+        var stepOpt = (this.options.step != null) ? this.options.step : 1;
 
-        // if steps is > 0, it is going up, else it is going down.
+        // if direction is > 0, it is going up, else it is going down.
         // need to check if min/max is reached, and if so, stop the repeat.
         // we do a quick css check to see if it is disabled.
-        if (steps > 0) {
+        if (direction > 0) {
           if (this.upButton[0].classList.contains('oj-disabled')) {
             stopRepeat = true;
           }
@@ -2179,13 +2247,32 @@ var __oj_input_number_metadata =
         clearTimeout(this.timer);
         // this.timer will be cleared elsewhere, like when the user stops holding down the up/down
         // arrows. See this._stop
-        this.timer = this._delay(function () {
+        this.timer = setTimeout(function () {
           if (!stopRepeat) {
-            this._repeat(40, steps, event);
+            self._repeat(40, direction, event, true);
           }
         }, i);
 
-        this._spin(steps * this.options.step, event);
+        // I need two paths. When I am 'spinning' and when I click click click the up
+        // or down buton or key individually. When I step individually, I queue up the steps
+        // using this.stepQueue if needed (e.g., a slow async validator)
+        if (!spinning) {
+          this._stepNoStartStop(direction * stepOpt, event);
+        } else {
+          // if we are actually spinning, it is ok to wait on the busyContext before we call
+          // _spin again. _spin increments the value and validates it.
+          domElem = this.element[0];
+          busyContext = oj.Context.getContext(domElem).getBusyContext();
+          if (busyContext.isReady()) {
+            // this clears the stepQueue so that when the user stops holding down
+            // the up/down button/key the number will stop spinning, even if the step
+            // queue isn't empty. e.g., the user clicks up 10 times, but then
+            // holds down the up. When he lets up, the number shouldn't keep going up just
+            // because the stepQueue isn't empty yet.
+            this.stepQueue = [];
+            this._spin(direction * stepOpt, event);
+          }
+        }
       },
       /**
        * This gets called when the user clicks the up/down buttons or the up/down arrows
@@ -2194,51 +2281,64 @@ var __oj_input_number_metadata =
        * @private
        * @memberof oj.ojInputNumber
        * @param {Number} step - Number of steps to increment.
+       * Negative steps means we are decrementing.
        * @param {Object=} event an optional event if this was a result of ui interaction.
        */
       _spin: function (step, event) {
-        // When the component's 'value' changes, the displayValue is automatically updated.
-        // So reading the component's display value should always give you the element's value
-        // This returns undefined when it can't parse
-        var value = this._getConvertedDisplayValue();
+        var adjustedValue;
+        var currentDisplayValue = this._GetDisplayValue();
+        var displayValue = currentDisplayValue || 0;
+        var value = this._ParseValueShowErrors(displayValue);
+
+        // parsing is synchronous, but _SetValue could be async if we have async-validators.
+        if (value !== undefined) {
+          adjustedValue = this._adjustParsedValueOnSpinAndUpdateDisplay(value, step);
+          return this._SetValue(adjustedValue, event,
+            { validationMode: this._VALIDATION_MODE.VALIDATORS_ONLY });
+        }
+        // parsing failed if I get here. It is showing the error message, so I can return.
+        this._updateButtonsAria(value);
+        return false;
+      },
+
+      /**
+       * Given the parsed value, it adjusts it by the step, formats, and updates the displayValue,
+       * rawValue, aria-* attributes, and buttons. It returns the adjustedValue.
+       * @return {number} the parsed value incremented by step.
+       * @private
+       * @memberof oj.ojInputNumber
+       */
+      _adjustParsedValueOnSpinAndUpdateDisplay: function (value, step) {
         var options = this.options;
         var minOpt = options.min;
         var maxOpt = options.max;
-        var stepOpt = options.step;
+        var stepOpt = (options.step != null) ? options.step : 1;
         var initialValue = this.initialValue;
+        var precision;
+        var adjustedValue;
+        var formatReturn;
 
-        if (value !== undefined) {
-          // get the max precision. e.g., min=2.4, initialValue=3.444, maxPrecision is 3.
-          var precision = this._precision(minOpt, stepOpt, initialValue);
+        // get the max precision. e.g., min=2.4, initialValue=3.444, maxPrecision is 3.
+        precision = this._precision(minOpt, stepOpt, initialValue);
 
-          value = this._adjustValue(value, step, minOpt, maxOpt, stepOpt, precision, initialValue);
+        adjustedValue = this._adjustValue(value, step, minOpt, maxOpt,
+          stepOpt, precision, initialValue);
 
-          // Show the user what is going to be validated. We are making it so that clicking on the
-          // up/down button is the same as if the user typed in a number and blurred.
-          if (this._CanSetValue()) {
-            // update the input's val which is what the user sees.
-            this.element.val(value);
-            // keep aria-valuenow in sync with the input's val
-            this._refreshAriaValueNowText(value);
-            // keep up/down buttons disabled state in sync with the input's val
-            this._updateButtons(value);
-            // keep rawValue in sync with the input's val
-            // use this.element.val() because the raw value should always be a string
-            this._SetRawValue(this.element.val(), event);
+        // Show the user what is going to be validated. We are making it so that clicking on the
+        // up/down button is the same as if the user typed in a number and blurred.
+        if (this._CanSetValue()) {
+          // format the value, then add that to the element's input and update rawValue with that.
+          // Passing true means 'do not show error messages or change valid state' since we
+          // do that in _SetValue.
+          formatReturn = this._UpdateElementDisplayValue(adjustedValue, true);
+          if (formatReturn !== undefined) {
+            // keep in sync with the input's val
+            this._updateButtonsAria(adjustedValue);
           }
-          // In this case, we know _parse was successful, so we can safely skip the parse
-          // step in this._SetValue by passing in the VALIDATORS_ONLY option.
-          this._SetValue(value, event, { validationMode: this._VALIDATION_MODE.VALIDATORS_ONLY });
-        } else {
-          // validate the unparsed value, and this will show the error.
-          // Note: _SetValue will reparse the display value and show the error if there
-          // is one.
-          // need to update aria-valuetext with the display value.
-          this._refreshAriaValueNowText(value);
-          this._updateButtons(value);
-          this._SetValue(this.element.val(), event);
         }
+        return adjustedValue;
       },
+
       /**
        * called from _adjustValue
        * @private
@@ -2514,14 +2614,13 @@ var __oj_input_number_metadata =
        * @private
        * @memberof oj.ojInputNumber
        */
-      _getConvertedDisplayValue: function () {
+      _getDisplayValueParsed: function () {
         var value;
         var displayValue;
         try {
           displayValue = this._GetDisplayValue() || 0;
           // if displayValue is not parseable, say it is 'abc',
           // then _parseValue throws an error. catch it and move on.
-          // TODO: Make _parseValue protected in EditableValue();
           value = this._parseValue(displayValue);
         } catch (e) {
           // catch the error, set value to undefined, and continue to update
@@ -2531,30 +2630,71 @@ var __oj_input_number_metadata =
         return value;
       },
       /**
+       * This calls _SetValue to parse, validate, and format the user's input.
+       * If we have async validators, this may happen asynchronously.
+       * If asynchronous and a new call is made to this method,
+       * it will ignore the Promise resolution from the previous request.
+       * @param {Object=} event the ui interaction event.
        * @private
        * @memberof oj.ojInputNumber
        */
       _blurEnterSetValue: function (event) {
         var val = this.element.val();
         var valuenow;
+        var setValueReturn;
+        var self = this;
+        var currentCounter;
 
         this._stop();
-        valuenow = this._getConvertedDisplayValue();
-        this._refreshAriaValueNowText(valuenow);
-        this._updateButtons(valuenow);
-        // run full validation
-        // _SetValue triggers valuechange event
-        this._SetValue(val, event);
+        // clear step queue
+        this.stepQueue = [];
+        // used to ignore if we get newer blurs
+        this._blurEnterSetValueCounter += 1;
+        currentCounter = this._blurEnterSetValueCounter;
+
+        setValueReturn = this._SetValue(val, event);
+
+        if (setValueReturn instanceof Promise) {
+          // We already set BusyContext in _SetValue
+          setValueReturn.then(function (setValueResolved) {
+            // valuenow/buttons are updated already in _Refresh for value option.
+            // handle the case where it wasn't.
+            // ignore if we got a more recent blur/enter while this one was still waiting.
+            if (currentCounter === self._blurEnterSetValueCounter) {
+              if (!setValueResolved) {
+                // If setValueResolved is false, there was an error in _SetValue parse/validate
+                // or it was ignored. Since we deal with ignoring ourselves,
+                // then we can rule that out.
+                valuenow = self._getDisplayValueParsed();
+                // we get here if parse is synchronous but validate is async, and validate
+                // failed.
+                self._updateButtonsAria(valuenow);
+              }
+            }
+          });
+        } else {
+          valuenow = setValueReturn ? this.options.value : this._getDisplayValueParsed();
+          // disables or enables both the up and down buttons depending upon what the value
+          // is on the screen after conversion plus what min/max are set to.
+          this._updateButtonsAria(valuenow);
+        }
       },
       /**
-       * Create the NumberRangeValidator. Use the translations['numberRange'] options if they exist,
-       * otherwise use the NumberRangeValidator default strings for
-       *  hints, messageSummary and messageDetail.
-       * Use the 'min' and 'max' options.
        * @private
        * @memberof oj.ojInputNumber
        */
-      _createRangeValidator: function () {
+      _updateButtonsAria: function (valuenow) {
+        this._refreshAriaValueNowText(valuenow);
+        this._updateButtons(valuenow);
+      },
+      /**
+       * Get the options for a number range validator, async or sync.
+       * Use the 'min' and 'max' options.
+       * @return {Object} the options
+       * @private
+       * @memberof oj.ojInputNumber
+       */
+      _createRangeValidatorOptions: function () {
         var options = this.options;
         var minOpt = options.min;
         var maxOpt = options.max;
@@ -2632,10 +2772,7 @@ var __oj_input_number_metadata =
             rangeUnderflow: messageSummaryRangeUnderflow || null },
           converter: this._GetConverter() };
 
-        this._inputNumberDefaultValidators[oj.ValidatorFactory.VALIDATOR_TYPE_NUMBERRANGE] =
-          __ValidationBase.Validation.validatorFactory(
-            oj.ValidatorFactory.VALIDATOR_TYPE_NUMBERRANGE)
-            .createValidator(numberRangeValidatorOptions);
+        return numberRangeValidatorOptions;
       },
 
       // The user can clear out min/max by setting the option to null, so we
@@ -2738,6 +2875,14 @@ var __oj_input_number_metadata =
        * displayValue if it is different than valuenow.
        * If valuenow is undefined, then aria-valuenow is skippped; it's not set or removed,
        * so it will be the last known valid value.
+       * Rules for aria-valuenow/aria-valuetext:
+       * if the input value shown to the user can be parsed to a valid non-formatted number,
+       * I'll set aria-valuenow, else it won't be there at all.
+       * if the input value shown is not equal to what aria-valuenow is,
+       * set aria-valuetext, e.g.,
+       * USD 10.00 for aria-valuetext, 10 for aria-valuenow.
+       * else it won't be there at all.
+       * My goal is for voiceover to read what is in the field, showing to the user.
        * @private
        * @memberof oj.ojInputNumber
        */
@@ -2777,21 +2922,72 @@ var __oj_input_number_metadata =
         }
       },
       /**
-       * step the inputnumber value up or down
+       * Step the inputnumber value up or down.
+       * If this is async because of async validators,
+       * then we queue up the step requests, so if a user clicks three times, but updating is slow
+       * due to slow validators, the user still sees the result of his three clicks
+       * at the end. This is different than when the user holds down the up/down
+       * key/button.
        * @private
        * @memberof oj.ojInputNumber
-       * @param {Number} steps - Number of steps to increment.
+       * @param {Number} step - Number of steps to increment, like 10 or 1. If undefined, we
+       * pull from the this.stepQueue queue.
        * @param {boolean} up If true step up, else step down.
+       * @param {Object=} event an optional event if this was a result of ui interaction.
        */
-      _step: function (steps, up) {
-        this._start();
-        if (up) {
-          this._spin((steps || 1) * this.options.step);
+      _stepNoStartStop: function (step, event) {
+        var currentStepObject;
+        var currentSpinStep;
+        var currentEvent;
+        // this.stepQueue = []; initialized in _AfterCreate and cleared if spinning or blurEnter
+        var spinPromise;
+        var self = this;
+
+        if (step === undefined) {
+          // pull from the queue. If it's empty, return.
+          if (this.stepQueue.length === 0) {
+            return;
+          }
+          currentStepObject = this.stepQueue.shift();
+          currentSpinStep = currentStepObject.step;
+          currentEvent = currentStepObject.event;
         } else {
-          this._spin((steps || 1) * -this.options.step);
+          // if we are already processing something in the queue, push new step request
+          //  to the queue, and return.
+          if (this.stepQueue.length >= 1) {
+            this.stepQueue.push({ step: step, event: event });
+            return;
+          }
+          currentSpinStep = step;
+          currentEvent = event;
         }
+
+        spinPromise = this._spin(currentSpinStep, currentEvent);
+        if (spinPromise instanceof Promise) {
+          this.stepQueue.push({ step: currentSpinStep, event: currentEvent });
+          spinPromise.then(function () {
+            // pop it off because it has been processed. This is used as a 'flag' that we
+            // are awaiting the promise to resolve.
+            self.stepQueue.shift();
+            // continue stepping if stepQueue is not empty.
+            self._stepNoStartStop(undefined, currentEvent);
+          });
+        }
+      },
+
+      /**
+       * step the inputnumber value up or down.
+       * @private
+       * @memberof oj.ojInputNumber
+       * @param {Number} step - Number of steps to increment, like 10 or 1 or -10.
+       * @param {Object=} event an optional event if this was a result of ui interaction.
+       */
+      _step: function (step, event) {
+        this._start();
+        this._stepNoStartStop(step, event);
         this._stop();
       },
+
       /**
        * Set the type of the input element based on virtualKeyboard option.
        * @memberof oj.ojInputNumber
@@ -2800,23 +2996,6 @@ var __oj_input_number_metadata =
        * @ignore
        */
       _SetInputType: oj.EditableValueUtils._SetInputType,
-      /**
-       * the validate method from v3.x that returns a boolean
-       * @memberof oj.ojInputNumber
-       * @instance
-       * @protected
-       * @ignore
-       */
-      _ValidateReturnBoolean: oj.EditableValueUtils._ValidateReturnBoolean,
-
-      /**
-       * the validate method that returns a Promise
-       * @memberof oj.ojInputNumber
-       * @instance
-       * @protected
-       * @ignore
-       */
-      _ValidateReturnPromise: oj.EditableValueUtils._ValidateReturnPromise,
 
       // API doc for inherited methods with no JS in this file:
 

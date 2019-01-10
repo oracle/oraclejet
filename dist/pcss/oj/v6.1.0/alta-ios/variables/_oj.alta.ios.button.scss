@@ -1,0 +1,207 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+
+$includeButtonVariables: $includeButtonClasses !default;
+
+@if $includeButtonVariables != false {
+  @include module-include-once("alta.ios.variables.button") {
+
+:root {
+
+  // button
+  // --------------------------
+  --oj-button-border-radius:     var(--oj-border-radius-lg);
+  --oj-button-cursor:            default;
+  --oj-button-font-weight:       normal;
+
+  // --oj-button-height: the --oj-button-height variable is defined in the general file 
+  // because many components depend on the value
+  --oj-button-sm-height:      1.625rem;
+  --oj-button-lg-height:      3.25rem;
+  --oj-button-xl-height:    3.875rem;
+
+
+// todo - seems odd these aren't different sizes
+  --oj-button-font-size:         1.125rem;
+  --oj-button-sm-font-size:   0.875rem;
+  --oj-button-lg-font-size:   1.25rem;
+  --oj-button-xl-font-size: 1.375rem;
+
+
+  // button padding
+  --oj-button-text-to-edge-padding:         0.875rem;
+  --oj-button-sm-text-to-edge-padding:   0.625rem;
+  --oj-button-lg-text-to-edge-padding:   1.25rem;
+  --oj-button-xl-text-to-edge-padding: 1.25rem;
+
+  --oj-button-icon-to-text-padding:          0.5rem;
+  --oj-button-sm-icon-to-text-padding:    0.375rem;
+  --oj-button-lg-icon-to-text-padding:    0.5rem;
+  --oj-button-xl-icon-to-text-padding:  0.75rem;
+
+  --oj-button-icon-to-edge-padding:          0.625rem;
+  --oj-button-sm-icon-to-edge-padding:    0.1875rem;
+  --oj-button-lg-icon-to-edge-padding:    1.125rem;
+  --oj-button-xl-icon-to-edge-padding:  1.875rem;
+
+  --oj-button-icon-only-padding:             0.625rem;
+  --oj-button-sm-icon-only-padding:       0.1875rem;
+  --oj-button-lg-icon-only-padding:       1.125rem;
+  --oj-button-xl-icon-only-padding:     1.875rem;
+
+  // enabled
+  --oj-button-bg-color:                      var(--oj-brand-color);
+  --oj-button-border-color:                  var(--oj-button-bg-color);
+  --oj-button-text-color:                    var(--oj-neutral-color-1);
+  --oj-button-icon-color:                    var(--oj-button-text-color);
+  --oj-button-bg-image:                      none;
+  --oj-button-box-shadow:                    none;
+  --oj-button-text-shadow:                   none;
+
+  // hover
+  --oj-button-bg-color-hover:                var(--oj-brand-color-light-1);
+  --oj-button-border-color-hover:            var(--oj-button-bg-color-hover);
+  --oj-button-text-color-hover:              var(--oj-neutral-color-1);
+  --oj-button-icon-color-hover:              var(--oj-button-text-color-hover);
+  --oj-button-bg-image-hover:                none;
+  --oj-button-box-shadow-hover:              var(--oj-button-box-shadow);
+  --oj-button-text-shadow-hover:             none;
+
+  // active
+  --oj-button-bg-color-active:               var(--oj-brand-color-dark-2);
+  --oj-button-border-color-active:           var(--oj-button-bg-color-active);
+  --oj-button-text-color-active:             var(--oj-neutral-color-1);
+  --oj-button-icon-color-active:             var(--oj-button-text-color-active);
+  --oj-button-bg-image-active:               none;
+  --oj-button-box-shadow-active:             var(--oj-button-box-shadow);
+  --oj-button-text-shadow-active:            none;
+  --oj-button-opacity-active:                1;
+
+  // selected
+  --oj-button-bg-color-selected:             var(--oj-button-bg-color-active);
+  --oj-button-border-color-selected:         var(--oj-button-border-color-active);
+  --oj-button-text-color-selected:           var(--oj-button-text-color-active);
+  --oj-button-icon-color-selected:           var(--oj-button-icon-color-active);
+  --oj-button-bg-image-selected:             var(--oj-button-bg-image-active);
+  --oj-button-box-shadow-selected:           var(--oj-button-box-shadow-active);
+  --oj-button-text-shadow-selected:          var(--oj-button-text-shadow-active);
+
+  // selected hover
+  --oj-button-bg-color-selected-hover:       var(--oj-brand-color-light-2);
+  --oj-button-border-color-selected-hover:   var(--oj-button-bg-color-selected-hover);
+  --oj-button-text-color-selected-hover:     var(--oj-neutral-color-1);
+  --oj-button-icon-color-selected-hover:     var(--oj-button-text-color-selected-hover);
+  
+  // disabled
+  --oj-button-bg-color-disabled:             var(--oj-neutral-color-9);
+  --oj-button-border-color-disabled:         var(--oj-button-bg-color-disabled);
+  --oj-button-text-color-disabled:           var(--oj-text-color-disabled);
+  --oj-button-icon-color-disabled:           var(--oj-icon-color-disabled);
+  --oj-button-box-shadow-disabled:           none;
+  --oj-button-opacity-disabled:              var(--oj-opacity-disabled);
+
+
+
+  // selected disabled
+  --oj-button-bg-color-selected-disabled:     var(--oj-neutral-color-11);
+  --oj-button-border-color-selected-disabled: var(--oj-button-bg-color-selected-disabled);
+  --oj-button-text-color-selected-disabled:   var(--oj-neutral-color-5);
+  --oj-button-icon-color-selected-disabled:   var(--oj-button-text-color-selected-disabled);
+
+
+  // half-chrome enabled
+  --oj-button-half-chrome-font-weight:       normal;
+  --oj-button-half-chrome-text-color:        var(--oj-link-text-color);
+  --oj-button-half-chrome-icon-color:        var(--oj-button-half-chrome-text-color);
+
+  // half chrome hover
+  --oj-button-half-chrome-bg-color-hover:        transparent;
+  --oj-button-half-chrome-border-color-hover:    var(--oj-button-half-chrome-bg-color-hover);
+  --oj-button-half-chrome-text-color-hover:      var(--oj-brand-color-light-1);
+  --oj-button-half-chrome-icon-color-hover:      var(--oj-button-half-chrome-text-color-hover);
+
+  // half chrome-active
+  --oj-button-half-chrome-bg-color-active:       transparent;
+  --oj-button-half-chrome-border-color-active:   var(--oj-button-half-chrome-bg-color-active);
+  --oj-button-half-chrome-text-color-active:     var(--oj-button-half-chrome-text-color);
+  --oj-button-half-chrome-icon-color-active:     var(--oj-button-half-chrome-text-color-active);
+  --oj-button-half-chrome-opacity-active:        0.2;
+
+  // half-chrome-selected
+  --oj-button-half-chrome-bg-color-selected:     var(--oj-brand-color-dark-1);
+  --oj-button-half-chrome-border-color-selected: var(--oj-button-half-chrome-bg-color-selected);
+  --oj-button-half-chrome-text-color-selected:   var(--oj-button-text-color-selected);
+  --oj-button-half-chrome-icon-color-selected:   var(--oj-button-icon-color-selected);
+
+  // half chrome selected hover
+  --oj-button-half-chrome-bg-color-selected-hover:     var(--oj-button-bg-color-hover);
+  --oj-button-half-chrome-border-color-selected-hover: var(--oj-button-half-chrome-bg-color-selected-hover);
+  --oj-button-half-chrome-text-color-selected-hover:   var(--oj-button-text-color-selected-hover);
+  --oj-button-half-chrome-icon-color-selected-hover:   var(--oj-button-icon-color-selected-hover);
+
+  // half chrome disabled
+  --oj-button-half-chrome-text-color-disabled:   var(--oj-neutral-color-17);
+  --oj-button-half-chrome-icon-color-disabled:   var(--oj-icon-color-disabled);
+  --oj-button-half-chrome-opacity-disabled:      0.3;
+
+  // half chrome selected disabled
+  --oj-button-half-chrome-bg-color-selected-disabled:     var(--oj-neutral-color-9);
+  --oj-button-half-chrome-border-color-selected-disabled: var(--oj-button-half-chrome-bg-color-selected-disabled);
+  --oj-button-half-chrome-text-color-selected-disabled:   var(--oj-neutral-color-5);
+  --oj-button-half-chrome-icon-color-selected-disabled:   var(--oj-button-half-chrome-text-color-selected-disabled);
+
+
+  // outlined
+  --oj-button-outlined-chrome-font-weight:           normal;
+
+  //outlined enabled
+  --oj-button-outlined-chrome-border-color:          var(--oj-brand-color-dark-1);;
+  --oj-button-outlined-chrome-text-color:            var(--oj-button-half-chrome-text-color);
+  --oj-button-outlined-chrome-icon-color:            var(--oj-button-half-chrome-icon-color);
+
+  // outlined hover
+  --oj-button-outlined-chrome-bg-color-hover:        var(--oj-button-half-chrome-bg-color-hover);
+  --oj-button-outlined-chrome-border-color-hover:    var(--oj-button-border-color-hover);
+  --oj-button-outlined-chrome-text-color-hover:      var(--oj-brand-color-light-1);
+  --oj-button-outlined-chrome-icon-color-hover:      var(--oj-brand-color-light-1);
+
+  // outlined active
+  --oj-button-outlined-chrome-bg-color-active:       var(--oj-button-bg-color-active);
+  --oj-button-outlined-chrome-border-color-active:   var(--oj-button-border-color-active);
+  --oj-button-outlined-chrome-text-color-active:     var(--oj-button-text-color-active);
+  --oj-button-outlined-chrome-icon-color-active:     var(--oj-button-icon-color-active);
+  --oj-button-outlined-chrome-opacity-active:        var(--oj-button-opacity-active);
+
+  // outlined selected
+  --oj-button-outlined-chrome-bg-color-selected:     var(--oj-button-half-chrome-bg-color-selected);
+  --oj-button-outlined-chrome-border-color-selected: var(--oj-button-outlined-chrome-bg-color-selected);
+  --oj-button-outlined-chrome-text-color-selected:   var(--oj-button-text-color-selected);
+  --oj-button-outlined-chrome-icon-color-selected:   var(--oj-button-icon-color-selected);
+
+  // outlined selected hover
+  --oj-button-outlined-chrome-bg-color-selected-hover:     var(--oj-button-bg-color-hover);
+  --oj-button-outlined-chrome-border-color-selected-hover: var(--oj-button-outlined-chrome-bg-color-selected-hover);
+  --oj-button-outlined-chrome-text-color-selected-hover:   var(--oj-button-text-color-selected-hover);
+  --oj-button-outlined-chrome-icon-color-selected-hover:   var(--oj-button-icon-color-selected-hover);
+
+  // outlined disabled
+  --oj-button-outlined-chrome-border-color-disabled: var(--oj-neutral-color-9);
+  --oj-button-outlined-chrome-text-color-disabled:   var(--oj-neutral-color-9);
+  --oj-button-outlined-chrome-icon-color-disabled:   var(--oj-neutral-color-9);
+  --oj-button-outlined-chrome-opacity-disabled:      var(--oj-button-opacity-disabled);
+
+  // outlined selected disabled
+  --oj-button-outlined-chrome-bg-color-selected-disabled:     var(--oj-button-half-chrome-bg-color-selected-disabled);
+  --oj-button-outlined-chrome-border-color-selected-disabled: var(--oj-button-outlined-chrome-bg-color-selected-disabled);
+  --oj-button-outlined-chrome-text-color-selected-disabled:   var(--oj-button-text-color-selected-disabled);
+  --oj-button-outlined-chrome-icon-color-selected-disabled:   var(--oj-button-icon-color-selected-disabled);
+
+  --oj-button-primary-color: var(--oj-brand-color);
+  --oj-button-confirm-color: var(--oj-accent-color-confirmation-5);
+
+}
+
+
+  }
+}

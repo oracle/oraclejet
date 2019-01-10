@@ -109,8 +109,7 @@ dvt.NBox.prototype.SetOptions = function(options) {
     // Process the data to add bulletproofing
     DvtNBoxDataUtils.processDataObject(this);
 
-    // Disable animation for canvas and xml
-    if (!dvt.Agent.isEnvironmentBrowser()) {
+    if (dvt.Agent.isEnvironmentTest()) {
       this.Options[dvt.NBoxConstants.ANIMATION_ON_DISPLAY] = 'none';
       this.Options[dvt.NBoxConstants.ANIMATION_ON_DATA_CHANGE] = 'none';
     }

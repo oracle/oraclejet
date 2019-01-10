@@ -186,7 +186,7 @@ dvt.Chart.prototype.SetOptions = function(options) {
     DvtChartDataUtils.processDataObject(this);
 
     // Disable animation for canvas, xml and large bubble/scatter data
-    if (!dvt.Agent.isEnvironmentBrowser() || (DvtChartTypeUtils.isScatterBubble(this) &&
+    if (dvt.Agent.isEnvironmentTest() || (DvtChartTypeUtils.isScatterBubble(this) &&
         DvtChartDataUtils.getSeriesCount(this) * DvtChartDataUtils.getGroupCount(this) > DvtChartPlotAreaRenderer.FILTER_THRESHOLD_SCATTER_BUBBLE)) {
       this.Options['animationOnDisplay'] = 'none';
       this.Options['animationOnDataChange'] = 'none';
@@ -4448,7 +4448,7 @@ DvtChartDefaults.SKIN_ALTA = {
   'title': {'style': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_13 + 'color: #252525;')},
   'subtitle': {'style': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA + 'color: #252525;')},
   'footnote': {'style': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_11)},
-  '_statusMessageStyle': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_13 + 'color: #252525;'),
+  '_statusMessageStyle': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA_13 + 'color: #252525; font-weight: normal'),
   'pieCenter': {'labelStyle': new dvt.CSSStyle(dvt.BaseComponentDefaults.FONT_FAMILY_ALTA)},
 
   'styleDefaults': {
@@ -4785,24 +4785,27 @@ DvtChartDataCursorHandler._getClosestMatchSecondDirection = function(matchesInBo
   return closestMatch;
 };
 
-DvtChartDataCursorHandler._getClosestMatchesFirstDirection = function(matches, horizontal, x, y) {
+DvtChartDataCursorHandler._getClosestMatchesFirstDirection = function(matches, horizontal, x, y, isHighlightMatched) {
   var minDiff = Infinity;
   var closestFirstDirectionMatches = new Array();
   // Get closest matches
   for (var i = 0; i < matches.length; i++) {
     var matchObj = matches[i];
-    var lowerBound = (horizontal) ? matchObj.matchRegion.y : matchObj.matchRegion.x;
-    var higherBound = (horizontal) ? matchObj.matchRegion.y + matchObj.matchRegion.h : matchObj.matchRegion.x + matchObj.matchRegion.w;
-    var value = (horizontal) ? y : x;
+    if (isHighlightMatched(matchObj.logicalObject)) {
+      var matchRegion = matchObj.matchRegion;
+      var lowerBound = (horizontal) ? matchRegion.y : matchRegion.x;
+      var higherBound = (horizontal) ? matchRegion.y + matchRegion.h : matchRegion.x + matchRegion.w;
+      var value = (horizontal) ? y : x;
 
-    var midPoint = (lowerBound + higherBound) / 2;
-    var diffValue = Math.round(Math.abs(midPoint - value));
-    if (diffValue <= minDiff) {
-      if (diffValue < minDiff) {
-        closestFirstDirectionMatches = new Array();
+      var midPoint = (lowerBound + higherBound) / 2;
+      var diffValue = Math.round(Math.abs(midPoint - value));
+      if (diffValue <= minDiff) {
+        if (diffValue < minDiff) {
+          closestFirstDirectionMatches = new Array();
+        }
+        closestFirstDirectionMatches.push(matchObj);
+        minDiff = diffValue;
       }
-      closestFirstDirectionMatches.push(matchObj);
-      minDiff = diffValue;
     }
   }
   return closestFirstDirectionMatches;
@@ -4842,7 +4845,14 @@ DvtChartDataCursorHandler.prototype._getClosestMatch = function(x, y) {
 
   var matches = this._findMatches();
 
-  var matchesInBounds = DvtChartDataCursorHandler._getClosestMatchesFirstDirection(matches, horizontal, x, y);
+  var highlightedCategories = DvtChartStyleUtils.getHighlightedCategories(this._chart);
+  var isHighlightMatchAll = this._chart.getOptions()['highlightMatch'] == 'all';
+  var matchFound = highlightedCategories.length > 0 ? (isHighlightMatchAll ? dvt.ArrayUtils.hasAllItems : dvt.ArrayUtils.hasAnyItem) : null;
+  var isHighlightMatched = function (obj) {
+    return matchFound ? matchFound(obj.getCategories(), highlightedCategories) : true;
+  };
+  
+  var matchesInBounds = DvtChartDataCursorHandler._getClosestMatchesFirstDirection(matches, horizontal, x, y, isHighlightMatched);
 
   // Non-numerical x axis
   if (!DvtChartTypeUtils.isScatterBubble(this._chart)) {
@@ -4859,21 +4869,22 @@ DvtChartDataCursorHandler.prototype._getClosestMatch = function(x, y) {
 
     for (var i = 0; i < matches.length; i++) {
       var match = matches[i];
-      var itemGroup = match.logicalObject.getGroupIndex();
-      if (useAllInGroup) {
-        if (closestGroup == itemGroup) {
-          matchesInBounds.push(match);
+      if (isHighlightMatched(match.logicalObject)) {
+        if (useAllInGroup) {
+          if (match.logicalObject.getGroupIndex() == closestGroup) {
+            matchesInBounds.push(match);
+          }
+        }
+        else {
+          var lowerBound = (horizontal) ? match.matchRegion.y : match.matchRegion.x;
+          var higherBound = (horizontal) ? match.matchRegion.y + match.matchRegion.h : match.matchRegion.x + match.matchRegion.w;
+          var midPoint = (lowerBound + higherBound) / 2;
+          if (closestHigherBound >= midPoint && closestLowerBound <= midPoint) {
+            matchesInBounds.push(match);
+          }
         }
       }
-      else {
-        var lowerBound = (horizontal) ? match.matchRegion.y : match.matchRegion.x;
-        var higherBound = (horizontal) ? match.matchRegion.y + match.matchRegion.h : match.matchRegion.x + match.matchRegion.w;
-        var midPoint = (lowerBound + higherBound) / 2;
-        if (closestHigherBound >= midPoint && closestLowerBound <= midPoint) {
-          matchesInBounds.push(match);
-        }
-
-      }
+      
     }
   }
   return DvtChartDataCursorHandler._getClosestMatchSecondDirection(matchesInBounds, horizontal, x, y);
@@ -9743,6 +9754,14 @@ DvtChartPie.prototype.getCenter = function() {
 };
 
 /**
+ * Returns an id for the chart. This is mainly for animation purposes.
+ * @return {string} id for chart
+ */
+DvtChartPie.prototype.getId = function () {
+  return 'chart/pie';
+};
+
+/**
  * @return {number} The inner radius of this pie chart
  */
 DvtChartPie.prototype.getInnerRadius = function() {
@@ -11745,6 +11764,7 @@ DvtChartAnimOnDC._buildAnimLists = function(ctx, arOldList, oldChart, arNewList,
 
   for (i = 0; i < 2; i++) {            // loop over old peers and new peers
     var barCount = {}; // keeps track of how many bars have been handled for each series
+    var lineAreaCount = {}; // keeps track of areas and lines for areas
     for (j = 0; j < ar.length; j++) {
       peer = ar[j];
 
@@ -11772,6 +11792,9 @@ DvtChartAnimOnDC._buildAnimLists = function(ctx, arOldList, oldChart, arNewList,
       }
       else if (obj instanceof DvtChartLineArea) {
         dch = new DvtChartDataChangeLineArea(peer, duration);
+        var lineAreaId = dch.getId();
+        lineAreaCount[lineAreaId] = lineAreaCount[lineAreaId] ? lineAreaCount[lineAreaId] + 1 : 1;
+        dch.setId(lineAreaId + '/' + lineAreaCount[lineAreaId]);
       }
       else if (obj instanceof dvt.SimpleMarker) {
         // DvtChartLineMarker is invisible unless selected.
@@ -11967,7 +11990,7 @@ DvtChartDataChangeAbstract.prototype.Init = function(peer, duration)
   this._insertDuration = duration * 0.50;
   this._deleteDuration = duration * 0.50;
   this._shape = peer.getDisplayables()[0];
-  this._animId = peer.getSeries() + '/' + peer.getGroup();
+  this._animId = peer.getDataItemId() || peer.getSeries() + '/' + peer.getGroup();
 };
 
 /**
@@ -14017,7 +14040,7 @@ DvtChartDataUtils.getSeries = function(chart, seriesIndex) {
   if (seriesItem) {
     if (seriesItem['id'])
       return seriesItem['id'];
-    else if (seriesItem['name'] || seriesItem['name'] == '')
+    else if (seriesItem['name'] || seriesItem['name'] === '')
       return seriesItem['name'];
     else
       return String(seriesIndex);
@@ -14034,7 +14057,7 @@ DvtChartDataUtils.getSeries = function(chart, seriesIndex) {
  */
 DvtChartDataUtils.getSeriesLabel = function(chart, seriesIndex) {
   var seriesItem = DvtChartDataUtils.getSeriesItem(chart, seriesIndex);
-  if (seriesItem && (seriesItem['name'] || seriesItem['name'] == ''))
+  if (seriesItem && (seriesItem['name'] || seriesItem['name'] === ''))
     return seriesItem['name'];
   else
     return null;
@@ -14069,7 +14092,7 @@ DvtChartDataUtils.getSeriesStyleIndex = function(chart, seriesIndex) {
     return seriesIndex;
 
   var series = DvtChartDataUtils.getSeries(chart, seriesIndex);
-  if (!series)
+  if (series == null)
     return seriesIndex;
 
   return dvt.ArrayUtils.getIndex(chart.getSeriesStyleArray(), series);
@@ -14231,9 +14254,9 @@ DvtChartDataUtils.getGroup = function(chart, groupIndex) {
   if (groupIndex != null && groupIndex >= 0 && groupIndex < DvtChartDataUtils.getGroupCount(chart)) {
     var group = DvtChartDataUtils._getGroupsArray(chart)[groupIndex];
     if (group) {
-      if (group['id'])
+      if (group['id'] != null)
         return group['id'];
-      else if (group['name'] || group['name'] == '')
+      else if (group['name'] != null)
         return group['name'];
       else
         return String(groupIndex);
@@ -14252,7 +14275,7 @@ DvtChartDataUtils.getGroup = function(chart, groupIndex) {
 DvtChartDataUtils.getGroupIndex = function(chart, group) {
   var groups = DvtChartDataUtils.getGroups(chart);
   for (var i = 0; i < groups.length; i++) {
-    if ((group instanceof Array && groups[i] instanceof Array) ? dvt.ArrayUtils.equals(group, groups[i]) : group == groups[i])
+    if ((group instanceof Array && groups[i] instanceof Array) ? dvt.ArrayUtils.equals(group, groups[i]) : group === groups[i])
       return i;
   }
   return -1;
@@ -14268,7 +14291,7 @@ DvtChartDataUtils.getGroupLabel = function(chart, groupIndex) {
   if (groupIndex >= 0 && groupIndex < DvtChartDataUtils.getGroupCount(chart)) {
     var group = DvtChartDataUtils._getGroupsArray(chart)[groupIndex];
     if (group) {
-      if (group['name'])
+      if (group['name'] != null)
         return group['name'];
       else if (group['id'] != null) // Empty or null group name allowed if id is specified
         return '';
@@ -14656,7 +14679,7 @@ DvtChartDataUtils.getCategories = function(chart, seriesIndex, groupIndex, itemI
     return seriesItem['categories'];
 
   var series = DvtChartDataUtils.getSeries(chart, seriesIndex);
-  if (series)
+  if (series != null)
     return [series];
 
   return [];
@@ -18547,7 +18570,7 @@ DvtChartTooltipUtils.getOtherSliceDatatip = function(chart, otherValue, isTabula
  */
 DvtChartTooltipUtils._processDatatip = function(datatip, chart, isTabular) {
   // Don't render tooltip if empty
-  if (datatip == '')
+  if (datatip === '')
     return null;
 
   // Add outer table tags
@@ -21240,7 +21263,7 @@ DvtChartPieLabelUtils._setLabelsAndFeelers = function(pie, alabels, side) {
     // perform 'logical' clipping ourselves
     if ((labelInfo.getY() < frame.y) || (labelInfo.getY() + labelInfo.getHeight()) > frame.y + frame.h) {
       slice.setSliceLabel(null);
-      slice.setNoOutsideFeeler(); // Bug 8358713 - don't show feelers if the label is 'clipped' (invisible)
+      slice.setNoOutsideFeeler(); //  - don't show feelers if the label is 'clipped' (invisible)
     }
     else {
       DvtChartPieLabelUtils._truncateSliceLabel(pie, slice, labelInfo, isLeftSide);
@@ -26536,8 +26559,7 @@ dvt.SparkChart.prototype.SetOptions = function(options) {
     // Combine the user options with the defaults and store
     this.Options = this.Defaults.calcOptions(options);
 
-    // Disable animation for canvas and xml
-    if (!dvt.Agent.isEnvironmentBrowser()) {
+    if (dvt.Agent.isEnvironmentTest()) {
       this.Options['animationOnDisplay'] = 'none';
       this.Options['animationOnDataChange'] = 'none';
     }

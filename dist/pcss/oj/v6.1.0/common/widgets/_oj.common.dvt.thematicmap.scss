@@ -1,0 +1,107 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// !!!
+// WARNING: do not directly import this file, instead import the
+//          version in your theme's directory,
+//          for example alta/widgets/_oj.alta.dvt.thematicmap.scss
+// !!!
+@import "../../utilities/oj.utilities";
+
+@if $includeThematicMapClasses != false {
+  @include module-include-once("common.thematicmap") {
+
+    // This is to prevent the flash of unstyled content before the html becomes JET components.
+    @if $initialVisibility == hidden {
+      oj-thematic-map:not(.oj-complete) {
+        visibility: hidden;
+      }
+    }
+
+    oj-thematic-map {
+      display: block;
+    }
+
+    .oj-thematicmap{
+      @include oj-user-select-property(none);
+      width:600px;
+      height:375px;
+    }
+
+    .oj-thematicmap-arealayer {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+      background-color: var(--oj-thematic-map-bg-color);
+      border-color: var(--oj-thematic-map-border-color);
+      font-size: var(--oj-font-size);
+      } @else {
+      background-color: $dvtMapBgColor;
+      border-color: $dvtBorder2Color;
+      font-size: $fontSize;
+      }
+    }
+
+    .oj-thematicmap-area {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+      border-color: var(--oj-thematic-map-border-color);
+      } @else {
+      border-color: $dvtBorder2Color;
+      }
+    }
+
+    .oj-thematicmap-area.oj-hover {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+      border-color: var(--oj-dvt-item-inner-border-color-selected);
+      } @else {
+      border-color: $dvtBorder2Color;
+      }
+    }
+
+    .oj-thematicmap-area.oj-selected {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+      border-top-color: var(--oj-dvt-item-inner-border-color-selected);
+      border-bottom-color: var(--oj-dvt-item-outer-border-color-selected);
+      } @else {
+      border-top-color: $dvtBorder2Color;
+      border-bottom-color: $dvtBorderColor;
+      }
+    }
+
+    .oj-thematicmap-marker {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+      border-color: var(--oj-thematic-map-marker-border-color);
+        color: var(--oj-text-color);
+        font-size: var(--oj-font-size);
+        background-color: var(--oj-thematic-map-marker-bg-color);
+      } @else {
+      border-color: $dvtBorder2Color;
+      color: $textColor;
+      font-size: $fontSize;
+      background-color: $dvtMapMarkerBgColor;
+      }
+    }
+
+    .oj-thematicmap-link {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+      color: var(--oj-thematic-map-link-color);
+      } @else {
+      color: $dvtMapLinkColor;
+      }
+    }
+
+    // Link inner hover color
+    .oj-thematicmap-link.oj-hover {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+      color: var(--oj-dvt-item-inner-border-color-selected);
+      } @else {
+      color: $dvtBorder2Color;
+      }
+    }
+
+    // Link outer selection color
+    .oj-thematicmap-link.oj-selected {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+      border-color: var(--oj-dvt-item-outer-border-color-selected);
+      } @else {
+      border-color: $dvtBorderColor;
+      }
+    }
+  }
+}

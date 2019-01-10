@@ -1,7 +1,7 @@
 {
   "name": "oj-messages",
-  "version": "6.0.0",
-  "jetVersion": "6.0.0",
+  "version": "6.1.0",
+  "jetVersion": "6.1.0",
   "displayName": "Messages",
   "type": "core",
   "styleClasses": [
@@ -13,7 +13,7 @@
     }
   ],
   "description": "Manages layout and display of messages.",
-  "help": "https://docs.oracle.com/en/middleware/jet/6/reference-api/oj.ojMessages.html",
+  "help": "https://docs.oracle.com/en/middleware/jet/6.1/reference-api/oj.ojMessages.html",
   "properties": {
     "display": {
       "description": "Specifies the display purpose of messages. The valid values for display are\ngeneral and notification.\nGeneral messages are commonly rendered at the page level or section level, relating to the task\nthe user performed. Notification messages are typically used for reporting asynchronous events,\nor to communicate some background activity.\n\nThe presentation of the message is inline by default. However, when a\nojMessages#positionproperty is provided, the presentation will be an overlay.\nThe alignment of the overlay will default based on the display property. The\ndefaults are defined by the theme.",
@@ -33,6 +33,40 @@
         "notification": {
           "description": "often used for communicating alerts arriving asynchronously",
           "displayName": "Notification"
+        }
+      }
+    },
+    "displayOptions": {
+      "description": "Specifies the display options for contents of all the messages specified for the\nojMessages#messages attribute.",
+      "type": "object",
+      "displayName": "Display Options",
+      "help": "displayOptions",
+      "properties": {
+        "category": {
+          "description": "Specifies display option for ojMessage#message.category text in all the messages\nspecified for the ojMessages#messages attribute.",
+          "type": "string",
+          "displayName": "Category",
+          "value": "auto",
+          "help": "displayOptions.category",
+          "enumValues": [
+            "auto",
+            "header",
+            "none"
+          ],
+          "propertyEditorValues": {
+            "auto": {
+              "description": "the component decides whether and where the ojMessage#message.category text is displayed. The behavior is same as 'header' option, but may change in future releases.",
+              "displayName": "Auto"
+            },
+            "header": {
+              "description": "if the ojMessage#message.category property is specified, its value will be displayed in the header region of the message next to message icon. If ojMessage#message.category property is not specified, a translated text corresponding to the value of the ojMessage#message.severity property will be displayed.",
+              "displayName": "Header"
+            },
+            "none": {
+              "description": "the ojMessage#message.category text will not be displayed",
+              "displayName": "None"
+            }
+          }
         }
       }
     },
@@ -328,8 +362,8 @@
       "help": "close",
       "params": [
         {
-          "name": "associated",
-          "description": "message instance of type ojMessage#message",
+          "name": "message",
+          "description": "the message to be closed",
           "type": "object"
         }
       ],
@@ -342,8 +376,7 @@
         {
           "name": "closeFilter",
           "description": "an optional callback function that will be passed an instance of type ojMessage#message for each child oj-message. If closeFilter returns true, the associated oj-message will be closed. Returning false will exclude the child message from closure. If a closeFilter is not passed, all child messages will be closed.",
-          "type": "function",
-          "optional": true
+          "type": "function"
         }
       ],
       "return": "void"

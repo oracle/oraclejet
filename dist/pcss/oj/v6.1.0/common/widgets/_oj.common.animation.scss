@@ -1,0 +1,144 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// !!!
+// WARNING: do not directly import this file, instead import the
+//          version in your theme's directory,
+//          for example alta/widgets/_oj.alta.animation.scss
+// !!!
+
+@import "../../utilities/oj.utilities";
+
+@if $includeAnimationClasses != false {
+  @include module-include-once("common.animation") {
+
+    /*
+     * Viewport element for clipping ojModule view host during animation
+     * so that the view content doesn't overlap surrounding elements
+     */
+    .oj-animation-host-viewport {
+      overflow: hidden;
+    }
+
+    /*
+     * ojModule view host for holding view content temporarily during animation
+     */
+    .oj-animation-host {
+      position: relative;
+      width: 100%;
+      height: 100%;
+    }
+
+    $animationModuleEffects: (coverLeft: (
+                                oldViewEffect: (effect: "slideOut", offsetX: "-30%", duration: $animationDurationShort, timingFunction: "ease-in-out", persist: "all"),
+                                newViewEffect: (effect: "slideIn", direction: "left", duration: $animationDurationShort, timingFunction: "ease-in-out"),
+                                newViewOnTop: true
+                              ),
+                              coverRight: (oldViewEffect: (effect: "slideOut", offsetX: "30%", duration: $animationDurationShort, timingFunction: "ease-in-out", persist: "all"),
+                                newViewEffect: (effect: "slideIn", direction: "right", duration: $animationDurationShort, timingFunction: "ease-in-out"),
+                                newViewOnTop: true
+                              ),
+                              coverUp: (
+                                newViewEffect: (effect: "slideIn", direction: "top", duration: $animationDurationShort, timingFunction: "ease-in-out"),
+                                newViewOnTop: true
+                              ),
+                              fade: (
+                                oldViewEffect: (effect: "fadeOut", duration: $animationDurationMedium, timingFunction: "ease-in-out", persist: "all"),
+                                newViewEffect: (effect: "fadeIn", duration: $animationDurationMedium, timingFunction: "ease-in-out"),
+                                newViewOnTop: false
+                              ),
+                              pushStart: (
+                                oldViewEffect: (effect: "slideOut", direction: "start", duration: $animationDurationShort, timingFunction: "ease-in-out", persist: "all"),
+                                newViewEffect: (effect: "slideIn", direction: "start", duration: $animationDurationShort, timingFunction: "ease-in-out"),
+                                newViewOnTop: false
+                              ),
+                              pushEnd: (
+                                oldViewEffect: (effect: "slideOut", direction: "end", duration: $animationDurationShort, timingFunction: "ease-in-out", persist: "all"),
+                                newViewEffect: (effect: "slideIn", direction: "end", duration: $animationDurationShort, timingFunction: "ease-in-out"),
+                                newViewOnTop: false
+                              ),
+                              revealDown: (
+                                oldViewEffect: (effect: "slideOut", direction: "bottom", duration: $animationDurationShort, timingFunction: "ease-in-out", persist: "all"),
+                                newViewOnTop: false
+                              ),
+                              revealLeft: (
+                                oldViewEffect: (effect: "slideOut", direction: "left", duration: $animationDurationShort, timingFunction: "ease-in-out", persist: "all"),
+                                newViewEffect: (effect: "slideIn", offsetX: "30%", duration: $animationDurationShort, timingFunction: "ease-in-out"),
+                                newViewOnTop: false
+                              ),
+                              revealRight: (
+                                oldViewEffect: (effect: "slideOut", direction: "right", duration: $animationDurationShort, timingFunction: "ease-in-out", persist: "all"),
+                                newViewEffect: (effect: "slideIn", offsetX: "-30%", duration: $animationDurationShort, timingFunction: "ease-in-out"),
+                                newViewOnTop: false
+                              ),
+                              zoomIn: (
+                                newViewEffect: (effect: "zoomIn", duration: $animationDurationMedium, timingFunction: "ease-in-out"),
+                                newViewOnTop: true
+                              ),
+                              zoomOut: (
+                                oldViewEffect: (effect: "zoomOut", duration: $animationDurationMedium, timingFunction: "ease-in-out", persist: "all"),
+                                newViewOnTop: false
+                              )
+                             );
+
+    .oj-animation-module-effects {
+      font-family: oj-json-from-map($animationModuleEffects);
+    }
+
+    $animationNavigateMethods: ();
+
+    @if ($animationNavChildDefault)
+    {
+      $animationNavigateMethods: map-merge($animationNavigateMethods, (navChild: $animationNavChildDefault));
+    }
+
+    @if ($animationNavParentDefault)
+    {
+      $animationNavigateMethods: map-merge($animationNavigateMethods, (navParent: $animationNavParentDefault));
+    }
+
+    @if ($animationNavSiblingEarlierDefault)
+    {
+      $animationNavigateMethods: map-merge($animationNavigateMethods, (navSiblingEarlier: $animationNavSiblingEarlierDefault));
+    }
+
+    @if ($animationNavSiblingLaterDefault)
+    {
+      $animationNavigateMethods: map-merge($animationNavigateMethods, (navSiblingLater: $animationNavSiblingLaterDefault));
+    }
+
+    .oj-animation-navigate-methods {
+      font-family: oj-json-from-map($animationNavigateMethods);
+    }
+
+    $animationEffectDefaultOptions: (fadeIn: (duration: $animationDurationMedium),
+                                     fadeOut: (duration: $animationDurationMedium),
+                                     expand: (duration: $animationDurationMedium),
+                                     collapse: (duration: $animationDurationMedium),
+                                     zoomIn: (duration: $animationDurationMedium),
+                                     zoomOut: (duration: $animationDurationMedium),
+                                     slideIn: (duration: $animationDurationMedium),
+                                     slideOut: (duration: $animationDurationMedium),
+                                     flipIn: (duration: $animationDurationMedium),
+                                     flipOut: (duration: $animationDurationMedium),
+                                     ripple: (duration: $animationDurationMedium));
+
+    .oj-animation-effect-default-options {
+      font-family: oj-json-from-map($animationEffectDefaultOptions);
+    }
+
+    .oj-animation-effect-ripple {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        background-color: var(--oj-animation-effect-ripple-bg-color);
+      } @else {
+        background-color: $animationEffectRippleBgColor;        
+      }
+      opacity: 0.6;
+      border-radius: 50%;
+      position: absolute;
+      width: 140px;
+      height: 140px;
+      left: 0;
+      top: 0;
+    }
+
+  }
+}

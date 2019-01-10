@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -32,7 +32,8 @@ define(['ojs/ojcore', 'ojs/ojeventtarget'], function(oj)
  * @export
  * @interface oj.FetchByKeysParameters
  * @ojsignature {target: "Type",
- *               value: "interface FetchByKeysParameters<K>"}
+ *               value: "interface FetchByKeysParameters<K>",
+ *               genericParameters: [{"name": "K", "description": "Type of Key"}]}
  */
 
 /**
@@ -51,6 +52,22 @@ define(['ojs/ojcore', 'ojs/ojeventtarget'], function(oj)
  */
 
 /**
+ * attributes to include in the result. If specified, then at least these set of attributes will be included in each row
+ * results. If not specified then the default attributes will be included.
+ *
+ * @ojstatus preview
+ * @since 6.1.0
+ * @export
+ * @expose
+ * @memberof oj.FetchByKeysParameters
+ * @instance
+ * @name attributes
+ * @type {Array.<string | oj.FetchAttribute>}
+ * @ojsignature {target: "Type",
+ *               value: "?Array<string | FetchAttribute>"}
+ */
+
+/**
  * The interface for oj.FetchByKeysResults
  *
  * @ojstatus preview
@@ -58,7 +75,8 @@ define(['ojs/ojcore', 'ojs/ojeventtarget'], function(oj)
  * @export
  * @interface oj.FetchByKeysResults
  * @ojsignature {target: "Type",
- *               value: "interface FetchByKeysResults<K, D>"}
+ *               value: "interface FetchByKeysResults<K, D>",
+ *               genericParameters: [{"name": "K", "description": "Type of Key"}, {"name": "D", "description": "Type of Data"}]}
  */
 
 /**
@@ -99,7 +117,8 @@ define(['ojs/ojcore', 'ojs/ojeventtarget'], function(oj)
  * @export
  * @interface oj.ContainsKeysResults
  * @ojsignature {target: "Type",
- *               value: "interface ContainsKeysResults<K>"}
+ *               value: "interface ContainsKeysResults<K>",
+ *               genericParameters: [{"name": "K", "description": "Type of Key"}]}
  */
 
 /**
@@ -154,7 +173,8 @@ define(['ojs/ojcore', 'ojs/ojeventtarget'], function(oj)
  * @export
  * @interface oj.SortCriterion
  * @ojsignature {target: "Type",
- *               value: "interface SortCriterion<D>"}
+ *               value: "interface SortCriterion<D>",
+ *               genericParameters: [{"name": "D", "description": "Type of Data"}]}
  */
 
 /**
@@ -207,7 +227,9 @@ define(['ojs/ojcore', 'ojs/ojeventtarget'], function(oj)
  * @export
  * @interface oj.DataMapping
  * @ojsignature {target: "Type",
- *               value: "interface DataMapping <K, D, Kin, Din>"}
+ *               value: "interface DataMapping <K, D, Kin, Din>",
+ *               genericParameters: [{"name": "K", "description": "Type of output key"}, {"name": "D", "description": "Type of output data"},
+ *                    {"name": "Kin", "description": "Type of input key"}, {"name": "Din", "description": "Type of input data"}]}
  */
 
 /**
@@ -288,7 +310,8 @@ define(['ojs/ojcore', 'ojs/ojeventtarget'], function(oj)
  * @since 4.1.0
  * @export
  * @ojsignature {target: "Type",
- *               value: "interface FetchFunc<K, D>"}
+ *               value: "interface FetchFunc<K, D>",
+ *               genericParameters: [{"name": "K", "description": "Type of Key"}, {"name": "D", "description": "Type of Data"}]}
  */
 
 /**
@@ -320,7 +343,8 @@ define(['ojs/ojcore', 'ojs/ojeventtarget'], function(oj)
  * @export
  * @interface oj.FetchListParameters
  * @ojsignature {target: "Type",
- *               value: "interface FetchListParameters<D>"}
+ *               value: "interface FetchListParameters<D>",
+ *               genericParameters: [{"name": "D", "description": "Type of Data"}]}
  */
 
 /**
@@ -372,6 +396,22 @@ define(['ojs/ojcore', 'ojs/ojeventtarget'], function(oj)
  */
 
 /**
+ * attributes to include in the result. If specified, then at least these set of attributes will be included in each row
+ * in the data array in the FetchListResult. If not specified then the default attributes will be included.
+ *
+ * @ojstatus preview
+ * @since 6.1.0
+ * @export
+ * @expose
+ * @memberof oj.FetchListParameters
+ * @instance
+ * @name attributes
+ * @type {Array.<string | oj.FetchAttribute>}
+ * @ojsignature {target: "Type",
+ *               value: "?Array<string | FetchAttribute>"}
+ */
+
+/**
  * End of jsdoc
  */
 
@@ -395,7 +435,8 @@ define(['ojs/ojcore', 'ojs/ojeventtarget'], function(oj)
  * @export
  * @interface oj.FetchListResult
  * @ojsignature {target: "Type",
- *               value: "interface FetchListResult<K, D>"}
+ *               value: "interface FetchListResult<K, D>",
+ *               genericParameters: [{"name": "K", "description": "Type of Key"}, {"name": "D", "description": "Type of Data"}]}
  */
 
 /**
@@ -467,7 +508,8 @@ define(['ojs/ojcore', 'ojs/ojeventtarget'], function(oj)
  * @export
  * @interface oj.ItemMetadata
  * @ojsignature {target: "Type",
- *               value: "interface ItemMetadata<K>"}
+ *               value: "interface ItemMetadata<K>",
+ *               genericParameters: [{"name": "K", "description": "Type of Key"}]}
  */
 
 /**
@@ -536,7 +578,8 @@ oj['AttributeFilterOperator']['AttributeOperator'] = AttributeFilterOperator.Att
  * @extends oj.FilterOperator
  * @since 5.0.0
  * @ojsignature {target: "Type",
- *               value: "interface AttributeFilterOperator<D>"}
+ *               value: "interface AttributeFilterOperator<D>",
+ *               genericParameters: [{"name": "D", "description": "Type of Data"}]}
  */
 
 /**
@@ -648,7 +691,8 @@ oj['CompoundFilterOperator']['CompoundOperator'] = CompoundFilterOperator.Compou
  * @extends oj.FilterOperator
  * @since 5.0.0
  * @ojsignature {target: "Type",
- *               value: "interface CompoundFilterOperator<D>"}
+ *               value: "interface CompoundFilterOperator<D>",
+ *               genericParameters: [{"name": "D", "description": "Type of Data"}]}
  */
 
 /**
@@ -737,7 +781,8 @@ oj['CompoundFilterOperator']['CompoundOperator'] = CompoundFilterOperator.Compou
  * @interface oj.DataProviderAddOperationEventDetail
  * @extends oj.DataProviderOperationEventDetail
  * @ojsignature {target: "Type",
- *               value: "interface DataProviderAddOperationEventDetail<K, D> extends DataProviderOperationEventDetail<K, D>"}
+ *               value: "interface DataProviderAddOperationEventDetail<K, D> extends DataProviderOperationEventDetail<K, D>",
+ *               genericParameters: [{"name": "K", "description": "Type of Key"}, {"name": "D", "description": "Type of Data"}]}
  */
 
 /**
@@ -845,7 +890,8 @@ oj['DataProviderMutationEvent'] = DataProviderMutationEvent;
  * @export
  * @interface oj.DataProviderMutationEventDetail
  * @ojsignature {target: "Type",
- *               value: "interface DataProviderMutationEventDetail<K, D>"}
+ *               value: "interface DataProviderMutationEventDetail<K, D>",
+ *               genericParameters: [{"name": "K", "description": "Type of Key"}, {"name": "D", "description": "Type of Data"}]}
  */
 
 /**
@@ -919,7 +965,8 @@ oj['DataProviderMutationEvent'] = DataProviderMutationEvent;
  * @classdesc Mutation event dispatched by oj.DataProvider
  * @param {oj.DataProviderMutationEventDetail} detail the event detail
  * @ojsignature [{target: "Type",
- *               value: "class DataProviderMutationEvent<K, D> implements Event"},
+ *               value: "class DataProviderMutationEvent<K, D> implements Event",
+ *               genericParameters: [{"name": "K", "description": "Type of Key"}, {"name": "D", "description": "Type of Data"}]},
  *               {target: "Type",
  *               value: "DataProviderMutationEventDetail<K, D>",
  *               for: "detail"}]
@@ -1227,7 +1274,8 @@ oj['DataProviderMutationEvent'] = DataProviderMutationEvent;
  * @export
  * @interface oj.DataProviderOperationEventDetail
  * @ojsignature {target: "Type",
- *               value: "interface DataProviderOperationEventDetail<K, D>"}
+ *               value: "interface DataProviderOperationEventDetail<K, D>",
+ *               genericParameters: [{"name": "K", "description": "Type of Key"}, {"name": "D", "description": "Type of Data"}]}
  */
 
 /**
@@ -1618,7 +1666,8 @@ oj['DataProviderRefreshEvent'] = DataProviderRefreshEvent;
  * @interface oj.DataProvider
  * @extends EventTarget
  * @ojsignature {target: "Type",
- *               value: "interface DataProvider<K, D> extends EventTarget"}
+ *               value: "interface DataProvider<K, D> extends EventTarget",
+ *               genericParameters: [{"name": "K", "description": "Type of Key"}, {"name": "D", "description": "Type of Data"}]}
  * @classdesc
  * DataProvider is the basic interface for getting runtime data which JET components that display list of items (such as [oj-table]{@link oj.ojTable} and [oj-list-view]{@link oj.ojListView}) can use.
  * <p>
@@ -1882,6 +1931,71 @@ oj.DataProvider = function () {
  */
 
 /**
+ * @preserve Copyright 2013 jQuery Foundation and other contributors
+ * Released under the MIT license.
+ * http://jquery.org/license
+ */
+
+/* jslint browser: true,devel:true*/
+/**
+ * The interface for oj.FetchAttribute
+ *
+ * @ojstatus preview
+ * @since 6.1.0
+ * @export
+ * @interface oj.FetchAttribute
+ * @ojsignature {target: "Type",
+ *               value: "interface FetchAttribute"}
+ */
+
+/**
+ * The name of the attribute or sub object or related object.
+ *
+ * @ojstatus preview
+ * @since 6.1.0
+ * @export
+ * @expose
+ * @memberof oj.FetchAttribute
+ * @instance
+ * @name name
+ * @type string
+ * @ojsignature {target: "Type",
+ *               value: "string"}
+ */
+
+/**
+ * Optional attributes property which specifies at least which attributes of the value we want to include. If not specified then the default attributes are included. If the value
+ * is a primitive then this is ignored. Expressions like "!" and "@default" are also supported. e.g. ['!lastName', '@default'] for everything except 'lastName'. For only
+ * 'firstName' and 'lastName' we'd have ['firstName', 'lastName']. Order does not matter when @default is used with field exclusions "!".
+ * This can be nested. e.g. ['!lastName', '@default', {name: 'location', attributes: ['address line 1', 'address line 2']}]
+ *
+ * @ojstatus preview
+ * @since 6.1.0
+ * @export
+ * @expose
+ * @memberof oj.FetchAttribute
+ * @instance
+ * @name attributes
+ * @type {Array.<string | oj.FetchAttribute>}
+ * @ojsignature {target: "Type",
+ *               value: "?Array<string | FetchAttribute>"}
+ */
+
+ /**
+  * end of jsdoc
+  */
+
+/**
+ * Copyright (c) 2014, Oracle and/or its affiliates.
+ * All rights reserved.
+ */
+
+/**
+ * Copyright (c) 2014, Oracle and/or its affiliates.
+ * All rights reserved.
+ */
+
+/**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
  */
@@ -1902,7 +2016,8 @@ oj.DataProvider = function () {
  * @interface oj.FetchByKeysCapability
  * @since 4.2.0
  * @ojsignature {target: "Type",
- *               value: "interface FetchByKeysCapability<D>"}
+ *               value: "interface FetchByKeysCapability<D>",
+ *               genericParameters: [{"name": "D", "description": "Type of Data"}]}
  */
 
 /**
@@ -2147,7 +2262,8 @@ oj['FetchByKeysMixin']['applyMixin'] = FetchByKeysMixin.applyMixin;
  * @interface oj.FetchByOffsetCapability
  * @since 4.2.0
  * @ojsignature {target: "Type",
- *               value: "interface FetchByOffsetCapability<D>"}
+ *               value: "interface FetchByOffsetCapability<D>",
+ *               genericParameters: [{"name": "D", "description": "Type of Data"}]}
  */
 
 /**
@@ -2361,7 +2477,8 @@ oj['FetchByOffsetMixin']['applyMixin'] = FetchByOffsetMixin.applyMixin;
  * @interface oj.FetchByOffsetParameters
  * @extends oj.FetchListParameters
  * @ojsignature {target: "Type",
- *               value: "interface FetchByOffsetParameters<D> extends FetchListParameters<D>"}
+ *               value: "interface FetchByOffsetParameters<D> extends FetchListParameters<D>",
+ *               genericParameters: [{"name": "D", "description": "Type of Data"}]}
  */
 
 /**
@@ -2375,6 +2492,22 @@ oj['FetchByOffsetMixin']['applyMixin'] = FetchByOffsetMixin.applyMixin;
  * @instance
  * @name offset
  * @type {number}
+ */
+
+/**
+ * attributes to include in the result. If specified, then at least these set of attributes will be included in each row
+ * results. If not specified then the default attributes will be included.
+ *
+ * @ojstatus preview
+ * @since 6.1.0
+ * @export
+ * @expose
+ * @memberof oj.FetchByOffsetParameters
+ * @instance
+ * @name attributes
+ * @type {Array.<string | oj.FetchAttribute>}
+ * @ojsignature {target: "Type",
+ *               value: "?Array<string | FetchAttribute>"}
  */
 
 /**
@@ -2464,6 +2597,11 @@ oj['FetchByOffsetMixin']['applyMixin'] = FetchByOffsetMixin.applyMixin;
  */
 
 /**
+ * Copyright (c) 2014, Oracle and/or its affiliates.
+ * All rights reserved.
+ */
+
+/**
  * @preserve Copyright 2013 jQuery Foundation and other contributors
  * Released under the MIT license.
  * http://jquery.org/license
@@ -2525,7 +2663,8 @@ oj['FetchByOffsetMixin']['applyMixin'] = FetchByOffsetMixin.applyMixin;
  * @interface oj.FilterOperator
  * @since 5.0.0
  * @ojsignature {target: "Type",
- *               value: "interface FilterOperator<D>"}
+ *               value: "interface FilterOperator<D>",
+ *               genericParameters: [{"name": "D", "description": "Type of Data"}]}
  */
 
 /**
@@ -2590,7 +2729,8 @@ oj['FetchByOffsetMixin']['applyMixin'] = FetchByOffsetMixin.applyMixin;
  * @export
  * @interface oj.Item
  * @ojsignature {target: "Type",
- *               value: "interface Item<K, D>"}
+ *               value: "interface Item<K, D>",
+ *               genericParameters: [{"name": "K", "description": "Type of Key"}, {"name": "D", "description": "Type of Data"}]}
  */
 
 /**
@@ -2653,7 +2793,8 @@ oj['FetchByOffsetMixin']['applyMixin'] = FetchByOffsetMixin.applyMixin;
  * @interface oj.SortCapability
  * @since 4.2.0
  * @ojsignature {target: "Type",
- *               value: "interface SortCapability<D>"}
+ *               value: "interface SortCapability<D>",
+ *               genericParameters: [{"name": "D", "description": "Type of Data"}]}
  */
 
 /**

@@ -1,21 +1,22 @@
 /**
  * @license
- * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
-define(['ojs/ojcore', 'jquery', 'knockout', 'ojs/ojkoshared', 'customElements'], function(oj, $, ko)
+define(['ojs/ojcore', 'jquery', 'knockout', 'ojs/ojkoshared', 'customElements'], function(oj, $, ko, BindingProviderImpl)
 {
 var __oj_defer_metadata = 
 {
   "extension": {}
 };
+/* global BindingProviderImpl:false */
 /**
  * @protected
  * @ignore
  */
 (function () {
-  oj.__KO_CUSTOM_BINDING_PROVIDER_INSTANCE.addPostprocessor(
+  BindingProviderImpl.addPostprocessor(
     {
       nodeHasBindings: function (node, _wrappedReturn) {
         var wrappedReturn = _wrappedReturn;

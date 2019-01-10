@@ -205,8 +205,7 @@ dvt.PictoChart.prototype.SetOptions = function(options) {
   else if (!this.Options)
     this.Options = this.GetDefaults();
 
-  // Disable animation for png
-  if (!dvt.Agent.isEnvironmentBrowser()) {
+  if (dvt.Agent.isEnvironmentTest()) {
     this.Options['animationOnDisplay'] = 'none';
     this.Options['animationOnDataChange'] = 'none';
   }

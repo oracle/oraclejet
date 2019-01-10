@@ -1,7 +1,7 @@
 {
   "name": "oj-toolbar",
-  "version": "6.0.0",
-  "jetVersion": "6.0.0",
+  "version": "6.1.0",
+  "jetVersion": "6.1.0",
   "displayName": "Toolbar",
   "type": "core",
   "styleClasses": [
@@ -43,7 +43,7 @@
     }
   ],
   "description": "Displays a strip of control elements (icons, buttons, separators, etc.) with support for touch, mouse, and keyboard interactions.",
-  "help": "https://docs.oracle.com/en/middleware/jet/6/reference-api/oj.ojToolbar.html",
+  "help": "https://docs.oracle.com/en/middleware/jet/6.1/reference-api/oj.ojToolbar.html",
   "properties": {
     "chroming": {
       "description": "Indicates in what states the toolbar's buttons and buttonsets have chrome (background and border). This option only affects buttons and buttonsets that have never had their own chroming option set. This allows individual buttons and buttonsets to opt out of their toolbar's chroming if needed. The default chroming varies by theme. Each theme can set its default by setting $toolbarChromingOptionDefault as seen in the example below. Once a value has been set on this option, that value applies regardless of theme.",

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -1140,7 +1140,7 @@ var __oj_color_palette_metadata =
           // as is, and not fire a value change event.
           return;
         }
-        this._SetValueReturnBoolean(newColor, event);
+        this._SetValue(newColor, event);
         this._value = newColor;
       },
 

@@ -1,14 +1,14 @@
 /**
  * @license
- * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
-define(['knockout', 'ojs/ojcore', 'ojs/ojbindingprovider'],
-       function(ko, oj, BindingProvider)
+define(['knockout', 'ojs/ojcore', 'ojs/ojkoshared', 'ojs/ojhtmlutils'],
+       function(ko, oj, BindingProviderImpl, HtmlUtils)
 {
 
-/* global ko:false, oj:false, BindingProvider: false, WeakMap: false, Map: false */
+/* global ko:false, oj:false, BindingProviderImpl: false, WeakMap: false, Map: false, HtmlUtils:false */
 
 /**
  * Default JET Template engine iumplementation
@@ -32,7 +32,7 @@ function JetTemplateEngine() {
     // alias to provide to the template children
     var templateAlias = node.getAttribute('data-oj-as');
     ko.applyBindingsToDescendants(_getContext(componentElement, properties, alias, templateAlias),
-                                  tmpContainer);
+      tmpContainer);
 
     return Array.prototype.slice.call(tmpContainer.childNodes, 0);
   };
@@ -56,6 +56,7 @@ function JetTemplateEngine() {
    * @param {Set.<string>} propertySet properties to be resolved
    * @param {Object} data data to be applied to the template
    * @param {string} alias an alias for referencing the data within a template
+   * @param {Function=} propertyValidator a function to type check the value for a property
    * @param {Element=} alternateParent an element where the template element will be
    * temporarily added as a child. If the parameter is ommitted, the componentElement will
    * be used
@@ -63,18 +64,21 @@ function JetTemplateEngine() {
    * @ignore
    */
   this.resolveProperties = function (componentElement, node, elementTagName, propertySet,
-    data, alias, alternateParent) {
+    data, alias, propertyValidator, alternateParent) {
     var templateAlias = node.getAttribute('data-oj-as');
 
     var context = _getContext(componentElement, data, alias, templateAlias);
 
     var contribs = _getPropertyContributorsViaCache(node, context, elementTagName,
-                      propertySet, alternateParent || componentElement);
+      propertySet, alternateParent || componentElement);
 
     var boundValues = {};
     contribs.evalMap.forEach(function (value, tokens) {
-      boundValues[tokens[0]] = _getMergedValue(boundValues, tokens,
-        ko.ignoreDependencies(value, null, [context]));
+      var leafValue = ko.ignoreDependencies(_evaluateAndUnwrap, null, [value, context]);
+      if (propertyValidator) {
+        propertyValidator(tokens, leafValue);
+      }
+      boundValues[tokens[0]] = _getMergedValue(boundValues, tokens, leafValue);
     });
 
     var extend = oj.CollectionUtils.copyInto;
@@ -85,6 +89,10 @@ function JetTemplateEngine() {
   };
 
   var _propertyContribsCache = new WeakMap();
+
+  function _evaluateAndUnwrap(evaluator, context) {
+    return ko.utils.unwrapObservable(evaluator(context));
+  }
 
   function _getPropertyContributorsViaCache(node, context, elementTagName, propertySet, parent) {
     var contribs = _propertyContribsCache.get(node);
@@ -101,7 +109,7 @@ function JetTemplateEngine() {
     return contribs;
   }
 
-  function _getPropertyEvaluatorMap(firstElem, propertySet) {
+  function _getPropertyEvaluatorMap(firstElem, propertySet, context) {
     var evalMap = new Map();
     var attrs = firstElem ? firstElem.attributes : [];
 
@@ -114,7 +122,8 @@ function JetTemplateEngine() {
         var info = oj.__AttributeUtils.getExpressionInfo(attr.value);
         var expr = info.expr;
         if (expr) {
-          evalMap.set(propTokens, BindingProvider.createBindingExpressionEvaluator(expr));
+          evalMap.set(propTokens,
+            BindingProviderImpl.createBindingExpressionEvaluator(expr, context));
         }
       }
     }
@@ -161,48 +170,17 @@ function JetTemplateEngine() {
 
   function _createAndPopulateContainer(node) {
     var div = document.createElement('div');
-
-    if (node.nodeType === 1 && node.tagName.toLowerCase() === 'template') {
-      var content = node.content;
-      if (content) {
-        div.appendChild(document.importNode(content, true));
-      } else {
-        Array.prototype.forEach.call(node.childNodes,
-           function (child) {
-             div.appendChild(child.cloneNode(true));
-           }
-         );
-      }
-    } else {
-      throw new Error('Invalid template node ' + node);
+    var nodes = HtmlUtils.getTemplateContent(node);
+    for (var i = 0; i < nodes.length; i++) {
+      div.appendChild(nodes[i]);
     }
-
     return div;
   }
 
   function _getContext(componentElement, properties, alias, templateAlias) {
-    var extension = { $current: properties };
     var bindingContext = ko.contextFor(componentElement);
-
-    // The component provided properties will be made available on
-    // $current, any alias passed in, and any alias defined on the
-    // template element via data-oj-as
-    if (bindingContext) {
-      if (alias) {
-        extension[alias] = properties;
-      }
-      if (templateAlias) {
-        extension[templateAlias] = properties;
-      }
-      extension = bindingContext.extend(extension);
-    } else {
-      extension.$data = {}; // simulate binding context behvior
-    }
-
-    // All inline templates for a given component will share evaluator cache
-    Object.defineProperty(extension, '_ojCacheScope', { value: componentElement });
-
-    return extension;
+    return BindingProviderImpl.extendBindingContext(bindingContext, properties,
+      alias, templateAlias, componentElement);
   }
 }
 

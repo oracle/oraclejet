@@ -1,0 +1,26 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+$includeConveyorBeltVariables: $includeConveyorBeltClasses !default;
+
+@if $includeConveyorBeltVariables != false {
+  $includeButtonVariables: true !global;
+}
+
+// import dependencies
+@import "oj.alta.ios.button";
+
+@if $includeConveyorBeltVariables != false {
+  @include module-include-once("alta.ios.variables.conveyorbelt") {
+
+:root {
+
+  // conveyorBelt
+  // ----------------------------
+  --oj-conveyor-belt-overflow-indicator-height:  1.8125rem; // 29px when root is 16px
+
+}
+
+
+  }
+}

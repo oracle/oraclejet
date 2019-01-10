@@ -189,6 +189,7 @@ define(['../persistenceUtils', '../persistenceStoreManager', './logger'],
             var varyFields = varyValue.split(',');
             for (var index = 0; index < varyFields.length; index++) {
               var varyField = varyFields[index];
+              varyField = varyField.trim();
               var varyValue = requestHeaders ? requestHeaders.get(varyField) : 'undefined';
               key += varyField + '=' + varyValue;
             }
@@ -432,7 +433,7 @@ define(['../persistenceUtils', '../persistenceStoreManager', './logger'],
           return store.findByKey(storeEntry.keys[0]);
         } else {
           var transformedKeys = storeEntry.keys.map(function (keyValue) {
-            return {key: keyValue};
+            return {key: {$eq: keyValue}};
           });
           var findExpression = {
             selector: {

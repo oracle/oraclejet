@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -540,7 +540,8 @@ oj.EventTargetMixin.applyMixin(ArrayTreeDataProvider);
  * @param {string=} options.childrenAttribute Optional field name which stores the children of nodes in the data.  Dot notation can be used to specify nested attribute.
  *                                                  If this is not specified, the default is "children".
  * @ojsignature [{target: "Type",
- *               value: "class ArrayTreeDataProvider<K, D> implements TreeDataProvider<K, D>"},
+ *               value: "class ArrayTreeDataProvider<K, D> implements TreeDataProvider<K, D>",
+ *               genericParameters: [{"name": "K", "description": "Type of Key"}, {"name": "D", "description": "Type of Data"}]},
  *               {target: "Type",
  *               value: "Array<SortCriterion<D>>",
  *               for: "options.implicitSort"},

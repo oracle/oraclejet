@@ -1,0 +1,20 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+$includeRefresherVariables: $includeRefresherClasses !default;
+
+@if $includeRefresherVariables != false {
+  @include module-include-once("alta.ios.variables.refresher") {
+
+:root {
+
+  // refresher
+  // ----------------------------
+  --oj-refresher-bg-color:           var(--oj-neutral-color-5);
+  --oj-refresher-animation-duration: var(--oj-animation-duration-medium);
+
+  
+}
+
+  }
+}

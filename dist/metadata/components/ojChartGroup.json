@@ -1,11 +1,11 @@
 {
   "name": "oj-chart-group",
-  "version": "6.0.0",
-  "jetVersion": "6.0.0",
+  "version": "6.1.0",
+  "jetVersion": "6.1.0",
   "displayName": "Chart Group",
   "type": "core",
   "description": "ojChartGroup",
-  "help": "https://docs.oracle.com/en/middleware/jet/6/reference-api/oj.ojChartGroup.html",
+  "help": "https://docs.oracle.com/en/middleware/jet/6.1/reference-api/oj.ojChartGroup.html",
   "properties": {
     "drilling": {
       "description": "Whether drilling is enabled on the group label. Drillable objects will show a pointer cursor on hover and fire an ojDrill event on click. To enable drilling for all group labels at once, use the drilling attribute in the top level.",

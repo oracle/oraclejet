@@ -1,0 +1,135 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// !!!
+// WARNING: do not directly import this file, instead import the
+//          version in your theme's directory,
+//          for example alta/widgets/_oj.alta.dvt.sunburst.scss
+// !!!
+@import "../../utilities/oj.utilities";
+@if $includeSunburstClasses != false {
+  @include module-include-once("common.sunburst") {
+
+    // This is to prevent the flash of unstyled content before the html becomes JET components.
+    @if $initialVisibility == hidden {
+      oj-sunburst:not(.oj-complete) {
+        visibility: hidden;
+      }
+    }
+
+    oj-sunburst {
+      display: block;
+    }
+
+    .oj-sunburst {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+          font-size: var(--oj-font-size-sm);
+          color: var(--oj-text-color);
+      } @else {
+          font-size: $smallFontSize;
+          color: $textColor;
+      }
+      @include oj-user-select-property(none);
+      width:400px;
+      height:400px;
+    }
+
+    .oj-sunburst-expand-icon {
+      background-image: oj-common-image-url("dvt/sunburst/node_expand.png");
+    }
+
+    .oj-sunburst-collapse-icon {
+      background-image: oj-common-image-url("dvt/sunburst/node_collapse.png");
+    }
+
+    .oj-sunburst-expand-icon.oj-hover {
+      background-image: oj-common-image-url("dvt/sunburst/node_expand_ovr.png");
+    }
+
+    .oj-sunburst-collapse-icon.oj-hover {
+      background-image: oj-common-image-url("dvt/sunburst/node_collapse_ovr.png");
+    }
+
+    .oj-sunburst-expand-icon.oj-active {
+      background-image: oj-common-image-url("dvt/sunburst/node_expand_ovr.png");
+    }
+
+    .oj-sunburst-collapse-icon.oj-active {
+      background-image: oj-common-image-url("dvt/sunburst/node_collapse_ovr.png");
+    }
+
+    .oj-sunburst-attribute-type-text {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        color: var(--oj-sunburst-legend-label-color);
+        font-size: var(--oj-font-size);
+      } @else {
+        color: $formControlLabelColor;
+        font-size: $fontSize;
+      }
+    }
+
+    .oj-sunburst-attribute-value-text {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        font-size: var(--oj-font-size);
+          color: var(--oj-text-color);
+      } @else {
+        font-size: $fontSize;
+        color: $textColor;
+      }
+    }
+
+    .oj-sunburst-current-drill-text {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        font-size: var(--oj-font-size);
+          color: var(--oj-text-color);
+      } @else {
+        font-size: $fontSize;
+        color: $textColor;
+      }
+    }
+
+    .oj-sunburst-drill-text {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        color: var(--oj-sunburst-drill-text-color);
+        font-size: var(--oj-font-size);
+        text-decoration: var(--oj-link-text-decoration);
+      } @else {
+      color: $dvtSunburstDrillTextColor;
+      font-size: $fontSize;
+      text-decoration: $linkTextDecoration;
+      }
+    }
+
+    .oj-sunburst-drill-text.oj-hover {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+      text-decoration: var(--oj-link-text-decoration-hover);
+      } @else {
+      text-decoration: $linkTextDecorationHover;
+      }
+    }
+
+    .oj-sunburst-node {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+      font-size: var(--oj-font-size-sm);
+      } @else {
+      font-size: $smallFontSize;
+      }
+    }
+
+    .oj-sunburst-node.oj-hover {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+      border-color: var(--oj-sunburst-node-border-color-hover);
+      } @else {
+      border-color: $dvtSunburstNodeBorderColorHover;
+      }
+    }
+
+    .oj-sunburst-node.oj-selected {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+      border-top-color: var(--oj-dvt-item-outer-border-color-selected);
+      border-bottom-color: var(--oj-dvt-item-inner-border-color-selected);
+      } @else {
+      border-top-color:$dvtBorderColor;
+      border-bottom-color: $dvtBorder2Color;
+      }
+    }
+  }
+}

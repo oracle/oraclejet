@@ -1,0 +1,49 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+$includeListViewVariables: $includeListViewClasses !default;
+
+@if $includeListViewVariables != false {
+  $includeCollectionVariables: true !global;
+  $includePanelVariables: true !global;
+}
+// import dependencies
+@import "oj.alta.android.collection";
+@import "oj.alta.android.panel";
+
+
+@if $includeListViewVariables != false {
+  @include module-include-once("alta.android.variables.listview") {
+
+:root {
+  // list view
+  // ----------------------------
+
+  --oj-list-view-drill-icon-color:    var(--oj-icon-color-default);
+
+  // header
+  --oj-list-view-header-bg-color:          var(--oj-neutral-color-6);
+  --oj-list-view-header-bg-color-disabled: var(--oj-neutral-color-3);
+  --oj-list-view-header-bg-image:          none;
+  --oj-list-view-header-font-weight:  500;
+  --oj-list-view-header-font-size:    var(--oj-header-5-font-size);
+  --oj-list-view-header-border-width-expanded: 0;
+  --oj-list-view-header-border-width-collapsed: 0 0 1px;
+  --oj-list-view-header-opacity:      1;
+
+  // item
+  --oj-list-view-item-border-position: 0;
+
+  // card
+  --oj-list-view-card-width:          240px;
+  --oj-list-view-card-height:         auto;
+  --oj-list-view-card-margin-top:     8px;
+  --oj-list-view-card-margin-end:     8px;
+  --oj-list-view-card-margin-bottom:  0;
+  --oj-list-view-card-margin-start:   0;
+
+  
+}
+
+  }
+}

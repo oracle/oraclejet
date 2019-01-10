@@ -1,4 +1,4 @@
-// Copyright (c) 2014, 2018, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // WARNING: do not directly import this file, instead import the 
 //          version in your base theme's directory, 
@@ -90,6 +90,37 @@
       white-space: nowrap;
       background-clip: padding-box;
       text-overflow: ellipsis;
+    }
+
+    /* Styling for readonly mode */
+    .oj-select.oj-read-only .oj-select-choice,
+    .oj-select.oj-read-only .oj-select-choices {
+      background-color: transparent;
+      border-color: transparent;
+      outline: none;
+    }
+
+    /* apply to the selected entries */
+    .oj-select.oj-read-only .oj-select-chosen,
+    .oj-select.oj-read-only .oj-select-selected-choice {
+      outline: none;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        @include oj-form-control-content-readonly($outputCssVars: true);
+      }
+      @else {
+        @include oj-form-control-content-readonly;        
+      }
+    }
+
+    /* don't show dropdown trigger */
+    .oj-select.oj-read-only .oj-select-arrow {
+      display: none;
+    }
+
+    /* don't show clear entry trigger */
+    .oj-select.oj-read-only .oj-select-clear-entry {
+      display: none;
     }
 
     /* Styling for text-align */
@@ -692,7 +723,7 @@
 
     //jet theme
     // trigger
-    .oj-select-jet.oj-enabled .oj-select-choice:active,
+    .oj-select-jet:not(.oj-read-only).oj-enabled .oj-select-choice:active,
       .oj-select-native.oj-enabled .oj-select-select:active {
         @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
         {

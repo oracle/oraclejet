@@ -1,0 +1,70 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+
+$includeFormLayoutVariables: $includeFormLayoutClasses !default;
+
+@if $includeFormLayoutVariables != false {
+  @include module-include-once("alta.web.variables.formlayout") {
+
+:root {
+  // form layout
+  // ------------------------
+  // outer border
+  --oj-form-layout-border-color:                          transparent;
+  --oj-form-layout-border-width: 0;
+  --oj-form-layout-inset-margin: 0; //settings: ignore
+
+  // divider between rows
+  --oj-form-layout-divider-color:                         transparent;
+  --oj-form-layout-divider-width:                         0;
+  --oj-form-layout-divider-margin:                        0;
+
+  // border divider width between rows
+  --oj-form-layout-divider-width:                         0;
+
+  // These variables are used to set the column-width/column-gap properties
+  // in .oj-form-cols and .oj-form-cols-labels-inline.
+  // These classes use css multi column layout, see:
+  // http://dev.w3.org/csswg/css-multicol/
+  --oj-form-layout-labels-inline-column-width:            22rem;
+  --oj-form-layout-labels-inline-column-gap:              normal;
+  --oj-form-layout-column-width:                          18.45rem;
+  --oj-form-layout-column-gap:                            normal;
+
+  // In a form layout this is the space expected between
+  // form controls in different rows
+  // todo: probably need to change this, think we are calculating off this in sass
+  --oj-form-layout-margin-bottom:                         10px;
+
+  // todo: I have this var below but not the sass vars commented, figure out what is going on and add it to the doc
+  --oj-form-layout-field-inline-justify-content: flex-start;
+  // inline label in a oj-flex > oj-flex-item; we do not float, thus we need line-height
+  // to maintain label's height, and we need a different top margin for this case.
+  --oj-form-layout-label-inline-margin-top: 0.4em;
+
+  // in a form layout when the labels are inline what is the
+  // default label alignment, legal values are start and end
+  --oj-form-layout-label-inline-text-align: right;
+  --oj-form-layout-label-inline-text-align-rtl: left;
+
+  // in a form layout when the labels are inline what is the
+  // default field alignment, legal values are start and end
+  --oj-form-layout-field-inline-text-align: left;
+  --oj-form-layout-field-inline-text-align-rtl: right;
+
+  // gutter (padding) between the inline label and the control
+  --oj-form-layout-label-inline-gutter-padding: 0.5em;
+
+  // Since the mixin oj-inline-label-support-radio-checkbox() does some weird
+  // calculations, we need to manually do the calculations here, which is:
+  //   @if (oj-strip-unit($radioCheckboxRowHeight) > 2.6) {
+  //     margin-top: $radioCheckboxRowHeight/5;
+  //   } @else {
+  //     margin-top: $radioCheckboxRowHeight/10;
+  //   }
+  --oj-form-layout-label-inline-radio-checkbox-margin-top: 0.19rem;
+}
+
+  }
+}

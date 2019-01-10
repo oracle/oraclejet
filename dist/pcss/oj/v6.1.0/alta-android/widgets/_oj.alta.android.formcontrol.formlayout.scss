@@ -1,0 +1,24 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+@import "../../common/helpers/oj.common.helpers"; 
+
+// implementation currently in common
+@import "../../common/widgets/oj.common.formcontrol.formlayout";
+
+@if $includeFormLayoutElementClasses != false  {
+  @include module-include-once("alta.android.formlayout.element") {
+
+    .oj-form > .oj-flex {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+        padding-left: var(--oj-form-layout-label-inline-gutter-padding);
+        padding-right: var(--oj-form-layout-label-inline-gutter-padding);
+      }
+      @else {
+        padding-left: $formControlLabelInlineGutter;
+        padding-right: $formControlLabelInlineGutter;
+      }
+    }
+  }
+}
+

@@ -1,0 +1,49 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+
+$includeButtonsetVariables: $includeButtonsetClasses !default;
+
+@if $includeButtonsetVariables != false {
+  $includeButtonVariables: true !global;
+}
+
+// import dependencies
+@import "oj.alta.android.button";
+
+@if $includeButtonsetVariables != false {
+  @include module-include-once("alta.android.variables.buttonset") {
+
+:root {
+
+  // buttonset
+  // --------------------------
+  --oj-buttonset-border-radius:                             var(--oj-button-border-radius);
+
+  --oj-buttonset-equal-width-overall-width:                 100%;
+
+  --oj-buttonset-internal-border-color:                     var(--oj-neutral-color-10);
+  --oj-buttonset-internal-border-color-active:              var(--oj-neutral-color-10);
+  --oj-buttonset-internal-border-color-selected:            var(--oj-buttonset-internal-border-color-active);
+  --oj-buttonset-internal-border-color-selected-disabled:   var(--oj-neutral-color-10);
+
+  --oj-buttonset-outlined-chrome-internal-border-color:                   var(--oj-neutral-color-9);
+  --oj-buttonset-outlined-chrome-internal-border-color-active:            var(--oj-brand-color-dark-1);
+  --oj-buttonset-outlined-chrome-internal-border-color-selected:          var(--oj-buttonset-internal-border-color-selected);
+  --oj-buttonset-outlined-chrome-internal-border-color-selected-disabled: var(--oj-buttonset-internal-border-color-selected-disabled);
+
+  --oj-buttonset-full-chrome-overall-width:     var(--oj-buttonset-equal-width-overall-width);
+  --oj-buttonset-full-chrome-flex:              1;
+
+  --oj-buttonset-half-chrome-overall-width:     initial;
+  --oj-buttonset-half-chrome-flex:              auto;
+
+  --oj-buttonset-outlined-chrome-overall-width:     var(--oj-buttonset-equal-width-overall-width);
+  --oj-buttonset-outlined-chrome-flex:              1;
+
+
+}
+
+
+  }
+}

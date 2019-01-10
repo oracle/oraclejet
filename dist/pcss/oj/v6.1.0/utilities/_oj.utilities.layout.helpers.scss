@@ -1,0 +1,134 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+//-------------------------------------------------------------------------------------------------
+// generate layout utility classes, usually these belong inside of media queries
+//
+//
+// $selectorPrefix:    name of class prefix to use, i.e. "oj-sm" will generate
+//                     .oj-sm-hide, .oj-sm-float-end, etc.
+// $generateHide:         generate hide classes like .oj-sm-hide
+// $generateTextAlignEnd: generate text align end classes like .oj-sm-text-align-end
+// $generateFloatStart:   generate float end classes like .oj-sm-float-end
+// $generateFloatEnd:     generate float start classes like .oj-sm-float-start
+//-------------------------------------------------------------------------------------------------
+@mixin oj-layout-helpers-responsive($selectorPrefix,
+                                    $generateHide:                  $responsiveGenerateHide,
+                                    $generateTextAlignEnd:          $responsiveGenerateTextAlignEnd,
+                                    $generateFloatEnd:              $responsiveGenerateFloatEnd,
+                                    $generateFloatStart:            $responsiveGenerateFloatStart,
+                                    $generateSpacing:               $responsiveGenerateSpacing)
+{
+  @if $generateHide {
+    .#{$selectorPrefix}-hide { display:none; }
+  }
+
+
+  @if $generateSpacing {
+    @for  $i from 1 through 4 {
+      $spacing: var(--oj-spacing-#{$i}x);
+
+      .#{$selectorPrefix}-margin-#{$i}x {
+        margin: $spacing; }
+
+      .#{$selectorPrefix}-margin-#{$i}x-horizontal {
+        margin-left: $spacing;
+        margin-right: $spacing;
+      }
+
+      .#{$selectorPrefix}-margin-#{$i}x-vertical {
+        margin-top: $spacing;
+        margin-bottom: $spacing;
+      }
+
+      .#{$selectorPrefix}-margin-#{$i}x-top {
+        margin-top: $spacing;
+      }
+
+      .#{$selectorPrefix}-margin-#{$i}x-bottom {
+        margin-bottom: $spacing;
+      }
+
+      .#{$selectorPrefix}-margin-#{$i}x-start {
+        @include oj-ltr() {
+          margin-left: $spacing;
+        }
+        @include oj-rtl() {
+          margin-right: $spacing;
+        }
+      }
+
+      .#{$selectorPrefix}-margin-#{$i}x-end {
+        @include oj-ltr() {
+          margin-right: $spacing;
+        }
+        @include oj-rtl() {
+          margin-left: $spacing;
+        }
+      }
+
+      .#{$selectorPrefix}-padding-#{$i}x {
+        padding: $spacing;
+      }
+
+      .#{$selectorPrefix}-padding-#{$i}x-horizontal {
+        padding-left: $spacing;
+        padding-right: $spacing;
+      }
+
+      .#{$selectorPrefix}-padding-#{$i}x-vertical {
+        padding-top: $spacing;
+        padding-bottom: $spacing;
+      }
+
+      .#{$selectorPrefix}-padding-#{$i}x-top {
+        padding-top: $spacing;
+      }
+
+      .#{$selectorPrefix}-padding-#{$i}x-bottom {
+        padding-bottom: $spacing;
+      }
+
+      .#{$selectorPrefix}-padding-#{$i}x-start {
+        @include oj-ltr() {
+          padding-left: $spacing;
+        }
+        @include oj-rtl() {
+          padding-right: $spacing;
+        }
+      }
+
+      .#{$selectorPrefix}-padding-#{$i}x-end {
+        @include oj-ltr() {
+          padding-right: $spacing;
+        }
+        @include oj-rtl() {
+          padding-left: $spacing;
+        }
+      }
+    }
+  }
+
+  @if $generateTextAlignEnd {
+    .#{$selectorPrefix}-text-align-end {
+      @include oj-bidi-property(
+                 $property: "text-align",
+                 $startOrEnd: end);
+    }
+  }
+
+  @if $generateFloatEnd {
+    .#{$selectorPrefix}-float-end {
+      @include oj-bidi-property(
+                 $property: "float",
+                 $startOrEnd: end);
+    }
+  }
+
+  @if $generateFloatStart {
+    .#{$selectorPrefix}-float-start {
+      @include oj-bidi-property(
+                 $property: "float",
+                 $startOrEnd: start);
+    }
+  }
+
+}

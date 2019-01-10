@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -8,19 +8,20 @@ define(['ojs/ojcore', 'knockout'], function(oj, ko)
 {
 
 /**
- * Utility class with functions for preprocessing HTML data
- * to avoid a problem using a custom tag within HTML table.
- * Used as a part of ModuleElementUtils.createView() call
- *
- * @constructor
- * @private
- * @expose
+ * Utility class with functions for preprocessing HTML content.
+ * @namespace
+ * @hideconstructor
+ * @ojtsmodule
+ * @ojstatus preview
+ * @since 6.1.0
  */
 var HtmlUtils = {};
 
 /**
- * @ignore
- * @export
+ * Utility that will parse an HTML string into an array of DOM Nodes.
+ * @param {string} html The HTML string to parse.
+ * @return {Array<Node>}
+ * @memberof! HtmlUtils
  * @static
  */
 HtmlUtils.stringToNodeArray = function (html) {
@@ -45,6 +46,35 @@ HtmlUtils.stringToNodeArray = function (html) {
   var nodesArray = [];
   for (i = childList.length; i--; nodesArray.unshift(childList[i]));
   return nodesArray;
+};
+
+/**
+ * Utility that will clone the content of a template node and return
+ * an array of DOM Nodes.
+ * @param {Node} node The template node to retrieve the content for.
+ * @return {Array<Node>}
+ * @memberof! HtmlUtils
+ * @static
+ */
+HtmlUtils.getTemplateContent = function (node) {
+  var nodes = [];
+
+  if (node.nodeType === 1 && node.tagName.toLowerCase() === 'template') {
+    var content = node.content;
+    if (content) {
+      nodes.push(document.importNode(content, true));
+    } else {
+      Array.prototype.forEach.call(node.childNodes,
+        function (child) {
+          nodes.push(child.cloneNode(true));
+        }
+      );
+    }
+  } else {
+    throw new Error('Invalid template node ' + node);
+  }
+
+  return nodes;
 };
 
 /**

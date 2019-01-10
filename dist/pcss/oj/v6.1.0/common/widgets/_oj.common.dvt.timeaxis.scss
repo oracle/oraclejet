@@ -1,0 +1,94 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// !!!
+// WARNING: do not directly import this file, instead import the 
+//          version in your theme's directory, 
+//          for example alta/widgets/_oj.alta.dvt.timeaxis.scss
+// !!!
+
+@import "../../utilities/oj.utilities";
+
+@if $includeTimeAxisClasses != false {
+  @include module-include-once("common.timeaxis") {
+    
+    // This is to prevent the flash of unstyled content before the html becomes JET components.
+    @if $initialVisibility == hidden {
+      oj-time-axis:not(.oj-complete) {
+        visibility: hidden;
+      }      
+    }
+
+    /* Styling for the timeaxis widget */
+    .oj-timeaxis {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        background-color: var(--oj-time-axis-bg-color);
+        border: 1px solid var(--oj-time-axis-border-color);
+      } @else {
+        background-color: $dvtTimeAxisBgColor;
+        border: 1px solid $dvtTimeAxisBorderColor;
+      }
+      @include oj-user-select-property(none);
+      outline: none;
+    }
+
+    /* Styling for the timeaxis labels */
+    .oj-timeaxis-label {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        font-size: var(--oj-font-size);
+        fill: var(--oj-time-axis-label-color);
+      } @else {
+        font-size: $fontSize;
+        fill: $dvtTimeAxisLabelColor;
+      }
+    }
+
+    /* Styling for the timeaxis separators */
+    .oj-timeaxis-separator {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        stroke: var(--oj-time-axis-separator-color);
+      } @else {
+        stroke: $dvtTimeAxisSeparatorColor;
+      }
+    }
+
+    .oj-table-header-row .oj-timeaxis-separator {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        stroke: var(--oj-table-header-border-color);
+      } @else {
+        stroke: $tableHeaderBorderColor;
+      }
+    }
+
+    .oj-datagrid-column-header-cell .oj-timeaxis-separator {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        stroke: var(--oj-collection-header-border-color);
+      } @else {
+        stroke: $collectionHeaderBorderColor;
+      }
+    }
+
+    /* Styling border for stamping onto ojTable header case:
+    All timeaxes does not have bottom border */
+    .oj-table-header-row .oj-timeaxis {
+      border-bottom: none;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        border-color: var(--oj-table-header-border-color);
+      } @else {
+        border-color: $tableHeaderBorderColor;
+      }
+    }
+
+    /* Styling border for stamping onto ojDataGrid header case:
+    First timeaxis does not have border, all other timeaxes have top border */
+    .oj-datagrid-column-header-cell .oj-timeaxis {
+      border: none;
+    }
+
+    .oj-datagrid-column-header-cell .oj-timeaxis ~ .oj-timeaxis {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        border-top: 1px solid var(--oj-collection-header-border-color);
+      } @else { 
+        border-top: 1px solid $collectionHeaderBorderColor;
+      }
+    }
+  }
+}

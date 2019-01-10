@@ -1,0 +1,57 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+
+// ----- start dependencies ---------
+
+// set up include variables before importing dependencies
+@if $includeTimelineClasses != false {
+  $includeDvtBaseClasses:              true !global;
+}
+
+// import dependencies
+@import "../../common/helpers/oj.common.helpers"; 
+@import "oj.alta.android.dvt.base"; 
+
+// ----- end dependencies ---------
+
+
+// import classes defined in the common directory
+@import "../../common/widgets/oj.common.dvt.timeline"; 
+
+
+@if $includeTimelineClasses != false {
+  @include module-include-once("alta.android.timeline") {
+    .oj-timeline-zoomin-icon {
+      background-image:oj-common-image-url("dvt/common/zoom_in_16_ena.svg");
+    }
+    
+    .oj-timeline-zoomin-icon.oj-hover {
+      background-image:oj-common-image-url("dvt/common/zoom_in_16_hov.svg");
+    }
+    
+    .oj-timeline-zoomin-icon.oj-active {
+      background-image:oj-common-image-url("dvt/common/zoom_in_16_act.svg");
+    }
+    
+    .oj-timeline-zoomin-icon.oj-disabled {
+      background-image:oj-common-image-url("dvt/common/zoom_in_16_dis.svg");
+    }
+    
+    .oj-timeline-zoomout-icon {
+      background-image:oj-common-image-url("dvt/common/zoom_out_16_ena.svg");
+    }
+    
+    .oj-timeline-zoomout-icon.oj-hover {
+      background-image:oj-common-image-url("dvt/common/zoom_out_16_hov.svg");
+    }
+    
+    .oj-timeline-zoomout-icon.oj-active {
+      background-image:oj-common-image-url("dvt/common/zoom_out_16_act.svg");
+    }
+    
+    .oj-timeline-zoomout-icon.oj-disabled {
+      background-image:oj-common-image-url("dvt/common/zoom_out_16_dis.svg");
+    }
+  }
+}

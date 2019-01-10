@@ -1,0 +1,1913 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the
+//          version in your base theme's directory,
+//          for example alta/widgets/_oj.alta.tabbar.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+@import "../../utilities/oj.utilities";
+
+@if $includeTabBarClasses != false {
+    @include module-include-once("common.tabbar") {
+
+        // This is to prevent the flash of unstyled content before the html becomes JET components.
+        @if $initialVisibility == hidden {
+            oj-tab-bar:not(.oj-complete) {
+                visibility: hidden;
+            }
+        }
+
+        oj-tab-bar {
+          display: block;
+        }
+
+        /*Navtabs root node*/
+        .oj-tabbar,
+        .oj-tabbar-listview-container {
+            overflow-x:hidden;
+        }
+
+        .oj-tabbar-touch {
+             -webkit-tap-highlight-color: rgba(0,0,0,0);
+        }
+
+        /* navigation tabs divider used in category header natabs*/
+        .oj-tabbar-category-divider {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            border-color: var(--oj-tab-bar-category-divider-color);
+          } @else {
+            border-color: $tabBarCategoryDividerColor;
+          }
+            border-style: solid;
+            border-width: 1px 0 0;
+            font-size: 0;
+            height: 0;
+            line-height: 0;
+            margin: 0 3px;
+        }
+        /* navigation tabs divider used in horizontal natabs to separate buttons*/
+        .oj-tabbar-horizontal .oj-tabbar-divider {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            border-color: var(--oj-tab-bar-horizontal-item-divider-color);
+          } @else {
+            border-color: $tabBarHorizontalItemDividerColor;
+          }
+            border-style: solid;
+            border-width: 0 1px 0 0;
+            font-size: 0;
+            height: 1.714rem;//24px
+            line-height: 0;
+            margin: 5px 0;
+            align-self: center;
+            display: none; // hide dividers by default
+        }
+        // enable dividers when natabs has marker class oj-tabbar-item-dividers
+        .oj-tabbar-item-dividers .oj-tabbar-divider {
+            display: list-item;
+        }
+
+        /* Basic styling  for all ul elements in list*/
+        .oj-tabbar-element {
+            list-style-type: none;
+            padding-left: 0;
+            padding-right: 0;
+            margin: 0;
+        }
+
+        .oj-tabbar-item-element:not(.oj-tabbar-item) {
+          display: block;
+        }
+
+        .oj-tabbar-item-element {
+          // work around for IE 11 which ignores list-style-type:none for sub items on first load.
+          // Setting list style image to transparent image.
+          list-style-image: url("data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7");
+        }
+
+        /* Remove focus ring on outer ul element*/
+        .oj-tabbar-element:focus {
+            outline: none;
+        }
+
+        /* Style content wrapper of each tab item */
+
+        .oj-tabbar-vertical:not(.oj-tabbar-icon-only) .oj-tabbar-item-label {
+            vertical-align: middle;
+        }
+
+        .oj-tabbar-vertical .oj-tabbar-item::before {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            min-height: var(--oj-tab-bar-item-min-height);
+          } @else {
+            min-height: $tabBarVerticalItemMinHeight;
+          }
+        //This is needed for IE 11 bug
+        //https://connect.microsoft.com/IE/feedback/details/816293/ie11-flexbox-with-min-height-not-vertically-aligning-with-align-items-center
+            content:"";
+            display: inline-block;
+            visibility: hidden;
+        }
+
+        .oj-tabbar-vertical .oj-tabbar-item-label {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            font-size: var(--oj-tab-bar-item-font-size);
+          } @else {
+            font-size: $tabBarVerticalItemFontSize;
+          }
+        }
+
+        /* Style content of each tab item */
+        .oj-tabbar-item-content {
+            display: flex;
+            flex: 1 1 auto;
+            align-items: center;
+        }
+
+        // For simple links case
+        a.oj-tabbar-item-content {
+            text-decoration: none;
+            font-weight: normal;
+            outline:none;
+            overflow: hidden;
+        }
+        a.oj-tabbar-item-content:active {
+            background-color: transparent;
+        }
+
+        a.oj-tabbar-item-content .oj-tabbar-item-label {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            color: var(--oj-tab-bar-item-label-color-default);
+          } @else {
+            color: $tabBarItemLabelColorDefault;
+          }
+            .oj-contrast-marker & {
+              @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+                color: var(--oj-tab-bar-item-contrast-label-color-default);
+              } @else {
+                color: $tabBarItemContrastLabelColorDefault;
+              }
+            }
+        }
+
+        .oj-selected > a.oj-tabbar-item-content > .oj-tabbar-item-label {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            color: var(--oj-tab-bar-item-label-color-selected);
+          } @else {
+            color: $tabBarItemLabelColorSelected;
+          }
+            .oj-contrast-marker & {
+              @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+                color: var(--oj-tab-bar-item-contrast-label-color-selected);
+              } @else {
+                color: $tabBarItemContrastLabelColorSelected;
+              }
+            }
+        }
+        .oj-hover:not(.oj-selected) > a.oj-tabbar-item-content > .oj-tabbar-item-label {
+            @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+                color: var(--oj-tab-bar-item-label-color-hover);
+            } @else {
+                color: $tabBarItemLabelColorHover;
+            }
+            .oj-contrast-marker & {
+              @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+                color: var(--oj-tab-bar-item-contrast-label-color-hover);
+              } @else {
+                color: $tabBarItemContrastLabelColorHover;
+              }
+            }
+        }
+        /* Navigation tabs item label or arbitrary content place holder*/
+        .oj-tabbar-item-label {
+            order: 2;
+            text-overflow: ellipsis;
+            @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+              white-space: var(--oj-tab-bar-item-label-text-wrap);
+              min-width: var(--oj-tab-bar-item-truncated-label-min-width);
+            } @else {
+              white-space: $tabBarItemLabelTextWrap;
+              min-width: $tabBarTruncatedLabelMinWidth;
+            }
+            overflow-x: hidden;
+            display: inline-block;
+            line-height: normal;
+        }
+
+        .oj-tabbar-item-text-wrap .oj-tabbar-item-label {
+            white-space: normal;
+        }
+
+        /*Padding for vertical natabs item label*/
+        .oj-tabbar-vertical .oj-tabbar-item-label {
+            padding: 3px 0;
+            flex: 1 1 auto;
+        }
+        //move label to left most when edge is end
+        .oj-tabbar-vertical-end.oj-tabbar-vertical .oj-tabbar-item-label {
+            order: -1;
+
+            @include oj-ltr() {
+              text-align: right;
+            }
+
+            @include oj-rtl() {
+              text-align: left;
+            }
+        }
+
+        /* hide label for icons-only case */
+        .oj-tabbar-icon-only .oj-tabbar-item-label {
+            display:none;
+        }
+
+        /* Tab item's Icon */
+        .oj-tabbar-item-icon
+        {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            color: var(--oj-tab-bar-item-icon-color-default);
+          } @else {
+            color: $tabBarItemIconColorDefault;
+          }
+            .oj-contrast-marker & {
+              @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+                color: var(--oj-tab-bar-item-contrast-label-color-default);
+              } @else {
+                color: $tabBarItemContrastLabelColorDefault;
+              }
+            }
+            flex: 0 0 auto;
+        }
+
+        /* Disabled node */
+        .oj-tabbar-item.oj-disabled > .oj-tabbar-item-content {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            opacity: var(--oj-opacity-disabled); // adding opacity to contents of item as it should not applicable to item separator/border.
+          } @else {
+            opacity: $opacityDisabled; // adding opacity to contents of item as it should not applicable to item separator/border.
+          }
+        }
+
+        .oj-tabbar-item.oj-disabled .oj-tabbar-item-label {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            color: var(--oj-tab-bar-item-label-color-disabled);
+          } @else {
+            color: $tabBarItemLabelColorDisabled;
+          }
+            .oj-contrast-marker & {
+              @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+                color: var(--oj-tab-bar-item-contrast-label-color-disabled);
+              } @else {
+                color: $tabBarItemContrastLabelColorDisabled;
+              }
+            }
+        }
+
+        .oj-tabbar-item.oj-disabled a.oj-tabbar-item-content {
+            cursor: default;
+        }
+
+        .oj-tabbar-item.oj-disabled .oj-tabbar-item-icon {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            color: var(--oj-tab-bar-icon-color-disabled);
+          } @else {
+            color: $tabBarIconColorDisabled;
+          }
+            .oj-contrast-marker & {
+              @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+                color: var(--oj-tab-bar-item-contrast-label-color-disabled);
+              } @else {
+                color: $tabBarItemContrastLabelColorDisabled;
+              }
+            }
+        }
+
+        /* Selected node */
+        .oj-tabbar-item.oj-selected .oj-tabbar-item-icon {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            color: var(--oj-tab-bar-item-icon-color-selected);
+          } @else {
+            color: $tabBarItemIconColorSelected;
+          }
+            .oj-contrast-marker & {
+              @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+                color: var(--oj-tab-bar-item-contrast-label-color-selected);
+              } @else {
+                color: $tabBarItemContrastLabelColorSelected;
+              }
+            }
+        }
+
+        /* hover icon */
+        .oj-tabbar-item.oj-hover.oj-selected .oj-tabbar-item-icon,
+        .oj-tabbar-item.oj-hover .oj-tabbar-item-icon
+        {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            color: var(--oj-tab-bar-item-icon-color-hover);
+          } @else {
+            color: $tabBarItemIconColorHover;
+          }
+            .oj-contrast-marker & {
+              @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+                color: var(--oj-tab-bar-item-contrast-label-color-hover);
+              } @else {
+                color: $tabBarItemContrastLabelColorHover;
+              }
+            }
+        }
+
+        .oj-tabbar-vertical .oj-tabbar-item.oj-hover.oj-selected .oj-tabbar-item-icon
+        {
+          .oj-contrast-marker & {
+            @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+              color: var(--oj-tab-bar-item-contrast-label-color-selected);
+            } @else {
+              color: $tabBarItemContrastLabelColorSelected;
+            }
+          }
+        }
+
+        /*borders for high contrast mode*/
+
+        .oj-hicontrast .oj-tabbar-item.oj-selected,
+        .oj-hicontrast .oj-tabbar-item.oj-selected.oj-hover,
+        .oj-hicontrast .oj-tabbar-item.oj-selected.oj-focus {
+            border: 1px solid;
+        }
+
+        .oj-hicontrast .oj-tabbar-item.oj-hover,
+        .oj-hicontrast .oj-tabbar-item.oj-focus {
+            border: 1px dotted;
+        }
+
+        /*Focus ring around  focused tab item*/
+        .oj-tabbar .oj-tabbar-item.oj-focus-highlight {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            outline: dotted 1px var(--oj-tab-bar-item-outline-color-focus); // Using dotted line for all browsers
+          } @else {
+            outline: dotted 1px $tabBarItemOutlineColorFocus; // Using dotted line for all browsers
+          }
+            outline-offset: -1px;
+        }
+
+        .oj-hicontrast .oj-tabbar-item.oj-focus {
+            outline: none;
+        }
+
+        .oj-tabbar-item {
+            border-color:  transparent;
+            display: flex;
+            align-items: stretch;
+        }
+
+        //Set Selected item colors
+        .oj-tabbar-vertical .oj-tabbar-item.oj-selected {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            background-color: var(--oj-tab-bar-item-bg-color-selected);
+          } @else {
+            background-color: $tabBarItemBgColorSelected;
+          }
+            .oj-contrast-marker & {
+              @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+                background-color: var(--oj-tab-bar-item-contrast-bg-color-selected);
+              } @else {
+                background-color: $tabBarItemContrastBgColorSelected;
+              }
+            }
+        }
+
+        .oj-tabbar-item.oj-selected {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            border-color:  var(--oj-tab-bar-item-border-color-selected);
+          } @else {
+            border-color:  $tabBarItemBorderColorSelected;
+          }
+        }
+
+        //Apply hover bgcolor or border color only when item is not selected.
+        .oj-tabbar-item.oj-hover:not(.oj-selected) {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            background-color: var(--oj-tab-bar-item-bg-color-hover);
+            border-color:  var(--oj-tab-bar-item-border-color-hover);
+          } @else {
+            background-color: $tabBarItemBgColorHover;
+            border-color:  $tabBarItemBorderColorHover;
+          }
+            .oj-contrast-marker & {
+              @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+                background-color: var(--oj-tab-bar-item-contrast-bg-color-hover);
+              } @else {
+                background-color: $tabBarItemContrastBgColorHover;
+              }
+            }
+        }
+        :not(.oj-tabbar-icon-only).oj-tabbar-vertical .oj-tabbar-item.oj-hover:not(.oj-selected),
+        .oj-tabbar-icon-only.oj-tabbar-vertical .oj-tabbar-item.oj-hover:not(.oj-selected) {
+           @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            border-color:  var(--oj-tab-bar-item-border-color-hover);
+          } @else {
+            border-color:  $tabBarItemBorderColorHover;
+          } 
+        }
+
+
+
+        //Space between icon and text
+        .oj-tabbar-vertical:not(.oj-tabbar-icon-only) .oj-tabbar-item-icon {
+            align-self: center;
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            html:not([dir="rtl"]) & {
+              margin-right: var(--oj-tab-bar-icon-to-text-padding); }
+            html[dir="rtl"] & {
+              margin-left: var(--oj-tab-bar-icon-to-text-padding); }
+          } @else {
+            @include oj-ltr() {
+                margin-right: $tabBarIconToTextPadding;
+            }
+
+            
+            @include oj-rtl() {
+                margin-left: $tabBarIconToTextPadding;
+            }
+            
+          }
+        }
+        //Add margin to left of icon when edge is end
+        .oj-tabbar-vertical-end.oj-tabbar-vertical:not(.oj-tabbar-icon-only) .oj-tabbar-item-icon {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+          } @else {
+           @include oj-ltr() {
+                margin: 0 0 0 $tabBarIconToTextPadding;
+           }
+
+           @include oj-rtl() {
+                margin: 0 $tabBarIconToTextPadding 0 0;
+           }
+          }
+        }
+        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+          html:not([dir="rtl"]) .oj-tabbar-vertical-end.oj-tabbar-vertical:not(.oj-tabbar-icon-only) .oj-tabbar-item-icon {
+            margin: 0 0 0 var(--oj-tab-bar-icon-to-text-padding); }
+
+          html[dir="rtl"] .oj-tabbar-vertical-end.oj-tabbar-vertical:not(.oj-tabbar-icon-only) .oj-tabbar-item-icon {
+            margin: 0 var(--oj-tab-bar-icon-to-text-padding) 0 0; }
+        }
+        //space when icon missing
+        .oj-tabbar-vertical:not(.oj-tabbar-icon-only) .oj-tabbar-has-icons > .oj-tabbar-item > .oj-tabbar-item-no-icon .oj-tabbar-item-label {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+          } @else {
+            @include oj-ltr() {
+                margin-left: calc(#{$tabBarIconToTextPadding} + 24px ); // here 24px is icon size
+            }
+
+            @include oj-rtl() {
+                margin-right: calc(#{$tabBarIconToTextPadding} + 24px );// here 24px is icon size
+            }
+          }
+        }
+        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+          html:not([dir="rtl"]) .oj-tabbar-vertical:not(.oj-tabbar-icon-only) .oj-tabbar-has-icons > .oj-tabbar-item > .oj-tabbar-item-no-icon .oj-tabbar-item-label {
+            margin-left: calc(var(--oj-tab-bar-icon-to-text-padding) + 24px); }
+
+          html[dir="rtl"] .oj-tabbar-vertical:not(.oj-tabbar-icon-only) .oj-tabbar-has-icons > .oj-tabbar-item > .oj-tabbar-item-no-icon .oj-tabbar-item-label {
+            margin-right: calc(var(--oj-tab-bar-icon-to-text-padding) + 24px); }
+        }
+        // Add extra margin to left of icon when edge is end. This is when icon is missing on a specific item
+        .oj-tabbar-vertical-end.oj-tabbar-vertical:not(.oj-tabbar-icon-only) .oj-tabbar-has-icons > .oj-tabbar-item > .oj-tabbar-item-no-icon .oj-tabbar-item-label {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+          } @else {
+            @include oj-ltr() {
+                margin: 0 calc(#{$tabBarIconToTextPadding} + 24px ) 0 0; // here 24px is icon size
+            }
+
+            @include oj-rtl() {
+                margin: 0 0 0 calc(#{$tabBarIconToTextPadding} + 24px );// here 24px is icon size
+            }
+          }
+        }
+        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+          html:not([dir="rtl"]) .oj-tabbar-vertical-end.oj-tabbar-vertical:not(.oj-tabbar-icon-only) .oj-tabbar-has-icons > .oj-tabbar-item > .oj-tabbar-item-no-icon .oj-tabbar-item-label {
+            margin: 0 calc(var(--oj-tab-bar-icon-to-text-padding) + 24px) 0 0; }
+
+          html[dir="rtl"] .oj-tabbar-vertical-end.oj-tabbar-vertical:not(.oj-tabbar-icon-only) .oj-tabbar-has-icons > .oj-tabbar-item > .oj-tabbar-item-no-icon .oj-tabbar-item-label {
+            margin: 0 0 0 calc(var(--oj-tab-bar-icon-to-text-padding) + 24px); }
+        }
+
+        .oj-tabbar-vertical:not(.oj-tabbar-icon-only) .oj-tabbar-item
+        {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            html[dir="rtl"] & {
+              padding-right: calc(var(--oj-tab-bar-item-start-end-padding) - var(--oj-tab-bar-item-border-width-left));
+              border-width: var(--oj-tab-bar-item-border-width-top) var(--oj-tab-bar-item-border-width-left) var(--oj-tab-bar-item-border-width-bottom) var(--oj-tab-bar-item-border-width-right); }
+            html:not([dir="rtl"]) & {
+              padding-left: calc(var(--oj-tab-bar-item-start-end-padding) - var(--oj-tab-bar-item-border-width-left));
+              border-width: var(--oj-tab-bar-item-border-width-top) var(--oj-tab-bar-item-border-width-right) var(--oj-tab-bar-item-border-width-bottom) var(--oj-tab-bar-item-border-width-left); }
+          } @else {
+            $tmpPadding: 0;//Need to define out side if to pass ruby sass build
+            $tmpItemBorderWidth: oj-shorthand-property-value-left($tabBarVerticalItemBorderWidth);
+            @if $tmpItemBorderWidth == 0 {
+                $tmpPadding: calc(#{$tabBarItemStartEndPadding} - 0px);
+            } @else {
+                $tmpPadding: calc(#{$tabBarItemStartEndPadding} - #{$tmpItemBorderWidth});
+            }
+
+            //Padding at start of item
+            @include oj-rtl() {
+                padding-right: $tmpPadding;
+                border-width: oj-shorthand-property-value-top($tabBarVerticalItemBorderWidth) oj-shorthand-property-value-left($tabBarVerticalItemBorderWidth) oj-shorthand-property-value-bottom($tabBarVerticalItemBorderWidth) oj-shorthand-property-value-right($tabBarVerticalItemBorderWidth);
+            }
+            @include oj-ltr() {
+                padding-left:  $tmpPadding;
+                border-width: oj-shorthand-property-value-top($tabBarVerticalItemBorderWidth) oj-shorthand-property-value-right($tabBarVerticalItemBorderWidth) oj-shorthand-property-value-bottom($tabBarVerticalItemBorderWidth) oj-shorthand-property-value-left($tabBarVerticalItemBorderWidth);
+            }
+          }
+            border-style: solid;
+
+        }
+        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+        }
+
+        .oj-hicontrast :not(.oj-tabbar-icon-only).oj-tabbar-vertical .oj-tabbar-item {
+            border-style: none;
+        }
+        .oj-hicontrast :not(.oj-tabbar-icon-only).oj-tabbar-vertical .oj-tabbar-item.oj-focus,
+        .oj-hicontrast :not(.oj-tabbar-icon-only).oj-tabbar-vertical .oj-tabbar-item.oj-hover
+        {
+            @include oj-rtl() {
+                border-width: 1px;
+            }
+            @include oj-ltr() {
+                border-width: 1px;
+            }
+            border-style: dotted;
+        }
+
+        .oj-hicontrast :not(.oj-tabbar-icon-only).oj-tabbar-vertical .oj-tabbar-item.oj-selected,
+        .oj-hicontrast :not(.oj-tabbar-icon-only).oj-tabbar-vertical .oj-tabbar-item.oj-selected.oj-focus,
+        .oj-hicontrast :not(.oj-tabbar-icon-only).oj-tabbar-vertical .oj-tabbar-item.oj-selected.oj-hover
+        {
+            @include oj-rtl() {
+                border-width: 1px;
+            }
+            @include oj-ltr() {
+                border-width: 1px;
+            }
+            border-style: solid;
+        }
+
+
+
+        //Add padding to right side for leaf node
+        .oj-tabbar-vertical:not(.oj-tabbar-icon-only) .oj-tabbar-item .oj-tabbar-item-content {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+          } @else {
+            @include oj-ltr() {
+                padding-right: $tabBarItemStartEndPadding;
+            }
+            @include oj-rtl() {
+                padding-left: $tabBarItemStartEndPadding;
+            }
+          }
+        }
+        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+          html:not([dir="rtl"]) .oj-tabbar-vertical:not(.oj-tabbar-icon-only) .oj-tabbar-item .oj-tabbar-item-content {
+            padding-right: var(--oj-tab-bar-item-start-end-padding); }
+          html[dir="rtl"] .oj-tabbar-vertical:not(.oj-tabbar-icon-only) .oj-tabbar-item .oj-tabbar-item-content {
+            padding-left: var(--oj-tab-bar-item-start-end-padding); }
+        }
+
+        .oj-tabbar-vertical-end.oj-tabbar-vertical:not(.oj-tabbar-icon-only) .oj-tabbar-item .oj-tabbar-item-content {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+          } @else {
+            @include oj-ltr() {
+                padding: 0 0 0 $tabBarItemStartEndPadding;
+            }
+            @include oj-rtl() {
+                padding: 0 $tabBarItemStartEndPadding 0 0;
+            }
+          }
+        }
+        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+          html:not([dir="rtl"]) .oj-tabbar-vertical-end.oj-tabbar-vertical:not(.oj-tabbar-icon-only) .oj-tabbar-item .oj-tabbar-item-content {
+            padding: 0 0 0 var(--oj-tab-bar-item-start-end-padding); }
+
+          html[dir="rtl"] .oj-tabbar-vertical-end.oj-tabbar-vertical:not(.oj-tabbar-icon-only) .oj-tabbar-item .oj-tabbar-item-content {
+            padding: 0 var(--oj-tab-bar-item-start-end-padding) 0 0; }
+        }
+
+        .oj-tabbar-focused-element:not(.oj-focus-highlight) {
+          outline: none;// avoid native browser ring on focus
+        }
+
+        //Add border with radius
+        :not(.oj-tabbar-icon-only).oj-tabbar-vertical .oj-tabbar-item
+        {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            html[dir="rtl"] & {
+              padding-right: calc(var(--oj-tab-bar-item-start-end-padding) - var(--oj-tab-bar-item-border-width-left));
+              border-width: 0 var(--oj-tab-bar-item-border-width-left) var(--oj-tab-bar-item-border-width-bottom) var(--oj-tab-bar-item-border-width-right); }
+            html:not([dir="rtl"]) & {
+              padding-left: calc(var(--oj-tab-bar-item-start-end-padding) - var(--oj-tab-bar-item-border-width-left));
+              border-width: 0 var(--oj-tab-bar-item-border-width-right) var(--oj-tab-bar-item-border-width-bottom) var(--oj-tab-bar-item-border-width-left); }  
+            border-color: var(--oj-tab-bar-item-border-color);
+          } @else {
+            $tmpPadding: 0;//Need to define out side if to pass ruby sass build
+            $tmpItemBorderWidth: oj-shorthand-property-value-left($tabBarVerticalItemBorderWidth);
+            @if $tmpItemBorderWidth == 0 {
+                $tmpPadding:  calc(#{$tabBarItemStartEndPadding} - 0px);
+            }@else {
+                $tmpPadding:  calc(#{$tabBarItemStartEndPadding} - #{$tmpItemBorderWidth})
+            }
+            // need to override both ltr and rtl because default expanded natabs will have selection border based on direction.
+            @include oj-rtl() {
+                padding-right: $tmpPadding;
+                border-width: 0 oj-shorthand-property-value-left($tabBarVerticalItemBorderWidth) oj-shorthand-property-value-bottom($tabBarVerticalItemBorderWidth) oj-shorthand-property-value-right($tabBarVerticalItemBorderWidth);
+            }
+            @include oj-ltr() {
+                padding-left: $tmpPadding;
+                border-width: 0 oj-shorthand-property-value-right($tabBarVerticalItemBorderWidth) oj-shorthand-property-value-bottom($tabBarVerticalItemBorderWidth) oj-shorthand-property-value-left($tabBarVerticalItemBorderWidth);
+            }
+            border-color: $tabBarItemBorderColor;
+          }
+            border-style: solid;
+            border-radius: 0;
+        }
+
+        .oj-tabbar-vertical.oj-tabbar-vertical-end:not(.oj-tabbar-icon-only) .oj-tabbar-item
+        {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+          } @else {
+            $tmpPadding: 0;//Need to define out side if to pass ruby sass build
+            $tmpItemBorderWidth: oj-shorthand-property-value-left($tabBarVerticalItemBorderWidth);
+            @if $tmpItemBorderWidth == 0 {
+                $tmpPadding:  calc(#{$tabBarItemStartEndPadding} - 0px);
+            }@else {
+                $tmpPadding:  calc(#{$tabBarItemStartEndPadding} - #{$tmpItemBorderWidth})
+            }
+
+            @include oj-rtl() {
+              padding: 0 0 0 $tmpPadding;
+              border-width: 0 oj-shorthand-property-value-right($tabBarVerticalItemBorderWidth) oj-shorthand-property-value-bottom($tabBarVerticalItemBorderWidth) oj-shorthand-property-value-left($tabBarVerticalItemBorderWidth);
+            }
+            @include oj-ltr() {
+              padding: 0 $tmpPadding 0 0; //Add padding to right of item  when edge is end.
+              border-width: 0 oj-shorthand-property-value-left($tabBarVerticalItemBorderWidth) oj-shorthand-property-value-bottom($tabBarVerticalItemBorderWidth) oj-shorthand-property-value-right($tabBarVerticalItemBorderWidth);
+            }
+          }
+        }
+        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+          html[dir="rtl"] .oj-tabbar-vertical.oj-tabbar-vertical-end:not(.oj-tabbar-icon-only) .oj-tabbar-item {
+            padding: 0 0 0 calc(var(--oj-tab-bar-item-start-end-padding) - var(--oj-tab-bar-item-border-width-left));
+            border-width: 0 var(--oj-tab-bar-item-border-width-right) var(--oj-tab-bar-item-border-width-bottom) var(--oj-tab-bar-item-border-width-left); }
+
+          html:not([dir="rtl"]) .oj-tabbar-vertical.oj-tabbar-vertical-end:not(.oj-tabbar-icon-only) .oj-tabbar-item {
+            padding: 0 calc(var(--oj-tab-bar-item-start-end-padding) - var(--oj-tab-bar-item-border-width-left)) 0 0;
+            border-width: 0 var(--oj-tab-bar-item-border-width-left) var(--oj-tab-bar-item-border-width-bottom) var(--oj-tab-bar-item-border-width-right); }
+        }
+
+        :not(.oj-tabbar-icon-only).oj-tabbar-vertical .oj-tabbar-item:first-of-type {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            border-top-left-radius: var(--oj-tab-bar-border-radius-top-left);
+            border-top-right-radius: var(--oj-tab-bar-border-radius-top-right);
+            html[dir="rtl"] & {
+              border-top-width: var(--oj-tab-bar-item-border-width-top); }
+            html:not([dir="rtl"]) & {
+              border-top-width: var(--oj-tab-bar-item-border-width-top); }
+          } @else {
+            border-top-left-radius: oj-shorthand-property-value-top($tabBarItemBorderRadius);
+            border-top-right-radius: oj-shorthand-property-value-right($tabBarItemBorderRadius);
+            // need to override both ltr and rtl as it was overriden above for border-width.
+            @include oj-rtl() {
+                border-top-width: oj-shorthand-property-value-top($tabBarVerticalItemBorderWidth);
+            }
+            @include oj-ltr() {
+                border-top-width: oj-shorthand-property-value-top($tabBarVerticalItemBorderWidth);
+            }
+          }
+        }
+
+        :not(.oj-tabbar-icon-only).oj-tabbar-vertical .oj-tabbar-item:last-of-type {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            border-bottom-left-radius: var(--oj-tab-bar-border-radius-bottom-left);
+            border-bottom-right-radius: var(--oj-tab-bar-border-radius-bottom-right);
+          } @else {
+            border-bottom-left-radius: oj-shorthand-property-value-left($tabBarItemBorderRadius);
+            border-bottom-right-radius: oj-shorthand-property-value-bottom($tabBarItemBorderRadius);
+          }
+        }
+
+        /*Start of icons only natabs*/
+
+        //vertical icon only tab styling
+         @if $tabBarIconOnlyStyle == circle {
+            .oj-tabbar-vertical.oj-tabbar-icon-only .oj-tabbar-item.oj-selected,
+            .oj-tabbar-vertical.oj-tabbar-icon-only .oj-tabbar-item.oj-hover,
+            .oj-tabbar-vertical.oj-tabbar-icon-only .oj-tabbar-item.oj-active.oj-hover:not(.oj-selected), 
+            .oj-tabbar-vertical.oj-tabbar-icon-only .oj-tabbar-item.oj-active:not(.oj-selected){
+                background-color: transparent;
+                .oj-contrast-marker & {
+                    background-color: transparent;
+                }
+            }
+            .oj-tabbar-vertical.oj-tabbar-icon-only .oj-tabbar-item.oj-selected .oj-tabbar-item-icon {
+              @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+                background-color: var(--oj-tab-bar-item-icon-only-bg-color-selected);
+              } @else {
+                background-color: $tabBarItemIconOnlyBgColorSelected;
+              }
+                .oj-contrast-marker & {
+                  @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+                    background-color: var(--oj-tab-bar-item-icon-only-bg-color-selected);
+                  } @else {
+                    background-color: $tabBarItemIconOnlyBgColorSelected;
+                  }
+                }
+            }
+
+            .oj-tabbar-vertical.oj-tabbar-icon-only .oj-tabbar-item.oj-hover:not(.oj-selected) .oj-tabbar-item-icon {
+              @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+                background-color: var(--oj-tab-bar-item-icon-only-bg-color-hover);
+              } @else {
+                background-color: $tabBarItemIconOnlyBgColorHover;
+              }
+                .oj-contrast-marker & {
+                  @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+                    background-color: var(--oj-tab-bar-item-contrast-bg-color-hover);
+                  } @else {
+                    background-color: $tabBarItemContrastBgColorHover;
+                  }
+                }
+            }
+
+            .oj-tabbar-vertical.oj-tabbar-icon-only .oj-tabbar-item-icon
+            {
+                border-radius: 50%;
+                padding: 12px;
+            }
+        }
+        @else {
+            .oj-tabbar-vertical.oj-tabbar-icon-only .oj-tabbar-item-icon
+            {
+              @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+              } @else {
+                $tmpPadding: 0;//Need to define out side if to pass ruby sass build
+                $tmpSelectionBorderWidth: oj-shorthand-property-value-left($tabBarVerticalIconOnlyItemBorderWidth);
+                @if $tmpSelectionBorderWidth == 0 {
+                    $tmpPadding:  calc(#{$tabBarVerticalIconOnlyIconStartEndPadding} - 0px);
+                }@else {
+                    $tmpPadding:  calc(#{$tabBarVerticalIconOnlyIconStartEndPadding} - #{$tmpSelectionBorderWidth})
+                }
+
+                @include oj-rtl() {
+                    padding: 0 $tmpPadding 0 $tabBarVerticalIconOnlyIconStartEndPadding;
+                }
+
+                @include oj-ltr() {
+                    padding: 0 $tabBarVerticalIconOnlyIconStartEndPadding 0 $tmpPadding;
+                }
+              }
+            }
+            @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+              html[dir="rtl"] .oj-tabbar-vertical.oj-tabbar-icon-only .oj-tabbar-item-icon{
+                padding:0 calc(var(--oj-tab-bar-icon-only-icon-start-end-padding) - var(--oj-tab-bar-item-icon-only-border-width-left)) 0 var(--oj-tab-bar-icon-only-icon-start-end-padding)}
+              html:not([dir="rtl"]) .oj-tabbar-vertical.oj-tabbar-icon-only .oj-tabbar-item-icon{
+                padding:0 var(--oj-tab-bar-icon-only-icon-start-end-padding) 0 calc(var(--oj-tab-bar-icon-only-icon-start-end-padding) - var(--oj-tab-bar-item-icon-only-border-width-left))}
+            }
+
+            .oj-tabbar-icon-only.oj-tabbar-vertical .oj-tabbar-item
+            {
+                border-style: solid;
+                border-radius: 0;
+                // need to override both ltr and rtl because default expanded natabs will have selection border based on direction.
+                @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+                  border-color: var(--oj-tab-bar-item-border-color);
+                  html[dir="rtl"] & {
+                    border-width: 0 var(--oj-tab-bar-item-icon-only-border-width-left) var(--oj-tab-bar-item-icon-only-border-width-bottom) var(--oj-tab-bar-item-icon-only-border-width-right);}
+                  html:not([dir="rtl"]) & {
+                    border-width: 0 var(--oj-tab-bar-item-icon-only-border-width-right) var(--oj-tab-bar-item-icon-only-border-width-bottom) var(--oj-tab-bar-item-icon-only-border-width-left);}
+                } @else {
+                  border-color: $tabBarItemBorderColor;
+                  @include oj-rtl() {
+                      border-width: 0 oj-shorthand-property-value-left($tabBarVerticalIconOnlyItemBorderWidth) oj-shorthand-property-value-bottom($tabBarVerticalIconOnlyItemBorderWidth) oj-shorthand-property-value-right($tabBarVerticalIconOnlyItemBorderWidth);
+                  }
+                  @include oj-ltr() {
+                      border-width: 0 oj-shorthand-property-value-right($tabBarVerticalIconOnlyItemBorderWidth) oj-shorthand-property-value-bottom($tabBarVerticalIconOnlyItemBorderWidth) oj-shorthand-property-value-left($tabBarVerticalIconOnlyItemBorderWidth);
+                  }
+                }
+            }
+            .oj-tabbar-icon-only.oj-tabbar-vertical.oj-tabbar-vertical-end .oj-tabbar-item
+            {
+                @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+                } @else {
+                  @include oj-rtl() {
+                    border-width: 0 oj-shorthand-property-value-right($tabBarVerticalIconOnlyItemBorderWidth) oj-shorthand-property-value-bottom($tabBarVerticalIconOnlyItemBorderWidth) oj-shorthand-property-value-left($tabBarVerticalIconOnlyItemBorderWidth);
+                  }
+                  @include oj-ltr() {
+                    border-width: 0 oj-shorthand-property-value-left($tabBarVerticalIconOnlyItemBorderWidth) oj-shorthand-property-value-bottom($tabBarVerticalIconOnlyItemBorderWidth) oj-shorthand-property-value-right($tabBarVerticalIconOnlyItemBorderWidth);
+                  }
+                }
+            }
+            @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+                html[dir="rtl"] .oj-tabbar-icon-only.oj-tabbar-vertical.oj-tabbar-vertical-end .oj-tabbar-item{
+                  border-width: 0 var(--oj-tab-bar-item-icon-only-border-width-right) var(--oj-tab-bar-item-icon-only-border-width-bottom) var(--oj-tab-bar-item-icon-only-border-width-left);}
+                html:not([dir="rtl"]) .oj-tabbar-icon-only.oj-tabbar-vertical.oj-tabbar-vertical-end .oj-tabbar-item{
+                  border-width: 0 var(--oj-tab-bar-item-icon-only-border-width-left) var(--oj-tab-bar-item-icon-only-border-width-bottom) var(--oj-tab-bar-item-icon-only-border-width-right);}
+            }
+
+            .oj-tabbar-icon-only.oj-tabbar-vertical .oj-tabbar-item:first-of-type {
+                @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+                  html[dir="rtl"] & {
+                    border-top-width: var(--oj-tab-bar-item-icon-only-border-width-top)}
+                  html:not([dir="rtl"]) & {
+                    border-top-width: var(--oj-tab-bar-item-icon-only-border-width-top)}  
+                  border-top-left-radius: var(--oj-tab-bar-border-radius-top-left);
+                  border-top-right-radius: var(--oj-tab-bar-border-radius-top-right);
+                } @else {
+                  // need to override both ltr and rtl as it was overriden above for border-width.
+                  @include oj-rtl() {
+                      border-top-width: oj-shorthand-property-value-top($tabBarVerticalIconOnlyItemBorderWidth);
+                  }
+                  @include oj-ltr() {
+                      border-top-width: oj-shorthand-property-value-top($tabBarVerticalIconOnlyItemBorderWidth);
+                  }
+                  border-top-left-radius: oj-shorthand-property-value-top($tabBarItemBorderRadius);
+                  border-top-right-radius: oj-shorthand-property-value-right($tabBarItemBorderRadius);
+                }
+            }
+
+            .oj-tabbar-icon-only.oj-tabbar-vertical .oj-tabbar-item:last-of-type {
+                @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+                  border-bottom-left-radius: var(--oj-tab-bar-border-radius-bottom-left);
+                  border-bottom-right-radius: var(--oj-tab-bar-border-radius-bottom-right);
+                } @else {
+                  border-bottom-left-radius: oj-shorthand-property-value-left($tabBarItemBorderRadius);
+                  border-bottom-right-radius: oj-shorthand-property-value-bottom($tabBarItemBorderRadius);
+                }
+            }
+
+            .oj-tabbar-vertical .oj-tabbar-item.oj-selected {
+                @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+                  background-color: var(--oj-tab-bar-item-bg-color-selected);
+                } @else {
+                  background-color: $tabBarItemBgColorSelected;
+                }
+                .oj-contrast-marker & {
+                    @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+                      background-color: var(--oj-tab-bar-item-contrast-bg-color-selected);
+                    } @else {
+                      background-color: $tabBarItemContrastBgColorSelected;
+                    }
+                }
+            }
+        }
+
+
+        .oj-tabbar-icon-only .oj-tabbar-item-content {
+            justify-content: center;
+        }
+        /*End of icons only natabs*/
+
+        //This is needed to ensure icon only tabs not stretch to available space.
+        .oj-tabbar-vertical.oj-tabbar-icon-only {
+            display: inline-flex;
+        }
+
+        //Margin for Vertical icons only tabs
+        .oj-tabbar-icon-only.oj-tabbar-vertical .oj-tabbar-item {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            margin: var(--oj-tab-bar-item-icon-only-margin);
+          } @else {
+            margin: $tabBarVerticalIconOnlyItemPadding;
+          }
+        }
+        //Remove margin top for first element
+        .oj-tabbar-icon-only.oj-tabbar-vertical .oj-tabbar-item:first-child {
+            margin-top: 0;
+        }
+
+
+        .oj-tabbar-vertical .oj-tabbar-item.oj-selected {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            border-color:  var(--oj-tab-bar-item-border-color-selected);
+          } @else {
+            border-color:  $tabBarItemBorderColorSelected;
+          }
+        }
+
+        .oj-tabbar-vertical:not(.oj-tabbar-icon-only) .oj-tabbar-item.oj-selected {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            background-color: var(--oj-tab-bar-item-bg-color-selected);
+          } @else {
+            background-color: $tabBarItemBgColorSelected;
+          }
+            .oj-contrast-marker & {
+              @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+                background-color: var(--oj-tab-bar-item-contrast-bg-color-selected);
+              } @else {
+                background-color: $tabBarItemContrastBgColorSelected;
+              }
+            }
+        }
+
+        .oj-tabbar-vertical:not(.oj-tabbar-icon-only)  .oj-tabbar-item:not(.oj-disabled) a.oj-tabbar-item-content  .oj-tabbar-item-label {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            color: var(--oj-tab-bar-item-label-color-default);
+          } @else {
+            color: $tabBarItemLabelColorDefault;
+          }
+            .oj-contrast-marker & {
+              @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+                color: var(--oj-tab-bar-item-contrast-label-color-default);
+              } @else {
+                color: $tabBarItemContrastLabelColorDefault;
+              }
+            }
+        }
+        .oj-tabbar-vertical:not(.oj-tabbar-icon-only) .oj-tabbar-item:not(.oj-disabled) .oj-tabbar-item-icon
+        {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            color: var(--oj-tab-bar-item-icon-color-default);
+          } @else {
+            color: $tabBarItemIconColorDefault;
+          }
+            .oj-contrast-marker & {
+              @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+                color: var(--oj-tab-bar-item-contrast-label-color-default);
+              } @else {
+                color: $tabBarItemContrastLabelColorDefault;
+              }
+            }
+        }
+        .oj-tabbar-vertical:not(.oj-tabbar-icon-only)  .oj-tabbar-item.oj-selected a.oj-tabbar-item-content  .oj-tabbar-item-label {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            color: var(--oj-tab-bar-item-label-color-selected);
+            font-weight: var(--oj-tab-bar-item-font-weight-selected);
+          } @else {
+            color: $tabBarItemLabelColorSelected;
+            font-weight: $tabBarItemFontWeightSelected;
+          }
+            .oj-contrast-marker & {
+              @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+                color: var(--oj-tab-bar-item-contrast-label-color-selected);
+              } @else {
+                color: $tabBarItemContrastLabelColorSelected;
+              }
+            }
+        }
+
+        .oj-tabbar-vertical:not(.oj-tabbar-icon-only) .oj-tabbar-item.oj-selected:not(.oj-hover) .oj-tabbar-item-icon
+        {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            color: var(--oj-tab-bar-item-icon-color-selected);
+          } @else {
+            color: $tabBarItemIconColorSelected;
+          }
+            .oj-contrast-marker & {
+              @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+                color: var(--oj-tab-bar-item-contrast-label-color-selected);
+              } @else {
+                color: $tabBarItemContrastLabelColorSelected;
+              }
+            }
+        }
+
+        .oj-tabbar-vertical:not(.oj-tabbar-icon-only)  .oj-tabbar-item.oj-hover:not(.oj-selected) a.oj-tabbar-item-content  .oj-tabbar-item-label {
+            @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+              color: var(--oj-tab-bar-item-label-color-hover);
+            } @else {
+              color: $tabBarItemLabelColorHover;
+            }
+            .oj-contrast-marker & {
+              @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+                color: var(--oj-tab-bar-item-contrast-label-color-hover);
+              } @else {
+                color: $tabBarItemContrastLabelColorHover;
+              }
+            }
+        }
+
+        .oj-tabbar-vertical:not(.oj-tabbar-icon-only) .oj-tabbar-item.oj-hover .oj-tabbar-item-icon
+        {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            color: var(--oj-tab-bar-item-icon-color-hover);
+          } @else {
+            color: $tabBarItemIconColorHover;
+          }
+            .oj-contrast-marker & {
+              @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+                color: var(--oj-tab-bar-item-contrast-label-color-hover);
+              } @else {
+                color: $tabBarItemContrastLabelColorHover;
+              }
+            }
+        }
+        .oj-tabbar-vertical:not(.oj-tabbar-icon-only) .oj-tabbar-item.oj-hover.oj-selected .oj-tabbar-item-icon
+        {
+            .oj-contrast-marker & {
+              @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+                color: var(--oj-tab-bar-item-contrast-label-color-selected);
+              } @else {
+                color: $tabBarItemContrastLabelColorSelected;
+              }
+            }
+        }
+        // bg and border colors for hover or active  are same.
+        .oj-tabbar-vertical .oj-tabbar-item.oj-active.oj-hover:not(.oj-selected),
+        .oj-tabbar-vertical .oj-tabbar-item.oj-active:not(.oj-selected){
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            background-color: var(--oj-tab-bar-item-bg-color-active);
+            .oj-contrast-marker & {
+              background-color: var(--oj-tab-bar-item-contrast-bg-color-active);
+            }
+            html[dir="rtl"] & {
+              border-right-color: var(--oj-tab-bar-item-border-color-active); }
+            html:not([dir="rtl"]) & {
+              border-left-color: var(--oj-tab-bar-item-border-color-active); }
+          } @else {
+            background-color: $tabBarItemBgColorActive;
+            .oj-contrast-marker & {
+              background-color: $tabBarItemContrastBgColorActive;
+            }
+            
+            @include oj-rtl() {
+                border-right-color: $tabBarItemBorderColorActive;
+            }
+            @include oj-ltr() {
+                border-left-color: $tabBarItemBorderColorActive;
+            }
+          }
+        }
+
+
+        /*Start of common horizontal navigationtabs styles */
+
+        .oj-tabbar-horizontal .oj-tabbar-element {
+                display: flex;
+        }
+
+        .oj-tabbar-horizontal.oj-tabbar-item-text-wrap .oj-tabbar-item {
+                flex: 1 1 auto;
+        }
+
+        /* This is due to bug in IE 11 where setting flex-shrink:0 is needed to avoid truncation in item text which is needed for overflow feature. This work around breaks text-wrap functionality so enabling this only when no text wrap. We can remove this once IE 11 support dropped and can update docs saying text-wrap is supported with overflow. */
+
+        .oj-tabbar-horizontal .oj-tabbar-item {
+                flex: 1 0 auto;
+        }
+
+        // UP
+        @if $responsiveQuerySmallUp and $responsiveQuerySmallUp != none {
+          @media #{$responsiveQuerySmallUp} {
+            //Need to add page-level/app-level selector as we already overriding flex property in ios scss to show equal sized buttons
+            .oj-tabbar-horizontal.oj-sm-condense .oj-tabbar-item
+            {
+              flex: 0 0 auto;
+            }
+
+            .oj-tabbar-horizontal.oj-sm-justify-content-center .oj-tabbar-element {
+                justify-content: center;
+            }
+            .oj-tabbar-horizontal.oj-sm-justify-content-flex-end .oj-tabbar-element {
+                justify-content: flex-end;
+            }
+
+          }
+        }
+
+
+        @if $responsiveQueryMediumUp and $responsiveQueryMediumUp != none {
+          @media #{$responsiveQueryMediumUp} {
+            .oj-tabbar-horizontal.oj-md-condense .oj-tabbar-item
+            {
+              flex: 0 0 auto;
+            }
+            .oj-tabbar-horizontal.oj-md-justify-content-center .oj-tabbar-element {
+                justify-content: center;
+            }
+            .oj-tabbar-horizontal.oj-md-justify-content-flex-end .oj-tabbar-element {
+                justify-content: flex-end;
+            }
+          }
+        }
+
+
+        @if $responsiveQueryLargeUp and $responsiveQueryLargeUp != none {
+          @media #{$responsiveQueryLargeUp} {
+            .oj-tabbar-horizontal.oj-lg-condense .oj-tabbar-item
+            {
+              flex: 0 1 auto;
+            }
+            .oj-tabbar-horizontal.oj-lg-justify-content-center .oj-tabbar-element {
+                justify-content: center;
+            }
+            .oj-tabbar-horizontal.oj-lg-justify-content-flex-end .oj-tabbar-element {
+                justify-content: flex-end;
+            }
+          }
+        }
+
+
+        @if $responsiveQueryXlargeUp and $responsiveQueryXlargeUp != none {
+          @media #{$responsiveQueryXlargeUp} {
+            .oj-tabbar-horizontal.oj-xl-condense .oj-tabbar-item
+            {
+              flex: 0 0 auto;
+            }
+            .oj-tabbar-horizontal.oj-xl-justify-content-center .oj-tabbar-element {
+                justify-content: center;
+            }
+            .oj-tabbar-horizontal.oj-xl-justify-content-flex-end .oj-tabbar-element {
+                justify-content: flex-end;
+            }
+          }
+        }
+
+
+        @if $responsiveQueryXXlargeUp and $responsiveQueryXXlargeUp != none {
+          @media #{$responsiveQueryXXlargeUp} {
+            .oj-tabbar-horizontal.oj-xxl-condense .oj-tabbar-item
+            {
+              flex: 0 0 auto;
+            }
+            .oj-tabbar-horizontal.oj-xxl-justify-content-center .oj-tabbar-element {
+                justify-content: center;
+            }
+            .oj-tabbar-horizontal.oj-xxl-justify-content-flex-end .oj-tabbar-element {
+                justify-content: flex-end;
+            }
+          }
+        }
+
+        .oj-tabbar-horizontal .oj-tabbar-item-element {
+          box-sizing: border-box;
+            @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+              min-height: var(--oj-tab-bar-horizontal-item-min-height);
+            } @else {
+              min-height: $tabBarHorizontalItemMinHeight;
+            }
+        }
+
+        .oj-tabbar-horizontal  .oj-selected > a.oj-tabbar-item-content > .oj-tabbar-item-label{
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            color: var(--oj-tab-bar-item-label-color-selected);
+          } @else {
+            color: $tabBarItemLabelColorSelected;
+          }
+        }
+
+        .oj-tabbar-horizontal .oj-tabbar-item.oj-selected {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            background-color: var(--oj-tab-bar-horizontal-item-bg-color-selected);
+          } @else {
+            background-color: $tabBarHorizontalItemBgColorSelected;
+          }
+            .oj-contrast-marker & {
+              @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+                background-color: var(--oj-tab-bar-horizontal-item-contrast-bg-color-selected);
+              } @else {
+                background-color: $tabBarHorizontalItemContrastBgColorSelected
+              }
+            }
+        }
+        .oj-tabbar-horizontal .oj-tabbar-item-label {
+                align-self: center;
+        }
+
+        //Padding around icon in horizontal tabs
+        .oj-tabbar-horizontal .oj-tabbar-item-icon
+        {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            margin: var(--oj-tab-bar-horizontal-icon-margin);
+          } @else {
+            margin: $tabBarHorizontalIconMargin;
+          }
+        }
+
+        /*End of common horizontal navigationtabs styles */
+
+        /*Start of  horizontal navigationtabs styles icons only*/
+        //Padding for horizontal icons only tabs
+        .oj-tabbar-horizontal.oj-tabbar-icon-only .oj-tabbar-item {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+          } @else {
+           @include oj-ltr() {
+                margin-left: $tabBarHorizontalIconOnlyItemMargin;
+           }
+           @include oj-rtl() {
+                margin-right: $tabBarHorizontalIconOnlyItemMargin;
+           }
+          }
+        }
+        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+          html:not([dir="rtl"]) .oj-tabbar-horizontal.oj-tabbar-icon-only .oj-tabbar-item {
+            margin-left: var(--oj-tab-bar-horizontal-item-icon-only-margin); }
+
+          html[dir="rtl"] .oj-tabbar-horizontal.oj-tabbar-icon-only .oj-tabbar-item {
+            margin-right: var(--oj-tab-bar-horizontal-item-icon-only-margin); }
+        }
+
+        .oj-tabbar-horizontal.oj-tabbar-icon-only .oj-tabbar-item:first-child {
+           @include oj-ltr() {
+                margin-left:0;
+           }
+           @include oj-rtl() {
+                margin-right:0;
+           }
+        }
+        @if $tabBarHorizontalIconOnlyStyle == circle {
+            .oj-tabbar-horizontal.oj-tabbar-icon-only .oj-tabbar-item.oj-selected,
+            .oj-tabbar-horizontal.oj-tabbar-icon-only .oj-tabbar-item.oj-hover,
+            .oj-tabbar-horizontal.oj-tabbar-icon-only .oj-tabbar-item.oj-active.oj-hover:not(.oj-selected), 
+            .oj-tabbar-horizontal.oj-tabbar-icon-only .oj-tabbar-item.oj-active:not(.oj-selected) {
+                background-color: transparent;
+                .oj-contrast-marker & {
+                    background-color: transparent;
+                }
+            }
+            .oj-tabbar-horizontal.oj-tabbar-icon-only .oj-tabbar-item.oj-selected .oj-tabbar-item-icon {
+                @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+                  background-color: var(--oj-tab-bar-item-icon-only-bg-color-selected);
+                } @else {
+                  background-color: $tabBarItemIconOnlyBgColorSelected;
+                }
+            }
+
+            .oj-tabbar-horizontal.oj-tabbar-icon-only .oj-tabbar-item.oj-hover:not(.oj-selected) .oj-tabbar-item-icon {
+                @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+                  background-color: var(--oj-tab-bar-item-icon-only-bg-color-hover);
+                } @else {
+                  background-color: $tabBarItemIconOnlyBgColorHover;
+                }
+                .oj-contrast-marker & {
+                    @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+                      background-color: var(--oj-tab-bar-item-contrast-bg-color-hover);
+                    } @else {
+                      background-color: $tabBarItemContrastBgColorHover;
+                    }
+                }
+            }
+            .oj-tabbar-horizontal.oj-tabbar-icon-only .oj-tabbar-item-icon
+            {
+                border-radius: 50%;
+                padding: 12px;
+            }
+        }
+        @else {
+            .oj-tabbar-horizontal.oj-tabbar-icon-only .oj-tabbar-item {
+                @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+                  border-width: var(--oj-tab-bar-horizontal-item-icon-only-border-width-top) var(--oj-tab-bar-horizontal-item-icon-only-border-width-right) var(--oj-tab-bar-horizontal-item-icon-only-border-width-bottom) var(--oj-tab-bar-horizontal-item-icon-only-border-width-left);
+                } @else {
+                  border-width: $tabBarHorizontalIconOnlyItemBorderWidth;
+                }
+                border-style: solid;
+            }
+            .oj-tabbar-horizontal-bottom.oj-tabbar-horizontal.oj-tabbar-icon-only .oj-tabbar-item {
+                @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+                  border-width: var(--oj-tab-bar-horizontal-item-icon-only-border-width-bottom) var(--oj-tab-bar-horizontal-item-icon-only-border-width-right) var(--oj-tab-bar-horizontal-item-icon-only-border-width-top) var(--oj-tab-bar-horizontal-item-icon-only-border-width-left);
+                } @else {
+                  border-width: oj-shorthand-property-value-bottom($tabBarHorizontalIconOnlyItemBorderWidth) oj-shorthand-property-value-right($tabBarHorizontalIconOnlyItemBorderWidth) oj-shorthand-property-value-top($tabBarHorizontalIconOnlyItemBorderWidth) oj-shorthand-property-value-left($tabBarHorizontalIconOnlyItemBorderWidth);
+                }
+
+            }
+            .oj-tabbar-horizontal .oj-tabbar-item.oj-selected {
+                @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+                  background-color: var(--oj-tab-bar-horizontal-item-bg-color-selected);
+                } @else {
+                  background-color: $tabBarHorizontalItemBgColorSelected;
+                }
+                .oj-contrast-marker & {
+                    @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+                      background-color: var(--oj-tab-bar-horizontal-item-contrast-bg-color-selected);
+                    } @else {
+                      background-color: $tabBarHorizontalItemContrastBgColorSelected;
+                    }
+                }
+            }
+        }
+        /*End of  horizontal navigationtabs styles icons only*/
+
+        /*Start of  horizontal navigationtabs styles excluding icons only*/
+
+        .oj-tabbar-horizontal:not(.oj-tabbar-icon-only) .oj-tabbar-item {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            border-width: var(--oj-tab-bar-horizontal-item-border-width-top) var(--oj-tab-bar-horizontal-item-border-width-right) var(--oj-tab-bar-horizontal-item-border-width-bottom) var(--oj-tab-bar-horizontal-item-border-width-left);;
+          } @else {
+            border-width: $tabBarHorizontalItemBorderWidth;
+          }
+            border-style: solid;
+        }
+
+        .oj-tabbar-horizontal-bottom.oj-tabbar-horizontal:not(.oj-tabbar-icon-only) .oj-tabbar-item {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            border-width: var(--oj-tab-bar-horizontal-item-border-width-bottom) var(--oj-tab-bar-horizontal-item-border-width-right) var(--oj-tab-bar-horizontal-item-border-width-top) var(--oj-tab-bar-horizontal-item-border-width-left);
+          } @else {
+            border-width: oj-shorthand-property-value-bottom($tabBarHorizontalItemBorderWidth) oj-shorthand-property-value-right($tabBarHorizontalItemBorderWidth) oj-shorthand-property-value-top($tabBarHorizontalItemBorderWidth) oj-shorthand-property-value-left($tabBarHorizontalItemBorderWidth);
+          }
+        }
+
+        .oj-hicontrast  .oj-tabbar-horizontal:not(.oj-tabbar-icon-only) .oj-tabbar-item{
+            border-style: none;
+        }
+        .oj-hicontrast  .oj-tabbar-horizontal:not(.oj-tabbar-icon-only) .oj-tabbar-item.oj-focus,
+        .oj-hicontrast  .oj-tabbar-horizontal:not(.oj-tabbar-icon-only) .oj-tabbar-item.oj-hover {
+            border-width: 1px;
+            border-style: dotted;
+        }
+        .oj-hicontrast  .oj-tabbar-horizontal:not(.oj-tabbar-icon-only) .oj-tabbar-item.oj-selected,
+        .oj-hicontrast  .oj-tabbar-horizontal:not(.oj-tabbar-icon-only) .oj-tabbar-item.oj-selected.oj-focus,
+        .oj-hicontrast  .oj-tabbar-horizontal:not(.oj-tabbar-icon-only) .oj-tabbar-item.oj-selected.oj-hover {
+            border-width: 1px;
+            border-style: solid;
+        }
+
+        .oj-tabbar-horizontal:not(.oj-tabbar-icon-only) .oj-tabbar-item-content {
+            justify-content: center;
+            @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+              padding: var(--oj-tab-bar-horizontal-item-padding);
+            } @else {
+              padding: $tabBarHorizontalItemPadding;
+            }
+        }
+
+        .oj-tabbar-horizontal.oj-tabbar-stack-icon-label:not(.oj-tabbar-icon-only) .oj-tabbar-item-content {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            padding: var(--oj-tab-bar-horizontal-item-stacked-padding);
+          } @else {
+            padding: $tabBarHorizontalStackedItemPadding;
+          }
+        }
+
+            //Add Space between icon and text
+        .oj-tabbar-horizontal:not(.oj-tabbar-stack-icon-label):not(.oj-tabbar-icon-only) .oj-tabbar-item-icon {
+            align-self: center;
+            @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+              html:not([dir="rtl"]) & {
+                margin-right: var(--oj-tab-bar-horizontal-icon-to-text-padding); }
+              html[dir="rtl"] & {
+                margin-left: var(--oj-tab-bar-horizontal-icon-to-text-padding); }
+            } @else {
+              @include oj-ltr() {
+                  margin-right: $tabBarHorizontalIconToTextPadding;
+              }
+              @include oj-rtl() {
+                  margin-left: $tabBarHorizontalIconToTextPadding;
+              }
+            }
+        }
+
+        /*End of  horizontal navigationtabs styles excluding icons only*/
+
+        /*Start of  horizontal stacked icon label navigationtabs styles */
+
+        .oj-tabbar-horizontal.oj-tabbar-stack-icon-label .oj-tabbar-item-element {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            min-height: var(--oj-tab-bar-horizontal-item-stacked-min-height);
+          } @else {
+            min-height: $tabBarHorizontalItemStackedIconMinHeight;
+          }
+        }
+            //Horizontal divider
+        .oj-tabbar-horizontal.oj-tabbar-stack-icon-label:not(.oj-tabbar-icon-only) .oj-tabbar-divider {
+             height: 2.714rem;//38px
+        }
+
+        .oj-tabbar-horizontal.oj-tabbar-stack-icon-label:not(.oj-tabbar-icon-only) .oj-tabbar-item {
+            padding-bottom: 2px;
+        }
+        .oj-tabbar-horizontal.oj-tabbar-stack-icon-label:not(.oj-tabbar-icon-only) .oj-tabbar-item-content {
+            flex-direction: column;
+        }
+
+        /*End of  horizontal stacked icon label navigationtabs styles */
+
+        .oj-tabbar-horizontal .oj-tabbar-item-label {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            font-size: var(--oj-tab-bar-horizontal-item-font-size);
+          } @else {
+            font-size: $tabBarHorizontalItemFontSize;
+          }
+          text-align: center;
+        }
+
+
+        //Add border to horizontal tab item
+        .oj-tabbar-horizontal:not(.oj-tabbar-icon-only) .oj-tabbar-item {
+          border-radius: 0;
+            @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+              html:not([dir="rtl"]) & {
+                border-right-width: var(--oj-tab-bar-horizontal-item-border-width-left);
+                border-left-width: 0; }
+              html[dir="rtl"] & {
+                border-left-width: var(--oj-tab-bar-horizontal-item-border-width-left);
+                border-right-width: 0; }  
+              border-color: var(--oj-tab-bar-horizontal-item-border-color);
+            } @else {
+              @include oj-ltr() {
+                border-right-width: oj-shorthand-property-value-left($tabBarHorizontalItemBorderWidth);
+                border-left-width: 0;
+              }
+              @include oj-rtl() {
+                border-left-width: oj-shorthand-property-value-left($tabBarHorizontalItemBorderWidth);
+                border-right-width:0;
+              }
+              border-color: $tabBarHorizontalItemBorderColor;
+            }
+        }
+
+        .oj-tabbar-horizontal:not(.oj-tabbar-icon-only) .oj-tabbar-item.oj-selected {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+          } @else {
+            @include oj-ltr() {
+              border-left-width: oj-shorthand-property-value-left($tabBarHorizontalItemBorderWidth);
+            }
+            @include oj-rtl() {
+              border-right-width: oj-shorthand-property-value-left($tabBarHorizontalItemBorderWidth);
+            }
+          }
+        }
+        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+          html:not([dir="rtl"]) .oj-tabbar-horizontal:not(.oj-tabbar-icon-only) .oj-tabbar-item.oj-selected {
+            border-left-width: var(--oj-tab-bar-horizontal-item-border-width-left); }
+          html[dir="rtl"] .oj-tabbar-horizontal:not(.oj-tabbar-icon-only) .oj-tabbar-item.oj-selected {
+            border-right-width: var(--oj-tab-bar-horizontal-item-border-width-left); }
+        }
+
+        .oj-tabbar-horizontal:not(.oj-tabbar-icon-only) .oj-tabbar-item:first-of-type {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+          } @else {
+            @include oj-ltr() {
+              border-left-width: oj-shorthand-property-value-left($tabBarHorizontalItemBorderWidth);
+              border-top-left-radius: oj-shorthand-property-value-top($tabBarItemBorderRadius);
+              border-bottom-left-radius: oj-shorthand-property-value-left($tabBarItemBorderRadius);
+            }
+            @include oj-rtl() {
+              border-right-width: oj-shorthand-property-value-left($tabBarHorizontalItemBorderWidth);
+              border-top-right-radius: oj-shorthand-property-value-right($tabBarItemBorderRadius);
+              border-bottom-right-radius: oj-shorthand-property-value-bottom($tabBarItemBorderRadius);
+            }
+          }
+        }
+        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+          html:not([dir="rtl"]) .oj-tabbar-horizontal:not(.oj-tabbar-icon-only) .oj-tabbar-item:first-of-type {
+            border-left-width: var(--oj-tab-bar-horizontal-item-border-width-left);
+            border-top-left-radius: var(--oj-tab-bar-border-radius-top-left);
+            border-bottom-left-radius: var(--oj-tab-bar-border-radius-bottom-left); }
+          html[dir="rtl"] .oj-tabbar-horizontal:not(.oj-tabbar-icon-only) .oj-tabbar-item:first-of-type {
+            border-right-width: var(--oj-tab-bar-horizontal-item-border-width-left);
+            border-top-right-radius: var(--oj-tab-bar-border-radius-top-right);
+            border-bottom-right-radius: var(--oj-tab-bar-border-radius-bottom-right); }
+        }
+        //Add border to icon only horizontal tab item
+        .oj-tabbar-horizontal.oj-tabbar-icon-only .oj-tabbar-item {
+          border-radius: 0;
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            border-color: var(--oj-tab-bar-horizontal-item-border-color);
+          } @else {
+            border-color: $tabBarHorizontalItemBorderColor;
+          }
+        }
+        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+          html:not([dir="rtl"]) .oj-tabbar-horizontal.oj-tabbar-icon-only .oj-tabbar-item {
+            border-right-width: var(--oj-tab-bar-horizontal-item-icon-only-border-width-left);
+            border-left-width: 0; }
+          html[dir="rtl"] .oj-tabbar-horizontal.oj-tabbar-icon-only .oj-tabbar-item {
+            border-left-width: var(--oj-tab-bar-horizontal-item-icon-only-border-width-left);
+            border-right-width: 0; }
+        } @else {
+            .oj-tabbar-horizontal.oj-tabbar-icon-only .oj-tabbar-item {
+                @include oj-ltr() {
+                  border-right-width: oj-shorthand-property-value-left($tabBarHorizontalIconOnlyItemBorderWidth);
+                  border-left-width: 0;
+                }
+                @include oj-rtl() {
+                  border-left-width: oj-shorthand-property-value-left($tabBarHorizontalIconOnlyItemBorderWidth);
+                  border-right-width:0;
+                }
+            }
+        }
+        
+        .oj-tabbar-horizontal.oj-tabbar-icon-only .oj-tabbar-item.oj-selected {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            html:not([dir="rtl"]) & {
+              border-left-width: var(--oj-tab-bar-horizontal-item-icon-only-border-width-left);
+            }
+            
+            html[dir="rtl"] & {
+              border-right-width: var(--oj-tab-bar-horizontal-item-icon-only-border-width-left);
+            }
+            
+          } @else {
+            @include oj-ltr() {
+              border-left-width: oj-shorthand-property-value-left($tabBarHorizontalIconOnlyItemBorderWidth);
+            }
+  
+            @include oj-rtl() {
+              border-right-width: oj-shorthand-property-value-left($tabBarHorizontalIconOnlyItemBorderWidth);
+            }
+          }
+        }
+
+        .oj-tabbar-horizontal.oj-tabbar-icon-only .oj-tabbar-item:first-of-type {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+          } @else {
+            @include oj-ltr() {
+              border-left-width: oj-shorthand-property-value-left($tabBarHorizontalIconOnlyItemBorderWidth);
+              border-top-left-radius: oj-shorthand-property-value-top($tabBarItemBorderRadius);
+              border-bottom-left-radius: oj-shorthand-property-value-left($tabBarItemBorderRadius);
+            }
+            @include oj-rtl() {
+              border-right-width: oj-shorthand-property-value-left($tabBarHorizontalIconOnlyItemBorderWidth);
+              border-top-right-radius: oj-shorthand-property-value-right($tabBarItemBorderRadius);
+              border-bottom-right-radius: oj-shorthand-property-value-bottom($tabBarItemBorderRadius);
+            }
+          }
+        }
+
+        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+          html:not([dir="rtl"]) .oj-tabbar-horizontal.oj-tabbar-icon-only .oj-tabbar-item:first-of-type {
+            border-left-width: var(--oj-tab-bar-horizontal-item-icon-only-border-width-left);
+            border-top-left-radius: var(--oj-tab-bar-border-radius-top-left);
+            border-bottom-left-radius: var(--oj-tab-bar-border-radius-bottom-left); }
+
+          html[dir="rtl"] .oj-tabbar-horizontal.oj-tabbar-icon-only .oj-tabbar-item:first-of-type {
+            border-right-width: var(--oj-tab-bar-horizontal-item-icon-only-border-width-left);
+            border-top-right-radius: var(--oj-tab-bar-border-radius-top-right);
+            border-bottom-right-radius: var(--oj-tab-bar-border-radius-bottom-right); }
+        }
+
+        .oj-tabbar-horizontal.oj-tabbar-icon-only .oj-tabbar-item.oj-tabbar-item-last-child,
+        .oj-tabbar-horizontal:not(.oj-tabbar-icon-only) .oj-tabbar-item.oj-tabbar-item-last-child {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            html:not([dir="rtl"]) & {
+              border-top-right-radius: var(--oj-tab-bar-border-radius-top-right);
+              border-bottom-right-radius: var(--oj-tab-bar-border-radius-bottom-right); }
+            html[dir="rtl"] & {
+              border-top-left-radius: var(--oj-tab-bar-border-radius-top-left);
+              border-bottom-left-radius: var(--oj-tab-bar-border-radius-bottom-left); }
+          } @else {
+            @include oj-ltr() {
+              border-top-right-radius: oj-shorthand-property-value-right($tabBarItemBorderRadius);
+              border-bottom-right-radius: oj-shorthand-property-value-bottom($tabBarItemBorderRadius);
+            }
+            @include oj-rtl() {
+              border-top-left-radius: oj-shorthand-property-value-top($tabBarItemBorderRadius);
+              border-bottom-left-radius: oj-shorthand-property-value-left($tabBarItemBorderRadius);
+            }
+          }
+        }
+
+        .oj-tabbar-horizontal.oj-tabbar-icon-only .oj-tabbar-item.oj-selected,
+        .oj-tabbar-horizontal:not(.oj-tabbar-icon-only) .oj-tabbar-item.oj-selected {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            border-color:  var(--oj-tab-bar-horizontal-item-border-color-selected);
+          } @else {
+            border-color:  $tabBarHorizontalItemBorderColorSelected;
+          }
+        }
+
+        .oj-tabbar-horizontal.oj-tabbar-icon-only .oj-tabbar-item.oj-hover:not(.oj-selected),
+        .oj-tabbar-horizontal:not(.oj-tabbar-icon-only) .oj-tabbar-item.oj-hover:not(.oj-selected) {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            border-color:  var(--oj-tab-bar-horizontal-item-border-color-hover);
+          } @else {
+            border-color:  $tabBarHorizontalItemBorderColorHover;
+          }
+        }
+
+        .oj-tabbar-horizontal:not(.oj-tabbar-icon-only) .oj-tabbar-item.oj-selected {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            background-color: var(--oj-tab-bar-horizontal-item-bg-color-selected);
+          } @else {
+            background-color: $tabBarHorizontalItemBgColorSelected;
+          }
+            .oj-contrast-marker & {
+              @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+                background-color: var(--oj-tab-bar-horizontal-item-contrast-bg-color-selected);
+              } @else {
+                background-color: $tabBarHorizontalItemContrastBgColorSelected;
+              }
+            }
+        }
+        .oj-tabbar-horizontal:not(.oj-tabbar-icon-only)  .oj-tabbar-item:not(.oj-disabled) a.oj-tabbar-item-content  .oj-tabbar-item-label {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            color: var(--oj-tab-bar-item-label-color-default);
+          } @else {
+            color: $tabBarItemLabelColorDefault;
+          }
+            .oj-contrast-marker & {
+              @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+                color: var(--oj-tab-bar-item-contrast-label-color-default);
+              } @else {
+                color: $tabBarItemContrastLabelColorDefault;
+              }
+            }
+        }
+
+        .oj-tabbar-horizontal .oj-tabbar-item:not(.oj-disabled):not(.oj-hover):not(.oj-selected) .oj-tabbar-item-icon
+        {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            color: var(--oj-tab-bar-item-icon-color-default);
+          } @else {
+            color: $tabBarItemIconColorDefault;
+          }
+            .oj-contrast-marker & {
+              @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+                color: var(--oj-tab-bar-item-contrast-label-color-default);
+              } @else {
+                color: $tabBarItemContrastLabelColorDefault;
+              }
+            }
+        }
+
+        .oj-tabbar-horizontal:not(.oj-tabbar-icon-only)  .oj-tabbar-item.oj-selected a.oj-tabbar-item-content  .oj-tabbar-item-label {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            color: var(--oj-tab-bar-horizontal-item-label-color-selected);
+            font-weight: var(--oj-tab-bar-item-font-weight-selected);
+          } @else {
+            color: $tabBarHorizontalItemLabelColorSelected;
+            font-weight: $tabBarItemFontWeightSelected;
+          }
+            .oj-contrast-marker & {
+              @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+                color: var(--oj-tab-bar-horizontal-item-contrast-label-color-selected);
+              } @else {
+                color: $tabBarHorizontalItemContrastLabelColorSelected;
+              }
+            }
+        }
+
+        .oj-tabbar-horizontal:not(.oj-tabbar-icon-only) .oj-tabbar-item.oj-selected:not(.oj-hover) .oj-tabbar-item-icon
+        {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            color: var(--oj-tab-bar-horizontal-item-icon-color-selected);
+          } @else {
+            color: $tabBarHorizontalItemIconColorSelected;
+          }
+            .oj-contrast-marker & {
+              @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+                color: var(--oj-tab-bar-horizontal-item-contrast-label-color-selected);
+              } @else {
+                color: $tabBarHorizontalItemContrastLabelColorSelected;
+              }
+            }
+        }
+        .oj-tabbar-horizontal .oj-tabbar-item.oj-hover:not(.oj-selected) a.oj-tabbar-item-content > .oj-tabbar-item-label {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            color: var(--oj-tab-bar-horizontal-item-label-color-hover);
+          } @else {
+            color: $tabBarHorizontalItemLabelColorHover;
+          }
+        }
+        .oj-tabbar-horizontal .oj-tabbar-item.oj-hover .oj-tabbar-item-icon
+        {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            color: var(--oj-tab-bar-item-icon-color-hover);
+          } @else {
+            color: $tabBarItemIconColorHover;
+          }
+        }
+
+        .oj-tabbar-horizontal .oj-tabbar-item.oj-active.oj-hover:not(.oj-selected),
+        .oj-tabbar-horizontal .oj-tabbar-item.oj-active:not(.oj-selected){
+            @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+              background-color: var(--oj-tab-bar-item-bg-color-active);
+              .oj-contrast-marker & {
+                background-color: var(--oj-tab-bar-item-contrast-bg-color-active);
+              }
+            } @else {
+              background-color: $tabBarItemBgColorActive;
+              .oj-contrast-marker & {
+                background-color: $tabBarItemContrastBgColorActive;
+              }
+            }
+        }
+        
+        .oj-tabbar-horizontal:not(.oj-tabbar-icon-only) .oj-tabbar-item.oj-active.oj-hover:not(.oj-selected),
+        .oj-tabbar-horizontal:not(.oj-tabbar-icon-only) .oj-tabbar-item.oj-active:not(.oj-selected) {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            border-color: var(--oj-tab-bar-item-border-color-active);
+          } @else {
+            border-color: $tabBarItemBorderColorActive;
+          }
+        }
+
+
+
+        .oj-tabbar-icon-only .oj-tabbar-item.oj-selected:not(.oj-hover) .oj-tabbar-item-icon {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            color: var(--oj-tab-bar-icon-only-icon-color-selected);
+          } @else {
+            color: $tabBarIconOnlyIconColorSelected;
+          }
+            .oj-contrast-marker & {
+              @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+                color: var(--oj-tab-bar-item-contrast-label-color-selected);
+              } @else {
+                color: $tabBarItemContrastLabelColorSelected;
+              }
+            }
+        }
+
+        .oj-tabbar-horizontal.oj-tabbar-icon-only .oj-tabbar-item.oj-selected:not(.oj-hover) .oj-tabbar-item-icon {
+            .oj-contrast-marker & {
+              @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+                color: var(--oj-tab-bar-horizontal-item-contrast-label-color-selected);
+              } @else {
+                color: $tabBarHorizontalItemContrastLabelColorSelected;
+              }
+            }
+        }
+
+        .oj-tabbar-vertical.oj-tabbar-icon-only .oj-tabbar-item.oj-selected:not(.oj-hover) .oj-tabbar-item-icon {
+            .oj-contrast-marker & {
+              @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+                color: var(--oj-tab-bar-item-contrast-label-color-selected);
+              } @else {
+                color: $tabBarItemContrastLabelColorSelected;
+              }
+            }
+        }
+
+        @if( $tabBarVerticalItemLabelTextAlign == center ) {
+            //center align the entire contents
+            .oj-tabbar-vertical:not(.oj-tabbar-icon-only) .oj-tabbar-item-content {
+              justify-content: center;
+            }
+
+          .oj-tabbar-vertical:not(.oj-tabbar-icon-only) .oj-tabbar-item-content .oj-tabbar-item-label {
+              flex: 0 1 auto;
+            }
+        }
+
+        @if( $tabBarHorizontalItemWidthDistribution == even) {
+          //For horizontal navtabs, button size should be equal.
+            .oj-tabbar-horizontal .oj-tabbar-item {
+              flex: 1 1 0;
+            }
+        } 
+        
+        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+          //This is needed for ios as icon default color is not visible on selected item
+          .oj-tabbar-vertical .oj-tabbar-item.oj-selected .oj-tabbar-remove-icon:not(:hover) {
+              color: var(--oj-tab-bar-item-icon-color-selected);
+          }
+
+          //This is needed for ios as icon default color is not visible on selected item
+          .oj-tabbar-horizontal .oj-tabbar-item.oj-selected .oj-tabbar-remove-icon:not(:hover) {
+              color: var(--oj-tab-bar-horizontal-item-icon-color-selected);
+          }
+        } @else {
+            //This is needed for ios as icon default color is not visible on selected item
+            .oj-tabbar-vertical .oj-tabbar-item.oj-selected .oj-tabbar-remove-icon:not(:hover) {
+                color: $tabBarItemIconColorSelected;
+            }
+  
+            //This is needed for ios as icon default color is not visible on selected item
+            .oj-tabbar-horizontal .oj-tabbar-item.oj-selected .oj-tabbar-remove-icon:not(:hover) {
+                color: $tabBarHorizontalItemIconColorSelected;
+            }
+        }
+
+        //Add bottom border to separate list items
+        .oj-tabbar-vertical .oj-tabbar-item,
+        .oj-tabbar-vertical .oj-tabbar-item.oj-hover:not(.oj-selected),
+        .oj-tabbar-vertical .oj-tabbar-item.oj-selected,
+        :not(.oj-tabbar-icon-only).oj-tabbar-vertical .oj-tabbar-item,
+        :not(.oj-tabbar-icon-only).oj-tabbar-vertical .oj-tabbar-item.oj-hover:not(.oj-selected) {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            border-bottom-color: var(--oj-tab-bar-item-divider-color);
+          } @else {
+            border-bottom-color: $tabBarVerticalItemSeparatorColor;
+          }
+        }
+
+        .oj-tabbar-has-icons .oj-tabbar-overflow-item-icon {
+            display: block;
+        }
+
+        .oj-tabbar-overflow-item-icon {
+           display: none;
+           font-size: 24px;
+        }
+
+        /* Styling for the drag image */
+        .oj-tabbar-drag-image {
+            background-color: transparent;
+            position: fixed;
+            top: 10000px;
+            border: 1px solid transparent;
+            overflow-x: initial;
+            padding: 3px;
+        }
+
+        /* Styling for hiding the original item being dragged */
+        .oj-tabbar-drag-item {
+            display: none;
+        }
+
+        /* Styling item that is draggable (no affordance) */
+        .oj-tabbar-item.oj-draggable {
+            cursor: move;
+        }
+
+        /* Styling for the item that is being moved using drag */
+        .oj-tabbar-item.oj-drag {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            box-shadow: var(--oj-box-shadow-lg);
+            border-top: 1px solid;
+            border-bottom: 1px solid;
+          } @else {
+            box-shadow: $largeBoxShadow;
+            border-top: 1px solid;
+            border-bottom: 1px solid;
+          }
+        }
+
+        /* Styling all drop targets in the list */
+        .oj-tabbar .oj-tabbar-item.oj-drop,
+        .oj-tabbar .oj-tabbar-item.oj-drop.oj-active,
+        .oj-tabbar .oj-tabbar-item.oj-drop.oj-default,
+        .oj-tabbar .oj-tabbar-item.oj-drop.oj-disabled,
+        .oj-tabbar .oj-tabbar-item.oj-drop.oj-selected,
+        .oj-tabbar .oj-tabbar-item.oj-drop.oj-hover,
+        .oj-tabbar .oj-tabbar-item.oj-drop.oj-hover:not(.oj-selected) {
+            box-sizing: border-box;
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            border: 1px solid var(--oj-drop-target-color-2);
+            background-color: var(--oj-drop-target-color-1);
+          } @else {
+            border: 1px solid $dropTarget2Color;
+            background-color: $dropTarget1Color;
+          }
+        }
+
+        /* Used when there are no items in tabbar */
+        .oj-tabbar-no-data-message {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            padding: var(--oj-panel-padding);
+            color: var(--oj-text-color);
+            min-height: var(--oj-font-size);
+          } @else {
+            padding: $panelPadding;
+            color: $textColor;
+            min-height: $fontSize;
+          }
+        }
+
+        /* Styling for an item that is cut during a context menu cut operation */
+        .oj-tabbar-cut {
+            opacity: 0.8;
+        }
+        .oj-tabbar-remove-icon {
+          @extend .oj-fwk-icon-cross;
+          align-self: center;
+          @include oj-ltr() {
+            padding-right: 5px;
+          }
+          @include oj-rtl() {
+            padding-left: 5px;
+          }
+          padding-top: 3px;
+        }
+
+        .oj-tabbar-hide-remove-icon .oj-tabbar-remove-icon {
+          display: none;
+        }
+
+        /* Override  default options*/
+        $tabBarDefaultOptions: ();
+        $tabBarAnimationDefaults: ();
+
+        @if ($tabBarHorizontalAddAnimation) {
+            $tabBarAnimationDefaults: map-merge($tabBarAnimationDefaults, (addHorizontalItem: $tabBarHorizontalAddAnimation));
+        }
+
+        @if ($tabBarHorizontalRemoveAnimation) {
+            $tabBarAnimationDefaults: map-merge($tabBarAnimationDefaults, (removeHorizontalItem: $tabBarHorizontalRemoveAnimation));
+        }
+
+        @if ($tabBarAddAnimation) {
+            $tabBarAnimationDefaults: map-merge($tabBarAnimationDefaults, (add: $tabBarAddAnimation));
+        }
+
+        @if ($tabBarRemoveAnimation) {
+            $tabBarAnimationDefaults: map-merge($tabBarAnimationDefaults, (remove: $tabBarRemoveAnimation));
+        }
+
+        @if ($tabBarUpdateAnimation) {
+            $tabBarAnimationDefaults: map-merge($tabBarAnimationDefaults, (update: $tabBarUpdateAnimation));
+        }
+
+        @if ($tabBarPointerUpAnimation) {
+            $tabBarAnimationDefaults: map-merge($tabBarAnimationDefaults, (pointerUp: $tabBarPointerUpAnimation));
+        }
+
+        @if ($tabBarAnimationDefaults) {
+            $tabBarDefaultOptions: map-merge($tabBarDefaultOptions, (animation: $tabBarAnimationDefaults));
+        }
+
+        .oj-tabbar-option-defaults {
+           font-family: oj-json-from-map($tabBarDefaultOptions);
+        }
+    }
+}

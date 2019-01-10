@@ -1,11 +1,11 @@
 {
   "name": "oj-menu",
-  "version": "6.0.0",
-  "jetVersion": "6.0.0",
+  "version": "6.1.0",
+  "jetVersion": "6.1.0",
   "displayName": "Menu",
   "type": "core",
   "description": "Displays a popup menu with support for touch, mouse, and keyboard interactions.",
-  "help": "https://docs.oracle.com/en/middleware/jet/6/reference-api/oj.ojMenu.html",
+  "help": "https://docs.oracle.com/en/middleware/jet/6.1/reference-api/oj.ojMenu.html",
   "properties": {
     "disabled": {
       "description": "Disables the menu if set to true.",
@@ -315,14 +315,12 @@
         {
           "name": "event",
           "description": "What triggered the menu launch. May be null. May be omitted if subsequent params are omitted.",
-          "type": "object",
-          "optional": true
+          "type": "object"
         },
         {
           "name": "openOptions",
           "description": "Options to merge with the openOptions option. May be null. May be omitted if subsequent params are omitted.",
-          "type": "object",
-          "optional": true
+          "type": "object"
         }
       ],
       "return": "void"
@@ -407,10 +405,16 @@
       }
     },
     "ojBeforeOpen": {
-      "description": "Triggered before this menu is launched via the open method or via menu button or context menu functionality. The launch can be cancelled by calling event.preventDefault(). The ui.openOptions payload field contains the settings being used for this menu launch, resulting from merging the openOptions passed to open(), if any, with the openOptions component option. This field is \"live\", meaning that the listener can alter fields such as position to affect this launch without affecting the component option. Since these changes are applied to the merged object, they supersede both the openOptions passed to open() and the openOptions component option. If any of the above techniques are used to alter the built-in [menu button]ojButton#menu or [context menu]baseComponent#contextMenu functionality, it is the app's responsibility to ensure that the result is both correct and accessible.",
+      "description": "Triggered before this menu is launched via the open method or via menu button or context menu functionality. The launch can be cancelled by calling event.preventDefault(). The event.detail.openOptions payload field contains the settings being used for this menu launch, resulting from merging the openOptions passed to open(), if any, with the openOptions component option. This field is \"live\", meaning that the listener can alter fields such as position to affect this launch without affecting the component option. Since these changes are applied to the merged object, they supersede both the openOptions passed to open() and the openOptions component option. If any of the above techniques are used to alter the built-in [menu button]ojButton#menu or [context menu]baseComponent#contextMenu functionality, it is the app's responsibility to ensure that the result is both correct and accessible.",
       "bubbles": true,
       "cancelable": true,
-      "help": "beforeOpen"
+      "help": "beforeOpen",
+      "detail": {
+        "openOptions": {
+          "description": "effecting the open operation",
+          "type": "oj.ojMenu.OpenOptions"
+        }
+      }
     },
     "ojClose": {
       "description": "Triggered after this menu is closed.",

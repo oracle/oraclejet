@@ -1,0 +1,39 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+$includeColorPaletteVariables: $includeColorPaletteClasses !default;
+
+@if $includeColorPaletteVariables != false {
+  $includeFormControlVariables: true !global;
+  $includeMessagesVariables: true !global;
+}
+// import dependencies
+@import "oj.alta.android.formcontrol";
+@import "oj.alta.android.messages";
+
+@if $includeColorPaletteVariables != false {
+  @include module-include-once("alta.android.variables.colorpalette") {
+
+:root {
+
+  // color palette
+  // --------------------------
+  --oj-color-palette-grid-swatch-xs-size:                22px;
+  --oj-color-palette-grid-swatch-sm-size:                29px;
+  --oj-color-palette-grid-swatch-lg-size:                64px;
+  --oj-color-palette-grid-swatch-xl-size:                64px;
+  --oj-color-palette-list-swatch-sm-width:               84px;
+  --oj-color-palette-list-swatch-sm-height:              22px;
+  --oj-color-palette-list-swatch-lg-width:               274px;
+  --oj-color-palette-list-swatch-lg-height:              22px;
+  --oj-color-palette-swatch-inner-border-color:          var(--oj-neutral-color-14);
+  --oj-color-palette-swatch-outer-border-color-selected: var(--oj-brand-color-dark-1);
+  --oj-color-palette-text-color:                         var(--oj-text-color);
+  --oj-color-palette-grid-font-size:                     var(--oj-font-size-sm);
+
+  
+}
+
+
+  }
+}

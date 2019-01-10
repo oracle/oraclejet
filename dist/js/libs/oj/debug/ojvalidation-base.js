@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -1191,7 +1191,7 @@ oj.Validation._registerFactory = function (name, instance, factories, contractDe
  * @ojtsnoexport
  * @ojtsexportastype
  * @since 0.6
- * @ojsignature {target: "Type", value: "class ConverterFactory<V>"}
+ * @ojsignature {target: "Type", value: "class ConverterFactory<V>", genericParameters: [{"name": "V", "description": "Type of value to be converted"}]}
  * @see oj.Validation
  * @see oj.NumberConverterFactory
  * @see oj.DateTimeConverterFactory
@@ -1340,7 +1340,7 @@ oj.ConverterFactory =
  * @name oj.ValidatorFactory
  * @abstract
  * @class
- * @ojsignature {target: "Type", value: "class ValidatorFactory<V>"}
+ * @ojsignature {target: "Type", value: "class ValidatorFactory<V>", genericParameters: [{"name": "V", "description": "Type of value to be validated"}]}
  * @export
  * @ojtsnoexport
  * @ojtsexportastype
@@ -1516,7 +1516,9 @@ oj.ValidatorFactory =
  * @param {Object=} options an object literal used to provide an optional information to
  * initialize the converter.<p>
  * @export
- * @ojsignature {target: "Type", value: "class Converter<V>"}
+ * @ojsignature {target: "Type", value: "class Converter<V>",
+ *               genericParameters: [{"name": "V", "description": "Type of value to be converted. Parse will
+ *                 convert string to this type and format will format this type to string"}]}
  * @abstract
  * @ojtsnoexport
  * @ojtsexportastype
@@ -1746,7 +1748,7 @@ oj.ConverterError.prototype.getMessage = function () {
  * @abstract
  * @class
  * @param {Object=} options An object which contains the options for the validator
- * @ojsignature {target: "Type", value: "class Validator<V>"}
+ * @ojsignature {target: "Type", value: "class Validator<V>", genericParameters: [{"name": "V", "description": "Type of value to be validated"}]}
  * @ojtsnoexport
  * @ojtsexportastype
  * @export
@@ -1913,7 +1915,9 @@ oj.ValidatorError.prototype.getMessage = function () {
  */
 /* global Translations:false */
 /**
- * Constructs a RegExpValidator that ensures the value matches the provided pattern
+ * Constructs a RegExpValidator that ensures the value matches the provided pattern.
+ * In most use cases you will use the ValidatorFactory to get an instance of a
+ * RegExpValidator instead of using the constructor.
  * @param {Object=} options an object literal used to provide the pattern, an optional hint and error
  * message.
  * @export
@@ -1926,6 +1930,7 @@ oj.ValidatorError.prototype.getMessage = function () {
  *                for: "options", jsdocOverride: true}
  *              ]
  * @since 0.6
+ * @see oj.ValidatorFactory
  */
 oj.RegExpValidator = function (options) {
   this.Init(options);
@@ -2097,7 +2102,9 @@ oj.RegExpValidator.prototype._getDetailKey = function () {
  */
 /* global Translations:false */
 /**
- * Constructs a RequiredValidator that ensures that the value provided is not empty
+ * Constructs a RequiredValidator that ensures that the value provided is not empty. In
+ * most use cases you will use the ValidatorFactory to get an instance of a
+ * RequiredValidator instead of using the constructor.
  * @param {Object=} options an object literal used to provide an optional hint and error message.<p>
  *
  * @export
@@ -2106,6 +2113,7 @@ oj.RegExpValidator.prototype._getDetailKey = function () {
  * @ojsignature [{target: "Type", value: "class RequiredValidator implements Validator<object|string|number>"},
  *               {target: "Type", value: "oj.RequiredValidator.ValidatorOptions", for: "options", jsdocOverride: true}]
  * @since 0.6
+ * @see oj.ValidatorFactory
  *
  */
 oj.RequiredValidator = function (options) {
@@ -2271,7 +2279,8 @@ oj.RequiredValidator.prototype._getDetailKey = function () {
  *  &lt;oj-input-text value="{{value}}"
  *  async-validators="[[[asyncValidator1]]]">&lt;/oj-input-text>
  * @interface oj.AsyncValidator
- * @ojsignature {target: "Type", value: "interface AsyncValidator<V>"}
+ * @ojsignature {target: "Type", value: "interface AsyncValidator<V>",
+ *               genericParameters: [{"name": "V", "description": "Type of value to be validated"}]}
  * @export
  * @since 5.2.0
  * @ojstatus preview
@@ -2328,7 +2337,7 @@ oj.RequiredValidator.prototype._getDetailKey = function () {
  */
 
  /**
- * hint is an optional attribute. It is a Promise that resolves to the hint string.
+ * hint is an optional attribute. It is a Promise that resolves to the hint string or null.
  * @example <caption>Create an Object that duck-types the oj.AsyncValidator interface.
  * Bind the Object to the JET form component's async-validators attribute. The
  * validator's 'hint'  will be called when the user focuses on the input and it
@@ -2361,7 +2370,7 @@ oj.RequiredValidator.prototype._getDetailKey = function () {
  * @memberof oj.AsyncValidator
  * @instance
  * @name hint
- * @type {Promise<string>}
+ * @type {Promise<string|null>}
  * @ojstatus preview
  */
 
@@ -2382,6 +2391,8 @@ oj.RequiredValidator.prototype._getDetailKey = function () {
 
 (function () {
   /**
+   * In most use cases you will use the ConverterFactory to get an instance of a
+   * ColorConverter.
    * @export
    * @constructor
    * @augments oj.Converter
@@ -2405,7 +2416,7 @@ oj.RequiredValidator.prototype._getDetailKey = function () {
    * var cv        = cv.createConverter({format: "hsl");
    * var color     = new oj.Color("rgb(30, 87, 236)") ;
    * var hsl       = cv.format(color);   -->  "hsl(223, 84%, 52%)"
-   *
+   * @see oj.ConverterFactory
    */
   oj.ColorConverter = function (options) {
     this.Init(options);
@@ -3186,6 +3197,8 @@ oj.IntlConverterUtils.getInitials = function (firstName, lastName) {
 
 /**
  * Constructs a LengthValidator that ensures the value entered is within a given length.
+ * In most use cases you will use the ValidatorFactory to get an instance of a
+ * LengthValidator instead of using the constructor.
  * <p>
  * By default this uses Javascript's String length property
  * which counts a UTF-16 surrogate pair as length === 2.
@@ -3211,6 +3224,7 @@ oj.IntlConverterUtils.getInitials = function (firstName, lastName) {
  *                jsdocOverride: true}
  *              ]
  * @since 0.7
+ * @see oj.ValidatorFactory
  */
 oj.LengthValidator = function (options) {
   this.Init(options);

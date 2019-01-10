@@ -1,0 +1,71 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+$includeMenuVariables: $includeMenuClasses !default;
+@if $includeMenuVariables != false {
+  $includePopupVariables: true !global;
+}
+// import dependencies
+@import "oj.alta.web.popup";
+@if $includeMenuVariables != false {
+  @include module-include-once("alta.web.variables.menu") {
+    :root {
+      // menu
+      // ---------------------------
+    // todo: sass doc says this is top/bottom padding, change var name?
+      --oj-menu-padding:                        0;
+      --oj-menu-border-width:                   1px;
+      --oj-menu-border-radius:                  0;
+      --oj-menu-font-size:                      var(--oj-font-size);
+      --oj-menu-box-shadow:                     var(--oj-box-shadow-sm);
+      --oj-menu-submenu-box-shadow:             var(--oj-menu-box-shadow);
+      --oj-menu-icon-size:                      16px;
+      --oj-menu-icon-to-edge-padding:           0.57143rem;
+      --oj-menu-text-to-icon-padding:           0.57143rem;
+      --oj-menu-submenu-icon-padding:           0;
+      --oj-menu-text-to-edge-padding:           calc(var(--oj-menu-icon-to-edge-padding) + var(--oj-menu-icon-size) + var(--oj-menu-text-to-icon-padding)) ;
+      --oj-menu-text-only-text-align:           initial;
+      --oj-menu-divider-margin:                 1px;
+      --oj-menu-divider-border-width:           1px;
+      --oj-menu-item-line-height:               2.5rem;
+    
+      --oj-menu-bg-color:                       var(--oj-popup-bg-color);
+      --oj-menu-border-color:                   var(--oj-popup-border-color);
+      --oj-menu-divider-border-color:           var(--oj-menu-border-color);
+      --oj-menu-item-text-color:                var(--oj-primary-text-color);
+      --oj-menu-item-border-color:              transparent;
+      --oj-menu-item-border-width:              0px;
+      --oj-menu-item-bg-color-focus:            var(--oj-neutral-color-6);
+      --oj-menu-item-border-color-focus:        transparent;
+      --oj-menu-item-text-color-disabled:       var(--oj-text-color-disabled);
+      --oj-menu-item-last-border-width:         var(--oj-menu-item-border-width);
+      --oj-menu-icon-color:                     var(--oj-icon-color-default);
+      --oj-menu-icon-color-disabled:            var(--oj-icon-color-disabled);
+      --oj-menu-icon-opacity-disabled:          var(--oj-opacity-disabled);
+      --oj-menu-submenu-icon-color:             inherit;
+    
+      // menu sheet
+      --oj-menu-sheet-border-radius:            var(--oj-menu-border-radius);
+      --oj-menu-sheet-font-size:                var(--oj-menu-font-size);
+      --oj-menu-sheet-margin-horizontal:        0px;
+    // todo: sass had $menuSheetMarginBottom
+    //$menuSheetMarginBottom value must be 0, px, or %, e.g. 0, 10px, 5%
+      --oj-menu-sheet-item-line-height:         var(--oj-menu-item-line-height);
+    
+      // groups of sheet menu items separated by group dividers
+      --oj-menu-sheet-item-group-border-radius: 0;
+      --oj-menu-sheet-divider-border-width:     var(--oj-menu-divider-border-width);
+      // cancel menu item (.oj-menu-item-cancel) and its anchor
+      --oj-menu-sheet-item-cancel-font-weight:  normal;
+    
+      --oj-menu-sheet-bg-color:                 var(--oj-menu-bg-color);
+      --oj-menu-sheet-item-text-color:          var(--oj-menu-item-text-color);
+      --oj-menu-sheet-item-bg-color:            transparent;
+      --oj-menu-sheet-item-border-color:        var(--oj-menu-item-border-color);
+      --oj-menu-sheet-item-border-width:        var(--oj-menu-item-border-width);
+      --oj-menu-sheet-item-bg-color-focus:      var(--oj-menu-item-bg-color-focus);
+      --oj-menu-sheet-item-border-color-focus:  var(--oj-menu-item-border-color-focus);
+      --oj-menu-sheet-item-text-color-disabled: var(--oj-menu-item-text-color-disabled);
+      --oj-menu-sheet-divider-border-color:     var(--oj-menu-divider-border-color);      
+}    
+}
+}

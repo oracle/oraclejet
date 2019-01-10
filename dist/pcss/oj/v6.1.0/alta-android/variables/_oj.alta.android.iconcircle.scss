@@ -1,0 +1,49 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+$includeIconCircleVariables: $includeIconCircleClasses !default;
+
+@if $includeIconCircleVariables != false {
+  @include module-include-once("alta.android.variables.iconcircle") {
+
+:root {
+  // icon circle
+  // ----------------------------
+  --oj-icon-circle-inner-bg-color:            var(--oj-neutral-color-13);
+  --oj-icon-cirle-border-offset-bg-color:     var(--oj-neutral-color-1);
+  --oj-icon-circle-border-color:              var(--oj-icon-circle-inner-bg-color);
+  --oj-icon-circle-font-color:                var(--oj-neutral-color-1);
+
+  --oj-icon-circle-xxs-inner-size:            32px;
+  --oj-icon-circle-xs-inner-size:             48px;
+  --oj-icon-circle-sm-inner-size:             64px;
+  --oj-icon-circle-md-inner-size:             96px;
+  --oj-icon-circle-lg-inner-size:             144px;
+  --oj-icon-circle-xl-inner-size:             192px;
+  --oj-icon-circle-xxl-inner-size:            256px;
+
+  --oj-icon-circle-xxs-border-offset:         2px;
+  --oj-icon-circle-xs-border-offset:          3px;
+  --oj-icon-circle-sm-border-offset:          4px;
+  --oj-icon-circle-md-border-offset:          4px;
+  --oj-icon-circle-lg-border-offset:          5px;
+  --oj-icon-circle-xl-border-offset:          6px;
+  --oj-icon-circle-xxl-border-offset:         8px;
+
+  --oj-icon-circle-xxs-border-width:          1px;
+  --oj-icon-circle-xl-border-width:           2px;
+
+  --oj-icon-circle-xxs-font-size:             calc(var(--oj-icon-circle-xxs-inner-size) / 2);
+  --oj-icon-circle-xs-font-size:              calc(var(--oj-icon-circle-xs-inner-size) / 2);
+  --oj-icon-circle-sm-font-size:              calc(var(--oj-icon-circle-sm-inner-size) / 2);
+  --oj-icon-circle-md-font-size:              calc(var(--oj-icon-circle-md-inner-size) / 2);
+  --oj-icon-circle-lg-font-size:              calc(var(--oj-icon-circle-lg-inner-size) / 2);
+  --oj-icon-circle-xl-font-size:              calc(var(--oj-icon-circle-xl-inner-size) / 2);
+  --oj-icon-circle-xxl-font-size:             calc(var(--oj-icon-circle-xxl-inner-size) / 2);
+
+  
+}
+
+
+  }
+}

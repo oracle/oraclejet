@@ -1,7 +1,7 @@
 {
   "name": "oj-input-number",
-  "version": "6.0.0",
-  "jetVersion": "6.0.0",
+  "version": "6.1.0",
+  "jetVersion": "6.1.0",
   "displayName": "Input Number",
   "type": "core",
   "styleClasses": [
@@ -25,7 +25,7 @@
     }
   ],
   "description": "Provides basic support for specifying a number value.",
-  "help": "https://docs.oracle.com/en/middleware/jet/6/reference-api/oj.ojInputNumber.html",
+  "help": "https://docs.oracle.com/en/middleware/jet/6.1/reference-api/oj.ojInputNumber.html",
   "properties": {
     "asyncValidators": {
       "description": "List of asynchronous validators used by the component when performing validation. Use async-validators when you need to perform some validation work on the server. Otherwise, use validators, which are synchronous. Each item in the Array is an instance that duck types AsyncValidator. Implicit validators created by a component when certain attributes are present (e.g. required attribute) are separate from validators specified through the async-validators attribute and the validators attribute. At runtime when the component runs validation, it combines the implicit validators with the list specified through the validators attribute and also the list specified through the async-validators attribute. Error messages are shown as soon as each async validator returns; we do not wait until all the async validators finish to show errors. If the component's valid state changes for the worse, it is also updated as each validator returns so valid will be invalidShown as soon as the first validator has an Error. It is recommended that you show the value you are validating in the error message because if the async operation takes a while, the user could be typing in a new value when the error message comes back and might be confused what value the error is for. However, if the user enters a new value (like presses Enter or Tab), a new validation lifecycle will start and validation errors for the previous value will not be shown to the user. If you need to format the value for the error message, you can use oj.IntlConverterUtils.getConverterInstance(converterOption) to get the converter instance, then call converter.format(value). Hints exposed by async-validators and validators are shown in the notewindow by default, or as determined by the 'validatorHint' property set on the display-options attribute. Since async validators are run asynchronously, you should wait on the BusyContext before you check valid property or the value property. Alternatively you can add a callback to the onValidChanged or ojValueChanged events. The steps performed always, running validation and clearing messages is the same as for the ojInputNumber#validators attribute. ",
@@ -465,9 +465,8 @@
       "params": [
         {
           "name": "steps",
-          "description": "Number of steps to decrement, defaults to 1.",
-          "type": "number",
-          "optional": true
+          "description": "Number of steps to decrement, defaults to 1. Null is treated as 0.",
+          "type": "number"
         }
       ],
       "return": "void"
@@ -479,8 +478,7 @@
         {
           "name": "steps",
           "description": "Number of steps to increment, defaults to 1.",
-          "type": "number",
-          "optional": true
+          "type": "number"
         }
       ],
       "return": "void"

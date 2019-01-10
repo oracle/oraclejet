@@ -1,0 +1,32 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+$includeSwipeActionsVariables: $includeSwipeActionsClasses !default;
+
+@if $includeSwipeActionsVariables != false {
+  $includePanelVariables: true !global;
+}
+// import dependencies
+@import "oj.alta.windows.panel";
+
+@if $includeSwipeActionsVariables != false {
+  @include module-include-once("alta.windows.variables.swipeactions") {
+
+:root {
+  // swipe actions
+  // ----------------------------
+  --oj-swipe-actions-text-color:           var(--oj-neutral-color-1);
+  --oj-swipe-actions-animation-duration:   var(--oj-animation-duration-medium);
+  --oj-swipe-actions-item-width:           75px;
+  --oj-swipe-actions-icon-to-text-padding: 0.625rem;
+
+  --oj-swipe-actions-default-bg-color:     var(--oj-brand-color);
+  --oj-swipe-actions-neutral-bg-color:     var(--oj-neutral-color-13);
+  --oj-swipe-actions-attention-bg-color:   var(--oj-accent-color-attention-5);
+  --oj-swipe-actions-danger-bg-color:      var(--oj-accent-color-danger-5);
+
+  
+}
+
+  }
+}

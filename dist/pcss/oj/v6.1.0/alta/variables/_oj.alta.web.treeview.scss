@@ -1,0 +1,33 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+
+$includeTreeViewVariables: $includeTreeViewClasses !default;
+
+@if $includeTreeViewVariables != false {
+  $includeCollectionVariables: true !global;
+}
+// import dependencies
+@import "oj.alta.web.collection";
+
+
+@if $includeTreeViewVariables != false {
+  @include module-include-once("alta.web.variables.treeview") {
+
+:root {
+  // tree view
+  // ----------------------------
+  --oj-tree-view-spacer-width:                    24px;
+  --oj-tree-view-spacer-height:                   30px;
+  --oj-tree-view-text-color:                      var(--oj-link-text-color);
+  --oj-tree-view-item-bg-color-hover:             var(--oj-collection-cell-bg-color-hover);
+  --oj-tree-view-item-bg-color-selected:          var(--oj-brand-color-light-4);
+  --oj-tree-view-item-bg-color-selected-inactive: var(--oj-tree-view-item-bg-color-selected);
+  --oj-tree-view-drop-line-color:                 var(--oj-brand-color);
+  --oj-tree-view-drop-marker-color:               var(--oj-brand-color);
+
+  
+}
+
+  }
+}

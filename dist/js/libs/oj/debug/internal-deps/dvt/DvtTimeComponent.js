@@ -90,8 +90,7 @@ dvt.TimeComponent.prototype.SetOptions = function(options)
   // Combine the user options with the defaults and store
   this.Options = this.Defaults.calcOptions(options);
 
-  // Disable animation for canvas and xml
-  if (!dvt.Agent.isEnvironmentBrowser()) {
+  if (dvt.Agent.isEnvironmentTest()) {
     this.Options['animationOnDisplay'] = 'none';
     this.Options['animationOnDataChange'] = 'none';
   }

@@ -1,0 +1,98 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the 
+//          version in your base theme's directory, 
+//          for example alta/widgets/_oj.alta.filepicker.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@import "../../utilities/oj.utilities";
+
+@if $includeFilePickerClasses != false  {
+  @include module-include-once("common.filepicker") {
+        
+    // This is to prevent the flash of unstyled content before the html becomes JET components.
+    @if $initialVisibility == hidden {
+      oj-file-picker:not(.oj-complete) {
+        visibility: hidden;
+      }
+    }
+
+    .oj-filepicker {
+      display: block;
+    }
+
+    .oj-filepicker-custom {
+      display: inline-block;
+    }
+
+    .oj-filepicker:not(.oj-filepicker-custom) {
+      max-width: 400px;
+      width: 100%;
+    }
+
+    .oj-filepicker-dropzone {
+      display: flex;
+
+      // center containing items
+      justify-content: center;
+
+      // vertically center containing items
+      align-items: center;
+
+      height: 100px;
+      box-sizing: border-box;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        border-width: var(--oj-file-picker-border-width);
+        border-style: var(--oj-file-picker-border-style);
+        border-color: var(--oj-file-picker-border-color);
+        border-radius: var(--oj-file-picker-border-radius);
+        background-color: var(--oj-file-picker-bg-color);
+      }
+      @else {
+        border-width: $filePickerBorderWidth;
+        border-style: $filePickerBorderStyle;
+        border-color: $filePickerBorderColor;
+        border-radius: $filePickerBorderRadius;
+        background-color: $filePickerBgColor;
+      }
+
+    }
+
+    .oj-filepicker-dropzone.oj-valid-drop,
+    .oj-filepicker-dropzone:active { 
+      padding: 1px;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        border-width: var(--oj-file-picker-border-width-active);
+        background-color: var(--oj-file-picker-bg-color-active);
+      }
+      @else {
+        border-width: $filePickerBorderWidthActive;
+        background-color: $filePickerBgColorActive;
+      }
+    }
+
+    /* 
+     * Suppress focus ring
+     */
+    .oj-filepicker-dropzone:not(.oj-focus-highlight):focus {
+      outline: none;
+    }
+
+    .oj-filepicker-text { 
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        font-size: var(--oj-file-picker-text-font-size);
+        color: var(--oj-file-picker-text-color);
+      }
+      @else {
+        font-size: $filePickerTextFontSize;
+        color: $filePickerTextColor;
+      }
+      text-align: center;
+      padding: 10px;
+    }
+    
+  }
+}

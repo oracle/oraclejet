@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -1641,7 +1641,7 @@ oj.ConversionDiagramDataSource.prototype.getDescendantsConnectivity = function (
  * @property {number} h height
  * @return {Object} An object containing properties of the diagram size
  * @memberof oj.DvtDiagramLayoutContext
- * @ojsignature {target: "Type", value: "():{ x: number, y: number, w: number, h: number }", jsdocOverride: true}
+ * @ojsignature {target: "Type", value: "{ x: number, y: number, w: number, h: number }", for: "returns"}
  * @export
  */
 
@@ -1656,7 +1656,7 @@ oj.ConversionDiagramDataSource.prototype.getDescendantsConnectivity = function (
  * @property {number} h height
  * @return {void}
  * @memberof oj.DvtDiagramLayoutContext
- * @ojsignature {target: "Type", value: "(viewport: { x: number, y: number, w: number, h: number }):void", jsdocOverride: true}
+ * @ojsignature {target: "Type", value: "{ x: number, y: number, w: number, h: number }", for: "viewport"}
  * @export
  */
 
@@ -1670,7 +1670,7 @@ oj.ConversionDiagramDataSource.prototype.getDescendantsConnectivity = function (
  * @property {number} w width
  * @property {number} h height
  * @memberof oj.DvtDiagramLayoutContext
- * @ojsignature {target: "Type", value: "():{ x: number, y: number, w: number, h: number }", jsdocOverride: true}
+ * @ojsignature {target: "Type", value: "{ x: number, y: number, w: number, h: number }", for: "returns"}
  * @export
  */
 
@@ -1684,7 +1684,7 @@ oj.ConversionDiagramDataSource.prototype.getDescendantsConnectivity = function (
  * @property {number} w width
  * @property {number} h height
  * @memberof oj.DvtDiagramLayoutContext
- * @ojsignature {target: "Type", value: "():{ x: number, y: number, w: number, h: number }", jsdocOverride: true}
+ * @ojsignature {target: "Type", value: "{ x: number, y: number, w: number, h: number }", for: "returns"}
  * @export
  */
 
@@ -1786,7 +1786,7 @@ oj.ConversionDiagramDataSource.prototype.getDescendantsConnectivity = function (
  * @property {number} y y-coordinate
  * @return {void}
  * @memberof oj.DvtDiagramLayoutContextLink
- * @ojsignature {target: "Type", value: "(pos: { x: number, y: number}):void", jsdocOverride: true}
+ * @ojsignature {target: "Type", value: "{ x: number, y: number}", for: "pos"}
  * @export
  */
 
@@ -1801,7 +1801,7 @@ oj.ConversionDiagramDataSource.prototype.getDescendantsConnectivity = function (
  * @property {number} x x-coordinate
  * @property {number} y y-coordinate
  * @memberof oj.DvtDiagramLayoutContextLink
- * @ojsignature {target: "Type", value: "():{ x: number, y: number }", jsdocOverride: true}
+ * @ojsignature {target: "Type", value: "{ x: number, y: number }", for: "returns"}
  * @export
  */
 
@@ -1817,7 +1817,7 @@ oj.ConversionDiagramDataSource.prototype.getDescendantsConnectivity = function (
  * @ojvalue {string} "right"
  * @return {void}
  * @memberof oj.DvtDiagramLayoutContextLink
- * @ojsignature {target: "Type", value: "(halign: 'left'|'center'|'right'):void", jsdocOverride: true}
+ * @ojsignature {target: "Type", value: "'left'|'center'|'right'", for: "halign"}
  * @export
  */
 
@@ -1832,7 +1832,7 @@ oj.ConversionDiagramDataSource.prototype.getDescendantsConnectivity = function (
  * @ojvalue {string} "center"
  * @ojvalue {string} "right"
  * @memberof oj.DvtDiagramLayoutContextLink
- * @ojsignature {target: "Type", value: "():'left'|'center'|'right'", jsdocOverride: true}
+ * @ojsignature {target: "Type", value: "'left'|'center'|'right'", for: "returns"}
  * @export
  */
 
@@ -1850,7 +1850,7 @@ oj.ConversionDiagramDataSource.prototype.getDescendantsConnectivity = function (
  * @ojvalue {string} "baseline"
  * @return {void}
  * @memberof oj.DvtDiagramLayoutContextLink
- * @ojsignature {target: "Type", value: "(valign: 'top'|'middle'|'bottom'|'baseline'):void", jsdocOverride: true}
+ * @ojsignature {target: "Type", value: "'top'|'middle'|'bottom'|'baseline'", for: "valign"}
  * @export
  */
 
@@ -1865,7 +1865,7 @@ oj.ConversionDiagramDataSource.prototype.getDescendantsConnectivity = function (
  * @ojvalue {string} "bottom"
  * @ojvalue {string} "baseline"
  * @memberof oj.DvtDiagramLayoutContextLink
- * @ojsignature {target: "Type", value: "():'top'|'middle'|'bottom'|'baseline'", jsdocOverride: true}
+ * @ojsignature {target: "Type", value: "'top'|'middle'|'bottom'|'baseline'", for: "returns"}
  * @export
  */
 
@@ -1879,7 +1879,7 @@ oj.ConversionDiagramDataSource.prototype.getDescendantsConnectivity = function (
  * @property {number} w width
  * @property {number} h height
  * @memberof oj.DvtDiagramLayoutContextLink
- * @ojsignature {target: "Type", value: "():{ x: number, y: number, w: number, h: number }", jsdocOverride: true}
+ * @ojsignature {target: "Type", value: "{ x: number, y: number, w: number, h: number }", for: "returns"}
  * @export
  */
 
@@ -1965,7 +1965,7 @@ oj.ConversionDiagramDataSource.prototype.getDescendantsConnectivity = function (
  * @property {number} y y-coordinate
  * @return {void}
  * @memberof oj.DvtDiagramLayoutContextLink
- * @ojsignature {target: "Type", value: "(point: { x: number, y: number}):void", jsdocOverride: true}
+ * @ojsignature {target: "Type", value: "{ x: number, y: number}", for: "point"}
  * @export
  */
 
@@ -1978,7 +1978,7 @@ oj.ConversionDiagramDataSource.prototype.getDescendantsConnectivity = function (
  * @property {number} x x-coordinate
  * @property {number} y y-coordinate
  * @memberof oj.DvtDiagramLayoutContextLink
- * @ojsignature {target: "Type", value: "():{ x: number, y: number }", jsdocOverride: true}
+ * @ojsignature {target: "Type", value: "{ x: number, y: number }", for: "returns"}
  * @export
  */
 
@@ -2058,7 +2058,7 @@ oj.ConversionDiagramDataSource.prototype.getDescendantsConnectivity = function (
  * @property {number} w width
  * @property {number} h height
  * @memberof oj.DvtDiagramLayoutContextNode
- * @ojsignature {target: "Type", value: "():{ x: number, y: number, w: number, h: number }", jsdocOverride: true}
+ * @ojsignature {target: "Type", value: "{ x: number, y: number, w: number, h: number }", for: "returns"}
  * @export
  */
 
@@ -2073,7 +2073,7 @@ oj.ConversionDiagramDataSource.prototype.getDescendantsConnectivity = function (
  * @property {number} w width
  * @property {number} h height
  * @memberof oj.DvtDiagramLayoutContextNode
- * @ojsignature {target: "Type", value: "():{ x: number, y: number, w: number, h: number }", jsdocOverride: true}
+ * @ojsignature {target: "Type", value: "{ x: number, y: number, w: number, h: number }", for: "returns"}
  * @export
  */
 
@@ -2087,7 +2087,7 @@ oj.ConversionDiagramDataSource.prototype.getDescendantsConnectivity = function (
  * @property {number} y y-coordinate
  * @return {void}
  * @memberof oj.DvtDiagramLayoutContextNode
- * @ojsignature {target: "Type", value: "(pos: { x: number, y: number}):void", jsdocOverride: true}
+ * @ojsignature {target: "Type", value: "{ x: number, y: number }", for: "pos"}
  * @export
  */
 
@@ -2100,7 +2100,7 @@ oj.ConversionDiagramDataSource.prototype.getDescendantsConnectivity = function (
  * @property {number} x x-coordinate
  * @property {number} y y-coordinate
  * @memberof oj.DvtDiagramLayoutContextNode
- * @ojsignature {target: "Type", value: "():{ x: number, y: number }", jsdocOverride: true}
+ * @ojsignature {target: "Type", value: "{ x: number, y: number }", for: "returns"}
  * @export
  */
 
@@ -2116,7 +2116,7 @@ oj.ConversionDiagramDataSource.prototype.getDescendantsConnectivity = function (
  * @property {number} y y-coordinate
  * @return {void}
  * @memberof oj.DvtDiagramLayoutContextNode
- * @ojsignature {target: "Type", value: "(pos: { x: number, y: number}):void", jsdocOverride: true}
+ * @ojsignature {target: "Type", value: "{ x: number, y: number}", for: "pos"}
  * @export
  */
 
@@ -2131,7 +2131,7 @@ oj.ConversionDiagramDataSource.prototype.getDescendantsConnectivity = function (
  * @property {number} x x-coordinate
  * @property {number} y y-coordinate
  * @memberof oj.DvtDiagramLayoutContextNode
- * @ojsignature {target: "Type", value: "():{ x: number, y: number }", jsdocOverride: true}
+ * @ojsignature {target: "Type", value: "{ x: number, y: number }", for: "returns"}
  * @export
  */
 
@@ -2147,7 +2147,7 @@ oj.ConversionDiagramDataSource.prototype.getDescendantsConnectivity = function (
  * @ojvalue {string} "right"
  * @return {void}
  * @memberof oj.DvtDiagramLayoutContextNode
- * @ojsignature {target: "Type", value: "(halign: 'left'|'center'|'right'):void", jsdocOverride: true}
+ * @ojsignature {target: "Type", value: "'left'|'center'|'right'", for: "halign"}
  * @export
  */
 
@@ -2162,7 +2162,7 @@ oj.ConversionDiagramDataSource.prototype.getDescendantsConnectivity = function (
  * @ojvalue {string} "center"
  * @ojvalue {string} "right"
  * @memberof oj.DvtDiagramLayoutContextNode
- * @ojsignature {target: "Type", value: "():'left'|'center'|'right'", jsdocOverride: true}
+ * @ojsignature {target: "Type", value: "'left'|'center'|'right'", for: "returns"}
  * @export
  */
 
@@ -2180,7 +2180,7 @@ oj.ConversionDiagramDataSource.prototype.getDescendantsConnectivity = function (
  * @ojvalue {string} "baseline"
  * @return {void}
  * @memberof oj.DvtDiagramLayoutContextNode
- * @ojsignature {target: "Type", value: "(valign: 'top'|'middle'|'bottom'|'baseline'):void", jsdocOverride: true}
+ * @ojsignature {target: "Type", value: "'top'|'middle'|'bottom'|'baseline'", for: "valign"}
  * @export
  */
 
@@ -2195,7 +2195,7 @@ oj.ConversionDiagramDataSource.prototype.getDescendantsConnectivity = function (
  * @ojvalue {string} "bottom"
  * @ojvalue {string} "baseline"
  * @memberof oj.DvtDiagramLayoutContextNode
- * @ojsignature {target: "Type", value: "():'top'|'middle'|'bottom'|'baseline'", jsdocOverride: true}
+ * @ojsignature {target: "Type", value: "'top'|'middle'|'bottom'|'baseline'", for: "returns"}
  * @export
  */
 /**
@@ -2208,7 +2208,7 @@ oj.ConversionDiagramDataSource.prototype.getDescendantsConnectivity = function (
  * @property {number} w width
  * @property {number} h height
  * @memberof oj.DvtDiagramLayoutContextNode
- * @ojsignature {target: "Type", value: "():{ x: number, y: number, w: number, h: number }", jsdocOverride: true}
+ * @ojsignature {target: "Type", value: "{ x: number, y: number, w: number, h: number }", for: "returns"}
  * @export
  */
 
@@ -2262,7 +2262,7 @@ oj.ConversionDiagramDataSource.prototype.getDescendantsConnectivity = function (
  * @property {number} y y-coordinate
  * @return {void}
  * @memberof oj.DvtDiagramLayoutContextNode
- * @ojsignature {target: "Type", value: "(point: { x: number, y: number}):void", jsdocOverride: true}
+ * @ojsignature {target: "Type", value: "{ x: number, y: number}", for: "point"}
  * @export
  */
 
@@ -2275,7 +2275,7 @@ oj.ConversionDiagramDataSource.prototype.getDescendantsConnectivity = function (
  * @property {number} x x-coordinate
  * @property {number} y y-coordinate
  * @memberof oj.DvtDiagramLayoutContextNode
- * @ojsignature {target: "Type", value: "():{ x: number, y: number }", jsdocOverride: true}
+ * @ojsignature {target: "Type", value: "{ x: number, y: number }", for: "returns"}
  * @export
  */
 
@@ -2308,7 +2308,7 @@ oj.ConversionDiagramDataSource.prototype.getDescendantsConnectivity = function (
  * @property {number} x x-coordinate
  * @property {number} y y-coordinate
  * @memberof oj.DvtDiagramLayoutContextNode
- * @ojsignature {target: "Type", value: "(containerId: any):{ x: number, y: number }", jsdocOverride: true}
+ * @ojsignature {target: "Type", value: "{ x: number, y: number }", for: "returns"}
  * @export
  */
 
@@ -2343,7 +2343,9 @@ oj.DiagramUtils = DiagramUtils;
  * @ojtsimport {module: "ojkeyset", type: "AMD", imported: ["KeySet"]}
  * @ojsignature [{
  *                target: "Type",
- *                value: "class ojDiagram<K1, K2, D1, D2> extends dvtBaseComponent<ojDiagramSettableProperties<K1, K2, D1, D2>>"
+ *                value: "class ojDiagram<K1, K2, D1, D2> extends dvtBaseComponent<ojDiagramSettableProperties<K1, K2, D1, D2>>",
+ *                genericParameters: [{"name": "K1", "description": "Type of key of the nodeData dataprovider"}, {"name": "K2", "description": "Type of key of the linkData dataprovider"},
+ *                 {"name": "D1", "description": "Type of data from the nodeData dataprovider"}, {"name": "D2", "description": "Type of data from the linkData dataprovider"}]
  *               },
  *               {
  *                target: "Type",

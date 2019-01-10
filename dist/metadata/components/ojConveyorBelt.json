@@ -1,11 +1,11 @@
 {
   "name": "oj-conveyor-belt",
-  "version": "6.0.0",
-  "jetVersion": "6.0.0",
+  "version": "6.1.0",
+  "jetVersion": "6.1.0",
   "displayName": "Conveyor Belt",
   "type": "core",
   "description": "Container element that manages overflow for its child elements and allows scrolling among them.",
-  "help": "https://docs.oracle.com/en/middleware/jet/6/reference-api/oj.ojConveyorBelt.html",
+  "help": "https://docs.oracle.com/en/middleware/jet/6.1/reference-api/oj.ojConveyorBelt.html",
   "properties": {
     "contentParent": {
       "description": "Specify the selector of the descendant DOM element in the conveyorBelt that directly contains the items to scroll among.",

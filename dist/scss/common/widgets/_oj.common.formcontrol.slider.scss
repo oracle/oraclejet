@@ -1,4 +1,4 @@
-// Copyright (c) 2014, 2018, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // WARNING: do not directly import this file, instead import the
 //          version in your base theme's directory,
@@ -291,16 +291,16 @@
    position: absolute;
    @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
    {
-     top: calc(0px - (var(--oj-slider-bar-hit-area) / 2) + (var(--oj-slider-bar-thickness) / 2));
-     bottom: calc(0px - (var(--oj-slider-bar-hit-area) / 2) + (var(--oj-slider-bar-thickness) / 2));
-     left: calc(0px - (var(--oj-slider-bar-hit-area) / 2) + (var(--oj-slider-bar-thickness) / 2));
-     right: calc(0px - (var(--oj-slider-bar-hit-area) / 2) + (var(--oj-slider-bar-thickness) / 2));
+     top: calc(0px - (36px / 2) + (var(--oj-slider-bar-thickness) / 2));
+     bottom: calc(0px - (36px / 2) + (var(--oj-slider-bar-thickness) / 2));
+     left: calc(0px - (36px / 2) + (var(--oj-slider-bar-thickness) / 2));
+     right: calc(0px - (36px / 2) + (var(--oj-slider-bar-thickness) / 2));
    }
    @else {
-     top: calc(0px - (#{$sliderBarHitArea} / 2) + (#{$sliderBarThickness} / 2));
-     bottom: calc(0px - (#{$sliderBarHitArea} / 2) + (#{$sliderBarThickness} / 2));
-     left: calc(0px - (#{$sliderBarHitArea} / 2) + (#{$sliderBarThickness} / 2));
-     right: calc(0px - (#{$sliderBarHitArea} / 2) + (#{$sliderBarThickness} / 2));
+     top: calc(0px - (36px / 2) + (#{$sliderBarThickness} / 2));
+     bottom: calc(0px - (36px / 2) + (#{$sliderBarThickness} / 2));
+     left: calc(0px - (36px / 2) + (#{$sliderBarThickness} / 2));
+     right: calc(0px - (36px / 2) + (#{$sliderBarThickness} / 2));
    }
   }
 
@@ -536,20 +536,20 @@
   .oj-slider-horizontal .oj-slider-thumb:after  {
     content:'';
     position:absolute;
-    top: calc(0px - (var(--oj-slider-thumb-hit-area) - var(--oj-slider-thumb-height-active)) / 2);
-    bottom: calc(0px - (var(--oj-slider-thumb-hit-area) - var(--oj-slider-thumb-height-active)) / 2);
-    left: calc(0px - (var(--oj-slider-thumb-hit-area) - var(--oj-slider-thumb-width-active)) / 2);
-    right: calc(0px - (var(--oj-slider-thumb-hit-area) - var(--oj-slider-thumb-width-active)) / 2);
+    top: calc(0px - (28px - var(--oj-slider-thumb-height-active)) / 2);
+    bottom: calc(0px - (28px - var(--oj-slider-thumb-height-active)) / 2);
+    left: calc(0px - (28px - var(--oj-slider-thumb-width-active)) / 2);
+    right: calc(0px - (28px - var(--oj-slider-thumb-width-active)) / 2);
 
   }
 
   .oj-slider-vertical .oj-slider-thumb:after  {
     content:'';
     position:absolute;
-    top: calc(0px - (var(--oj-slider-thumb-hit-area) - var(--oj-slider-thumb-width-active)) / 2);
-    bottom: calc(0px - (var(--oj-slider-thumb-hit-area) - var(--oj-slider-thumb-width-active)) / 2);
-    left: calc(0px - (var(--oj-slider-thumb-hit-area) - var(--oj-slider-thumb-height-active)) / 2);
-    right: calc(0px - (var(--oj-slider-thumb-hit-area) - var(--oj-slider-thumb-height-active)) / 2);
+    top: calc(0px - (28px - var(--oj-slider-thumb-width-active)) / 2);
+    bottom: calc(0px - (28px - var(--oj-slider-thumb-width-active)) / 2);
+    left: calc(0px - (28px - var(--oj-slider-thumb-height-active)) / 2);
+    right: calc(0px - (28px - var(--oj-slider-thumb-height-active)) / 2);
   }
 } 
 @else {
@@ -557,20 +557,20 @@
   .oj-slider-horizontal .oj-slider-thumb:after  {
     content:'';
     position:absolute;
-    top: calc(0px - (#{$sliderThumbHitArea} - #{$sliderThumbHeightActive}) / 2);
-    bottom: calc(0px - (#{$sliderThumbHitArea} - #{$sliderThumbHeightActive}) / 2);
-    left: calc(0px - (#{$sliderThumbHitArea} - #{$sliderThumbWidthActive}) / 2);
-    right: calc(0px - (#{$sliderThumbHitArea} - #{$sliderThumbWidthActive}) / 2);
+    top: calc(0px - (28px - #{$sliderThumbHeightActive}) / 2);
+    bottom: calc(0px - (28px - #{$sliderThumbHeightActive}) / 2);
+    left: calc(0px - (28px - #{$sliderThumbWidthActive}) / 2);
+    right: calc(0px - (28px - #{$sliderThumbWidthActive}) / 2);
   }
 
   .oj-slider-vertical .oj-slider-thumb:after  {
     content:'';
     position:absolute;
     // Note - the height and width variables are swapped for vertical sliders.
-    top: calc(0px - (#{$sliderThumbHitArea} - #{$sliderThumbWidthActive}) / 2);
-    bottom: calc(0px - (#{$sliderThumbHitArea} - #{$sliderThumbWidthActive}) / 2);
-    left: calc(0px - (#{$sliderThumbHitArea} - #{$sliderThumbHeightActive}) / 2);
-    right: calc(0px - (#{$sliderThumbHitArea} - #{$sliderThumbHeightActive}) / 2);
+    top: calc(0px - (28px - #{$sliderThumbWidthActive}) / 2);
+    bottom: calc(0px - (28px - #{$sliderThumbWidthActive}) / 2);
+    left: calc(0px - (28px - #{$sliderThumbHeightActive}) / 2);
+    right: calc(0px - (28px - #{$sliderThumbHeightActive}) / 2);
   }
 }
   
@@ -809,16 +809,16 @@
 .oj-slider-color-picker .oj-slider-bar:after {
   @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
   {
-    top: calc(0px - var(--oj-slider-bar-hit-area) / 2 + var(--oj-slider-color-picker-bar-thickness) / 2);
-    bottom: calc(0px - var(--oj-slider-bar-hit-area) / 2 + var(--oj-slider-color-picker-bar-thickness) / 2);
-    left: calc(0px - var(--oj-slider-bar-hit-area) / 2 + var(--oj-slider-color-picker-bar-thickness) / 2);
-    right: calc(0px - var(--oj-slider-bar-hit-area) / 2 + var(--oj-slider-color-picker-bar-thickness) / 2);
+    top: calc(0px - 36px / 2 + var(--oj-slider-color-picker-bar-thickness) / 2);
+    bottom: calc(0px - 36px / 2 + var(--oj-slider-color-picker-bar-thickness) / 2);
+    left: calc(0px - 36px / 2 + var(--oj-slider-color-picker-bar-thickness) / 2);
+    right: calc(0px - 36px / 2 + var(--oj-slider-color-picker-bar-thickness) / 2);
   }
   @else {
-    top: calc(0px - #{$sliderBarHitArea} / 2 + #{$sliderColorPickerBarThickness} / 2);
-    bottom: calc(0px - #{$sliderBarHitArea} / 2 + #{$sliderColorPickerBarThickness} / 2);
-    left: calc(0px - #{$sliderBarHitArea} / 2 + #{$sliderColorPickerBarThickness} / 2);
-    right: calc(0px - #{$sliderBarHitArea} / 2 + #{$sliderColorPickerBarThickness} / 2);
+    top: calc(0px - 36px / 2 + #{$sliderColorPickerBarThickness} / 2);
+    bottom: calc(0px - 36px / 2 + #{$sliderColorPickerBarThickness} / 2);
+    left: calc(0px - 36px / 2 + #{$sliderColorPickerBarThickness} / 2);
+    right: calc(0px - 36px / 2 + #{$sliderColorPickerBarThickness} / 2);
   }
 }
 
@@ -880,35 +880,35 @@
 @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
 {
   .oj-slider-color-picker.oj-slider-horizontal .oj-slider-thumb:after  {
-    top: calc(0px - (var(--oj-slider-thumb-hit-area) - var(--oj-slider-color-picker-thumb-height-active)) / 2);
-    bottom: calc(0px - (var(--oj-slider-thumb-hit-area) - var(--oj-slider-color-picker-thumb-height-active)) / 2);
-    left: calc(0px - (var(--oj-slider-thumb-hit-area) - var(--oj-slider-color-picker-thumb-width-active)) / 2);
-    right: calc(0px - (var(--oj-slider-thumb-hit-area) - var(--oj-slider-color-picker-thumb-width-active)) / 2);
+    top: calc(0px - (28px - var(--oj-slider-color-picker-thumb-height-active)) / 2);
+    bottom: calc(0px - (28px - var(--oj-slider-color-picker-thumb-height-active)) / 2);
+    left: calc(0px - (28px - var(--oj-slider-color-picker-thumb-width-active)) / 2);
+    right: calc(0px - (28px - var(--oj-slider-color-picker-thumb-width-active)) / 2);
   }
 
   .oj-slider-color-picker.oj-slider-vertical .oj-slider-thumb:after  {
     // Note - the height and width variables are swapped for vertical sliders.
-    top: calc(0px - (var(--oj-slider-thumb-hit-area) - var(--oj-slider-color-picker-thumb-width-active)) / 2);
-    bottom: calc(0px - (var(--oj-slider-thumb-hit-area) - var(--oj-slider-color-picker-thumb-width-active)) / 2);
-    left: calc(0px - (var(--oj-slider-thumb-hit-area) - var(--oj-slider-color-picker-thumb-height-active)) / 2);
-    right: calc(0px - (var(--oj-slider-thumb-hit-area) - var(--oj-slider-color-picker-thumb-height-active)) / 2);
+    top: calc(0px - (28px - var(--oj-slider-color-picker-thumb-width-active)) / 2);
+    bottom: calc(0px - (28px - var(--oj-slider-color-picker-thumb-width-active)) / 2);
+    left: calc(0px - (28px - var(--oj-slider-color-picker-thumb-height-active)) / 2);
+    right: calc(0px - (28px - var(--oj-slider-color-picker-thumb-height-active)) / 2);
   }
 }
 @else {
 
   .oj-slider-color-picker.oj-slider-horizontal .oj-slider-thumb:after  {      
-    top: calc(0px - (#{$sliderThumbHitArea} - #{$sliderColorPickerThumbHeightActive}) / 2);
-    bottom: calc(0px - (#{$sliderThumbHitArea} - #{$sliderColorPickerThumbHeightActive}) / 2);
-    left: calc(0px - (#{$sliderThumbHitArea} - #{$sliderColorPickerThumbWidthActive}) / 2);
-    right: calc(0px - (#{$sliderThumbHitArea} - #{$sliderColorPickerThumbWidthActive}) / 2);
+    top: calc(0px - (28px - #{$sliderColorPickerThumbHeightActive}) / 2);
+    bottom: calc(0px - (28px - #{$sliderColorPickerThumbHeightActive}) / 2);
+    left: calc(0px - (28px - #{$sliderColorPickerThumbWidthActive}) / 2);
+    right: calc(0px - (28px - #{$sliderColorPickerThumbWidthActive}) / 2);
   }
 
   .oj-slider-color-picker.oj-slider-vertical .oj-slider-thumb:after  {
     // Note - the height and width variables are swapped for vertical sliders.
-    top: calc(0px - (#{$sliderThumbHitArea} - #{$sliderColorPickerThumbWidthActive}) / 2);
-    bottom: calc(0px - (#{$sliderThumbHitArea} - #{$sliderColorPickerThumbWidthActive}) / 2);
-    left: calc(0px - (#{$sliderThumbHitArea} - #{$sliderColorPickerThumbHeightActive}) / 2);
-    right: calc(0px - (#{$sliderThumbHitArea} - #{$sliderColorPickerThumbHeightActive}) / 2);
+    top: calc(0px - (28px - #{$sliderColorPickerThumbWidthActive}) / 2);
+    bottom: calc(0px - (28px - #{$sliderColorPickerThumbWidthActive}) / 2);
+    left: calc(0px - (28px - #{$sliderColorPickerThumbHeightActive}) / 2);
+    right: calc(0px - (28px - #{$sliderColorPickerThumbHeightActive}) / 2);
   }
 }
 

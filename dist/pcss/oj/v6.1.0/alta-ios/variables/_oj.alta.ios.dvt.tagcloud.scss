@@ -1,0 +1,19 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+
+@import "../../utilities/oj.utilities";
+
+
+$includeTagCloudVariables: $includeTagCloudClasses !default;
+
+@if $includeTagCloudVariables != false {
+  $includeDvtBaseVariables: true !global;
+}
+// import dependencies
+@import "oj.alta.ios.dvt";
+
+@if $includeTagCloudVariables != false {
+  @include module-include-once("alta.android.variables.tagcloud") {
+
+
+  }
+}

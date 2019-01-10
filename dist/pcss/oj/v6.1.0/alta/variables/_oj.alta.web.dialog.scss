@@ -1,0 +1,50 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+
+$includeDialogVariables: $includeDialogClasses !default;
+
+@if $includeDialogVariables != false {
+  $includeButtonVariables: true !global;
+  $includePanelVariables: true !global;
+}
+
+// import dependencies
+@import "oj.alta.web.button";
+@import "oj.alta.web.panel";
+
+@if $includeDialogVariables != false {
+  @include module-include-once("alta.web.variables.dialog") {
+
+:root {
+  --oj-dialog-bg-color:                 var(--oj-neutral-color-2); //settings: ignore
+  --oj-dialog-border-color:             var(--oj-neutral-color-9); //settings: ignore
+  --oj-dialog-border-width:             1px; //settings: ignore
+  --oj-dialog-border-radius:            var(--oj-border-radius-sm); //settings: ignore
+  --oj-dialog-box-shadow:               var(--oj-box-shadow-lg); //settings: ignore
+
+  --oj-dialog-header-padding-top:       var(--oj-panel-padding); //settings: ignore
+  --oj-dialog-header-padding-side:      var(--oj-panel-padding); //settings: ignore
+  --oj-dialog-header-padding-bottom:    var(--oj-panel-padding); //settings: ignore
+
+  --oj-dialog-body-padding:             var(--oj-panel-padding); //settings: ignore
+  --oj-dialog-footer-padding:           var(--oj-panel-padding); //settings: ignore
+
+  --oj-dialog-body-text-align:          start; //settings: ignore
+
+  --oj-dialog-close-icon-button-margin: 0 var(--oj-button-icon-only-padding); //settings: ignore
+
+  --oj-dialog-header-bg-color:          var(--oj-neutral-color-5); //settings: ignore
+  --oj-dialog-header-bg-image:          none; //settings: ignore
+  --oj-dialog-header-border-color:      var(--oj-dialog-border-color); //settings: ignore
+  --oj-dialog-header-font-size:         var(--oj-header-3-font-size); //settings: ignore
+  --oj-dialog-header-text-color:        var(--oj-text-color-2); //settings: ignore
+
+  --oj-dialog-footer-button-height:     var(--oj-button-height); //settings: ignore
+  --oj-dialog-footer-button-font-weight:var(--oj-button-font-weight); //settings: ignore
+  --oj-dialog-footer-divider-color:     var(--oj-button-border-color); //settings: ignore
+
+}
+
+  }
+}

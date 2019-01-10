@@ -1,7 +1,7 @@
 {
   "name": "oj-menu-button",
-  "version": "6.0.0",
-  "jetVersion": "6.0.0",
+  "version": "6.1.0",
+  "jetVersion": "6.1.0",
   "displayName": "Menu Button",
   "type": "core",
   "styleClasses": [
@@ -33,7 +33,7 @@
     }
   ],
   "description": "A button that launches a menu when clicked.",
-  "help": "https://docs.oracle.com/en/middleware/jet/6/reference-api/oj.ojMenuButton.html",
+  "help": "https://docs.oracle.com/en/middleware/jet/6.1/reference-api/oj.ojMenuButton.html",
   "properties": {
     "chroming": {
       "description": "Indicates in what states the button has chrome (background and border).",

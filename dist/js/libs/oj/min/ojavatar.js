@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";define(["ojs/ojcore","ojs/ojcomposite","ojs/ojcomponentcore"],function(i,e){e.register("oj-avatar",{view:'<div class="oj-avatar-outer" data-bind="css: !$properties.initials || $properties.src ? \'oj-avatar-\'  + $properties.size : \'oj-avatar-has-initials oj-avatar-\'+ $properties.size"aria-hidden="true">  <div class="oj-avatar-inner">    \x3c!-- ko if: $properties.src --\x3e    <div class="oj-avatar-background-image"         data-bind="style:{\'background-image\':\'url(\' + $properties.src + \')\'}">      <div class="oj-avatar-initials" data-bind="text: $properties.initials"></div>    </div>    \x3c!-- /ko --\x3e    \x3c!-- ko if: $properties.initials && !$properties.src --\x3e    <div class="oj-avatar-initials" data-bind="text: $properties.initials"></div>    \x3c!-- /ko --\x3e    \x3c!-- ko if: !$properties.initials && !$properties.src --\x3e    <div class="oj-avatar-placeholder"></div>    \x3c!-- /ko --\x3e  </div></div>',metadata:{properties:{initials:{type:"string"},size:{type:"string",enumValues:["xxs","xs","sm","md","lg","xl","xxl"],value:"md"},src:{type:"string"}},methods:{setProperty:{},getProperty:{},setProperties:{},getNodeBySubId:{},getSubIdByNode:{}},extension:{}}})});

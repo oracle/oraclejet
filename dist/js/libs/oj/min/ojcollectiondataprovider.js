@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";define(["ojs/ojcore","ojs/ojcollectiontabledatasource","ojs/ojdataprovideradapter"],function(t){var e=function(){function e(e){this.collection=e,this._dataProviderAdapter=new t.TableDataSourceAdapter(new t.CollectionTableDataSource(e)),this.addEventListener=this._dataProviderAdapter.addEventListener.bind(this._dataProviderAdapter),this.removeEventListener=this._dataProviderAdapter.removeEventListener.bind(this._dataProviderAdapter),this.dispatchEvent=this._dataProviderAdapter.dispatchEvent.bind(this._dataProviderAdapter)}return e.prototype.destroy=function(){this._dataProviderAdapter.destroy()},e.prototype.fetchFirst=function(t){return this._dataProviderAdapter.fetchFirst(t)},e.prototype.fetchByKeys=function(t){return this._dataProviderAdapter.fetchByKeys(t)},e.prototype.containsKeys=function(t){return this._dataProviderAdapter.containsKeys(t)},e.prototype.fetchByOffset=function(t){return this._dataProviderAdapter.fetchByOffset(t)},e.prototype.getCapability=function(t){return this._dataProviderAdapter.getCapability(t)},e.prototype.getTotalSize=function(){return this._dataProviderAdapter.getTotalSize()},e.prototype.isEmpty=function(){return this._dataProviderAdapter.isEmpty()},e}();return t.CollectionDataProvider=e,t.CollectionDataProvider=e,e});

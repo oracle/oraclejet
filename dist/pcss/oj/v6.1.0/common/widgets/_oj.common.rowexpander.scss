@@ -1,0 +1,129 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+@if $includeRowExpanderClasses != false {
+    @include module-include-once("common.rowexpander") {
+
+        // This is to prevent the flash of unstyled content before the html becomes JET components.
+        @if $initialVisibility == hidden {
+          oj-row-expander:not(.oj-complete) {
+            visibility: hidden;
+          }
+        }
+
+        /* Styling for the widget */
+        .oj-table .oj-rowexpander {
+            display: inline-block;
+        }
+
+        /* Bottom alignment in datagrid */
+        .oj-datagrid .oj-rowexpander {
+            height:100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        // do not overwrite hidden display properties
+        [hidden].oj-rowexpander {
+            display: none;
+        }
+
+        /* Size and position the spacer that determines the distance between the icon and cell text */
+        .oj-rowexpander-icon-spacer {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            min-width: var(--oj-row-expander-spacer-width);
+          } @else {
+            min-width: $rowExpanderSpacerWidth;
+          }
+            display:inline-block;
+        }
+
+        /* Size and position the touch area */
+        .oj-rowexpander-touch-area {
+            box-sizing: border-box;
+            height: 1.5em;
+            width: 1.5em;
+            padding: .25em;
+        }
+
+        /* Data grid specific bottom alignment of touch area */
+        .oj-datagrid .oj-rowexpander-touch-area {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex: 0 1 auto;
+        }
+
+        /* Table specific centered alignment of touch area */
+        .oj-table .oj-rowexpander-touch-area {
+            margin-bottom: -.25em;
+            margin-top: -.25em;
+        }
+
+        /* Alignment for the leaf, expand, lazyload and collapse icons */
+        .oj-rowexpander-leaf-icon,
+        .oj-rowexpander-expand-icon,
+        .oj-rowexpander-collapse-icon,
+        .oj-rowexpander-lazyload-icon {
+            // font size should be default for icons and not grow/shrink with content
+            outline:none;
+            flex: 0 1 auto;
+        }
+
+        /* Focus border for highlighted icons */
+        .oj-rowexpander-leaf-icon.oj-focus-highlight,
+        .oj-rowexpander-expand-icon.oj-focus-highlight,
+        .oj-rowexpander-collapse-icon.oj-focus-highlight,
+        .oj-rowexpander-lazyload-icon.oj-focus-highlight {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            outline: dotted 1px var(--oj-primary-text-color);
+            outline: -webkit-focus-ring-color auto;
+          } @else {
+            @include oj-browser-focus-outline-approximation($primaryTextColor);
+          }
+        }
+
+        /* Styling for the load icon */
+        .oj-rowexpander-lazyload-icon {
+            @extend .oj-fwk-icon-load;
+            width: 100%;
+        }
+
+        /* Add this class name to your text when stamping a row expander inside of data grid to obtain bottom alignment */
+        .oj-rowexpander-cell-text {
+            flex: 0 1 auto;
+            box-sizing: border-box;
+        }
+
+        .oj-rowexpander-indent{
+            display:inline-block;
+        }
+
+        /* Set the indentation here depth 1 is one indent level */
+        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+            *.oj-rowexpander-depth-1 {
+                width: calc(1 * var(--oj-row-expander-indent-width)); }
+            *.oj-rowexpander-depth-2 {
+                width: calc(2 * var(--oj-row-expander-indent-width)); }                
+            *.oj-rowexpander-depth-3 {
+                width: calc(3 * var(--oj-row-expander-indent-width)); }                    
+            *.oj-rowexpander-depth-4 {
+                width: calc(4 * var(--oj-row-expander-indent-width)); }
+            *.oj-rowexpander-depth-5 {
+                width: calc(5 * var(--oj-row-expander-indent-width)); }                                                    
+            *.oj-rowexpander-depth-6 {
+                width: calc(6 * var(--oj-row-expander-indent-width)); }                                
+            *.oj-rowexpander-depth-7 {
+              width: calc(7 * var(--oj-row-expander-indent-width)); }
+          }@else {
+            @include oj-property-multiplier($selectorName: 'oj-rowexpander-depth', $propertyName: 'width', $propertyMultiplicand: $rowExpanderIndentWidth, $minMultiplier: 1, $maxMultiplier: 7);
+          }
+
+        /* Styling to remove the default underlining of hovered links */
+        .oj-rowexpander a:hover,
+        .oj-rowexpander a:focus {
+            text-decoration:none;
+        }
+    }
+}

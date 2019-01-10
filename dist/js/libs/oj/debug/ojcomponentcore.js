@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -711,7 +711,7 @@ function _isComponentElement(node) {
  */
 
 /* global Promise:false, _OJ_COMPONENT_NODE_CLASS:false, _OJ_WIDGET_NAMES_DATA:false,
-          __ojDynamicGetter:false, Translations:false */
+          __ojDynamicGetter:false, Translations:false, Logger: false*/
 /* jslint browser: true*/
 
 /**
@@ -1847,6 +1847,9 @@ var _OJ_COMPONENT_EVENT_OVERRIDES = {
         var changed = flags && flags.changed;
         if (changed || !this._CompareOptionValues(option, oldValue, newValue)) {
           newOptions[option] = newValue;
+        } else if (this._IsCustomElement()) {
+          Logger.info(oj.BaseCustomElementBridge.getElementInfo(this.element[0]) + ": Ignoring property set for property '" +
+            option + "' with same value.");
         }
       }
 
@@ -2546,6 +2549,14 @@ var _OJ_COMPONENT_EVENT_OVERRIDES = {
           var constructor = oj.Components.__GetWidgetConstructor(contextMenuNode, 'ojMenu');
           var menu = constructor && constructor('instance');
           menu.open(event, mergedOpenOptions, submenuOpenOptions);
+          // Open is immediate for jquery UI menus.
+          // Win FF will fire a contextmenu event on shift+F10 long after the keypress was prevented.
+          // jquery ui needs immediate focus to the menu on open. The contextmenu event is fired on
+          // the menu versus the launcher. This logic prevents the context menu event within a 50ms
+          // window after the menu is open.
+          var eatEventHandler = function (e) { e.preventDefault(); };
+          contextMenuNode.addEventListener('contextmenu', eatEventHandler);
+          window.setTimeout(function () { contextMenuNode.removeEventListener('contextmenu', eatEventHandler); }, 50);
         }
         contextMenuNode.__openingContextMenu = false;
       }
@@ -3859,7 +3870,7 @@ function _returnTrue() {
  * or it can customize the menu contents by editing the menu DOM directly, and then calling refresh() on the Menu.
  * <p>
  * To help determine whether it's appropriate to cancel the launch or customize the menu, the ojBeforeOpen listener can use component API's to determine which
- * table cell, chart item, etc., is the target of the context menu. See the JSDoc and demos of the individual components for details.
+ * table cell, chart item, etc., is the target of the context menu. See the JSDoc of the individual components for details.
  * <p>
  * Keep in mind that any such logic must work whether the context menu was launched via right-click, Shift-F10, Press & Hold, or component-specific touch gesture.
  *
@@ -4583,7 +4594,8 @@ oj.MessagingStrategy.prototype.ShowValidatorHint = function () {
 };
 
 oj.MessagingStrategy.prototype.ShowTitle = function () {
-  return this._displayOptions.indexOf('title') !== -1;
+  return this._displayOptions.indexOf('title') !== -1 ||
+         this._displayOptions.indexOf('helpInstruction') !== -1;
 };
 
 /**
@@ -5640,6 +5652,8 @@ oj.DataProviderFeatureChecker = DataProviderFeatureChecker;
  * End of jsdoc
  */
 
+/* global Logger:false */
+
 /**
  * A bridge for a custom element that renders using a constructor
  * function. Note that when a constructor function is provided, the new instance isn't
@@ -5793,6 +5807,9 @@ oj.CollectionUtils.copyInto(oj.DefinitionalElementBridge.proto, {
               this._ELEMENT, property, value, previousValue, bOuterSet ? 'external' : 'internal'
             );
           }
+        } else {
+          Logger.info(oj.BaseCustomElementBridge.getElementInfo(this._ELEMENT) + ": Ignoring property set for property '" +
+            property + "' with same value.");
         }
       }
     }
@@ -6596,7 +6613,7 @@ oj.DomUtils.setScrollLeft = function (elem, scrollLeft) {
   if (oj.DomUtils.getReadingDirection() === 'rtl') {
     var browser = oj.AgentUtils.getAgentInfo().browser;
     if (browser === oj.AgentUtils.BROWSER.FIREFOX) {
-      // see mozilla bug 383026, even though it's marked as fixed, they basically
+      // see mozilla , even though it's marked as fixed, they basically
       // did not change anything.  It still expects a negative value for RTL
       // eslint-disable-next-line no-param-reassign
       elem.scrollLeft = -scrollLeft;
@@ -7420,7 +7437,13 @@ oj.GestureUtils.startDetectContextMenuGesture = function (rootNode, callback) {
     // it (that don't already fire a contextmenu event for pressHold), but architectural preference is to avoid
     // platform-specific solutions if possible.
     if ((doubleOpenType === 'touchstart' && event.type === 'contextmenu')
-        || (doubleOpenType === 'contextmenu' && event.type === 'touchstart')) {
+        || (doubleOpenType === 'contextmenu' && event.type === 'touchstart')
+        || (doubleOpenType === 'keydown' && event.type === 'contextmenu')) {
+      // FF 60.2.2esr (32-bit) Win fires a rogue contextmenu event following the prevented keydown. What's odd is
+      // preventing the keydown for shift+F10 prevents keypress but still files the contextmenu event.
+      // Seems like "fallout" (behavior not yet correct) from bug https://bugzilla.mozilla.org/show_bug.cgi?id=1382199
+      // For this case, prevent the native context menu within double open timeout window
+      if (doubleOpenType === 'keydown' && event.type === 'contextmenu') event.preventDefault();
       doubleOpenType = null;
       clearTimeout(doubleOpenTimer);
       return;
@@ -7445,7 +7468,7 @@ oj.GestureUtils.startDetectContextMenuGesture = function (rootNode, callback) {
     // cancelled by a beforeOpen listener...
     if (event.isDefaultPrevented()) {
       // see double-open comments above
-      if (event.type === 'touchstart' || event.type === 'contextmenu') {
+      if (event.type === 'touchstart' || event.type === 'contextmenu' || event.type === 'keydown') {
         doubleOpenType = event.type;
         doubleOpenTimer = setTimeout(function () {
           doubleOpenType = null;
@@ -7472,8 +7495,7 @@ oj.GestureUtils.startDetectContextMenuGesture = function (rootNode, callback) {
 
   $(rootNode)
     .on('touchstart' + namespace + ' ' +
-        'mousedown' + namespace + ' ' +
-        'keydown' + namespace + ' ', function (event) {
+        'mousedown' + namespace, function (event) {
           // for mousedown-after-touchend Mobile Safari issue explained above where __contextMenuPressHoldJustEnded is set.
           if (event.type === 'mousedown' && contextMenuPressHoldJustEnded) {
             return undefined;

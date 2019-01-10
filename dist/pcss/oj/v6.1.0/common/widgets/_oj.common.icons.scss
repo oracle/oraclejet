@@ -1,0 +1,799 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the
+//          version in your base theme's directory,
+//          for example alta/widgets/_oj.alta.icons.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@import "../../utilities/oj.utilities";
+@import "oj.common.sprite";
+
+$iconFontFileName: 'JetFW_iconfont.woff' !default;
+
+
+// this function is needed because
+// escaped unicode not output when using vars
+// https://github.com/sass/sass/issues/659
+// https://github.com/FortAwesome/Font-Awesome/pull/6728
+// http://www.sassmeister.com/gist/2c5975d9b52afa8a68f6
+// expects the var passed in to be
+// assigned to a string without a slash,
+// for example
+// $foo: "e60a";
+// prepend-slash($foo);
+@function oj-prepend-slash($char)
+{
+  @return #{"\"\\"}#{$char + "\""};
+}
+
+@if $includeIconClasses != false {
+  @include module-include-once("common.icons") {
+
+    /* Icons
+    --------------------------------------------------------------------*/
+    
+    @if  $iconFontFileName and $iconFontFileName != '' {
+
+      @font-face {
+        font-family: 'Alta Icon Font';
+        src: oj-font-url($iconFontFileName) format('woff');
+
+      }
+    }
+
+    /*--------------------------------------------------------------------
+    /  Generic style that can be used for widget images
+    /  You can use the mixin ("oj-icon-content") to generate
+    /  a class with additions/overrides
+    /
+    /  For example let's say you used the mixin ("oj-icon-content") to
+    /  generate a class ".binky-icon". You
+    /  could then put class="oj-icon binky-icon" on your dom element.
+    --------------------------------------------------------------------*/
+    .oj-fwk-icon,
+    %oj-component-icon-placeholder {
+      
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+        @include oj-icon-font-base(
+             // the alta icon font was designed to look best at 16px
+             $fontSize:   16px,
+             $fontFamily: 'Alta Icon Font',
+             $color:      var(--oj-icon-color));
+      } @else {
+        @if  $iconFontFileName and $iconFontFileName != '' {
+  
+          @include oj-icon-font-base(
+               // the alta icon font was designed to look best at 16px
+               $fontSize:   16px,
+               $fontFamily: 'Alta Icon Font',
+               $color:      $iconColor);
+        }
+      }
+    }
+
+    // extend %oj-component-icon-placeholder;
+    // If you need the same css properties as .oj-component-icon,
+    // extend %oj-component-icon-placeholder, not .oj-component-icon.
+    .oj-component-icon {
+      @extend %oj-component-icon-placeholder;
+    }
+
+    /*--------------------------------------------------------------------
+    /  Generic style that can be used for images
+    /  App developers can use the mixin ("oj-icon-content") to generate
+    /  a class with additions/overrides
+    /
+    /  For example let's say you used the mixin ("oj-icon-content") to
+    /  generate a class ".binky-icon". You
+    /  could then put class="oj-icon binky-icon" on your dom element.
+    --------------------------------------------------------------------*/
+    .oj-icon {
+      @include oj-icon-base(
+           $height: 16px,
+           $width:  16px);
+    }
+
+    // we support two generic classes for getting icon font colors
+    //   1. oj-clickable-icon
+    //   2. oj-clickable-icon-nocontext
+    //
+    // these classes, when used in conjunction with an anchor tag and/or
+    // marker classes like oj-default, oj-hover, oj-active, oj-selected,
+    // and oj-disabled will use the $iconColor* variables
+    //
+    // oj-clickable-icon is optionally contextual, meaning the anchor
+    // or marker style can be on an ancestor. For example this will work
+    //
+    //   <div class="oj-default">
+    //     <span class="oj-clickable-icon demo-icon-font demo-icon-gear"></span>
+    //   </div>
+    //   <a href="http://www.oracle.com">
+    //     <span class="oj-clickable-icon demo-icon-font demo-icon-gear"></span>
+    //   </a>
+    //
+    //
+    // oj-clickable-icon-nocontext is not contextual, instead it must go on the
+    // same tag as seen below (oj-clickable-icon would also work in the examples below).
+    //
+    //   <span class="oj-default oj-clickable-icon-nocontext demo-icon-font demo-icon-gear"></span>
+    //   <a href="http://www.oracle.com"
+    //      class="oj-clickable-icon-nocontext demo-icon-font demo-icon-gear"></a>
+
+    a .oj-clickable-icon,
+    a.oj-clickable-icon,
+    a.oj-clickable-icon-nocontext {
+      // needed when clickable on an anchor tag
+      font-weight: normal;
+    }
+
+    a .oj-clickable-icon,
+    a.oj-clickable-icon,
+    a.oj-clickable-icon-nocontext,
+    a:visited .oj-clickable-icon,
+    a:visited.oj-clickable-icon,
+    a:visited.oj-clickable-icon-nocontext,
+    .oj-default .oj-clickable-icon,
+    .oj-default.oj-clickable-icon,
+    .oj-default.oj-clickable-icon-nocontext {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+        color: var(--oj-icon-color-default);
+      } @else {
+        color: $iconColorDefault;        
+      }
+    }
+
+    a:hover .oj-clickable-icon,
+    a:hover.oj-clickable-icon,
+    a:hover.oj-clickable-icon-nocontext,
+    .oj-hover .oj-clickable-icon,
+    .oj-hover.oj-clickable-icon,
+    .oj-hover.oj-clickable-icon-nocontext {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+        color: var(--oj-icon-color-hover);
+      } @else {
+        color: $iconColorHover;
+      }
+    }
+
+    a:active .oj-clickable-icon,
+    a:active.oj-clickable-icon,
+    a:active.oj-clickable-icon-nocontext,
+    .oj-active .oj-clickable-icon,
+    .oj-active.oj-clickable-icon,
+    .oj-active.oj-clickable-icon-nocontext {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+        color: var(--oj-icon-color-active);
+      } @else {
+        color: $iconColorActive;
+      }
+    }
+
+    a.oj-selected .oj-clickable-icon,
+    a.oj-selected.oj-clickable-icon,
+    a.oj-selected.oj-clickable-icon-nocontext,
+    .oj-selected .oj-clickable-icon,
+    .oj-selected.oj-clickable-icon,
+    .oj-selected.oj-clickable-icon-nocontext {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+        color: var(--oj-icon-color-selected);
+      } @else {
+        color: $iconColorSelected;
+      }
+    }
+
+    a.oj-disabled .oj-clickable-icon,
+    a.oj-disabled.oj-clickable-icon,
+    a.oj-disabled.oj-clickable-icon-nocontext,
+    .oj-disabled .oj-clickable-icon,
+    .oj-disabled a .oj-clickable-icon,
+    .oj-disabled.oj-clickable-icon,
+    .oj-disabled.oj-clickable-icon-nocontext {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+        color: var(--oj-icon-color-disabled);
+        opacity: var(--oj-opacity-disabled);
+      } @else {
+        color: $iconColorDisabled;
+        opacity: $opacityDisabled;
+      }
+
+    }
+
+
+    .oj-fwk-icon-load {
+      @include oj-icon-content(
+        $icon: oj-common-image-url("node_anim.gif")
+      );
+    }
+
+
+    // svg icons defined in the sprite
+    .oj-fwk-icon-status-confirmation,
+    .oj-fwk-icon-status-info,
+    .oj-fwk-icon-status-warning,
+    .oj-fwk-icon-status-error,
+    .oj-fwk-icon-folder-open,
+    .oj-fwk-icon-folder-collapsed,
+    .oj-fwk-icon-document {
+      // if the page font size happens to
+      // be larger than the icon not setting the
+      // font size can cause padding above the icon.
+      // for example if the page font is 18px and the
+      // icon is 16px there will be some padding at
+      // the top of the icon
+      font-size: 16px;
+    }
+
+    // svg icons defined in the sprite
+    .oj-fwk-icon-status-error2,
+    .oj-fwk-icon-status-warning2,
+    .oj-fwk-icon-status-info2,
+    .oj-fwk-icon-status-confirmation2 {
+      font-size: 9px;
+    }
+
+
+    /* Icon Font Icons =========== */
+
+
+    // misc
+    .oj-fwk-icon-cross:before {
+      content: oj-prepend-slash($oj-fwk-icon-cross);
+    }
+    .oj-fwk-icon-cross02:before {
+      content: oj-prepend-slash($oj-fwk-icon-cross02);
+    }
+    .oj-fwk-icon-cross03:before {
+      content: oj-prepend-slash($oj-fwk-icon-cross03);
+    }
+
+    .oj-fwk-icon-magnifier:before {
+      content: oj-prepend-slash($oj-fwk-icon-magnifier);
+    }
+    .oj-fwk-icon-calendar:before {
+      content: oj-prepend-slash($oj-fwk-icon-calendar);
+    }
+    .oj-fwk-icon-calendar-clock:before {
+      content: oj-prepend-slash($oj-fwk-icon-calendarclock);
+    }
+    .oj-fwk-icon-clock:before {
+      content: oj-prepend-slash($oj-fwk-icon-clock);
+    }
+    .oj-fwk-icon-help:before {
+      content: oj-prepend-slash($oj-fwk-icon-help);
+    }
+    .oj-fwk-icon-hamburger:before {
+      content: oj-prepend-slash($oj-fwk-icon-hamburger);
+    }
+    .oj-fwk-icon-drag:before {
+      content: oj-prepend-slash($oj-fwk-icon-drag);
+    }
+    .oj-fwk-icon-folderhierarchy:before {
+      content: oj-prepend-slash($oj-fwk-icon-folderhierarchy);
+    }
+    .oj-fwk-icon-grid:before {
+      content: oj-prepend-slash($oj-fwk-icon-grid);
+    }
+    .oj-fwk-icon-list:before {
+      content: oj-prepend-slash($oj-fwk-icon-list);
+    }
+    .oj-fwk-icon-arrowbox-n:before {
+      content: oj-prepend-slash($oj-fwk-icon-arrowbox-n);
+    }
+
+    @if global-variable-exists(oj-fwk-icon-corner-drag) and $oj-fwk-icon-corner-drag != '' {
+      .oj-fwk-icon-corner-drag:before {
+        content: oj-prepend-slash($oj-fwk-icon-corner-drag);
+      }
+   }
+
+    @if global-variable-exists(oj-fwk-icon-checkmark) and $oj-fwk-icon-checkmark != '' {
+      .oj-fwk-icon-checkmark:before {
+        content: oj-prepend-slash($oj-fwk-icon-checkmark);
+      }
+    }
+
+    @if global-variable-exists(oj-fwk-icon-info) and $oj-fwk-icon-info != '' {
+      .oj-fwk-icon-info:before {
+        content: oj-prepend-slash($oj-fwk-icon-info);
+      }
+    }
+
+    @if global-variable-exists(oj-fwk-icon-warning) and $oj-fwk-icon-warning != '' {
+      .oj-fwk-icon-warning:before {
+        content: oj-prepend-slash($oj-fwk-icon-warning);
+      }
+    }
+
+    @if global-variable-exists(oj-fwk-icon-plus) and $oj-fwk-icon-plus != '' {
+      .oj-fwk-icon-plus:before {
+        content: oj-prepend-slash($oj-fwk-icon-plus);
+      }
+    }
+
+    @if global-variable-exists(oj-fwk-icon-minus) and $oj-fwk-icon-minus != '' {
+      .oj-fwk-icon-minus:before {
+        content: oj-prepend-slash($oj-fwk-icon-minus);
+      }
+    }
+
+
+    @if global-variable-exists(oj-fwk-icon-dots-vertical) and $oj-fwk-icon-dots-vertical != '' {
+      .oj-fwk-icon-dots-vertical:before,
+      .oj-fwk-icon-dots-horizontal:before {
+        content: oj-prepend-slash($oj-fwk-icon-dots-vertical);
+      }
+      .oj-fwk-icon-dots-horizontal:before{
+        content: oj-prepend-slash($oj-fwk-icon-dots-vertical);
+        transform: rotate(-90deg);
+      }
+    }
+
+    @if global-variable-exists(oj-fwk-icon-minimize) and $oj-fwk-icon-minimize != '' {
+      .oj-fwk-icon-minimize:before {
+        content: oj-prepend-slash($oj-fwk-icon-minimize);
+        @include oj-rtl() {
+          transform: scale(-1, 1);
+        }
+      }
+    }
+
+
+    @if global-variable-exists(oj-fwk-icon-maximize) and $oj-fwk-icon-maximize != '' {
+      .oj-fwk-icon-maximize:before {
+        content: oj-prepend-slash($oj-fwk-icon-maximize);
+        @include oj-rtl() {
+          transform: scale(-1, 1);
+        }
+      }
+    }
+
+
+    // arrow
+
+
+    @if global-variable-exists(oj-fwk-icon-arrowtail-w) and $oj-fwk-icon-arrowtail-w != '' {
+      .oj-fwk-icon-arrowtail-w:before {
+        content: oj-prepend-slash($oj-fwk-icon-arrowtail-w);
+      }
+
+      // rotation
+      .oj-fwk-icon-arrowtail-e:before {
+        @extend .oj-fwk-icon-arrowtail-w;
+        transform: scale(-1, 1);
+      }
+      .oj-fwk-icon-arrowtail-n:before {
+        @extend .oj-fwk-icon-arrowtail-w;
+        transform: rotate(90deg);
+      }
+      .oj-fwk-icon-arrowtail-s:before {
+        @extend .oj-fwk-icon-arrowtail-w;
+        transform: scale(-1, 1) rotate(-90deg);
+      }
+
+      // bidi
+      .oj-fwk-icon-arrowtail-start:before {
+        @include oj-ltr() {
+          @extend .oj-fwk-icon-arrowtail-w:before
+        }
+        @include oj-rtl() {
+          @extend .oj-fwk-icon-arrowtail-e:before
+        }
+      }
+
+      .oj-fwk-icon-arrowtail-end:before {
+        @include oj-ltr() {
+          @extend .oj-fwk-icon-arrowtail-e:before
+        }
+        @include oj-rtl() {
+          @extend .oj-fwk-icon-arrowtail-w:before
+        }
+      }
+    }
+
+    @if  $oj-fwk-icon-arrow-e and $oj-fwk-icon-arrow-e != '' {
+      .oj-fwk-icon-arrow-e:before {
+        content: oj-prepend-slash($oj-fwk-icon-arrow-e);
+      }
+
+      // rotation
+      .oj-fwk-icon-arrow-w:before {
+        @extend .oj-fwk-icon-arrow-e;
+        transform: scale(-1, 1);
+      }
+      .oj-fwk-icon-arrow-n:before {
+        @extend .oj-fwk-icon-arrow-e;
+        transform: rotate(-90deg);
+      }
+      .oj-fwk-icon-arrow-s:before {
+        @extend .oj-fwk-icon-arrow-e;
+        transform: scale(-1, 1) rotate(90deg);
+      }
+
+      // bidi
+      .oj-fwk-icon-arrow-start:before {
+        @include oj-ltr() {
+          @extend .oj-fwk-icon-arrow-w:before
+        }
+        @include oj-rtl() {
+          @extend .oj-fwk-icon-arrow-e:before
+        }
+      }
+
+      .oj-fwk-icon-arrow-end:before {
+        @include oj-ltr() {
+          @extend .oj-fwk-icon-arrow-e:before
+        }
+        @include oj-rtl() {
+          @extend .oj-fwk-icon-arrow-w:before
+        }
+      }
+    }
+
+    @if  $oj-fwk-icon-arrow-se and $oj-fwk-icon-arrow-se != '' {
+      .oj-fwk-icon-arrow-se:before {
+        content: oj-prepend-slash($oj-fwk-icon-arrow-se);
+      }
+
+
+      // rotation
+      .oj-fwk-icon-arrow-sw:before {
+        @extend .oj-fwk-icon-arrow-se;
+        transform: scale(-1, 1);
+      }
+      .oj-fwk-icon-arrow-nw:before {
+        @extend .oj-fwk-icon-arrow-se;
+        transform: scale(-1, -1);
+      }
+      .oj-fwk-icon-arrow-ne:before {
+        @extend .oj-fwk-icon-arrow-se;
+        transform: scale(1, -1);
+      }
+      .oj-fwk-icon-arrow-n-start:before {
+        @include oj-ltr() {
+          @extend .oj-fwk-icon-arrow-nw:before
+        }
+        @include oj-rtl() {
+          @extend .oj-fwk-icon-arrow-ne:before
+        }
+      }
+
+      // bidi
+      .oj-fwk-icon-arrow-n-end:before {
+        @include oj-ltr() {
+          @extend .oj-fwk-icon-arrow-ne:before
+        }
+        @include oj-rtl() {
+          @extend .oj-fwk-icon-arrow-nw:before
+        }
+      }
+
+      .oj-fwk-icon-arrow-s-start:before {
+        @include oj-ltr() {
+          @extend .oj-fwk-icon-arrow-sw:before
+        }
+        @include oj-rtl() {
+          @extend .oj-fwk-icon-arrow-se:before
+        }
+      }
+
+      .oj-fwk-icon-arrow-s-end:before {
+        @include oj-ltr() {
+          @extend .oj-fwk-icon-arrow-se:before
+        }
+        @include oj-rtl() {
+          @extend .oj-fwk-icon-arrow-sw:before
+        }
+      }
+    }
+
+    @if  $oj-fwk-icon-arrow02-s and $oj-fwk-icon-arrow02-s != '' {
+      .oj-fwk-icon-arrow02-s:before {
+        content: oj-prepend-slash($oj-fwk-icon-arrow02-s);
+      }
+
+
+      // rotation
+      .oj-fwk-icon-arrow02-w:before {
+        @extend .oj-fwk-icon-arrow02-s;
+        transform: scale(1, -1) rotate(90deg);
+      }
+      .oj-fwk-icon-arrow02-n:before {
+        @extend .oj-fwk-icon-arrow02-s;
+        transform: scale(1, -1);
+      }
+      .oj-fwk-icon-arrow02-e:before {
+        @extend .oj-fwk-icon-arrow02-s;
+       transform: rotate(-90deg);
+      }
+
+      // bidi
+      .oj-fwk-icon-arrow02-start:before {
+        @include oj-ltr() {
+          @extend .oj-fwk-icon-arrow02-w:before
+        }
+        @include oj-rtl() {
+          @extend .oj-fwk-icon-arrow02-e:before
+        }
+      }
+
+      .oj-fwk-icon-arrow02-end:before {
+        @include oj-ltr() {
+          @extend .oj-fwk-icon-arrow02-e:before
+        }
+        @include oj-rtl() {
+          @extend .oj-fwk-icon-arrow02-w:before
+        }
+      }
+    }
+
+
+    @if  $oj-fwk-icon-arrow03-e and $oj-fwk-icon-arrow03-e != '' {
+      .oj-fwk-icon-arrow03-e:before {
+        content: oj-prepend-slash($oj-fwk-icon-arrow03-e);
+      }
+
+
+      // rotation
+      .oj-fwk-icon-arrow03-w:before {
+        @extend .oj-fwk-icon-arrow03-e;
+        transform: scale(-1, 1);
+      }
+      .oj-fwk-icon-arrow03-n:before {
+        @extend .oj-fwk-icon-arrow03-e;
+        transform: rotate(-90deg);
+      }
+      .oj-fwk-icon-arrow03-s:before {
+        @extend .oj-fwk-icon-arrow03-e;
+        transform: scale(-1, 1) rotate(90deg);
+      }
+
+      //bidi
+      .oj-fwk-icon-arrow03-start:before {
+        @include oj-ltr() {
+          @extend .oj-fwk-icon-arrow03-w:before
+        }
+        @include oj-rtl() {
+          @extend .oj-fwk-icon-arrow03-e:before
+        }
+      }
+
+      .oj-fwk-icon-arrow03-end:before {
+        @include oj-ltr() {
+          @extend .oj-fwk-icon-arrow03-e:before
+        }
+        @include oj-rtl() {
+          @extend .oj-fwk-icon-arrow03-w:before
+        }
+      }
+    }
+
+    @if  $oj-fwk-icon-arrow03-se and $oj-fwk-icon-arrow03-se != '' {
+      .oj-fwk-icon-arrow03-se:before {
+        content: oj-prepend-slash($oj-fwk-icon-arrow03-se);
+      }
+
+
+
+      // rotatoin
+      .oj-fwk-icon-arrow03-sw:before {
+        @extend .oj-fwk-icon-arrow03-se;
+        transform: scale(-1, 1);
+      }
+      .oj-fwk-icon-arrow03-nw:before {
+        @extend .oj-fwk-icon-arrow03-se;
+        transform: scale(-1, -1);
+      }
+      .oj-fwk-icon-arrow03-ne:before {
+        @extend .oj-fwk-icon-arrow03-se;
+        transform: scale(1, -1);
+      }
+
+      // bidi
+      .oj-fwk-icon-arrow03-n-start:before {
+        @include oj-ltr() {
+          @extend .oj-fwk-icon-arrow03-nw:before
+        }
+        @include oj-rtl() {
+          @extend .oj-fwk-icon-arrow03-ne:before
+        }
+      }
+
+      .oj-fwk-icon-arrow03-n-end:before {
+        @include oj-ltr() {
+          @extend .oj-fwk-icon-arrow03-ne:before
+        }
+        @include oj-rtl() {
+          @extend .oj-fwk-icon-arrow03-nw:before
+        }
+      }
+
+      .oj-fwk-icon-arrow03-s-start:before {
+        @include oj-ltr() {
+          @extend .oj-fwk-icon-arrow03-sw:before
+        }
+        @include oj-rtl() {
+          @extend .oj-fwk-icon-arrow03-se:before
+        }
+      }
+
+      .oj-fwk-icon-arrow03-s-end:before {
+        @include oj-ltr() {
+          @extend .oj-fwk-icon-arrow03-se:before
+        }
+        @include oj-rtl() {
+          @extend .oj-fwk-icon-arrow03-sw:before
+        }
+      }
+
+    }
+
+
+    // caret
+
+
+    @if  $oj-fwk-icon-caret-e and $oj-fwk-icon-caret-e != '' {
+      .oj-fwk-icon-caret-e:before {
+        content: oj-prepend-slash($oj-fwk-icon-caret-e);
+      }
+
+
+      // rotation
+      .oj-fwk-icon-caret-s:before {
+        @extend .oj-fwk-icon-caret-e;
+        transform: scale(-1, 1) rotate(90deg);
+      }
+      .oj-fwk-icon-caret-w:before {
+        @extend .oj-fwk-icon-caret-e;
+        transform: scale(-1, 1);
+      }
+      .oj-fwk-icon-caret-n:before {
+        @extend .oj-fwk-icon-caret-e;
+        transform: rotate(-90deg);
+      }
+
+      // bidi
+      .oj-fwk-icon-caret-start:before {
+        @include oj-ltr() {
+          @extend .oj-fwk-icon-caret-w:before
+        }
+        @include oj-rtl() {
+          @extend .oj-fwk-icon-caret-e:before
+        }
+      }
+
+      .oj-fwk-icon-caret-end:before {
+        @include oj-ltr() {
+          @extend .oj-fwk-icon-caret-e:before
+        }
+        @include oj-rtl() {
+          @extend .oj-fwk-icon-caret-w:before
+        }
+      }
+
+    }
+
+    @if  $oj-fwk-icon-caret02-e and $oj-fwk-icon-caret02-e != '' {
+      .oj-fwk-icon-caret02-e:before {
+        content: oj-prepend-slash($oj-fwk-icon-caret02-e);
+      }
+
+
+
+      // rotation
+      .oj-fwk-icon-caret02-s:before {
+        @extend .oj-fwk-icon-caret02-e;
+        transform: scale(-1, 1) rotate(90deg);
+      }
+      .oj-fwk-icon-caret02-w:before {
+        @extend .oj-fwk-icon-caret02-e;
+        transform: scale(-1, 1);
+      }
+      .oj-fwk-icon-caret02-n:before {
+        @extend .oj-fwk-icon-caret02-e;
+        transform: rotate(-90deg);
+      }
+
+      // bidi
+      .oj-fwk-icon-caret02-start:before {
+        @include oj-ltr() {
+          @extend .oj-fwk-icon-caret02-w:before
+        }
+        @include oj-rtl() {
+          @extend .oj-fwk-icon-caret02-e:before
+        }
+      }
+
+      .oj-fwk-icon-caret02-end:before {
+        @include oj-ltr() {
+          @extend .oj-fwk-icon-caret02-e:before
+        }
+        @include oj-rtl() {
+          @extend .oj-fwk-icon-caret02-w:before
+        }
+      }
+    }
+
+
+    @if  $oj-fwk-icon-caret02end-e and $oj-fwk-icon-caret02end-e != '' {
+      .oj-fwk-icon-caret02end-e:before {
+        content: oj-prepend-slash($oj-fwk-icon-caret02end-e);
+      }
+
+      // rotation
+      .oj-fwk-icon-caret02end-s:before {
+        @extend .oj-fwk-icon-caret02end-e;
+        transform: scale(-1, 1) rotate(90deg);
+      }
+      .oj-fwk-icon-caret02end-w:before {
+        @extend .oj-fwk-icon-caret02end-e;
+        transform: scale(-1, 1);
+      }
+      .oj-fwk-icon-caret02end-n:before {
+        @extend .oj-fwk-icon-caret02end-e;
+        transform: rotate(-90deg);
+      }
+
+
+      // bidi
+      .oj-fwk-icon-caret02end-start:before {
+        @include oj-ltr() {
+          @extend .oj-fwk-icon-caret02end-w:before
+        }
+        @include oj-rtl() {
+          @extend .oj-fwk-icon-caret02end-e:before
+        }
+      }
+
+      .oj-fwk-icon-caret02end-end:before {
+        @include oj-ltr() {
+          @extend .oj-fwk-icon-caret02end-e:before
+        }
+        @include oj-rtl() {
+          @extend .oj-fwk-icon-caret02end-w:before
+        }
+      }
+
+    }
+
+    @if  $oj-fwk-icon-caret03-e and $oj-fwk-icon-caret03-e != '' {
+      .oj-fwk-icon-caret03-e:before {
+        content: oj-prepend-slash($oj-fwk-icon-caret03-e);
+      }
+
+      // rotation
+      .oj-fwk-icon-caret03-s:before {
+        @extend .oj-fwk-icon-caret03-e;
+        transform: scale(-1, 1) rotate(90deg);
+      }
+      .oj-fwk-icon-caret03-w:before {
+        @extend .oj-fwk-icon-caret03-e;
+        transform: scale(-1, 1);
+      }
+      .oj-fwk-icon-caret03-n:before {
+        @extend .oj-fwk-icon-caret03-e;
+        transform: rotate(-90deg);
+      }
+
+      // bidi
+      .oj-fwk-icon-caret03-start:before {
+        @include oj-ltr() {
+          @extend .oj-fwk-icon-caret03-w:before
+        }
+        @include oj-rtl() {
+          @extend .oj-fwk-icon-caret03-e:before
+        }
+      }
+
+      .oj-fwk-icon-caret03-end:before {
+        @include oj-ltr() {
+          @extend .oj-fwk-icon-caret03-e:before
+        }
+        @include oj-rtl() {
+          @extend .oj-fwk-icon-caret03-w:before
+        }
+      }
+
+    }
+
+  }
+}

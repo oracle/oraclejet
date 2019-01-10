@@ -1,0 +1,24 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+$includeListboxVariables: false !default;
+
+@if $includeListboxVariables != false {
+  @include module-include-once("alta.windows.variables.listbox") {
+
+:root {
+
+  // listbox
+  // --------------------------
+  // listbox values used in drop down for
+  // inputTime, select, combobox
+  --oj-listbox-item-padding:           5px;
+  --oj-listbox-indent-width:           15px;
+  --oj-listbox-bg-color-focus:         var(--oj-neutral-color-6);
+  --oj-listbox-message-text-color:     var(--oj-secondary-text-color);
+  
+}
+
+
+  }
+}

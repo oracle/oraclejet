@@ -1,0 +1,47 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+$includeDialogVariables: $includeDialogClasses !default;
+
+@if $includeDialogVariables != false {
+  $includeButtonVariables: true !global;
+}
+
+// import dependencies
+@import "oj.alta.ios.button";
+
+@if $includeDialogVariables != false {
+  @include module-include-once("alta.ios.variables.dialog") {
+
+:root {
+  --oj-dialog-bg-color:                 var(--oj-neutral-color-1); //settings: ignore
+  --oj-dialog-border-color:             var(--oj-neutral-color-8); //settings: ignore
+  --oj-dialog-border-width:             1px; //settings: ignore
+  --oj-dialog-border-radius:            12px; //settings: ignore
+  --oj-dialog-box-shadow:               var(--oj-box-shadow-sm); //settings: ignore
+
+  --oj-dialog-header-padding-top:       1.4375rem; //settings: ignore
+  --oj-dialog-header-padding-side:      0.875rem; //settings: ignore
+  --oj-dialog-header-padding-bottom:    0.1875rem; //settings: ignore
+
+  --oj-dialog-body-padding:             0.1875rem var(--oj-dialog-header-padding-side) 0.875rem; //settings: ignore
+  --oj-dialog-footer-padding:           0; //settings: ignore
+
+  --oj-dialog-body-text-align:          center; //settings: ignore
+
+  --oj-dialog-close-icon-button-margin: 0 var(--oj-button-icon-only-padding); //settings: ignore
+
+  --oj-dialog-header-bg-color:          transparent; //settings: ignore
+  --oj-dialog-header-bg-image:          none; //settings: ignore
+  --oj-dialog-header-border-color:      transparent; //settings: ignore
+  --oj-dialog-header-font-size:         1.125rem; //settings: ignore
+  --oj-dialog-header-text-color:        var(--oj-text-color-2); //settings: ignore
+ 
+  --oj-dialog-footer-button-height:     2.625rem; //settings: ignore
+  --oj-dialog-footer-button-font-weight:500; //settings: ignore
+  --oj-dialog-footer-divider-color:     var(--oj-neutral-color-7); //settings: ignore
+
+}
+
+  }
+}

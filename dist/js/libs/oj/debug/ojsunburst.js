@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -521,7 +521,8 @@ var __oj_sunburst_node_metadata =
  * @ojshortdesc An interactive data visualization in which hierarchical data is represented in concentric rings.  Each ring segment is proportionally sized relative to the other segments at a given level.
  * @ojsignature [{
  *                target: "Type",
- *                value: "class ojSunburst<K, D> extends dvtBaseComponent<ojSunburstSettableProperties<K, D>>"
+ *                value: "class ojSunburst<K, D> extends dvtBaseComponent<ojSunburstSettableProperties<K, D>>",
+ *                genericParameters: [{"name": "K", "description": "Type of key of the dataprovider"}, {"name": "D", "description": "Type of data from the dataprovider"}]
  *               },
  *               {
  *                target: "Type",
@@ -1193,8 +1194,8 @@ oj.__registerWidget('oj.ojSunburst', $.oj.dvtBaseComponent,
           templateName: 'nodeTemplate',
           templateElementName: 'oj-sunburst-node',
           resultPath: 'nodes',
-          // TODO:  - allow lazy loading of data from tree data provider
-          expandedKeySet: new KeySet.ExpandAllKeySet()
+          expandedKeySet: new KeySet.ExpandAllKeySet(),
+          maxFetchDepth: this.options.displayLevels - 1
         }
       };
     },

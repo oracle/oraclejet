@@ -1,11 +1,11 @@
 {
   "name": "oj-tag-cloud",
-  "version": "6.0.0",
-  "jetVersion": "6.0.0",
+  "version": "6.1.0",
+  "jetVersion": "6.1.0",
   "displayName": "Tag Cloud",
   "type": "core",
   "description": "An interactive data visualization of textual data, where the importance of each tagged word or phrase is represented by font size or color.",
-  "help": "https://docs.oracle.com/en/middleware/jet/6/reference-api/oj.ojTagCloud.html",
+  "help": "https://docs.oracle.com/en/middleware/jet/6.1/reference-api/oj.ojTagCloud.html",
   "properties": {
     "animationOnDataChange": {
       "description": "Defines the animation that is applied on data changes.",

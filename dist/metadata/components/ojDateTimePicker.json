@@ -1,7 +1,7 @@
 {
   "name": "oj-date-time-picker",
-  "version": "6.0.0",
-  "jetVersion": "6.0.0",
+  "version": "6.1.0",
+  "jetVersion": "6.1.0",
   "displayName": "Inline Date Time Picker",
   "type": "core",
   "styleClasses": [
@@ -25,7 +25,7 @@
     }
   ],
   "description": "An inline element for picking a date-time value.",
-  "help": "https://docs.oracle.com/en/middleware/jet/6/reference-api/oj.ojDateTimePicker.html",
+  "help": "https://docs.oracle.com/en/middleware/jet/6.1/reference-api/oj.ojDateTimePicker.html",
   "properties": {
     "asyncValidators": {
       "description": "List of asynchronous validators used by the component when performing validation.\nUse async-validators when you need to\nperform some validation work on the server. Otherwise, use\nvalidators, which are synchronous.\n\nEach item in the Array is an instance that duck types AsyncValidator.\nImplicit validators created by a component when certain attributes\nare present (e.g. required attribute) are separate from\nvalidators specified through the async-validators\nattribute and the validators attribute.\nAt runtime when the component runs validation, it\ncombines the implicit validators with the list specified through the\nvalidators\nattribute and also the list specified through the\nasync-validators attribute.\nError messages are shown as soon as each async validator returns;\nwe do not wait until all the async validators finish to show errors.\nIf the component's valid state changes for the worse, it is also updated\nas each validator returns so valid will be invalidShown\nas soon as the first validator has an Error. It is recommended that you show the\nvalue you are validating in the error message because if the async operation takes a while,\nthe user could be typing in a new value when the error message comes back\nand might be confused what value the error is for. However, if the user enters a new value\n(like presses Enter or Tab), a new validation lifecycle will start\nand validation errors for the previous value will not be shown to the user.\nIf you need to format the value for the error message,\nyou can use\noj.IntlConverterUtils.getConverterInstance(converterOption)\nto get the converter instance,\nthen call converter.format(value).\n\n\nHints exposed by async-validators and validators are shown in the notewindow by default,\nor as determined by the 'validatorHint' property set on the\ndisplay-options attribute.\n\nSince async validators are run asynchronously, you should wait on the BusyContext before\nyou check valid property or the value property. Alternatively you can add a callback to\nthe onValidChanged or ojValueChanged events.\n\n\nThe steps performed always, running validation and clearing messages is the same as\nfor the inputBase#validators attribute.\n\n",

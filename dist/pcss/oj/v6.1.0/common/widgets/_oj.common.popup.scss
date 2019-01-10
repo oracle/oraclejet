@@ -1,0 +1,276 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the 
+//          version in your base theme's directory, 
+//          for example alta/widgets/_oj.alta.popup.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+//-------------------------------------------------------------------------------------------------
+// Creates a popup tail using a SVG data URL. The point $x1,$y1 and $x3,$y3 must align to the popup.
+//-------------------------------------------------------------------------------------------------
+
+@function oj-popup-tail-url($edge, $width, $height, $borderColor, $borderWidth, $fillColor, $x1, $y1, $x2, $y2, $x3, $y3) {
+  $x1: oj-strip-unit($x1);
+  $y1: oj-strip-unit($y1);
+  $x2: oj-strip-unit($x2);
+  $y2: oj-strip-unit($y2);
+  $x3: oj-strip-unit($x3);
+  $y3: oj-strip-unit($y3);
+  $borderWidth: oj-strip-unit($borderWidth);
+  @if function-exists(oj-popup-tail-url-delegate) {
+    @return oj-popup-tail-url-delegate($edge, $width, $height, $borderColor, $borderWidth, $fillColor, $x1, $y1, $x2, $y2, $x3, $y3);
+  } @else {
+      @return oj-svg-url(
+        "<svg xmlns='http://www.w3.org/2000/svg' width='#{$width}' height='#{$height}'><polygon points='#{$x1},#{$y1} #{$x2},#{$y2} #{$x3},#{$y3}' style='fill:#{$fillColor};stroke:#{$fillColor};stroke-width:1;fill-rule:evenodd;'/><g style='stroke:#{$borderColor};stroke-width:#{$borderWidth};'><line x1='#{$x1}' y1='#{$y1}' x2='#{$x2}' y2='#{$y2}'/><line x1='#{$x3}' y1='#{$y3}' x2='#{$x2}' y2='#{$y2}'/></g></svg>");
+  }
+}
+
+@if $includePopupClasses != false {
+  @include module-include-once("common.popup") {
+    /* popup */
+    /* --------------------------------------------------------------- */
+
+    // This is to prevent the flash of unstyled content before the html becomes JET components.
+    @if $initialVisibility == hidden {
+      oj-popup:not(.oj-complete) {
+        visibility: hidden;
+      }
+    }
+
+    /* defines the stacking context for the popup and its children */
+    .oj-popup-layer {
+      @extend .oj-component-layer;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+        z-index: var(--oj-popup-zindex);
+      } @else {
+        z-index: $popupZindex;
+      }
+    }
+    .oj-popup-layer.oj-focus-within {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+        z-index: calc(var(--oj-popup-zindex) + 1);
+      } @else {
+        z-index: calc(#{$popupZindex} + 1);
+      }
+    }
+    .oj-popup-layer.oj-popup-tail-simple {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+        z-index: var(--oj-popup-tail-zindex);
+      } @else {
+        z-index: $popupTailZindex;
+      }
+    }
+    .oj-popup-layer.oj-popup-tail-simple.oj-focus-within {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+        z-index: calc(var(--oj-popup-tail-zindex) + 1);
+      } @else {
+        z-index: calc(#{$popupTailZindex} + 1);
+      }
+    }
+    .oj-popup {
+      @extend .oj-component-popup;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+        border: var(--oj-popup-border-width) solid var(--oj-popup-border-color);
+        border-radius: var(--oj-popup-border-radius);
+        background-color: var(--oj-popup-bg-color);
+        box-shadow: var(--oj-popup-box-shadow);
+      } @else {
+        border: $popupBorderWidth solid $popupBorderColor;
+        @include oj-border-radius($popupBorderRadius);
+        background-color: $popupBgColor;
+        @include oj-box-shadow($popupBoxShadow);
+      }
+      @include oj-will-change-property(top, left);
+    }
+    .oj-popup.oj-popup-tail-simple {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+        box-shadow: var(--oj-popup-tail-box-shadow);
+        border-width: var(--oj-popup-tail-border-width);
+        border-color: var(--oj-popup-tail-border-color);
+        background-color: var(--oj-popup-tail-bg-color);
+      } @else {
+        @include oj-box-shadow($popupTailBoxShadow);
+        border-width: $popupTailBorderWidth;
+        border-color: $popupTailBorderColor;
+        background-color: $popupTailBgcolor;
+      }
+      @include oj-will-change-property(top, left, bottom, right);
+    }
+    .oj-popup.oj-popup-no-chrome {
+      border-width: 0;
+      background-color: transparent;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+        box-shadow: none;
+        border-radius: 0;
+      } @else {
+        @include oj-box-shadow(none);
+        @include oj-border-radius(0);
+      }
+    }
+    .oj-popup-content {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+        padding: var(--oj-popup-content-padding);
+      } @else {
+        padding: $panelPadding;
+      }
+    }
+    .oj-popup-no-chrome > .oj-popup-content {
+      padding: 0;
+    }
+    // Disable the focus ring if the popup was open from a mouse gesture
+    .oj-popup:not(.oj-focus-highlight):focus {
+      outline:none;
+    }
+    
+    .oj-popup.oj-focus-highlight {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+        outline: dotted 1px var(--oj-primary-text-color);
+        outline: -webkit-focus-ring-color auto;
+      } @else {
+        @include oj-browser-focus-outline-approximation($primaryTextColor);
+      }
+    }
+    
+    .oj-popup-tail {
+      position: absolute;
+      pointer-events: none;
+    }
+    .oj-popup-tail.oj-popup-tail-simple {
+      @extend .oj-component-icon;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+        height: var(--oj-popup-tail-simple-height);
+        width: var(--oj-popup-tail-simple-width);
+      } @else {
+        height: $popupTailSimpleHeight;
+        width: $popupTailSimpleWidth;
+      }
+      font-size: 0;
+    }
+    .oj-popup-tail.oj-popup-tail-simple.oj-left.oj-top,
+    .oj-popup-tail.oj-popup-tail-simple.oj-left.oj-middle,
+    .oj-popup-tail.oj-popup-tail-simple.oj-left.oj-bottom {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+        left: calc(0px - var(--oj-popup-tail-simple-width));
+      } @else {
+        left: calc(0px - #{$popupTailSimpleWidth});
+      }
+    }
+    .oj-popup-tail.oj-popup-tail-simple.oj-right.oj-top,
+    .oj-popup-tail.oj-popup-tail-simple.oj-right.oj-middle,
+    .oj-popup-tail.oj-popup-tail-simple.oj-right.oj-bottom {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+        right: calc(0px - var(--oj-popup-tail-simple-width));
+      } @else {
+        right: calc(0px - #{$popupTailSimpleWidth});
+      }
+    }
+    .oj-popup-tail.oj-popup-tail-simple.oj-left.oj-top,
+    .oj-popup-tail.oj-popup-tail-simple.oj-right.oj-top {
+      top: 0;
+    }
+    .oj-popup-tail.oj-popup-tail-simple.oj-left.oj-bottom,
+    .oj-popup-tail.oj-popup-tail-simple.oj-right.oj-bottom {
+      bottom: 0;
+    }
+    .oj-popup-tail.oj-popup-tail-simple.oj-left.oj-middle,
+    .oj-popup-tail.oj-popup-tail-simple.oj-right.oj-middle {
+      top: 50%;
+    } 
+    .oj-popup-tail.oj-popup-tail-simple.oj-center.oj-top,
+    .oj-popup-tail.oj-popup-tail-simple.oj-center.oj-bottom {
+      left: 50%;
+    } 
+    .oj-popup-tail.oj-popup-tail-simple.oj-left.oj-top {
+      @include oj-icon-content(
+        $icon: oj-popup-tail-url('left-top', $popupTailSimpleWidth, $popupTailSimpleHeight, $popupTailBorderColor, $popupTailBorderWidth, $popupTailBgcolor, $popupTailSimpleWidth, $popupTailSimpleHeight, 0, 0, $popupTailSimpleWidth, round($popupTailSimpleHeight * 0.25))
+      );
+    }
+    .oj-popup-tail.oj-popup-tail-simple.oj-left.oj-middle {
+      @include oj-icon-content(
+        $icon: oj-popup-tail-url('left-middle', $popupTailSimpleWidth, $popupTailSimpleHeight, $popupTailBorderColor, $popupTailBorderWidth, $popupTailBgcolor, $popupTailSimpleWidth, 0, 0, ($popupTailSimpleWidth / 2), $popupTailSimpleWidth, $popupTailSimpleHeight)
+      );
+    }
+    .oj-popup-tail.oj-popup-tail-simple.oj-left.oj-bottom {
+      @include oj-icon-content(
+        $icon: oj-popup-tail-url('left-bottom', $popupTailSimpleWidth, $popupTailSimpleHeight, $popupTailBorderColor, $popupTailBorderWidth, $popupTailBgcolor, $popupTailSimpleWidth, 0, 0, $popupTailSimpleHeight, $popupTailSimpleWidth, round($popupTailSimpleHeight * 0.75))
+      );
+    }
+    .oj-popup-tail.oj-popup-tail-simple.oj-right.oj-top {
+      @include oj-icon-content(
+        $icon: oj-popup-tail-url('right-top', $popupTailSimpleWidth, $popupTailSimpleHeight, $popupTailBorderColor, $popupTailBorderWidth, $popupTailBgcolor, 0, round($popupTailSimpleHeight * 0.25), $popupTailSimpleWidth, 0, 0, $popupTailSimpleHeight)
+      );
+    }
+    .oj-popup-tail.oj-popup-tail-simple.oj-right.oj-middle {
+      @include oj-icon-content(
+        $icon: oj-popup-tail-url('right-middle', $popupTailSimpleWidth, $popupTailSimpleHeight, $popupTailBorderColor, $popupTailBorderWidth, $popupTailBgcolor, 0, 0, $popupTailSimpleWidth, ($popupTailSimpleHeight / 2), 0, $popupTailSimpleHeight)
+      );
+    }
+    .oj-popup-tail.oj-popup-tail-simple.oj-right.oj-bottom {
+      @include oj-icon-content(
+        $icon: oj-popup-tail-url('right-bottom', $popupTailSimpleWidth, $popupTailSimpleHeight, $popupTailBorderColor, $popupTailBorderWidth, $popupTailBgcolor, 0, 0, $popupTailSimpleWidth, $popupTailSimpleHeight, 0, round($popupTailSimpleHeight * .75))
+      );
+    }
+    .oj-popup-tail.oj-popup-tail-simple.oj-center.oj-top {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+        top: calc(0px - var(--oj-popup-tail-simple-height));
+      } @else {
+        top: calc(0px - #{$popupTailSimpleHeight});
+      }
+      @include oj-icon-content(
+        $icon: oj-popup-tail-url('center-top', $popupTailSimpleWidth, $popupTailSimpleHeight, $popupTailBorderColor, $popupTailBorderWidth, $popupTailBgcolor, 0, $popupTailSimpleHeight, ($popupTailSimpleWidth / 2), 0, $popupTailSimpleWidth, $popupTailSimpleHeight)
+      );
+    }
+    .oj-popup-tail.oj-popup-tail-simple.oj-center.oj-bottom {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+        bottom: calc(0px - var(--oj-popup-tail-simple-height));
+      } @else {
+        bottom: calc(0px - #{$popupTailSimpleHeight});
+      }
+      @include oj-icon-content(
+        $icon: oj-popup-tail-url('center-bottom', $popupTailSimpleWidth, $popupTailSimpleHeight, $popupTailBorderColor, $popupTailBorderWidth, $popupTailBgcolor, 0, 0, ($popupTailSimpleWidth / 2), $popupTailSimpleHeight, $popupTailSimpleWidth, 0)
+      );
+    }
+
+    // IE11 override - needs a block display or blows out the svg image outside 
+    // boundaries of the tail dom rect
+    .oj-popup-tail.oj-popup-tail-simple.oj-left.oj-top:before,
+    .oj-popup-tail.oj-popup-tail-simple.oj-left.oj-middle:before,
+    .oj-popup-tail.oj-popup-tail-simple.oj-left.oj-bottom:before,
+    .oj-popup-tail.oj-popup-tail-simple.oj-right.oj-top:before,
+    .oj-popup-tail.oj-popup-tail-simple.oj-right.oj-middle:before,
+    .oj-popup-tail.oj-popup-tail-simple.oj-right.oj-bottom:before,
+    .oj-popup-tail.oj-popup-tail-simple.oj-center.oj-top:before,
+    .oj-popup-tail.oj-popup-tail-simple.oj-center.oj-bottom:before {
+      display: block;
+    }
+    
+    // POPUP animation defaults
+    //----------------------------------
+    $popupAnimationDefaults: ();
+ 
+    @if ($popupOpenAnimation) {
+      $popupAnimationDefaults: map-merge($popupAnimationDefaults, (open: $popupOpenAnimation));
+    }
+ 
+    @if ($popupCloseAnimation) {
+      $popupAnimationDefaults: map-merge($popupAnimationDefaults, (close: $popupCloseAnimation));
+    }
+
+    // option defaults
+    //----------------------------------
+    $popupDefaultOptions: ();
+ 
+    @if ($popupModalityOptionDefault) {
+      $popupDefaultOptions: map-merge($popupDefaultOptions, (modality: $popupModalityOptionDefault));
+    }
+
+    @if ($popupAnimationDefaults) {
+      $popupDefaultOptions: map-merge($popupDefaultOptions, (animation: $popupAnimationDefaults));
+    }
+
+    // component default options selector 
+    .oj-popup-option-defaults {
+      font-family: oj-json-from-map($popupDefaultOptions);
+    }
+  }
+}

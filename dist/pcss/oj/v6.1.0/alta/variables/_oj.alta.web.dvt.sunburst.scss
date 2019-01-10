@@ -1,0 +1,28 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+
+@import "../../utilities/oj.utilities";
+
+
+$includeSunburstVariables: $includeSunburstClasses !default;
+
+@if $includeSunburstVariables != false {
+  $includeDvtBaseVariables: true !global;
+}
+// import dependencies
+@import "oj.alta.web.dvt";
+
+@if $includeSunburstVariables != false {
+  @include module-include-once("alta.web.variables.sunburst") {
+
+:root {
+  
+  // sunburst
+  // ----------------------------
+  --oj-sunburst-drill-text-color:         var(--oj-link-text-color);              
+  --oj-sunburst-node-border-color-hover:  var(--oj-neutral-color-6);
+  --oj-sunburst-legend-label-color: var(--oj-text-color-5);
+}
+
+
+  }
+}

@@ -1,0 +1,179 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the
+//          version in your base theme's directory,
+//          for example alta/widgets/_oj.alta.formcontrol.colorspectrum.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@import "../../utilities/oj.utilities";
+
+@if $includeColorSpectrumClasses != false  {
+  @include module-include-once("common.formcontrol.colorspectrum") {
+
+
+   /* Color  Spectrum */
+   /* --------------------------------------------------------------- */
+
+   // This is to prevent the flash of unstyled content before the html becomes JET components.
+   @if $initialVisibility == hidden {
+     oj-color-spectrum:not(.oj-complete) {
+       visibility: hidden;
+     }
+   }
+
+   .oj-colorspectrum {
+     display: inline-block;
+     position: relative;
+   }
+
+
+   /*  The spectrum rectangle containing the saturation/luminosity spectrum for the hue */
+   .oj-colorspectrum-spectrum {
+     @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+     {
+       width: var(--oj-color-spectrum-size);
+       height: var(--oj-color-spectrum-size);
+       border-color: var(--oj-color-spectrum-border-color);
+       margin-top: calc(var(--oj-color-spectrum-thumb-size) / 2);
+       margin-left: calc(var(--oj-color-spectrum-thumb-size) / 2);
+     }
+     @else {
+       width: $colorSpectrumSize;
+       height: $colorSpectrumSize;
+       border-color: $colorSpectrumBorderColor;
+       margin-top: calc(#{$colorSpectrumThumbSize} / 2);
+       margin-left: calc(#{$colorSpectrumThumbSize} / 2);
+     }
+      border-style: solid;
+      border-width: 1px;
+      margin-right: 15px;
+      box-sizing: border-box;
+      display: inline-block;
+   }
+
+   .oj-colorspectrum-container {
+     white-space: nowrap;
+   }
+
+   .oj-colorspectrum-container > .oj-slider-vertical {
+     display: inline-block;
+     vertical-align: top;
+   }
+
+   /*  Horizontal opacity slider  */
+   .oj-colorspectrum-container > .oj-slider-horizontal {
+     display: block;
+   }
+
+
+   /*  Horizontal opacity slider  - length  */
+   .oj-colorspectrum-container  > .oj-slider-horizontal > .oj-slider-container {
+     @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+     {
+       width: var(--oj-color-spectrum-size);
+     }
+     @else {
+       width: $colorSpectrumSize;       
+     }
+   }
+
+   /*  Vertical Hue slider  - height  */
+   .oj-colorspectrum-container > .oj-slider-vertical > .oj-slider-container {
+     @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+     {
+       height: var(--oj-color-spectrum-size);
+     }
+     @else {
+       height: $colorSpectrumSize;       
+     }
+   }
+
+   /*  Remove bottom margins from sliders  */
+   html .oj-colorspectrum-container .oj-form-control
+   {
+      margin-bottom: 0;
+   }
+
+   /*  Spectrum thumb   */
+   .oj-colorspectrum-thumb {
+     @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+     {
+       width: var(--oj-color-spectrum-thumb-size);
+       height: var(--oj-color-spectrum-thumb-size);
+       border-radius: var(--oj-color-spectrum-thumb-size);
+       border-width: var(--oj-color-spectrum-thumb-border-width);
+       border-color: var(--oj-color-spectrum-thumb-border-color);
+       box-shadow: var(--oj-color-spectrum-thumb-box-shadow);           
+     }
+     @else {
+       width: $colorSpectrumThumbSize;
+       height: $colorSpectrumThumbSize;
+       border-radius: $colorSpectrumThumbSize;
+       border-width: $colorSpectrumThumbBorderWidth;
+       border-color: $colorSpectrumThumbBorderColor;
+       box-shadow: $colorSpectrumThumbBoxShadow;       
+     }
+
+      border-style: solid;
+      background-color: transparent;
+      cursor: pointer;
+      box-sizing: border-box;
+   }
+
+   .oj-colorspectrum-thumb:not(.oj-focus-highlight):focus {
+      outline: none;
+   }
+
+   .oj-colorspectrum.oj-disabled .oj-colorspectrum-thumb {
+     @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+     {
+       border-color: var(--oj-color-spectrum-thumb-border-color-disabled);       
+     }
+     @else {
+       border-color: $colorspectrumThumbBorderColorDisabled;       
+     }
+   }
+
+   .oj-colorspectrum.oj-warning .oj-colorspectrum-container {
+     @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+     {
+       border-width: var(--oj-form-control-messaging-border-bottom-width) var(--oj-form-control-messaging-border-bottom-width) var(--oj-form-control-messaging-border-bottom-width) var(--oj-form-control-messaging-border-bottom-width);
+       border-style: solid;
+       border-color: var(--oj-form-control-border-color-warning);
+     }
+     @else {
+       border-width: $formControlMessagingBorderWidth;
+       border-style: solid;
+       border-color: $borderColorWarning;      
+     }
+   }
+
+   .oj-colorspectrum.oj-invalid .oj-colorspectrum-container {
+     @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+     {
+       border-width: var(--oj-form-control-messaging-border-bottom-width) var(--oj-form-control-messaging-border-bottom-width) var(--oj-form-control-messaging-border-bottom-width) var(--oj-form-control-messaging-border-bottom-width);
+       border-style: solid;
+       border-color: var(--oj-form-control-border-color-invalid);
+     }
+     @else {
+       border-width: $formControlMessagingBorderWidth;
+       border-style: solid;
+       border-color: $borderColorError;      
+     }
+   }
+
+   //class put on temp div to get computed path to spectrum-opacity-slider-bg.png
+   //all styles besides background-image are to ensure it is never displayed
+   .oj-colorspectrum-alpha-bg {
+     background-image: oj-common-image-url("spectrum-opacity-slider-bg.png");
+     position:absolute;
+     height:0;
+     width:0;
+     display:none;
+   }
+
+
+   /* --------------------------------------------------------------- */
+
+ }
+}

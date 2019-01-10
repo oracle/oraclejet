@@ -1,0 +1,40 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the
+//          version in your base theme's directory,
+//          for example alta/widgets/_oj.alta.applayout.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@import "../../utilities/oj.utilities";
+
+@if $includeAppLayoutClasses != false {
+  @include module-include-once("common.applayout") {
+
+    // POSITIONING CLASSES
+    .oj-applayout-fixed-top,
+    .oj-applayout-fixed-bottom {
+      position: fixed;
+      width: 100%;
+      box-sizing: border-box;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        z-index: var(--oj-app-layout-fixed-zindex);
+      }
+      @else {
+        z-index: $appLayoutFixedZindex;        
+      }
+    }
+    .oj-applayout-fixed-top {
+      top: 0;
+    }
+    .oj-applayout-fixed-bottom {
+      bottom: 0;
+    }
+
+    // Marker class used with the fixed positioning classes to adjust content paddings
+    // to prvent overlap
+    .oj-applayout-content {
+    }
+
+  }
+}

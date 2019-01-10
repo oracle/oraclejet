@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -5443,7 +5443,7 @@ DvtDataGrid.prototype.buildDatabody = function () {
   var root = document.createElement('div');
   root.id = this.createSubId('databody');
   root.className = this.getMappedStyle('databody');
-  // workaround for mozilla bug 616594, where overflow div would make it focusable
+  // workaround for mozilla , where overflow div would make it focusable
   root.tabIndex = '-1';
   this.m_databody = root;
   if (!root.addEventListener) {
@@ -7091,9 +7091,10 @@ DvtDataGrid.prototype._getMaxScrollHeight = function () {
  */
 DvtDataGrid.prototype.scroll = function (options) {
   if (options.position != null) {
-    var scrollLeft = Math.max(0, Math.min(this._getMaxScrollWidth(), options.position.scrollX));
-    var scrollTop = Math.max(0, Math.min(this._getMaxScrollHeight(), options.position.scrollY));
-    this._initiateScroll(scrollLeft, scrollTop);
+    var scrollPosObj = {};
+    scrollPosObj.x = Math.max(0, Math.min(this.m_scrollWidth, options.position.scrollX));
+    scrollPosObj.y = Math.max(0, Math.min(this.m_scrollHeight, options.position.scrollY));
+    this._scrollToScrollPositionObject(scrollPosObj);
   }
 };
 
@@ -19821,7 +19822,7 @@ DvtDataGridUtils.prototype.ctrlEquivalent = function (event) {
  */
 DvtDataGridUtils.prototype.getElementScrollLeft = function (element) {
   if (this.dataGrid.getResources().isRTLMode()) {
-    // see mozilla Bug 383026 scrollLeft property now returns negative values in rtl environment
+    // see mozilla  scrollLeft property now returns negative values in rtl environment
     if (this.platform === DvtDataGridUtils.GECKO_PLATFORM ||
         this.platform === DvtDataGridUtils.IE_PLATFORM ||
         this.platform === DvtDataGridUtils.EDGE_PLATFORM) {
@@ -19847,7 +19848,7 @@ DvtDataGridUtils.prototype.getElementScrollLeft = function (element) {
 DvtDataGridUtils.prototype.setElementScrollLeft = function (element, scrollLeft) {
   if (this.dataGrid.getResources().isRTLMode()) {
     if (this.platform === DvtDataGridUtils.GECKO_PLATFORM) {
-      // see mozilla Bug 383026 scrollLeft property now returns negative values in rtl environment
+      // see mozilla  scrollLeft property now returns negative values in rtl environment
       // eslint-disable-next-line no-param-reassign
       element.scrollLeft = -scrollLeft;
     } else if (this.platform === DvtDataGridUtils.IE_PLATFORM ||
@@ -20387,7 +20388,8 @@ DvtDataGridOptions.prototype.getScrollPolicyOptions = function () {
  * @ojtsimport {module: "ojdataprovider", type: "AMD", imported: ["DataProvider"]}
  * @ojsignature [{
  *                target: "Type",
- *                value: "class ojDataGrid<K, D> extends baseComponent<ojDataGridSettableProperties<K,D>>"
+ *                value: "class ojDataGrid<K, D> extends baseComponent<ojDataGridSettableProperties<K,D>>",
+ *                genericParameters: [{"name": "K", "description": "Type of key of the dataprovider"}, {"name": "D", "description": "Type of data from the dataprovider"}]
  *               },
  *               {
  *                target: "Type",

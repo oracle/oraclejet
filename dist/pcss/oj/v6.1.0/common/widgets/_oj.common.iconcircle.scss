@@ -1,0 +1,182 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the
+//          version in your base theme's directory,
+//          for example alta/widgets/_oj.alta.icon.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@import "../../utilities/oj.utilities";
+
+//--------------------------------------------------------
+
+// include dependencies
+@if $includeIconCircleClasses != false {
+  @include module-include-once("common.icon") {
+
+
+    .oj-icon-circle{
+      border-radius: 50%;
+      border: 0px solid transparent;
+      box-sizing: border-box;
+      display: inline-block;
+    }
+    @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+      
+      .oj-icon-circle-border.oj-icon-circle {
+        border-color: var(--oj-icon-circle-border-color);
+        //the padding color between border and circle
+        background-color: var(--oj-icon-cirle-border-offset-bg-color);
+        border-width: var(--oj-icon-circle-xxs-border-width);
+      }
+      .oj-icon-circle-inner {
+        border-radius: 50%;
+        color: var(--oj-icon-circle-font-color);
+        background-color: var(--oj-icon-circle-inner-bg-color);
+        box-sizing: border-box;;
+        align-items: center;
+        justify-content: center;
+        display: flex;
+      }
+      .oj-icon-xxs.oj-icon-circle.oj-icon-circle-border {
+        padding: var(--oj-icon-circle-xxs-border-offset);
+      }
+      .oj-icon-xxs .oj-icon-circle-inner {
+        height:var(--oj-icon-circle-xxs-inner-size);
+        width: var(--oj-icon-circle-xxs-inner-size);
+        font-size: var(--oj-icon-circle-xxs-font-size);
+      }
+      .oj-icon-xs.oj-icon-circle.oj-icon-circle-border {
+        padding: var(--oj-icon-circle-xs-border-offset);
+      }
+      .oj-icon-xs .oj-icon-circle-inner {
+        height:var(--oj-icon-circle-xs-inner-size);
+        width: var(--oj-icon-circle-xs-inner-size);
+        font-size: var(--oj-icon-circle-xs-font-size);
+      }
+      .oj-icon-sm.oj-icon-circle.oj-icon-circle-border{
+        padding: var(--oj-icon-circle-sm-border-offset);
+      }
+      .oj-icon-sm .oj-icon-circle-inner {
+        height:var(--oj-icon-circle-sm-inner-size);
+        width: var(--oj-icon-circle-sm-inner-size);
+        font-size: var(--oj-icon-circle-sm-font-size);
+      }
+      /*Don't need to specify medium size since it is the default*/
+      .oj-icon-circle.oj-icon-circle-border{
+        padding: var(--oj-icon-circle-md-border-offset);
+      }
+      .oj-icon-circle-inner {
+        height:var(--oj-icon-circle-md-inner-size);
+        width: var(--oj-icon-circle-md-inner-size);
+        font-size: var(--oj-icon-circle-md-font-size);
+      }
+      .oj-icon-lg.oj-icon-circle.oj-icon-circle-border {
+        padding: var(--oj-icon-circle-lg-border-offset);
+      }
+      .oj-icon-lg .oj-icon-circle-inner {
+        height:var(--oj-icon-circle-lg-inner-size);
+        width: var(--oj-icon-circle-lg-inner-size);
+        font-size: var(--oj-icon-circle-lg-font-size);
+      }
+      .oj-icon-xl.oj-icon-circle.oj-icon-circle-border {
+        padding: var(--oj-icon-circle-xl-border-offset);
+      }
+      .oj-icon-xl .oj-icon-circle-inner {
+        height:var(--oj-icon-circle-xl-inner-size);
+        width: var(--oj-icon-circle-xl-inner-size);
+        font-size: var(--oj-icon-circle-xl-font-size);
+      }
+      .oj-icon-xl.oj-icon-circle.oj-icon-circle-border,
+      .oj-icon-xxl.oj-icon-circle.oj-icon-circle-border{
+        border-width: var(--oj-icon-circle-xl-border-width);
+      }
+      .oj-icon-xxl.oj-icon-circle.oj-icon-circle-border {
+        padding: var(--oj-icon-circle-xxl-border-offset);
+      }
+      .oj-icon-xxl .oj-icon-circle-inner {
+        height:var(--oj-icon-circle-xxl-inner-size);
+        width: var(--oj-icon-circle-xxl-inner-size);
+        font-size: var(--oj-icon-circle-xxl-font-size);
+      }
+    } @else {
+      
+      .oj-icon-circle-border.oj-icon-circle {
+        border-color: $iconCircleBorderColor;
+        //the padding color between border and circle
+        background-color: $iconCircleBorderOffsetBgColor;
+        border-width: $iconCircleXxsBorderWidth;
+      }
+      .oj-icon-circle-inner {
+        border-radius: 50%;
+        color:$iconCircleFontColor;
+        background-color: $iconCircleInnerBgColor;
+        box-sizing: border-box;;
+        align-items: center;
+        justify-content: center;
+        display: flex;
+      }
+      .oj-icon-xxs.oj-icon-circle.oj-icon-circle-border {
+        padding: $iconCircleXxsBorderOffset;
+      }
+      .oj-icon-xxs .oj-icon-circle-inner {
+        height:$iconCircleXxsInnerSize;
+        width: $iconCircleXxsInnerSize;
+        font-size: $iconCircleXxsFontSize;
+      }
+      .oj-icon-xs.oj-icon-circle.oj-icon-circle-border {
+        padding: $iconCircleXsBorderOffset;
+      }
+      .oj-icon-xs .oj-icon-circle-inner {
+        height:$iconCircleXsInnerSize;
+        width: $iconCircleXsInnerSize;
+        font-size: $iconCircleXsFontSize;
+      }
+      .oj-icon-sm.oj-icon-circle.oj-icon-circle-border{
+        padding: $iconCircleSmBorderOffset;
+      }
+      .oj-icon-sm .oj-icon-circle-inner {
+        height:$iconCircleSmInnerSize;
+        width: $iconCircleSmInnerSize;
+        font-size: $iconCircleSmFontSize;
+      }
+      /*Don't need to specify medium size since it is the default*/
+      .oj-icon-circle.oj-icon-circle-border{
+        padding: $iconCircleMdBorderOffset;
+      }
+      .oj-icon-circle-inner {
+        height:$iconCircleMdInnerSize;
+        width: $iconCircleMdInnerSize;
+        font-size: $iconCircleMdFontSize;
+      }
+      .oj-icon-lg.oj-icon-circle.oj-icon-circle-border {
+        padding: $iconCircleLgBorderOffset;
+      }
+      .oj-icon-lg .oj-icon-circle-inner {
+        height:$iconCircleLgInnerSize;
+        width: $iconCircleLgInnerSize;
+        font-size: $iconCircleLgFontSize;
+      }
+      .oj-icon-xl.oj-icon-circle.oj-icon-circle-border {
+        padding: $iconCircleXlBorderOffset;
+      }
+      .oj-icon-xl .oj-icon-circle-inner {
+        height:$iconCircleXlInnerSize;
+        width: $iconCircleXlInnerSize;
+        font-size: $iconCircleXlFontSize;
+      }
+      .oj-icon-xl.oj-icon-circle.oj-icon-circle-border,
+      .oj-icon-xxl.oj-icon-circle.oj-icon-circle-border{
+        border-width: $iconCircleXlBorderWidth;
+      }
+      .oj-icon-xxl.oj-icon-circle.oj-icon-circle-border {
+        padding: $iconCircleXxlBorderOffset;
+      }
+      .oj-icon-xxl .oj-icon-circle-inner {
+        height:$iconCircleXxlInnerSize;
+        width: $iconCircleXxlInnerSize;
+        font-size: $iconCircleXxlFontSize;
+      }
+    }
+      
+  }
+}

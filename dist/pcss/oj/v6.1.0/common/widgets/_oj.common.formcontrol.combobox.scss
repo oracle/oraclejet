@@ -1,0 +1,571 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the 
+//          version in your base theme's directory, 
+//          for example alta/widgets/_oj.alta.formcontrol.combobox.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@import "../../utilities/oj.utilities";
+@import "oj.common.formcontrol.mixins";
+
+
+@if $includeComboboxClasses != false {
+  @include module-include-once("common.combobox") {
+    /* combobox */
+    /* --------------------------------------------------------------- */
+            
+    // This is to prevent the flash of unstyled content before the html becomes JET components.
+    @if $initialVisibility == hidden {
+      oj-combobox:not(.oj-complete) {
+        visibility: hidden;
+      }      
+    }
+
+    .oj-combobox {
+      position: relative;
+      display: inline-block;
+      vertical-align: middle; 
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        max-width: var(--oj-form-control-lg-max-width);
+        min-width: var(--oj-form-control-min-width);    
+        // font size needs to be on the root, because max/min width is in em.
+        font-size: var(--oj-form-control-trigger-font-size);
+        @include oj-form-control-text-size-adjust-css-vars();
+      }
+      @else {
+        max-width: $formControlLargeMaxWidth;
+        min-width: $formControlMinWidth;    
+        // font size needs to be on the root, because max/min width is in em.
+        font-size: $formControlTriggerFontSize;
+        @include oj-form-control-text-size-adjust($formControlTriggerFontSize);    
+      }
+
+      width: 100%;
+
+    }
+    
+    /* single-select */
+    /* 
+     * Applied to the single-select box which includes the input field and the dropdown open icon
+     */
+    .oj-combobox-choice {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        @include oj-form-control-content-css-vars();
+        height: var(--oj-form-control-input-height);
+        @include oj-form-control-content-no-focus-padding($outputCssVars: true);
+        html:not([dir="rtl"]) & {
+          padding-left: var(--oj-form-control-padding-horizontal);
+        }
+        html[dir="rtl"] & {
+          padding-right: var(--oj-form-control-padding-horizontal);
+        }
+      }
+      @else {
+        @include oj-form-control-content;
+        height: $formControlInputHeight;
+        @include oj-form-control-content-no-focus-padding;
+        @include oj-ltr() {
+          padding-left: $formControlPaddingHorizontal;
+        }
+        @include oj-rtl() {
+          padding-right: $formControlPaddingHorizontal;
+        }
+      }
+      box-sizing: border-box;
+      display: flex;
+      align-items: center;
+      width: 100%;
+      outline: 0;
+      overflow: hidden;
+      white-space: nowrap;
+      background-clip: padding-box;
+
+    }
+
+    /* 
+     * Applied to the input field
+     */
+    .oj-combobox-input {
+      flex: 1;
+      // needed for the input to be able to shrink smaller than the browser
+      // default width.  Because this has flex-grow of 1, it will always grow
+      // to the available space of the parent container, which is what we want.
+      width: 1em;
+      // needed or else the input could overflow the container
+      min-width: 1em;
+      border: 0;
+      outline: 0; 
+      padding: 0;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        background-color: var(--oj-form-control-bg-color);
+        color: var(--oj-form-control-input-value-color);    
+        font-size: var(--oj-form-control-trigger-font-size);
+        box-shadow: none;
+        @include oj-form-control-text-size-adjust-css-vars();
+        @include oj-placeholder()
+        {
+          color: var(--oj-form-control-placeholder-color);
+          // in Firefox the default opacity is not 1 for placeholder
+          opacity: 1;
+          font-style: var(--oj-form-control-placeholder-font-style);
+        }  
+      } @else {
+        background-color: $formControlBgColor;
+        color: $formControlInputValueColor;   
+        font-size: $formControlTriggerFontSize;
+        @include oj-box-shadow(none);
+        @include oj-form-control-text-size-adjust($formControlTriggerFontSize);  
+        @include oj-placeholder()
+        {
+          color: $formControlPlaceholderColor;
+          // in Firefox the default opacity is not 1 for placeholder
+          opacity: 1;
+          font-style: $formControlPlaceholderFontStyle;
+        }   
+      }
+    }
+
+    /* Styling for readonly mode */
+    .oj-combobox.oj-read-only .oj-combobox-choice,
+    .oj-combobox.oj-read-only .oj-combobox-choices {
+      background-color: transparent;
+      border-color: transparent;
+      outline: none;
+    }
+
+    /* apply to the selected entries */
+    .oj-combobox.oj-read-only .oj-combobox-input,
+    .oj-combobox.oj-read-only .oj-combobox-selected-choice {
+      outline: none;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        @include oj-form-control-content-readonly($outputCssVars: true);
+      }
+      @else {
+        @include oj-form-control-content-readonly;        
+      }
+    }
+
+    /* don't show dropdown trigger */
+    .oj-combobox.oj-read-only .oj-combobox-arrow,
+    .oj-combobox.oj-read-only .oj-combobox-divider {
+      display: none;
+    }
+
+    /* don't show clear entry trigger and search field button */
+    .oj-combobox.oj-read-only .oj-combobox-clear-entry,
+    .oj-combobox.oj-read-only .oj-combobox-search-field {
+      display: none;
+    }
+
+    /* Styling for text-align */
+    .oj-form-control-text-align-right .oj-combobox .oj-combobox-input
+    {
+      text-align: right;
+    }
+    .oj-form-control-text-align-start .oj-combobox .oj-combobox-input
+    {
+      @include oj-bidi-property(
+        $property: 'text-align',
+        $startOrEnd: start,
+        $important: false) ;
+    }
+    .oj-form-control-text-align-end .oj-combobox .oj-combobox-input
+    {
+      @include oj-bidi-property(
+        $property: 'text-align',
+        $startOrEnd: end,
+        $important: false) ;
+    }
+    .oj-form-control-text-align-right .oj-combobox .oj-combobox-choices li
+    {
+      float: right;
+    }
+    .oj-form-control-text-align-start .oj-combobox .oj-combobox-choices li
+    {
+      @include oj-bidi-property(
+        $property: 'float',
+        $startOrEnd: start,
+        $important: false) ;
+    }
+    .oj-form-control-text-align-end .oj-combobox .oj-combobox-choices li
+    {
+      @include oj-bidi-property(
+        $property: 'float',
+        $startOrEnd: end,
+        $important: false) ;
+    }
+    .oj-form-control-text-align-right .oj-combobox-selected-choice,
+    .oj-form-control-text-align-end .oj-combobox-selected-choice {
+      @include oj-ltr() {
+        margin: 5px 0 0 6px;
+      }
+    }
+    .oj-form-control-text-align-end .oj-combobox-selected-choice {
+      @include oj-rtl() {
+        margin: 5px 6px 0 0;
+      }
+    }
+
+    /* 
+     * Applied to the single-select drop down arrow
+     */
+    .oj-combobox-arrow {
+      box-sizing: border-box;
+      display: inline-flex;
+      cursor: pointer;
+      text-align: center;
+      vertical-align: middle;
+      text-decoration: none;
+    }
+    
+    .oj-combobox-arrow:hover, .oj-combobox-arrow:focus  {
+      text-decoration: none;
+    }
+    
+    /*
+     * Applied to the divider between the input and drop down arrow
+     */
+    .oj-combobox-divider {
+      box-sizing: border-box;
+      display: inline-flex;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        border-left: solid var(--oj-form-control-border-bottom-width) var(--oj-form-control-border-color);
+        html:not([dir="rtl"]) & {
+          margin-left: var(--oj-form-control-padding-horizontal);
+        }
+        html[dir="rtl"] & {
+          margin-right: var(--oj-form-control-padding-horizontal);
+        }
+      }
+      @else {
+        border-left: solid oj-shorthand-property-value-bottom($formControlBorderWidth) $formControlBorderColor;        
+        @include oj-ltr() {
+          margin-left: $formControlPaddingHorizontal;
+        }
+        @include oj-rtl() {
+          margin-right: $formControlPaddingHorizontal;
+        }
+      }
+      height: 80%;
+      vertical-align: middle;
+    }
+    
+    /* multi-select */
+    
+    /* 
+     * Applied to the multi-select box which includes the input field and the selected choices
+     */
+    .oj-combobox-choices {
+      box-sizing: border-box;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        @include oj-form-control-content-css-vars();
+        min-height: var(--oj-form-control-trigger-height);
+        padding-left: var(--oj-form-control-padding-horizontal);  
+        padding-right: var(--oj-form-control-padding-horizontal);  
+        @include oj-form-control-content-focus-padding($outputCssVars: true,
+                                                       $focusPaddingBottom: 5px);
+      }
+      @else {
+        @include oj-form-control-content;
+        min-height: $formControlTriggerHeight;
+        padding-left: $formControlPaddingHorizontal;   
+        padding-right: $formControlPaddingHorizontal;   
+        @include oj-form-control-content-focus-padding($focusPaddingBottom: 5px);
+      }
+      height: auto;
+      margin: 0;
+      position: relative;
+      cursor: text;
+      overflow: hidden;
+    }
+    
+    /* 
+     * Applied to the multi-select box list items which include the search field and the selected choices
+     */
+    .oj-combobox-choices li {
+      list-style: none; 
+      @include oj-ltr() {
+        float: left;
+      }
+      @include oj-rtl() {
+        float: right;
+      }   
+    }
+    
+    /* 
+     * Applied to the multi-select search field which is an li to wrap the input
+     */
+    .oj-combobox-search-field {
+      margin-top: 5px;
+      padding: 0;
+      white-space: nowrap; 
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        line-height: calc(var(--oj-form-control-trigger-height) * 0.9);
+      }
+      @else {
+        line-height: calc(#{$formControlTriggerHeight} * 0.9);        
+      }
+    }
+    
+    /* 
+     * Applied to the multi-select selected choice
+     */
+    .oj-combobox-selected-choice {
+      line-height: 1.8rem;
+      cursor: default;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        border-radius: var(--oj-button-border-radius);
+        border: 1px solid var(--oj-button-outlined-chrome-border-color);
+        color: var(--oj-button-outlined-chrome-text-color);
+      }
+      @else {
+        @include oj-border-radius($buttonBorderRadius);
+        border: 1px solid $buttonOutlinedChromeBorderColor;
+        color: $buttonOutlinedChromeTextColor;        
+      }
+
+      background-clip: padding-box;
+      @include oj-ltr() {
+        padding: 0 4px 0 7px;
+        margin: 5px 6px 0 0;
+      }
+      @include oj-rtl() {
+        padding: 0 7px 0 4px;
+        margin: 5px 0 0 6px;
+      }
+    }
+
+    /* 
+     * Applied to the multi-select selected choice when getting focus
+     */
+    .oj-combobox-selected-choice.oj-focus {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        @include oj-browser-focus-outline-approximation-css-vars(var(--oj-button-text-color));
+      }
+      @else {
+        @include oj-browser-focus-outline-approximation($buttonTextColor);
+      }
+    }
+    
+    /* 
+     * Applied to the label of the selected choice
+     */
+    .oj-combobox-selected-choice-label {
+      display: inline-block;
+      vertical-align: middle;
+    }
+
+    /*
+     * Applied to the clear entry field of the selected choice
+     */
+    .oj-combobox-clear-entry {
+      display: inline-block;
+      outline: none;
+      text-align: center;
+      vertical-align: middle;
+      line-height: 100%;
+      @include oj-ltr() {
+        right: 3px;
+      }
+      @include oj-rtl() {
+        left: 3px;
+      } 
+    }
+
+    /* end multiselect */
+    
+    /* 
+     * Invalid styling for the widget 
+     */
+    .oj-combobox.oj-invalid .oj-combobox-choice,
+    .oj-combobox-multi.oj-invalid .oj-combobox-choices {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        @include oj-form-control-border-message-width-css-vars();
+        border-color: var(--oj-form-control-border-color-invalid);
+      }
+      @else {
+        @include oj-form-control-border-message-width;
+        border-color: $borderColorError;        
+      }
+      border-style: solid;
+    }
+
+    /* 
+     * Warning styling for the widget 
+     */
+    .oj-combobox.oj-warning .oj-combobox-choice,
+    .oj-combobox-multi.oj-warning .oj-combobox-choices {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        @include oj-form-control-border-message-width-css-vars();
+        border-color: var(--oj-form-control-border-color-warning);
+      }
+      @else {
+        @include oj-form-control-border-message-width;
+        border-color: $borderColorWarning;        
+      }
+      border-style: solid;
+    }
+    
+    /* 
+     * Disabled styles for single-select 
+     */
+    .oj-combobox.oj-disabled .oj-combobox-choice,
+    .oj-combobox.oj-disabled input {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        @include oj-form-control-content-disabled($outputCssVars: true);
+      }
+      @else {
+        @include oj-form-control-content-disabled;        
+      }
+    }
+    
+    .oj-combobox.oj-disabled input {
+      border: 0;
+    }
+
+    .oj-combobox.oj-disabled .oj-combobox-arrow { 
+      cursor: default;
+    }
+    
+    .oj-combobox.oj-disabled .oj-combobox-divider { 
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        border-color: var(--oj-form-control-border-color-disabled);
+      }
+      @else {
+        border-color: $formControlBorderColorDisabled;        
+      }
+    }
+    
+    /* 
+     * Disabled styles for multi-select 
+     */
+    .oj-combobox-multi.oj-disabled .oj-combobox-choices,
+    .oj-combobox-multi.oj-disabled .oj-combobox-selected-choice,
+    .oj-combobox-multi.oj-disabled .oj-combobox-selected-choice.oj-focus,
+    .oj-combobox-multi.oj-disabled input {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        @include oj-form-control-content-disabled($outputCssVars: true);
+      }
+      @else {
+        @include oj-form-control-content-disabled;
+      }
+      outline: 0;
+    }
+    
+    .oj-combobox-multi.oj-disabled input {
+      border: 0;
+    }
+
+    .oj-combobox-multi.oj-disabled .oj-combobox-clear-entry {
+      display: none;
+      background: none; 
+    }
+
+    /*
+     * Styling for focus state
+     */
+    .oj-combobox:not(.oj-disabled):not(.oj-read-only):not(.oj-invalid):not(.oj-warning).oj-focus .oj-combobox-choice,
+    .oj-combobox:not(.oj-disabled):not(.oj-read-only):not(.oj-invalid):not(.oj-warning).oj-focus .oj-combobox-choices {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        @include oj-form-control-content-focus($outputCssVars: true);
+      }
+      @else {
+        @include oj-form-control-content-focus;
+      }
+    }
+    .oj-combobox:not(.oj-disabled):not(.oj-read-only):not(.oj-invalid):not(.oj-warning).oj-focus .oj-combobox-choice {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        @include oj-form-control-content-focus-padding($outputCssVars: true);
+      }
+      @else {
+        @include oj-form-control-content-focus-padding;
+      }
+    }
+    .oj-combobox:not(.oj-disabled):not(.oj-read-only):not(.oj-invalid):not(.oj-warning).oj-focus .oj-combobox-choices {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        @include oj-form-control-content-focus-padding($outputCssVars: true,
+                                                       $focusPaddingBottom: 5px);
+      }
+      @else {
+        @include oj-form-control-content-focus-padding($focusPaddingBottom: 5px);
+      }
+    }
+        
+    /* icon */
+    /* -----------------------------*/
+    
+    /* 
+     * Applied to the clear entry icon
+     */
+    .oj-combobox-clear-entry-icon {
+      text-align: center;
+      vertical-align: middle;
+      cursor: pointer;
+    }
+
+    
+    /* icon */
+    /* -----------------------------*/
+
+    /* 
+     * Applied to the single-select drop down open icon
+     */
+    .oj-combobox-open-icon {
+      @extend .oj-fwk-icon-arrow02-s;
+
+      line-height: inherit;
+      padding-right: 5px;
+      padding-left: 5px;
+    }
+    
+    /* clear entry icon for combobox */
+    .oj-combobox-clear-entry-icon {
+      @extend .oj-fwk-icon-cross;
+    }
+    
+    // .oj-button adds margin-bottom, we need to remove it if it's used in the end slot
+    .oj-combobox .oj-button {
+      margin-bottom: 0;
+    }
+    
+    // The oj-form-control-inherit selector on an ancestor indicates that the form control should
+    // inherit styles, like width/height/borders/colors/text-alignment, etc. This is used for
+    // editable datagrid cells and editable table cells
+    // -----------------------------------------------------------------------------------------
+
+    // remove borders, inherit colors and stretch the height
+    // need extra specificity since base selector has direction selectors
+    .oj-form-control-inherit .oj-combobox .oj-combobox-choice,
+    .oj-form-control-inherit .oj-combobox .oj-combobox-choices,
+    .oj-form-control-inherit .oj-combobox-input {    
+      @include oj-form-control-inherit();  
+    }
+
+    // TODO: multi combobox's color inherit does not work. the color does not get inherited. (same with select))
+    // TODO: multi combobox when it is in a narrow box, and multiple items are selected, it doesn't
+    // show all the items.
+    // TODO: single combobox's text-align: right makes the text overlap the icon 
+    // TODO: single combobox's height stretches for choice, but the icon no longer lines up
+
+  }
+}

@@ -1,0 +1,18 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+
+$includeDataGridVariables: $includeDataGridClasses !default;
+
+@if $includeDataGridVariables != false {
+  $includeCollectionVariables: true !global;
+}
+// import dependencies
+@import "oj.alta.web.collection";
+
+@if $includeDataGridVariables != false {
+  @include module-include-once("alta.web.variables.datagrid") {
+
+
+  }
+}

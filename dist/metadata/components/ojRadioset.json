@@ -1,7 +1,7 @@
 {
   "name": "oj-radioset",
-  "version": "6.0.0",
-  "jetVersion": "6.0.0",
+  "version": "6.1.0",
+  "jetVersion": "6.1.0",
   "displayName": "Radioset",
   "type": "core",
   "styleClasses": [
@@ -37,7 +37,7 @@
     }
   ],
   "description": "A grouping of related radio buttons.",
-  "help": "https://docs.oracle.com/en/middleware/jet/6/reference-api/oj.ojRadioset.html",
+  "help": "https://docs.oracle.com/en/middleware/jet/6.1/reference-api/oj.ojRadioset.html",
   "properties": {
     "describedBy": {
       "description": "described the relationship between this component and another element.",
@@ -153,6 +153,57 @@
       "value": [],
       "writeback": true,
       "help": "messagesCustom"
+    },
+    "optionRenderer": {
+      "description": "The renderer function that renders the content of each option.",
+      "type": "null|function",
+      "displayName": "Option Renderer",
+      "value": null,
+      "help": "optionRenderer",
+      "properties": {
+        "component": {
+          "description": "A reference to the Radioset element.",
+          "type": "Element"
+        },
+        "index": {
+          "description": "The index of the option, where 0 is the index of the first option.",
+          "type": "number"
+        },
+        "data": {
+          "description": "The data object for the option.",
+          "type": "object"
+        }
+      }
+    },
+    "options": {
+      "description": "The option items for the Radioset.",
+      "type": "oj.DataProvider|null",
+      "displayName": "Options",
+      "value": null,
+      "help": "options"
+    },
+    "optionsKeys": {
+      "description": "Specify the key names to use in the options array. Depending on options-keys means that the signature of the data does not match what is supported by the options attribute.",
+      "type": "object",
+      "displayName": "Options Keys",
+      "value": null,
+      "help": "optionsKeys",
+      "properties": {
+        "label": {
+          "description": "The key name for the label.",
+          "type": "string",
+          "displayName": "Label",
+          "value": null,
+          "help": "optionsKeys.label"
+        },
+        "value": {
+          "description": "The key name for the value.",
+          "type": "string",
+          "displayName": "Value",
+          "value": null,
+          "help": "optionsKeys.value"
+        }
+      }
     },
     "required": {
       "description": "Whether the component is required or optional. When required is set to true, an implicit required validator is created using the validator factory - oj.Validation.validatorFactory(oj.ValidatorFactory.VALIDATOR_TYPE_REQUIRED).createValidator(). Translations specified using the translations.required option and the label associated with the component, are passed through to the options parameter of the createValidator method. When required option changes due to programmatic intervention, the component may clears message and run validation, based on the current state it's in. Running Validation if component is valid when required is set to true, then it runs deferred validation on the property value. This is to ensure errors are not flagged unnecessarily. if component is invalid and has deferred messages when required is set to false, then component messages are cleared but no deferred validation is run. if component is invalid and currently showing invalid messages when required is set, then component messages are cleared and normal validation is run using the current display value. if there are validation errors, then value property is not updated and the error is shown. if no errors result from the validation, the value property is updated; page author can listen to the optionChange event to clear custom errors. Clearing Messages Only messages created by the component are cleared. messagesCustom option is not cleared. This property set to false implies that a value is not required to be provided by the user. This is the default. This property set to true implies that a value is required to be provided by user and the input's label will render a required icon. Additionally a required validator - RequiredValidator - is implicitly used if no explicit required validator is set. An explicit required validator can be set by page authors using the validators option. When the option is not set, the element's required property is used as its initial value if it exists.",

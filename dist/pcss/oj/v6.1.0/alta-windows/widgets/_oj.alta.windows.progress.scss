@@ -1,0 +1,50 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+
+@import "../../common/helpers/oj.common.helpers";
+@import "../../common/widgets/oj.common.progress";
+
+@if $includeProgressClasses != false  {
+  @include module-include-once("alta.windows.progress") {
+
+    .oj-progress-bar-overlay {
+      background-size: contain;
+      background-repeat: no-repeat;
+      position: absolute;
+      width: inherit;
+      @include oj-ltr() {
+        animation: indeterminateAnimation 2s infinite;
+        -webkit-animation: indeterminateAnimation 2s infinite;
+      }
+      @include oj-rtl() {
+        animation: indeterminateAnimation 2s infinite reverse;
+        -webkit-animation: indeterminateAnimation 2s infinite reverse;
+        //windows is only theme that does not flip overlay
+        transform: scaleX(1);
+      }
+    }
+
+    .oj-progress-bar-indeterminate .oj-progress-bar-value {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        background-color: var(--oj-progress-bar-bg-color);
+      } @else {
+        background-color: $progressBarBgColor;
+      }
+      position: relative;
+    }
+
+    @keyframes indeterminateAnimation {
+      0%   {background-position:-20%}
+      40%   {background-position:center}
+      60%   {background-position:center}
+      100%   {background-position:120%}
+    }
+
+    .oj-progress-circle-overlay {
+      background-size: cover;
+      background-image: url($progressCircleIndeterminateOverlayImage);
+    }
+  }
+}

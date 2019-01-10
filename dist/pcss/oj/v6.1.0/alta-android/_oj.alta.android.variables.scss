@@ -1,0 +1,97 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../utilities/oj.utilities.math";
+@import "../utilities/oj.utilities.units";
+
+$themeName:                                             alta !default;
+$themeTargetPlatform:                                   android !default;
+
+$menuDropDownModality:                                  "modal" !default;
+$menuSheetMarginBottom:                                 0 !default;
+$menuSheetSwipeDownBehavior:                            "dismiss" !default;
+$navigationListIconOnlyStyle:                           none !default;
+$navigationListHorizontalIconOnlyStyle:                 none !default;
+$navigationListHierarchyMenuThresholdOptionDefault:     -1 !default;
+$navigationListPointerUpAnimation:                      (effect: "ripple") !default;
+$tabBarIconOnlyStyle:                                   none !default;
+$tabBarHorizontalIconOnlyStyle:                         none !default;
+$tabBarVerticalItemLabelTextAlign:                      center !default;
+$tabBarHorizontalItemWidthDistribution:                 null !default;
+$tabBarPointerUpAnimation:                              (effect: "ripple") !default;
+$dialogResizeBehaviorOptionDefault:                     none !default;
+$dialogCancelBehaviorOptionDefault:                     none !default;
+$dialogDragAffordanceOptionDefault:                     none !default;
+$dialogFooterIntegrateButtons:                          false !default; //settings: ignore
+$dialogCloseIconPosition:                               top !default; //settings: ignore
+$dialogHeaderTextAlign:                                 start !default; //settings: ignore
+$formLayoutLabelInlineAlign:                            end !default; //settings: ignore
+$inputDateTimeRenderModeOptionDefault:                  native !default;
+$inputDateTimeKeyboardEditOptionDefault:                disabled !default;
+$selectRenderModeOptionDefault:                         native !default;
+$popupModalityOptionDefault:                            "modal" !default;
+$listViewPointerUpAnimation:                            (effect: "ripple") !default;
+$offcanvasDisplayModeOptionDefault:                     overlay !default;
+$imageDir:                                              "images/" !default;
+$progressCircleIndeterminateOverlayImage: $imageDir + "spinner_full_default.gif" !default;
+
+$switchTrackBgColorSelected: red; //settings: ignore
+$switchTrackBorderColorSelected: red; //settings: ignore
+$switchThumbBorderColorHover: red; //settings: ignore
+$switchThumbBorderColorSelectedHover: red; //settings: ignore
+$switchThumbBorderWidthHover: 2px; //settings: ignore
+
+$buttonChromingOptionDefault: half !default;
+
+$animationNavChildDefault:           coverUp     !default;
+$animationNavParentDefault:          revealDown  !default;
+$animationNavSiblingEarlierDefault:  pushEnd     !default;
+$animationNavSiblingLaterDefault:    pushStart   !default;
+
+$radioCheckboxLabelPosition:    start !default;
+
+
+
+//------------------------------------------------------------
+// do not move anything below this line to the common directory,
+// all the variables you see here are either deprecated or not yet public
+
+// not sure we will continue supporting colored panels, hide the
+// panel values in the theme specific files for now
+$panel2BgColor:     #dae9f5 !default; //settings: ignore
+$panel2BorderColor: #aed8fa !default; //settings: ignore
+$panel3BgColor:     #fef9e8 !default; //settings: ignore
+$panel3BorderColor: #fef3ce !default; //settings: ignore
+$panel4BgColor:     #ffe4e1 !default; //settings: ignore
+$panel4BorderColor: #ffcdc8 !default; //settings: ignore
+$panel5BgColor:     unquote('hsl(203, 2%, 93%)') !default; //settings: ignore
+$panel5BorderColor: unquote('hsl(203, 2%, 80%)') !default; //settings: ignore
+
+
+// ideally we will use css generated tails in future, so
+// hiding these vars for now.
+$popupTailSimpleWidth:  14px !default; //settings: ignore
+$popupTailSimpleHeight: 14px !default; //settings: ignore
+$popupTailBorderColor:      unquote('hsl(203, 2%, 78%)') !default; //settings: ignore
+$popupTailBorderWidth:      1px !default; //settings: ignore
+$popupTailBgcolor:          unquote('hsl(203, 2%, 100%)') !default; //settings: ignore
+$popupTailBoxShadow:        0 0 5px 0 unquote('hsla(0, 0%, 0%,0.2)') !default; //settings: ignore
+$overlayBgColor:    unquote('hsl(0, 0%, 0%)') !default; //settings: ignore
+
+// TODO Bug 25897533: Clean up after sprite tooling is implemented
+// radioset and checkboxset image directory
+$radioCheckboxImageDir: null !default; //settings: ignore
+// TODO Bug 25897533: Clean up after sprite tooling is implemented
+// the dir of pull to refresh images
+$refresherImageDir: null !default; //settings: ignore
+
+// todo: we should remove this and add something to sass instead
+$outputOnlyCssVars: true; //settings: ignore
+
+// inputsearch is deprecated, hide var
+$inputSearchIconPosition:                               start !default; //settings: ignore
+
+// INITIAL VISIBILITY
+//----------------------------------
+// when $initialVisiblity is hidden then visibility: hidden is set on the dom until the
+// component is initialized. This reduces the unstyled dom seen by the user during page load.
+$initialVisibility: hidden !default; //settings: ignore
+@import "../common/oj.common.variables";

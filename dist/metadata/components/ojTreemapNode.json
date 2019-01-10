@@ -1,11 +1,11 @@
 {
   "name": "oj-treemap-node",
-  "version": "6.0.0",
-  "jetVersion": "6.0.0",
+  "version": "6.1.0",
+  "jetVersion": "6.1.0",
   "displayName": "Treemap Node",
   "type": "core",
   "description": "ojTreemapNode",
-  "help": "https://docs.oracle.com/en/middleware/jet/6/reference-api/oj.ojTreemapNode.html",
+  "help": "https://docs.oracle.com/en/middleware/jet/6.1/reference-api/oj.ojTreemapNode.html",
   "properties": {
     "categories": {
       "description": "An optional array of category strings corresponding to this data item. This enables highlighting and filtering of individual data items through interactions with the legend and other visualization elements. The categories array of each node is required to be a superset of the categories array of its parent node. If not specified, the ids of the node and its ancestors will be used.",

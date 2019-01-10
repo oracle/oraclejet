@@ -1,0 +1,29 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+
+$includeComboboxVariables: $includeComboboxClasses !default;
+
+@if $includeComboboxVariables != false {
+  $includeListboxVariables: true !global;
+  $includeFormControlVariables: true !global;
+  $includeMessagesVariables: true !global;
+  $includeButtonVariables: true !global;
+}
+// import dependencies
+@import "oj.alta.web.formcontrol";
+@import "oj.alta.web.formcontrol.listbox";
+@import "oj.alta.web.messages";
+@import "oj.alta.web.button";
+
+
+@if $includeComboboxVariables != false {
+  @include module-include-once("alta.web.variables.combobox") {
+
+:root {
+
+}
+
+
+  }
+}

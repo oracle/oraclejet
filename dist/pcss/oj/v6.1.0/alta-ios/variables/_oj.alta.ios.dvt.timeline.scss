@@ -1,0 +1,51 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+$includeTimelineVariables: $includeTimelineClasses !default;
+
+@if $includeTimelineVariables != false {
+  $includeDvtBaseVariables: true !global;
+}
+
+// import dependencies
+@import "oj.alta.ios.dvt";
+
+@if $includeTimelineVariables != false {
+  @include module-include-once("alta.ios.variables.timeline") {
+
+:root {
+  
+    // timeline
+    // ----------------------------
+    --oj-timeline-reference-object-color:                var(--oj-accent-color-dvt-4);
+    --oj-timeline-border-color:                          var(--oj-neutral-color-7);
+    --oj-timeline-tooltip-label-color:                   var(--oj-text-color-3);
+
+    --oj-timeline-item-bg-color:                         var(--oj-neutral-color-1);            
+    --oj-timeline-item-border-color:                     var(--oj-neutral-color-12);             
+    --oj-timeline-item-border-color-hover:               var(--oj-brand-color-light-1);             
+    --oj-timeline-item-border-color-selected:            var(--oj-dvt-item-outer-border-color-selected);             
+    --oj-timeline-item-description-color:                var(--oj-text-color);              
+    --oj-timeline-item-title-color:                      var(--oj-secondary-text-color);  
+              
+    --oj-timeline-major-axis-label-color:                var(--oj-secondary-text-color);              
+    --oj-timeline-major-axis-separator-color:            var(--oj-neutral-color-9);  
+             
+    --oj-timeline-minor-axis-bg-color:                   var(--oj-neutral-color-5);              
+    --oj-timeline-minor-axis-border-color:               var(--oj-neutral-color-7);              
+    --oj-timeline-minor-axis-label-color:                var(--oj-text-color);              
+    --oj-timeline-minor-axis-separator-color:            var(--oj-timeline-major-axis-separator-color); 
+               
+    --oj-timeline-overview-bg-color:                     var(--oj-neutral-color-7);              
+    --oj-timeline-overview-label-color:                  var(--oj-secondary-text-color);              
+    --oj-timeline-overview-window-bg-color:              var(--oj-neutral-color-1);              
+    --oj-timeline-overview-window-border-color:          var(--oj-neutral-color-14);    
+            
+    --oj-timeline-series-bg-color:                       var(--oj-neutral-color-3);              
+    --oj-timeline-series-label-color:                    var(--oj-header-text-color);              
+    --oj-timeline-series-empty-text-color:               var(--oj-text-color);              
+
+}
+
+  }
+}

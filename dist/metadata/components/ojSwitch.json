@@ -1,7 +1,7 @@
 {
   "name": "oj-switch",
-  "version": "6.0.0",
-  "jetVersion": "6.0.0",
+  "version": "6.1.0",
+  "jetVersion": "6.1.0",
   "displayName": "Switch",
   "type": "core",
   "styleClasses": [
@@ -19,7 +19,7 @@
     }
   ],
   "description": "Provides basic support for toggling a boolean value.",
-  "help": "https://docs.oracle.com/en/middleware/jet/6/reference-api/oj.ojSwitch.html",
+  "help": "https://docs.oracle.com/en/middleware/jet/6.1/reference-api/oj.ojSwitch.html",
   "properties": {
     "describedBy": {
       "description": "described the relationship between this component and another element.",

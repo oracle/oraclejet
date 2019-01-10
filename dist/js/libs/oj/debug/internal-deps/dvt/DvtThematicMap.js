@@ -79,7 +79,7 @@ dvt.ThematicMap.newInstance = function(context, callback, callbackObj) {
  */
 dvt.ThematicMap.prototype.SetOptions = function(options) {
   dvt.ThematicMap.superclass.SetOptions.call(this, options);
-  if (!dvt.Agent.isEnvironmentBrowser()) {
+  if (dvt.Agent.isEnvironmentTest()) {
     this.Options['animationOnDisplay'] = 'none';
     this.Options['animationOnMapChange'] = 'none';
   }
@@ -740,7 +740,7 @@ dvt.ThematicMap.prototype._zoomData = function() {
   }
 
   var animation;
-  if (dvt.Agent.isEnvironmentBrowser())
+  if (!dvt.Agent.isEnvironmentTest())
     animation = new dvt.Animator(this.getCtx(), .3);
   if (bounds.w > 0 && bounds.h > 0)
     this._pzc.zoomToFit(animation, bounds);

@@ -1,0 +1,19 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+$includeMasonryLayoutVariables: $includeMasonryLayoutClasses !default;
+
+@if $includeMasonryLayoutVariables != false {
+  @include module-include-once("alta.ios.variables.masonrylayout") {
+
+
+:root {
+
+  --oj-masonry-layout-tile-margin:   var(--oj-spacing-1x);  // margin around a masonryLayout tile
+  --oj-masonry-layout-tile-width:    150px;                 // width of a 1x1 masonryLayout tile, not including margin
+  --oj-masonry-layout-tile-height:   150px;                 // height of a 1x1 masonryLayout tile, not including margin
+
+}
+
+  }
+}

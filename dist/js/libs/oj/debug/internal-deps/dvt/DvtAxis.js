@@ -3480,7 +3480,7 @@ dvt.GroupAxisInfo.prototype._generateLabels = function(context) {
       if (levels[i]) {
         label = this.getLabelAt(i, level);
         // No text object created when group name is null or ''
-        if (label == '' || (!label && label != 0)) {
+        if (label === '' || (!label && label != 0)) {
           labels.push(null);
           continue;
         }
@@ -3778,7 +3778,7 @@ dvt.GroupAxisInfo.prototype.getGroupAt = function(index, level) {
   if (label) {
     if (label['id'])
       return label['id'];
-    else if (label['name'] || label['name'] == '')
+    else if (label['name'] || label['name'] === '')
       return label['name'];
   }
 

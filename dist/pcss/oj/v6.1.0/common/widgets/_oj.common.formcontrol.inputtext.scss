@@ -1,0 +1,425 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the 
+//          version in your base theme's directory, 
+//          for example alta/widgets/_oj.alta.formcontrol.inputtextarea.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@import "../../utilities/oj.utilities";
+@import "oj.common.formcontrol.mixins";
+
+@if $includeInputTextClasses != false {
+  @include module-include-once("common.inputtext") {
+
+    // this file includes classes for ojInputText, ojInputPassword, and ojTextarea,
+    // but you will also see classes to use html/css without a component, classes are: 
+    //   .oj-inputtext-nocomp,
+    //   .oj-inputpassword-nocomp,
+    //   .oj-textarea-nocomp 
+    // to use these put oj-form-control on as well, for example
+    //   <input class="oj-inputtext-nocomp oj-form-control">
+
+
+    // This is to prevent the flash of unstyled content before the html becomes JET components.
+    @if $initialVisibility == hidden {
+      oj-input-text:not(.oj-complete) {
+        visibility: hidden;
+      }      
+    }
+
+    // This is to prevent the flash of unstyled content before the html becomes JET components.
+    @if $initialVisibility == hidden {
+      oj-input-password:not(.oj-complete) {
+        visibility: hidden;
+      }      
+    }
+
+    // This is to prevent the flash of unstyled content before the html becomes JET components.
+    @if $initialVisibility == hidden {
+      oj-text-area:not(.oj-complete) {
+        visibility: hidden;
+      }      
+    }
+
+    // general css styles between the wrapper components
+    .oj-inputtext,
+    .oj-inputpassword,
+    .oj-textarea,
+    .oj-inputtext-nocomp,
+    .oj-inputpassword-nocomp,
+    .oj-textarea-nocomp 
+    {
+      box-sizing: border-box;
+
+      display: inline-block;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        // because max/min width is in em the font size needs to be on this element 
+        // and not on the selector that goes on the input.
+        font-size: var(--oj-form-control-input-font-size);
+        @include oj-form-control-text-size-adjust-css-vars();
+        /* use a width of 100% and then max and min width so that when 
+           there's less room for the form control it can automatically 
+           get smaller instead of overflowing its boundaries */
+        max-width: var(--oj-form-control-lg-max-width);
+        min-width: var(--oj-form-control-min-width);
+      }
+      @else{
+        // because max/min width is in em the font size needs to be on this element 
+        // and not on the selector that goes on the input.
+        font-size: $formControlInputFontSize;
+        @include oj-form-control-text-size-adjust($formControlInputFontSize);
+
+        /* use a width of 100% and then max and min width so that when 
+           there's less room for the form control it can automatically 
+           get smaller instead of overflowing its boundaries */
+        max-width: $formControlLargeMaxWidth;
+        min-width: $formControlMinWidth;
+        
+      }
+      width: 100%;
+    }
+
+    // oj-input-text specific
+    // We need to make the wrapper position relative so that we can make the
+    // clear icon button position absolute.
+    .oj-inputtext {
+      position: relative;
+    }
+    // clear icon styles    
+    .oj-inputtext .oj-inputtext-clear-icon-btn {
+      position: absolute;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        height: var(--oj-form-control-input-height);
+      }
+      @else {
+        height: $formControlInputHeight;
+      }
+      width: 25px;
+      text-decoration: none;
+      cursor: default;
+
+      @include oj-ltr() {
+        right: 0px;
+      }      
+      @include oj-rtl() {
+        left: 0px;
+      }
+    }
+    // override background color set in a:active (mobile)
+    a.oj-inputtext-clear-icon-btn:active {
+      background-color: transparent;
+    }
+    .oj-inputtext-clear-icon {
+      @extend .oj-fwk-icon-cross03;
+      margin-top: 1px;
+      color: inherit;
+    }
+    // No focus ring
+    .oj-inputtext .oj-inputtext-clear-icon-btn:focus {
+      outline:none;
+    }
+    // if clear-icon="conditional", we make it visible on focus or hover
+    .oj-inputtext.oj-focus:not(.oj-form-control-empty-clearicon).oj-inputtext-clearicon-conditional .oj-inputtext-clear-icon-btn,
+    .oj-inputtext.oj-hover:not(.oj-form-control-empty-clearicon).oj-inputtext-clearicon-conditional .oj-inputtext-clear-icon-btn {
+      visibility: visible;
+    }
+    // hide the icon conditionally
+    .oj-inputtext.oj-inputtext-clearicon-conditional .oj-inputtext-clear-icon-btn {
+      visibility: hidden;
+    }
+    
+    // add padding when the icon is shown so that the text doesn't show up under
+    // the icon.
+    .oj-inputtext.oj-inputtext-clearicon-visible .oj-inputtext-input,
+    .oj-inputtext.oj-focus.oj-inputtext-clearicon-conditional .oj-inputtext-input,
+    .oj-inputtext.oj-hover.oj-inputtext-clearicon-conditional .oj-inputtext-input {
+      @include oj-ltr() {
+        padding-right: 21px;
+      }      
+      @include oj-rtl() {
+        padding-left: 21px;
+      }
+    }
+
+    // general css input styles between the components
+    .oj-inputtext-input,
+    .oj-inputpassword-input,
+    .oj-textarea-input,
+    .oj-inputtext-nocomp,
+    .oj-inputpassword-nocomp,
+    .oj-textarea-nocomp
+    {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        @include oj-form-control-content-css-vars($textAlign: '--oj-input-text-text-align');
+      }
+      @else{
+        @include oj-form-control-content($textAlign: $inputTextTextAlign);
+      }
+
+      // normally removing an outline can cause accessibility issues, however
+      // on an input the cursor blinks so an outline is not required for
+      // accessibility. As of 6-11-14 only chrome is putting
+      // an outline on inputs anyway
+      outline: 0;
+
+      box-sizing: border-box;
+
+      font-family: inherit;
+      font-weight: normal;
+
+      width: 100%;
+    }
+
+    /* Styling for text-align */
+    .oj-form-control-text-align-right.oj-inputtext .oj-inputtext-input,
+    .oj-form-control-text-align-right.oj-inputpassword .oj-inputpassword-input,
+    .oj-form-control-text-align-right.oj-textarea .oj-textarea-input,
+    .oj-form-control-text-align-right .oj-inputtext .oj-inputtext-input,
+    .oj-form-control-text-align-right .oj-inputpassword .oj-inputpassword-input,
+    .oj-form-control-text-align-right .oj-textarea .oj-textarea-input
+    {
+      text-align: right;
+    }
+    .oj-form-control-text-align-start.oj-inputtext .oj-inputtext-input,
+    .oj-form-control-text-align-start.oj-inputpassword .oj-inputpassword-input,
+    .oj-form-control-text-align-start.oj-textarea .oj-textarea-input,
+    .oj-form-control-text-align-start .oj-inputtext .oj-inputtext-input,
+    .oj-form-control-text-align-start .oj-inputpassword .oj-inputpassword-input,
+    .oj-form-control-text-align-start .oj-textarea .oj-textarea-input
+    {
+      @include oj-bidi-property(
+        $property: 'text-align',
+        $startOrEnd: start,
+        $important: false) ;
+    }
+    .oj-form-control-text-align-end.oj-inputtext .oj-inputtext-input,
+    .oj-form-control-text-align-end.oj-inputpassword .oj-inputpassword-input,
+    .oj-form-control-text-align-end.oj-textarea .oj-textarea-input,
+    .oj-form-control-text-align-end .oj-inputtext .oj-inputtext-input,
+    .oj-form-control-text-align-end .oj-inputpassword .oj-inputpassword-input,
+    .oj-form-control-text-align-end .oj-textarea .oj-textarea-input
+    {
+      @include oj-bidi-property(
+        $property: 'text-align',
+        $startOrEnd: end,
+        $important: false) ;
+    }
+
+    // When size is provided, set width to auto to allow proper sizing
+    .oj-inputtext-input[size],
+    .oj-inputpassword-input[size],
+    .oj-textarea-input[size] 
+    {
+      width: auto;
+    }
+
+    // specific css for inputtext-input + inputpassword-input
+    .oj-inputtext-input,
+    .oj-inputpassword-input,
+    .oj-inputtext-nocomp,
+    .oj-inputpassword-nocomp
+    {
+      @include oj-normalize-text-input;
+      
+      box-sizing: border-box;
+      
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        height: var(--oj-form-control-input-height);
+        padding: 0 var(--oj-form-control-padding-horizontal);
+        @include oj-form-control-content-no-focus-padding($outputCssVars: true);
+      }
+      @else {
+        height: $formControlInputHeight;
+        padding: 0 $formControlPaddingHorizontal;
+        @include oj-form-control-content-no-focus-padding;
+      }
+
+
+    }
+    
+    // specific css for textarea-input
+    .oj-textarea-input,
+    .oj-textarea-nocomp
+    {
+      @include oj-normalize-textarea;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        padding: .5rem var(--oj-form-control-padding-horizontal);
+        line-height: var(--oj-text-area-line-height);        
+      }
+      @else
+      {
+        padding: .5rem $formControlPaddingHorizontal;
+        line-height: $textAreaLineHeight;
+      }
+      
+      height: auto;
+      padding-top: 6px;
+      resize: none; //turning off as resizing can cause layout problems.
+
+    }
+
+    // Styling for invalid state
+    .oj-inputtext.oj-invalid .oj-inputtext-input,
+    .oj-inputpassword.oj-invalid .oj-inputpassword-input,
+    .oj-textarea.oj-invalid .oj-textarea-input
+    {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        @include oj-form-control-border-message-width-css-vars();
+        border-color: var(--oj-form-control-border-color-invalid);
+      }
+      @else{
+        @include oj-form-control-border-message-width;
+        border-color: $borderColorError; 
+      }
+      border-style: solid;
+    }
+
+    // Styling for warning state
+    .oj-inputtext.oj-warning .oj-inputtext-input,
+    .oj-inputpassword.oj-warning .oj-inputpassword-input,
+    .oj-textarea.oj-warning .oj-textarea-input
+    {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        @include oj-form-control-border-message-width-css-vars();
+        border-color: var(--oj-form-control-border-color-warning);
+      }
+      @else {
+        @include oj-form-control-border-message-width;
+        border-color: $borderColorWarning; 
+      }
+      border-style: solid;
+      
+    }
+
+    // Styling for disabled state
+    .oj-inputtext.oj-disabled .oj-inputtext-input,
+    .oj-inputpassword.oj-disabled .oj-inputpassword-input,
+    .oj-textarea.oj-disabled .oj-textarea-input,
+    .oj-inputtext-nocomp[disabled],
+    .oj-inputpassword-nocomp[disabled],
+    .oj-textarea-nocomp[disabled]
+    {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        border-style: var(--oj-form-control-input-border-style-disabled);
+        @include oj-form-control-content-disabled($outputCssVars: true);
+      }
+      @else {
+        border-style: $inputTextBorderStyleDisabled;
+        @include oj-form-control-content-disabled;
+      }
+      
+    }
+
+    // Styling for readonly state, if supported in the future
+    .oj-inputtext.oj-read-only .oj-inputtext-input,
+    .oj-inputpassword.oj-read-only .oj-inputpassword-input,
+    .oj-textarea.oj-read-only .oj-textarea-input,
+    .oj-inputtext-nocomp[readonly],
+    .oj-inputpassword-nocomp[readonly],
+    .oj-textarea-nocomp[readonly]
+    {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        @include oj-form-control-content-readonly($outputCssVars: true);
+      }
+      @else {
+        @include oj-form-control-content-readonly;        
+      }
+
+      padding: 0;
+    }
+
+    .oj-textarea.oj-read-only .oj-textarea-input,
+    .oj-textarea-nocomp[readonly]
+    {
+      padding-top: 6px;
+    }
+
+    // Styling for focus state
+    .oj-inputtext:not(.oj-disabled):not(.oj-read-only):not(.oj-invalid):not(.oj-warning) .oj-inputtext-input:focus,
+      .oj-inputpassword:not(.oj-disabled):not(.oj-read-only):not(.oj-invalid):not(.oj-warning) .oj-inputpassword-input:focus,
+      .oj-textarea:not(.oj-disabled):not(.oj-read-only):not(.oj-invalid):not(.oj-warning) .oj-textarea-input:focus,
+      .oj-inputtext-nocomp:not([disabled]):not([readonly]):focus,
+      .oj-inputpassword-nocomp:not([disabled]):not([readonly]):focus,
+      .oj-textarea-nocomp:not([disabled]):not([readonly]):focus
+      {
+        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+        {
+          @include oj-form-control-content-focus($outputCssVars: true);
+        }
+        @else {
+          @include oj-form-control-content-focus;
+        }
+    }
+
+    // Styling for focus state. only change padding for input, not textarea
+    .oj-inputtext:not(.oj-disabled):not(.oj-read-only) .oj-inputtext-input:focus,
+      .oj-inputpassword:not(.oj-disabled):not(.oj-read-only) .oj-inputpassword-input:focus,
+      .oj-inputtext-nocomp:not([disabled]):not([readonly]):focus,
+      .oj-inputpassword-nocomp:not([disabled]):not([readonly]):focus
+      {
+        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+        {
+          @include oj-form-control-content-focus-padding($outputCssVars: true);
+        }
+        @else {
+          @include oj-form-control-content-focus-padding;        
+        }
+
+    }
+
+    // The oj-form-control-inherit selector on an ancestor indicates that the form control should
+    // inherit styles, like width/height/borders/colors/text-alignment, etc. This is used for
+    // editable datagrid cells and editable table cells
+    // -----------------------------------------------------------------------------------------
+
+    // remove borders, inherit colors and stretch the height
+    .oj-form-control-inherit .oj-inputtext-input,
+    .oj-form-control-inherit .oj-inputtext-nocomp,
+    .oj-form-control-inherit .oj-inputpassword-input,
+    .oj-form-control-inherit .oj-inputpassword-nocomp,    
+    .oj-form-control-inherit .oj-textarea-input,
+    .oj-form-control-inherit .oj-textarea-nocomp {
+      @include oj-form-control-inherit(); 
+    }
+
+    // if a focus border width is set reset it back to 0
+    // TODO
+    @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+    {
+      .oj-form-control-inherit .oj-inputtext:not(.oj-disabled):not(.oj-read-only) .oj-inputtext-input:focus, 
+        .oj-form-control-inherit .oj-inputpassword:not(.oj-disabled):not(.oj-read-only) .oj-inputpassword-input:focus, 
+        .oj-form-control-inherit .oj-textarea:not(.oj-disabled):not(.oj-read-only) .oj-textarea-input:focus, 
+        .oj-form-control-inherit .oj-inputtext-nocomp:not([disabled]):not([readonly]):focus, 
+        .oj-form-control-inherit .oj-inputpassword-nocomp:not([disabled]):not([readonly]):focus, 
+        .oj-form-control-inherit .oj-textarea-nocomp:not([disabled]):not([readonly]):focus {
+        border-width:0;
+      }
+    }
+    @else {
+      
+      @if ($formControlInputBorderWidthFocus != null) {                      
+        .oj-form-control-inherit .oj-inputtext:not(.oj-disabled):not(.oj-read-only) .oj-inputtext-input:focus, 
+          .oj-form-control-inherit .oj-inputpassword:not(.oj-disabled):not(.oj-read-only) .oj-inputpassword-input:focus, 
+          .oj-form-control-inherit .oj-textarea:not(.oj-disabled):not(.oj-read-only) .oj-textarea-input:focus, 
+          .oj-form-control-inherit .oj-inputtext-nocomp:not([disabled]):not([readonly]):focus, 
+          .oj-form-control-inherit .oj-inputpassword-nocomp:not([disabled]):not([readonly]):focus, 
+          .oj-form-control-inherit .oj-textarea-nocomp:not([disabled]):not([readonly]):focus {
+          border-width:0;
+        }
+      }
+    }
+    
+  }
+}

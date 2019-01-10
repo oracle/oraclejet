@@ -1,0 +1,26 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+$includeFilmStripVariables: $includeFilmStripClasses !default;
+
+@if $includeFilmStripVariables != false {
+  $includeButtonVariables: true !global;
+}
+
+// import dependencies
+@import "oj.alta.android.button";
+
+@if $includeFilmStripVariables != false {
+  @include module-include-once("alta.android.variables.filmstrip") {
+:root {
+
+  // filmstrip
+  // ----------------------------
+  --oj-film-strip-arrow-border-radius:          var(--oj-button-border-radius);
+  --oj-film-strip-arrow-opacity:                1;
+  --oj-film-strip-overflow-indicator-height:    var(--oj-button-height);
+
+}
+
+  }
+}

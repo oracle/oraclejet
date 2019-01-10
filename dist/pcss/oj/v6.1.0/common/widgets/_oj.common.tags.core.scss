@@ -1,0 +1,56 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the 
+//          version in your base theme's directory, 
+//          for example alta/widgets/_oj.alta.tags.core.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@import "../../utilities/oj.utilities";
+
+@if $includeTagsCoreClasses != false {
+  @include module-include-once("common.tagscore") {
+
+    /* html */
+    /* --------------------------------------------------------------- */
+    // we want to allow for using rems, which requires the base 
+    // font size is set on the html element.
+  
+    @include oj-tag-selectors(
+      $tagSelectors:   "html", 
+      $classSelectors: ".oj-html") {
+        @include oj-normalize-html;
+        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+          font-family: var(--oj-font-family);
+          font-size: var(--oj-root-font-size); 
+        }
+        @else {
+          font-family: $fontFamily;
+          font-size: $rootFontSize; 
+        }
+    }
+    
+    /* body */
+    /* --------------------------------------------------------------- */
+   
+    @include oj-tag-selectors(
+      $tagSelectors:   "body", 
+      $classSelectors: ".oj-body") {
+        @include oj-normalize-body;
+        background-repeat: repeat;
+        background-position: top left; 
+        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+          background-image: var(--oj-body-bg-image);
+          color: var(--oj-body-text-color);  
+          background-color: var(--oj-body-bg-color);
+          touch-action: var(--oj-body-touch-action);
+        }
+        @else {
+          @include oj-background-image($bodyBgImage);
+          color: $bodyTextColor;  
+          background-color: $bodyBgColor;
+          touch-action: $bodyTouchAction;
+        }   
+    }
+
+  }
+}

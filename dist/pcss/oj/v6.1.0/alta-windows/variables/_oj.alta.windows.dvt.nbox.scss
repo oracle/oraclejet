@@ -1,0 +1,30 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+
+$includeNBoxVariables: $includeNBoxClasses !default;
+
+@if $includeNBoxVariables != false {
+  $includeDvtBaseVariables: true !global;
+}
+// import dependencies
+@import "oj.alta.windows.dvt";
+
+@if $includeNBoxVariables != false {
+  @include module-include-once("alta.windows.variables.nbox") {
+
+:root {
+  
+    // nbox
+    // ----------------------------
+    --oj-n-box-cell-bg-color:            var(--oj-neutral-color-5);              
+    --oj-n-box-cell-bg-color-maximized:  var(--oj-neutral-color-8);        
+    --oj-n-box-cell-bg-color-minimized:  var(--oj-n-box-cell-bg-color);              
+    --oj-n-box-dialog-border-color:      var(--oj-neutral-color-10);              
+    --oj-n-box-node-bg-color:            var(--oj-neutral-color-1);              
+   
+}
+
+
+  }
+}

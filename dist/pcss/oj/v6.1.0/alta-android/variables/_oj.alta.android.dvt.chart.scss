@@ -1,0 +1,26 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+$includeChartVariables: $includeChartClasses !default;
+
+@if $includeChartVariables != false {
+  $includeDvtBaseVariables: true !global;
+}
+// import dependencies
+@import "oj.alta.android.dvt";
+
+@if $includeChartVariables != false {
+  @include module-include-once("alta.android.variables.chart") {
+
+:root {
+    // chart
+    // ----------------------------
+    --oj-chart-axis-title-textcolor:    var(--oj-tertiary-text-color);
+    --oj-chart-stock-falling-bg-color:  var(--oj-accent-color-dvt-4);
+    --oj-chart-stock-range-bg-color:    var(--oj-neutral-color-10);
+    --oj-chart-stock-rising-bg-color:   var(--oj-neutral-color-13);
+    --oj-chart-tooltip-label-color:     var(--oj-text-color-3);
+}
+
+  }
+}

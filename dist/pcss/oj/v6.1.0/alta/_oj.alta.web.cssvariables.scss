@@ -1,0 +1,83 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../common/oj.common.cssvariables.palette";
+// todo: check all animation vars
+// todo: check all box shadow vars
+// todo: we need to automate checking for unused vars, in random searching there seem to be quite a few that don't do anything
+// todo: check all right/left vars and see if they should be start/end
+// todo: search for solid on borders and make sure those vars are needed, when are things not solid?
+
+@import "variables/oj.alta.web.general";
+
+
+@import "variables/oj.alta.web.accordion";
+@import "variables/oj.alta.web.avatar";
+@import "variables/oj.alta.web.button";
+@import "variables/oj.alta.web.buttonset";
+@import "variables/oj.alta.web.collapsible";
+@import "variables/oj.alta.web.conveyorbelt";
+@import "variables/oj.alta.web.datagrid";
+@import "variables/oj.alta.web.dialog";
+@import "variables/oj.alta.web.filepicker";
+@import "variables/oj.alta.web.filmstrip";
+@import "variables/oj.alta.web.iconcircle";
+@import "variables/oj.alta.web.indexer";
+@import "variables/oj.alta.web.listview";
+@import "variables/oj.alta.web.masonrylayout";
+@import "variables/oj.alta.web.menu";
+@import "variables/oj.alta.web.menuselectmany";
+@import "variables/oj.alta.web.message";
+@import "variables/oj.alta.web.messages";
+@import "variables/oj.alta.web.navigationlist";
+@import "variables/oj.alta.web.pagingcontrol";
+@import "variables/oj.alta.web.panel";
+@import "variables/oj.alta.web.popup";
+@import "variables/oj.alta.web.progress";
+@import "variables/oj.alta.web.progresslist";
+@import "variables/oj.alta.web.refresher";
+@import "variables/oj.alta.web.rowexpander";
+@import "variables/oj.alta.web.swipeactions";
+@import "variables/oj.alta.web.tabbar";
+@import "variables/oj.alta.web.table";
+@import "variables/oj.alta.web.toolbar";
+@import "variables/oj.alta.web.train";
+@import "variables/oj.alta.web.treeview";
+
+//forms
+@import "variables/oj.alta.web.formcontrol.label";
+@import "variables/oj.alta.web.formcontrol.checkboxset";
+@import "variables/oj.alta.web.formcontrol.colorpalette";
+@import "variables/oj.alta.web.formcontrol.colorspectrum";
+@import "variables/oj.alta.web.formcontrol.combobox";
+@import "variables/oj.alta.web.formcontrol.inputdatetime";
+@import "variables/oj.alta.web.formcontrol.inputnumber";
+@import "variables/oj.alta.web.formcontrol.inputtext";
+@import "variables/oj.alta.web.formcontrol.radioset";
+@import "variables/oj.alta.web.formcontrol.select";
+@import "variables/oj.alta.web.formcontrol.slider";
+@import "variables/oj.alta.web.formcontrol.switch";
+@import "variables/oj.alta.web.formcontrol.textarea";
+@import "variables/oj.alta.web.formlayout";
+
+//dvt
+@import "variables/oj.alta.web.dvt.chart";
+@import "variables/oj.alta.web.dvt.diagram";
+@import "variables/oj.alta.web.dvt.gantt";
+@import "variables/oj.alta.web.dvt.gauge";
+@import "variables/oj.alta.web.dvt.nbox";
+@import "variables/oj.alta.web.dvt.pictochart";
+@import "variables/oj.alta.web.dvt.sunburst";
+@import "variables/oj.alta.web.dvt.tagcloud";
+@import "variables/oj.alta.web.dvt.thematicmap";
+@import "variables/oj.alta.web.dvt.timeaxis";
+@import "variables/oj.alta.web.dvt.timeline";
+@import "variables/oj.alta.web.dvt.treemap";
+
+// preview components
+@import "variables/oj.alta.web.applayout";
+@import "variables/oj.alta.web.applayout.hybrid";
+@import "variables/oj.alta.web.applayout.web";
+
+// deprecated components
+@import "variables/oj.deprecated.alta.web.formcontrol.inputsearch";
+@import "variables/oj.deprecated.alta.web.tabs";
+@import "variables/oj.deprecated.alta.web.tree";

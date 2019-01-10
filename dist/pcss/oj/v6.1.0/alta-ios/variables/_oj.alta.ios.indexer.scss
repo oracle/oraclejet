@@ -1,0 +1,28 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+$includeIndexerVariables: $includeIndexerClasses !default;
+
+@if $includeIndexerVariables != false {
+  @include module-include-once("alta.ios.variables.indexer") {
+
+:root {
+
+  // indexer
+  // ----------------------------
+  --oj-indexer-item-width:            32px;
+  --oj-indexer-item-height:           18px;
+  --oj-indexer-abbr-item-height:      14px;
+  --oj-indexer-text-color:            var(--oj-link-text-color);
+  --oj-indexer-text-color-disabled:   var(--oj-link-text-color);
+  --oj-indexer-text-decoration:       none;
+  --oj-indexer-font-weight:           bold;
+  --oj-indexer-text-decoration-hover: none;
+
+
+  
+}
+
+
+  }
+}

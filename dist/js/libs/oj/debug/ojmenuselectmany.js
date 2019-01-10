@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -289,6 +289,10 @@ MenuSelectManyViewModel.prototype._addEventListener = function () {
 MenuSelectManyViewModel.prototype._removeEventListener = function () {
   this._composite.removeEventListener('ojAction', this.handleAction, true);
   if (this._optionMutations) {
+    var records = this._optionMutations.takeRecords();
+    if (records && records.length > 0) {
+      this.handleOptionMutations();
+    }
     this._optionMutations.disconnect();
     delete this._optionMutations;
   }

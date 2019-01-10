@@ -1,11 +1,11 @@
 {
   "name": "oj-form-layout",
-  "version": "6.0.0",
-  "jetVersion": "6.0.0",
+  "version": "6.1.0",
+  "jetVersion": "6.1.0",
   "displayName": "Form Layout",
   "type": "core",
   "description": "Used to group child elements in an organized layout that can be optimized for multiple display sizes.",
-  "help": "https://docs.oracle.com/en/middleware/jet/6/reference-api/oj.ojFormLayout.html",
+  "help": "https://docs.oracle.com/en/middleware/jet/6.1/reference-api/oj.ojFormLayout.html",
   "properties": {
     "direction": {
       "description": "Specifies the layout direction of the form layout children.",

@@ -1,4 +1,4 @@
-// Copyright (c) 2014, 2018, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // WARNING: do not directly import this file, instead import the 
 //          version in your base theme's directory, 
@@ -129,6 +129,39 @@
           font-style: $formControlPlaceholderFontStyle;
         }   
       }
+    }
+
+    /* Styling for readonly mode */
+    .oj-combobox.oj-read-only .oj-combobox-choice,
+    .oj-combobox.oj-read-only .oj-combobox-choices {
+      background-color: transparent;
+      border-color: transparent;
+      outline: none;
+    }
+
+    /* apply to the selected entries */
+    .oj-combobox.oj-read-only .oj-combobox-input,
+    .oj-combobox.oj-read-only .oj-combobox-selected-choice {
+      outline: none;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        @include oj-form-control-content-readonly($outputCssVars: true);
+      }
+      @else {
+        @include oj-form-control-content-readonly;        
+      }
+    }
+
+    /* don't show dropdown trigger */
+    .oj-combobox.oj-read-only .oj-combobox-arrow,
+    .oj-combobox.oj-read-only .oj-combobox-divider {
+      display: none;
+    }
+
+    /* don't show clear entry trigger and search field button */
+    .oj-combobox.oj-read-only .oj-combobox-clear-entry,
+    .oj-combobox.oj-read-only .oj-combobox-search-field {
+      display: none;
     }
 
     /* Styling for text-align */

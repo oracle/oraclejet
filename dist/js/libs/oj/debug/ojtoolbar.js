@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -109,7 +109,7 @@ var __oj_toolbar_metadata =
  *
  * <p>JET Toolbar takes care of focus management, as noted above.
  *
- * <p>As shown in the online demos, the application is responsible for applying <code class="prettyprint">aria-label</code> and/or
+ * <p>The application is responsible for applying <code class="prettyprint">aria-label</code> and/or
  * <code class="prettyprint">aria-controls</code> attributes to the toolbar element, if applicable per the instructions that follow:
  *
  * <p>If this toolbar is (or might be) placed in context with other toolbars, then the application should apply an

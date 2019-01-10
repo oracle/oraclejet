@@ -1,7 +1,7 @@
 {
   "name": "oj-slider",
-  "version": "6.0.0",
-  "jetVersion": "6.0.0",
+  "version": "6.1.0",
+  "jetVersion": "6.1.0",
   "displayName": "Slider",
   "type": "core",
   "styleClasses": [
@@ -13,7 +13,7 @@
     }
   ],
   "description": "Displays an interactive slider element.",
-  "help": "https://docs.oracle.com/en/middleware/jet/6/reference-api/oj.ojSlider.html",
+  "help": "https://docs.oracle.com/en/middleware/jet/6.1/reference-api/oj.ojSlider.html",
   "properties": {
     "describedBy": {
       "description": "described the relationship between this component and another element.",

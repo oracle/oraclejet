@@ -1,0 +1,17 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+$includeToolbarVariables: $includeToolbarClasses !default;
+
+@if $includeToolbarVariables != false {
+  @include module-include-once("alta.windows.variables.toolbar") {
+
+:root {
+  --oj-toolbar-bg-color:     transparent;
+  --oj-toolbar-border-color: var(--oj-neutral-color-8);
+  --oj-toolbar-border-width: 0;
+}
+
+
+  }
+}

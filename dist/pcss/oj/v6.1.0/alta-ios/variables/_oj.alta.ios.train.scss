@@ -1,0 +1,92 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+$includeTrainVariables: $includeTrainClasses !default;
+
+@if $includeTrainVariables != false {
+  @include module-include-once("alta.ios.variables.train") {
+
+    :root {
+      // train
+      --oj-train-step-width:                       112px;
+      --oj-train-label-padding-top:                13px;
+      --oj-train-label-text-wrap:                  normal;
+      --oj-train-button-diameter:                  24px;
+      --oj-train-button-border-width:              1px;
+      --oj-train-button-font-size:                 12px;
+
+    // todo: comment says  "message icon diameter", is this only for messaging? If so rename?
+      --oj-train-icon-diameter:                    var(--oj-train-button-diameter);
+
+
+      // connector vars
+      // todo: figure out how to support different connectors and numbers, use sass?
+
+      --oj-train-button-text-is-numeric:           1;
+      --oj-train-button-connector-diameter:        var(--oj-train-button-diameter);
+      //oj-train-connector-has-fill is 0 for individual and 1 for continuous
+      --oj-train-connector-height:                 1px;
+      --oj-train-button-text-display:              inherit;
+
+      // default
+      --oj-train-bg-color:                         var(--oj-neutral-color-13);
+      --oj-train-border-color:                     var(--oj-train-bg-color);
+      --oj-train-button-text-color:                var(--oj-neutral-color-1);
+      --oj-train-label-color:                      var(--oj-text-color-5);
+      --oj-train-connector-bg-color:               var(--oj-neutral-color-11);
+
+      // visited
+      --oj-train-bg-color-visited:                 var(--oj-brand-color);
+      --oj-train-border-color-visited:             var(--oj-train-bg-color-visited);
+      --oj-train-button-text-color-visited:        var(--oj-neutral-color-1);
+      --oj-train-label-color-visited:              var(--oj-text-color-5);
+      --oj-train-icon-display-visited:            inherit;
+      --oj-train-button-text-display-visited:     inherit;
+
+      // hover
+      --oj-train-bg-color-hover:                   var(--oj-brand-color-light-1);
+      --oj-train-border-color-hover:               var(--oj-brand-color-light-1);
+      --oj-train-button-text-color-hover:          var(--oj-neutral-color-1);
+
+      // active
+      --oj-train-bg-color-active:                  var(--oj-brand-color-light-3);
+      --oj-train-border-color-active:              var(--oj-brand-color);
+      --oj-train-button-text-color-active:         var(--oj-train-bg-color-visited);
+      --oj-train-label-text-decoration-active:     none;
+      --oj-train-label-font-weight-active:         bold;
+
+      // selected
+      --oj-train-bg-color-selected:                var(--oj-brand-color);
+      --oj-train-border-color-selected:            var(--oj-train-bg-color-selected);
+      --oj-train-button-text-color-selected:       var(--oj-neutral-color-1);
+      --oj-train-label-font-weight-selected:       bold;
+      --oj-train-continuous-connector-bg-color-selected: var(--oj-neutral-color-11);
+
+      // disabled
+      --oj-train-bg-color-disabled:                var(--oj-neutral-color-9);
+      --oj-train-border-color-disabled:            var(--oj-train-bg-color-disabled);
+      --oj-train-button-text-color-disabled:       var(--oj-neutral-color-1);
+      --oj-train-label-color-disabled:             var(--oj-text-color);
+      --oj-train-opacity-disabled:                 var(--oj-opacity-disabled);
+
+
+      --oj-train-button-messaging-icon-color:      var(--oj-neutral-color-1);
+      --oj-train-error-bg-color:                   var(--oj-accent-color-danger-4);
+      --oj-train-warning-bg-color:                 var(--oj-accent-color-attention-4);
+      --oj-train-info-bg-color:                    var(--oj-accent-color-info-4);
+      --oj-train-confirmation-bg-color:            var(--oj-accent-color-confirmation-4);
+      --oj-train-icon-font-size:                   unset;
+
+      --oj-train-individual-connector-bg-color-selected: var(--oj-train-connector-bg-color);
+
+      // padding for individual connector
+      --oj-train-individual-connector-padding:         10px;
+      --oj-train-individual-connector-padding-selected: var(--oj-train-individual-connector-padding);
+
+      --oj-train-connector-has-fill:               0;
+
+    }
+
+
+      }
+    }

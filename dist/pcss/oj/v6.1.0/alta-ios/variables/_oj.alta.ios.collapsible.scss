@@ -1,0 +1,16 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+$includeCollapsibleVariables: $includeCollapsibleClasses !default;
+
+@if $includeCollapsibleVariables != false {
+  @include module-include-once("alta.ios.variables.collapsible") {
+
+
+:root {
+
+  --oj-collapsible-animation-duration:                    var(--oj-animation-duration-medium); //settings: ignore
+}
+
+  }
+}

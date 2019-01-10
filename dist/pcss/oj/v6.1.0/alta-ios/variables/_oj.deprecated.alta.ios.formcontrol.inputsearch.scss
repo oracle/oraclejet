@@ -1,0 +1,34 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+
+$includeDeprecatedInputSearchVariables: $includeInputSearchClasses !default;
+
+@if $includeDeprecatedInputSearchVariables != false {
+  $includeListboxVariables: true !global;
+  $includeFormControlVariables: true !global;
+  $includeMessagesVariables: true !global;
+  $includeButtonVariables: true !global;
+}
+// import dependencies
+@import "oj.alta.ios.formcontrol.listbox";
+@import "oj.alta.ios.formcontrol";
+@import "oj.alta.ios.messages";
+@import "oj.alta.ios.button";
+
+@if $includeDeprecatedInputSearchVariables != false {
+  @include module-include-once("alta.ios.variables.inputsearch") {
+:root {
+
+  // search
+  //--------------------------
+  --oj-input-search-bg-color:          var(--oj-neutral-color-9); //settings: ignore
+  --oj-input-search-bg-color-disabled: var(--oj-input-search-bg-color); //settings: ignore
+
+  --oj-input-search-icon-padding-start: 9px; //settings: ignore
+  --oj-input-search-icon-padding-end:   6px; //settings: ignore
+
+}
+
+  }
+}

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -1162,7 +1162,7 @@ oj.TreeDndContext.prototype._dndPrepare = function () {
     tree._prepare_move(vars.o, vars.r, 'after');
     dnd.after = tree._checkMove();
 
-    if (this.component._is_loaded(vars.r)) {
+    if (this.component._isLoaded(vars.r)) {
       tree._prepare_move(vars.o, vars.r, 'inside');
       dnd.inside = tree._checkMove();
     } else {

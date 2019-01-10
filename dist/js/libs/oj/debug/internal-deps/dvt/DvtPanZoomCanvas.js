@@ -56,7 +56,7 @@ dvt.ComboBox.prototype.Init = function(context, id, styleMap)
   //the selected item changes
   this._bStaticButtonStates = false;
 
-  //BUG FIX #10142865: flag indicating that the dropdown has been hidden and
+  //: flag indicating that the dropdown has been hidden and
   //should be removed
   this._bRemoveDropdown = false;
 
@@ -349,7 +349,7 @@ dvt.ComboBox.prototype.HandleExpandClick = function(event)
 
   dvt.EventManager.consumeEvent(event);    //don't want click to fall through to other components
 
-  //BUG FIX #10142865: if the previous dropdown was hidden but hasn't been
+  //: if the previous dropdown was hidden but hasn't been
   //removed yet, then remove it now before the new dropdown is created
   if (this._bRemoveDropdown) {
     this.RemoveDropdown();
@@ -592,7 +592,7 @@ dvt.ComboBox.prototype.HideDropdown = function() {
     this._dropdown.setVisible(false);
     this._button.setToggled(false);
     this.FireListener(new dvt.ComboBoxEvent(dvt.ComboBoxEvent.SUBTYPE_HIDE_DROPDOWN));
-    //BUG FIX #10142865: don't remove the dropdown yet, because we want
+    //: don't remove the dropdown yet, because we want
     //the item the mouse was over to register a mouse rollout event
     //first so that when we next show the dropdown, which will contain
     //the same item, the item won't appear to be highlighted at first;
@@ -604,7 +604,7 @@ dvt.ComboBox.prototype.HideDropdown = function() {
 
   //remove the mouse focus change listener from the stage now
   //that the dropdown is no longer visible
-  //bug 9885226: ACC:keyBoard togggle for show/hide controlPanel is borken
+  //: ACC:keyBoard togggle for show/hide controlPanel is borken
   var stage = this.getCtx().getStage();
   if (stage) {
     if (this._isTouchDevice) {
@@ -622,7 +622,7 @@ dvt.ComboBox.prototype.HideDropdown = function() {
  * Remove the dropdown from the display list.
  */
 dvt.ComboBox.prototype.RemoveDropdown = function() {
-  //BUG FIX #10142865: remove the dropdown from the display list after
+  //: remove the dropdown from the display list after
   //the item in it has had time to register a mouse rollout event
   //so that it doesn't appear to be highlighted the next time the
   //dropdown is displayed
@@ -1041,7 +1041,7 @@ DvtPanControl.prototype.HandlePanMouseMove = function(event) {
 
   //     event.updateAfterEvent();
   }
-  //BUG FIX #7352517: rotate the arrows shown when the mouse is over
+  //: rotate the arrows shown when the mouse is over
   //the pan control
   else {
     //rotate the directional arrow to point towards the mouse
@@ -1503,7 +1503,7 @@ dvt.ControlPanel.prototype.rotateControlPanelDisplayObject = function(dispObj) {
 };
 
 
-//BUG FIX #10154856: show single row of controls in TMap
+//: show single row of controls in TMap
 /**
  * Determine whether the horizontal arm of the control panel shows a single row or
  * two rows.
@@ -1516,7 +1516,7 @@ dvt.ControlPanel.prototype.isSingleHorzRow = function() {
 };
 
 
-//BUG FIX #10154856: show single row of controls in TMap
+//: show single row of controls in TMap
 /**
  * Get the height of the horizontal bar of the control panel.
  *
@@ -1659,7 +1659,7 @@ dvt.ControlPanel.prototype._createVBarBackground = function(horzContentBar, vert
   var context = this.getCtx();
   if (vertContentBar) {
 
-    // Bug 9686175 - controlPanel looks bad when featuresOff="pan zoom cardSync changeLayout"
+    //  - controlPanel looks bad when featuresOff="pan zoom cardSync changeLayout"
     // if zoom-to-fit is the only button left on vertContentBar and there is no buttonss in
     // horzContentBar, make bottom right corner square (not round)
 
@@ -1755,7 +1755,7 @@ dvt.ControlPanel.prototype._createHBarPanControl = function(horzContentBar, nHor
 
   var context = this.getCtx();
 
-  //BUG FIX #10154856: determine if the control panel is showing a single or
+  //: determine if the control panel is showing a single or
   //double row of controls
   var bSingleRow = this.isSingleHorzRow();
 
@@ -1763,7 +1763,7 @@ dvt.ControlPanel.prototype._createHBarPanControl = function(horzContentBar, nHor
   if ((this._controls & dvt.ControlPanel.CONTROLS_CENTER_BUTTON) != 0) {
     this._panControl = dvt.ButtonLAFUtils.createPanControl(context, this._panZoomCanvas, this._controls, this._buttonImages, this._styleMap);
 
-    //BUG FIX #10154856: create underlays to erase the view of the intersection
+    //: create underlays to erase the view of the intersection
     //between the horz and vert arms of the control panel under the pan control,
     //and to show a solid background behind the pan control so that it blends
     //in with the rest of the control panel
@@ -1871,7 +1871,7 @@ dvt.ControlPanel.prototype._positionHBarElements = function(bBiDi, currX) {
 
       this._panControl.setTranslate(currX, yy);
 
-      //BUG FIX #10154856: keep underlays in sync with pan control position
+      //: keep underlays in sync with pan control position
       if (this._panControlUnderlay) {
         this._panControlUnderlay.setTranslate(currX, yy);
       }
@@ -1894,7 +1894,7 @@ dvt.ControlPanel.prototype._positionHBarElements = function(bBiDi, currX) {
       var yy = 3.5;
       this._panControl.setTranslate(xx, yy);
 
-      //BUG FIX #10154856: keep underlays in sync with pan control position
+      //: keep underlays in sync with pan control position
       if (this._panControlUnderlay) {
         this._panControlUnderlay.setTranslate(xx, yy);
       }
@@ -2015,7 +2015,7 @@ dvt.ControlPanel.prototype.RenderExpanded = function() {
 
   var vertContentBar = null;
   var currY = this._getVBarButtonsOffsetY(nHorzContentBarChildren);
-  //BUG FIX #10154856: if showing a single horizontal row, offset the start of the
+  //: if showing a single horizontal row, offset the start of the
   //vertical controls to leave room for the pan control
   if (this.isSingleHorzRow() &&
       (this._controls & dvt.ControlPanel.CONTROLS_CENTER_BUTTON) != 0)
@@ -2129,7 +2129,7 @@ dvt.ControlPanel.prototype._doExpand = function() {
   //transition from the collapsed control panel to the expanded one
   this.transitionExpand(this.getChildAt(0), s);
 
-  //BUG FIX #8719343: fire expand event
+  //: fire expand event
   this.fireExpandEvent();
 };
 
@@ -2188,7 +2188,7 @@ dvt.ControlPanel.prototype._doCollapse = function() {
   //transition from the expanded control panel to the collapsed one
   this.transitionCollapse(this.getChildAt(0), s);
 
-  //BUG FIX #8719343: fire collapse event
+  //: fire collapse event
   this.fireCollapseEvent();
 };
 
@@ -2368,7 +2368,7 @@ dvt.ControlPanel.prototype._applyAlphasRollover = function() {
   this._background.setAlpha(this._styleMap[dvt.ControlPanel.BG_ROLLOVER_ALPHA]);
   this._frame.setAlpha(this._styleMap[dvt.ControlPanel.FRAME_ROLLOVER_ALPHA]);
 
-  //BUG FIX #10154856: fade underlay just like control panel fill
+  //: fade underlay just like control panel fill
   if (this._panControlUnderlay) {
     this._panControlUnderlay.setAlpha(this._styleMap[dvt.ControlPanel.BG_ROLLOVER_ALPHA]);
   }
@@ -2384,7 +2384,7 @@ dvt.ControlPanel.prototype._applyAlphasRollout = function() {
   this._background.setAlpha(this._bgAlpha);
   this._frame.setAlpha(this._styleMap[dvt.ControlPanel.FRAME_ROLLOUT_ALPHA]);
 
-  //BUG FIX #10154856: fade underlay just like control panel fill
+  //: fade underlay just like control panel fill
   if (this._panControlUnderlay) {
     this._panControlUnderlay.setAlpha(this._bgAlpha);
   }
@@ -2897,7 +2897,7 @@ dvt.ControlPanelLAFUtils.getViewPanelHeight = function() {
  * @return {number} height of the horizontal bar for single row
  */
 dvt.ControlPanelLAFUtils.getViewPanelHalfHeight = function() {
-  //BUG FIX #10154856: show single row of controls in horizontal arm of control panel in TMap
+  //: show single row of controls in horizontal arm of control panel in TMap
   return dvt.ControlPanelLAFUtils.VIEW_PANEL_HALF_HEIGHT;
 };
 
@@ -2914,7 +2914,7 @@ dvt.ControlPanelLAFUtils.getViewPanelHalfHeight = function() {
  * @return {dvt.Path} background for the view part of the expanded control panel
  */
 dvt.ControlPanelLAFUtils.createEmptyViewOpenShape = function(context, nw, nh, bL2R, styleMap) {
-  //BUG FIX #10154856: pass in height to show single row of controls in
+  //: pass in height to show single row of controls in
   //horizontal arm of control panel in TMap
   if (! nw)
     nw = 86;
@@ -2995,7 +2995,7 @@ dvt.ControlPanelLAFUtils.makeViewOpenShapeHelper = function(context, r, ww, hh, 
  * @return {dvt.Path} background for the collapsed control panel
  */
 dvt.ControlPanelLAFUtils.createEmptyViewClosedShape = function(context, nh, styleMap, bR2L) {
-  //BUG FIX #10154856: pass in height to show single row of controls in
+  //: pass in height to show single row of controls in
   //horizontal arm of control panel in TMap
   if (!nh)
     nh = 47;
@@ -3028,7 +3028,7 @@ dvt.ControlPanelLAFUtils.createEmptyViewClosedShape = function(context, nh, styl
  * @return {dvt.Path} frame for the collapsed control panel
  */
 dvt.ControlPanelLAFUtils.createEmptyViewClosedFrame = function(context, nh, styleMap, bR2L) {
-  //BUG FIX #10154856: pass in height to show single row of controls in
+  //: pass in height to show single row of controls in
   //horizontal arm of control panel in TMap
   if (!nh)
     nh = 47;
@@ -3120,7 +3120,7 @@ dvt.ControlPanelLAFUtils.makeZoomShapeHelper = function(context, r, ww, hh, xx, 
 
   var cmds = dvt.PathUtils.moveTo(x + r, y);
 
-  // Bug 9686175 - controlPanel looks bad when featuresOff="pan zoom cardSync changeLayout"
+  //  - controlPanel looks bad when featuresOff="pan zoom cardSync changeLayout"
   if (roundBottomRight) {
     cmds += dvt.PathUtils.quadTo(r + x, dvt.ControlPanelLAFUtils.TAN_PI_8 * r + y,
         dvt.ControlPanelLAFUtils.SIN_PI_4 * r + x,
@@ -3353,8 +3353,8 @@ dvt.PanZoomComponent.prototype.Init = function(context, callback, callbackObj) {
   dvt.PanZoomComponent.superclass.Init.call(this, context, callback, callbackObj);
   this._controlPanelBehavior = dvt.PanZoomComponent.CONTROL_PANEL_BEHAVIOR_INIT_COLLAPSED;
   this._displayedControls = dvt.PanZoomCanvas.DEFAULT_DISPLAYED_CONTROLS;
-  // Batik which is used for ADF PNG rendering and IE11 do not support vector-effects=non-scaling-stroke so we still need to set stroke width based on zoom
-  this._bSupportsVectorEffects = !dvt.Agent.isEnvironmentBatik() && !(dvt.Agent.isPlatformIE() && dvt.Agent.getVersion() <= 11);
+  // IE11 does not support vector-effects=non-scaling-stroke so we still need to set stroke width based on zoom
+  this._bSupportsVectorEffects = !(dvt.Agent.isPlatformIE() && dvt.Agent.getVersion() <= 11);
   this._resourcesMap = null;
   this._subcomponentStyles = null;
   this._skinName = '';
@@ -5980,7 +5980,7 @@ dvt.CollapsiblePanel.prototype.Init = function(context, maxWidth, maxHeight, col
 
   this.setCollapseDirection(collapseDir);
   this._buttonImages = buttonImages;
-  this._isFixed = isFixed ? isFixed : dvt.Agent.isEnvironmentBatik();
+  this._isFixed = isFixed ? isFixed : false;
   this._expandTooltip = null;
   this._collapseTooltip = null;
   this._animation = null;
@@ -7230,7 +7230,7 @@ dvt.ButtonLAFUtils._createRecenterButtonState = function(context, uri, styleMap)
  */
 dvt.ButtonLAFUtils._createCollapseExpandButtonState = function(context, state, nh, uri, styleMap, right) {
 
-  //BUG FIX #10154856: pass in height so we can show single row in
+  //: pass in height so we can show single row in
   //horizontal arm of control panel in TMap
   if (!nh)
     nh = 47;
@@ -7247,7 +7247,7 @@ dvt.ButtonLAFUtils._createCollapseExpandButtonState = function(context, state, n
     var buttonWidth = dvt.StyleUtils.getStyle(styleMap, dvt.ControlPanel.CP_OPEN_CLOSE_BUTTON_WIDTH, 0);
     var offsetX = (buttonWidth - imageW) / 2;
 
-    //BUG FIX #10154856: calculate y coord instead of hardcoding because we may
+    //: calculate y coord instead of hardcoding because we may
     //show 1 or 2 rows of controls in horizontal arm of control panel
     //(calculation should yield same as old code for 2 rows)
     //icon height is 20
@@ -7567,7 +7567,7 @@ dvt.ButtonLAFUtils.GetButtonPathCommands = function(buttonWidth, buttonHeight, r
 };
 
 
-//BUG FIX #10154856: pass in height to show single row of controls in
+//: pass in height to show single row of controls in
 //horizontal arm of control panel in TMap
 /**
  * Creates a shape for the open close button

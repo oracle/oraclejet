@@ -1,0 +1,48 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+
+$includeDialogVariables: $includeDialogClasses !default;
+
+@if $includeDialogVariables != false {
+  $includeButtonVariables: true !global;
+}
+
+// import dependencies
+@import "oj.alta.windows.button";
+
+@if $includeDialogVariables != false {
+  @include module-include-once("alta.windows.variables.dialog") {
+
+:root {
+  --oj-dialog-bg-color:                 var(--oj-neutral-color-1); //settings: ignore
+  --oj-dialog-border-color:             var(--oj-brand-color); //settings: ignore
+  --oj-dialog-border-width:             1px; //settings: ignore
+  --oj-dialog-border-radius:            0; //settings: ignore
+  --oj-dialog-box-shadow:               var(--oj-box-shadow-sm); //settings: ignore
+
+  --oj-dialog-header-padding-top:       1.66667rem; //settings: ignore
+  --oj-dialog-header-padding-side:      1.66667rem; //settings: ignore
+  --oj-dialog-header-padding-bottom:    0.2rem; //settings: ignore
+
+  --oj-dialog-body-padding:             0.13333rem var(--oj-dialog-header-padding-side) 1.26667rem; //settings: ignore
+  --oj-dialog-footer-padding:           0.4rem 1.66667rem 1.2rem; //settings: ignore
+
+  --oj-dialog-body-text-align:          start; //settings: ignore
+
+  --oj-dialog-close-icon-button-margin: 0 0.625rem; //settings: ignore
+
+  --oj-dialog-header-bg-color:          transparent; //settings: ignore
+  --oj-dialog-header-bg-image:          none; //settings: ignore
+  --oj-dialog-header-border-color:      transparent; //settings: ignore
+  --oj-dialog-header-font-size:         var(--oj-header-3-font-size); //settings: ignore
+  --oj-dialog-header-text-color:        var(--oj-text-color-1); //settings: ignore
+
+  --oj-dialog-footer-button-height:     var(--oj-button-height); //settings: ignore
+  --oj-dialog-footer-button-font-weight:var(--oj-button-font-weight); //settings: ignore
+  --oj-dialog-footer-divider-color:     var(--oj-button-border-color); //settings: ignore
+
+}
+
+  }
+}

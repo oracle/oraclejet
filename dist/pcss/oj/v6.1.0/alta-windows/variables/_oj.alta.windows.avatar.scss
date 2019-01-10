@@ -1,0 +1,60 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+
+$includeAvatarVariables: $includeAvatarClasses !default;
+
+@if $includeAvatarVariables != false {
+  @include module-include-once("alta.windows.variables.avatar") {
+
+
+:root {
+
+  // avatar
+  // ----------------------------
+  --oj-avatar-inner-bg-color:                 var(--oj-neutral-color-13);
+  --oj-avatar-border-offset-bg-color:         var(--oj-avatar-inner-bg-color);
+  --oj-avatar-border-color:                   var(--oj-avatar-inner-bg-color);
+  --oj-avatar-text-color:                     var(--oj-neutral-color-1);
+
+  --oj-avatar-xxs-inner-size:                 32px;
+  --oj-avatar-xs-inner-size:                  36px;
+  --oj-avatar-sm-inner-size:                  54px;
+  --oj-avatar-md-inner-size:                  72px;
+  --oj-avatar-lg-inner-size:                  104px;
+  --oj-avatar-xl-inner-size:                  192px;
+  --oj-avatar-xxl-inner-size:                 256px;
+
+  --oj-avatar-xxs-border-offset:              0;
+  --oj-avatar-xs-border-offset:               0;
+  --oj-avatar-sm-border-offset:               0;
+  --oj-avatar-md-border-offset:               0;
+  --oj-avatar-lg-border-offset:               0;
+  --oj-avatar-xl-border-offset:               0;
+  --oj-avatar-xxl-border-offset:              0;
+
+  --oj-avatar-xxs-initials-font-size:         12px;
+  --oj-avatar-xs-initials-font-size:          14px;
+  --oj-avatar-sm-initials-font-size:          18px;
+  --oj-avatar-md-initials-font-size:          24px;
+  --oj-avatar-lg-initials-font-size:          36px;
+  --oj-avatar-xl-initials-font-size:          72px;
+  --oj-avatar-xxl-initials-font-size:         96px;
+
+  --oj-avatar-xxs-border-width:               1px;
+  --oj-avatar-xl-border-width:                2px;
+
+  --oj-avatar-xxs-placeholder-scale:          1;
+  --oj-avatar-xs-placeholder-scale:           1.125;
+  --oj-avatar-sm-placeholder-scale:           1.6875;
+  --oj-avatar-md-placeholder-scale:           2.25;
+  --oj-avatar-lg-placeholder-scale:           3.25;
+  --oj-avatar-xl-placeholder-scale:           6;
+  --oj-avatar-xxl-placeholder-scale:          8;
+
+  --oj-avatar-initials-shade-color:           transparent;
+
+}
+
+  }
+}

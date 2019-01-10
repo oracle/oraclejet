@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -16,7 +16,7 @@ define(['ojs/ojcore', 'knockout', 'ojs/ojkeyset'], function(oj, ko)
  * @class ObservableExpandedKeySet
  * @classdesc Observable implementation of ExpandedKeySet that keeps track of mutation of KeySet.
  * @ojtsimport {module: "ojkeyset", type: "AMD", imported: ["ExpandedKeySet", "ExpandAllKeySet"]}
- * @ojsignature [{target: "Type", value: "class ObservableExpandedKeySet<K>"},
+ * @ojsignature [{target: "Type", value: "class ObservableExpandedKeySet<K>", genericParameters: [{"name": "K", "description": "Type of Key"}]},
  *               {target: "Type", value: "ExpandedKeySet<K>|ExpandAllKeySet<K>", for:"initialValue"}]
  */
 var ObservableExpandedKeySet = function (initialValue) {

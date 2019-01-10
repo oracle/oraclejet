@@ -1,0 +1,261 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the
+//          version in your base theme's directory,
+//          for example alta/widgets/_oj.alta.treeview.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@import "../../utilities/oj.utilities";
+
+@if $includeTreeViewClasses != false  {
+  @include module-include-once("common.treeview") {
+
+    // Prevents the flash of unstyled content before the HTML becomes JET components.
+    @if $initialVisibility == hidden {
+      oj-tree-view:not(.oj-complete) {
+        visibility: hidden;
+      }
+    }
+
+    // Prevents the grey background that appears on tap on iOS
+    oj-tree-view {
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    // Remove focus ring
+    .oj-treeview-list:focus {
+      outline: none;
+    }
+
+    // Base style for treeview and items
+    .oj-treeview-list,
+    .oj-treeview-item {
+      display: block;
+      margin: 0 ;
+      padding: 0;
+      list-style-type: none;
+      @include oj-user-select-property(none);
+      overflow: hidden;
+    }
+
+    // Basic item
+    .oj-treeview-item {
+      white-space: nowrap;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        min-width: var(--oj-tree-view-spacer-width);
+        @include oj-ltr() {
+          margin-left: var(--oj-tree-view-spacer-width);
+        }
+        @include oj-rtl() {
+          margin-right: var(--oj-tree-view-spacer-width);
+        }
+      }
+      @else {
+        min-width: $treeViewSpacerWidth;
+        @include oj-ltr() {
+          margin-left: $treeViewSpacerWidth;
+        }
+        @include oj-rtl() {
+          margin-right: $treeViewSpacerWidth;
+        }
+      }
+      vertical-align: middle;
+    }
+
+    // First level items are not indented
+    oj-tree-view > .oj-treeview-list > .oj-treeview-item,
+    .oj-treeview-list.oj-treeview-drag-image > .oj-treeview-item {
+      @include oj-ltr() {
+        margin-left: 0;
+      }
+      @include oj-rtl() {
+        margin-right: 0;
+      }
+    }
+
+    // Treeview icon (item, disclosure)
+    .oj-treeview-icon {
+      display: inline-block;
+      text-decoration: none;
+      vertical-align: middle;
+    }
+
+    // Item icon
+    .oj-treeview-item-icon {
+      cursor: default;
+      margin: 4px;
+    }
+
+    // Default expanded parent image
+    .oj-expanded > .oj-treeview-item-content > .oj-treeview-item-icon {
+      @extend .oj-fwk-icon-folder-open;
+    }
+
+    // Default collapsed parent image
+    .oj-collapsed > .oj-treeview-item-content > .oj-treeview-item-icon {
+      @extend .oj-fwk-icon-folder-collapsed;
+    }
+
+    // Default leaf item image
+    .oj-treeview-leaf > .oj-treeview-item-content > .oj-treeview-item-icon {
+      @extend .oj-fwk-icon-document;
+    }
+
+    // Item text
+    .oj-treeview-item-text {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        color: var(--oj-tree-view-text-color);
+      } @else {
+        color: $treeViewTextColor;
+      }
+
+      cursor: default;
+      vertical-align: middle;
+      @include oj-ltr() {
+        margin-left: 2px;
+        margin-right: 4px;
+      }
+      @include oj-rtl() {
+        margin-left: 4px;
+        margin-right: 2px;
+      }
+    }
+
+    .oj-treeview-item-content {
+      display: inline-block;
+    }
+
+    // Hovered item content
+    .oj-treeview-item-content.oj-hover {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        background-color: var(--oj-tree-view-item-bg-color-hover);
+      } @else {
+        background-color: $treeViewItemBgColorHover;
+      }
+    }
+
+    // Selected item content when the root is focused
+    .oj-treeview-list:focus .oj-treeview-item-content.oj-selected {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        background-color: var(--oj-tree-view-item-bg-color-selected);
+      } @else {
+        background-color: $treeViewItemBgColorSelected;
+      }
+    }
+
+    // Selected item content when the root is NOT focused
+    .oj-treeview-item-content.oj-selected {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        background-color: var(--oj-tree-view-item-bg-color-selected-inactive);
+      } @else {
+        background-color: $treeViewItemBgColorSelectedInactive;
+      }
+    }
+
+    // Focused item content
+    .oj-treeview-item-content.oj-focus-highlight {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        outline: dotted 1px var(--oj-primary-text-color);
+        outline: -webkit-focus-ring-color auto;
+      } @else {
+        @include oj-browser-focus-outline-approximation($primaryTextColor);
+      }
+    }
+
+    // Disclosure icon or the spacer
+    .oj-treeview-spacer {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        width: var(--oj-tree-view-spacer-width);
+        height: var(--oj-tree-view-spacer-height);
+      } @else {
+        width: $treeViewSpacerWidth;
+        height: $treeViewSpacerHeight;
+      }
+    }
+
+    .oj-treeview-disclosure-icon {
+      cursor: pointer;
+    }
+
+    .oj-treeview-disclosure-icon:before {
+      margin: 7px 4px;
+    }
+
+    // DnD reorder insert position pointer container
+    .oj-treeview-drop-marker {
+      position: absolute;
+      background-color: transparent;
+      pointer-events: none;
+      width: 16px;
+      height: 16px;
+      padding: 1px;
+    }
+
+    // DnD reorder insert position pointer line when dropping between items
+    .oj-treeview-drop-line {
+      height: 1px;
+      width: 100px;
+      position: absolute;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        background-color: var(--oj-tree-view-drop-line-color);
+      } @else {
+        background-color: $treeViewDropLineColor;
+      }
+      pointer-events: none;
+    }
+
+    // DnD insert pointer icon
+    .oj-treeview-drop-marker-icon {
+      position: absolute;
+      @extend .oj-fwk-icon-arrow-end;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        color: var(--oj-tree-view-drop-marker-color);
+      } @else {
+        color: $treeViewDropMarkerColor;
+      }
+    }
+
+    // Make sure drag image isn't visible to the end user
+    .oj-treeview-drag-image {
+      position: fixed;
+      top: 10000px;
+      overflow: visible;
+    }
+
+    .oj-treeview-drag-image .oj-treeview-item {
+      position: absolute;
+    }
+
+    // Animation defaults
+    $treeViewAnimationDefaults: ();
+
+    @if ($treeViewExpandAnimation) {
+      $treeViewAnimationDefaults: map-merge($treeViewAnimationDefaults, (expand: $treeViewExpandAnimation));
+    }
+
+    @if ($treeViewCollapseAnimation) {
+      $treeViewAnimationDefaults: map-merge($treeViewAnimationDefaults, (collapse: $treeViewCollapseAnimation));
+    }
+
+    // Option defaults
+    $treeViewDefaultOptions: ();
+
+    @if ($treeViewAnimationDefaults) {
+      $treeViewDefaultOptions: map-merge($treeViewDefaultOptions, (animation: $treeViewAnimationDefaults));
+    }
+
+    // Component default options selector
+    .oj-treeview-option-defaults {
+      font-family: oj-json-from-map($treeViewDefaultOptions);
+    }
+  }
+}

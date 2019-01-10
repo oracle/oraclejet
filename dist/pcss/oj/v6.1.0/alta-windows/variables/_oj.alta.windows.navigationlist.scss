@@ -1,0 +1,112 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+
+$includeNavigationListVariables: $includeNavigationListClasses !default;
+
+@if $includeNavigationListVariables != false {
+  $includeTabBarVariables: true !global;
+  $includeToolbarVariables: true !global;
+  $includeTreeViewVariables: true !global;
+  $includeMenuVariables: true !global;
+  $includePanelVariables: true !global;
+}
+// import dependencies
+@import "oj.alta.windows.tabbar";
+@import "oj.alta.windows.toolbar";
+@import "oj.alta.windows.treeview";
+@import "oj.alta.windows.menu";
+@import "oj.alta.windows.panel";
+
+@if $includeNavigationListVariables != false {
+  @include module-include-once("alta.windows.variables.navigationlist") {
+
+:root {
+  // nav list
+  // ----------------------------
+
+  --oj-navigation-list-category-divider-color:            var(--oj-neutral-color-8);
+  --oj-navigation-list-icon-only-icon-start-end-padding:   16px;  
+  --oj-navigation-list-horizontal-icon-margin:             4px;
+  --oj-navigation-list-horizontal-font-size:               0.8rem;
+  
+  --oj-navigation-list-icon-to-text-padding:               0.625rem;
+  --oj-navigation-list-horizontal-icon-to-text-padding:    2px;  
+  
+  --oj-navigation-list-item-min-height:                    2.6875rem;
+  --oj-navigation-list-horizontal-item-min-height:         3.2rem;  
+  --oj-navigation-list-horizontal-item-stacked-min-height: 4rem;  
+  
+  --oj-navigation-list-item-label-text-wrap:               nowrap;
+  --oj-navigation-list-item-border-width-top:              0;
+  --oj-navigation-list-item-border-width-right:            0;
+  --oj-navigation-list-item-border-width-bottom:           0;
+  --oj-navigation-list-item-border-width-left:             3px;
+  --oj-navigation-list-item-start-end-padding:             0.625rem;
+  --oj-navigation-list-item-icon-only-border-width-top:    0;
+  --oj-navigation-list-item-icon-only-border-width-right:  0;
+  --oj-navigation-list-item-icon-only-border-width-bottom: 0;
+  --oj-navigation-list-item-icon-only-border-width-left:   3px;
+  --oj-navigation-list-item-icon-only-margin:             0;
+  --oj-navigation-list-horizontal-item-icon-only-margin:   4px;
+  --oj-navigation-list-horizontal-item-border-width:       0;
+  --oj-navigation-list-horizontal-item-padding:            4px 0.625rem 2px;
+  --oj-navigation-list-horizontal-item-stacked-padding:    3px 0.625rem 2px;
+
+
+
+  // default
+  --oj-navigation-list-item-label-color-default:               var(--oj-secondary-text-color);
+  --oj-navigation-list-horizontal-item-label-color-default:    var(--oj-navigation-list-item-label-color-default);
+  --oj-navigation-list-item-icon-color-default:                var(--oj-navigation-list-item-label-color-default);
+  --oj-navigation-list-horizontal-item-icon-color-default:     var(--oj-navigation-list-item-icon-color-default);
+  --oj-navigation-list-horizontal-item-divider-color:          var(--oj-neutral-color-7);
+  --oj-navigation-list-collapsible-icon-color-default:         var(--oj-navigation-list-item-label-color-default);
+
+  // hover
+  --oj-navigation-list-item-bg-color-hover:                    var(--oj-neutral-color-6);
+  --oj-navigation-list-item-border-color-hover:                var(--oj-brand-color-light-1);
+  --oj-navigation-list-item-icon-color-hover:                  var(--oj-icon-color-hover);
+  --oj-navigation-list-item-icon-only-bg-color-hover:          var(--oj-navigation-list-item-bg-color-hover);
+
+  // selected
+  --oj-navigation-list-item-bg-color-selected:                 var(--oj-neutral-color-5);
+  --oj-navigation-list-horizontal-item-bg-color-selected:      transparent;
+  --oj-navigation-list-item-border-color-selected:             var(--oj-brand-color);
+  --oj-navigation-list-item-label-color-selected:              var(--oj-link-text-color);
+  --oj-navigation-list-horizontal-item-label-color-selected:   var(--oj-brand-color-dark-1);
+  --oj-navigation-list-item-icon-color-selected:               var(--oj-icon-color-selected);
+  --oj-navigation-list-horizontal-item-icon-color-selected:    var(--oj-brand-color);
+  --oj-navigation-list-item-icon-only-bg-color-selected:       var(--oj-brand-color);
+  --oj-navigation-list-icon-only-icon-color-selected:          var(--oj-brand-color);
+
+
+  // focus
+  --oj-navigation-list-item-outline-color-focus:               var(--oj-neutral-color-14);
+
+  // disabled
+  --oj-navigation-list-item-label-color-disabled:              var(--oj-navigation-list-item-label-color-default);
+  --oj-navigation-list-icon-color-disabled:                    var(--oj-navigation-list-item-label-color-default);
+
+
+  // contrast default
+  --oj-navigation-list-item-contrast-label-color-default:      var(--oj-neutral-color-10);
+
+  // contrast hover
+  --oj-navigation-list-item-contrast-bg-color-hover:           var(--oj-neutral-color-16);
+  --oj-navigation-list-item-contrast-label-color-hover:        var(--oj-neutral-color-3);
+
+  // contrast selected
+  --oj-navigation-list-item-contrast-bg-color-selected:              var(--oj-neutral-color-16);
+  --oj-navigation-list-horizontal-item-contrast-bg-color-selected:   var(--oj-neutral-color-1);
+  --oj-navigation-list-item-contrast-label-color-selected:           var(--oj-neutral-color-3);
+  --oj-navigation-list-horizontal-item-contrast-label-color-selected: var(--oj-text-color-3);
+
+  // contrast disabled
+  --oj-navigation-list-item-contrast-label-color-disabled:     var(--oj-neutral-color-13);
+
+  
+}
+
+  }
+}

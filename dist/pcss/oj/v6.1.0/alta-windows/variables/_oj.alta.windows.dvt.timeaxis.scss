@@ -1,0 +1,29 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+$includeTimeAxisVariables: $includeTimeAxisClasses !default;
+
+@if $includeTimeAxisVariables != false {
+  $includeCollectionVariables: true !global;
+  $includeTableVariables: true !global;
+}
+
+// import dependencies
+@import "oj.alta.windows.collection";
+@import "oj.alta.windows.table";
+
+@if $includeTimeAxisVariables != false {
+  @include module-include-once("alta.windows.variables.timeaxis") {
+:root {
+  
+
+    // time axis
+    // ----------------------------
+    --oj-time-axis-bg-color:        transparent;          
+    --oj-time-axis-border-color:    var(--oj-neutral-color-7);              
+    --oj-time-axis-label-color:     var(--oj-text-color);              
+    --oj-time-axis-separator-color: var(--oj-neutral-color-7);              
+}
+
+  }
+}

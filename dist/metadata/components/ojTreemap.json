@@ -1,11 +1,11 @@
 {
   "name": "oj-treemap",
-  "version": "6.0.0",
-  "jetVersion": "6.0.0",
+  "version": "6.1.0",
+  "jetVersion": "6.1.0",
   "displayName": "Treemap",
   "type": "core",
   "description": "An interactive data visualization in which hierarchical data is represented across two dimensions by the size and color of nested rectangular nodes.",
-  "help": "https://docs.oracle.com/en/middleware/jet/6/reference-api/oj.ojTreemap.html",
+  "help": "https://docs.oracle.com/en/middleware/jet/6.1/reference-api/oj.ojTreemap.html",
   "properties": {
     "animationDuration": {
       "description": "Specifies the animation duration in milliseconds. For data change animations with multiple stages, this attribute defines the duration of each stage. For example, if an animation contains two stages, the total duration will be two times this attribute's value. The default value comes from the CSS and varies based on theme.",

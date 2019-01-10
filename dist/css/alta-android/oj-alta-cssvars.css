@@ -6964,23 +6964,25 @@ oj-message:not(.oj-complete) {
   html[dir="rtl"] .oj-message-close {
     float: left; }
 
+.oj-message-auto-timeout-close {
+  display: var(--oj-message-auto-timeout-close-icon-display); }
+
 .oj-message-close .oj-button {
   margin-bottom: 0; }
 
 .oj-message-option-defaults {
   font-family: '{"autoTimeout":4000}'; }
 
-.oj-message-summary {
+.oj-message-body .oj-message-summary {
   padding-bottom: 4px; }
 
-html:not([dir="rtl"]) .oj-message-category {
+html:not([dir="rtl"]) .oj-message-category, html:not([dir="rtl"])
+.oj-message-header .oj-message-summary {
   padding: 0px 0px 0px 10px; }
 
-html[dir="rtl"] .oj-message-category {
+html[dir="rtl"] .oj-message-category, html[dir="rtl"]
+.oj-message-header .oj-message-summary {
   padding: 0px 10px 0px 0px; }
-
-.oj-message-header {
-  justify-content: flex-start; }
 
 .oj-message-timestamp:before {
   content: "\25CF";
@@ -7201,7 +7203,8 @@ oj-messages {
   border-radius: var(--oj-messages-notification-overlay-border-radius);
   box-shadow: var(--oj-messages-notification-overlay-box-shadow); }
 
-oj-messages:not(.oj-messages-inline) .oj-messages-container {
+.oj-messages-general .oj-messages-container,
+.oj-messages-notification .oj-messages-container {
   margin: 10px; }
 
 .oj-messages-general .oj-message-header {
@@ -7274,10 +7277,12 @@ oj-messages:not(.oj-messages-inline) .oj-messages-container {
 .oj-messages-inline .oj-message-body {
   padding: 0px 24px 17px 24px; }
 
-oj-messages:not(.oj-messages-inline) .oj-message-header {
+.oj-messages-general .oj-message-header,
+.oj-messages-notification .oj-message-header {
   padding: 15px 16px 10px 16px; }
 
-oj-messages:not(.oj-messages-inline) .oj-message-body {
+.oj-messages-general .oj-message-body,
+.oj-messages-notification .oj-message-body {
   padding: 0px 16px 15px 16px; }
 
 @media screen and (max-width: 767px) {
@@ -8156,10 +8161,6 @@ input.oj-pagingcontrol-nav-input.oj-inputtext-input {
   padding-top: 0px;
   padding-right: 2px;
   margin-top: 0.2em; }
-  input.oj-pagingcontrol-nav-input.oj-inputtext-input::-webkit-input-placeholder {
-    color: var(--oj-form-control-placeholder-color);
-    opacity: 1;
-    font-style: var(--oj-form-control-placeholder-font-style); }
   input.oj-pagingcontrol-nav-input.oj-inputtext-input:-ms-input-placeholder {
     color: var(--oj-form-control-placeholder-color);
     opacity: 1;
@@ -11605,13 +11606,16 @@ oj-label:not(.oj-complete) {
 .oj-label-help-icon-anchor:not(.oj-focus-highlight).oj-focus {
   outline: none; }
 
-.oj-label.oj-label-nowrap {
+.oj-label.oj-label-nowrap,
+.oj-label-nocomp.oj-label-nowrap {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis; }
-  html:not([dir="rtl"]) .oj-label.oj-label-nowrap {
+  html:not([dir="rtl"]) .oj-label.oj-label-nowrap, html:not([dir="rtl"])
+  .oj-label-nocomp.oj-label-nowrap {
     padding-right: var(--oj-form-control-inline-gutter); }
-  html[dir="rtl"] .oj-label.oj-label-nowrap {
+  html[dir="rtl"] .oj-label.oj-label-nowrap, html[dir="rtl"]
+  .oj-label-nocomp.oj-label-nowrap {
     padding-left: var(--oj-form-control-inline-gutter); }
 
 .oj-label.oj-label-nowrap .oj-label-group {
@@ -12016,15 +12020,6 @@ html[dir="rtl"] .oj-inputtext.oj-inputtext-clearicon-visible .oj-inputtext-input
   .oj-inputpassword-nocomp, html[dir="rtl"]
   .oj-textarea-nocomp {
     text-align: var(--oj-input-text-text-align-rtl); }
-  .oj-inputtext-input::-webkit-input-placeholder,
-  .oj-inputpassword-input::-webkit-input-placeholder,
-  .oj-textarea-input::-webkit-input-placeholder,
-  .oj-inputtext-nocomp::-webkit-input-placeholder,
-  .oj-inputpassword-nocomp::-webkit-input-placeholder,
-  .oj-textarea-nocomp::-webkit-input-placeholder {
-    color: var(--oj-form-control-placeholder-color);
-    opacity: 1;
-    font-style: var(--oj-form-control-placeholder-font-style); }
   .oj-inputtext-input:-ms-input-placeholder,
   .oj-inputpassword-input:-ms-input-placeholder,
   .oj-textarea-input:-ms-input-placeholder,
@@ -12220,7 +12215,7 @@ oj-input-number:not(.oj-complete) {
 .oj-inputnumber {
   display: inline-block;
   width: 100%;
-  max-width: var(--oj-form-control-md-max-width);
+  max-width: var(--oj-form-control-lg-max-width);
   min-width: var(--oj-form-control-min-width);
   font-size: var(--oj-form-control-input-font-size); }
   @media screen and (max-width: 767px) {
@@ -12256,10 +12251,6 @@ oj-input-number:not(.oj-complete) {
   padding-bottom: calc(var(--oj-form-control-input-border-bottom-width-focus) - var(--oj-form-control-border-bottom-width)); }
   html[dir="rtl"] .oj-inputnumber-input {
     text-align: var(--oj-form-control-text-align-rtl); }
-  .oj-inputnumber-input::-webkit-input-placeholder {
-    color: var(--oj-form-control-placeholder-color);
-    opacity: 1;
-    font-style: var(--oj-form-control-placeholder-font-style); }
   .oj-inputnumber-input:-ms-input-placeholder {
     color: var(--oj-form-control-placeholder-color);
     opacity: 1;
@@ -12924,10 +12915,6 @@ oj-calendar:not(.oj-complete) {
   outline: 0; }
   html[dir="rtl"] .oj-inputdatetime-input {
     text-align: var(--oj-form-control-text-align-rtl); }
-  .oj-inputdatetime-input::-webkit-input-placeholder {
-    color: var(--oj-form-control-placeholder-color);
-    opacity: 1;
-    font-style: var(--oj-form-control-placeholder-font-style); }
   .oj-inputdatetime-input:-ms-input-placeholder {
     color: var(--oj-form-control-placeholder-color);
     opacity: 1;
@@ -13953,10 +13940,6 @@ oj-combobox:not(.oj-complete) {
   background-clip: padding-box; }
   html[dir="rtl"] .oj-combobox-choice {
     text-align: var(--oj-form-control-text-align-rtl); }
-  .oj-combobox-choice::-webkit-input-placeholder {
-    color: var(--oj-form-control-placeholder-color);
-    opacity: 1;
-    font-style: var(--oj-form-control-placeholder-font-style); }
   .oj-combobox-choice:-ms-input-placeholder {
     color: var(--oj-form-control-placeholder-color);
     opacity: 1;
@@ -13994,10 +13977,6 @@ oj-combobox:not(.oj-complete) {
   @media screen and (max-width: 767px) {
     .oj-combobox-input {
       -webkit-text-size-adjust: var(--oj-form-control-trigger-font-size-adjust); } }
-  .oj-combobox-input::-webkit-input-placeholder {
-    color: var(--oj-form-control-placeholder-color);
-    opacity: 1;
-    font-style: var(--oj-form-control-placeholder-font-style); }
   .oj-combobox-input:-ms-input-placeholder {
     color: var(--oj-form-control-placeholder-color);
     opacity: 1;
@@ -14010,6 +13989,35 @@ oj-combobox:not(.oj-complete) {
     color: var(--oj-form-control-placeholder-color);
     opacity: 1;
     font-style: var(--oj-form-control-placeholder-font-style); }
+
+/* Styling for readonly mode */
+.oj-combobox.oj-read-only .oj-combobox-choice,
+.oj-combobox.oj-read-only .oj-combobox-choices {
+  background-color: transparent;
+  border-color: transparent;
+  outline: none; }
+
+/* apply to the selected entries */
+.oj-combobox.oj-read-only .oj-combobox-input,
+.oj-combobox.oj-read-only .oj-combobox-selected-choice {
+  outline: none;
+  background-color: transparent;
+  border-color: transparent;
+  border-left-width: 0;
+  border-right-width: 0;
+  color: var(--oj-form-control-value-color-read-only);
+  font-size: var(--oj-form-control-font-size-read-only);
+  font-weight: var(--oj-form-control-font-weight-read-only); }
+
+/* don't show dropdown trigger */
+.oj-combobox.oj-read-only .oj-combobox-arrow,
+.oj-combobox.oj-read-only .oj-combobox-divider {
+  display: none; }
+
+/* don't show clear entry trigger and search field button */
+.oj-combobox.oj-read-only .oj-combobox-clear-entry,
+.oj-combobox.oj-read-only .oj-combobox-search-field {
+  display: none; }
 
 /* Styling for text-align */
 .oj-form-control-text-align-right .oj-combobox .oj-combobox-input {
@@ -14099,10 +14107,6 @@ html[dir="rtl"] .oj-form-control-text-align-end .oj-combobox-selected-choice {
   overflow: hidden; }
   html[dir="rtl"] .oj-combobox-choices {
     text-align: var(--oj-form-control-text-align-rtl); }
-  .oj-combobox-choices::-webkit-input-placeholder {
-    color: var(--oj-form-control-placeholder-color);
-    opacity: 1;
-    font-style: var(--oj-form-control-placeholder-font-style); }
   .oj-combobox-choices:-ms-input-placeholder {
     color: var(--oj-form-control-placeholder-color);
     opacity: 1;
@@ -14341,10 +14345,6 @@ oj-select:not(.oj-complete) {
   text-overflow: ellipsis; }
   html[dir="rtl"] .oj-select-choice {
     text-align: var(--oj-form-control-text-align-rtl); }
-  .oj-select-choice::-webkit-input-placeholder {
-    color: var(--oj-form-control-placeholder-color);
-    opacity: 1;
-    font-style: var(--oj-form-control-placeholder-font-style); }
   .oj-select-choice:-ms-input-placeholder {
     color: var(--oj-form-control-placeholder-color);
     opacity: 1;
@@ -14363,6 +14363,33 @@ oj-select:not(.oj-complete) {
   html[dir="rtl"] .oj-select-choice {
     padding-left: 0;
     padding-right: var(--oj-form-control-padding-horizontal); }
+
+/* Styling for readonly mode */
+.oj-select.oj-read-only .oj-select-choice,
+.oj-select.oj-read-only .oj-select-choices {
+  background-color: transparent;
+  border-color: transparent;
+  outline: none; }
+
+/* apply to the selected entries */
+.oj-select.oj-read-only .oj-select-chosen,
+.oj-select.oj-read-only .oj-select-selected-choice {
+  outline: none;
+  background-color: transparent;
+  border-color: transparent;
+  border-left-width: 0;
+  border-right-width: 0;
+  color: var(--oj-form-control-value-color-read-only);
+  font-size: var(--oj-form-control-font-size-read-only);
+  font-weight: var(--oj-form-control-font-weight-read-only); }
+
+/* don't show dropdown trigger */
+.oj-select.oj-read-only .oj-select-arrow {
+  display: none; }
+
+/* don't show clear entry trigger */
+.oj-select.oj-read-only .oj-select-clear-entry {
+  display: none; }
 
 /* Styling for text-align */
 .oj-form-control-text-align-right .oj-select .oj-select-choice {
@@ -14449,10 +14476,6 @@ html[dir="rtl"] .oj-form-control-text-align-end .oj-select-selected-choice {
   overflow: hidden; }
   html[dir="rtl"] .oj-select-choices {
     text-align: var(--oj-form-control-text-align-rtl); }
-  .oj-select-choices::-webkit-input-placeholder {
-    color: var(--oj-form-control-placeholder-color);
-    opacity: 1;
-    font-style: var(--oj-form-control-placeholder-font-style); }
   .oj-select-choices:-ms-input-placeholder {
     color: var(--oj-form-control-placeholder-color);
     opacity: 1;
@@ -14701,10 +14724,6 @@ html:not([dir="rtl"]) .oj-select-open-icon {
   background-clip: padding-box; }
   html[dir="rtl"] .oj-select-select {
     text-align: var(--oj-form-control-text-align-rtl); }
-  .oj-select-select::-webkit-input-placeholder {
-    color: var(--oj-form-control-placeholder-color);
-    opacity: 1;
-    font-style: var(--oj-form-control-placeholder-font-style); }
   .oj-select-select:-ms-input-placeholder {
     color: var(--oj-form-control-placeholder-color);
     opacity: 1;
@@ -14737,7 +14756,7 @@ select.oj-select-select.oj-select-default:not([multiple]) {
 .oj-select-select:not(.oj-focus-highlight):focus {
   outline: none; }
 
-.oj-select-jet.oj-enabled .oj-select-choice:active,
+.oj-select-jet:not(.oj-read-only).oj-enabled .oj-select-choice:active,
 .oj-select-native.oj-enabled .oj-select-select:active {
   background-color: var(--oj-form-control-trigger-bg-color-active); }
 
@@ -14840,10 +14859,6 @@ oj-input-search:not(.oj-complete) {
   background-clip: padding-box; }
   html[dir="rtl"] .oj-inputsearch-choice {
     text-align: var(--oj-form-control-text-align-rtl); }
-  .oj-inputsearch-choice::-webkit-input-placeholder {
-    color: var(--oj-form-control-placeholder-color);
-    opacity: 1;
-    font-style: var(--oj-form-control-placeholder-font-style); }
   .oj-inputsearch-choice:-ms-input-placeholder {
     color: var(--oj-form-control-placeholder-color);
     opacity: 1;
@@ -14878,10 +14893,6 @@ oj-input-search:not(.oj-complete) {
   @media screen and (max-width: 767px) {
     .oj-inputsearch-input {
       -webkit-text-size-adjust: var(--oj-form-control-trigger-font-size-adjust); } }
-  .oj-inputsearch-input::-webkit-input-placeholder {
-    color: var(--oj-form-control-placeholder-color);
-    opacity: 1;
-    font-style: var(--oj-form-control-placeholder-font-style); }
   .oj-inputsearch-input:-ms-input-placeholder {
     color: var(--oj-form-control-placeholder-color);
     opacity: 1;
@@ -15024,13 +15035,14 @@ oj-switch:not(.oj-complete) {
   height: var(--oj-switch-container-height);
   width: var(--oj-switch-container-width); }
 
-html:not([dir="rtl"]) .oj-switch .oj-switch-thumb {
-  left: 0;
-  right: auto; }
-
-html[dir="rtl"] .oj-switch .oj-switch-thumb {
-  left: auto;
-  right: 0; }
+.oj-switch .oj-switch-thumb {
+  box-sizing: content-box; }
+  html:not([dir="rtl"]) .oj-switch .oj-switch-thumb {
+    left: 0;
+    right: auto; }
+  html[dir="rtl"] .oj-switch .oj-switch-thumb {
+    left: auto;
+    right: 0; }
 
 html:not([dir="rtl"]) .oj-switch.oj-selected .oj-switch-thumb {
   left: auto;
@@ -15399,10 +15411,10 @@ oj-slider:not(.oj-complete) {
 .oj-slider-bar:after {
   content: '';
   position: absolute;
-  top: calc(var(--oj-slider-bar-hit-area) / -2 + var(--oj-slider-bar-thickness) / 2);
-  bottom: calc(var(--oj-slider-bar-hit-area) / -2 + var(--oj-slider-bar-thickness) / 2);
-  left: calc(var(--oj-slider-bar-hit-area) / -2 + var(--oj-slider-bar-thickness) / 2);
-  right: calc(var(--oj-slider-bar-hit-area) / -2 + var(--oj-slider-bar-thickness) / 2); }
+  top: calc(-18px + var(--oj-slider-bar-thickness) / 2);
+  bottom: calc(-18px + var(--oj-slider-bar-thickness) / 2);
+  left: calc(-18px + var(--oj-slider-bar-thickness) / 2);
+  right: calc(-18px + var(--oj-slider-bar-thickness) / 2); }
 
 .oj-slider-bar-value {
   border-radius: var(--oj-slider-bar-thickness);
@@ -15489,18 +15501,18 @@ html[dir="rtl"] .oj-slider-horizontal .oj-slider-range-max {
 .oj-slider-horizontal .oj-slider-thumb:after {
   content: '';
   position: absolute;
-  top: calc((var(--oj-slider-thumb-hit-area) - var(--oj-slider-thumb-height-active)) / -2);
-  bottom: calc((var(--oj-slider-thumb-hit-area) - var(--oj-slider-thumb-height-active)) / -2);
-  left: calc((var(--oj-slider-thumb-hit-area) - var(--oj-slider-thumb-width-active)) / -2);
-  right: calc((var(--oj-slider-thumb-hit-area) - var(--oj-slider-thumb-width-active)) / -2); }
+  top: calc((-28px - var(--oj-slider-thumb-height-active)) / -2);
+  bottom: calc((-28px - var(--oj-slider-thumb-height-active)) / -2);
+  left: calc((-28px - var(--oj-slider-thumb-width-active)) / -2);
+  right: calc((-28px - var(--oj-slider-thumb-width-active)) / -2); }
 
 .oj-slider-vertical .oj-slider-thumb:after {
   content: '';
   position: absolute;
-  top: calc((var(--oj-slider-thumb-hit-area) - var(--oj-slider-thumb-width-active)) / -2);
-  bottom: calc((var(--oj-slider-thumb-hit-area) - var(--oj-slider-thumb-width-active)) / -2);
-  left: calc((var(--oj-slider-thumb-hit-area) - var(--oj-slider-thumb-height-active)) / -2);
-  right: calc((var(--oj-slider-thumb-hit-area) - var(--oj-slider-thumb-height-active)) / -2); }
+  top: calc((-28px - var(--oj-slider-thumb-width-active)) / -2);
+  bottom: calc((-28px - var(--oj-slider-thumb-width-active)) / -2);
+  left: calc((-28px - var(--oj-slider-thumb-height-active)) / -2);
+  right: calc((-28px - var(--oj-slider-thumb-height-active)) / -2); }
 
 .oj-slider-horizontal .oj-slider-thumb.oj-active {
   margin-left: calc(var(--oj-slider-thumb-width-active) / -2);
@@ -15579,10 +15591,10 @@ html[dir="rtl"] .oj-slider-vertical .oj-slider-thumb.oj-active {
   margin-left: calc(var(--oj-slider-color-picker-bar-thickness) / -2); }
 
 .oj-slider-color-picker .oj-slider-bar:after {
-  top: calc(var(--oj-slider-bar-hit-area) / -2 + var(--oj-slider-color-picker-bar-thickness) / 2);
-  bottom: calc(var(--oj-slider-bar-hit-area) / -2 + var(--oj-slider-color-picker-bar-thickness) / 2);
-  left: calc(var(--oj-slider-bar-hit-area) / -2 + var(--oj-slider-color-picker-bar-thickness) / 2);
-  right: calc(var(--oj-slider-bar-hit-area) / -2 + var(--oj-slider-color-picker-bar-thickness) / 2); }
+  top: calc(-18px + var(--oj-slider-color-picker-bar-thickness) / 2);
+  bottom: calc(-18px + var(--oj-slider-color-picker-bar-thickness) / 2);
+  left: calc(-18px + var(--oj-slider-color-picker-bar-thickness) / 2);
+  right: calc(-18px + var(--oj-slider-color-picker-bar-thickness) / 2); }
 
 .oj-slider-color-picker .oj-slider-bar-value {
   border-radius: var(--oj-slider-color-picker-bar-thickness); }
@@ -15604,16 +15616,16 @@ html[dir="rtl"] .oj-slider-vertical .oj-slider-thumb.oj-active {
     margin-right: calc(var(--oj-slider-color-picker-thumb-height) / -2); }
 
 .oj-slider-color-picker.oj-slider-horizontal .oj-slider-thumb:after {
-  top: calc((var(--oj-slider-thumb-hit-area) - var(--oj-slider-color-picker-thumb-height-active)) / -2);
-  bottom: calc((var(--oj-slider-thumb-hit-area) - var(--oj-slider-color-picker-thumb-height-active)) / -2);
-  left: calc((var(--oj-slider-thumb-hit-area) - var(--oj-slider-color-picker-thumb-width-active)) / -2);
-  right: calc((var(--oj-slider-thumb-hit-area) - var(--oj-slider-color-picker-thumb-width-active)) / -2); }
+  top: calc((-28px - var(--oj-slider-color-picker-thumb-height-active)) / -2);
+  bottom: calc((-28px - var(--oj-slider-color-picker-thumb-height-active)) / -2);
+  left: calc((-28px - var(--oj-slider-color-picker-thumb-width-active)) / -2);
+  right: calc((-28px - var(--oj-slider-color-picker-thumb-width-active)) / -2); }
 
 .oj-slider-color-picker.oj-slider-vertical .oj-slider-thumb:after {
-  top: calc((var(--oj-slider-thumb-hit-area) - var(--oj-slider-color-picker-thumb-width-active)) / -2);
-  bottom: calc((var(--oj-slider-thumb-hit-area) - var(--oj-slider-color-picker-thumb-width-active)) / -2);
-  left: calc((var(--oj-slider-thumb-hit-area) - var(--oj-slider-color-picker-thumb-height-active)) / -2);
-  right: calc((var(--oj-slider-thumb-hit-area) - var(--oj-slider-color-picker-thumb-height-active)) / -2); }
+  top: calc((-28px - var(--oj-slider-color-picker-thumb-width-active)) / -2);
+  bottom: calc((-28px - var(--oj-slider-color-picker-thumb-width-active)) / -2);
+  left: calc((-28px - var(--oj-slider-color-picker-thumb-height-active)) / -2);
+  right: calc((-28px - var(--oj-slider-color-picker-thumb-height-active)) / -2); }
 
 .oj-slider-color-picker.oj-slider-horizontal .oj-slider-thumb.oj-active {
   margin-left: calc(var(--oj-slider-color-picker-thumb-width-active) / -2);
@@ -20414,7 +20426,8 @@ oj-module {
   --oj-message-detail-line-height: 1.1;
   --oj-message-time-text-color: var(--oj-secondary-text-color);
   --oj-message-time-font-size: 0.75rem;
-  --oj-message-close-icon-display: none;
+  --oj-message-close-icon-display: block;
+  --oj-message-auto-timeout-close-icon-display: none;
   --oj-message-general-inline-border-width: 0 0 1px 0;
   --oj-message-general-inline-border-color: var(--oj-neutral-color-9);
   --oj-message-component-inline-bg-color-error: var(--oj-accent-color-danger-1);
@@ -20864,8 +20877,6 @@ oj-module {
   --oj-slider-bar-value-bg-color-active: var(--oj-slider-bar-value-bg-color);
   --oj-slider-bar-bg-color-disabled: var(--oj-slider-bar-bg-color);
   --oj-slider-bar-value-bg-color-disabled: var(--oj-neutral-color-11);
-  --oj-slider-bar-hit-area: 36px;
-  --oj-slider-thumb-hit-area: 28px;
   --oj-slider-color-picker-thumb-width: 24px;
   --oj-slider-color-picker-thumb-height: var(--oj-slider-color-picker-thumb-width);
   --oj-slider-color-picker-thumb-width-active: 34px;

@@ -1,0 +1,72 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+// set up include variables before importing dependencies
+@if $includeProgressClasses != false {
+  $includeIconClasses: true !global;
+}
+
+// import dependencies
+@import "../../common/helpers/oj.common.helpers";
+@import "../../common/widgets/oj.common.progress";
+@import "oj.alta.icons";
+
+@if $includeProgressClasses != false  {
+  @include module-include-once("alta.progress") {
+    .oj-progress-bar-overlay {
+      @include oj-rtl() {
+        transform:rotate(180deg);
+      }
+    }
+
+    .oj-progress-bar-indeterminate .oj-progress-bar-value {
+      width: 100%;
+      height: 100%;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        animation: indeterminateAnimation var(--oj-progress-bar-indeterminate-animation-duration) infinite linear;
+      }
+      @else
+      {
+        animation: indeterminateAnimation $progressBarIndeterminateAnimationDuration infinite linear;
+      }
+      transform-origin: 0% 50%;
+    }
+
+    @keyframes indeterminateAnimation {
+      0% {
+        transform:  translateX(0) scaleX(0);
+      }
+      40% {
+        transform:  translateX(0) scaleX(0.4);
+      }
+      100% {
+        transform:  translateX(100%) scaleX(0.5);
+      }
+    }
+
+    .oj-progress-circle-overlay {
+      background: $progressCircleIndeterminateOverlayImage;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        background-size: var(--oj-progress-circle-indeterminate-overlay-size);
+        animation: spinnerAnimation var(--oj-progress-circle-indeterminate-animation-duration) infinite linear;
+      }
+      @else
+      {
+        background-size: $progressCircleIndeterminateOverlaySize;
+        animation: spinnerAnimation $progressCircleIndeterminateAnimationDuration infinite linear;
+      }
+      @extend .oj-fwk-icon-spinner-static;
+    }
+
+    @keyframes spinnerAnimation {
+      from {
+        transform: rotateZ(0deg);
+      }
+      to {
+        transform: rotateZ(360deg);
+      }
+    }
+  }
+}

@@ -1,0 +1,49 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+$includeListViewVariables: $includeListViewClasses !default;
+
+@if $includeListViewVariables != false {
+  $includeCollectionVariables: true !global;
+  $includePanelVariables: true !global;
+}
+// import dependencies
+@import "oj.alta.ios.collection";
+@import "oj.alta.ios.panel";
+
+
+@if $includeListViewVariables != false {
+  @include module-include-once("alta.ios.variables.listview") {
+
+:root {
+  // list view
+  // ----------------------------
+
+  --oj-list-view-drill-icon-color:    var(--oj-neutral-color-11);
+
+  // header
+  --oj-list-view-header-bg-color:          var(--oj-neutral-color-5);
+  --oj-list-view-header-bg-color-disabled: var(--oj-neutral-color-3);
+  --oj-list-view-header-bg-image:          none;
+  --oj-list-view-header-font-weight:  bold;
+  --oj-list-view-header-font-size:    var(--oj-header-4-font-size);
+  --oj-list-view-header-border-width-expanded: 0;
+  --oj-list-view-header-border-width-collapsed: 0 0 1px;
+  --oj-list-view-header-opacity:      1;
+
+  // item
+  --oj-list-view-item-border-position: 0.5rem;
+
+  // card
+  --oj-list-view-card-width:          240px;
+  --oj-list-view-card-height:         auto;
+  --oj-list-view-card-margin-top:     10px;
+  --oj-list-view-card-margin-end:     10px;
+  --oj-list-view-card-margin-bottom:  0;
+  --oj-list-view-card-margin-start:   0;
+
+  
+}
+
+  }
+}

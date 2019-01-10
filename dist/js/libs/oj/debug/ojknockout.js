@@ -1,11 +1,11 @@
 /**
  * @license
- * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
-define(['ojs/ojcore', 'jquery', 'ojs/ojcontext', 'knockout', 'ojs/ojbindingprovider', 'ojs/ojkeysetimpl', 'ojs/ojknockouttemplateutils', 'ojs/ojresponsiveknockoututils', 'ojs/ojlogger', 'jqueryui-amd/widget', 'ojs/ojkoshared'], 
-    function(oj, $, Context, ko, BindingProvider, KeySetImpl, KnockoutTemplateUtils, ResponsiveKnockoutUtils, Logger)
+define(['ojs/ojcore', 'jquery', 'ojs/ojcontext', 'knockout', 'ojs/ojkeysetimpl', 'ojs/ojknockouttemplateutils', 'ojs/ojresponsiveknockoututils', 'ojs/ojlogger',  'ojs/ojkoshared', 'jqueryui-amd/widget'], 
+    function(oj, $, Context, ko, KeySetImpl, KnockoutTemplateUtils, ResponsiveKnockoutUtils, Logger, BindingProviderImpl)
 {
 /**
  * @private
@@ -62,7 +62,7 @@ GlobalChangeQueue.prototype._deliverChangesImpl = function () {
 };
 
 /* jslint browser: true, devel: true */
-/* global ComponentChangeTracker:false, ko:false, GlobalChangeQueue:false, WeakMap: false, BindingProvider: false, Logger:false */
+/* global ComponentChangeTracker:false, ko:false, GlobalChangeQueue:false, BindingProviderImpl: false, Logger:false */
 
 /**
  * To create a custom binding,
@@ -587,45 +587,6 @@ oj.ComponentBinding.prototype._initComponent = function (element, ctx) {
   return comp;
 };
 
-/**
- * @ignore
- */
-oj.ComponentBinding._evaluatorCacheMap = new WeakMap();
-
-/**
- * @ignore
- */
-oj.ComponentBinding._createEvaluatorViaCache = function (factory, expr, bindingContext) {
-  // The absence of binding context indicates that no caching should occur
-  if (!bindingContext) {
-    return factory(expr);
-  }
-
-  var cacheScope;
-  var scopeMap = oj.ComponentBinding._evaluatorCacheMap;
-
-  var key = bindingContext._ojCacheScope || bindingContext;
-
-  cacheScope = scopeMap.get(key);
-  if (!cacheScope) {
-    cacheScope = {};
-    scopeMap.set(key, cacheScope);
-  }
-  var func = cacheScope[expr];
-  if (!func) {
-    func = factory(expr);
-    cacheScope[expr] = func;
-  }
-  return func;
-};
-
-/**
- * @ignore
- */
-oj.ComponentBinding.__CreateEvaluator = function (expr, bindingContext) {
-  return oj.ComponentBinding._createEvaluatorViaCache(
-    BindingProvider.createBindingExpressionEvaluator, expr, bindingContext);
-};
 
 /**
  * @private
@@ -824,7 +785,7 @@ oj.ComponentBinding._writeValueToProperty = function (
       if (writerExpr != null) {
         // These writer expressions are already being cached, so we are not passing a second
         // to the function below and are not asking for the returned eveluator to be cached
-        inContextWriter = oj.ComponentBinding.__CreateEvaluator(writerExpr);
+        inContextWriter = BindingProviderImpl.createEvaluator(writerExpr, bindingContext);
       }
       // eslint-disable-next-line no-param-reassign
       cachedWriterFunctionEvaluators[name] = inContextWriter;
@@ -1815,12 +1776,12 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
 oj.KnockoutTemplateUtils = KnockoutTemplateUtils;
 oj.ResponsiveKnockoutUtils = ResponsiveKnockoutUtils;
 
-/* global ko:false */
+/* global ko:false, BindingProviderImpl:false */
 
 /**
  * @ignore
  */
-oj.__KO_CUSTOM_BINDING_PROVIDER_INSTANCE.addPostprocessor({
+BindingProviderImpl.addPostprocessor({
   getBindingAccessors: _replaceComponentBindingWithV2
 });
 
@@ -1844,7 +1805,7 @@ function _replaceComponentBindingWithV2(node, bindingContext, accessorMap, wrapp
   if (bindingName != null) {
     // eslint-disable-next-line no-param-reassign
     accessorMap = _modifyOjComponentBinding(node, bindingName, wrapped,
-                                            bindingContext, accessorMap);
+      bindingContext, accessorMap);
   }
 
   return accessorMap;
@@ -1912,7 +1873,7 @@ function _getOjComponent2BindingAccessor(bindingContext, attributeMap, bindingEx
 
         // bindingContext will be passed as as the first parameter to the evaluator
         var getter =
-            oj.ComponentBinding.__CreateEvaluator(expression, bindingContext).bind(null,
+          BindingProviderImpl.createEvaluator(expression, bindingContext).bind(null,
             bindingContext);
 
         Object.defineProperty(accessor, option,
@@ -1946,31 +1907,6 @@ function _getOjComponent2BindingAccessor(bindingContext, attributeMap, bindingEx
 
 /**
  * @param node
- * @param wrapped
- * @param bindingContext
- * @ignore
- */
-function _getBindingString(node, wrapped, bindingContext) {
-  var func = wrapped.getBindingsString;
-  if (func) {
-    return func.call(wrapped, node, bindingContext);
-  }
-
-  switch (node.nodeType) {
-    case 1: // Element
-      return node.getAttribute('data-bind');
-
-    case 8: // Comment node
-      var match = node.nodeValue.match(/^\s*ko(?:\s+([\s\S]+))?\s*$/);
-      return (match ? match[1] : null);
-
-    default:
-      return null;
-  }
-}
-
-/**
- * @param node
  * @param bindingName
  * @param wrapped
  * @param bindingContext
@@ -1979,7 +1915,7 @@ function _getBindingString(node, wrapped, bindingContext) {
 function _getBindingValueInfo(node, bindingName, wrapped, bindingContext) {
   var list = null;
 
-  var bindingString = _getBindingString(node, wrapped, bindingContext);
+  var bindingString = BindingProviderImpl.getBindingsString(node, wrapped, bindingContext);
   var keyValueArray = ko.jsonExpressionRewriting.parseObjectLiteral(bindingString);
 
   var selfVal = null;
@@ -2016,7 +1952,7 @@ function _keyValueArrayForEach(array, callback) {
 }
 
 
-oj.__KO_CUSTOM_BINDING_PROVIDER_INSTANCE.addPostprocessor(
+BindingProviderImpl.addPostprocessor(
   {
     nodeHasBindings: function (node, wrappedReturn) {
       if (!oj.BaseCustomElementBridge) {
@@ -2106,8 +2042,9 @@ oj.__KO_CUSTOM_BINDING_PROVIDER_INSTANCE.addPostprocessor(
           var eventName = oj.__AttributeUtils.eventListenerPropertyToEventType(propName);
           var isDomEvent = eventName && !metadataProps[propName];
           _expressionHandler.setupExpression(attr.value, propName, isDomEvent ?
-                                             domListenerMetadata :
-                                             metadataProps[propName.split('.')[0]]);
+            domListenerMetadata :
+            metadataProps[propName.split('.')[0]],
+            oj.BaseCustomElementBridge.isPromiseType(element, propName));
         }
 
         bridge.__INITIALIZING_PROPS = false;
@@ -2121,7 +2058,7 @@ oj.__KO_CUSTOM_BINDING_PROVIDER_INSTANCE.addPostprocessor(
 
           var metadata =
               _isDomEvent ? domListenerMetadata : metadataProps[_propName.split('.')[0]]; // send metadata for top level property
-          _expressionHandler.setupExpression(detail.value, _propName, metadata);
+          _expressionHandler.setupExpression(detail.value, _propName, metadata, false);
         };
 
         element.addEventListener(_ATTRIBUTE_CHANGED, attributeListener);
@@ -2157,7 +2094,7 @@ oj.__KO_CUSTOM_BINDING_PROVIDER_INSTANCE.addPostprocessor(
 }());
 
 
-/* global ko:false, ComponentChangeTracker:false, Logger:false */
+/* global ko:false, ComponentChangeTracker:false, Logger:false, BindingProviderImpl:false */
 
 /**
  * @ignore
@@ -2174,7 +2111,7 @@ oj.__ExpressionPropertyUpdater = function (element, bindingContext, skipThrottli
   var _CHANGED_EVENT_SUFFIX = 'Changed';
 
   // This function should be called when the bindings are applied initially and whenever the expression attribute changes
-  this.setupExpression = function (attrVal, propName, metadata) {
+  this.setupExpression = function (attrVal, propName, metadata, immediateWriteback) {
     // If no metadata was passed in, just return bc this is not a component property.
     if (!metadata) {
       return undefined;
@@ -2213,8 +2150,7 @@ oj.__ExpressionPropertyUpdater = function (element, bindingContext, skipThrottli
     var expr = info.expr;
 
     if (expr) {
-      // TODO: consider moving  __CreateEvaluator() to a more generic utility class
-      var evaluator = oj.ComponentBinding.__CreateEvaluator(expr, bindingContext);
+      var evaluator = BindingProviderImpl.createEvaluator(expr, bindingContext);
 
       if (!readOnly) {
         var initialRead = true;
@@ -2258,6 +2194,12 @@ oj.__ExpressionPropertyUpdater = function (element, bindingContext, skipThrottli
           }
         );
         initialRead = false;
+      }
+
+      // Some top level Promise properties support immediate writeback like the oj-dynamic component
+      // ready API
+      if (immediateWriteback) {
+        _writeToObservable(propName, expr, element[propName], evaluator);
       }
 
       // Only listen for property changes for writeable properties
@@ -2365,48 +2307,14 @@ oj.__ExpressionPropertyUpdater = function (element, bindingContext, skipThrottli
     var topProp = splitProps[0];
     var listener = function (evt) {
       if (!_isSettingProperty(topProp)) {
-        var written = false;
-        var reason;
-        ko.ignoreDependencies(
-          function () {
-            var value = evt.detail.value;
-            // If the propName has '.' we need to walk the top level value and writeback
-            // subproperty value
-            for (var i = 1; i < splitProps.length; i++) {
-              var subprop = splitProps[i];
-              value = value[subprop];
-            }
-
-            var target = evaluator(bindingContext);
-
-            if (ko.isObservable(target)) {
-              if (ko.isWriteableObservable(target)) {
-                target(oj.ComponentBinding.__cloneIfArray(value));
-                written = true;
-              } else {
-                reason = 'the observable is not writeable';
-              }
-            } else {
-              var writerExpr = oj.__ExpressionUtils.getPropertyWriterExpression(expr);
-              if (writerExpr != null) {
-                // TODO: consider caching the evaluator
-                var wrirerEvaluator =
-                      oj.ComponentBinding.__CreateEvaluator(writerExpr, bindingContext);
-                wrirerEvaluator(bindingContext)(oj.ComponentBinding.__cloneIfArray(value));
-                written = true;
-              } else {
-                reason = 'the expression is not a valid update target';
-              }
-            }
-          }
-        );
-
-        if (!written) {
-          if (reason) {
-            Logger.info("The expression '%s' for property '%s' was not updated because %s.",
-                          expr, propName, reason);
-          }
+        var value = evt.detail.value;
+        // If the propName has '.' we need to walk the top level value and writeback
+        // subproperty value
+        for (var i = 1; i < splitProps.length; i++) {
+          var subprop = splitProps[i];
+          value = value[subprop];
         }
+        _writeToObservable(propName, expr, value, evaluator);
       }
     };
 
@@ -2506,9 +2414,43 @@ oj.__ExpressionPropertyUpdater = function (element, bindingContext, skipThrottli
 
     return new ComponentChangeTracker(updater, oj.ComponentBinding._changeQueue);
   }
+
+  function _writeToObservable(propName, expr, value, evaluator) {
+    var written = false;
+    var reason = '';
+    ko.ignoreDependencies(
+      function () {
+        var target = evaluator(bindingContext);
+        if (ko.isObservable(target)) {
+          if (ko.isWriteableObservable(target)) {
+            target(oj.ComponentBinding.__cloneIfArray(value));
+            written = true;
+          } else {
+            reason = 'the observable is not writeable';
+          }
+        } else {
+          var writerExpr = oj.__ExpressionUtils.getPropertyWriterExpression(expr);
+          if (writerExpr != null) {
+            var wrirerEvaluator =
+                  BindingProviderImpl.createEvaluator(writerExpr, bindingContext);
+            wrirerEvaluator(bindingContext)(oj.ComponentBinding.__cloneIfArray(value));
+            written = true;
+          } else {
+            reason = 'the expression is not a valid update target';
+          }
+        }
+      }
+    );
+    if (!written) {
+      if (reason) {
+        Logger.info("The expression '%s' for property '%s' was not updated because %s.",
+                      expr, propName, reason);
+      }
+    }
+  }
 };
 
-/* global ko:false */
+/* global ko:false, BindingProviderImpl:false */
 
 /**
  * @ignore
@@ -2516,24 +2458,24 @@ oj.__ExpressionPropertyUpdater = function (element, bindingContext, skipThrottli
 (function () {
   var _BINDINGS = '_ojbindingsobj';
 
-  oj.__KO_CUSTOM_BINDING_PROVIDER_INSTANCE.registerPreprocessor(
+  BindingProviderImpl.registerPreprocessor(
     'oj-bind-text',
     function (node) {
       return _replaceWithKo(node, 'text', 'value', true);
     }
   );
 
-  oj.__KO_CUSTOM_BINDING_PROVIDER_INSTANCE.registerPreprocessor(
+  BindingProviderImpl.registerPreprocessor(
     'oj-bind-if',
     function (node) {
       return _replaceWithKo(node, 'if', 'test', false);
     }
   );
 
-  oj.__KO_CUSTOM_BINDING_PROVIDER_INSTANCE.registerPreprocessor(
+  BindingProviderImpl.registerPreprocessor(
     'oj-bind-for-each', _replaceWithKoForEach);
 
-  oj.__KO_CUSTOM_BINDING_PROVIDER_INSTANCE.addPostprocessor(
+  BindingProviderImpl.addPostprocessor(
     {
       nodeHasBindings: function (node, wrappedReturn) {
         var bindings = _getBindings(node);
@@ -2620,7 +2562,7 @@ oj.__ExpressionPropertyUpdater = function (element, bindingContext, skipThrottli
               var propName = oj.__AttributeUtils.attributeToPropertyName(attrNode.nodeName);
               expressionHandler.setupExpression(attrNode.value, propName, {
                 _domListener: true
-              });
+              }, false);
             }
 
             ko.utils.domNodeDisposal.addDisposeCallback(node, function () {
@@ -2768,7 +2710,7 @@ oj.__ExpressionPropertyUpdater = function (element, bindingContext, skipThrottli
       };
     } else {
       evaluator =
-          oj.ComponentBinding.__CreateEvaluator(exp, bindingContext).bind(null, bindingContext);
+            BindingProviderImpl.createEvaluator(exp, bindingContext).bind(null, bindingContext);
       var classObs = evaluator();
 
       if (typeof classObs === 'function') {
@@ -2780,7 +2722,14 @@ oj.__ExpressionPropertyUpdater = function (element, bindingContext, skipThrottli
           });
         }
       } else {
+        // Non observable data bound attribute
         resolvedValue = classObs;
+        isArray = Array.isArray(resolvedValue);
+        if (isArray) {
+          evaluator = function () {
+            return resolvedValue.join(' ');
+          };
+        }
       }
     }
     if (typeof resolvedValue === 'string' || isArray) {
@@ -2801,7 +2750,7 @@ oj.__ExpressionPropertyUpdater = function (element, bindingContext, skipThrottli
           value;
       };
     }
-    return oj.ComponentBinding.__CreateEvaluator(exp, bindingContext).bind(null, bindingContext);
+    return BindingProviderImpl.createEvaluator(exp, bindingContext).bind(null, bindingContext);
   }
 
   function _getObjectEvaluator(attrEvaluators) {
@@ -2922,6 +2871,117 @@ oj._KnockoutBindingProvider.getInstance = function () {
  */
 oj._KnockoutBindingProvider._instance = new oj._KnockoutBindingProvider();
 
+/**
+ * @ojoverviewdoc BindingOverview - [6]JET Binding Elements
+ * @classdesc
+ * {@ojinclude "name":"bindingOverviewDoc"}
+ */
+
+/**
+ * <h2 id="overview">Overview
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#overview"></a>
+ * </h2>
+ *
+ * <p>
+ *  JET provides a set of binding elements that exist in the DOM only before bindings are applied.
+ *  After the bindings are applied, the elements are removed from the document's DOM. However, the
+ *  bindings they have defined will continue to function, i.e they will still be reacting to any
+ *  changes in binding parameters, etc. These elements are intended to allow declaratively handling
+ *  logic that would otherwise need to be done programatically, e.g. conditionals, loops, text binding,
+ *  etc. Binding elements are removed from the DOM after bindings are applied in order to not interfere
+ *  with page layout.
+ * </p>
+ * <p>
+ *  Note that since binding elements will be removed from the DOM after bindings are applied, for
+ *  slotting, applications need to wrap binding elements inside another HTML element (e.g. &lt;span&gt;)
+ *  with the slot attribute. JET binding elements do not support the slot attribute.
+ * </p>
+ *
+ * <h2 id="knockout">Knockout Equivalents
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#knockout"></a>
+ * </h2>
+ * <table class="params">
+ *   <thead>
+ *     <tr>
+ *       <th>Knockout Binding</th>
+ *       <th>JET Equivalent</th>
+ *       <th>Notes</th>
+ *     </tr>
+ *   </thead>
+ *   <tbody>
+ *     <tr>
+ *       <td class="rt">attr</td>
+ *       <td>:[attribute]="[[attrValue]]", e.g. :id="[[inputId]]"</td>
+ *       <td>See the custom element
+ *           <a href="./CustomElementOverview.html#ce-databind-global-section">global attribute</a>
+ *           data binding doc for details.</td>
+ *     </tr>
+ *     <tr>
+ *       <td class="rt">css</td>
+ *       <td>:class="[[classList]]"</td>
+ *       <td>Supports the normal space delimited string of classes,
+ *           an array of classes, or a map of class to boolean values
+ *           for toggling classes in the DOM. See the custom element
+ *           <a href="./CustomElementOverview.html#ce-databind-class-section">class</a>
+ *           data binding doc for details.</td>
+ *     </tr>
+ *     <tr>
+ *       <td class="rt">event</td>
+ *       <td>on-[event]</td>
+ *       <td>No ":" prefix needed even on native HTML elements. The parameters
+ *           passed to the on- listeners include two additional params.
+ *           this.clickListener=function(event, data, bindingContext) {..}
+ *           If the component has its own event equivalent, use those instead.
+ *           Eg: oj-button should use on-oj-action not on-click. See the custom element
+ *           <a href="./CustomElementOverview.html#ce-events-section">event</a>
+ *           data binding doc for details.</td>
+ *     </tr>
+ *     <tr>
+ *       <td class="rt">foreach</td>
+ *       <td>oj-bind-for-each</td>
+ *       <td>See the <a href="./oj.ojBindForEach.html">oj-bind-for-each</a> binding element doc
+ *           for details.</td>
+ *     </tr>
+ *     <tr>
+ *       <td class="rt">html</td>
+ *       <td>oj-bind-dom</td>
+ *       <td>See the <a href="./oj.ojBindDom.html">oj-bind-dom</a> binding element doc
+ *           for details.</td>
+ *     </tr>
+ *     <tr>
+ *       <td class="rt">if</td>
+ *       <td>oj-bind-if</td>
+ *       <td>See the <a href="./oj.ojBindIf.html">oj-bind-if</a> binding element doc
+ *           for details.</td>
+ *     </tr>
+ *     <tr>
+ *       <td class="rt">template</td>
+ *       <td>oj-bind-template-slot if being used inside a composite or oj-module for other cases</td>
+ *       <td>See the <a href="./oj.ojBindTemplateSlot.html">oj-bind-template-slot</a> binding element and
+ *           <a href="./oj.ojModule.html">oj-module</a> element doc
+ *           for details.</td>
+ *     </tr>
+ *     <tr>
+ *       <td class="rt">text</td>
+ *       <td>oj-bind-text</td>
+ *       <td>See the <a href="./oj.ojBindText.html">oj-bind-text</a> binding element doc
+ *           for details.</td>
+ *     </tr>
+ *     <tr>
+ *       <td class="rt">visible</td>
+ *       <td>:style.display="[[ CONDITION ? '' : 'none' ]]"</td>
+ *       <td> See the custom element
+ *           <a href="./CustomElementOverview.html#ce-databind-style-section">style</a>
+ *           data binding doc for details.</td>
+ *     </tr>
+ *   </tbody>
+ * </table>
+ *
+ *
+ * @ojfragment bindingOverviewDoc
+ * @memberof BindingOverview
+ */
+
 /* global ko:false */
 
 /**
@@ -3019,7 +3079,7 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
   and modified by Oracle JET team to be included into Oracle JET project.
 */
 
-/* global ko:false, Symbol:false, Map:false, KeySetImpl:false, Context:false */
+/* global ko:false, Symbol:false, Map:false, KeySetImpl:false, Context:false, BindingProviderImpl: false */
 
 (function () {
   'use strict';
@@ -3265,7 +3325,7 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
         addDetail.addBeforeKeys ? addDetail.addBeforeKeys : addDetail.afterKeys);
       var getCurrentIndex = function (entryIndex) {
         var currentIndex = dataIndexes.length > entryIndex ? dataIndexes[entryIndex] :
-            this.firstLastNodesList.length + entryIndex; // add entry to the end
+          this.firstLastNodesList.length + entryIndex; // add entry to the end
         if (currentIndex === undefined) {
           return this.firstLastNodesList.length;
         }
@@ -3293,7 +3353,7 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
         dataIndex = 0; // used to iterate trough eventData
         eventKeys.forEach(function (keyValue) {
           changes.push(valueToChangeAddItem(eventData[dataIndex],
-                                            getCurrentIndex(dataIndex), keyValue));
+            getCurrentIndex(dataIndex), keyValue));
           dataIndex += 1;
         }, this);
       }
@@ -3333,7 +3393,7 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
           if (dataIndexes[dataIndex] !== undefined) {
             changes.push(valueToChangeDeleteItem(dataIndexes[dataIndex]));
             changes.push(valueToChangeAddItem(updateDetail.data[dataIndex],
-                                              dataIndexes[dataIndex], keyValue));
+              dataIndexes[dataIndex], keyValue));
           }
           dataIndex += 1;
         });
@@ -3377,7 +3437,7 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
       if (changeMap[statusAdded].length && changeSet[i].status === statusAdded) {
         var lastAdd = changeMap[statusAdded][changeMap[statusAdded].length - 1];
         var lastIndex = lastAdd.isBatch ? (lastAdd.index + lastAdd.values.length) - 1 :
-            lastAdd.index;
+          lastAdd.index;
         if (lastIndex + 1 === changeSet[i].index) {
           if (!lastAdd.isBatch) {
             // transform the last addition into a batch addition object
@@ -3465,21 +3525,8 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
           index: index + i,
           observableIndex: ko.observable()
         };
-        childContext = this.$context.extend({
-          $root: undefined,
-          $parent: undefined,
-          $parents: undefined,
-          $current: current
-        });
-        if (this.as) {
-          childContext[this.as] = current;
-        }
-        if (this.templateAlias) {
-          childContext[this.templateAlias] = current;
-        }
-
-        // All rows in the foreach will share evaluator cache, so use the parent context as cache scope
-        Object.defineProperty(childContext, '_ojCacheScope', { value: this.$context });
+        childContext = BindingProviderImpl.extendBindingContext(this.$context, current, this.as,
+          this.templateAlias, this.$context);
 
         // apply bindings first, and then process child nodes, because bindings can add childnodes
         ko.applyBindingsToDescendants(childContext, templateClone);
@@ -3692,8 +3739,8 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
           ffe.onArrayChange(changeSet);
         }
       },
-      null,
-      { disposeWhenNodeIsRemoved: element }
+        null,
+        { disposeWhenNodeIsRemoved: element }
       );
 
       ffe = new OjForEach(element, value, context);

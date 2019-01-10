@@ -1,0 +1,751 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the 
+//          version in your base theme's directory, 
+//          for example alta/widgets/_oj.alta.formcontrol.inputnumber.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+@import "../../utilities/oj.utilities";
+@import "oj.common.formcontrol.mixins";
+
+
+@if $includeInputNumberClasses != false {
+  @include module-include-once("common.inputnumber") {
+
+    /* inputnumber */
+    /* --------------------------------------------------------------- */
+
+    // This is to prevent the flash of unstyled content before the html becomes JET components.
+    @if $initialVisibility == hidden {
+      oj-input-number:not(.oj-complete) {
+        visibility: hidden;
+      }      
+    }
+
+    /* We need to support this sizing use cases: 
+       - width on root dom element should be the width of input and buttons, not just input. */
+
+    /* Root dom element for inputnumber. 
+     It wraps the input and the down/up buttons */
+    .oj-inputnumber { 
+
+      display: inline-block;
+      width: 100%;
+
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        max-width: var(--oj-form-control-lg-max-width);
+        min-width: var(--oj-form-control-min-width);
+        font-size: var(--oj-form-control-input-font-size);
+        @include oj-form-control-text-size-adjust-css-vars();
+      }
+      @else {
+        
+        // use a width of 100% and then max and min width so that when 
+        // there's less room for the form control it can automatically 
+        // get smaller instead of overflowing its boundaries
+        max-width: $formControlLargeMaxWidth;
+        min-width: $formControlMinWidth;
+
+        // font size needs to be on the root, because max/min width is in em.
+        font-size: $formControlInputFontSize;
+        @include oj-form-control-text-size-adjust($formControlInputFontSize);
+      }
+      
+    }
+
+    .oj-inputnumber-wrapper {
+      width: 100%; 
+      // do not allow the buttons to wrap to the next line
+      white-space: nowrap;
+      // use inline-flex properties. This will grow the input and the buttons will take up 
+      // the remaining width
+      display: inline-flex;
+      box-sizing: border-box;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        height: var(--oj-form-control-input-height);
+        border-radius: var(--oj-form-control-border-radius);
+      }
+      @else
+      {
+        height: $formControlInputHeight;
+        @include oj-border-radius($formControlBorderRadius);        
+      }
+    }
+
+    /* Input field for inputnumber */
+    .oj-inputnumber-input { 
+      border-style: solid;
+      
+      // grow the input using the flex property
+      flex: 1;
+      // needed for the input to be able to shrink smaller than the browser
+      // default width.  Because this has flex-grow of 1, it will always grow
+      // to the available space of the parent container, which is what we want.
+      width: 1em;
+      // needed or else the input could overflow the container
+      min-width: 1em;
+
+      // normally removing an outline can cause accessibility issues, however
+      // on an input the cursor blinks so an outline is not required for
+      // accessibility. As of 6-11-14 only chrome is putting
+      // an outline on inputs anyway
+      outline: 0;
+
+      box-sizing: border-box;
+      
+      // font-family and font-size would normally be included by
+      // calling @include oj-normalize-text-input;
+      // however we can't call @include oj-normalize-text-input;  
+      // or we get a css lint error because margin is set to 0 in that and 
+      // you shouldn't use margin with display: table-cell
+      // so set the font-family and font-size here instead
+      font-family: inherit; 
+      font-size: 100%;
+      
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        @include oj-form-control-input-css-vars;
+        border-color: var(--oj-form-control-border-color);
+        border-width: var(--oj-form-control-border-top-width) var(--oj-form-control-border-right-width) var(--oj-form-control-border-bottom-width) var(--oj-form-control-border-left-width);
+        
+        html:not([dir="rtl"]) & {
+          border-radius: var(--oj-form-control-border-radius) var(--oj-input-number-input-to-button-border-radius) var(--oj-input-number-input-to-button-border-radius) var(--oj-form-control-border-radius);
+          border-right-width: var(--oj-input-number-input-to-button-border-width);
+        }
+        html[dir="rtl"] & {
+          border-radius: var(--oj-input-number-input-to-button-border-radius) var(--oj-form-control-border-radius) var(--oj-form-control-border-radius) var(--oj-input-number-input-to-button-border-radius);
+          border-left-width: var(--oj-input-number-input-to-button-border-width);
+        }
+        
+        padding: 0 var(--oj-form-control-padding-horizontal);
+        
+        @include oj-form-control-content-no-focus-padding($outputCssVars: true);
+        
+      }
+      @else {
+        
+        @include oj-form-control-input;
+        border-color: $formControlBorderColor;
+        border-width: $formControlBorderWidth;
+        // border-radius on input:
+        // if there is no margin between input and buttonset, then remove border radius from
+        // the edge of the input.
+        @if ($inputNumberInputToButtonMargin == null or $inputNumberInputToButtonMargin == 0) {
+          @include oj-ltr()
+          {
+            @include oj-border-radius($formControlBorderRadius 0 0 $formControlBorderRadius,
+            $slowOverride: false);
+            border-right-width: 0;
+          }
+
+          @include oj-rtl()
+          {
+            @include oj-border-radius(0 $formControlBorderRadius $formControlBorderRadius 0,
+            $slowOverride: false);
+            border-left-width: 0;
+          }
+        } @else {
+          @include oj-ltr()
+          {
+            @include oj-border-radius($formControlBorderRadius $formControlBorderRadius $formControlBorderRadius $formControlBorderRadius,
+            $slowOverride: false);
+            border-right-width: oj-shorthand-property-value-right($formControlBorderWidth);
+          }
+
+          @include oj-rtl()
+          {
+            @include oj-border-radius($formControlBorderRadius $formControlBorderRadius $formControlBorderRadius $formControlBorderRadius,
+            $slowOverride: false);
+            border-left-width: oj-shorthand-property-value-left($formControlBorderWidth);
+          }
+        }
+
+        @if ($formControlPaddingHorizontal != null and $formControlPaddingHorizontal != 0)  {
+          padding: 0 $formControlPaddingHorizontal;
+        }
+        @else {
+          padding: 0 0;
+        }
+
+        @include oj-form-control-content-no-focus-padding;
+      }
+      
+    }
+
+    // space between input and buttons, if any
+    .oj-inputnumber-input {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        html:not([dir="rtl"]) & {
+          margin-right: var(--oj-input-number-input-to-button-margin);
+        }
+        html[dir="rtl"] & {
+          margin-left: var(--oj-input-number-input-to-button-margin);
+        }
+      }
+      @else {
+        @include oj-ltr() {
+          margin-right: $inputNumberInputToButtonMargin;
+        }
+        @include oj-rtl() {
+          margin-left: $inputNumberInputToButtonMargin;
+        }
+      }
+    }
+
+    /* Invalid/warning styling */
+    /* ----------------------- */
+    @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+    {
+      .oj-inputnumber.oj-invalid .oj-inputnumber-input {
+        border-color: var(--oj-form-control-border-color-invalid);
+        border-style: solid;
+      }
+      .oj-inputnumber.oj-warning .oj-inputnumber-input {
+        border-color: var(--oj-form-control-border-color-warning);
+        border-style: solid;
+      }
+      
+      .oj-inputnumber.oj-invalid .oj-inputnumber-input,
+      .oj-inputnumber.oj-warning .oj-inputnumber-input
+      {
+        html:not([dir="rtl"]) & {
+          border-width: var(--oj-form-control-messaging-border-top-width) var(--oj-input-number-input-to-button-messaging-border-width) var(--oj-form-control-messaging-border-bottom-width) var(--oj-form-control-messaging-border-left-width);
+        }
+        html[dir="rtl"] & {
+          border-width: var(--oj-form-control-messaging-border-top-width) var(--oj-form-control-messaging-border-right-width) var(--oj-form-control-messaging-border-bottom-width) var(--oj-input-number-input-to-button-messaging-border-width);
+        }        
+      }
+
+      .oj-inputnumber.oj-invalid .oj-buttonset,
+      .oj-inputnumber.oj-warning .oj-buttonset {
+        html:not([dir="rtl"]) & {
+          border-top-left-radius: 0;
+          border-bottom-left-radius: 0;
+        }
+        html[dir="rtl"] & {
+          border-top-right-radius: 0;
+          border-bottom-right-radius: 0;
+        }
+      }
+
+      .oj-inputnumber.oj-invalid .oj-buttonset {
+        border-style: solid;
+        border-color: var(--oj-form-control-border-color-invalid);
+      }
+      .oj-inputnumber.oj-warning .oj-buttonset {
+        border-style: solid;
+        border-color: var(--oj-form-control-border-color-warning);  
+      } 
+
+      // NOTE: borderErrorWidth might be only for the bottom
+      .oj-inputnumber.oj-invalid .oj-buttonset,
+      .oj-inputnumber.oj-warning .oj-buttonset {
+
+        html:not([dir="rtl"]) & {
+          border-width: var(--oj-input-number-buttonset-messaging-border-width) var(--oj-input-number-buttonset-messaging-border-width) var(--oj-input-number-buttonset-messaging-border-width) 0;
+        }
+        html[dir="rtl"] & {
+          border-width: var(--oj-input-number-buttonset-messaging-border-width) 0 var(--oj-input-number-buttonset-messaging-border-width) var(--oj-input-number-buttonset-messaging-border-width);
+        }
+      }
+    }
+    @else {
+      .oj-inputnumber.oj-invalid .oj-inputnumber-input {
+        border-color: $borderColorError;
+        border-style: solid;
+      }
+      .oj-inputnumber.oj-warning .oj-inputnumber-input {
+        border-color: $borderColorWarning;
+        border-style: solid;
+      }
+
+      .oj-inputnumber.oj-invalid .oj-inputnumber-input,
+      .oj-inputnumber.oj-warning .oj-inputnumber-input
+      {
+
+        $borderErrorWidth: oj-form-control-border-message-width-func();
+        @include oj-ltr()
+        {
+
+          border-width: oj-shorthand-property-value-top($borderErrorWidth) 0 
+            oj-shorthand-property-value-bottom($borderErrorWidth)  
+            oj-shorthand-property-value-left($borderErrorWidth);
+        }
+
+        @include oj-rtl()
+        {
+          border-width: oj-shorthand-property-value-top($borderErrorWidth)  
+            oj-shorthand-property-value-left($borderErrorWidth) 
+            oj-shorthand-property-value-bottom($borderErrorWidth)  0;
+        }
+        // We don't want to mess with the border-radius if the error border is on all four sides. 
+        // Otherwise, set the border-radius to 0 to show a straight border.
+        @if(not(oj-form-control-message-border-four-sides($borderErrorWidth)) and 
+        $formControlBorderRadius != 0) {
+          @include oj-border-radius(0);
+        }
+      }
+
+      // now style the buttonset
+      .oj-inputnumber.oj-invalid .oj-buttonset,
+      .oj-inputnumber.oj-warning .oj-buttonset {
+        @include oj-ltr() {
+          border-top-left-radius: 0;
+          border-bottom-left-radius: 0;
+        }
+        @include oj-rtl() {
+          border-top-right-radius: 0;
+          border-bottom-right-radius: 0;
+        }
+      }
+
+      .oj-inputnumber.oj-invalid .oj-buttonset {
+        border-style: solid;
+        border-color: $borderColorError;
+      }
+      .oj-inputnumber.oj-warning .oj-buttonset {
+        border-style: solid;
+        border-color: $borderColorWarning;  
+      } 
+
+      // NOTE: borderErrorWidth might be only for the bottom
+      .oj-inputnumber.oj-invalid .oj-buttonset,
+      .oj-inputnumber.oj-warning .oj-buttonset {
+        $borderErrorWidth: oj-form-control-border-message-width-func();
+        @include oj-ltr() {
+          border-width: oj-shorthand-property-value-top($borderErrorWidth)  
+            oj-shorthand-property-value-right($borderErrorWidth) 
+            oj-shorthand-property-value-top($borderErrorWidth)  0;
+        }
+        @include oj-rtl() {
+          border-width: oj-shorthand-property-value-top($borderErrorWidth)  0
+            oj-shorthand-property-value-top($borderErrorWidth) 
+            oj-shorthand-property-value-left($borderErrorWidth);
+        }
+        @if(not(oj-form-control-message-border-four-sides($borderErrorWidth)) and 
+        $formControlBorderRadius != 0) {
+          @include oj-border-radius(0);
+        }
+      }
+    }
+    
+
+    // end invalid and error styling
+
+    /* Disabled styling for the widget */
+    .oj-inputnumber.oj-disabled .oj-inputnumber-input {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        color: var(--oj-form-control-value-color-disabled);
+        background-color: var(--oj-form-control-bg-color-disabled);
+      }
+      @else {  
+        color: $formControlValueColorDisabled;
+        background-color: $formControlBgColorDisabled;
+      }
+    }
+
+    .oj-inputnumber.oj-disabled .oj-inputnumber-input {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        border-style: var(--oj-form-control-input-border-style-disabled);
+        color: var(--oj-form-control-value-color-disabled);
+        background-color: var(--oj-form-control-bg-color-disabled);
+        border-color: var(--oj-form-control-border-color-disabled);
+        opacity: var(--oj-form-control-opacity-disabled);
+      }
+      @else {        
+        border-style: $inputTextBorderStyleDisabled;
+        color: $formControlValueColorDisabled;
+        background-color: $formControlBgColorDisabled;
+        border-color: $formControlBorderColorDisabled;
+        opacity: $formControlOpacityDisabled;
+  }
+    }
+
+    /* readonly styling for the widget */
+    .oj-inputnumber.oj-read-only .oj-inputnumber-input {
+      border-color: transparent;
+    }
+
+    .oj-inputnumber.oj-read-only .oj-inputnumber-input {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        @include oj-form-control-content-readonly($outputCssVars: true);
+      }
+      @else {
+        @include oj-form-control-content-readonly;        
+      }
+      padding: 0;
+    }
+
+    /* Styling for focus state */
+    // same as inputText
+    .oj-inputnumber:not(.oj-read-only):not(.oj-invalid):not(.oj-warning).oj-focus .oj-inputnumber-input {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        @include oj-form-control-content-focus($outputCssVars: true);
+        @include oj-form-control-content-focus-padding($outputCssVars: true);
+      }
+      @else {
+        @include oj-form-control-content-focus;
+        @include oj-form-control-content-focus-padding;        
+      }
+    }
+
+    /* styling for inputNumber's buttonset/buttons */
+    // if there is space between input and buttons, then the buttons act like a buttonset
+    // if there isn't space, then it looks like the input and buttons are wrapped in a single border.
+
+    // height of buttons. we don't want the buttons to bleed outside the wrapper
+    .oj-inputnumber .oj-buttonset {
+      height: 100%;
+      box-sizing: border-box;
+    }
+
+    // .oj-button adds margin-bottom, so we need to remove it
+    .oj-inputnumber .oj-inputnumber-button.oj-button {
+      height: 100%;
+      line-height: normal;
+      margin-bottom: 0;
+    }
+    .oj-inputnumber .oj-button {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+      {
+        width: var(--oj-input-number-button-width);
+      }
+      @else
+      {
+        width: $inputNumberButtonWidth;
+      }
+    }
+
+    // hide buttons when in readonly mode
+    .oj-inputnumber.oj-read-only .oj-buttonset {
+      display: none;
+    }
+
+    // don't show button's built-in focus outline.
+    .oj-inputnumber-button.oj-button.oj-focus {
+      outline-style: none;
+    }
+    /* Styling for text-align */
+    .oj-form-control-text-align-right.oj-inputnumber .oj-inputnumber-input,
+    .oj-form-control-text-align-right .oj-inputnumber .oj-inputnumber-input
+    {
+      text-align: right;
+    }
+    .oj-form-control-text-align-start.oj-inputnumber .oj-inputnumber-input,
+    .oj-form-control-text-align-start .oj-inputnumber .oj-inputnumber-input
+    {
+      @include oj-bidi-property(
+        $property: 'text-align',
+        $startOrEnd: start,
+        $important: false) ;
+    }
+    .oj-form-control-text-align-end.oj-inputnumber .oj-inputnumber-input,
+    .oj-form-control-text-align-end .oj-inputnumber .oj-inputnumber-input
+    {
+      @include oj-bidi-property(
+        $property: 'text-align',
+        $startOrEnd: end,
+        $important: false) ;
+    }
+
+    // border-radius on the buttonset/buttons
+    // buttonset uses the form control border radius
+    // if there is no space between input and buttons, then use $formControlBorderRadius 
+    // for end button (the up button)) and no border-radius for the inside button
+    // otherwise default to the buttonset's border-radius
+    @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+    {
+      .oj-inputnumber .oj-buttonset {
+        html:not([dir="rtl"]) & {
+          border-top-left-radius: 0;
+          border-bottom-left-radius: 0;
+        }
+        html[dir="rtl"] & {
+          border-top-right-radius: 0;
+          border-bottom-right-radius: 0;
+        }
+      }
+      .oj-buttonset-multi.oj-button-full-chrome .oj-inputnumber-button.oj-buttonset-first,
+      .oj-buttonset-multi.oj-button-outlined-chrome .oj-inputnumber-button.oj-buttonset-first {
+        html:not([dir="rtl"]) & {
+          border-top-left-radius: var(--oj-input-number-button-border-radius);
+          border-bottom-left-radius: var(--oj-input-number-button-border-radius);
+        }
+        html[dir="rtl"] & {
+          border-top-right-radius: var(--oj-input-number-button-border-radius);
+          border-bottom-right-radius: var(--oj-input-number-button-border-radius);
+        }
+      }
+      .oj-inputnumber .oj-buttonset {
+        html:not([dir="rtl"]) & {
+          border-top-right-radius: var(--oj-form-control-border-radius);
+          border-bottom-right-radius: var(--oj-form-control-border-radius);
+        }
+        html[dir="rtl"] & {
+          border-top-left-radius: var(--oj-form-control-border-radius);
+          border-bottom-left-radius: var(--oj-form-control-border-radius);
+        }
+      }
+      .oj-buttonset-multi.oj-button-full-chrome .oj-inputnumber-button.oj-buttonset-last,
+      .oj-buttonset-multi.oj-button-outlined-chrome .oj-inputnumber-button.oj-buttonset-last {
+        html:not([dir="rtl"]) & {
+          border-top-right-radius: var(--oj-input-number-button-border-radius);
+          border-bottom-right-radius: var(--oj-input-number-button-border-radius);
+        }
+        html[dir="rtl"] & {
+          border-top-left-radius: var(--oj-input-number-button-border-radius);
+          border-bottom-left-radius: var(--oj-input-number-button-border-radius);
+        }
+      }
+    }
+    @else {
+      $borderRadius: $buttonBorderRadius;
+      @if ($inputNumberInputToButtonMargin == null or $inputNumberInputToButtonMargin == 0) {
+        $borderRadius: 0;
+      }
+      // The leading edge of the buttonset should always have a border radius of 0.
+      .oj-inputnumber .oj-buttonset {
+        @include oj-ltr() {
+          @include oj-border-top-left-radius(0, $slowOverride: false);
+          @include oj-border-bottom-left-radius(0, $slowOverride: false);
+        }
+        @include oj-rtl() {
+          @include oj-border-top-right-radius(0, $slowOverride: false);
+          @include oj-border-bottom-right-radius(0, $slowOverride: false);
+        }
+
+        @include oj-border-radius-slowoverride();
+      }
+      // .oj-buttonset-first is applied to the first button of the buttonset.
+      // override the first button with 0 radius
+      .oj-buttonset-multi.oj-button-full-chrome .oj-inputnumber-button.oj-buttonset-first,
+      .oj-buttonset-multi.oj-button-outlined-chrome .oj-inputnumber-button.oj-buttonset-first {
+        @include oj-ltr() {
+          @include oj-border-top-left-radius($borderRadius, $slowOverride: false);
+          @include oj-border-bottom-left-radius($borderRadius, $slowOverride: false);
+        }
+        @include oj-rtl() {
+          @include oj-border-top-right-radius($borderRadius, $slowOverride: false);
+          @include oj-border-bottom-right-radius($borderRadius, $slowOverride: false);
+        }
+
+        @include oj-border-radius-slowoverride();
+      }
+
+      .oj-inputnumber .oj-buttonset {
+        @include oj-ltr() {
+          @include oj-border-top-right-radius($formControlBorderRadius, $slowOverride: false);
+          @include oj-border-bottom-right-radius($formControlBorderRadius, $slowOverride: false);
+        }
+        @include oj-rtl() {
+          @include oj-border-top-left-radius($formControlBorderRadius, $slowOverride: false);
+          @include oj-border-bottom-left-radius($formControlBorderRadius, $slowOverride: false);
+        }
+
+        @include oj-border-radius-slowoverride();
+      }
+      // .oj-buttonset-last is applied to the last button of the buttonset.
+      // override the first button with 0 radius
+      .oj-buttonset-multi.oj-button-full-chrome .oj-inputnumber-button.oj-buttonset-last,
+      .oj-buttonset-multi.oj-button-outlined-chrome .oj-inputnumber-button.oj-buttonset-last {
+        @include oj-ltr() {
+          @include oj-border-top-right-radius($borderRadius, $slowOverride: false);
+          @include oj-border-bottom-right-radius($borderRadius, $slowOverride: false);
+        }
+        @include oj-rtl() {
+          @include oj-border-top-left-radius($borderRadius, $slowOverride: false);
+          @include oj-border-bottom-left-radius($borderRadius, $slowOverride: false);
+        }
+
+        @include oj-border-radius-slowoverride();
+      }
+    }
+    // end border-radius on buttonset
+
+    // make borders look like they go around the input and buttonset if there is no space between
+    // them.
+    @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+    {
+      .oj-inputnumber .oj-inputnumber-button.oj-buttonset-first {
+        border-top-width: var(--oj-input-number-button-border-width);
+        border-bottom-width: var(--oj-input-number-button-border-width);
+      }
+      
+      .oj-inputnumber .oj-inputnumber-button.oj-buttonset-last {
+        @include oj-ltr() {
+          border-right-width: var(--oj-input-number-button-border-width);
+        }
+        @include oj-rtl() {
+          border-left-width: var(--oj-input-number-button-border-width);
+        }
+        border-top-width: var(--oj-input-number-button-border-width);
+        border-bottom-width: var(--oj-input-number-button-border-width);
+      }
+
+      //disabled up and down buttons
+      .oj-inputnumber.oj-disabled .oj-buttonset {
+        border-color: var(--oj-form-control-border-color-disabled);
+      }
+      .oj-inputnumber.oj-disabled .oj-inputnumber-button {
+        border-color: var(--oj-button-border-color-disabled);
+      }
+
+      // change color of border around buttons
+      .oj-inputnumber .oj-buttonset {
+        border-color: var(--oj-form-control-border-color);
+        border-width: var(--oj-input-number-buttonset-border-width) var(--oj-input-number-buttonset-border-width) var(--oj-input-number-buttonset-border-width) var(--oj-input-number-buttonset-border-width);
+        @include oj-ltr() {
+          border-left-width: 0;
+        }
+        @include oj-rtl() {
+          border-right-width: 0;
+        }
+        border-style: solid;
+      }
+      
+      // color in focus state
+      .oj-inputnumber:not(.oj-read-only):not(.oj-invalid):not(.oj-warning).oj-focus .oj-inputnumber-input {
+        border-color: var(--oj-form-control-input-border-color-focus);
+        border-width: var(--oj-form-control-input-border-top-width-focus) var(--oj-form-control-input-border-right-width-focus) var(--oj-form-control-input-border-bottom-width-focus) var(--oj-form-control-input-border-left-width-focus);
+        @include oj-ltr() {
+          border-right-width: var(--oj-input-number-input-to-button-border-width-focus);
+        }
+        @include oj-rtl() {
+          border-left-width: var(--oj-input-number-input-to-button-border-width-focus);
+        }
+      }
+      .oj-inputnumber:not(.oj-read-only):not(.oj-invalid):not(.oj-warning).oj-focus .oj-buttonset {
+        border-color: var(--oj-form-control-input-border-color-focus);
+        border-width: var(--oj-input-number-buttonset-border-width-focus) var(--oj-input-number-buttonset-border-width-focus) var(--oj-input-number-buttonset-border-width-focus) var(--oj-input-number-buttonset-border-width-focus);
+        @include oj-ltr() {
+          border-left-width: 0;
+        }
+        @include oj-rtl() {
+          border-right-width: 0;
+        }
+      }
+    }
+    @else {
+      // if no margin, use the buttonset's border for the outsides
+      @if ($inputNumberInputToButtonMargin == null or $inputNumberInputToButtonMargin == 0) {
+        .oj-inputnumber .oj-inputnumber-button.oj-buttonset-first {
+          border-top-width: 0;
+          border-bottom-width: 0;
+        }
+      }
+      @else {
+        .oj-inputnumber .oj-inputnumber-button.oj-buttonset-first {
+          border-top-width: 1px;
+          border-bottom-width: 1px;
+        }
+      }
+
+      .oj-inputnumber .oj-inputnumber-button.oj-buttonset-last {
+        @if ($inputNumberInputToButtonMargin == null or $inputNumberInputToButtonMargin == 0) {
+          @include oj-ltr() {
+            border-right-width: 0;
+          }
+          @include oj-rtl() {
+            border-left-width: 0;
+          }
+          border-top-width: 0;
+          border-bottom-width: 0;
+        }
+        @else {
+          @include oj-ltr() {
+            border-right-width: 1px;
+          }
+          @include oj-rtl() {
+            border-left-width: 1px;
+          }
+          border-top-width: 1px;
+          border-bottom-width: 1px;
+        }
+      }
+      //disabled up and down buttons
+      .oj-inputnumber.oj-disabled .oj-buttonset {
+        border-color: $formControlBorderColorDisabled;
+      }
+      .oj-inputnumber.oj-disabled .oj-inputnumber-button {
+        border-color: $buttonBorderColorDisabled;
+      }
+
+      // change color of border around buttons
+      .oj-inputnumber .oj-buttonset {
+        border-color: $formControlBorderColor;
+        border-width: oj-shorthand-property-value-top($formControlBorderWidth) oj-shorthand-property-value-left($formControlBorderWidth) oj-shorthand-property-value-top($formControlBorderWidth) oj-shorthand-property-value-left($formControlBorderWidth);
+        @include oj-ltr() {
+          border-left-width: 0;
+        }
+        @include oj-rtl() {
+          border-right-width: 0;
+        }
+        border-style: solid;
+      }
+      // color in focus state
+      .oj-inputnumber:not(.oj-read-only):not(.oj-invalid):not(.oj-warning).oj-focus .oj-inputnumber-input {
+        border-color: $formControlInputBorderColorFocus;
+        border-width: $formControlInputBorderWidthFocus;
+        $innerBorderWidth: 0;
+        @if ($inputNumberInputToButtonMargin == null or $inputNumberInputToButtonMargin == 0) {
+          @include oj-ltr() {
+            border-right-width: 0;
+          }
+          @include oj-rtl() {
+            border-left-width: 0;
+          }
+        }
+        @else {
+          @include oj-ltr() {
+            border-right-width: oj-shorthand-property-value-right($formControlInputBorderWidthFocus);
+          }
+          @include oj-rtl() {
+            border-left-width: oj-shorthand-property-value-left($formControlInputBorderWidthFocus);
+          }
+        }
+      }
+      .oj-inputnumber:not(.oj-read-only):not(.oj-invalid):not(.oj-warning).oj-focus .oj-buttonset {
+        border-color: $formControlInputBorderColorFocus;
+        border-width: oj-shorthand-property-value-top($formControlInputBorderWidthFocus) oj-shorthand-property-value-right($formControlInputBorderWidthFocus) oj-shorthand-property-value-top($formControlInputBorderWidthFocus) oj-shorthand-property-value-left($formControlInputBorderWidthFocus);
+        @include oj-ltr() {
+          border-left-width: 0;
+        }
+        @include oj-rtl() {
+          border-right-width: 0;
+        }
+      }
+    }
+
+    // The oj-form-control-inherit selector on an ancestor indicates that the form control should
+    // inherit styles, like width/height/borders/colors/text-alignment, etc. This is used for
+    // editable datagrid cells and editable table cells
+    // -----------------------------------------------------------------------------------------
+    // TODO: redo the comments, make mixins for the common properties
+
+    // remove borders, inherit colors and stretch the height
+    .oj-form-control-inherit .oj-inputnumber-input {
+      @include oj-form-control-inherit(); 
+    }
+    
+    // stretch the height
+    .oj-form-control-inherit .oj-inputnumber-wrapper {
+      height: 100%;
+    }
+
+    // if a focus border width is set reset it back to 0
+    // TODO
+    @if ($formControlInputBorderWidthFocus != null) {                      
+      .oj-form-control-inherit .oj-inputnumber:not(.oj-read-only).oj-focus .oj-inputnumber-input {
+        border-width:0;
+      }
+    }
+  }
+}

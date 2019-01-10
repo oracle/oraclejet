@@ -1,0 +1,162 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+
+
+//*****************************************************************************
+// returns the lower bound (first item) in a range
+//*****************************************************************************
+@function lower-bound($range){
+  @if length($range) <= 0 {
+    @error "called lower-bound function but the range is empty";
+  }
+  @return nth($range,1);
+}
+
+//*****************************************************************************
+// returns the upper bound (second item) in a range
+//*****************************************************************************
+@function upper-bound($range) {
+  @if length($range) < 2 {
+    @error "called upper-bound function the range is less than 2 items";
+  }
+  @return nth($range, 2);
+}
+
+//*****************************************************************************
+// returns a unitless number
+//*****************************************************************************
+@function oj-strip-unit($number)
+{
+  // The key concept in the treatment of numeric values is that division by 1 
+  // of the same unit will remove the unit.  However, the units must be the same 
+  // for this trick to work.
+
+  @if type-of($number) == 'number' and not unitless($number) 
+  {
+    $divisors: ('em':1em, 'rem':1rem, 'ex:':1ex, 'px':1px, 'in':1in, 'cm':1cm, 'mm':1mm, 'pt':1pt, 'pc':1pc);
+    $unit: unit($number);
+    $divisor: map-get($divisors, $unit);
+    @return $number / $divisor;
+  }
+  @return $number; 
+}
+
+//*****************************************************************************
+// converts 0px, 0em, 0%, etc. to 0, leaving other inputs unchanged, given the 
+// CSS convention that 0 should be unitless
+//*****************************************************************************
+// @function oj-strip-unit-from-zero($number)
+// {
+//   @if oj-strip-unit($number) == 0
+//   {
+//     @return 0;
+//   }
+//   @return $number;
+// } 
+
+//*****************************************************************************
+// converts 0 to 0px, leaving other inputs unchanged, for use in a calc(),
+// since calc(10%-0) fails, but calc(10%-0px) works, despite the CSS convention
+// that 0 should be unitless
+//*****************************************************************************
+// @function oj-add-unit-to-zero($number)
+// {
+//   @if $number == 0
+//   {
+//     @return 0px;
+//   }
+//   @return $number; 
+// }
+
+//*****************************************************************************
+// maps 0 to 0, 7px to 7, 10% to 10%, else throws an error
+//*****************************************************************************
+@function oj-convert-to-jqui-position-syntax($number)
+{
+  // This function converts from CSS syntax conventions (0, 7px, 10%) to the values supported 
+  // by the JQUI position utility ( https://api.jqueryui.com/position/ ), which are 0, 7, and 
+  // 10%, respectively.  This function throws an error for inputs other than 0, px, or %.
+
+  @if type-of($number) != 'number' 
+  {
+    @error "oj-convert-to-jqui-position-syntax function param must be of form 0, 7px, 10%, but was #{$number}.";
+  }
+
+  @if $number == 0 or unit($number) == "%"
+  {
+    @return $number;
+  }
+
+  @if unit($number) == "px"
+  {
+    @return oj-strip-unit($number);
+  }
+
+  @error "oj-convert-to-jqui-position-syntax function param must be of form 0, 7px, 10%, but was #{$number}.";
+}
+
+///*****************************************************************************
+/// implementation from https://css-tricks.com/snippets/sass/fix-number-n-digits/
+/// @param {Number} $float - Number to format
+/// @param {Number} $digits [5] - Number of digits to leave
+/// @return {Number}
+///*****************************************************************************
+@function oj-round-float($float, $decimals) {
+
+  $pow: 1;
+
+  @if $decimals > 0 {
+    @for $i from 1 through $decimals {
+      $pow: 10 * $pow;
+    }
+  }
+
+  @return round($float * $pow) / $pow;
+}
+
+///*****************************************************************************
+/// Use this mixin to multiply the values of a certain property
+/// across an incrementing selector name
+///
+/// SCSS EXAMPLE:
+///
+///   .oj-datagrid-column-header-cell {
+///     @include oj-property-multiplier(
+///				 $selectorName: 'oj-datagrid-depth'
+///               $propertyName: 'height',
+///               $propertyMultiplicand: 15px,
+///               $minMultiplier: 2,
+///               $maxMultiplier: 3);
+///   }
+///
+/// CSS:
+///   .oj-datagrid-column-header-cell.oj-datagrid-depth-2 {
+///     height: 30px;
+///   }
+///
+///   .oj-datagrid-column-header-cell.oj-datagrid-depth-3 {
+///     height: 45px;
+///   }
+///*****************************************************************************
+@mixin oj-property-multiplier($selectorName, $propertyName, $propertyMultiplicand, $minMultiplier, $maxMultiplier)
+{
+  @if (unit($propertyMultiplicand) == 'rem')
+  {
+    $propertyMultiplicand: oj-rem-to-px($propertyMultiplicand, $rootFontSize);
+  }
+
+  @if (unit($propertyMultiplicand) == 'px')
+  {
+    @for $i from $minMultiplier through $maxMultiplier
+    {
+      #{if(&, "&", "*")}.#{$selectorName}-#{$i} {
+        // $dimensionValue needs to be rounded and in pixels in the case that multiplying the rem value
+        // by i is different than converting to pixels and summing over the three values.
+        #{$propertyName}: ($i * round($propertyMultiplicand))
+      }
+    }
+  }
+  @else
+  {
+    @warn $propertyMultiplicand + ' was passed to oj-property-multiplier(), only px and rem units allowed, therefore no multiplication was applied';
+  }
+}

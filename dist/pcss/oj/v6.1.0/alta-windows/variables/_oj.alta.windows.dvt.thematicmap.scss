@@ -1,0 +1,29 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+$includeThematicMapVariables: $includeThematicMapClasses !default;
+
+@if $includeThematicMapVariables != false {
+  $includeDvtBaseVariables: true !global;
+}
+
+// import dependencies
+@import "oj.alta.windows.dvt";
+
+@if $includeThematicMapVariables != false {
+  @include module-include-once("alta.windows.variables.ThematicMap") {
+
+:root {
+  
+    // map
+    // ----------------------------
+    --oj-thematic-map-bg-color:            var(--oj-neutral-color-7);              
+    --oj-thematic-map-border-color:        var(--oj-neutral-color-1);              
+    --oj-thematic-map-marker-bg-color:     var(--oj-neutral-color-15);              
+    --oj-thematic-map-marker-border-color: var(--oj-neutral-color-1);              
+    --oj-thematic-map-link-color:          var(--oj-neutral-color-11);              
+    
+}
+
+  }
+}

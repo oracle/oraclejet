@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 @import "../utilities/oj.utilities.urls";
@@ -1000,7 +1000,8 @@
 //  position of its oj-message parent
 //$messageHeaderHeight:                                   auto !default;
 // valid values for messageCloseIconDisplay are none and block
-//$messageCloseIconDisplay:                               none !default;
+//$messageCloseIconDisplay:                               block !default;
+//$messageAutoTimeoutCloseIconDisplay:                    none !default;
 //$messageCategoryTextColor:                              $secondaryTextColor !default;
 //$messageCategoryFontSize:                               inherit !default;
 //$messageTimeTextColor:                                  $secondaryTextColor !default;

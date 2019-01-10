@@ -1,0 +1,74 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+$includeMenuVariables: $includeMenuClasses !default;
+
+@if $includeMenuVariables != false {
+  $includePopupVariables: true !global;
+}
+// import dependencies
+@import "oj.alta.android.popup";
+
+@if $includeMenuVariables != false {
+  @include module-include-once("alta.android.variables.menu") {
+    :root {
+      // menu
+      // ---------------------------
+    // todo: sass doc says this is top/bottom padding, change var name?
+      --oj-menu-padding:                        0.5rem;
+      --oj-menu-border-width:                   1px;
+      --oj-menu-border-radius:                  1px;
+      --oj-menu-font-size:                      var(--oj-font-size);
+      --oj-menu-box-shadow:                     0 2px 5px unquote('hsla(var(--oj-box-shadow-hsl),0.25)');
+      --oj-menu-submenu-box-shadow:             0 3px 7px unquote('hsla(var(--oj-box-shadow-hsl),0.25)');
+      --oj-menu-icon-size:                      24px;
+      --oj-menu-icon-to-edge-padding:           1.25rem;
+      --oj-menu-text-to-icon-padding:           1.125rem;
+      --oj-menu-submenu-icon-padding:           0.6875rem;
+      --oj-menu-text-to-edge-padding:           0.875rem;
+      --oj-menu-text-only-text-align:           initial;
+      --oj-menu-divider-margin:                 0;
+      --oj-menu-divider-border-width:           1px;
+      --oj-menu-item-line-height:               3rem;
+    
+      --oj-menu-bg-color:                       var(--oj-popup-bg-color);
+      --oj-menu-border-color:                   var(--oj-neutral-color-10);
+      --oj-menu-divider-border-color:           var(--oj-menu-border-color);
+      --oj-menu-item-text-color:                var(--oj-primary-text-color);
+      --oj-menu-item-border-color:              transparent;
+      --oj-menu-item-border-width:              1px;
+      --oj-menu-item-bg-color-focus:            var(--oj-neutral-color-5);
+      --oj-menu-item-border-color-focus:        var(--oj-neutral-color-11);
+      --oj-menu-item-text-color-disabled:       var(--oj-text-color-disabled);
+      --oj-menu-item-last-border-width:         1px;
+      --oj-menu-icon-color:                     var(--oj-brand-color);
+      --oj-menu-icon-color-disabled:            var(--oj-menu-icon-color);
+      --oj-menu-icon-opacity-disabled:          var(--oj-opacity-disabled);
+      --oj-menu-submenu-icon-color:             var(--oj-icon-color-default);
+    
+      // menu sheet
+      --oj-menu-sheet-border-radius:            var(--oj-menu-border-radius);
+      --oj-menu-sheet-font-size:                1.0625rem;
+      --oj-menu-sheet-margin-horizontal:        1rem;
+    // todo: sass had $menuSheetMarginBottom
+    //$menuSheetMarginBottom value must be 0, px, or %, e.g. 0, 10px, 5%
+      --oj-menu-sheet-item-line-height:         2.8235294118rem;
+    
+      // groups of sheet menu items separated by group dividers
+      --oj-menu-sheet-item-group-border-radius: 0;
+      --oj-menu-sheet-divider-border-width:     var(--oj-menu-divider-border-width);
+      // cancel menu item (.oj-menu-item-cancel) and its anchor
+      --oj-menu-sheet-item-cancel-font-weight:  normal;
+    
+      --oj-menu-sheet-bg-color:                 var(--oj-menu-bg-color);
+      --oj-menu-sheet-item-text-color:          var(--oj-text-color-5);
+      --oj-menu-sheet-item-bg-color:            transparent;
+      --oj-menu-sheet-item-border-color:        var(--oj-menu-item-border-color);
+      --oj-menu-sheet-item-border-width:        var(--oj-menu-item-border-width);
+      --oj-menu-sheet-item-bg-color-focus:      var(--oj-menu-item-bg-color-focus);
+      --oj-menu-sheet-item-border-color-focus:  transparent;
+      --oj-menu-sheet-item-text-color-disabled: var(--oj-menu-item-text-color-disabled);
+      --oj-menu-sheet-divider-border-color:     var(--oj-menu-divider-border-color);  
+    }  
+  }
+}

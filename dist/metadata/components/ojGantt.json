@@ -1,11 +1,11 @@
 {
   "name": "oj-gantt",
-  "version": "6.0.0",
-  "jetVersion": "6.0.0",
+  "version": "6.1.0",
+  "jetVersion": "6.1.0",
   "displayName": "Gantt",
   "type": "core",
   "description": "Displays scheduling information graphically, making it easier to plan, coordinate, and track various tasks and resources.",
-  "help": "https://docs.oracle.com/en/middleware/jet/6/reference-api/oj.ojGantt.html",
+  "help": "https://docs.oracle.com/en/middleware/jet/6.1/reference-api/oj.ojGantt.html",
   "properties": {
     "animationOnDataChange": {
       "description": "Defines the animation that is applied on data changes.",

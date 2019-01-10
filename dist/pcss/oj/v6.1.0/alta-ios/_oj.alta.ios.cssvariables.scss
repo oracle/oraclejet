@@ -1,0 +1,78 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../common/oj.common.cssvariables.palette";
+@import "variables/oj.alta.ios.general";
+
+
+@import "variables/oj.alta.ios.accordion";
+@import "variables/oj.alta.ios.avatar";
+@import "variables/oj.alta.ios.button";
+@import "variables/oj.alta.ios.buttonset";
+@import "variables/oj.alta.ios.collapsible";
+@import "variables/oj.alta.ios.conveyorbelt";
+@import "variables/oj.alta.ios.datagrid";
+@import "variables/oj.alta.ios.dialog";
+@import "variables/oj.alta.ios.filepicker";
+@import "variables/oj.alta.ios.filmstrip";
+@import "variables/oj.alta.ios.iconcircle";
+@import "variables/oj.alta.ios.indexer";
+@import "variables/oj.alta.ios.listview";
+@import "variables/oj.alta.ios.masonrylayout";
+@import "variables/oj.alta.ios.menu";
+@import "variables/oj.alta.ios.menuselectmany";
+@import "variables/oj.alta.ios.message";
+@import "variables/oj.alta.ios.messages";
+@import "variables/oj.alta.ios.navigationlist";
+@import "variables/oj.alta.ios.pagingcontrol";
+@import "variables/oj.alta.ios.panel";
+@import "variables/oj.alta.ios.popup";
+@import "variables/oj.alta.ios.progress";
+@import "variables/oj.alta.ios.progresslist";
+@import "variables/oj.alta.ios.refresher";
+@import "variables/oj.alta.ios.rowexpander";
+@import "variables/oj.alta.ios.swipeactions";
+@import "variables/oj.alta.ios.tabbar";
+@import "variables/oj.alta.ios.table";
+@import "variables/oj.alta.ios.toolbar";
+@import "variables/oj.alta.ios.train";
+@import "variables/oj.alta.ios.treeview";
+
+//forms
+@import "variables/oj.alta.ios.formcontrol.label";
+@import "variables/oj.alta.ios.formcontrol.checkboxset";
+@import "variables/oj.alta.ios.formcontrol.colorpalette";
+@import "variables/oj.alta.ios.formcontrol.colorspectrum";
+@import "variables/oj.alta.ios.formcontrol.combobox";
+@import "variables/oj.alta.ios.formcontrol.inputdatetime";
+@import "variables/oj.alta.ios.formcontrol.inputnumber";
+@import "variables/oj.alta.ios.formcontrol.inputtext";
+@import "variables/oj.alta.ios.formcontrol.radioset";
+@import "variables/oj.alta.ios.formcontrol.select";
+@import "variables/oj.alta.ios.formcontrol.slider";
+@import "variables/oj.alta.ios.formcontrol.switch";
+@import "variables/oj.alta.ios.formcontrol.textarea";
+@import "variables/oj.alta.ios.formlayout";
+
+//dvt
+@import "variables/oj.alta.ios.dvt.chart";
+@import "variables/oj.alta.ios.dvt.diagram";
+@import "variables/oj.alta.ios.dvt.gantt";
+@import "variables/oj.alta.ios.dvt.gauge";
+@import "variables/oj.alta.ios.dvt.nbox";
+@import "variables/oj.alta.ios.dvt.pictochart";
+@import "variables/oj.alta.ios.dvt.sunburst";
+@import "variables/oj.alta.ios.dvt.tagcloud";
+@import "variables/oj.alta.ios.dvt.thematicmap";
+@import "variables/oj.alta.ios.dvt.timeaxis";
+@import "variables/oj.alta.ios.dvt.timeline";
+@import "variables/oj.alta.ios.dvt.treemap";
+
+
+// preview components
+@import "variables/oj.alta.ios.applayout";
+@import "variables/oj.alta.ios.applayout.hybrid";
+@import "variables/oj.alta.ios.applayout.web";
+
+// deprecated components
+@import "variables/oj.deprecated.alta.ios.formcontrol.inputsearch";
+@import "variables/oj.deprecated.alta.ios.tabs";
+@import "variables/oj.deprecated.alta.ios.tree";

@@ -1,0 +1,32 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+$includeDeprecatedTreeVariables: $includeTreeClasses !default;
+
+@if $includeDeprecatedTreeVariables != false {
+  @include module-include-once("alta.ios.variables.tree") {
+
+:root {
+  --oj-tree-animation-duration:                   0.4s; //settings: ignore
+
+  --oj-tree-text-color:                           var(--oj-link-text-color); //settings: ignore
+
+  --oj-tree-node-bg-color-hover:                  transparent; //settings: ignore
+  --oj-tree-node-border-color-hover:              var(--oj-neutral-color-14); //settings: ignore
+
+  --oj-tree-node-bg-color-selected:               var(--oj-brand-color-light-4); //settings: ignore
+  --oj-tree-node-border-color-selected:           var(--oj-tree-node-bg-color-selected); //settings: ignore
+
+  --oj-tree-node-bg-color-hover-selected:         var(--oj-brand-color-light-4); //settings: ignore
+  --oj-tree-node-border-color-hover-selected:     var(--oj-tree-text-color); //settings: ignore
+
+  --oj-tree-node-bg-color-selected-inactive:      var(--oj-brand-color-light-5); //settings: ignore
+  --oj-tree-node-border-color-selected-inactive:  var(--oj-brand-color-light-3); //settings: ignore
+
+  --oj-tree-dnd-marker-line-color:                var(--oj-brand-color); //settings: ignore
+
+}
+
+
+  }
+}

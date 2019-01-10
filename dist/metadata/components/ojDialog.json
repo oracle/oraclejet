@@ -1,7 +1,7 @@
 {
   "name": "oj-dialog",
-  "version": "6.0.0",
-  "jetVersion": "6.0.0",
+  "version": "6.1.0",
+  "jetVersion": "6.1.0",
   "displayName": "Dialog",
   "type": "core",
   "styleClasses": [
@@ -55,7 +55,7 @@
     }
   ],
   "description": "Displays a popup window that provides information and gathers input from the application user.",
-  "help": "https://docs.oracle.com/en/middleware/jet/6/reference-api/oj.ojDialog.html",
+  "help": "https://docs.oracle.com/en/middleware/jet/6.1/reference-api/oj.ojDialog.html",
   "properties": {
     "cancelBehavior": {
       "description": "Specifies the cancel behavior of the dialog.\nThe default value depends on the theme.\nIn the alta-web theme, the default is \"icon\",\nand in alta-android, alta-ios and alta-windows themes, the\ndefault is \"none\". Note that the cancelBehavior applies to both automatic and user-defined headers.\nSo by default, a user-defined header in the alta-web theme will have a system generated close icon.",
@@ -82,6 +82,12 @@
           "displayName": "None"
         }
       }
+    },
+    "dialogTitle": {
+      "description": "Specify the title of the dialog. null is the default.",
+      "type": "string|null",
+      "displayName": "Dialog Title",
+      "help": "dialogTitle"
     },
     "dragAffordance": {
       "description": "Specifies the drag affordance.\nThe default value depends on the theme.\nIn the alta-web theme, the default is \"title-bar\",\nand in alta-android, alta-ios and alta-windows themes, the\ndefault is \"none\".",

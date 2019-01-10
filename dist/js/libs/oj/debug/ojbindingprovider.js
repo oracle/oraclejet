@@ -1,46 +1,53 @@
 /**
  * @license
- * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
-define(['ojs/ojcore', 'ojs/ojkoshared'], function(oj)
+define(['ojs/ojcore', 'ojs/ojkoshared'], function(oj, BindingProviderImpl)
 {
+/* global BindingProviderImpl:false */
 /**
  * Copyright (c) 2018, Oracle and/or its affiliates.
  * All rights reserved.
  */
 
 /**
- * @class
- * @since 6.0.0
- * @ignore
+ * Utility class with functions for interacting with the JET binding provider.
+ * @namespace
  * @hideconstructor
+ * @ojtsmodule
+ * @ojstatus preview
+ * @since 6.1.0
  */
 function BindingProvider() { }
 
 /**
- * @param {*} tagName
- * @param {*} preprocessor
+ * Utility method to register a preprocessor for a specific tag name. The preprocessor
+ * will be called with the DOM node matching the specified tag name and can modify, remove,
+ * or replace node. Any new nodes must be inserted immediately before the DOM node, and if any
+ * nodes were added or node was removed, the function must return an array of the new nodes
+ * that are now in the document in place of node.
+ * @param {string} tagName
+ * @param {function(Node):Array<Node>} preprocessor
  * @return {void}
- * @export
+ * @ignore
+ * @static
  */
 BindingProvider.registerPreprocessor = function (tagName, preprocessor) {
-  oj.__KO_CUSTOM_BINDING_PROVIDER_INSTANCE.registerPreprocessor(tagName, preprocessor);
+  BindingProviderImpl.registerPreprocessor(tagName, preprocessor);
 };
 
 /**
- * Creates expression evaluator
- * @param {string} expressionText inner expression text not including any decorator characters
- * that identify the string as an expression
- * @return {Function} an evaluator function that will take binding (data) context as a parameter
- *
+ * Creates an expression evaluator.
+ * @param {string} expressionText The inner expression text not including any decorator characters
+ *                                that identifies the string as an expression.
+ * @param {Object} binding context where the expression will be evaluated
+ * @return {function(object):any} An evaluator function that will take binding (data) context as a parameter
+ * @static
  */
-BindingProvider.createBindingExpressionEvaluator = function (expressionText) {
-    /* jslint evil:true */
-    // eslint-disable-next-line no-new-func
-  return new Function('$context', 'with($context){with($data||{}){return '
-              + expressionText + ';}}'); // @HTMLUpdateOK; binding expression evaluation
+BindingProvider.createBindingExpressionEvaluator = function (expressionText, bindingContext) {
+  return BindingProviderImpl.createBindingExpressionEvaluator(expressionText, bindingContext);
 };
 
 

@@ -1,0 +1,54 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+$includeListViewVariables: $includeListViewClasses !default;
+
+@if $includeListViewVariables != false {
+  $includeCollectionVariables: true !global;
+  $includePanelVariables: true !global;
+}
+// import dependencies
+@import "oj.alta.web.collection";
+@import "oj.alta.web.panel";
+
+@if $includeListViewVariables != false {
+  @include module-include-once("alta.web.variables.listview") {
+
+:root {
+  // list view
+  // ----------------------------
+
+  --oj-list-view-drill-icon-color:    var(--oj-icon-color-default);
+
+  // header
+//todo: I made oj-header-bg-color, --oj-header-bg-color-disabled, and --oj-header-bg-image into 
+// list view variables. what's weird now is that only the accordion uses 
+//--oj-list-view-header-bg-color-disabled and --oj-list-view-header-bg-image, but accordion doesn't 
+//have its own variables, it already uses other list view vars. 
+// I'm pretty certain list view could use --oj-list-view-header-bg-image as I think it's 
+//transparent in all the themes, can it also use --oj-list-view-header-bg-color-disabled somehow?
+  --oj-list-view-header-bg-color:          var(--oj-neutral-color-5);
+  --oj-list-view-header-bg-color-disabled: var(--oj-neutral-color-3);
+  --oj-list-view-header-bg-image:          none;
+  --oj-list-view-header-font-weight:  normal;
+  --oj-list-view-header-font-size:    var(--oj-header-4-font-size);
+  --oj-list-view-header-border-width-expanded: 1px;
+  --oj-list-view-header-border-width-collapsed: 1px 1px 0;
+  --oj-list-view-header-opacity:      1;
+
+  // item
+  --oj-list-view-item-border-position: 0;
+
+  // card
+  --oj-list-view-card-width:          240px;
+  --oj-list-view-card-height:         auto;
+  --oj-list-view-card-margin-top:     10px;
+  --oj-list-view-card-margin-end:     10px;
+  --oj-list-view-card-margin-bottom:  0;
+  --oj-list-view-card-margin-start:   0;
+
+  
+}
+
+  }
+}

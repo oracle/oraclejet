@@ -1,0 +1,15 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+$includeMenuSelectManyVariables: $includeMenuSelectManyClasses !default;
+
+@if $includeMenuSelectManyVariables != false {
+  @include module-include-once("alta.android.variables.menuselectmany") {
+
+    :root {
+    // menu-select-many
+    // ---------------------------
+      --oj-menu-icon-size: 24px;
+    }
+  }
+}

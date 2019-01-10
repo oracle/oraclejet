@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -37,7 +37,8 @@ define(['ojs/ojcore', 'ojs/ojeventtarget', 'ojs/ojdataprovider'], function(oj)
  * @ojtsmodule
  * @extends oj.DataProvider
  * @ojsignature {target: "Type",
- *               value: "interface TreeDataProvider<K, D> extends DataProvider<K, D>"}
+ *               value: "interface TreeDataProvider<K, D> extends DataProvider<K, D>",
+ *               genericParameters: [{"name": "K", "description": "Type of Key"}, {"name": "D", "description": "Type of Data"}]}
  * @ojtsimport {module: "ojdataprovider", type: "AMD", imported: ["DataProvider"]}
  * @classdesc
  * TreeDataProvider is the basic interface for getting runtime data which JET components that display hierarchical list of items (such as [oj-tree-view]{@link oj.ojTreeView}) can use.

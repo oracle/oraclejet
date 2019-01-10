@@ -1,0 +1,17 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+$includeRowExpanderVariables: $includeRowExpanderClasses !default;
+
+@if $includeRowExpanderVariables != false {
+  @include module-include-once("alta.windows.variables.rowexpander") {
+:root {
+  // row expander
+  // ----------------------------
+  --oj-row-expander-indent-width: 16px;
+  --oj-row-expander-spacer-width: 2.25rem;
+  
+}
+
+  }
+}

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -449,6 +449,9 @@ oj.CollectionUtils.copyInto(oj.CompositeElementBridge.proto,
                                                                    previousValue,
                                                                    updatedFrom);
             }
+          } else {
+            Logger.info(oj.BaseCustomElementBridge.getElementInfo(this._ELEMENT) + ": Ignoring property set for property '" +
+              property + "' with same value.");
           }
         }
       };
@@ -955,7 +958,482 @@ oj.CompositeElementBridge._isDocumentFragment = function (content) {
 };
 
 /**
- * @ojoverviewdoc CompositeOverview - JET Custom Components
+ * @ojoverviewdoc ComponentPackOverview - [5]JET Pack Metadata
+ * @classdesc
+ * {@ojinclude "name":"componentPackOverviewDoc"}
+ */
+
+/**
+ * <h2 id="usage">Overview
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#overview"></a>
+ * </h2>
+ * <p>
+ *  As development teams become more familiar with JET and gain experience with implementing and packaging reusable bits of application functionality as
+ *  <a href="CompositeOverview.html">custom JET Web Components</a>, they encounter more complex use cases where multiple components have dependencies upon
+ *  a set of shared development resources, including:  related Components, JavaScript base and utility classes, CSS files, icons, translation bundles, etc.
+ * </p>
+ * <p>
+ *  The following JET component types can assist both JET Web Component producers and consumers with managing these complex use cases:
+ *  <ul>
+ *    <li><b>JET Component Packs, or JET Packs</b>, define versioned sets of JET Web Components that can be managed, packaged, and delivered as a whole.  JET Packs
+ *      consist of metadata and additional artifacts that allow downstream consumers, such as Oracle Visual Builder Cloud Service (VBCS) or the JET Command Line interface,
+ *      to automate the configuration and initialization of deployed applications that are built with these Components, including shared resources (e.g., CSS resources,
+ *      utility JavaScript files, base JavaScript classes extended by multiple Web Components, etc.), and information about 3rd party packages.</li>
+ *    <li><b>JET Reference Components</b> define a versioned external 3rd party library dependency – JET Packs, JET Resource Components, and individual JET Web Components can include
+ *      a JET Reference Component as part of their <code>dependencies</code> metadata.  JET Reference Components consist of metadata for automating the installation of the corresponding
+ *      3rd party library, as well as the necessary RequireJS configuration for calling into this 3rd party library from a deployed JET application.</li>
+ *    <li><b>JET Resource Components</b> define and package resources shared by a set of JET Web Components – JET Packs, other JET Resource Components, and individual JET Web Components
+ *      can include a JET Resource Component as part of their <code>dependencies</code> metadata.  Shared resources can include shared CSS, JavaScript base classes & utility code,
+ *      icons, translation bundles, etc.</li>
+ *  </ul>
+ * </p>
+ *
+ * <h2 id="metadata">Metadata Structure
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#metadata"></a>
+ * </h2>
+ * <p>
+ *   Metatata for JET Packs, JET Reference Components, and JET Resource Components is specified in a component.json file that is expected at the root
+ *   of the Component's packaging.  Metadata properties like "name", "version", "jetVersion", "description", and "displayName" should be familiar from the
+ *   <a href="MetadataOverview.html">metadata JSON</a> that is defined for JET Web Components.  The complete metadata structure for
+ *   JET Packs, JET Reference Components, and JET Resource Components is as follows:
+ * </p>
+ *
+ * <table class="params">
+ *   <thead>
+ *     <tr>
+ *       <th>Key</th>
+ *       <th>Required</th>
+ *       <th>Type</th>
+ *       <th>Description</th>
+ *     </tr>
+ *   </thead>
+ *   <tbody>
+ *     <tr>
+ *       <td class="rt">name</td>
+ *       <td>yes</td>
+ *       <td>{string}</td>
+ *       <td>The component name.
+ *           The component name must meet the following requirements (based upon the <a href="https://www.w3.org/TR/custom-elements/#custom-elements-core-concepts">W3C Custom Element spec</a>):
+ *           <ul>
+ *             <li>The name can include only letters, digits, '-', and '_'.</li>
+ *             <li>The letters in the name should be all lowercase.
+ *             <li>The name cannot be one of the following reserved names:
+ *             <ul>
+ *               <li>annotation-xml
+ *               <li>color-profile
+ *               <li>font-face
+ *               <li>font-face-src
+ *               <li>font-face-uri
+ *               <li>font-face-format
+ *               <li>font-face-name
+ *               <li>missing-glyph
+ *             </ul>
+ *           </ul>
+ *           <h6>Note:</h6>
+ *           The <b>full name</b> of a component consists of its <code>pack</code> metadata value and its <code>name</code> metadata value, appended
+ *           together with a hyphen separating them:&nbsp;&nbsp;<code><i>[pack_value]</i>-<i>[name_value]</i></code>.  For both JET Core
+ *           Components and for JET Custom Components, <b>this full name corresponds to the Component's custom element tag name</b>.  The names of
+ *           standalone JET Components that are <b>not</b> members of a JET Pack have the following additional requirements:
+ *           <ul>
+ *             <li>At least one hyphen is required.</li>
+ *             <li>The first segment (up to the first hyphen) is a namespace prefix. <b>The namespace prefix 'oj' is reserved for components that are
+ *               bundled with the JET release.</b></li>
+ *             <li>The first hyphen must be followed by at least one character.</li>
+ *           <ul>
+ *       </td>
+ *     </tr>
+ *     <tr>
+ *       <td class="rt">version</td>
+ *       <td>yes</td>
+ *       <td>{string}</td>
+ *       <td>The component version. Note that changes to the metadata even for minor updates like updating the
+ *         jetVersion should result in at least a minor component version change, e.g. 1.0.0 -> 1.0.1.</td>
+ *     </tr>
+ *     <tr>
+ *       <td class="name">jetVersion</td>
+ *       <td>no</td>
+ *       <td>{string}</td>
+ *       <td>The <a href="http://semver.org/">semantic version</a> of the supported JET version(s).
+ *         JET Component authors should not specify a semantic version range that includes unreleased JET major versions
+ *         as major releases may contain non backwards compatible changes.  Authors should instead recertify components
+ *         with each major release and update the metadata or release a new version that is compatible with the new
+ *         release changes.</td>
+ *     </tr>
+ *     <tr>
+ *       <td class="name">bundles</td>
+ *       <td>no</td>
+ *       <td>{Object}</td>
+ *       <td>Optional <a href="http://requirejs.org/docs/api.html#config-bundles">RequireJS-style bundles configuration</a> metadata that applies to
+ *         JET Packs and JET Reference Components:
+ *           <ul>
+ *             <li>JET Packs may contain bundles that consist of multiple AMD modules (for example, each component could be packaged as a separate module).</li>
+ *             <li>JET Reference Components may refer to 3rd party packages that include AMD-style bundles.</li>
+ *           </ul>
+ *         This configuration metadata allows RequireJS to map individual module names to the containing bundle.
+ *         <p>The configuration object has the following properties:
+ *            <table class="params">
+ *              <thead>
+ *                <tr>
+ *                  <th>Key</th>
+ *                  <th>Type</th>
+ *                  <th>Description</th>
+ *                </tr>
+ *              </thead>
+ *              <tbody>
+ *                <tr>
+ *                  <td class="name"><i>[bundle name]</i></td>
+ *                  <td>{Array&lt;{string}>}</td>
+ *                  <td>An array of module names contained within the specified bundle.</td>
+ *                </tr>
+ *              </tbody>
+ *            </table>
+ *            </br>
+ *            Both the bundle names and the module names must correspond to paths that RequireJS is capable of loading.  This typically means prefixing these names
+ *            with a prefix that is known to be path-mapped, such as:
+ *              <ul>
+ *                <li>the <code>pack</code> name for JET Packs</li>
+ *                <li>some path that is specified by a JET Reference Component's <code>paths</code> metadata</li>
+ *              </ul>
+ *            Tools that consume JET Packs or JET Reference Components should merge the component.json <code>bundles</code> property into the application’s RequireJS config
+ *            at build time, thus allowing the application to run against the bundled artifacts.
+ *         </p>
+ *         <h6>Example:</h6>
+ *         Assuming we have an “oj-foo” JET Pack that defines two bundles, the bundles property might be configured as follows:
+ *  <pre class="prettyprint"><code>
+ *  "bundles":
+ *    {"oj-foo/some-bundle":
+ *       ["oj-foo/component-one/loader", "oj-foo/component-two/loader"],
+ *     "oj-foo/another-bundle":
+ *       ["oj-foo/component-three/loader", "oj-foo/component-four/loader"],
+ *    }
+ *  </code></pre>
+ *       </td>
+ *     </tr>
+ *     <tr>
+ *       <td class="name">dependencies</td>
+ *       <td>no</td>
+ *       <td>{Object}</td>
+ *       <td>Dependency to semantic version mapping for JET Component dependencies.
+ *         <h6>Example:</h6>
+ *         <pre class="prettyprint"><code>dependencies:  {"oj-foo-composite1": "1.2.0", "oj-foo-composite2": "^2.1.0"}</code></pre>
+ *         <h6>Note:</h6>
+ *           <ul>
+ *             <li>Always use the <b>full name</b> of the component when declaring a dependency upon it.</li>
+ *             <li>JET Packs use their <code>dependencies</code> metadata to specify the <b>exact</b> semantic versions of the JET Custom Components, JET Reference Components,
+ *               and JET Resource Components that constitute the JET Pack – consequently, semantic version ranges are <b><i>not</i></b> permitted in JET Packs.</li>
+ *             <li>JET Packs do not support nesting – in other words a JET Pack may not declare a dependency upon another JET Pack.</li>
+ *           </ul>
+ *       </td>
+ *     </tr>
+ *     <tr>
+ *       <td class="name">description</td>
+ *       <td>no</td>
+ *       <td>{string}</td>
+ *       <td>A high-level description for the component.</td>
+ *     </tr>
+ *     <tr>
+ *       <td class="name">displayName</td>
+ *       <td>no</td>
+ *       <td>{string}</td>
+ *       <td>A user friendly, translatable name of the component.</td>
+ *     </tr>
+ *     <tr>
+ *       <td class="name">extension</td>
+ *       <td>no</td>
+ *       <td>{Object}</td>
+ *       <td>Placeholder for Extension metadata.  Each section is identified by a key that specifies the downstream tool that will process this metadata.
+ *         <h6>For example:</h6>
+ *         <table class="params">
+ *           <thead>
+ *             <tr>
+ *               <th>Name</th>
+ *               <th>Type</th>
+ *               <th>Description</th>
+ *             </tr>
+ *           </thead>
+ *           <tbody>
+ *             <tr>
+ *               <td class="name">vbcs</td>
+ *               <td>{string}</td>
+ *               <td>Indentifies an object with VBCS-specific metadata</td>
+ *             </tr>
+ *           </tbody>
+ *         </table>
+ *         </br>
+ *         Please consult the documentation for the downstream tool to determine what (if any) extension metadata is supported.
+ *      </td>
+ *     </tr>
+ *     <tr>
+ *       <td class="name">license</td>
+ *       <td>no</td>
+ *       <td>{string}</td>
+ *       <td>A reference to the license under which use of the component is granted. The value can be:
+ *         <ul>
+ *           <li>the name of the license text file packaged with the component</li>
+ *           <li>a URL to a remote license file</li>
+ *         </ul>
+ *         If unspecified, downstream consumers can look for a default, case-insensitive license file at the root of the component package.
+ *       </td>
+ *     </tr>
+ *     <tr>
+ *       <td class="name">pack</td>
+ *       <td>no</td>
+ *       <td>{string}</td>
+ *       <td>Identifies the component as belonging to the specified JET Pack.
+ *         <p>A JET Pack is a versioned set of JET Components with additional metadata that enables applications to easily install and configure path mappings to the artifacts in that JET Pack.
+ *           <ul>
+ *             <li>If specified, then there should exist a JET Pack whose name is the <code>pack</code> value, and which lists this component's <b>full name</b> in its
+ *               <code>dependencies</code> metadata.</li>
+ *             <li>If unspecified, then this is a standalone JET Component that is not a member of any JET Pack.</li>
+ *             <li>JET Packs do not supported nesting and are therefore, by definition, standalone JET Components.</li>
+ *           </ul>
+ *         </p>
+ *       </td>
+ *     </tr>
+ *     <tr>
+ *       <td class="name">package</td>
+ *       <td>no</td>
+ *       <td>{string}</td>
+ *       <td>This metadata property is only valid for JET Reference Components, where it is a <b>REQUIRED</b> property.
+ *         <p>Specifies the name of the AMD-compatible <a href="https://www.npmjs.com/">npm</a> package that is referenced by this component.  This is needed to allow the consuming application
+ *           to identify the 3rd party library, for conflict resolution purposes as well as for security scanning and patching.
+ *         </p>
+ *       </td>
+ *     </tr>
+ *     <tr>
+ *       <td class="name">paths</td>
+ *       <td>no</td>
+ *       <td>{Object | Array&lt;{Object}>}</td>
+ *       <td>Specifies path metadata that is used to generate RequireJS path mappings.
+ *         <p>Each object is defined as follows:</p>
+ *         <table class="params">
+ *           <thead>
+ *             <tr>
+ *               <th>Key</th>
+ *               <th>Type</th>
+ *               <th>Description</th>
+ *             </tr>
+ *           </thead>
+ *           <tbody>
+ *             <tr>
+ *               <td class="name">npm</td>
+ *               <td>{Object}</td>
+ *               <td>Specifies paths to use when configuring a path mapping to an npm package.  <b>This is only valid for JET Reference Components.</b>  At least one of the
+ *                 following sub-properties must be specified:
+ *                 <table class="params">
+ *                   <thead>
+ *                     <tr>
+ *                       <th>Key</th>
+ *                       <th>Type</th>
+ *                       <th>Description</th>
+ *                     </tr>
+ *                   </thead>
+ *                   <tbody>
+ *                     <tr>
+ *                       <td class="name">min</td>
+ *                       <td>{string}</td>
+ *                       <td>Path to the optimized form of the library, relative to the root of the npm package.</td>
+ *                     </tr>
+ *                     <tr>
+ *                       <td class="name">debug</td>
+ *                       <td>{string}</td>
+ *                       <td>Path to the debug form of the library, relative to the root of the npm package.</td>
+ *                     </tr>
+ *                   </tbody>
+ *                 </table>
+ *               </td>
+ *             </tr>
+ *             <tr>
+ *               <td class="name">cdn</td>
+ *               <td>{Object}</td>
+ *               <td>Specifies url-based paths to use when configuring a path mapping to a CDN-hosted artifact.  It is strongly recommended that urls be specified with <code>https:</code>,
+ *                 as this is required for HTTP/2 and the consuming app may be configured to disallow non-secure urls.  At least one of the following sub-properties must be specified:
+ *                 <table class="params">
+ *                   <thead>
+ *                     <tr>
+ *                       <th>Key</th>
+ *                       <th>Type</th>
+ *                       <th>Description</th>
+ *                     </tr>
+ *                   </thead>
+ *                   <tbody>
+ *                     <tr>
+ *                       <td class="name">min</td>
+ *                       <td>{string}</td>
+ *                       <td>The full url to the location of the optimized form of the artifact.</td>
+ *                     </tr>
+ *                     <tr>
+ *                       <td class="name">debug</td>
+ *                       <td>{string}</td>
+ *                       <td>The full url to the location of the debug form of the artifact.</td>
+ *                     </tr>
+ *                   </tbody>
+ *                 </table>
+ *               </td>
+ *             </tr>
+ *             <tr>
+ *               <td class="name">name</td>
+ *               <td>{string}</td>
+ *               <td>Optional value to use on the left hand side of the RequireJS path mapping when installing a JET Reference Component into an application. If not specified,
+ *                 then the name defaults to the value of the <code>package</code> property, excluding any <a href="https://docs.npmjs.com/misc/scope">scope</a>.</td>
+ *             </tr>
+ *           </tbody>
+ *         </table>
+ *         <h6>Notes:</h6>
+ *         <ul>
+ *           <li>If the <code>paths</code> value is an array, then each array item is of the type described above.  When an array is specified, each element must resolve to a unique value
+ *             for the <code>name</code> property.  (In practical terms, that means that only one element in the array can leverage the <code>package</code> property value for its default
+ *             <code>name</code> value.)</li>
+ *           <li>In addition to its use for JET Reference Components, <code>paths</code> is also valid for JET Packs and JET Resource Components <b>with the following restrictions</b>:
+ *             <ol>
+ *               <li>Only a single path mapping is allowed (in other words, the value cannot be an array);</li>
+ *               <li>The <code>name</code> sub-property is ignored – the left hand side of the RequireJS path mapping always defaults to the JET Pack or JET Resource Component <code>name</code>
+ *                 property value;</li>
+ *               <li>The <code>npm</code> sub-property is ignored – JET Packs and JET Resource Components can leverage the <code>cdn</code> sub-property to configure loading those artifacts
+ *                 at runtime from a CDN;</li>
+ *               <li>The information in the <code>paths</code> property is ignored for JET Resource Components that are part of a JET Pack – only the JET Pack itself will be path mapped.</li>
+ *             </ol>
+ *           </li>
+ *         </ul>
+ *       </td>
+ *     </tr>
+ *     <tr>
+ *       <td class="name">type</td>
+ *       <td>no</td>
+ *       <td>{"composite" | "core" | "pack" | "reference" | "resource"}
+ *         <p><b>Default:</b>&nbsp;&nbsp;"composite"</p>
+ *       </td>
+ *       <td>Identifies the type of this JET Component.
+ *         <p>Supported values are:</p>
+ *         <table class="params">
+ *           <thead>
+ *             <tr>
+ *               <th>Value</th>
+ *               <th>Description</th>
+ *             </tr>
+ *           </thead>
+ *           <tbody>
+ *             <tr>
+ *               <td class="name">composite</td>
+ *               <td>Identifies the component as a <a href="ComponentTypeOverview.html#customcomponents">custom JET Web Component</a>, also known as a "Composite Component".
+ *                 <b>This is the default, if <code>type</code> is unspecified.</b></td>
+ *             </tr>
+ *             <tr>
+ *               <td class="name">core</td>
+ *               <td>Identifies the component as a <a href="ComponentTypeOverview.html#corecomponents">JET Web Component</a> that is bundled with a particular version of JET.</td>
+ *             </tr>
+ *             <tr>
+ *               <td class="name">pack</td>
+ *               <td>Identifies the component as a <a href="ComponentTypeOverview.html#componentpacks">JET Component Pack</a>, or <b>JET Pack</b>.  A JET Pack is a versioned set
+ *                 of JET Web Components with additional metadata that enables applications to easily install and configure path mappings to the artifacts in that JET Pack.
+ *                 <p>The <code>dependencies</code> metadata property is used to specify the versioned components that make up the JET Pack.</p></td>
+ *             </tr>
+ *             <tr>
+ *               <td class="name">reference</td>
+ *               <td>Identifies the component as a <a href="ComponentTypeOverview.html#referencecomponents">JET Reference Component</a>, which describes a versioned external 3rd party library.
+ *                 <p>A JET Reference Component can be referenced in the <code>dependencies</code> metadata of a JET Pack, a JET Resource Component, or an individual JET Web Component.</p>
+ *               </td>
+ *             </tr>
+ *             <tr>
+ *               <td class="name">resource</td>
+ *               <td>Identifes the component as a <a href="ComponentTypeOverview.html#resourcecomponents">JET Resource Component</a>, which describes a versioned set of shared resources
+ *                 (such as shared CSS, JavaScript base classes & utility code, icons, translation bundles, etc.)
+ *                 <p>A JET Resource Component can be referenced in the <code>dependencies</code> metadata of a JET Pack, another JET Resource Component, or an individual JET Web Component.</p>
+ *               </td>
+ *             </tr>
+ *           </tbody>
+ *         </table>
+ *         <p>Metadata for JET Web Components are described in more detail in the <a href="MetadataOverview.html">JET Metadata</a> topic.</p>
+ *      </td>
+ *     </tr>
+ *   </tbody>
+ * </table>
+ *
+ * @ojfragment componentPackOverviewDoc
+ * @memberof ComponentPackOverview
+ */
+
+/**
+ * @ojoverviewdoc ComponentTypeOverview - [1]JET Component Types
+ * @classdesc
+ * {@ojinclude "name":"componentTypeOverviewDoc"}
+ */
+/**
+ * <h2 id="usage">Overview
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#overview"></a>
+ * </h2>
+ * <p>
+ *  JET Components are used to develop enterprise web applications.  In addition to offering Web Components, implemented as
+ *  <a href="https://developer.mozilla.org/en-US/docs/Web/Web_Components/Custom_Elements">HTML custom elements</a>, JET supports
+ *  other component types that help both producers and consumers package, install, and configure a set of related Web Components along
+ *  with their dependencies and shared resources.  The full set of JET Component types are described below.
+ * </p>
+ *
+ * <h2 id="corecomponents">JET Core Components
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#corecomponents"></a>
+ * </h2>
+ * <p>
+ * <b>JET Core Components</b> are Web Components that are packaged and delivered with a particular release of JET.  These include standard
+ * <a href="CustomElementOverview.html">custom element</a> widgets like buttons, input controls, data collection controls, data visualization controls, etc.
+ * </p>
+ * <p>
+ * See <a href="MetadataOverview.html">JET Metadata</a> for a discussion of the metadata structures that describe JET Web Components.
+ * </p>
+ *
+ * <h2 id="customcomponents">JET Custom Components
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#customcomponents"></a>
+ * </h2>
+ * <p>
+ * <b>JET Custom Components</b> are Web Components, typically developed, packaged, and distributed by other development teams, built on top of the JET Composite
+ * Component Architecture.  These are also known as <a href="CompositeOverview.html">composite components</a>.
+ * </p>
+ * <p>
+ * See <a href="MetadataOverview.html">JET Metadata</a> for a discussion of the metadata structures that describe JET Web Components.
+ * </p>
+ *
+ * <h2 id="componentpacks">JET Component Packs
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#componentpacks"></a>
+ * </h2>
+ * <p>
+ * <b>JET Component Packs, or JET Packs</b>, define versioned sets of JET Web Components that can be managed, packaged, and delivered as a whole.  JET Packs
+ * consist of metadata and additional artifacts that allow downstream consumers to automate the configuration and initialization of deployed applications that are built
+ * with these Components, including shared resources (e.g., CSS resources, utility JavaScript files, base JavaScript classes extended by multiple Web Components, etc.),
+ * and information about 3rd party packages.
+ * </p>
+ * <p>
+ * See <a href="ComponentPackOverview.html">JET Pack Metadata</a> for a discussion of the metadata structures that describe JET Packs and other components that manage
+ * dependencies and shared resources.
+ * </p>
+ *
+ * <h2 id="referencecomponents">JET Reference Components
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#referencecomponents"></a>
+ * </h2>
+ * <p>
+ * <b>JET Reference Components</b> define a versioned external 3rd party library dependency – JET Packs, JET Resource Components, and individual JET Web Components can include
+ * a JET Reference Component as part of their <code>dependencies</code> metadata.  JET Reference Components consist of metadata for automating the installation of the corresponding AMD-compatible
+ * 3rd party library, as well as the necessary RequireJS configuration for calling into this 3rd party library from a deployed JET application.
+ * </p>
+ * <p>
+ * See <a href="ComponentPackOverview.html">JET Pack Metadata</a> for a discussion of the JET Reference Component metadata structure.
+ * </p>
+ *
+ * <h2 id="resourcecomponents">JET Resource Components
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#resourcecomponents"></a>
+ * </h2>
+ * <p>
+ * <b>JET Resource Components</b> define and package resources shared by a set of JET components – JET Packs, other JET Resource Components, and individual JET Web Components can include
+ * a JET Resource Component as part of their <code>dependencies</code> metadata.  Shared resources can include shared CSS, JavaScript base classes & utility code, icons, translation bundles, etc.
+ * </p>
+ * <p>
+ * See <a href="ComponentPackOverview.html">JET Pack Metadata</a> for a discussion of the JET Resource Component metadata structure.
+ * </p>
+ *
+ * @ojfragment componentTypeOverviewDoc
+ * @memberof ComponentTypeOverview
+ */
+
+/**
+ * @ojoverviewdoc CompositeOverview - [3]JET Custom Components
  * @classdesc
  * {@ojinclude "name":"compositeOverviewDoc"}
  */
@@ -965,9 +1443,9 @@ oj.CompositeElementBridge._isDocumentFragment = function (content) {
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#overview"></a>
  * </h2>
  * <p>
- *  JET allows developers to create custom components which can be composites of other components, HTML, JavaScript, or CSS.
+ *  JET allows developers to create custom Web Components which can be composites of other components, HTML, JavaScript, or CSS.
  *  These reusable pieces of UI can be embedded as <a href="CustomElementOverview.html">custom HTML elements</a> and are
- *  registered using the <a href="oj.Composite.html">Composite API</a>. These custom components will be referred to
+ *  registered using the <a href="oj.Composite.html">Composite API</a>. These custom Web Components will be referred to
  *  as "composites" throughout the rest of this doc.
  * </p>
  *
@@ -1264,7 +1742,7 @@ oj.CompositeElementBridge._isDocumentFragment = function (content) {
  */
 
 /**
- * @ojoverviewdoc MetadataOverview - JET Metadata
+ * @ojoverviewdoc MetadataOverview - [4]JET Metadata
  * @classdesc
  * {@ojinclude "name":"metadataOverviewDoc"}
  */
@@ -1274,10 +1752,10 @@ oj.CompositeElementBridge._isDocumentFragment = function (content) {
  *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#overview"></a>
  * </h2>
  * <p>
- *  Metadata is a JSON formatted object which defines the properties, methods, slots, and events fired by
- *  the composite. <b>The name of the composite component properties, event listeners, and methods should avoid collision
- *  with the existing <a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement">HTMLElement</a> properties,
- *  event listeners, and methods. Additionally, the composite should not re-define any
+ *  Metadata for a JET Web Component consists of a JSON formatted object which defines the properties, methods, slots, and events fired by the
+ *  Web Component. <b>The names of the Web Component's properties, event listeners, and methods should avoid collision with the existing
+ *  <a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement">HTMLElement</a> properties, event listeners, and methods.
+ *  Additionally, the Web Component should not re-define any
  *  <a href="https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes">global attributes</a> or events.</b>
  * </p>
  *
@@ -1289,12 +1767,12 @@ oj.CompositeElementBridge._isDocumentFragment = function (content) {
  * </p>
  *
  * <p>
- *  Keys defined in the "properties" top level object should map to the composite component's properties following
+ *  Keys defined in the "properties" top level object should map to the JET Web Component's properties following
  *  the same naming convention described in the <a href="CustomElementOverview.html#ce-proptoattr-section">Property-to-Attribute mapping</a> section.
- *  Non expression bound composite component attributes will be correctly evaluated only if they are a primitive JavaScript type (boolean, number, string)
+ *  Non expression bound Web Component attributes will be correctly evaluated only if they are a primitive JavaScript type (boolean, number, string)
  *  or a JSON object. Note that JSON syntax requires that strings use double quotes. Attributes evaluating to any other types must be bound via expression syntax.
  *  Boolean attributes are considered true if set to the case-insensitive attribute name, the empty string or have no value assignment.
- *  JET composite components will also evalute boolean attributes set explicitly to 'true' or 'false' to their respective boolean values. All other values are invalid.
+ *  JET Web Components will also evalute boolean attributes set explicitly to 'true' or 'false' to their respective boolean values. All other values are invalid.
  * </p>
  *
  * <p>
@@ -1302,6 +1780,14 @@ oj.CompositeElementBridge._isDocumentFragment = function (content) {
  *  below can be omitted to reduce the Metadata download size. Any non run time information can be used for design time tools and property editors and could
  *  be kept in a separate JSON file which applications can use directly or merge with the run time metadata as needed, but would not be required by the loader.js
  *  file. For methods and events, only the method/event name is required at run time.
+ * </p>
+ *
+ * <p>
+ *  Note that every release of JET includes a <code>'metadata/components'</code> directory with JSON files for each Web Component that is bundled
+ *  as part of that release.  Web Components that are bundled as part of a JET release are also referred to as <b>JET Core Components</b>.  These
+ *  JSON files use the exact same metadata structure as those that are packaged with <b>JET Custom Components</b> (also known as
+ *  <a href="CompositeOverview.html">composite components</a>), such that design time tools and property editors can leverage the same metadata
+ *  when integrating any JET Web Component into their environments.
  * </p>
  *
  * <h2 id="structure">Metadata Structure
@@ -1326,14 +1812,11 @@ oj.CompositeElementBridge._isDocumentFragment = function (content) {
  *       <td>yes</td>
  *       <td>yes</td>
  *       <td>{string}</td>
- *       <td>The component tag name.
+ *       <td>The component name.
  *           The component name must meet the following requirements (based upon the <a href="https://www.w3.org/TR/custom-elements/#custom-elements-core-concepts">W3C Custom Element spec</a>):
  *           <ul>
  *             <li>The name can include only letters, digits, '-', and '_'.</li>
  *             <li>The letters in the name should be all lowercase.
- *             <li>At least one hyphen is required.
- *             <li>The first segment (up to the first hyphen) is supposed to be a namespace prefix. The prefix 'oj' is reserved for native JET components.
- *             <li>The first hyphen must be followed by at least one character.
  *             <li>The name cannot be one of the following reserved names:
  *             <ul>
  *               <li>annotation-xml
@@ -1344,7 +1827,18 @@ oj.CompositeElementBridge._isDocumentFragment = function (content) {
  *               <li>font-face-format
  *               <li>font-face-name
  *               <li>missing-glyph
- *             <ul>
+ *             </ul>
+ *           </ul>
+ *           <h6>Note:</h6>
+ *           The <b>full name</b> of a component consists of its <code>pack</code> metadata value (if specified) and its <code>name</code> metadata
+ *           value, appended together with a hyphen separating them:&nbsp;&nbsp;<code><i>[pack_value]</i>-<i>[name_value]</i></code>.
+ *           <b>This full name corresponds to the Component's custom element tag name</b>.  The names of standalone JET Components that are
+ *           <b>not</b> members of a <a href="ComponentPackOverview.html">JET Pack</a> have the following additional requirements:
+ *           <ul>
+ *             <li>At least one hyphen is required.</li>
+ *             <li>The first segment (up to the first hyphen) is a namespace prefix. <b>The namespace prefix 'oj' is reserved for components that are
+ *               bundled with the JET release.</b></li>
+ *             <li>The first hyphen must be followed by at least one character.</li>
  *           <ul>
  *       </td>
  *     </tr>
@@ -1354,7 +1848,7 @@ oj.CompositeElementBridge._isDocumentFragment = function (content) {
  *       <td>yes</td>
  *       <td>{string}</td>
  *       <td>The component version. Note that changes to the metadata even for minor updates like updating the
- *         jetVersion should result in at least a minor composite version change, e.g. 1.0.0 -> 1.0.1.</td>
+ *         jetVersion should result in at least a minor component version change, e.g. 1.0.0 -> 1.0.1.</td>
  *     </tr>
  *     <tr>
  *       <td class="rt">jetVersion</td>
@@ -1362,9 +1856,9 @@ oj.CompositeElementBridge._isDocumentFragment = function (content) {
  *       <td>yes</td>
  *       <td>{string}</td>
  *       <td>The <a href="http://semver.org/">semantic version</a> of the supported JET version(s).
- *         Composite authors should not specify a semantic version range that includes unreleased JET major versions
- *         as major releases may contain non backwards compatible changes. Authors should instead recertify composites
- *         with each major release and update the composite metadata or release a new version that is compatible with the new
+ *         JET Component authors should not specify a semantic version range that includes unreleased JET major versions
+ *         as major releases may contain non backwards compatible changes. Authors should instead recertify components
+ *         with each major release and update the metadata or release a new version that is compatible with the new
  *         release changes.</td>
  *     </tr>
  *     <tr>
@@ -1411,9 +1905,18 @@ oj.CompositeElementBridge._isDocumentFragment = function (content) {
  *       <td>no</td>
  *       <td>no</td>
  *       <td>{Object<string, string>}</td>
- *       <td>Dependency to semantic version mapping for composite dependencies.
- *         3rd party libraries should not be included in this mapping.
- *         <code>{"composite1": "1.2.0", "composite2": ">=2.1.0"}</code></td>
+ *       <td>Dependency to semantic version mapping for JET Component dependencies.
+ *         3rd party libraries should not be included directly in this mapping; instead, define the 3rd party library with a
+ *         <a href="ComponentTypeOverview.html#referencecomponents">JET Reference Component</a> and include the dependency upon that Reference Component.
+ *         <h6>Example:</h6>
+ *         <pre class="prettyprint"><code>dependencies:  {"oj-foo-composite1": "1.2.0", "oj-foo-composite2": "^2.1.0"}</code></pre>
+ *         <h6>Note:</h6>
+ *         <ul>
+ *           <li>Always use the <b>full name</b> of the component when declaring a dependency upon it.</li>
+             <li>Dependencies upon JET Custom Components, JET Reference Components, and JET Resource Components may use semantic version range syntax to specify the range of versions
+               that are acceptable to fulfill the dependency requirement.</li>
+ *         </ul>
+ *       </td>
  *     </tr>
  *     <tr>
  *       <td class="name"><code>description</code></td>
@@ -1509,6 +2012,22 @@ oj.CompositeElementBridge._isDocumentFragment = function (content) {
  *           <li>a URL to a remote license file</li>
  *         </ul>
  *         If unspecified, downstream consumers can look for a default, case-insensitive license file at the root of the component package.
+ *       </td>
+ *     </tr>
+ *     <tr>
+ *       <td class="name">pack</td>
+ *       <td>no</td>
+ *       <td>no</td>
+ *       <td>{string}</td>
+ *       <td>Identifies the component as belonging to the specified JET Component Pack, or <b>JET Pack</b>.
+ *         <p>A <a href="ComponentPackOverview.html">JET Pack</a> is a versioned set of JET Components with additional metadata that enables
+ *           applications to easily install and configure path mappings to the components and shared resources in that JET Pack.
+ *           <ul>
+ *             <li>If specified, then there should exist a JET Pack whose name is the <code>pack</code> value, and which lists this component's <b>full name</b> in its
+ *               <code>dependencies</code> metadata.</li>
+ *             <li>If unspecified, then this is a standalone JET Component that is not a member of any JET Pack.</li>
+ *           </ul>
+ *         </p>
  *       </td>
  *     </tr>
  *     <tr>
@@ -1615,6 +2134,56 @@ oj.CompositeElementBridge._isDocumentFragment = function (content) {
  *         </table>
  *      </td>
  *     </tr>
+ *     <tr>
+ *       <td class="name">type</td>
+ *       <td>no</td>
+ *       <td>no</td>
+ *       <td>{"composite" | "core" | "pack" | "reference" | "resource"}
+ *         <p><b>Default:</b>&nbsp;&nbsp;"composite"</p>
+ *       </td>
+ *       <td>Identifies the type of this JET Component.
+ *         <p>Supported values are:</p>
+ *         <table class="params">
+ *           <thead>
+ *             <tr>
+ *               <th>Value</th>
+ *               <th>Description</th>
+ *             </tr>
+ *           </thead>
+ *           <tbody>
+ *             <tr>
+ *               <td class="name">composite</td>
+ *               <td>Identifies the component as a <a href="ComponentTypeOverview.html#customcomponents">custom JET Web Component</a>, also known as a "Composite Component".
+                   <b>This is the default, if <code>type</code> is unspecified.</b></td>
+ *             </tr>
+ *             <tr>
+ *               <td class="name">core</td>
+ *               <td>Identifies the component as a <a href="ComponentTypeOverview.html#corecomponents">JET Web Component</a> that is bundled with a particular version of JET.</td>
+ *             </tr>
+ *             <tr>
+ *               <td class="name">pack</td>
+ *               <td>Identifies the component as a <a href="ComponentTypeOverview.html#componentpacks">JET Component Pack</a>, or <b>JET Pack</b>.  A JET Pack is a versioned set
+ *                 of JET Web Components with additional metadata that enables applications to easily install and configure path mappings to the artifacts in that JET Pack.
+ *                 <p>The <code>dependencies</code> metadata property is used to specify the versioned components that make up the JET Pack.</p></td>
+ *             </tr>
+ *             <tr>
+ *               <td class="name">reference</td>
+ *               <td>Identifies the component as a <a href="ComponentTypeOverview.html#referencecomponents">JET Reference Component</a>, which describes a versioned external 3rd party library.
+ *                 <p>A JET Reference Component can be referenced in the <code>dependencies</code> metadata of a JET Pack, a JET Resource Component, or an individual JET Web Component.</p>
+ *               </td>
+ *             </tr>
+ *             <tr>
+ *               <td class="name">resource</td>
+ *               <td>Identifes the component as a <a href="ComponentTypeOverview.html#resourcecomponents">JET Resource Component</a>, which describes a versioned set of shared resources
+ *                 (such as shared CSS, JavaScript base classes & utility code, icons, translation bundles, etc.)
+ *                 <p>A JET Resource Component can be referenced in the <code>dependencies</code> metadata of a JET Pack, another JET Resource Component, or an individual JET Web Component.</p>
+ *               </td>
+ *             </tr>
+ *           </tbody>
+ *         </table>
+ *         <p>Metadata for JET Packs, JET Reference Components, and JET Resource Components are described in more detail in the <a href="ComponentPackOverview.html">JET Packs</a> topic.</p>
+ *      </td>
+ *     </tr>
  *   </tbody>
  * </table>
  *
@@ -1665,7 +2234,7 @@ oj.CompositeElementBridge._isDocumentFragment = function (content) {
  *               <td>{boolean}</td>
  *               <td>Determines whether a property can be updated outside of the ViewModel.
  *                 False by default. If readOnly is true, the property can only be updated by the ViewModel or by the
- *                 components within the composite. This property only needs to be defined for the top level property,
+ *                 components within the composite component. This property only needs to be defined for the top level property,
  *                 with subproperties inheriting that value.</td>
  *             </tr>
  *             <tr>
@@ -1690,7 +2259,7 @@ oj.CompositeElementBridge._isDocumentFragment = function (content) {
  *               <td>yes</td>
  *               <td>{boolean}</td>
  *               <td>Applicable when the application uses two way data binding to bind an expression to a property. If the property
- *                 is marked as writeback, the composite can directly update the value of the bound expression after a user interaction
+ *                 is marked as writeback, the JET Web Component can directly update the value of the bound expression after a user interaction
  *                 like selection. False by default. This property only needs to be defined for the top level property, with subproperties
  *                 inheriting that value.</td>
  *             </tr>
@@ -2438,6 +3007,8 @@ oj.CompositeElementBridge._isDocumentFragment = function (content) {
  *     </tr>
  *   </tbody>
  * </table>
+ * <h6>Note:</h6>
+ * By convention, the slot name for a component's Default slot is the empty string:  <code>""</code>.
  *
  * @ojfragment metadataOverviewDoc
  * @memberof MetadataOverview

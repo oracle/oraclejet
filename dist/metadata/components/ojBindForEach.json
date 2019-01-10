@@ -1,11 +1,11 @@
 {
   "name": "oj-bind-for-each",
-  "version": "6.0.0",
-  "jetVersion": "6.0.0",
+  "version": "6.1.0",
+  "jetVersion": "6.1.0",
   "displayName": "Bind For Each",
   "type": "core",
   "description": "Binds items of an array to the specified markup section. The markup section is duplicated for each array item when element is rendered.",
-  "help": "https://docs.oracle.com/en/middleware/jet/6/reference-api/oj.ojBindForEach.html",
+  "help": "https://docs.oracle.com/en/middleware/jet/6.1/reference-api/oj.ojBindForEach.html",
   "properties": {
     "as": {
       "description": "An alias for the array item. This can be especially useful\nif multiple oj-bind-for-each elements are nested to provide access to the data\nfor each level of iteration.",

@@ -1,7 +1,7 @@
 {
   "name": "oj-train",
-  "version": "6.0.0",
-  "jetVersion": "6.0.0",
+  "version": "6.1.0",
+  "jetVersion": "6.1.0",
   "displayName": "Train",
   "type": "core",
   "styleClasses": [
@@ -13,7 +13,7 @@
     }
   ],
   "description": "Displays a navigation visual element that allows an application user to go between different steps of a process.",
-  "help": "https://docs.oracle.com/en/middleware/jet/6/reference-api/oj.ojTrain.html",
+  "help": "https://docs.oracle.com/en/middleware/jet/6.1/reference-api/oj.ojTrain.html",
   "properties": {
     "selectedStep": {
       "description": "Indicates the id of the current selected step.",
@@ -104,32 +104,27 @@
             {
               "name": "id",
               "description": "id of step",
-              "type": "string",
-              "optional": true
+              "type": "string"
             },
             {
               "name": "label",
               "description": "label of step",
-              "type": "string",
-              "optional": true
+              "type": "string"
             },
             {
               "name": "disabled",
               "description": "whether step is disabled",
-              "type": "boolean",
-              "optional": true
+              "type": "boolean"
             },
             {
               "name": "visited",
               "description": "whether step has been visited",
-              "type": "boolean",
-              "optional": true
+              "type": "boolean"
             },
             {
               "name": "messageType",
               "description": "type of message displayed",
-              "type": "\"info\"|\"error\"|\"fatal\"|\"warning\"",
-              "optional": true
+              "type": "\"info\"|\"error\"|\"fatal\"|\"warning\""
             }
           ]
         }

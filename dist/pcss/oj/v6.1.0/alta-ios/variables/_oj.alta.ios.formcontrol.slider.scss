@@ -1,0 +1,62 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+
+$includeSliderVariables: $includeSliderClasses !default;
+
+@if $includeSliderVariables != false {
+  $includeFormControlVariables: true !global;
+}
+// import dependencies
+@import "oj.alta.ios.formcontrol";
+
+@if $includeSliderVariables != false {
+  @include module-include-once("alta.ios.variables.slider") {
+
+:root {
+
+  // slider
+  // ---------------------------
+  --oj-slider-thumb-width:                 26px;
+  --oj-slider-thumb-height:                var(--oj-slider-thumb-width);
+  --oj-slider-thumb-width-active:          34px;
+  --oj-slider-thumb-height-active:         var(--oj-slider-thumb-width-active);
+  --oj-slider-thumb-border-radius:         50%;
+  --oj-slider-thumb-border-width:          1px;
+  --oj-slider-thumb-box-shadow:            0 3px 1px unquote('hsla(var(--oj-box-shadow-hsl),0.05)'), 0 0 8px unquote('hsla(var(--oj-box-shadow-hsl),0.2)');
+
+  --oj-slider-thumb-bg-color:              var(--oj-neutral-color-1);
+  --oj-slider-thumb-border-color:          var(--oj-neutral-color-9);
+  --oj-slider-thumb-bg-color-hover:        var(--oj-neutral-color-7);
+  --oj-slider-thumb-bg-color-active:       var(--oj-neutral-color-7);
+  --oj-slider-thumb-border-color-active:   var(--oj-neutral-color-9);
+  --oj-slider-thumb-bg-color-disabled:     var(--oj-neutral-color-1);
+  --oj-slider-thumb-border-color-disabled: var(--oj-neutral-color-7);
+
+  --oj-slider-bar-thickness:               2px;
+  --oj-slider-bar-bg-color:                var(--oj-neutral-color-11);
+  --oj-slider-bar-value-bg-color:          var(--oj-brand-color);
+  --oj-slider-bar-value-bg-color-active:   var(--oj-slider-bar-value-bg-color);
+  --oj-slider-bar-bg-color-disabled:       var(--oj-neutral-color-8);
+  --oj-slider-bar-value-bg-color-disabled: var(--oj-neutral-color-12);
+
+
+// todo: should the slider color vars be in a separate file?
+
+  --oj-slider-color-picker-thumb-width:         24px;
+  --oj-slider-color-picker-thumb-height:        var(--oj-slider-color-picker-thumb-width);
+  --oj-slider-color-picker-thumb-width-active:  34px;
+  --oj-slider-color-picker-thumb-height-active: var(--oj-slider-color-picker-thumb-width-active);
+  --oj-slider-color-picker-thumb-border-radius: 17px;
+  --oj-slider-color-picker-thumb-border-width:  3px;
+  --oj-slider-color-picker-thumb-border-color:  var(--oj-neutral-color-1);
+  --oj-slider-color-picker-thumb-box-shadow:    var(--oj-box-shadow-md);
+
+  --oj-slider-color-picker-bar-thickness:      10px;
+
+  
+}
+
+
+  }
+}

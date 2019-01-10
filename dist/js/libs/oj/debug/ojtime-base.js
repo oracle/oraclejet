@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -204,13 +204,15 @@ oj.__registerWidget('oj.dvtTimeComponent', $.oj.dvtBaseComponent,
         if (seriesTemplate) {
           var alias = self.options.as;
           var seriesTemplateTopProperties = self.getElementPropertyNames(seriesTemplateElementName);
+          var seriesPropertyValidator = this.getPropertyValidator(seriesTemplate[0],
+            seriesTemplateElementName);
           for (i = 0; i < seriesArray.length; i++) {
             seriesObj = seriesArray[i];
             seriesContext = seriesContexts[seriesObj.id];
             try {
               var resolvedSeriesObj = templateEngine.resolveProperties(parentElement,
                 seriesTemplate[0], seriesTemplateElementName, seriesTemplateTopProperties,
-                seriesContext, alias);
+                seriesContext, alias, seriesPropertyValidator);
               resolvedSeriesObj.id = seriesObj.id;
               resolvedSeriesObj[itemsKey] = seriesObj[itemsKey];
               seriesArray[i] = resolvedSeriesObj;

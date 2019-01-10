@@ -1,0 +1,52 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+$includeLabelVariables: $includeLabelClasses !default;
+
+@if $includeLabelVariables != false {
+  @include module-include-once("alta.windows.variables.label") {
+
+
+:root {
+  
+    // form control label
+    // ------------------------
+    // todo: change to --oj-label instead of --oj-form-control-label?
+
+
+    --oj-form-control-label-color:         var(--oj-text-color-3);
+    --oj-form-control-label-font-size:     var(--oj-font-size-sm);
+    --oj-form-control-label-font-weight:   normal;
+
+
+    --oj-form-control-label-required-char: "";
+    --oj-form-control-label-required-char-font-size:  1.6rem;
+    --oj-form-control-label-required-icon-color: var(--oj-accent-color-danger-4);
+    --oj-form-control-label-required-icon-background-color: var(--oj-accent-color-danger-4);
+    --oj-form-control-label-required-icon-border-radius: 50%;
+    --oj-form-control-label-required-icon-height: 4px;
+    --oj-form-control-label-required-icon-width: 4px;
+
+
+    // top aligned labels
+    //    by default labels are dislplay: block and therefore
+    //    render on top of the field. This variable controls
+    //    the vertical spacing between labels and fields
+    --oj-form-control-label-margin-bottom: 0.25em;
+
+
+    // inline labels
+    //   gutter (padding) between the inline label and the control
+    --oj-form-control-inline-gutter:       1.33333rem;
+
+    // inline labels
+    //   top margin on the inline label, generally this
+    //   distance is to align the label text with an input's text.
+    //   Note that there is an additional inline label
+    //  var --oj-form-layout-label-inline-margin-top
+    --oj-form-control-inline-margin-top:   0.55em;
+
+}
+
+  }
+}

@@ -76,8 +76,7 @@ DvtGauge.prototype.Init = function(context, callback, callbackObj, bStaticRender
 DvtGauge.prototype.SetOptions = function(options) {
   this.Options = options;
 
-  // Disable animation for canvas and xml
-  if (!dvt.Agent.isEnvironmentBrowser()) {
+  if (dvt.Agent.isEnvironmentTest()) {
     this.Options['animationOnDisplay'] = 'none';
     this.Options['animationOnDataChange'] = 'none';
   }
@@ -123,15 +122,25 @@ DvtGauge.prototype.render = function(options, width, height)
     this.Height = height;
   }
 
-  var oldShapes = this.__shapes;
+  this.__oldShapes = this.__shapes;
   this.__shapes = [];
 
   // Render the gauge.  Add the container at index 0 to avoid interfering with the editable overlay.
   var container = new dvt.Container(this.getCtx());
   this.addChildAt(container, 0);
-  this.Render(container, this.Width, this.Height);
+  var isRenderComplete = this.Render(container, this.Width, this.Height) != false;
+  if (isRenderComplete)
+    this.PostRender(options, container);
+};
 
-  this._setAnimation(container, (options != null), oldShapes, this.Width, this.Height);
+/**
+ * Post processing after gauge is rendered.
+ * @param {object} options component options
+ * @param {dvt.Container} container The container to render within.
+ * @protected
+ */
+DvtGauge.prototype.PostRender = function(options, container) {
+  this._setAnimation(container, (options != null), this.__oldShapes, this.Width, this.Height);
 
   // Set the size of the editing overlay if editable
   if (this._editingOverlay) {
@@ -4672,8 +4681,10 @@ dvt.RatingGauge.prototype.Render = function(container, width, height)
             new dvt.Rectangle((width - this.__shapeWidth * maxValue) / 2.0, outerGap, this.__shapeWidth * maxValue, height - 2 * outerGap);
         DvtRatingGaugeRenderer.render(this, container, width, height);
       }
+      this.PostRender(this.Options, container);
     };
     dvt.ImageLoader.loadImage(this.getCtx(), this.Options['selectedState']['source'], dvt.Obj.createCallback(this, onLoad));
+    return false;
   }
   else {
     if (!preserveAspectRatio) {
@@ -4689,6 +4700,7 @@ dvt.RatingGauge.prototype.Render = function(container, width, height)
     this.__bounds = isVert ? new dvt.Rectangle(outerGap, (height - this.__shapeHeight * maxValue) / 2.0, width - 2 * outerGap, this.__shapeHeight * maxValue) :
         new dvt.Rectangle((width - this.__shapeWidth * maxValue) / 2.0, outerGap, this.__shapeWidth * maxValue, height - 2 * outerGap);
     DvtRatingGaugeRenderer.render(this, container, width, height);
+    return true;
   }
 };
 

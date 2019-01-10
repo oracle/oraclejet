@@ -1,12 +1,46 @@
 {
   "name": "oj-message",
-  "version": "6.0.0",
-  "jetVersion": "6.0.0",
+  "version": "6.1.0",
+  "jetVersion": "6.1.0",
   "displayName": "Message",
   "type": "core",
   "description": "Displays a message",
-  "help": "https://docs.oracle.com/en/middleware/jet/6/reference-api/oj.ojMessage.html",
+  "help": "https://docs.oracle.com/en/middleware/jet/6.1/reference-api/oj.ojMessage.html",
   "properties": {
+    "displayOptions": {
+      "description": "Specifies the display options for contents of the message.",
+      "type": "object",
+      "displayName": "Display Options",
+      "help": "displayOptions",
+      "properties": {
+        "category": {
+          "description": "Specifies display option for ojMessage#message.category text in this message.",
+          "type": "string",
+          "displayName": "Category",
+          "value": "auto",
+          "help": "displayOptions.category",
+          "enumValues": [
+            "auto",
+            "header",
+            "none"
+          ],
+          "propertyEditorValues": {
+            "auto": {
+              "description": "the component decides whether and where the ojMessage#message.category text is displayed. The behavior is same as 'header' option, but may change in future releases.",
+              "displayName": "Auto"
+            },
+            "header": {
+              "description": "if the ojMessage#message.category property is specified, its value will be displayed in the header region of the message next to message icon. If ojMessage#message.category property is not specified, a translated text corresponding to the value of the ojMessage#message.severity property will be displayed.",
+              "displayName": "Header"
+            },
+            "none": {
+              "description": "the ojMessage#message.category text will not be displayed",
+              "displayName": "None"
+            }
+          }
+        }
+      }
+    },
     "message": {
       "description": "Structured data specifying essential information to display a message on the UI.",
       "type": "object",
@@ -39,7 +73,7 @@
           ],
           "propertyEditorValues": {
             "defaults": {
-              "description": "use implicit affordance to best suit the native theme and screen\ntouch capabilities. See keyboard and touch end user information sections in this document.",
+              "description": "use implicit affordance to best suit the native theme, efficient use\nof available space and screen touch capabilities. A close 'X' icon is displayed in all cases\nexcept in the case when the message is set to auto-timeout when using mobile themes. The display\nof the close icon can be further controlled by using the theme variables as noted below. See\nkeyboard and touch end user information sections in this document for interaction options.",
               "displayName": "Defaults"
             },
             "none": {
@@ -226,7 +260,7 @@
       "help": "close",
       "detail": {
         "message": {
-          "description": "instance of type ojMessage#message corresponding to the message that was closed",
+          "description": "the message that was closed",
           "type": "object"
         }
       }

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 /**
@@ -599,10 +599,11 @@ var __oj_switch_metadata =
      * @instance
      */
     _setupEvents: function () {
-      this._off(this._element2, 'keydown keyup mousedown mouseup mouseleave mouseenter touchstart touchend');
+      this._off(this._element2, 'keydown keyup mouseup touchend');
       if (this._CanSetValue()) {
         this._on(this._element2, this._switchEvents);
         this._AddHoverable(this._element2);
+        this._AddActiveable(this._element2);
       }
       this._focusable({
         element: this.switchThumb,
@@ -626,38 +627,17 @@ var __oj_switch_metadata =
       keyup: function (event) {
         // ENTER and SPACE will change the switch
         if (event.which === $.ui.keyCode.ENTER || event.which === $.ui.keyCode.SPACE) {
-          this._SetValueReturnBoolean(!this.option('value'), event);
-        }
-      },
-      mousedown: function (event) {
-        // LEFT MOUSE BUTTON will change the switch
-        if (event.which === 1) {
-          $(event.currentTarget).addClass('oj-active');
-          event.preventDefault();
+          this._SetValue(!this.option('value'), event);
         }
       },
       mouseup: function (event) {
         // LEFT MOUSE BUTTON will change the switch
         if (event.which === 1) {
-          this._SetValueReturnBoolean(!this.option('value'), event);
+          this._SetValue(!this.option('value'), event);
         }
-      },
-      mouseleave: function (event) {
-        if (event.which === 1) {
-          $(event.currentTarget).removeClass('oj-active');
-        }
-      },
-      mouseenter: function (event) {
-        if (event.which === 1) {
-          $(event.currentTarget).addClass('oj-active');
-        }
-      },
-      touchstart: function (event) {
-        $(event.currentTarget).addClass('oj-active');
-        event.preventDefault();
       },
       touchend: function (event) {
-        this._SetValueReturnBoolean(!this.option('value'), event);
+        this._SetValue(!this.option('value'), event);
       }
     },
 
@@ -721,6 +701,7 @@ var __oj_switch_metadata =
     _destroy: function () {
       if (this._CanSetValue()) {
         this._RemoveHoverable(this._element2);
+        this._RemoveActiveable(this._element2);
       }
       this._element2.find('.oj-switch-track').remove();
       oj.DomUtils.unwrap(this.element);

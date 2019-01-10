@@ -1,0 +1,80 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// NOTE: The mixins defined in these files are needed
+// based on our current supported browsers. Mixins in this
+// file will be removed when we no longer need to use vendor
+// prefixes for a particular property.
+
+
+
+@mixin oj-will-change-property ($willChangeValue...)
+{
+  -webkit-will-change: $willChangeValue;
+  -ms-will-change: $willChangeValue;
+  -moz-will-change: $willChangeValue;
+
+  // cssLint doesn't yet support this property.
+  // tracking bug https://github.com/CSSLint/parser-lib/issues/121
+  // will-change: $willChangeValue;
+}
+
+@mixin oj-break-inside-property ($breakInsideValue)
+{
+  // -moz-column-break-inside doesn't work on FF 24 on windows
+  // try adding page-break-inside as well
+     -moz-column-break-inside: $breakInsideValue;
+      -ms-column-break-inside: $breakInsideValue;
+                 break-inside: $breakInsideValue;
+}
+
+
+
+//*****************************************************************************
+//
+// Usage Example:
+//
+// .oj-foo, .oj-bar
+// {
+//   @include oj-placeholder()
+//   {
+//     color: red;
+//   }
+// }
+//*****************************************************************************
+
+@mixin oj-placeholder ()
+{
+ 
+ &::-webkit-input-placeholder {
+   @content
+ }
+
+ &:-ms-input-placeholder {
+  @content
+ }
+
+ &::-ms-input-placeholder {
+  @content
+ }
+
+
+ &::placeholder {
+  @content
+ }
+
+};
+
+@mixin oj-user-select-property ($userSelectValue)
+{
+    -ms-user-select: $userSelectValue;
+    -webkit-user-select: $userSelectValue;
+    -moz-user-select: $userSelectValue;
+    user-select:$userSelectValue;
+}
+
+
+@mixin oj-backface-visibility-property ($backfaceVisibilityValue)
+{
+	-webkit-backface-visibility: $backfaceVisibilityValue;
+	backface-visibility: $backfaceVisibilityValue;
+}
+

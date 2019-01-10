@@ -1,0 +1,39 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+$includeAppLayoutWebVariables: $includeAppLayoutWebClasses !default;
+
+@if $includeAppLayoutWebVariables != false {
+  $includeButtonVariables: true !global;
+  $includeAppLayoutClasses: true !global;
+}
+
+// import dependencies
+@import "oj.alta.android.button";
+@import "oj.alta.android.applayout";
+
+@if $includeAppLayoutWebVariables != false {
+  @include module-include-once("alta.android.variables.applayout.web") {
+
+
+:root {
+  // app layout web
+  --oj-app-layout-web-offcanvas-bg-color:            var(--oj-contrast-background-1-color);
+  --oj-app-layout-web-padding:                       20px;
+
+  --oj-app-layout-web-header-bg-color:               var(--oj-neutral-color-6);
+  --oj-app-layout-web-header-border-color:           var(--oj-header-border-color); 
+  --oj-app-layout-web-header-box-shadow:             0 3px 3px unquote('hsla(var(--oj-box-shadow-hsl),0.1)');
+  --oj-app-layout-web-header-min-height:             3.143rem;
+  --oj-app-layout-web-header-title-text-color:       var(--oj-secondary-text-color);
+  --oj-app-layout-web-header-title-font-size:        1.25rem;
+  --oj-app-layout-web-header-title-font-weight:      500;
+
+  --oj-app-layout-web-footer-min-height:             3.571rem;
+  --oj-app-layout-web-footer-bg-color:               var(--oj-app-layout-web-header-bg-color);
+  --oj-app-layout-web-footer-border-color:           var(--oj-app-layout-web-header-border-color);
+}
+
+
+}
+}

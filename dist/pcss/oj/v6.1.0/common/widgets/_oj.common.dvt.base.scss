@@ -1,0 +1,297 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// !!!
+// WARNING: do not directly import this file, instead import the
+//          version in your theme's directory,
+//          for example alta/widgets/_oj.alta.dvt.base.scss
+// !!!
+
+@import "../../utilities/oj.utilities";
+
+@if $includeDvtBaseClasses != false {
+  @include module-include-once("common.dvtbase") {
+
+    // Common data visualization styles
+    .oj-dvtbase {
+      display:block;
+      position:relative;
+      -webkit-touch-callout: none;
+      -webkit-tap-highlight-color: rgba(0,0,0,0);
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+          font-family: var(--oj-font-family);
+          animation-duration: var(--oj-dvt-animation-duration);
+      } @else {
+          font-family: $fontFamily;
+          animation-duration: $dvtAnimationDuration;
+      }
+    }
+
+    .oj-dvtbase:focus {
+      outline:none;
+    }
+
+    // attribute group color used by oj.ColorAttributeGroupHandler
+    .oj-dvt-category1 {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+          color: var(--oj-dvt-category-color-1);
+      } @else {
+          color: $dvtCategory1Color;
+      }
+    }
+
+    // attribute group color used by oj.ColorAttributeGroupHandler
+    .oj-dvt-category2 {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+          color: var(--oj-dvt-category-color-2);
+      } @else {
+          color: $dvtCategory2Color;
+      }
+    }
+
+    // attribute group color used by oj.ColorAttributeGroupHandler
+    .oj-dvt-category3 {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+          color: var(--oj-dvt-category-color-3);
+      } @else {
+          color: $dvtCategory3Color;
+      }
+    }
+
+    // attribute group color used by oj.ColorAttributeGroupHandler
+    .oj-dvt-category4 {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+          color: var(--oj-dvt-category-color-4);
+      } @else {
+          color: $dvtCategory4Color;
+      }
+    }
+
+    // attribute group color used by oj.ColorAttributeGroupHandler
+    .oj-dvt-category5 {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+          color: var(--oj-dvt-category-color-5);
+      } @else {
+          color: $dvtCategory5Color;
+      }
+    }
+
+    // attribute group color used by oj.ColorAttributeGroupHandler
+    .oj-dvt-category6 {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+          color: var(--oj-dvt-category-color-6);
+      } @else {
+          color: $dvtCategory6Color;
+      }
+    }
+
+    // attribute group color used by oj.ColorAttributeGroupHandler
+    .oj-dvt-category7 {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+          color: var(--oj-dvt-category-color-7);
+      } @else {
+          color: $dvtCategory7Color;
+      }
+    }
+
+    // attribute group color used by oj.ColorAttributeGroupHandler
+    .oj-dvt-category8 {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+          color: var(--oj-dvt-category-color-8);
+      } @else {
+          color: $dvtCategory8Color;
+      }
+    }
+
+    // attribute group color used by oj.ColorAttributeGroupHandler
+    .oj-dvt-category9 {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+          color: var(--oj-dvt-category-color-9);
+      } @else {
+          color: $dvtCategory9Color;
+      }
+    }
+
+    // attribute group color used by oj.ColorAttributeGroupHandler
+    .oj-dvt-category10 {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+          color: var(--oj-dvt-category-color-10);
+      } @else {
+          color: $dvtCategory10Color;
+      }
+    }
+
+    // attribute group color used by oj.ColorAttributeGroupHandler
+    .oj-dvt-category11 {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+          color: var(--oj-dvt-category-color-11);
+      } @else {
+          color: $dvtCategory11Color;
+      }
+    }
+
+    // attribute group color used by oj.ColorAttributeGroupHandler
+    .oj-dvt-category12 {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+          color: var(--oj-dvt-category-color-12);
+      } @else {
+          color: $dvtCategory12Color;
+      }
+    }
+
+    // tooltip styles shared by data visualizations
+    .oj-dvt-tooltip {
+      border-style: solid;
+      border-width: 1px;
+      padding: 2px;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        background-color: var(--oj-dvt-tooltip-bg-color);
+        color: var(--oj-text-color);
+        border-color: var(--oj-dvt-tooltip-border-color);
+        font-size: var(--oj-font-size);
+        font-family: var(--oj-font-family);
+      } @else {
+        background-color: $dvtTooltipBgColor;
+        color: $textColor;
+        border-color: $dvtBorderColor;
+        font-size: $fontSize;
+        font-family: $fontFamily;
+      }
+    }
+
+    // datatip styles shared by data visualizations
+    .oj-dvt-datatip {
+      border-style: solid;
+      border-width: 2px;
+      padding: 2px;
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        background-color: var(--oj-dvt-tooltip-bg-color);
+        color: var(--oj-text-color);
+        border-color: var(--oj-dvt-tooltip-border-color);
+        border-radius: var(--oj-border-radius-sm);
+        box-shadow: var(--oj-box-shadow-sm); 
+        font-size: var(--oj-font-size-sm);
+        font-family: var(--oj-font-family);
+      } @else {
+        background-color: $dvtTooltipBgColor;
+        color: $textColor;
+        border-color: $dvtBorderColor;
+        @include oj-border-radius($smallBorderRadius);
+        @include oj-box-shadow($smallBoxShadow);
+        font-size: $smallFontSize;
+        font-family: $fontFamily;
+      }
+    }
+
+    // This is to prevent the flash of unstyled content before the html becomes JET components.
+    @if $initialVisibility == hidden {
+      oj-legend:not(.oj-complete) {
+        visibility: hidden;
+      }
+    }
+
+    oj-legend {
+      display: block;
+    }
+
+    .oj-legend {
+        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+          font-size: var(--oj-font-size-sm);
+          color: var(--oj-text-color);
+        } @else {
+          font-size: $smallFontSize;
+          color: $textColor;
+        }
+        @include oj-user-select-property(none);
+    }
+
+    .oj-legend-title {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        font-size: var(--oj-font-size-sm);
+      } @else {
+        font-size: $smallFontSize;
+      }
+    }
+
+    .oj-legend-section-title {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        font-size: var(--oj-font-size-sm);
+        color: var(--oj-text-color);
+      } @else {
+        font-size: $smallFontSize;
+        color: $textColor;
+      }
+    }
+
+    .oj-legend-section-open-icon {
+      @include oj-ltr() {
+        background-image: oj-common-image-url("dvt/legend/open-ena.png");
+      }
+      @include oj-rtl() {
+        background-image: oj-common-image-url("dvt/legend/open-ena-r.png");
+      }
+    }
+
+    .oj-legend-section-open-icon.oj-hover {
+      @include oj-ltr() {
+        background-image: oj-common-image-url("dvt/legend/open-ovr.png");
+      }
+      @include oj-rtl() {
+        background-image: oj-common-image-url("dvt/legend/open-ovr-r.png");
+      }
+    }
+
+    .oj-legend-section-open-icon.oj-active {
+      @include oj-ltr() {
+        background-image: oj-common-image-url("dvt/legend/open-dwn.png");
+      }
+      @include oj-rtl() {
+        background-image: oj-common-image-url("dvt/legend/open-dwn-r.png");
+      }
+    }
+
+    .oj-legend-section-close-icon {
+      @include oj-ltr() {
+        background-image: oj-common-image-url("dvt/legend/closed-ena.png");
+      }
+      @include oj-rtl() {
+        background-image: oj-common-image-url("dvt/legend/closed-ena-r.png");
+      }
+    }
+
+    .oj-legend-section-close-icon.oj-hover {
+      @include oj-ltr() {
+        background-image: oj-common-image-url("dvt/legend/closed-ovr.png");
+      }
+      @include oj-rtl() {
+        background-image: oj-common-image-url("dvt/legend/closed-ovr-r.png");
+      }
+    }
+
+    .oj-legend-section-close-icon.oj-active {
+      @include oj-ltr() {
+        background-image: oj-common-image-url("dvt/legend/closed-dwn.png");
+      }
+      @include oj-rtl() {
+        background-image: oj-common-image-url("dvt/legend/closed-dwn-r.png");
+      }
+    }
+
+    .oj-legend-title {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        color: var(--oj-tertiary-text-color);
+      } @else {
+        color: $tertiaryTextColor;
+      }
+    }
+
+    .oj-legend-section-title {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true){
+        color: var(--oj-tertiary-text-color);
+      } @else {
+        color: $tertiaryTextColor;
+      }
+    }
+
+    .oj-dvt-no-data-message{
+    }
+  }
+}

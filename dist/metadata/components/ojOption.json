@@ -1,11 +1,11 @@
 {
   "name": "oj-option",
-  "version": "6.0.0",
-  "jetVersion": "6.0.0",
+  "version": "6.1.0",
+  "jetVersion": "6.1.0",
   "displayName": "Option",
   "type": "core",
   "description": "Declare values for JET elements that display a list of values.",
-  "help": "https://docs.oracle.com/en/middleware/jet/6/reference-api/oj.ojOption.html",
+  "help": "https://docs.oracle.com/en/middleware/jet/6.1/reference-api/oj.ojOption.html",
   "properties": {
     "disabled": {
       "description": "Disables the option if set to true.",

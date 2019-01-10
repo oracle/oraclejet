@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -17,6 +17,8 @@ function(oj, $, Config, Translations, ojld, LocaleData, __ValidationBase, Logger
  */
 
 /**
+ * In most use cases you will use the ConverterFactory to get an instance of a
+ * NumberConverter.
  * @export
  * @constructor
  * @augments oj.Converter
@@ -27,6 +29,7 @@ function(oj, $, Config, Translations, ojld, LocaleData, __ValidationBase, Logger
  * @ojtsimport {module: "ojvalidation-base", type: "AMD", imported:["Converter", "Validator", "Validation"]}
  * @abstract
  * @since 0.6
+ * @see oj.ConverterFactory
  */
 oj.NumberConverter = function () {
   this.Init();
@@ -76,7 +79,9 @@ oj.NumberConverter.prototype.parse = function (value) {
  */
 /* global __ValidationBase:false, Translations:false */
 /**
- * Constructs a NumberRangeValidator that ensures the value provided is within a given range
+ * Constructs a NumberRangeValidator that ensures the value provided is within a given range.
+ * In most use cases you will use the ValidatorFactory to get an instance of a
+ * NumberRangeValidator instead of using the constructor.
  * @param {Object=} options an object literal used to provide the following properties
  * @export
  * @constructor
@@ -88,6 +93,7 @@ oj.NumberConverter.prototype.parse = function (value) {
  *                for: "options", jsdocOverride: true}
  *              ]
  * @since 0.7
+ * @see oj.ValidatorFactory
  *
  */
 oj.NumberRangeValidator = function _NumberRangeValidator(options) {
@@ -682,6 +688,14 @@ oj.IntlNumberConverter = function (options) {
 };
 
 /**
+ * @typedef {object} oj.IntlNumberConverter.Separators
+ * @property {string=} decimal - Allows the user to provide custom decimal separators.
+ * <br/>Example: { style:'decimal', separators: {decimal: ',',  group: '.'}};
+ * @property {string=} group - Allows the user to provide custom group separators.
+ * <br/>Example: { style:'decimal', separators: {decimal: ',',  group: '.'}};
+ */
+
+/**
  * @typedef {object} oj.IntlNumberConverter.ConverterOptions
  * @property {('decimal'|'currency'|'percent'|'unit')=} style - sets the style of number formatting. Allowed values are "decimal"
  * (the default), "currency", "percent" or "unit". When a number is formatted as a decimal, the decimal
@@ -798,7 +812,7 @@ oj.IntlNumberConverter = function (options) {
  * @property {boolean=} roundDuringParse - Specifies whether or not to round during
  * parse. Defaults to false; the number converter rounds during format but not during parse.
  *
- * @property {Object=} separators - An object with 2 fields: 'decimal' and 'group'.
+ * @property {oj.IntlNumberConverter.Separators=} separators - An object with 2 fields: 'decimal' and 'group'.
  * It allows the user to provide custom decimal and grouping separators. It is accepted for both
  * format and parse methods.
  * <br/>

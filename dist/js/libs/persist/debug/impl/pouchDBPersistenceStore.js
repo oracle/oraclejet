@@ -182,16 +182,21 @@ define(["../PersistenceStore", "../impl/storageUtils", "pouchdb", "./logger"],
       // get all rows and use our own find logic
       return self._db.allDocs({include_docs: true}).then(function (result) {
         if (result && result.rows && result.rows.length) {
-          var satisfiedRows = result.rows.filter(function(row) {
-            if (storageUtils.satisfy(findExpression.selector, row.doc)) {
-              return true;
-            }
-            return false;
+          var fixedDocPromises = result.rows.map(function(row) {
+            return self._fixValue(row.doc);
           });
-          var promises = satisfiedRows.map(function(row) {
-            return self._findResultCallback(modifiedFind.fields).bind(self)(row.doc);
+          return Promise.all(fixedDocPromises).then(function(docs) {
+            var satisfiedRows = result.rows.filter(function(row) {
+              if (storageUtils.satisfy(findExpression.selector, row.doc)) {
+                return true;
+              }
+              return false;
+            });
+            var promises = satisfiedRows.map(function(row) {
+              return self._findResultCallback(modifiedFind.fields).bind(self)(row.doc);
+            });
+            return Promise.all(promises);
           });
-          return Promise.all(promises);
         } else {
           return Promise.resolve([]);
         }

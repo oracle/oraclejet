@@ -1,0 +1,47 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+$includeDvtBaseVariables: $includeDvtBaseClasses !default;
+
+@if $includeDvtBaseVariables != false {
+  $includeButtonVariables: true !global;
+}
+
+// import dependencies
+@import "oj.alta.ios.button";
+
+@if $includeDvtBaseVariables != false {
+  @include module-include-once("alta.ios.variables.dvtbase") {
+:root {
+  
+
+
+    // DVT general
+    // ----------------------------
+
+    --oj-dvt-category-color-1:              var(--oj-accent-color-dvt-1);
+    --oj-dvt-category-color-2:              var(--oj-accent-color-dvt-2);
+    --oj-dvt-category-color-3:              var(--oj-accent-color-dvt-3);
+    --oj-dvt-category-color-4:              var(--oj-accent-color-dvt-4);
+    --oj-dvt-category-color-5:              var(--oj-accent-color-dvt-5);
+    --oj-dvt-category-color-6:              var(--oj-accent-color-dvt-6);
+    --oj-dvt-category-color-7:              var(--oj-accent-color-dvt-7);
+    --oj-dvt-category-color-8:              var(--oj-accent-color-dvt-8);
+    --oj-dvt-category-color-9:              var(--oj-accent-color-dvt-9);
+    --oj-dvt-category-color-10:             var(--oj-accent-color-dvt-10);
+    --oj-dvt-category-color-11:             var(--oj-accent-color-dvt-11);
+    --oj-dvt-category-color-12:             var(--oj-accent-color-dvt-12);
+
+    --oj-dvt-animation-duration:               var(--oj-animation-duration-long);
+    --oj-dvt-tooltip-bg-color:                 var(--oj-neutral-color-1);
+    --oj-dvt-tooltip-border-color:             var(--oj-neutral-color-17);
+    --oj-dvt-item-outer-border-color-selected: var(--oj-neutral-color-17);
+    --oj-dvt-item-inner-border-color-selected: var(--oj-neutral-color-1);
+    --oj-dvt-icon-bg-color:                    var(--oj-neutral-color-1);
+    --oj-dvt-icon-border-color:                var(--oj-neutral-color-7);
+    --oj-dvt-icon-bg-color-active:             var(--oj-button-bg-color-active);
+    --oj-dvt-icon-border-color-active:         var(--oj-button-border-color-active);
+}
+
+  }
+}

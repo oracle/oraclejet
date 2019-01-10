@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -473,7 +473,8 @@ var __oj_table_metadata =
  * @ojtsimport {module: "ojdataprovider", type: "AMD", imported: ["DataProvider"]}
  * @ojsignature [{
  *                target: "Type",
- *                value: "class ojTable<K, D> extends baseComponent<ojTableSettableProperties<K,D>>"
+ *                value: "class ojTable<K, D> extends baseComponent<ojTableSettableProperties<K,D>>",
+ *                genericParameters: [{"name": "K", "description": "Type of key of the dataprovider"}, {"name": "D", "description": "Type of data from the dataprovider"}]
  *               },
  *               {
  *                target: "Type",
@@ -2640,7 +2641,9 @@ var __oj_table_metadata =
       _ERR_DATA_INVALID_TYPE_SUMMARY: 'Invalid data type.',
       _ERR_DATA_INVALID_TYPE_DETAIL: 'Please specify the appropriate data type.',
       _ERR_ELEMENT_INVALID_TYPE_SUMMARY: 'Invalid element type.',
-      _ERR_ELEMENT_INVALID_TYPE_DETAIL: 'Only a <table> element can be specified for ojTable.'
+      _ERR_ELEMENT_INVALID_TYPE_DETAIL: 'Only a <table> element can be specified for ojTable.',
+      _ERR_WIDTH_INVALID_TYPE_SUMMARY: 'Invalid data type for column width.',
+      _ERR_WIDTH_INVALID_TYPE_DETAIL: 'Please specify a valid number (not a string).'
     },
 
     /**
@@ -4951,19 +4954,20 @@ var __oj_table_metadata =
 
       // loop through the cached header values
       var columnLocations = this._getColumnLocations();
-      var i;
-      var index = columnLocations.length - 1;
-      for (i = 0; i < columnLocations.length - 1; i++) {
-        if (scrollPosition.x >= columnLocations[i] && scrollPosition.x < columnLocations[i + 1]) {
-          index = i;
-          break;
+      if (columnLocations && columnLocations.length > 0) {
+        var i;
+        var index = columnLocations.length - 1;
+        for (i = 0; i < columnLocations.length - 1; i++) {
+          if (scrollPosition.x >= columnLocations[i] && scrollPosition.x < columnLocations[i + 1]) {
+            index = i;
+            break;
+          }
         }
+
+        scrollPosition.columnKey = this._getColumnDefs()[index].id;
+        scrollPosition.columnIndex = index;
+        scrollPosition.offsetX = scrollPosition.x - columnLocations[index];
       }
-
-      scrollPosition.columnKey = this._getColumnDefs()[index].id;
-      scrollPosition.columnIndex = index;
-      scrollPosition.offsetX = scrollPosition.x - columnLocations[index];
-
       return scrollPosition;
     },
 
@@ -5025,22 +5029,21 @@ var __oj_table_metadata =
      */
     _getColumnLocations: function () {
       if (this._columnOffsets == null) {
-        var headerColumns = this._getTableDomUtils().getTableHeaderColumns();
         this._columnOffsets = [];
+        var headerColumns = this._getTableDomUtils().getTableHeaderColumns();
 
-        // depending on browser, offsetLeft of first column might not be 0
-        var firstColumnOffset = 0;
-        if (headerColumns.length > 0) {
+        if (headerColumns && headerColumns.length > 0) {
+          // depending on browser, offsetLeft of first column might not be 0
+          var firstColumnOffset = 0;
           firstColumnOffset = headerColumns[0].offsetLeft;
           this._columnOffsets.push(0);
-        }
 
-        var i;
-        for (i = 1; i < headerColumns.length; i++) {
-          this._columnOffsets.push(headerColumns[i].offsetLeft - firstColumnOffset);
+          var i;
+          for (i = 1; i < headerColumns.length; i++) {
+            this._columnOffsets.push(headerColumns[i].offsetLeft - firstColumnOffset);
+          }
         }
       }
-
       return this._columnOffsets;
     },
 
@@ -7767,8 +7770,13 @@ var __oj_table_metadata =
             for (var i = 0; i < resultDataCount; i++) {
               indexArray[i] = offset + startIndex + i;
             }
-
             var metadataArray = [];
+
+            // Need to clear DOM scroller before refreshAll potentially triggers
+            // additional data fetches when syncing scroll position
+            if (self._domScroller != null) {
+              self._domScroller.destroy();
+            }
 
             self._refreshAll({
               data: data,
@@ -11687,7 +11695,7 @@ oj.TableDndContext.prototype._updateDragRowsState = function (event, newRowIndex
  */
 
 /* jslint browser: true,devel:true*/
-/* global Components:false */
+/* global Components:false, Logger:false, Translations:false */
 /**
  * @ignore
  * @export
@@ -15050,6 +15058,39 @@ oj.TableDomUtils.prototype._getBoxStyle = function (style) {
   };
 };
 
+oj.TableDomUtils.prototype._applyColumnHeaderHeight = function (headerColumnCell) {
+  var headerColumnTextDiv = headerColumnCell.querySelectorAll(
+    '.' + oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_TEXT_CLASS);
+  if (headerColumnTextDiv && headerColumnTextDiv.length > 0) {
+    var headerColumnDivMinHeight =
+      headerColumnTextDiv[0].clientHeight + oj.TableDomUtils.CSS_VAL._PX;
+
+    var headerColumnDiv = headerColumnCell.querySelectorAll(
+      '.' + oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_CLASS);
+    if (headerColumnDiv && headerColumnDiv.length > 0) {
+      headerColumnDiv[0].style[oj.TableDomUtils.CSS_PROP._MIN_HEIGHT] =
+        headerColumnDivMinHeight;
+    }
+  }
+};
+
+oj.TableDomUtils.prototype._getForcedColumnWidth = function (columnWidth, cellBoxStyle) {
+  // ojtable columns width is interpreted as padding + content width, so we either have to
+  // add in the border width or substract the padding width based on the box-sizing style.
+  var forcedWidth = columnWidth +
+    ((cellBoxStyle.boxSizing === 'border-box') ?
+     cellBoxStyle.borderWidth : -cellBoxStyle.paddingWidth);
+  forcedWidth += oj.TableDomUtils.CSS_VAL._PX;
+  return forcedWidth;
+};
+
+oj.TableDomUtils.prototype._applyForcedColumnWidth = function (cell, forcedWidth) {
+  var columnElement = cell;
+  columnElement.style[oj.TableDomUtils.CSS_PROP._MIN_WIDTH] = forcedWidth;
+  columnElement.style[oj.TableDomUtils.CSS_PROP._WIDTH] = forcedWidth;
+  columnElement.style[oj.TableDomUtils.CSS_PROP._MAX_WIDTH] = forcedWidth;
+};
+
 /**
  * Iterate through the columns and get and then set the widths
  * for the columns and first row this is so that when we re-apply the styling
@@ -15058,183 +15099,191 @@ oj.TableDomUtils.prototype._getBoxStyle = function (style) {
  * @memberof oj.TableDomUtils
  */
 oj.TableDomUtils.prototype._setColumnWidths = function (scrollbarWidth) {
-  var columns = this.component._getColumnDefs();
-  var columnWidths = [];
-  var columnBoxStyles = [];
-  var headerColumnDivMinHeights = [];
-  var tableBodyCellBoxStyles = [];
-  var footerBoxStyles = [];
-  var defaultColumnBoxStyle;
-  var defaultTableBodyCellBoxStyle;
-  this._forcedWidthColumns = [];
   var i;
-  var headerColumnCell;
-  var footerCell;
-  var forceWidth;
-  var columnsCount = columns.length;
-
-  for (i = 0; i < columnsCount; i++) {
-    headerColumnCell = this.getTableHeaderColumn(i);
-    if (headerColumnCell != null) {
-      // read in the widths first. Set the widths in a separate loop so setting
-      // the widths of early columns does not affect the widths of the rest
-      var headerColumnCellStyle = window.getComputedStyle(headerColumnCell);
-      var columnWidth;
-      if (columns[i].width > 0) {
-        this._forcedWidthColumns[i] = true;
-        columnWidth = columns[i].width;
-      } else {
-        this._forcedWidthColumns[i] = false;
-        columnWidth = parseInt(headerColumnCellStyle[oj.TableDomUtils.CSS_PROP._WIDTH], 10) || 0;
-      }
-      columnWidths[i] = columnWidth;
-      var headerRenderer = this.component._getColumnRenderer(i, 'header');
-
-      if (!defaultColumnBoxStyle && headerRenderer == null) {
-        defaultColumnBoxStyle = this._getBoxStyle(headerColumnCellStyle);
-        columnBoxStyles[i] = defaultColumnBoxStyle;
-      } else if (headerRenderer != null) {
-        columnBoxStyles[i] = this._getBoxStyle(headerColumnCellStyle);
-      } else {
-        columnBoxStyles[i] = defaultColumnBoxStyle;
-      }
-      // also determine the header heights
-      var headerColumnTextDiv = headerColumnCell.querySelectorAll(
-        '.' + oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_TEXT_CLASS);
-      if (headerColumnTextDiv && headerColumnTextDiv.length > 0) {
-        headerColumnDivMinHeights[i] =
-          headerColumnTextDiv[0].clientHeight + oj.TableDomUtils.CSS_VAL._PX;
-      }
-    }
-  }
-
-  var adjustedColumnWidths = [];
+  var j;
+  var columnWidth;
   var adjustedColumnWidth;
+  var headerColumnCell;
+  var headerColumnCellStyle;
+  var headerBoxStyle;
+  var defaultHeaderBoxStyle;
   var tableBodyCell;
+  var tableBodyCellBoxStyle;
+  var defaultTableBodyCellBoxStyle;
+  var footerCell;
+  var footerBoxStyle;
+  var forcedBodyCellWidth;
+  var errSummary;
+  var errDetail;
+
+  var columnWidths = [];
+  var cellColumnWidths = [];
+  var footerColumnWidths = [];
+  var columns = this.component._getColumnDefs();
+  var columnsCount = columns.length;
   var tableBodyRows = this.getTableBodyRows();
 
-  if (tableBodyRows != null && tableBodyRows.length > 0) {
-    var tableBodyCellStyle;
-    var tableBodyCellBoxStyle;
-    for (i = 0; i < columnsCount; i++) {
-      tableBodyCell = this.getTableBodyCell(0, i, null);
-      if (tableBodyCell != null) {
-        // cellRenderer = this.component._getColumnRenderer(i, 'cell');
+  // find and set the widths of the forced width columns, cells, and footers first
+  // this allows the browser to adjust the remaining column widths automatically
+  this._forcedWidthColumns = [];
+  for (i = 0; i < columnsCount; i++) {
+    columnWidth = columns[i].width;
+    if (columnWidth > 0) {
+      this._forcedWidthColumns[i] = true;
+      if (typeof columnWidth !== 'number') {
+        // invalid column width property type
+        errSummary = this.component._LOGGER_MSG._ERR_WIDTH_INVALID_TYPE_SUMMARY;
+        errDetail = Translations.applyParameters(
+          this.component._LOGGER_MSG._ERR_WIDTH_INVALID_TYPE_DETAIL, { width: columnWidth });
+        Logger.warn(errSummary + '\n' + errDetail);
+        columnWidth = parseFloat(columnWidth);
+      }
+      columnWidths[i] = columnWidth;
+      cellColumnWidths[i] = columnWidth;
+      footerColumnWidths[i] = columnWidth;
 
+      // update column header cell width
+      headerColumnCell = this.getTableHeaderColumn(i);
+      if (headerColumnCell !== null) {
+        if (this.component._getColumnRenderer(i, 'header') !== null) {
+          headerBoxStyle = this._getBoxStyle(window.getComputedStyle(headerColumnCell));
+        } else {
+          if (!defaultHeaderBoxStyle) {
+            defaultHeaderBoxStyle = this._getBoxStyle(window.getComputedStyle(headerColumnCell));
+          }
+          headerBoxStyle = defaultHeaderBoxStyle;
+        }
+        this._applyForcedColumnWidth(headerColumnCell,
+                                     this._getForcedColumnWidth(columnWidth, headerBoxStyle));
+      }
+
+      // update column table body cell widths
+      tableBodyCell = this.getTableBodyCell(0, i, null);
+      if (tableBodyRows !== null && tableBodyCell !== null) {
         if (this.component._hasRowOrCellRendererOrTemplate(i)) {
-          tableBodyCellStyle = window.getComputedStyle(tableBodyCell);
-          tableBodyCellBoxStyle = this._getBoxStyle(tableBodyCellStyle);
+          tableBodyCellBoxStyle = this._getBoxStyle(window.getComputedStyle(tableBodyCell));
         } else {
           if (!defaultTableBodyCellBoxStyle) {
-            tableBodyCellStyle = window.getComputedStyle(tableBodyCell);
-            defaultTableBodyCellBoxStyle = this._getBoxStyle(tableBodyCellStyle);
+            defaultTableBodyCellBoxStyle =
+              this._getBoxStyle(window.getComputedStyle(tableBodyCell));
           }
           tableBodyCellBoxStyle = defaultTableBodyCellBoxStyle;
         }
-        tableBodyCellBoxStyles[i] = tableBodyCellBoxStyle;
-        adjustedColumnWidth = null;
-        if (tableBodyCellBoxStyle.paddingWidth > columnBoxStyles[i].paddingWidth) {
-          adjustedColumnWidth = (columnWidths[i] - tableBodyCellBoxStyle.paddingWidth) +
-            columnBoxStyles[i].paddingWidth;
+        forcedBodyCellWidth = this._getForcedColumnWidth(columnWidth, tableBodyCellBoxStyle);
+        for (j = 0; j < tableBodyRows.length; j++) {
+          this._applyForcedColumnWidth(this.getTableBodyCell(j, i, null), forcedBodyCellWidth);
+        }
+      }
+
+      // update column footer cell width
+      footerCell = this.getTableFooterCell(i);
+      if (footerCell !== null) {
+        footerBoxStyle = this._getBoxStyle(window.getComputedStyle(footerCell));
+        this._applyForcedColumnWidth(footerCell,
+                                     this._getForcedColumnWidth(columnWidth, footerBoxStyle));
+      }
+    } else {
+      // add placeholders until the next loop is run
+      this._forcedWidthColumns[i] = false;
+      columnWidths[i] = null;
+      cellColumnWidths[i] = null;
+      footerColumnWidths[i] = null;
+    }
+  }
+
+  // loop through remaining columns to get the remaining column widths
+  for (i = 0; i < columnsCount; i++) {
+    if (!this._forcedWidthColumns[i]) {
+      // find column header cell width
+      headerColumnCell = this.getTableHeaderColumn(i);
+      if (headerColumnCell !== null) {
+        headerColumnCellStyle = window.getComputedStyle(headerColumnCell);
+        columnWidth = parseFloat(headerColumnCellStyle[oj.TableDomUtils.CSS_PROP._WIDTH]) || 0;
+        columnWidths[i] = columnWidth;
+        if (this.component._getColumnRenderer(i, 'header') !== null) {
+          headerBoxStyle = this._getBoxStyle(headerColumnCellStyle);
         } else {
-          adjustedColumnWidth = (columnWidths[i] + columnBoxStyles[i].paddingWidth) -
+          if (!defaultHeaderBoxStyle) {
+            defaultHeaderBoxStyle = this._getBoxStyle(headerColumnCellStyle);
+          }
+          headerBoxStyle = defaultHeaderBoxStyle;
+        }
+      }
+
+      // find column table body cell widths
+      tableBodyCell = this.getTableBodyCell(0, i, null);
+      if (tableBodyRows !== null && tableBodyCell !== null) {
+        if (this.component._hasRowOrCellRendererOrTemplate(i)) {
+          tableBodyCellBoxStyle = this._getBoxStyle(window.getComputedStyle(tableBodyCell));
+        } else {
+          if (!defaultTableBodyCellBoxStyle) {
+            defaultTableBodyCellBoxStyle =
+              this._getBoxStyle(window.getComputedStyle(tableBodyCell));
+          }
+          tableBodyCellBoxStyle = defaultTableBodyCellBoxStyle;
+        }
+        if (tableBodyCellBoxStyle.paddingWidth > headerBoxStyle.paddingWidth) {
+          adjustedColumnWidth = (columnWidth - tableBodyCellBoxStyle.paddingWidth) +
+            headerBoxStyle.paddingWidth;
+        } else {
+          adjustedColumnWidth = (columnWidth + headerBoxStyle.paddingWidth) -
             tableBodyCellBoxStyle.paddingWidth;
         }
-        adjustedColumnWidths[i] = adjustedColumnWidth;
         // when vertical scrollbar is hidden (scrollbarWidth specified), extend the width of the last column
         if (scrollbarWidth && i === columnsCount - 1) {
-          adjustedColumnWidths[i] += scrollbarWidth;
+          adjustedColumnWidth += scrollbarWidth;
         }
-        if (tableBodyCellStyle && parseFloat(tableBodyCellStyle.borderRightWidth, 10) === 0) {
-          adjustedColumnWidths[i] += 1;
+        cellColumnWidths[i] = adjustedColumnWidth;
+      }
+
+      // find column footer cell width
+      footerCell = this.getTableFooterCell(i);
+      if (footerCell !== null) {
+        footerBoxStyle = this._getBoxStyle(window.getComputedStyle(footerCell));
+        // adjust the padding widths if the footer has more padding
+        if (footerBoxStyle.paddingWidth > headerBoxStyle.paddingWidth) {
+          adjustedColumnWidth = (columnWidth - footerBoxStyle.paddingWidth) +
+            headerBoxStyle.paddingWidth;
+        } else {
+          adjustedColumnWidth = (columnWidth + headerBoxStyle.paddingWidth) -
+            footerBoxStyle.paddingWidth;
         }
+        footerColumnWidths[i] = adjustedColumnWidth;
       }
     }
   }
 
+  // finally loop through to set the remaining column widths
   for (i = 0; i < columnsCount; i++) {
-    footerCell = this.getTableFooterCell(i);
-    if (footerCell != null) {
-      var footerCellStyle = window.getComputedStyle(footerCell);
-      footerBoxStyles[i] = this._getBoxStyle(footerCellStyle);
-    }
-  }
-
-  for (i = 0; i < columnsCount; i++) {
-    headerColumnCell = this.getTableHeaderColumn(i);
-    if (headerColumnCell != null) {
-      // also set the header heights
-      if (headerColumnDivMinHeights[i]) {
-        var headerColumnDiv = headerColumnCell.querySelectorAll(
-          '.' + oj.TableDomUtils.CSS_CLASSES._COLUMN_HEADER_CLASS);
-
-        if (headerColumnDiv && headerColumnDiv.length > 0) {
-          headerColumnDiv[0].style[oj.TableDomUtils.CSS_PROP._MIN_HEIGHT] =
-            headerColumnDivMinHeights[i];
-        }
+    if (this._forcedWidthColumns[i]) {
+      // update column header cell height
+      headerColumnCell = this.getTableHeaderColumn(i);
+      if (headerColumnCell !== null) {
+        this._applyColumnHeaderHeight(headerColumnCell);
       }
-
-      if (!this._forcedWidthColumns[i]) {
+    } else {
+      // update column header cell width
+      headerColumnCell = this.getTableHeaderColumn(i);
+      if (headerColumnCell !== null) {
         headerColumnCell.style[oj.TableDomUtils.CSS_PROP._MIN_WIDTH] =
           columnWidths[i] + oj.TableDomUtils.CSS_VAL._PX;
-      } else {
-        // ojtable columns width is interpreted as padding + content width, so we either have to
-        // add in the border width or substract the padding width based on the box-sizing style.
-        forceWidth = columnWidths[i] +
-          ((columnBoxStyles[i].boxSizing === 'border-box') ?
-           columnBoxStyles[i].borderWidth : -columnBoxStyles[i].paddingWidth);
-        forceWidth += oj.TableDomUtils.CSS_VAL._PX;
-        headerColumnCell.style[oj.TableDomUtils.CSS_PROP._MIN_WIDTH] = forceWidth;
-        headerColumnCell.style[oj.TableDomUtils.CSS_PROP._WIDTH] = forceWidth;
-        headerColumnCell.style[oj.TableDomUtils.CSS_PROP._MAX_WIDTH] = forceWidth;
-      }
-    }
 
-    tableBodyCell = this.getTableBodyCell(0, i, null);
-    if (tableBodyCell != null) {
-      if (!this._forcedWidthColumns[i]) {
+        // also update column header cell height
+        this._applyColumnHeaderHeight(headerColumnCell);
+      }
+
+      // update column table body cell widths
+      tableBodyCell = this.getTableBodyCell(0, i, null);
+      if (tableBodyRows !== null && tableBodyCell !== null) {
         tableBodyCell.style[oj.TableDomUtils.CSS_PROP._MIN_WIDTH] =
-          adjustedColumnWidths[i] + oj.TableDomUtils.CSS_VAL._PX;
-      } else {
-        // ojtable columns width is interpreted as padding + content width, so we either have to
-        // add in the border width or substract the padding width based on the box-sizing style.
-        forceWidth = columnWidths[i] +
-          ((tableBodyCellBoxStyles[i].boxSizing === 'border-box') ?
-           tableBodyCellBoxStyles[i].borderWidth : -tableBodyCellBoxStyles[i].paddingWidth);
-        forceWidth += oj.TableDomUtils.CSS_VAL._PX;
-        for (var j = 0; j < tableBodyRows.length; j++) {
-          tableBodyCell = this.getTableBodyCell(j, i, null);
-          tableBodyCell.style[oj.TableDomUtils.CSS_PROP._MIN_WIDTH] = forceWidth;
-          tableBodyCell.style[oj.TableDomUtils.CSS_PROP._WIDTH] = forceWidth;
-          tableBodyCell.style[oj.TableDomUtils.CSS_PROP._MAX_WIDTH] = forceWidth;
-        }
+            cellColumnWidths[i] + oj.TableDomUtils.CSS_VAL._PX;
       }
-    }
 
-    footerCell = this.getTableFooterCell(i);
-    if (footerCell != null) {
-      if (!this._forcedWidthColumns[i]) {
-        // adjust the padding widths if the footer has more padding
-        if (footerBoxStyles[i].paddingWidth > columnBoxStyles[i].paddingWidth) {
-          adjustedColumnWidth = (columnWidths[i] - footerBoxStyles[i].paddingWidth) +
-            columnBoxStyles[i].paddingWidth;
-        } else {
-          adjustedColumnWidth = (columnWidths[i] + columnBoxStyles[i].paddingWidth) -
-            footerBoxStyles[i].paddingWidth;
-        }
-
+      // update column footer cell width
+      footerCell = this.getTableFooterCell(i);
+      if (footerCell !== null) {
         footerCell.style[oj.TableDomUtils.CSS_PROP._MIN_WIDTH] =
-          adjustedColumnWidth + oj.TableDomUtils.CSS_VAL._PX;
-      } else {
-        // ojtable columns width is interpreted as padding + content width, so we either have to
-        // add in the border width or substract the padding width based on the box-sizing style.
-        forceWidth = columnWidths[i] +
-          ((footerBoxStyles[i].boxSizing === 'border-box') ?
-           footerBoxStyles[i].borderWidth : -footerBoxStyles[i].paddingWidth);
-        forceWidth += oj.TableDomUtils.CSS_VAL._PX;
-        footerCell.style[oj.TableDomUtils.CSS_PROP._MIN_WIDTH] = forceWidth;
-        footerCell.style[oj.TableDomUtils.CSS_PROP._WIDTH] = forceWidth;
-        footerCell.style[oj.TableDomUtils.CSS_PROP._MAX_WIDTH] = forceWidth;
+          footerColumnWidths[i] + oj.TableDomUtils.CSS_VAL._PX;
       }
     }
   }

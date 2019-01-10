@@ -1,0 +1,75 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../utilities/oj.utilities.math";
+@import "../utilities/oj.utilities.units";
+
+$allowTagSelectors:                                     true !default;
+$themeName:                                             alta !default;
+$themeTargetPlatform:                                   web !default;
+$fontWeightNormalization:                               $allowTagSelectors !default;
+$menuDropDownModality:                                  "modeless" !default;
+$menuSheetMarginBottom:                                 14px !default;
+$navigationListIconOnlyStyle:                           circle !default;
+$navigationListHorizontalIconOnlyStyle:                 circle !default;
+$navigationListHierarchyMenuThresholdOptionDefault:     3 !default;
+$tabBarIconOnlyStyle:                                   circle !default;
+$tabBarHorizontalIconOnlyStyle:                         circle !default;
+$tabBarVerticalItemLabelTextAlign:                      null !default;
+$tabBarHorizontalItemWidthDistribution:                 null !default;
+$dialogResizeBehaviorOptionDefault:                     resizable !default;
+$dialogCancelBehaviorOptionDefault:                     icon !default;
+$dialogDragAffordanceOptionDefault:                     title-bar !default;
+$dialogFooterIntegrateButtons:                          false !default; //settings: ignore
+$dialogCloseIconPosition:                               center !default; //settings: ignore
+$dialogHeaderTextAlign:                                 startSingleRow !default; //settings: ignore
+$formLayoutLabelInlineAlign:                            end !default; //settings: ignore
+$inputDateTimeRenderModeOptionDefault:                  jet !default;
+$inputDateTimeKeyboardEditOptionDefault:                enabled !default;
+$imageDir:                                              "images/" !default;
+$progressBarIndeterminateOverlayImage:   "images/animated-overlay.gif" !default;
+
+
+
+//------------------------------------------------------------
+// do not move anything below this line to the common directory,
+// all the variables you see here are either deprecated or not yet public
+
+// not sure we will continue supporting colored panels, hide the
+// panel values in the theme specific files for now
+$panel2BgColor:     #e8f2fb !default; //settings: ignore
+$panel2BorderColor: #d1e6f9 !default; //settings: ignore
+$panel3BgColor:     #fef9e8 !default; //settings: ignore
+$panel3BorderColor: #fef3ce !default; //settings: ignore
+$panel4BgColor:     #ffe4e1 !default; //settings: ignore
+$panel4BorderColor: #ffcdc8 !default; //settings: ignore
+$panel5BgColor:     #fce8fe !default; //settings: ignore
+$panel5BorderColor: #facefe !default; //settings: ignore
+
+// ideally we will use css generated tails in future, so
+// hiding these vars for now.
+$popupTailSimpleWidth:  14px !default; //settings: ignore
+$popupTailSimpleHeight: 14px !default; //settings: ignore
+$popupTailBorderColor:      unquote('hsl(203, 2%, 80%)') !default; //settings: ignore
+$popupTailBorderWidth:      1px !default; //settings: ignore
+$popupTailBgcolor:          unquote('hsl(203, 2%, 99%)') !default; //settings: ignore
+$popupTailBoxShadow:        1px 1px 5px 0 unquote('hsla(0, 0%, 0%,0.4)') !default; //settings: ignore
+$overlayBgColor:    unquote('hsl(0, 0%, 0%)') !default; //settings: ignore
+
+
+// TODO Bug 25897533: Clean up after sprite tooling is implemented
+// radioset and checkboxset image directory
+$radioCheckboxImageDir: null !default; //settings: ignore
+// TODO Bug 25897533: Clean up after sprite tooling is implemented
+// the dir of pull to refresh images
+$refresherImageDir: null !default; //settings: ignore
+
+// todo: we should remove this and add something to sass instead
+$outputOnlyCssVars: true; //settings: ignore
+
+// inputsearch is deprecated, hide var
+$inputSearchIconPosition:        end !default; //settings: ignore
+// INITIAL VISIBILITY
+//----------------------------------
+// when $initialVisiblity is hidden then visibility: hidden is set on the dom until the
+// component is initialized. This reduces the unstyled dom seen by the user during page load.
+$initialVisibility: hidden !default; //settings: ignore
+@import "../common/oj.common.variables";

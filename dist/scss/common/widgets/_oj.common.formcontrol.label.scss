@@ -1,4 +1,4 @@
-// Copyright (c) 2014, 2018, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // WARNING: do not directly import this file, instead import the 
 //          version in your base theme's directory, 
@@ -146,7 +146,8 @@
     }
     // This is for when you don't want your labels to wrap, whether the label is inline or
     // on top.
-    .oj-label.oj-label-nowrap {
+    .oj-label.oj-label-nowrap,
+    .oj-label-nocomp.oj-label-nowrap {
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;      

@@ -1,0 +1,18 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+
+$includeFormLayoutElementVariables: $includeFormLayoutElementClasses !default;
+
+@if $includeFormLayoutElementVariables != false {
+  $includeFormLayoutVariables: true !global;
+}
+// import dependencies
+@import "oj.alta.android.formlayout";
+
+@if $includeFormLayoutElementVariables != false {
+  @include module-include-once("alta.android.variables.formlayoutelement") {
+
+
+  }
+}

@@ -1,0 +1,24 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+$includePopupVariables: $includePopupClasses !default;
+
+@if $includePopupVariables != false {
+  @include module-include-once("alta.windows.variables.popup") {
+    :root {
+      --oj-popup-border-width:             2px;
+      --oj-popup-border-color:             var(--oj-neutral-color-10);
+      --oj-popup-bg-color:                 var(--oj-neutral-color-1);
+      --oj-popup-border-radius:            var(--oj-border-radius-sm);
+      --oj-popup-box-shadow:               var(--oj-box-shadow-sm);
+      --oj-popup-content-padding:          0.5rem;
+    
+      --oj-popup-tail-border-width:       var(--oj-popup-border-width);
+      --oj-popup-tail-bg-color:           var(--oj-popup-bg-color);
+      --oj-popup-tail-border-color:       var(--oj-popup-border-color);
+      --oj-popup-tail-simple-height:      14px;
+      --oj-popup-tail-simple-width:       14px;
+      --oj-popup-tail-box-shadow:         var(--oj-box-shadow-sm);
+    }
+  }
+}

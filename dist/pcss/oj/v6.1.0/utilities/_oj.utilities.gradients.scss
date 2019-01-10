@@ -1,0 +1,64 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// NOTE: This variable is defined here in order to allow stand alone
+// use of these utility mixins, however this variable may also
+// be defined in other variable files. Because of the !default,
+// the actual value will be the value in the file loaded first.
+//$gradientGeneration: on !default;
+
+//*****************************************************************************
+//
+// NOTE: when you use this mixin inside of the bidi mixins (oj-rtl and oj-ltr),
+//       the slow override is not written out, see the doc for
+//       mixin oj-gradients-slowoverride() for more info
+//
+// Usage Example:
+//
+//      .oj-foo .oj-binky {
+//
+//        @include oj-background-image(linear-gradient(to bottom, $headerBgColor 0%,#f0f0f0 100%));
+//      }
+//
+//
+// $slowOverride: set this to false to not write out the slow override.
+//       In some cases the slow override cannot be written out properly,
+//       for example when you use this mixin inside
+//       of the bidi mixins (oj-rtl and oj-ltr).
+//       See the doc for mixin oj-gradients-slowoverride() for more info.
+//       If you are in a bidi call and don't set this to false it will
+//       warn you.
+//*****************************************************************************
+// @mixin oj-background-image($bgImage, $slowOverride: true)
+// {
+//   @if ($bgImage != null)
+//   {
+//     $linearIndex: str-index($bgImage, 'linear-gradient');
+// 
+//     @if ($linearIndex == null or $gradientGeneration != off)
+//     {
+//       background-image: $bgImage;
+//     }
+// 
+//     @if ($linearIndex != null and $gradientGeneration == slowOverride)
+//     {
+// 
+//       @if ($_inbidi == true and $slowOverride == false)
+//       {
+//         //@warn "bidi's match, slow override not written out";
+//       }
+//       @else if ($_inbidi == true and $slowOverride == true)
+//       {
+//         @warn "oj-background-image mixin called inside a bidi mixin without setting $slowOverride to false, see doc for mixin oj-gradients-slowoverride for proper use";
+//       }
+//       @else if ($_inbidi != true and $slowOverride == false)
+//       {
+//         @warn "error: oj-background-image mixin called outside a bidi mixin, but with $slowOverride set to false.";
+//       }
+//       @else
+//       {
+//         html.oj-slow-cssgradients & {
+//           background-image: none;
+//         }
+//       }
+//     }
+//   }
+// }

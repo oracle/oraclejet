@@ -1,0 +1,30 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+$includePagingControlVariables: $includePagingControlClasses !default;
+
+@if $includePagingControlVariables != false {
+  $includeLabelVariables: true !global;
+  $includeButtonVariables: true !global;
+  $includeFormControlVariables: true !global;
+}
+// import dependencies
+@import "oj.alta.web.formcontrol.label";
+@import "oj.alta.web.button";
+@import "oj.alta.web.formcontrol";
+
+@if $includePagingControlVariables != false {
+  @include module-include-once("alta.web.variables.pagingcontrol") {
+
+:root {
+  // paging
+  // ----------------------------
+  --oj-paging-padding:          5px;
+  --oj-paging-dot-size:         10px;
+  --oj-paging-dot-padding:      10px;
+  --oj-paging-border-color:     var(--oj-neutral-color-8);
+
+}
+
+  }
+}

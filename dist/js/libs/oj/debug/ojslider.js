@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -1527,7 +1527,7 @@ var __oj_slider_metadata =
       this._SetRawValue(this._newValue, event);
       if (!rawOnly) {
         this.options[this._transientValueName] = this._newValue;
-        this._SetValueReturnBoolean(this._newValue, event);
+        this._SetValue(this._newValue, event);
         this._updateUI();
       }
     },
@@ -1538,12 +1538,12 @@ var __oj_slider_metadata =
         this._lastChangedValues = this._getNewValues(index, this._newMultiValue[index]);
         this._SetRawValue(this._lastChangedValues, event);
         if (!rawOnly) {
-          this._SetValueReturnBoolean(this._lastChangedValues, event);
+          this._SetValue(this._lastChangedValues, event);
         }
       } else {
         this._SetRawValue(this._newValue, event);
         if (!rawOnly) {
-          this._SetValueReturnBoolean(this._newValue, event);
+          this._SetValue(this._newValue, event);
         }
       }
 
@@ -1883,6 +1883,15 @@ var __oj_slider_metadata =
               thumb.css({ left: valPercent + '%' });
             } else {
               thumb.css({ top: (100 - valPercent) + '%' });
+            }
+
+            if (i === 0) {
+              // if the min thumb is at the max, set its zindex to 1
+              if (valPercent === 100) {
+                thumb.css({ zIndex: 1 });
+              } else {
+                thumb.css({ zIndex: '' });
+              }
             }
 
             if (!thumb.hasClass('oj-active')) {

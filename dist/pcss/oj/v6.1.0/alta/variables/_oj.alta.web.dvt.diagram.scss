@@ -1,0 +1,26 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+
+$includeDiagramVariables: $includeDiagramClasses !default;
+
+@if $includeDiagramVariables != false {
+  @include module-include-once("alta.web.variables.diagram") {
+:root {
+
+
+  // diagram
+  // ----------------------------
+  --oj-diagram-node-border-color-hover:              var(--oj-neutral-color-11);
+// todo: cannot be hard coded
+  --oj-diagram-link-color:                           var(--oj-neutral-color-11);
+  --oj-diagram-link-border-color-hover:              var(--oj-diagram-link-color);
+
+  --oj-diagram-overview-bg-color:                     var(--oj-neutral-color-7);
+  --oj-diagram-overview-window-bg-color:              var(--oj-neutral-color-1);
+  --oj-diagram-overview-window-border-color:          var(--oj-neutral-color-14);
+  --oj-diagram-overview-node-bg-color:                var(--oj-neutral-color-14);
+}
+
+  }
+}

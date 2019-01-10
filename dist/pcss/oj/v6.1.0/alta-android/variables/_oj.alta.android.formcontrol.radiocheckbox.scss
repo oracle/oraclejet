@@ -1,0 +1,38 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+$includeRadioCheckboxVariables: false !default;
+
+@if $includeRadioCheckboxVariables != false {
+  @include module-include-once("alta.android.variables.radiocheckbox") {
+
+:root {
+
+  // radioset and checkboxset
+  // --------------------------
+
+  --oj-radio-checkbox-width:                     100%;
+  --oj-radio-checkbox-image-size:                16px;
+  --oj-radio-checkbox-row-height:                3rem;
+
+  --oj-radio-checkbox-label-to-edge-padding:     16px;
+  --oj-radio-checkbox-input-to-label-padding:    0;
+  --oj-radio-checkbox-input-to-edge-padding:     0;
+  --oj-radio-checkbox-direction-row-inline-padding: 1.5rem;
+
+  --oj-radio-checkbox-label-color:               var(--oj-text-color);
+  --oj-radio-checkbox-label-color-selected:      var(--oj-radio-checkbox-label-color);
+
+  --oj-radio-checkbox-set-bg-color:              var(--oj-neutral-color-4);
+  --oj-radio-checkbox-set-border-color:          var(--oj-neutral-color-7);
+  --oj-radio-checkbox-item-divider-color:        var(--oj-neutral-color-8);
+  --oj-radio-checkbox-set-border-width:          1px;
+
+  --oj-radio-checkbox-item-bg-color-active:      var(--oj-brand-color-light-5);
+  --oj-radio-checkbox-item-divider-color-active: var(--oj-neutral-color-11);
+  --oj-radio-checkbox-set-message-padding:           0;
+  
+}
+
+  }
+}

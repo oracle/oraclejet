@@ -1,0 +1,359 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the
+//          version in your base theme's directory,
+//          for example alta/widgets/_oj.alta.formcontrol.colorpalette.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@import "../../utilities/oj.utilities";
+
+@if $includeColorPaletteClasses != false  {
+  @include module-include-once("common.formcontrol.colorpalette") {
+
+   /* Color Palette */
+   /* --------------------------------------------------------------- */
+
+   // This is to prevent the flash of unstyled content before the html becomes JET components.
+   @if $initialVisibility == hidden {
+     oj-color-palette:not(.oj-complete) {
+       visibility: hidden;
+     }
+   }
+
+   .oj-colorpalette  {
+     display: inline-block;
+   }
+
+   .oj-colorpalette-container  {
+     height: inherit;              /* required by ListView for scrollbar */
+   }
+
+   .oj-colorpalette-swatch-entry  {
+     display: inline-block;
+   }
+
+   .oj-colorpalette-list .oj-colorpalette-swatch-entry {
+     display: flex;
+     align-items: center;
+   }
+
+   .oj-colorpalette-list .oj-colorpalette-swatch,
+   .oj-colorpalette-list .oj-colorpalette-swatch-text {
+     flex-shrink: 0;
+   }
+
+   /* A palette color swatch  */
+   .oj-colorpalette-swatch-container,
+   .oj-colorpalette-swatch  {
+     vertical-align: middle;
+     display: inline-block;
+     border-style: solid;
+     box-sizing: border-box;
+   }
+
+   .oj-colorpalette-swatch-container {
+     border-width: 3px;
+     border-color: transparent;
+
+     /* reduce line height so extra small swatches remain square */
+     line-height: 0;
+   }
+
+   .oj-colorpalette-swatch  {
+     border-width: 1px;
+     @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+     {
+       border-color: var(--oj-color-palette-swatch-inner-border-color);
+     }
+     @else{
+       border-color: $colorPaletteSwatchInnerBorderColor;
+    }
+
+     background-clip: padding-box;
+     //tell the browser to print the background-color
+     -webkit-print-color-adjust: exact;
+   }
+
+   .oj-colorpalette-swatch-none-icon {
+     /* Color Hardcoded because this value is not related to theming and regardless of theme the swatch for none will be white */
+     background-color: #ffffff;
+     display: inline-block;
+     background-image: oj-common-image-url('none.svg');
+     background-repeat: no-repeat;
+     background-size: 100% 100%;
+     width: 100%;
+     height: 100%;
+     //tell the browser to print the background-image
+     -webkit-print-color-adjust: exact;
+   }
+
+   @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+  {
+    .oj-colorpalette-grid .oj-colorpalette-swatchsize-lg .oj-colorpalette-swatch {
+      width:  var(--oj-color-palette-grid-swatch-lg-size);
+      height: var(--oj-color-palette-grid-swatch-lg-size);
+    }
+
+    .oj-colorpalette-grid .oj-colorpalette-swatchsize-lg.oj-colorpalette-swatch-showlabel .oj-colorpalette-swatch {
+      width:  var(--oj-color-palette-grid-swatch-xl-size);
+      height: var(--oj-color-palette-grid-swatch-xl-size);
+    }
+
+    .oj-colorpalette-grid .oj-colorpalette-swatchsize-sm .oj-colorpalette-swatch {
+      width: var(--oj-color-palette-grid-swatch-sm-size);
+      height: var(--oj-color-palette-grid-swatch-sm-size);
+    }
+
+    .oj-colorpalette-grid .oj-colorpalette-swatchsize-xs .oj-colorpalette-swatch {
+      width: var(--oj-color-palette-grid-swatch-xs-size);
+      height: var(--oj-color-palette-grid-swatch-xs-size);
+    }
+
+    .oj-colorpalette-list .oj-colorpalette-swatchsize-sm .oj-colorpalette-swatch {
+      width: var(--oj-color-palette-list-swatch-sm-width);
+      height: var(--oj-color-palette-list-swatch-sm-height);
+    }
+
+    .oj-colorpalette-list .oj-colorpalette-swatchsize-lg .oj-colorpalette-swatch {
+       width: var(--oj-color-palette-list-swatch-lg-width);
+       height: var(--oj-color-palette-list-swatch-lg-height);
+    }  
+  }
+  @else {
+  
+   .oj-colorpalette-grid .oj-colorpalette-swatchsize-lg .oj-colorpalette-swatch {
+     width:  $colorPaletteGridSwatchLargeSize;
+     height: $colorPaletteGridSwatchLargeSize;
+   }
+
+   .oj-colorpalette-grid .oj-colorpalette-swatchsize-lg.oj-colorpalette-swatch-showlabel .oj-colorpalette-swatch {
+     width:  $colorPaletteGridSwatchXLargeSize;
+     height: $colorPaletteGridSwatchXLargeSize;
+   }
+
+   .oj-colorpalette-grid .oj-colorpalette-swatchsize-sm .oj-colorpalette-swatch {
+     width: $colorPaletteGridSwatchSmallSize;
+     height: $colorPaletteGridSwatchSmallSize;
+   }
+
+   .oj-colorpalette-grid .oj-colorpalette-swatchsize-xs .oj-colorpalette-swatch {
+     width: $colorPaletteGridSwatchXSmallSize;
+     height: $colorPaletteGridSwatchXSmallSize;
+   }
+
+   .oj-colorpalette-list .oj-colorpalette-swatchsize-sm .oj-colorpalette-swatch {
+     width: $colorPaletteListSwatchSmallWidth;
+     height: $colorPaletteListSwatchSmallHeight;
+   }
+
+   .oj-colorpalette-list .oj-colorpalette-swatchsize-lg .oj-colorpalette-swatch {
+      width: $colorPaletteListSwatchLargeWidth;
+      height: $colorPaletteListSwatchLargeHeight;
+   }
+ }
+
+   /*  Hover swatch  */
+   .oj-colorpalette-container .oj-listview-item.oj-hover .oj-colorpalette-swatch-container {
+     border-color: transparent;
+   }
+
+   /*  Selected swatch  */
+   .oj-colorpalette-container .oj-selected .oj-colorpalette-swatch-container,
+   .oj-colorpalette-container .oj-listview-item.oj-hover.oj-selected .oj-colorpalette-swatch-container {
+     @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+     {
+       border-color: var(--oj-color-palette-swatch-outer-border-color-selected);
+     }
+     @else {
+       border-color: $colorPaletteSwatchOuterBorderColorSelected;
+    }
+
+   }
+
+   .oj-colorpalette-container .oj-selected .oj-colorpalette-swatch,
+   .oj-colorpalette-container .oj-listview-item.oj-hover.oj-selected .oj-colorpalette-swatch {
+     border-color: transparent;
+   }
+
+   /*  Disabled swatch  */
+   .oj-colorpalette-container .oj-listview.oj-disabled .oj-colorpalette-swatch-container,
+   .oj-colorpalette-container .oj-listview.oj-disabled .oj-colorpalette-swatch,
+   .oj-colorpalette-container .oj-listview.oj-disabled .oj-selected .oj-colorpalette-swatch-container,
+   .oj-colorpalette-container .oj-listview.oj-disabled .oj-selected .oj-colorpalette-swatch,
+   .oj-colorpalette-container .oj-listview.oj-disabled .oj-listview-item.oj-hover .oj-colorpalette-swatch-container,
+   .oj-colorpalette-container .oj-listview.oj-disabled .oj-listview-item.oj-hover .oj-colorpalette-swatch,
+   .oj-colorpalette-container .oj-listview.oj-disabled .oj-colorpalette-swatch-none .oj-colorpalette-swatch-none-icon {
+     border-color: transparent;
+   }
+
+   .oj-colorpalette-container .oj-listview.oj-disabled .oj-colorpalette-swatch-none .oj-colorpalette-swatch-none-icon {
+     background-color: transparent;
+     background-image: none;
+   }
+
+   .oj-colorpalette-swatch-text  {
+     display:block;
+     text-align:center;
+     @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+     {
+       color: var(--oj-color-palette-text-color);
+     }
+     @else {
+       color: $colorPaletteTextColor;       
+     }
+     width: inherit;
+     max-width: inherit;
+     white-space: nowrap;
+     overflow:hidden;
+     text-overflow: ellipsis;
+   }
+
+   .oj-colorpalette-grid .oj-colorpalette-swatch-text  {
+     @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+     {
+       font-size: var(--oj-color-palette-grid-font-size);
+     }
+     @else {
+       font-size: $colorPaletteGridFontSize;       
+     }
+   }
+
+   .oj-colorpalette-list .oj-colorpalette-swatch-text  {
+     @if (not(variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true))
+     {
+       font-size: $colorPaletteListFontSize;
+     }
+     display: inline-block;
+     @include oj-ltr() {
+       margin-left: 15px;
+     }
+     @include oj-rtl() {
+       margin-right: 15px;
+     }
+     max-width: 155px;
+     vertical-align: middle;
+   }
+
+   /*  Constrain text width for ellipsis generation  */
+  .oj-colorpalette-grid .oj-colorpalette-swatchsize-lg .oj-colorpalette-swatch-text  {
+    @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+    {
+      width: var(--oj-color-palette-grid-swatch-xl-size);
+    }
+    @else {
+      width:  $colorPaletteGridSwatchXLargeSize;      
+    }
+     /* account for border of swatch container */
+     padding-left: 3px;
+     padding-right: 3px;
+  }
+
+   /*  Disabled  */
+  .oj-colorpalette-container .oj-listview.oj-disabled .oj-colorpalette-swatch,
+  .oj-colorpalette-container .oj-listview.oj-disabled .oj-colorpalette-swatch-text  {
+    @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+    {
+      color: var(--oj-text-color-disabled);
+    }
+    @else {      
+     color: $textColorDisabled;
+    }
+     cursor: default;
+  }
+
+  .oj-colorpalette-container .oj-listview-item  {
+    background-size:0;     /* required to remove selection listitem borders */
+    background-image: none;
+    padding: 0;
+    border-width: 0;
+    cursor: pointer;
+  }
+
+  .oj-colorpalette-container .oj-listview-card-layout li.oj-listview-item {
+    width: auto;
+    height: auto;
+    border-width: 0;
+    border-color: transparent;
+    border-radius: 0;
+    margin-top: 0;
+    margin-bottom: 0;
+    //need to specify separately for ltr and rtl in order to override specific listview styles
+    @include oj-ltr() {
+      margin-left: 0;
+      margin-right: 0;
+    }
+    @include oj-rtl() {
+      margin-left: 0;
+      margin-right: 0;
+    }
+  }
+
+  .oj-colorpalette-container .oj-listview-card-layout .oj-listview-group {
+    margin-bottom: 0;
+  }
+
+  //Decrease the height of the focus rect by an extra pixel so that it
+  //appears centered around the swatch.  Otherwise, the bottom extends
+  //one pixel further out than the other sides.
+  .oj-colorpalette-container .oj-listview-item.oj-focus-highlight::after {
+    height: calc(100% - 2px);
+  }
+
+  /*  Remove listview item background and outline  */
+  .oj-colorpalette-container .oj-listview.oj-focus-ancestor .oj-listview-item.oj-selected,
+  .oj-colorpalette-container .oj-listview-item.oj-selected   {
+    background-color: transparent;
+    border-width: 0;
+    outline-style: none;
+  }
+
+  /*  Remove listview top/bottom borders  */
+  .oj-colorpalette-container .oj-listview {
+    border-style: none;
+  }
+
+  /*  Remove listview selection border  */
+  .oj-colorpalette-container .oj-listview-item.oj-selected  {
+    border-color: transparent;
+  }
+
+  /*  Remove listview item top border  */
+  .oj-colorpalette-container ul.oj-listview-element:not(.oj-listview-card-layout) .oj-listview-item.oj-hover + li.oj-listview-item,
+  .oj-colorpalette-container .oj-listview.oj-focus-ancestor ul.oj-listview-element:not(.oj-listview-card-layout) .oj-listview-item.oj-focus + li.oj-listview-item,
+  .oj-colorpalette-container .oj-listview.oj-focus-ancestor ul.oj-listview-element:not(.oj-listview-card-layout) .oj-listview-item.oj-selected + li.oj-listview-item,
+  .oj-colorpalette-container .oj-listview.oj-focus-ancestor ul.oj-listview-element:not(.oj-listview-card-layout) .oj-listview-item.oj-focus,
+  .oj-colorpalette-container .oj-listview-item.oj-hover {
+    border-color: transparent;
+    border-width: 0;
+  }
+
+  .oj-colorpalette.oj-warning .oj-colorpalette-container {
+    @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+    {
+      border-width: var(--oj-form-control-messaging-border-bottom-width) var(--oj-form-control-messaging-border-bottom-width) var(--oj-form-control-messaging-border-bottom-width) var(--oj-form-control-messaging-border-bottom-width);
+      border-style: solid;
+      border-color: var(--oj-form-control-border-color-warning);
+    }
+    @else {
+      border-width: $formControlMessagingBorderWidth;
+      border-style: solid;
+      border-color: $borderColorWarning;      
+    }
+  }
+
+  .oj-colorpalette.oj-invalid .oj-colorpalette-container {
+    @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)
+    {
+      border-width: var(--oj-form-control-messaging-border-bottom-width) var(--oj-form-control-messaging-border-bottom-width) var(--oj-form-control-messaging-border-bottom-width) var(--oj-form-control-messaging-border-bottom-width);
+      border-style: solid;
+      border-color: var(--oj-form-control-border-color-invalid);
+    }
+    @else {
+      border-width: $formControlMessagingBorderWidth;
+      border-style: solid;
+      border-color: $borderColorError;      
+    }
+  }
+
+ }
+}

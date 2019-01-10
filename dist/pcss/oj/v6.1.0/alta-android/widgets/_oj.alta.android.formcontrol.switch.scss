@@ -1,0 +1,145 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../../utilities/oj.utilities";
+
+// ----- start dependencies ---------
+
+// set up include variables before importing dependencies
+@if $includeSwitchClasses != false {
+  $includeComponentClasses: true !global;
+}
+
+// import dependencies
+@import "../../common/helpers/oj.common.helpers"; 
+@import "oj.alta.android.component";
+
+// ----- end dependencies ---------
+
+
+// import classes defined in the common directory
+@import "../../common/widgets/oj.common.formcontrol.switch"; 
+
+@if $includeSwitchClasses != false {
+  @include module-include-once("alta.android.switch") {
+	/* switch specific */
+	/* --------------------------------------------------------------- */
+
+	.oj-switch .oj-switch-thumb {
+		margin-left: -2px;
+		margin-right: -2px;
+	}
+		
+	// ENABLED ON
+         
+           .oj-switch.oj-selected .oj-switch-track {
+               @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+		  background-color: var(--oj-switch-track-bg-color-selected);
+		  border-color: var(--oj-switch-track-border-color-selected);
+	       }
+               @else {
+		 background-color: $switchTrackBgColorSelected;
+		 border-color: $switchTrackBorderColorSelected;
+	      }
+            } 
+
+	// DISABLED OFF
+	.oj-switch.oj-disabled {
+		.oj-switch-track {
+			opacity: 0.3;
+		}
+	}
+
+	// HOVER/ACTIVE OFF
+       
+	  .oj-switch.oj-hover .oj-switch-thumb,
+	  .oj-switch.oj-active .oj-switch-thumb {
+             @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+               border-color: var(--oj-switch-thumb-border-color-hover);
+	     }
+             @else {	
+	       border-color: $switchThumbBorderColorHover;
+	     }
+            
+           }
+	
+	// HOVER/ACTIVE ON
+        
+	  .oj-switch.oj-selected.oj-hover .oj-switch-thumb,
+	  .oj-switch.oj-selected.oj-active .oj-switch-thumb {
+             @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+		
+                border-color: var(--oj-switch-thumb-border-color-selected-hover);
+	     }
+             @else {
+		border-color: $switchThumbBorderColorSelectedHover;
+	     }
+              
+           }
+	
+	// DISABLED ON
+	.oj-switch.oj-disabled.oj-selected {
+		.oj-switch-track {
+			opacity: 0.3;
+		}
+	}
+	
+	.oj-switch.oj-selected .oj-switch-track,
+	.oj-switch.oj-hover .oj-switch-thumb,
+	.oj-switch.oj-active .oj-switch-thumb,
+	.oj-switch.oj-disabled .oj-switch-track,
+	.oj-switch.oj-disabled.oj-selected .oj-switch-track {
+		background-clip: padding-box;
+		-moz-background-clip: padding;
+		-webkit-background-clip: padding;
+	}
+	  .oj-switch.oj-hover:not(.oj-read-only) .oj-switch-thumb,
+	  .oj-switch.oj-active:not(.oj-read-only) .oj-switch-thumb {
+            @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+		@include oj-ltr() {
+			
+                        margin-left: calc(0px - var(--oj-switch-thumb-border-width-hover));
+		}
+		@include oj-rtl() {
+			
+                        margin-right: calc(0px - var(--oj-switch-thumb-border-width-hover));
+		}
+	    }
+            @else {
+                @include oj-ltr() {
+			margin-left: calc(0px - #{$switchThumbBorderWidthHover});
+		}
+		@include oj-rtl() {
+			margin-right: calc(0px - #{$switchThumbBorderWidthHover});
+		}
+            }
+          } 
+
+	  .oj-switch.oj-selected.oj-hover:not(.oj-read-only) .oj-switch-thumb,
+	  .oj-switch.oj-selected.oj-active:not(.oj-read-only) .oj-switch-thumb {
+              @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+		@include oj-ltr() {
+			
+                        margin-right: calc(0px - var(--oj-switch-thumb-border-width-hover));
+		}
+		@include oj-rtl() {
+			
+                        margin-left: calc(0px - var(--oj-switch-thumb-border-width-hover));
+		}
+	    }
+            @else {
+		@include oj-ltr() {
+			margin-right: calc(0px - #{$switchThumbBorderWidthHover});
+		}
+		@include oj-rtl() {
+			margin-left: calc(0px - #{$switchThumbBorderWidthHover});
+		}
+	    }    
+            
+          }
+	// READONLY ON/OFF 
+	.oj-switch.oj-read-only .oj-switch-thumb,
+	.oj-switch.oj-selected.oj-read-only .oj-switch-thumb {
+		color: transparent;
+	}
+	
+  }
+}

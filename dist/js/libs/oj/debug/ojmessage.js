@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -13,6 +13,20 @@ define(['ojs/ojcore', 'jquery', 'knockout', 'ojs/ojcontext', 'ojs/ojthemeutils',
 var __oj_message_metadata = 
 {
   "properties": {
+    "displayOptions": {
+      "type": "object",
+      "properties": {
+        "category": {
+          "type": "string",
+          "enumValues": [
+            "auto",
+            "header",
+            "none"
+          ],
+          "value": "auto"
+        }
+      }
+    },
     "message": {
       "type": "object",
       "properties": {
@@ -175,7 +189,7 @@ var __oj_message_metadata =
  *   <tbody>
  *     <tr>
  *       <td>Message</td>
- *       <td><kbd>Swipe</kbd></td>
+ *       <td><kbd>Swipe Right, Swipe Up</kbd></td>
  *       <td>Close the message</td>
  *     </tr>
  *     <tr>
@@ -460,13 +474,25 @@ var __oj_message_metadata =
  * // setter
  * myMessage.setProperty("message.closeAffordance", "none");
  *
+ * @example <caption>Close icon is displayed when close-affordance is set to 'defaults'. This can
+ *          be changed at application level using this theme variable (SCSS) :</caption>
+ * $messageCloseIconDisplay: none !default;
+ *
+ * @example <caption>Close icon is not displayed when close-affordance is set to 'defaults', if
+ *          the message is set to auto timeout when using mobile themes. This can be changed at
+ *          application level using this theme variable (SCSS) :</caption>
+ * $messageAutoTimeoutCloseIconDisplay: block !default;
+ *
  * @expose
  * @type {string}
  * @name message.closeAffordance
  * @ojvalue {string} "none" no UI affordance is provided to close the message. Application has to
  * call the close() method to dismiss the message
- * @ojvalue {string} "defaults" use implicit affordance to best suit the native theme and screen
- * touch capabilities. See keyboard and touch end user information sections in this document.
+ * @ojvalue {string} "defaults" use implicit affordance to best suit the native theme, efficient use
+ * of available space and screen touch capabilities. A close 'X' icon is displayed in all cases
+ * except in the case when the message is set to auto-timeout when using mobile themes. The display
+ * of the close icon can be further controlled by using the theme variables as noted below. See
+ * keyboard and touch end user information sections in this document for interaction options.
  * @default "defaults"
  * @instance
  * @access public
@@ -515,6 +541,71 @@ var __oj_message_metadata =
  * @default "none"
  * @instance
  * @since 5.0.0
+ * @access public
+ * @memberof! oj.ojMessage
+ */
+
+/**
+ * <p>Specifies the display options for contents of the message.
+ *
+ * @expose
+ * @member
+ * @name displayOptions
+ * @memberof! oj.ojMessage
+ * @instance
+ * @since 6.1.0
+ * @type {Object}
+ * @ojsignature { target: "Type",
+ *                value: "oj.ojMessage.DisplayOptions",
+ *                jsdocOverride: true}
+ *
+ * @example <caption>Initialize the element with <code class="prettyprint">display-options</code>
+ * attribute:</caption>
+ * &lt;!-- Binding display-options attribute to a structured object -->
+ * &lt;oj-message display-options="[[myMessageDisplayOptions]]">&lt;/oj-message>
+ *
+ * &lt;!-- Setting display-options using JSON notation -->
+ * &lt;oj-message display-options='{"category": "none"}' message.summary="Some summary" message.detail="Some detail">&lt;/oj-message>
+ *
+ * &lt;!-- Setting the display-options sub-attributes -->
+ * &lt;oj-message display-options.category="none" message.summary="Some summary" message.detail="Some detail">&lt;/oj-message>
+ *
+ * @example <caption>Get or set the <code class="prettyprint">displayOptions</code> property after initialization:</caption>
+ * // getter
+ * var displayOptions = myMessage.displayOptions;
+ *
+ * // setter
+ * myMessage.displayOptions = {
+ *     category: "none"
+ * };
+ */
+
+/**
+ *<p>Specifies display option for {@link oj.ojMessage#message.category} text in this message.
+ *
+ * @example <caption>Initialize the element with <code class="prettyprint">display-options.category</code> attribute:</caption>
+ * &lt;oj-message display-options.category="none" message.summary="Some summary" message.detail="Some detail">&lt;/oj-message>
+ *
+ * @example <caption>Get or set the <code class="prettyprint">displayOptions.category</code> property after initialization:</caption>
+ * // getter
+ * var categoryOption = myMessage.getProperty("displayOptions.category");
+ *
+ * // setter
+ * myMessage.setProperty("displayOptions.category", "none");
+ *
+ * @expose
+ * @type {string}
+ * @name displayOptions.category
+ * @ojvalue {string} "header" if the {@link oj.ojMessage#message.category} property is specified,
+ *  its value will be displayed in the header region of the message next to message icon. If
+ *  {@link oj.ojMessage#message.category} property is not specified, a translated text corresponding
+ *  to the value of the {@link oj.ojMessage#message.severity} property will be displayed.
+ * @ojvalue {string} "auto" the component decides whether and where the
+ *  {@link oj.ojMessage#message.category} text is displayed. The behavior is same as 'header'
+ *  option, but may change in future releases.
+ * @ojvalue {string} "none" the {@link oj.ojMessage#message.category} text will not be displayed
+ * @default "auto"
+ * @instance
  * @access public
  * @memberof! oj.ojMessage
  */
@@ -578,7 +669,8 @@ var __oj_message_metadata =
  * @since 5.0.0
  * @ojcancelable
  * @ojbubbles
- * @property {Object} message instance of type {@link oj.ojMessage#message} corresponding to the message that was closed
+ * @property {Object} message the message that was closed
+ * @ojsignature {target:"Type", value:"oj.ojMessage.Message", for:"message", jsdocOverride: true}
  */
 
 /**
@@ -757,6 +849,12 @@ var __oj_message_metadata =
  * @property {string} [sound] Defines the sound to be played when message is open.
  */
 
+/**
+ * @typedef {Object} oj.ojMessage.DisplayOptions
+ * @property {"header"|"none"|"auto"} [category] Defines display option for the category text in the
+ *  message.
+ */
+
 
 var _MESSAGE_VIEW =
   '<div :id="[[containerId]]" class="oj-message-container" on-keydown="[[handleKeydown]]">' +
@@ -779,6 +877,11 @@ var _MESSAGE_VIEW =
   '          </h1>' +
   '        </div>' +
   '      </oj-bind-if>' +
+  '      <oj-bind-if test="[[!computedCategory() && computedSummary()]]">' +
+  '        <div class="oj-message-summary">' +
+  '          <oj-bind-text value="[[computedSummary]]"></oj-bind-text>' +
+  '        </div>' +
+  '      </oj-bind-if>' +
   '    </div>' +
   '    <div class="oj-message-trailing-header">' +
   '      <oj-bind-if test="[[computedTimestamp]]">' +
@@ -787,7 +890,7 @@ var _MESSAGE_VIEW =
   '        </div>' +
   '      </oj-bind-if>' +
   '      <oj-bind-if test="[[hasCloseAffordance]]">' +
-  '        <div class="oj-message-close">' +
+  '        <div :class="[[computedMessageCloseSelectors]]">' +
   '          <oj-button display="icons" chroming="half" on-click="[[handleCloseIcon]]">' +
   '            <span slot="startIcon" class="oj-fwk-icon oj-fwk-icon-cross"></span>' +
   '            <span>' +
@@ -799,9 +902,11 @@ var _MESSAGE_VIEW =
   '    </div>  ' +
   '  </div>' +
   '  <div class="oj-message-body">' +
-  '    <div class="oj-message-summary">' +
-  '      <oj-bind-text value="[[computedSummary]]"></oj-bind-text>' +
-  '    </div>' +
+  '    <oj-bind-if test="[[computedCategory]]">' +
+  '      <div class="oj-message-summary">' +
+  '        <oj-bind-text value="[[computedSummary]]"></oj-bind-text>' +
+  '      </div>' +
+  '    </oj-bind-if>' +
   '    <div class="oj-message-detail">' +
   '      <oj-bind-text value="[[computedDetail]]"></oj-bind-text>' +
   '    </div>' +
@@ -876,6 +981,7 @@ MessageViewModel.prototype._propertyChanged = function (detail) {
   // workaround for 
 
   if (subPropertyChanged(detail, 'message', 'autoTimeout')) {
+    this.computedMessageCloseSelectors(this._computeMessageCloseSelectors());
     this._clearAutoClose();
     this._scheduleAutoClose();
   }
@@ -891,7 +997,8 @@ MessageViewModel.prototype._propertyChanged = function (detail) {
     this.computedIconClass(this._computeIconClass());
   }
 
-  if (subPropertyChanged(detail, 'message', 'category')) {
+  if (subPropertyChanged(detail, 'message', 'category') ||
+      subPropertyChanged(detail, 'displayOptions', 'category')) {
     this.computedCategory(this._computeCategory());
   }
 
@@ -928,22 +1035,25 @@ MessageViewModel.prototype._registerSwipeHandler = function () {
     var messageContainerElement = $(document.getElementById(this._messagesContainerId));
     var options = {
       recognizers: [
-        [Hammer.Swipe, { direction: Hammer.DIRECTION_HORIZONTAL }]
+        [Hammer.Swipe, { direction: Hammer.DIRECTION_ALL }]
       ]
     };
 
-    var type = oj.DomUtils.getReadingDirection() === 'rtl' ? 'swipeleft' : 'swiperight';
-    this._hammerSwipe = messageContainerElement.ojHammer(options).on(type, function (event) {
-      event.preventDefault();
-      this._closeMessage();
-    }.bind(this));
+    var swipeDirections = oj.DomUtils.getReadingDirection() === 'rtl' ?
+      'swipeleft swipeup' : 'swiperight swipeup';
+    this._hammerSwipe = messageContainerElement.ojHammer(options).on(swipeDirections,
+      function (event) {
+        event.preventDefault();
+        this._closeMessage();
+      }.bind(this));
   }
 };
 
 MessageViewModel.prototype._unregisterSwipeHandler = function () {
   if (oj.DomUtils.isTouchSupported() && this._hammerSwipe) {
-    var type = oj.DomUtils.getReadingDirection() === 'rtl' ? 'swipeleft' : 'swiperight';
-    this._hammerSwipe.off(type);
+    var swipeDirections = oj.DomUtils.getReadingDirection() === 'rtl' ?
+      'swipeleft swipeup' : 'swiperight swipeup';
+    this._hammerSwipe.off(swipeDirections);
     delete this._hammerSwipe;
   }
 };
@@ -974,17 +1084,22 @@ MessageViewModel.prototype._closeMessage = function (event) {
   // Possible that the oj-message element may be disconnected/removed while close is in progress,
   //  guard against this case where messageContainerElement is removed
   if (messageContainerElement) {
-    var mediator = this._operationMediator;
     // unregister the swipe handler
     this._unregisterSwipeHandler();
-
-    // if we are pending the open operation, the close will be invoked after the open is done
-    if (mediator.isOperationPending('close', this._closeMessage.bind(this, event))) {
-      return;
-    }
-    mediator.destroy();
-
     this._clearAutoClose();
+    var mediator = this._operationMediator;
+
+    // When messages are inlined, the parent oj-messages takes care of open animation, but close
+    //  animation is taken care here by the component. Since we did not do the open animation no
+    //  mediator was used
+    if (mediator) {
+      // if we are pending the open operation, the close will be invoked after the open is done
+      if (mediator.isOperationPending('close', this._closeMessage.bind(this, event))) {
+        return;
+      }
+      mediator.destroy();
+    }
+
     this._operationMediator = new OperationMediator(this._composite, 'close');
 
     var action = 'close';
@@ -1069,7 +1184,16 @@ MessageViewModel.prototype._isDateToday = function (isoDate) {
          todayDate.getUTCDate() === suppliedDate.getUTCDate();
 };
 
+// Computes the category value for the bound variable. If category property is not specified, a
+//  default value based on the severity property is used. The display of category text is further
+//  dependent on what the display-options.category property value is.
 MessageViewModel.prototype._computeCategory = function () {
+  var displayOptions = this._properties.displayOptions;
+
+  if (displayOptions && displayOptions.category && displayOptions.category === 'none') {
+    return undefined;
+  }
+
   var message = this._properties.message;
 
   if (!oj.StringUtils.isEmptyOrUndefined(message.category)) {
@@ -1148,6 +1272,14 @@ MessageViewModel.prototype._computeCloseAffordance = function () {
   return message.closeAffordance;
 };
 
+MessageViewModel.prototype._computeMessageCloseSelectors = function () {
+  if (this._computeAutoTimeout() > -1) {
+    return 'oj-message-close oj-message-auto-timeout-close';
+  }
+
+  return 'oj-message-close';
+};
+
 MessageViewModel.prototype._computeSound = function () {
   var message = this._properties.message;
 
@@ -1194,18 +1326,18 @@ MessageViewModel.prototype._handleCloseIcon = function (event) {
 };
 
 MessageViewModel.prototype._openMessage = function () {
-  this._operationMediator = new OperationMediator(this._composite, 'open');
+  var messageContainerElement = document.getElementById(this._messagesContainerId);
 
-  // Invoke next micro-tick to allow the parent to apply bindings before opening the message.
-  // When the parent is an oj-messages, it will need to subscribe to message events:
-  // ojBeforeOpen, ojOpen and ojAnimateStart. These events are  queued by the message open
-  // besides resolving :id bindings defining its content.
-  Promise.resolve().then(function () {
-    var messageContainerElement = document.getElementById(this._messagesContainerId);
+  // Possible that the oj-message element may be disconnected/removed while open is in progress,
+  //  guard against this case where messageContainerElement is removed
+  if (messageContainerElement) {
+    // Open animation for inlined message is taken care by the parent oj-messages. More comments
+    //  on this below.
+    if (this._isInlinedChildOfOjMessages()) {
+      this._prepareMessageAtOpen();
+    } else {
+      this._operationMediator = new OperationMediator(this._composite, 'open');
 
-    // Possible that the oj-message element may be disconnected/removed while open is in progress,
-    //  guard against this case where messageContainerElement is removed
-    if (messageContainerElement) {
       // notify the oj-messages to show the messages container so initial animation
       // will be seen.
       var eventParams = {
@@ -1216,10 +1348,17 @@ MessageViewModel.prototype._openMessage = function () {
         }
       };
 
+      // When the parent is an oj-messages, it will subscribe to message events ojBeforeOpen, ojOpen
+      //  and ojAnimateStart for dealing with live region updates and to override animation based on
+      //  its layout. For the case of inlined oj-message children though (in default slot), these
+      //  events do not get delivered, since the parent oj-messages is not created yet. For this
+      //  case, oj-messages will animate the inlined children as soon as it is created, and not in
+      //  the ojAnimateStart listener.
       this._composite.dispatchEvent(new CustomEvent('ojBeforeOpen', eventParams));
 
       var action = 'open';
       var options = this._getAnimateOptionDefaults(action);
+
       // eslint-disable-next-line no-undef
       AnimationUtils.startAnimation(messageContainerElement, action, options, this._composite)
         .then(function () {
@@ -1231,20 +1370,52 @@ MessageViewModel.prototype._openMessage = function () {
             }
           };
 
-          var computedSound = this._computeSound();
-
-          if (computedSound !== 'none') {
-            // Initialize the AudioContext if the user agent supports Web Audio API
-            this._initAudioContext();
-            this._playSound(computedSound);
-          }
-          // register the swipe handler for touch devices
-          this._registerSwipeHandler();
-          this._scheduleAutoClose();
+          this._prepareMessageAtOpen();
           this._composite.dispatchEvent(new CustomEvent('ojOpen', eventParams));
         }.bind(this));
     }
-  }.bind(this));
+  }
+};
+
+MessageViewModel.prototype._isInlinedChildOfOjMessages = function () {
+  var messagesAncestor = this._findMessagesAncestor();
+  // If messages property is specified on oj-messages, the inlined oj-message children in its
+  //  default slot are excluded.
+  return (messagesAncestor && !messagesAncestor.getProperty('messages'));
+};
+
+MessageViewModel.prototype._findMessagesAncestor = function () {
+  var ancestor = this._composite.parentElement;
+
+  for (; ancestor; ancestor = ancestor.parentElement) {
+    if (ancestor.nodeName.startsWith('OJ-')) {
+      // stop at first ancestor with JET custom tag.
+      return (ancestor.nodeName === 'OJ-MESSAGES') ? ancestor : null;
+    }
+  }
+
+  return null;
+};
+
+// Takes care of few additional stuff on the already opened (stamped case)/to-be-opened
+//  (inlined case) message. For inlined case, we have 2 limitations as noted below, but we are okay
+//  with it since we dont care to provide accurate functionality for inlined usecases (unusual).
+MessageViewModel.prototype._prepareMessageAtOpen = function () {
+  var computedSound = this._computeSound();
+
+  if (computedSound !== 'none') {
+    // Initialize the AudioContext if the user agent supports Web Audio API
+    this._initAudioContext();
+    // 1. for inlined children case, we'd play sound a bit before the message actually is opened by
+    //  the parent oj-messages.
+    this._playSound(computedSound);
+  }
+  // register the swipe handler for touch devices
+  this._registerSwipeHandler();
+
+  // 2. for inlined children case, we'd be short of few seconds since we dont know when the parent
+  //  oj-messages opens the message.
+  this._scheduleAutoClose();
 };
 
 MessageViewModel.prototype._handleKeydown = function (event) {
@@ -1337,6 +1508,7 @@ MessageViewModel.prototype._createObservables = function () {
   this.computedCategory = ko.observable(this._computeCategory());
   this.computedTimestamp = ko.observable(this._computeTimestamp());
   this.computedLabelCloseIcon = ko.observable(this._computeLabelCloseIcon());
+  this.computedMessageCloseSelectors = ko.observable(this._computeMessageCloseSelectors());
   this.computedSummary = ko.observable(this._computeSummary());
   this.computedDetail = ko.observable(this._computeDetail());
 };

@@ -1,0 +1,2175 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the
+//          version in your base theme's directory,
+//          for example alta/widgets/_oj.alta.navigationList.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+@import "../../utilities/oj.utilities";
+
+@if $includeNavigationListClasses != false {
+    @include module-include-once("common.navigationlist") {
+
+        // This is to prevent the flash of unstyled content before the html becomes JET components.
+        @if $initialVisibility == hidden {
+            oj-navigation-list:not(.oj-complete) {
+                visibility: hidden;
+            }
+        }
+
+        oj-navigation-list {
+          display: block;
+        }
+
+        /*Navlist root node*/
+        .oj-navigationlist,
+        .oj-navigationlist-listview-container {
+            overflow-x:hidden;
+        }
+
+        .oj-navigationlist-touch {
+             -webkit-tap-highlight-color: rgba(0,0,0,0);
+        }
+
+        /* navigation list divider used in category header navlist*/
+        .oj-navigationlist-category-divider {
+            @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+              border-color: var(--oj-navigation-list-category-divider-color);
+            } @else {
+              border-color: $navigationListCategoryDividerColor;
+            }
+            border-style: solid;
+            border-width: 1px 0 0;
+            font-size: 0;
+            height: 0;
+            line-height: 0;
+            margin: 0 3px;
+        }
+        
+        /* navigation list divider used in horizontal navlist to separate buttons*/
+        .oj-navigationlist-horizontal .oj-navigationlist-divider {
+           @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+             border-color: var(--oj-navigation-list-horizontal-item-divider-color);
+           } @else {
+             border-color: $navigationListHorizontalItemDividerColor;
+           }
+            border-style: solid;
+            border-width: 0 1px 0 0;
+            font-size: 0;
+            height: 1.714rem;//24px
+            line-height: 0;
+            margin: 5px 0;
+            align-self: center;
+            display: none; // hide dividers by default
+        }
+        // enable dividers when navlist has marker class oj-navigationlist-item-dividers
+        .oj-navigationlist-item-dividers .oj-navigationlist-divider {
+            display: list-item;
+        }
+
+        /* Basic styling  for all ul elements in list*/
+        .oj-navigationlist-element, .oj-navigationlist-group {
+            list-style-type: none;
+            padding-left: 0;
+            padding-right: 0;
+            margin: 0;
+        }
+
+        .oj-navigationlist-item-element:not(.oj-navigationlist-item) {
+          display: block;
+          line-height: 0; //IE bug: IE is adding lineheight on top of actual contents height when display:block.
+        }
+
+        .oj-navigationlist-item-element {
+          // work around for IE 11 which ignores list-style-type:none for sub items on first load.
+          // Setting list style image to transparent image.
+          list-style-image: url("data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7");
+        }
+
+        /* Remove focus ring on outer ul element*/
+        .oj-navigationlist-element:focus {
+            outline: none;
+        }
+
+        /* Style content wrapper of each list item */
+
+        .oj-navigationlist-vertical:not(.oj-navigationlist-icon-only) .oj-navigationlist-item-label {
+            vertical-align: middle;
+        }
+
+        .oj-navigationlist-vertical .oj-navigationlist-item::before {
+           @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+             min-height: var(--oj-navigation-list-item-min-height);
+           } @else {
+             min-height: $navigationListItemMinHeight;
+           }
+        //This is needed for IE 11 bug
+        //https://connect.microsoft.com/IE/feedback/details/816293/ie11-flexbox-with-min-height-not-vertically-aligning-with-align-items-center
+            content:"";
+            display: inline-block;
+            visibility: hidden;
+        }
+
+        .oj-navigationlist-page-level.oj-navigationlist-vertical .oj-navigationlist-item::before {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            min-height: var(--oj-tab-bar-item-min-height);
+          } @else {
+            min-height: $tabBarVerticalItemMinHeight;
+          }
+        }
+
+        .oj-navigationlist-page-level.oj-navigationlist-vertical .oj-navigationlist-item-label {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            font-size: var(--oj-tab-bar-item-font-size);
+          } @else {
+            font-size: $tabBarVerticalItemFontSize;
+          }
+        }
+
+        /* Styling for expand/collapse icons holder */
+        .oj-navigationlist-collapse-icon,
+        .oj-navigationlist-expand-icon {
+            order: 1;
+            align-self: center;
+        }
+
+        a.oj-navigationlist-collapse-icon,
+        a.oj-navigationlist-expand-icon,
+        a.oj-navigationlist-collapse-icon:hover,
+        a.oj-navigationlist-expand-icon:hover{
+            text-decoration: none;  //workaround for IE11 where underline appears on icon hover
+        }
+
+        /* Style content of each list item */
+        .oj-navigationlist-item-content {
+            display: flex;
+            flex: 1 1 auto;
+            align-items: center;
+        }
+
+        // For simple links case
+        a.oj-navigationlist-item-content {
+            text-decoration: none;
+            font-weight: normal;
+            outline:none;
+            overflow: hidden;
+        }
+        a.oj-navigationlist-item-content:active{
+            background-color: transparent;
+        }
+
+        a.oj-navigationlist-item-content .oj-navigationlist-item-label{
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            color: var(--oj-navigation-list-item-label-color-default);
+          } @else {
+            color: $navigationListItemLabelColorDefault;
+          }
+            .oj-contrast-marker & {
+              @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+                color: var(--oj-navigation-list-item-contrast-label-color-default);
+              } @else {
+                color: $navigationListItemContrastLabelColorDefault;
+              }
+            }
+        }
+
+        .oj-selected > a.oj-navigationlist-item-content > .oj-navigationlist-item-label{
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            color: var(--oj-navigation-list-item-label-color-selected);
+          } @else {
+            color: $navigationListItemLabelColorSelected;
+          }
+            .oj-contrast-marker & {
+              @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+                color: var(--oj-navigation-list-item-contrast-label-color-selected);
+              } @else {
+                color: $navigationListItemContrastLabelColorSelected;
+              }
+            }
+        }
+
+        .oj-hover:not(.oj-selected) > a.oj-navigationlist-item-content > .oj-navigationlist-item-label{
+            .oj-contrast-marker & {
+              @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+                color: var(--oj-navigation-list-item-contrast-label-color-hover);
+              } @else {
+                color: $navigationListItemContrastLabelColorHover;
+              }
+            }
+        }
+        /* Navigation list node label or arbitrary content place holder*/
+        .oj-navigationlist-item-label {
+            order: 2;
+            text-overflow: ellipsis;
+            @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+              white-space: var(--oj-navigation-list-item-label-text-wrap);
+            } @else {
+              white-space: $navigationListItemLabelTextWrap;
+            }
+            overflow-x: hidden;
+            display: inline-block;
+            line-height: normal;
+        }
+
+        .oj-navigationlist-item-text-wrap .oj-navigationlist-item-label {
+            white-space: normal;
+        }
+
+        /*Padding for vertical navlist item label*/
+        .oj-navigationlist-vertical .oj-navigationlist-item-label {
+            padding: 3px 0;
+            flex: 1 1 auto;
+        }
+
+        /* hide label for icons-only case */
+        .oj-navigationlist-icon-only .oj-navigationlist-item-label {
+            display:none;
+        }
+
+        /* List item's Icon */
+        .oj-navigationlist-item-icon
+        {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            color: var(--oj-navigation-list-item-icon-color-default);
+          } @else {
+            color: $navigationListItemIconColorDefault;
+          }
+            .oj-contrast-marker & {
+              @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+                color: var(--oj-navigation-list-item-contrast-label-color-default);
+              } @else {
+                color: $navigationListItemContrastLabelColorDefault;
+              }
+            }
+            flex: 0 0 auto;
+        }
+
+        .oj-navigationlist-group-item {
+            display: flex;
+            flex: 1 1 auto;
+        }
+
+        .oj-navigationlist-group {
+            flex: 1 1 auto;
+        }
+
+        /* Disabled node */
+        .oj-navigationlist-item.oj-disabled > .oj-navigationlist-item-content,
+        .oj-navigationlist-item.oj-disabled > .oj-navigationlist-collapse-icon,
+        .oj-navigationlist-item.oj-disabled > .oj-navigationlist-expand-icon {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            opacity: var(--oj-opacity-disabled);
+          } @else {
+            opacity: $opacityDisabled; // adding opacity to contents of item as it should not applicable to item separator/border.
+          }
+        }
+
+        .oj-navigationlist-item.oj-disabled .oj-navigationlist-item-label {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            color: var(--oj-navigation-list-item-label-color-disabled);
+          } @else {
+            color: $navigationListItemLabelColorDisabled;
+          }
+            .oj-contrast-marker & {
+              @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+                color: var(--oj-navigation-list-item-contrast-label-color-disabled);
+              } @else {
+                color: $navigationListItemContrastLabelColorDisabled;
+              }
+            }
+        }
+
+        .oj-navigationlist-item.oj-disabled a.oj-navigationlist-item-content{
+            cursor: default;
+        }
+
+        .oj-navigationlist-item.oj-disabled .oj-navigationlist-item-icon {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            color: var(--oj-navigation-list-icon-color-disabled);
+          } @else {
+            color: $navigationListIconColorDisabled;
+          }
+            .oj-contrast-marker & {
+              @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+                color: var(--oj-navigation-list-item-contrast-label-color-disabled);
+              } @else {
+                color: $navigationListItemContrastLabelColorDisabled;
+              }
+            }
+        }
+
+        /* Selected node */
+        .oj-navigationlist-item.oj-selected .oj-navigationlist-item-icon {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            color: var(--oj-navigation-list-item-icon-color-selected);
+          } @else {
+            color: $navigationListItemIconColorSelected;
+          }
+            .oj-contrast-marker & {
+              @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+                color: var(--oj-navigation-list-item-contrast-label-color-selected);
+              } @else {
+                color: $navigationListItemContrastLabelColorSelected;
+              }
+            }
+        }
+
+        /* hover icon */
+        .oj-navigationlist-item.oj-hover.oj-selected .oj-navigationlist-item-icon,
+        .oj-navigationlist-item.oj-hover .oj-navigationlist-item-icon
+        {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            color: var(--oj-navigation-list-item-icon-color-hover);
+          } @else {
+            color: $navigationListItemIconColorHover;
+          }
+            .oj-contrast-marker & {
+              @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+                color: var(--oj-navigation-list-item-contrast-label-color-hover);
+              } @else {
+                color: $navigationListItemContrastLabelColorHover;
+              }
+            }
+        }
+
+        .oj-navigationlist-vertical.oj-navigationlist-page-level .oj-navigationlist-item.oj-hover.oj-selected .oj-navigationlist-item-icon
+        {
+          .oj-contrast-marker & {
+            @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+              color: var(--oj-tab-bar-item-contrast-label-color-selected);
+            } @else {
+              color: $tabBarItemContrastLabelColorSelected;
+            }
+          }
+        }
+
+        /*borders for high contrast mode*/
+
+        .oj-hicontrast .oj-navigationlist-item.oj-selected,
+        .oj-hicontrast .oj-navigationlist-item.oj-selected.oj-hover,
+        .oj-hicontrast .oj-navigationlist-item.oj-selected.oj-focus {
+            border: 1px solid;
+        }
+
+        .oj-hicontrast .oj-navigationlist-item.oj-hover,
+        .oj-hicontrast .oj-navigationlist-item.oj-focus {
+            border: 1px dotted;
+        }
+
+        /*Focus ring around  focused list item*/
+        .oj-navigationlist .oj-navigationlist-item.oj-focus-highlight {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            outline: dotted 1px var(--oj-navigation-list-item-outline-color-focus); // Using dotted line for all browsers
+          } @else {
+            outline: dotted 1px $navigationListItemOutlineColorFocus; // Using dotted line for all browsers
+          }
+            outline-offset: -1px;
+        }
+
+        .oj-hicontrast .oj-navigationlist-item.oj-focus {
+            outline: none;
+        }
+
+        .oj-navigationlist-item {
+            border-color:  transparent;
+            display: flex;
+            align-items: stretch;
+        }
+
+        //Set Selected item colors
+        .oj-navigationlist-vertical .oj-navigationlist-item.oj-selected {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            background-color: var(--oj-navigation-list-item-bg-color-selected);
+          } @else {
+            background-color: $navigationListItemBgColorSelected;
+          }
+            .oj-contrast-marker & {
+              @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+                background-color: var(--oj-navigation-list-item-contrast-bg-color-selected);
+              } @else {
+                background-color: $navigationListItemContrastBgColorSelected;
+              }
+            }
+        }
+
+        .oj-navigationlist-item.oj-selected {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            border-color: var(--oj-navigation-list-item-border-color-selected);
+          } @else {
+            border-color: $navigationListItemBorderColorSelected;
+          }
+        }
+
+        //Apply hover bgcolor or border color only when item is not selected.
+        .oj-navigationlist-item.oj-hover:not(.oj-selected) {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            background-color: var(--oj-navigation-list-item-bg-color-hover);
+            border-color:  var(--oj-navigation-list-item-border-color-hover);
+          } @else {
+            background-color: $navigationListItemBgColorHover;
+            border-color:  $navigationListItemBorderColorHover;
+          }
+            .oj-contrast-marker & {
+              @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+                background-color: var(--oj-navigation-list-item-contrast-bg-color-hover);
+              } @else {
+                background-color: $navigationListItemContrastBgColorHover;
+              }
+            }
+        }
+        
+        .oj-navigationlist-page-level.oj-navigationlist-icon-only.oj-navigationlist-vertical .oj-navigationlist-item.oj-hover:not(.oj-selected),
+        .oj-navigationlist-page-level.oj-navigationlist-expanded:not(.oj-navigationlist-icon-only).oj-navigationlist-vertical .oj-navigationlist-item.oj-hover:not(.oj-selected) {
+           @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            border-color:  var(--oj-tab-bar-item-border-color-hover);
+          } @else {
+            border-color:  $tabBarItemBorderColorHover;
+          } 
+        }
+
+
+        /*---- Start of common styles for collapsible and expanded navigation list ----*/
+
+        //Space between icon and text
+        .oj-navigationlist-vertical:not(.oj-navigationlist-icon-only) .oj-navigationlist-item-icon {
+            align-self: center;
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            html:not([dir="rtl"]) & {
+              margin-right: var(--oj-navigation-list-icon-to-text-padding); }
+            html[dir="rtl"] & {
+              margin-left: var(--oj-navigation-list-icon-to-text-padding); }
+          } @else {
+            @include oj-ltr() {
+                margin-right: $navigationListIconToTextPadding;
+            }
+
+            @include oj-rtl() {
+                margin-left: $navigationListIconToTextPadding;
+            }
+          }
+        }
+
+        //space when icon missing
+        .oj-navigationlist-vertical:not(.oj-navigationlist-icon-only) .oj-navigationlist-has-icons > .oj-navigationlist-item > .oj-navigationlist-item-no-icon .oj-navigationlist-item-label {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+          } @else {
+            @include oj-ltr() {
+                margin-left: calc(#{$navigationListIconToTextPadding} + 24px ); // here 24px is icon size
+            }
+
+            @include oj-rtl() {
+                margin-right: calc(#{$navigationListIconToTextPadding} + 24px );// here 24px is icon size
+            }
+          }
+        }
+        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+          html:not([dir="rtl"]) .oj-navigationlist-vertical:not(.oj-navigationlist-icon-only) .oj-navigationlist-has-icons > .oj-navigationlist-item > .oj-navigationlist-item-no-icon .oj-navigationlist-item-label {
+            margin-left: calc(var(--oj-navigation-list-icon-to-text-padding) + 24px); }
+
+          html[dir="rtl"] .oj-navigationlist-vertical:not(.oj-navigationlist-icon-only) .oj-navigationlist-has-icons > .oj-navigationlist-item > .oj-navigationlist-item-no-icon .oj-navigationlist-item-label {
+            margin-right: calc(var(--oj-navigation-list-icon-to-text-padding) + 24px); }
+        }
+        
+        .oj-navigationlist-vertical:not(.oj-navigationlist-icon-only) .oj-navigationlist-item {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {     
+            html[dir="rtl"] & {
+              padding-right: calc(var(--oj-navigation-list-item-start-end-padding) - var(--oj-navigation-list-item-border-width-left));
+              border-width: var(--oj-navigation-list-item-border-width-top) var(--oj-navigation-list-item-border-width-left) var(--oj-navigation-list-item-border-width-bottom) var(--oj-navigation-list-item-border-width-right); }
+            html:not([dir="rtl"]) & {
+              padding-left: calc(var(--oj-navigation-list-item-start-end-padding) - var(--oj-navigation-list-item-border-width-left));
+              border-width: var(--oj-navigation-list-item-border-width-top) var(--oj-navigation-list-item-border-width-right) var(--oj-navigation-list-item-border-width-bottom) var(--oj-navigation-list-item-border-width-left); }
+          
+          } @else {
+            $tmpPadding: 0;//Need to define out side if to pass ruby sass build
+            $tmpItemBorderWidth: oj-shorthand-property-value-left($navigationListItemBorderWidth);
+            @if $tmpItemBorderWidth == 0 {
+                $tmpPadding:  $navigationListItemStartEndPadding;
+            } @else {
+                $tmpPadding:  calc(#{$navigationListItemStartEndPadding} - #{$tmpItemBorderWidth});
+            }
+
+            //Padding at start of item
+            @include oj-rtl() {
+                padding-right: $tmpPadding;
+                border-width: oj-shorthand-property-value-top($navigationListItemBorderWidth) oj-shorthand-property-value-left($navigationListItemBorderWidth) oj-shorthand-property-value-bottom($navigationListItemBorderWidth) oj-shorthand-property-value-right($navigationListItemBorderWidth);
+            }
+            @include oj-ltr() {
+                padding-left:  $tmpPadding;
+                border-width: $navigationListItemBorderWidth;
+            }
+          }
+            border-style: solid;
+        }
+
+        .oj-hicontrast .oj-navigationlist-collapsible .oj-navigationlist-item,
+        .oj-hicontrast .oj-navigationlist-expanded:not(.oj-navigationlist-icon-only).oj-navigationlist-vertical .oj-navigationlist-item {
+            border-style: none;
+        }
+        .oj-hicontrast .oj-navigationlist-collapsible .oj-navigationlist-item.oj-focus,
+        .oj-hicontrast .oj-navigationlist-collapsible .oj-navigationlist-item.oj-hover,
+        .oj-hicontrast .oj-navigationlist-expanded:not(.oj-navigationlist-icon-only).oj-navigationlist-vertical .oj-navigationlist-item.oj-focus,
+        .oj-hicontrast .oj-navigationlist-expanded:not(.oj-navigationlist-icon-only).oj-navigationlist-vertical .oj-navigationlist-item.oj-hover
+        {
+            @include oj-rtl() {
+                border-width: 1px;
+            }
+            @include oj-ltr() {
+                border-width: 1px;
+            }
+            border-style: dotted;
+        }
+
+        .oj-hicontrast .oj-navigationlist-collapsible .oj-navigationlist-item.oj-selected,
+        .oj-hicontrast .oj-navigationlist-collapsible .oj-navigationlist-item.oj-selected.oj-focus,
+        .oj-hicontrast .oj-navigationlist-collapsible .oj-navigationlist-item.oj-selected.oj-hover,
+        .oj-hicontrast .oj-navigationlist-expanded:not(.oj-navigationlist-icon-only).oj-navigationlist-vertical .oj-navigationlist-item.oj-selected,
+        .oj-hicontrast .oj-navigationlist-expanded:not(.oj-navigationlist-icon-only).oj-navigationlist-vertical .oj-navigationlist-item.oj-selected.oj-focus,
+        .oj-hicontrast .oj-navigationlist-expanded:not(.oj-navigationlist-icon-only).oj-navigationlist-vertical .oj-navigationlist-item.oj-selected.oj-hover
+        {
+            @include oj-rtl() {
+                border-width: 1px;
+            }
+            @include oj-ltr() {
+                border-width: 1px;
+            }
+            border-style: solid;
+        }
+
+
+
+        /* Padding for sublist    */
+
+        //padding for sub list of non icons list
+        .oj-navigationlist-collapsible ul:not(.oj-navigationlist-has-icons) > .oj-navigationlist-item-element > ul,
+        .oj-navigationlist-expanded:not(.oj-navigationlist-icon-only).oj-navigationlist-vertical ul:not(.oj-navigationlist-has-icons) > .oj-navigationlist-item-element > ul
+        {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            html:not([dir="rtl"]) & { 
+              padding-left: var(--oj-navigation-list-item-start-end-padding); 
+            }
+            html[dir="rtl"] & {  
+              padding-right: var(--oj-navigation-list-item-start-end-padding); 
+            }
+          } 
+          @else {
+            @include oj-ltr() {
+                padding-left: $navigationListItemStartEndPadding;
+            }
+
+            @include oj-rtl() {
+                padding-right: $navigationListItemStartEndPadding;
+            }
+          }
+        }
+        //padding for sub list of icons list
+        .oj-navigationlist-collapsible ul.oj-navigationlist-has-icons > .oj-navigationlist-item-element > ul,
+        .oj-navigationlist-expanded:not(.oj-navigationlist-icon-only).oj-navigationlist-vertical ul.oj-navigationlist-has-icons > .oj-navigationlist-item-element > ul
+        {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            html:not([dir="rtl"]) & {
+              padding-left: calc(var(--oj-navigation-list-item-start-end-padding) + var(--oj-navigation-list-icon-to-text-padding) + 24px); 
+            }
+            html[dir="rtl"] & {
+              padding-right: calc(var(--oj-navigation-list-item-start-end-padding) + var(--oj-navigation-list-icon-to-text-padding) + 24px); }
+          } 
+          @else {
+            @include oj-ltr() {
+                padding-left: calc(#{$navigationListItemStartEndPadding} + #{$navigationListIconToTextPadding} + 24px );// total of parent item padding + icon text space + icon size.here 24px is icon size
+            }
+
+            @include oj-rtl() {
+                padding-right: calc(#{$navigationListItemStartEndPadding} + #{$navigationListIconToTextPadding} + 24px );// total of parent item padding + icon text space + icon size.here 24px is icon size
+            }
+          }
+        }
+
+        //Add padding to right side for leaf node
+        .oj-navigationlist-vertical:not(.oj-navigationlist-icon-only) .oj-navigationlist-item:not(.oj-navigationlist-group-item) .oj-navigationlist-item-content {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            html:not([dir="rtl"]) & {  
+              padding-right: var(--oj-navigation-list-item-start-end-padding); 
+            }
+            html[dir="rtl"]  & { 
+              padding-left: var(--oj-navigation-list-item-start-end-padding); 
+            }
+          } 
+          @else {
+            @include oj-ltr() {
+                padding-right: $navigationListItemStartEndPadding;
+            }
+            @include oj-rtl() {
+                padding-left: $navigationListItemStartEndPadding;
+            }
+          }
+        }
+        //Add padding to right side on group node as there should be some padding after expand/collapse icon.
+        .oj-navigationlist-group-item {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            html:not([dir="rtl"]) & {
+              padding-right: var(--oj-navigation-list-item-start-end-padding); }
+            html[dir="rtl"] & {
+              padding-left: var(--oj-navigation-list-item-start-end-padding); }
+          } @else {
+            @include oj-ltr() {
+                padding-right: $navigationListItemStartEndPadding;
+            }
+            @include oj-rtl() {
+                padding-left: $navigationListItemStartEndPadding;
+            }
+          }
+        }
+
+        /*---- End of common styles for collapsible and expanded navigation list ----*/
+
+        /* Start of Collapsible Navigation list*/
+
+        .oj-navigationlist-collapsible .oj-navigationlist-item-element.oj-collapsed .oj-navigationlist-group {
+            max-height: 0; //Needed for hiding collapsed elements
+        }
+
+         /* expand and collapse animation */
+        .oj-navigationlist-collapsible .oj-navigationlist-collapsible-transition {
+            overflow: hidden;
+        }
+
+        /* Collapse or expand icon color should not change on hover*/
+        .oj-navigationlist-item.oj-hover a.oj-navigationlist-collapse-icon ,
+        .oj-navigationlist-item a.oj-navigationlist-collapse-icon,
+        .oj-navigationlist-item.oj-hover a.oj-navigationlist-expand-icon,
+        .oj-navigationlist-item a.oj-navigationlist-expand-icon {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            color: var(--oj-navigation-list-collapsible-icon-color-default);
+          } @else {
+            color: $navigationListCollapsibleIconColorDefault;
+          }
+            .oj-contrast-marker & {
+              @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+                color: var(--oj-navigation-list-item-contrast-label-color-default);
+              } @else {
+                color: $navigationListItemContrastLabelColorDefault;
+              }
+            }
+        }
+
+        // Remove focus ring on expand/collapse icons
+        .oj-navigationlist-collapse-icon:focus,
+        .oj-navigationlist-expand-icon:focus {
+            outline: none;
+        }
+
+        .oj-navigationlist-focused-element:not(.oj-focus-highlight) {
+          outline: none;// avoid native browser ring on focus
+        }
+
+        /* End of Collapsible Navigation list*/
+
+        //Add border with radius for page level items
+        .oj-navigationlist-page-level.oj-navigationlist-expanded:not(.oj-navigationlist-icon-only).oj-navigationlist-vertical .oj-navigationlist-item
+        {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            border-color: var(--oj-tab-bar-item-border-color);
+              html[dir="rtl"] & {
+                padding-right: calc(var(--oj-navigation-list-item-start-end-padding) - var(--oj-tab-bar-item-border-width-left));
+                border-width: 0 var(--oj-tab-bar-item-border-width-left) var(--oj-tab-bar-item-border-width-bottom) var(--oj-tab-bar-item-border-width-right); }
+              html:not([dir="rtl"]) & {
+                padding-left: calc(var(--oj-navigation-list-item-start-end-padding) - var(--oj-tab-bar-item-border-width-left));
+                border-width: 0 var(--oj-tab-bar-item-border-width-right) var(--oj-tab-bar-item-border-width-bottom) var(--oj-tab-bar-item-border-width-left); }
+          } @else {
+            border-color: $tabBarItemBorderColor;
+            $tmpPadding: 0;//Need to define out side if to pass ruby sass build
+            $tmpItemBorderWidth: oj-shorthand-property-value-left($tabBarVerticalItemBorderWidth);
+            @if $tmpItemBorderWidth == 0 {
+                $tmpPadding:  calc(#{$navigationListItemStartEndPadding} - 0px);
+            } @else {
+                $tmpPadding:  calc(#{$navigationListItemStartEndPadding} - #{$tmpItemBorderWidth});
+            }
+            // need to override both ltr and rtl because default expanded navlist will have selection border based on direction.
+            @include oj-rtl() {
+                padding-right: $tmpPadding;
+                border-width: 0 oj-shorthand-property-value-left($tabBarVerticalItemBorderWidth) oj-shorthand-property-value-bottom($tabBarVerticalItemBorderWidth) oj-shorthand-property-value-right($tabBarVerticalItemBorderWidth);
+            }
+            @include oj-ltr() {
+                padding-left: $tmpPadding;
+                border-width: 0 oj-shorthand-property-value-right($tabBarVerticalItemBorderWidth) oj-shorthand-property-value-bottom($tabBarVerticalItemBorderWidth) oj-shorthand-property-value-left($tabBarVerticalItemBorderWidth);
+            }
+          }
+            border-style: solid;
+            border-radius: 0;
+        }
+
+        .oj-navigationlist-page-level.oj-navigationlist-expanded:not(.oj-navigationlist-icon-only).oj-navigationlist-vertical .oj-navigationlist-item:first-of-type {
+
+            // need to override both ltr and rtl as it was overriden above for border-width.
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            border-top-left-radius: var(--oj-tab-bar-border-radius-top-left);
+            border-top-right-radius: var(--oj-tab-bar-border-radius-top-right);
+            html[dir="rtl"] & { 
+              border-top-width: var(--oj-tab-bar-item-border-width-top); 
+            }
+            html:not([dir="rtl"]) & { 
+              border-top-width: var(--oj-tab-bar-item-border-width-top); 
+            }
+          } @else {
+            border-top-left-radius: oj-shorthand-property-value-top($tabBarItemBorderRadius);
+            border-top-right-radius: oj-shorthand-property-value-right($tabBarItemBorderRadius);
+            // need to override both ltr and rtl as it was overriden above for border-width.
+            @include oj-rtl() {
+                border-top-width: oj-shorthand-property-value-top($tabBarVerticalItemBorderWidth);
+            }
+            @include oj-ltr() {
+                border-top-width: oj-shorthand-property-value-top($tabBarVerticalItemBorderWidth);
+            }
+          }
+        }
+
+        .oj-navigationlist-page-level.oj-navigationlist-expanded:not(.oj-navigationlist-icon-only).oj-navigationlist-vertical .oj-navigationlist-item:last-of-type {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            border-bottom-left-radius: var(--oj-tab-bar-border-radius-bottom-left);
+            border-bottom-right-radius: var(--oj-tab-bar-border-radius-bottom-right);
+          } @else {
+            border-bottom-left-radius: oj-shorthand-property-value-left($tabBarItemBorderRadius);
+            border-bottom-right-radius: oj-shorthand-property-value-bottom($tabBarItemBorderRadius);
+          }
+        }
+
+        /*Start of icons only navlist*/
+
+        //vertical icon only list styling
+         @if $navigationListIconOnlyStyle == circle {
+            .oj-navigationlist-vertical.oj-navigationlist-icon-only .oj-navigationlist-item.oj-selected,
+            .oj-navigationlist-vertical.oj-navigationlist-icon-only .oj-navigationlist-item.oj-hover {
+                background-color: transparent;
+                .oj-contrast-marker & {
+                    background-color: transparent;
+                }
+            }
+            .oj-navigationlist-vertical.oj-navigationlist-icon-only .oj-navigationlist-item.oj-selected .oj-navigationlist-item-icon {
+              @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+                background-color: var(--oj-navigation-list-item-icon-only-bg-color-selected);
+              } @else {
+                background-color: $navigationListItemIconOnlyBgColorSelected;
+              }
+                .oj-contrast-marker & {
+                  @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+                    background-color: var(--oj-navigation-list-item-icon-only-bg-color-selected);
+                  } @else {
+                    background-color: $navigationListItemIconOnlyBgColorSelected;
+                  }
+                }
+            }
+
+            .oj-navigationlist-vertical.oj-navigationlist-icon-only .oj-navigationlist-item.oj-hover:not(.oj-selected) .oj-navigationlist-item-icon {
+              @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+                background-color: var(--oj-navigation-list-item-icon-only-bg-color-hover);
+              } @else {
+                background-color: $navigationListItemIconOnlyBgColorHover;
+              }
+                .oj-contrast-marker & {
+                  @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+                    background-color: var(--oj-navigation-list-item-contrast-bg-color-hover);
+                  } @else {
+                    background-color: $navigationListItemContrastBgColorHover;
+                  }
+                }
+            }
+
+            .oj-navigationlist-vertical.oj-navigationlist-icon-only .oj-navigationlist-item-icon
+            {
+                border-radius: 50%;
+                padding: 12px;
+            }
+        }
+        @else {
+            .oj-navigationlist-icon-only.oj-navigationlist-vertical .oj-navigationlist-item
+            {
+              @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+                html[dir="rtl"] & {
+                  border-width: var(--oj-navigation-list-item-icon-only-border-width-top) var(--oj-navigation-list-item-icon-only-border-width-left) var(--oj-navigation-list-item-icon-only-border-width-bottom) var(--oj-navigation-list-item-icon-only-border-width-right); }
+                html:not([dir="rtl"]) & {
+                  border-width: var(--oj-navigation-list-item-icon-only-border-width-top) var(--oj-navigation-list-item-icon-only-border-width-right) var(--oj-navigation-list-item-icon-only-border-width-bottom) var(--oj-navigation-list-item-icon-only-border-width-left); }
+              } @else {
+                @include oj-rtl() {
+                    border-width: oj-shorthand-property-value-top($navigationListIconOnlyItemBorderWidth) oj-shorthand-property-value-left($navigationListIconOnlyItemBorderWidth) oj-shorthand-property-value-bottom($navigationListIconOnlyItemBorderWidth) oj-shorthand-property-value-right($navigationListIconOnlyItemBorderWidth);
+                }
+                @include oj-ltr() {
+                    border-width: $navigationListIconOnlyItemBorderWidth;
+                }
+              }
+                border-style: solid;
+            }
+
+            .oj-navigationlist-vertical.oj-navigationlist-icon-only .oj-navigationlist-item-icon
+            {
+              @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+              } @else {
+                $tmpPadding: 0; //Need to define out side if to pass ruby sass build
+                $tmpItemBorderWidth: oj-shorthand-property-value-left($navigationListIconOnlyItemBorderWidth);
+                @if $tmpItemBorderWidth == 0 {
+                    $tmpPadding:  calc(#{$navigationListIconOnlyIconStartEndPadding} - 0px);
+                }@else {
+                    $tmpPadding:  calc(#{$navigationListIconOnlyIconStartEndPadding} - #{$tmpItemBorderWidth})
+                }
+                @include oj-rtl() {
+                    padding: 0 $tmpPadding 0 $navigationListIconOnlyIconStartEndPadding;
+                }
+                @include oj-ltr() {
+                    padding: 0 $navigationListIconOnlyIconStartEndPadding 0 $tmpPadding;
+                }
+              }
+            }
+            @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+              html[dir="rtl"] .oj-navigationlist-vertical.oj-navigationlist-icon-only .oj-navigationlist-item-icon {
+                padding: 0 calc(var(--oj-navigation-list-icon-only-icon-start-end-padding) - var(--oj-navigation-list-item-icon-only-border-width-left)) 0 var(--oj-navigation-list-icon-only-icon-start-end-padding); }
+              html:not([dir="rtl"]) .oj-navigationlist-vertical.oj-navigationlist-icon-only .oj-navigationlist-item-icon {
+                padding: 0 var(--oj-navigation-list-icon-only-icon-start-end-padding) 0 calc(var(--oj-navigation-list-icon-only-icon-start-end-padding) - var(--oj-navigation-list-item-icon-only-border-width-left)); }
+            }
+
+            .oj-navigationlist-page-level.oj-navigationlist-vertical.oj-navigationlist-icon-only .oj-navigationlist-item-icon
+            {
+              @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+              } @else {
+                $tmpPadding: 0;//Need to define out side if to pass ruby sass build
+                $tmpSelectionBorderWidth: oj-shorthand-property-value-left($tabBarVerticalIconOnlyItemBorderWidth);
+                @if $tmpSelectionBorderWidth == 0 {
+                    $tmpPadding:  calc(#{$navigationListIconOnlyIconStartEndPadding} - 0px);
+                }@else {
+                    $tmpPadding:  calc(#{$navigationListIconOnlyIconStartEndPadding} - #{$tmpSelectionBorderWidth})
+                }
+                @include oj-rtl() {
+                    padding: 0 $tmpPadding 0 $navigationListIconOnlyIconStartEndPadding;
+                }
+                @include oj-ltr() {
+                    padding: 0 $navigationListIconOnlyIconStartEndPadding 0 $tmpPadding;
+                }
+              }
+            }
+            @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+              html[dir="rtl"] .oj-navigationlist-page-level.oj-navigationlist-vertical.oj-navigationlist-icon-only .oj-navigationlist-item-icon {
+                padding: 0 calc(var(--oj-navigation-list-icon-only-icon-start-end-padding) - var(--oj-tab-bar-item-icon-only-border-width-left)) 0 var(--oj-navigation-list-icon-only-icon-start-end-padding); }
+              html:not([dir="rtl"]) .oj-navigationlist-page-level.oj-navigationlist-vertical.oj-navigationlist-icon-only .oj-navigationlist-item-icon {
+                padding: 0 var(--oj-navigation-list-icon-only-icon-start-end-padding) 0 calc(var(--oj-navigation-list-icon-only-icon-start-end-padding) - var(--oj-tab-bar-item-icon-only-border-width-left)); }
+            }
+
+            .oj-navigationlist-page-level.oj-navigationlist-icon-only.oj-navigationlist-vertical .oj-navigationlist-item
+            {
+                border-style: solid;
+                border-radius: 0;
+                @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+                  border-color: var(--oj-tab-bar-item-border-color);
+                  html[dir="rtl"] & {
+                    border-width: 0 var(--oj-tab-bar-item-icon-only-border-width-left) var(--oj-tab-bar-item-icon-only-border-width-bottom) var(--oj-tab-bar-item-icon-only-border-width-right); }
+                  html:not([dir="rtl"]) & {
+                    border-width: 0 var(--oj-tab-bar-item-icon-only-border-width-right) var(--oj-tab-bar-item-icon-only-border-width-bottom) var(--oj-tab-bar-item-icon-only-border-width-left); }                  
+                } @else {
+                  border-color: $tabBarItemBorderColor;
+                  // need to override both ltr and rtl because default expanded navlist will have selection border based on direction.
+                  // need to override both ltr and rtl because default expanded navlist will have selection border based on direction.
+                  @include oj-rtl() {
+                      border-width: 0 oj-shorthand-property-value-left($tabBarVerticalIconOnlyItemBorderWidth) oj-shorthand-property-value-bottom($tabBarVerticalIconOnlyItemBorderWidth) oj-shorthand-property-value-right($tabBarVerticalIconOnlyItemBorderWidth);
+                  }
+                  @include oj-ltr() {
+                      border-width: 0 oj-shorthand-property-value-right($tabBarVerticalIconOnlyItemBorderWidth) oj-shorthand-property-value-bottom($tabBarVerticalIconOnlyItemBorderWidth) oj-shorthand-property-value-left($tabBarVerticalIconOnlyItemBorderWidth);
+                  }
+                }
+            }
+
+            .oj-navigationlist-page-level.oj-navigationlist-icon-only.oj-navigationlist-vertical .oj-navigationlist-item:first-of-type {
+              @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+                border-top-left-radius: var(--oj-tab-bar-border-radius-top-left);
+                border-top-right-radius: var(--oj-tab-bar-border-radius-top-right);
+                html[dir="rtl"] & {
+                  border-top-width: var(--oj-tab-bar-item-icon-only-border-width-top); }
+                html:not([dir="rtl"]) & {
+                  border-top-width: var(--oj-tab-bar-item-icon-only-border-width-top); }
+              } @else {
+                border-top-left-radius: oj-shorthand-property-value-top($tabBarItemBorderRadius);
+                border-top-right-radius: oj-shorthand-property-value-right($tabBarItemBorderRadius);
+                // need to override both ltr and rtl as it was overriden above for border-width.
+                @include oj-rtl() {
+                    border-top-width: oj-shorthand-property-value-top($tabBarVerticalIconOnlyItemBorderWidth);
+                }
+                @include oj-ltr() {
+                    border-top-width: oj-shorthand-property-value-top($tabBarVerticalIconOnlyItemBorderWidth);
+                }
+              }
+            }
+
+            .oj-navigationlist-page-level.oj-navigationlist-icon-only.oj-navigationlist-vertical .oj-navigationlist-item:last-of-type {
+              @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+                border-bottom-left-radius: var(--oj-tab-bar-border-radius-bottom-left);
+                border-bottom-right-radius: var(--oj-tab-bar-border-radius-bottom-right);
+              } @else {
+                border-bottom-left-radius: oj-shorthand-property-value-left($tabBarItemBorderRadius);
+                border-bottom-right-radius: oj-shorthand-property-value-bottom($tabBarItemBorderRadius);
+              }
+            }
+
+            .oj-navigationlist-page-level.oj-navigationlist-vertical .oj-navigationlist-item.oj-selected {
+              @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+                background-color: var(--oj-tab-bar-item-bg-color-selected);
+              } @else {
+                background-color: $tabBarItemBgColorSelected;
+              }
+                .oj-contrast-marker & {
+                  @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+                    background-color: var(--oj-tab-bar-item-contrast-bg-color-selected);
+                  } @else {
+                    background-color: $tabBarItemContrastBgColorSelected;
+                  }
+                }
+            }
+        }
+
+
+        .oj-navigationlist-icon-only .oj-navigationlist-item-content {
+            justify-content: center;
+        }
+        /*End of icons only navlist*/
+
+        //This is needed to ensure icon only list not stretch to available space.
+        .oj-navigationlist-vertical.oj-navigationlist-icon-only{
+            display: inline-flex;
+        }
+
+        //Margin for Vertical icons only list
+        .oj-navigationlist-icon-only.oj-navigationlist-vertical .oj-navigationlist-item {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            margin: var(--oj-navigation-list-item-icon-only-margin);
+          } @else {
+            margin: $navigationListIconOnlyItemPadding;
+          }
+        }
+        //Remove margin top for first element
+        .oj-navigationlist-icon-only.oj-navigationlist-vertical .oj-navigationlist-item:first-child {
+            margin-top: 0;
+        }
+        /* Start of Page Level navlist styles*/
+        .oj-navigationlist-page-level.oj-navigationlist-expanded:not(.oj-navigationlist-icon-only).oj-navigationlist-vertical .oj-navigationlist-item.oj-selected,
+        .oj-navigationlist-page-level.oj-navigationlist-vertical .oj-navigationlist-item.oj-selected {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            border-color: var(--oj-tab-bar-item-border-color-selected);
+          } @else {
+            border-color: $tabBarItemBorderColorSelected;
+          }
+        }
+
+         .oj-navigationlist-page-level.oj-navigationlist-vertical:not(.oj-navigationlist-icon-only) .oj-navigationlist-item.oj-selected {
+           @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+             background-color: var(--oj-tab-bar-item-bg-color-selected);
+           } @else {
+             background-color: $tabBarItemBgColorSelected;
+           }
+            .oj-contrast-marker & {
+              @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+                background-color: var(--oj-tab-bar-item-contrast-bg-color-selected);
+              } @else {
+                background-color: $tabBarItemContrastBgColorSelected;
+              }
+            }
+        }
+
+        .oj-navigationlist-page-level.oj-navigationlist-vertical:not(.oj-navigationlist-icon-only)  .oj-navigationlist-item:not(.oj-disabled) a.oj-navigationlist-item-content  .oj-navigationlist-item-label {
+            @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+              color: var(--oj-tab-bar-item-label-color-default);
+            } @else {
+              color: $tabBarItemLabelColorDefault;
+            }
+            .oj-contrast-marker & {
+              @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+                color: var(--oj-navigation-list-item-contrast-label-color-default);
+              } @else {
+                color: $navigationListItemContrastLabelColorDefault;
+              }
+            }
+        }
+
+        .oj-navigationlist-page-level.oj-navigationlist-vertical:not(.oj-navigationlist-icon-only) .oj-navigationlist-item:not(.oj-disabled) .oj-navigationlist-item-icon
+        {
+            @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+              color: var(--oj-tab-bar-item-icon-color-default);
+            } @else {
+              color: $tabBarItemIconColorDefault;
+            }
+            .oj-contrast-marker & {
+              @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+                color: var(--oj-navigation-list-item-contrast-label-color-default);
+              } @else {
+                color: $navigationListItemContrastLabelColorDefault;
+              }
+            }
+        }
+        .oj-navigationlist-page-level.oj-navigationlist-vertical:not(.oj-navigationlist-icon-only)  .oj-navigationlist-item.oj-selected a.oj-navigationlist-item-content  .oj-navigationlist-item-label {
+            @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+              color: var(--oj-tab-bar-item-label-color-selected);
+              font-weight: var(--oj-tab-bar-item-font-weight-selected);
+            } @else {
+              color: $tabBarItemLabelColorSelected;
+              font-weight: $tabBarItemFontWeightSelected;
+            }
+            .oj-contrast-marker & {
+              @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+                color: var(--oj-tab-bar-item-contrast-label-color-selected);
+              } @else {
+                color: $tabBarItemContrastLabelColorSelected;
+              }
+            }
+        }
+
+        .oj-navigationlist-page-level.oj-navigationlist-vertical:not(.oj-navigationlist-icon-only) .oj-navigationlist-item.oj-selected:not(.oj-hover) .oj-navigationlist-item-icon
+        {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            color: var(--oj-tab-bar-item-icon-color-selected);
+          } @else {
+            color: $tabBarItemIconColorSelected;
+          }
+            .oj-contrast-marker & {
+              @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+                color: var(--oj-tab-bar-item-contrast-label-color-selected);
+              } @else {
+                color: $tabBarItemContrastLabelColorSelected;
+              }
+            }
+        }
+
+        .oj-navigationlist-page-level.oj-navigationlist-vertical:not(.oj-navigationlist-icon-only)  .oj-navigationlist-item.oj-hover:not(.oj-selected) a.oj-navigationlist-item-content  .oj-navigationlist-item-label {
+            @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+              color: var(--oj-tab-bar-item-label-color-hover);
+            } @else {
+              color: $tabBarItemLabelColorHover;
+            }
+            .oj-contrast-marker & {
+              @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+                color: var(--oj-navigation-list-item-contrast-label-color-hover);
+              } @else {
+                color: $navigationListItemContrastLabelColorHover;
+              }
+            }
+        }
+
+        .oj-navigationlist-page-level.oj-navigationlist-vertical:not(.oj-navigationlist-icon-only) .oj-navigationlist-item.oj-hover .oj-navigationlist-item-icon
+        {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            color: var(--oj-navigation-list-item-icon-color-hover);
+          } @else {
+            color: $navigationListItemIconColorHover;
+          }
+            .oj-contrast-marker & {
+              @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+                color: var(--oj-navigation-list-item-contrast-label-color-hover);
+              } @else {
+                color: $navigationListItemContrastLabelColorHover;
+              }
+            }
+        }
+        .oj-navigationlist-page-level.oj-navigationlist-vertical:not(.oj-navigationlist-icon-only) .oj-navigationlist-item.oj-hover.oj-selected .oj-navigationlist-item-icon
+        {
+            .oj-contrast-marker & {
+              @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+                color: var(--oj-tab-bar-item-contrast-label-color-selected);
+              } @else {
+                color: $tabBarItemContrastLabelColorSelected;
+              }
+            }
+        }
+        // bg and border colors for hover or active  are same.
+        .oj-navigationlist-page-level.oj-navigationlist-vertical .oj-navigationlist-item.oj-active.oj-hover:not(.oj-selected),
+        .oj-navigationlist-page-level.oj-navigationlist-vertical .oj-navigationlist-item.oj-active:not(.oj-selected){
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            background-color: var(--oj-tab-bar-item-bg-color-active);
+            .oj-contrast-marker & {
+              background-color: var(--oj-tab-bar-item-contrast-bg-color-active);
+            }
+            html[dir="rtl"] & {
+              border-right-color: var(--oj-tab-bar-item-border-color-active); }
+            html:not([dir="rtl"]) & {
+              border-left-color: var(--oj-tab-bar-item-border-color-active); }
+          } @else {
+            background-color: $tabBarItemBgColorActive;
+            .oj-contrast-marker & {
+              background-color: $tabBarItemContrastBgColorActive;
+            }
+            
+            @include oj-rtl() {
+                border-right-color: $tabBarItemBorderColorActive;
+            }
+            @include oj-ltr() {
+                border-left-color: $tabBarItemBorderColorActive;
+            }
+          }
+            
+        }
+
+        /* End of Page Level navlist styles*/
+
+        /*Start of common horizontal navigationlist styles */
+
+        .oj-navigationlist-horizontal .oj-navigationlist-element {
+                display: flex;
+        }
+
+        .oj-navigationlist-horizontal .oj-navigationlist-item {
+                flex: 1 1 auto;
+        }
+
+        /* This is due to bug in IE 11 where setting flex-shrink:0 is needed to avoid truncation in item text which is needed for overflow feature. This work around breaks text-wrap functionality so enabling this only when no text wrap. We can remove this once IE 11 support dropped and can update docs saying text-wrap is supported with overflow. */
+
+        .oj-navigationlist-horizontal:not(.oj-navigationlist-item-text-wrap) .oj-navigationlist-item {
+                flex: 1 0 auto;
+        }
+
+        // UP
+        @if $responsiveQuerySmallUp and $responsiveQuerySmallUp != none {
+          @media #{$responsiveQuerySmallUp} {
+            //Need to add page-level/app-level selector as we already overriding flex property in ios scss to show equal sized buttons
+            .oj-navigationlist-app-level.oj-navigationlist-horizontal.oj-sm-condense .oj-navigationlist-item,
+            .oj-navigationlist-page-level.oj-navigationlist-horizontal.oj-sm-condense .oj-navigationlist-item
+            {
+              flex: 0 0 auto;
+            }
+
+            .oj-navigationlist-app-level.oj-navigationlist-horizontal.oj-sm-justify-content-center .oj-navigationlist-element,
+            .oj-navigationlist-page-level.oj-navigationlist-horizontal.oj-sm-justify-content-center .oj-navigationlist-element {
+                justify-content: center;
+            }
+            .oj-navigationlist-app-level.oj-navigationlist-horizontal.oj-sm-justify-content-flex-end .oj-navigationlist-element,
+            .oj-navigationlist-page-level.oj-navigationlist-horizontal.oj-sm-justify-content-flex-end .oj-navigationlist-element {
+                justify-content: flex-end;
+            }
+
+          }
+        }
+
+
+        @if $responsiveQueryMediumUp and $responsiveQueryMediumUp != none {
+          @media #{$responsiveQueryMediumUp} {
+            .oj-navigationlist-app-level.oj-navigationlist-horizontal.oj-md-condense .oj-navigationlist-item,
+            .oj-navigationlist-page-level.oj-navigationlist-horizontal.oj-md-condense .oj-navigationlist-item
+            {
+              flex: 0 0 auto;
+            }
+            .oj-navigationlist-app-level.oj-navigationlist-horizontal.oj-md-justify-content-center .oj-navigationlist-element,
+            .oj-navigationlist-page-level.oj-navigationlist-horizontal.oj-md-justify-content-center .oj-navigationlist-element {
+                justify-content: center;
+            }
+            .oj-navigationlist-app-level.oj-navigationlist-horizontal.oj-md-justify-content-flex-end .oj-navigationlist-element,
+            .oj-navigationlist-page-level.oj-navigationlist-horizontal.oj-md-justify-content-flex-end .oj-navigationlist-element {
+                justify-content: flex-end;
+            }
+          }
+        }
+
+
+        @if $responsiveQueryLargeUp and $responsiveQueryLargeUp != none {
+          @media #{$responsiveQueryLargeUp} {
+            .oj-navigationlist-app-level.oj-navigationlist-horizontal.oj-lg-condense .oj-navigationlist-item,
+            .oj-navigationlist-page-level.oj-navigationlist-horizontal.oj-lg-condense .oj-navigationlist-item
+            {
+              flex: 0 1 auto;
+            }
+            .oj-navigationlist-app-level.oj-navigationlist-horizontal.oj-lg-justify-content-center .oj-navigationlist-element,
+            .oj-navigationlist-page-level.oj-navigationlist-horizontal.oj-lg-justify-content-center .oj-navigationlist-element {
+                justify-content: center;
+            }
+            .oj-navigationlist-app-level.oj-navigationlist-horizontal.oj-lg-justify-content-flex-end .oj-navigationlist-element,
+            .oj-navigationlist-page-level.oj-navigationlist-horizontal.oj-lg-justify-content-flex-end .oj-navigationlist-element {
+                justify-content: flex-end;
+            }
+          }
+        }
+
+
+        @if $responsiveQueryXlargeUp and $responsiveQueryXlargeUp != none {
+          @media #{$responsiveQueryXlargeUp} {
+            .oj-navigationlist-app-level.oj-navigationlist-horizontal.oj-xl-condense .oj-navigationlist-item,
+            .oj-navigationlist-page-level.oj-navigationlist-horizontal.oj-xl-condense .oj-navigationlist-item
+            {
+              flex: 0 0 auto;
+            }
+            .oj-navigationlist-app-level.oj-navigationlist-horizontal.oj-xl-justify-content-center .oj-navigationlist-element,
+            .oj-navigationlist-page-level.oj-navigationlist-horizontal.oj-xl-justify-content-center .oj-navigationlist-element {
+                justify-content: center;
+            }
+            .oj-navigationlist-app-level.oj-navigationlist-horizontal.oj-xl-justify-content-flex-end .oj-navigationlist-element,
+            .oj-navigationlist-page-level.oj-navigationlist-horizontal.oj-xl-justify-content-flex-end .oj-navigationlist-element {
+                justify-content: flex-end;
+            }
+          }
+        }
+
+
+        @if $responsiveQueryXXlargeUp and $responsiveQueryXXlargeUp != none {
+          @media #{$responsiveQueryXXlargeUp} {
+            .oj-navigationlist-app-level.oj-navigationlist-horizontal.oj-xxl-condense .oj-navigationlist-item,
+            .oj-navigationlist-page-level.oj-navigationlist-horizontal.oj-xxl-condense .oj-navigationlist-item
+            {
+              flex: 0 0 auto;
+            }
+            .oj-navigationlist-app-level.oj-navigationlist-horizontal.oj-xxl-justify-content-center .oj-navigationlist-element,
+            .oj-navigationlist-page-level.oj-navigationlist-horizontal.oj-xxl-justify-content-center .oj-navigationlist-element {
+                justify-content: center;
+            }
+            .oj-navigationlist-app-level.oj-navigationlist-horizontal.oj-xxl-justify-content-flex-end .oj-navigationlist-element,
+            .oj-navigationlist-page-level.oj-navigationlist-horizontal.oj-xxl-justify-content-flex-end .oj-navigationlist-element {
+                justify-content: flex-end;
+            }
+          }
+        }
+
+        .oj-navigationlist-horizontal .oj-navigationlist-item-element {
+            box-sizing: border-box;
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            min-height: var(--oj-navigation-list-horizontal-item-min-height);
+          } @else {
+            min-height: $navigationListHorizontalMinHeight;
+          }
+        }
+
+        .oj-navigationlist-page-level.oj-navigationlist-horizontal .oj-navigationlist-item-element {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            min-height: var(--oj-tab-bar-horizontal-item-min-height);
+          } @else {
+            min-height: $tabBarHorizontalItemMinHeight;
+          }
+        }
+
+        .oj-navigationlist-horizontal  .oj-selected > a.oj-navigationlist-item-content > .oj-navigationlist-item-label{
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            color: var(--oj-navigation-list-item-label-color-selected);
+          } @else {
+            color: $navigationListItemLabelColorSelected;
+          }
+        }
+
+        .oj-navigationlist-horizontal .oj-navigationlist-item.oj-selected {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            background-color: var(--oj-navigation-list-horizontal-item-bg-color-selected);
+          } @else {
+            background-color: $navigationListHorizontalItemBgColorSelected;
+          }
+            .oj-contrast-marker & {
+              @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+                background-color: var(--oj-navigation-list-horizontal-item-contrast-bg-color-selected);
+              } @else {
+                background-color: $navigationListHorizontalItemContrastBgColorSelected;
+              }
+            }
+        }
+        .oj-navigationlist-horizontal .oj-navigationlist-item-label {
+                align-self: center;
+        }
+
+        //Padding around icon in horizontal list
+        .oj-navigationlist-horizontal .oj-navigationlist-item-icon
+        {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            margin: var(--oj-navigation-list-horizontal-icon-margin);
+          } @else {
+            margin: $navigationListHorizontalIconMargin;
+          }
+        }
+
+        /*End of common horizontal navigationlist styles */
+
+        /*Start of  horizontal navigationlist styles icons only*/
+        //Padding for horizontal icons only list
+        .oj-navigationlist-horizontal.oj-navigationlist-icon-only .oj-navigationlist-item {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+          } @else {
+             @include oj-ltr() {
+                  margin-left: $navigationListHorizontalIconOnlyItemMargin;
+             }
+             @include oj-rtl() {
+                  margin-right: $navigationListHorizontalIconOnlyItemMargin;
+             }
+          }
+        }
+        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+          html:not([dir="rtl"]) .oj-navigationlist-horizontal.oj-navigationlist-icon-only .oj-navigationlist-item {
+            margin-left: var(--oj-navigation-list-horizontal-item-icon-only-margin); }
+          html[dir="rtl"] .oj-navigationlist-horizontal.oj-navigationlist-icon-only .oj-navigationlist-item {
+            margin-right: var(--oj-navigation-list-horizontal-item-icon-only-margin); }
+        }
+
+        .oj-navigationlist-horizontal.oj-navigationlist-icon-only .oj-navigationlist-item:first-child {
+             @include oj-ltr() {
+                  margin-left:0;
+             }
+             @include oj-rtl() {
+                  margin-right:0;
+             }
+        }
+        @if $navigationListHorizontalIconOnlyStyle == circle {
+            .oj-navigationlist-horizontal.oj-navigationlist-icon-only .oj-navigationlist-item.oj-selected,
+            .oj-navigationlist-horizontal.oj-navigationlist-icon-only .oj-navigationlist-item.oj-hover {
+                background-color: transparent;
+            }
+            .oj-navigationlist-horizontal.oj-navigationlist-icon-only .oj-navigationlist-item.oj-selected .oj-navigationlist-item-icon {
+              @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+                background-color: var(--oj-navigation-list-item-icon-only-bg-color-selected);
+              } @else {
+                background-color: $navigationListItemIconOnlyBgColorSelected;
+              }
+            }
+
+            .oj-navigationlist-horizontal.oj-navigationlist-icon-only .oj-navigationlist-item.oj-hover:not(.oj-selected) .oj-navigationlist-item-icon {
+              @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+                background-color: var(--oj-navigation-list-item-icon-only-bg-color-hover);
+              } @else {
+                background-color: $navigationListItemIconOnlyBgColorHover;
+              }
+                .oj-contrast-marker & {
+                  @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+                    background-color: var(--oj-navigation-list-item-contrast-bg-color-hover);
+                  } @else {
+                    background-color: $navigationListItemContrastBgColorHover;
+                  }
+                }
+            }
+            .oj-navigationlist-horizontal.oj-navigationlist-icon-only .oj-navigationlist-item-icon
+            {
+                border-radius: 50%;
+                padding: 12px;
+            }
+        }
+        @else {
+            .oj-navigationlist-horizontal.oj-navigationlist-icon-only .oj-navigationlist-item {
+              @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+                border-width: var(--oj-navigation-list-horizontal-item-border-width);
+              } @else {
+                border-width: $navigationListHorizontalItemBorderWidth;
+              }
+                border-style: solid;
+            }
+            .oj-navigationlist-page-level.oj-navigationlist-horizontal .oj-navigationlist-item.oj-selected {
+              @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+                background-color: var(--oj-tab-bar-horizontal-item-bg-color-selected);
+              } @else {
+                background-color: $tabBarHorizontalItemBgColorSelected;
+              }
+                .oj-contrast-marker & {
+                  @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+                    background-color: var(--oj-tab-bar-horizontal-item-contrast-bg-color-selected);
+                  } @else {
+                    background-color: $tabBarHorizontalItemContrastBgColorSelected
+                  }
+                }
+            }
+        }
+
+        /*End of  horizontal navigationlist styles icons only*/
+
+        /*Start of  horizontal navigationlist styles excluding icons only*/
+
+        .oj-navigationlist-horizontal:not(.oj-navigationlist-icon-only) .oj-navigationlist-item {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            border-width: var(--oj-navigation-list-horizontal-item-border-width);
+          } @else {
+            border-width: $navigationListHorizontalItemBorderWidth;
+          }
+            border-style: solid;
+        }
+
+        .oj-hicontrast  .oj-navigationlist-horizontal:not(.oj-navigationlist-icon-only) .oj-navigationlist-item{
+            border-style: none;
+        }
+        .oj-hicontrast  .oj-navigationlist-horizontal:not(.oj-navigationlist-icon-only) .oj-navigationlist-item.oj-focus,
+        .oj-hicontrast  .oj-navigationlist-horizontal:not(.oj-navigationlist-icon-only) .oj-navigationlist-item.oj-hover {
+            border-width: 1px;
+            border-style: dotted;
+        }
+        .oj-hicontrast  .oj-navigationlist-horizontal:not(.oj-navigationlist-icon-only) .oj-navigationlist-item.oj-selected,
+        .oj-hicontrast  .oj-navigationlist-horizontal:not(.oj-navigationlist-icon-only) .oj-navigationlist-item.oj-selected.oj-focus,
+        .oj-hicontrast  .oj-navigationlist-horizontal:not(.oj-navigationlist-icon-only) .oj-navigationlist-item.oj-selected.oj-hover {
+            border-width: 1px;
+            border-style: solid;
+        }
+
+        .oj-navigationlist-horizontal:not(.oj-navigationlist-icon-only) .oj-navigationlist-item-content {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            padding: var(--oj-navigation-list-horizontal-item-padding);
+          } @else {
+            padding: $navigationListHorizontalItemPadding;
+          }
+          justify-content: center;
+        }
+
+        .oj-navigationlist-horizontal.oj-navigationlist-stack-icon-label:not(.oj-navigationlist-icon-only) .oj-navigationlist-item-content {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            padding: var(--oj-navigation-list-horizontal-item-stacked-padding);
+          } @else {
+            padding: $navigationListHorizontalStackedItemPadding;
+          }
+        }
+
+            //Add Space between icon and text
+        .oj-navigationlist-horizontal:not(.oj-navigationlist-stack-icon-label):not(.oj-navigationlist-icon-only) .oj-navigationlist-item-icon {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            html:not([dir="rtl"]) & {
+              margin-right: var(--oj-navigation-list-horizontal-icon-to-text-padding); }
+            html[dir="rtl"] & {
+              margin-left: var(--oj-navigation-list-horizontal-icon-to-text-padding); }
+          } @else {
+            @include oj-ltr() {
+                margin-right: $navigationListHorizontalIconToTextPadding;
+            }
+
+            @include oj-rtl() {
+                margin-left: $navigationListHorizontalIconToTextPadding;
+            }
+          }
+          align-self: center;
+        }
+
+        /*End of  horizontal navigationlist styles excluding icons only*/
+
+        /*Start of  horizontal stacked icon label navigationlist styles */
+
+        .oj-navigationlist-horizontal.oj-navigationlist-stack-icon-label .oj-navigationlist-item-element {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            min-height: var(--oj-navigation-list-horizontal-item-stacked-min-height);
+          } @else {
+            min-height: $navigationListHorizontalStackedIconMinHeight;
+          }
+        }
+
+        .oj-navigationlist-page-level.oj-navigationlist-horizontal.oj-navigationlist-stack-icon-label .oj-navigationlist-item-element {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            min-height: var(--oj-tab-bar-horizontal-item-stacked-min-height);
+          } @else {
+            min-height: $tabBarHorizontalItemStackedIconMinHeight;
+          }
+        }
+            //Horizontal divider
+        .oj-navigationlist-horizontal.oj-navigationlist-stack-icon-label:not(.oj-navigationlist-icon-only) .oj-navigationlist-divider {
+             height: 2.714rem;//38px
+        }
+
+        .oj-navigationlist-horizontal.oj-navigationlist-stack-icon-label:not(.oj-navigationlist-icon-only) .oj-navigationlist-item {
+            padding-bottom: 2px;
+        }
+        .oj-navigationlist-horizontal.oj-navigationlist-stack-icon-label:not(.oj-navigationlist-icon-only) .oj-navigationlist-item-content {
+            flex-direction: column;
+        }
+
+        /*End of  horizontal stacked icon label navigationlist styles */
+
+        /* Start of App Level horizontal navlist styles */
+
+        .oj-navigationlist-app-level.oj-navigationlist-horizontal .oj-navigationlist-item-label {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            font-size: var(--oj-navigation-list-horizontal-font-size);
+          } @else {
+            font-size: $navigationListHorizontalFontSize;
+          }
+        }
+        .oj-navigationlist-page-level.oj-navigationlist-horizontal .oj-navigationlist-item-label {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            font-size: var(--oj-tab-bar-horizontal-item-font-size);
+          } @else {
+            font-size: $tabBarHorizontalItemFontSize;
+          }
+        }
+        .oj-navigationlist-app-level.oj-navigationlist-horizontal .oj-navigationlist-item:not(.oj-disabled) a.oj-navigationlist-item-content > .oj-navigationlist-item-label{
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            color: var(--oj-navigation-list-horizontal-item-label-color-default);
+          } @else {
+            color: $navigationListHorizontalItemLabelColorDefault;
+          }
+            .oj-contrast-marker & {
+              @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+                color: var(--oj-navigation-list-item-contrast-label-color-default);
+              } @else {
+                color: $navigationListItemContrastLabelColorDefault;
+              }
+            }
+        }
+        .oj-navigationlist-app-level.oj-navigationlist-horizontal .oj-navigationlist-item:not(.oj-disabled):not(.oj-hover):not(.oj-selected) .oj-navigationlist-item-icon
+        {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            color: var(--oj-navigation-list-horizontal-item-icon-color-default);
+          } @else {
+            color: $navigationListHorizontalItemIconColorDefault;
+          }
+            .oj-contrast-marker & {
+              @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+                color: var(--oj-navigation-list-item-contrast-label-color-default);
+              } @else {
+                color: $navigationListItemContrastLabelColorDefault;
+              }
+            }
+        }
+        .oj-navigationlist-app-level.oj-navigationlist-horizontal .oj-navigationlist-item.oj-selected a.oj-navigationlist-item-content > .oj-navigationlist-item-label {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            color: var(--oj-navigation-list-horizontal-item-label-color-selected);
+          } @else {
+            color: $navigationListHorizontalItemLabelColorSelected;
+          }
+            .oj-contrast-marker & {
+              @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+                color: var(--oj-navigation-list-horizontal-item-contrast-label-color-selected);
+              } @else {
+                color: $navigationListHorizontalItemContrastLabelColorSelected;
+              }
+            }
+        }
+        .oj-navigationlist-app-level.oj-navigationlist-horizontal:not(.oj-navigationlist-icon-only) .oj-navigationlist-item.oj-selected:not(.oj-hover) .oj-navigationlist-item-icon
+        {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            color: var(--oj-navigation-list-horizontal-item-icon-color-selected);
+          } @else {
+            color: $navigationListHorizontalItemIconColorSelected;
+          }
+            .oj-contrast-marker & {
+              @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+                color: var(--oj-navigation-list-horizontal-item-contrast-label-color-selected);
+              } @else {
+                color: $navigationListHorizontalItemContrastLabelColorSelected;
+              }
+            }
+        }
+        .oj-navigationlist-app-level.oj-navigationlist-horizontal .oj-navigationlist-item.oj-hover:not(.oj-selected){
+            background-color: transparent;
+        }
+        .oj-navigationlist-app-level.oj-navigationlist-horizontal .oj-navigationlist-item.oj-hover:not(.oj-selected) a.oj-navigationlist-item-content > .oj-navigationlist-item-label{
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            color: var(--oj-navigation-list-item-icon-color-hover);
+          } @else {
+            color: $navigationListItemIconColorHover;
+          }
+        }
+        .oj-navigationlist-app-level.oj-navigationlist-horizontal .oj-navigationlist-item.oj-hover .oj-navigationlist-item-icon
+        {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            color: var(--oj-navigation-list-item-icon-color-hover);
+          } @else {
+            color: $navigationListItemIconColorHover;
+          }
+        }
+
+        /* End of App Level horizontal navlist styles */
+
+        /* Start of Page Level horizontal navlist styles*/
+        //Add border to horizontal list item
+        .oj-navigationlist-page-level.oj-navigationlist-horizontal:not(.oj-navigationlist-icon-only) .oj-navigationlist-item {
+          border-radius: 0;
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            border-width: var(--oj-tab-bar-horizontal-item-border-width-top) var(--oj-tab-bar-horizontal-item-border-width-right) var(--oj-tab-bar-horizontal-item-border-width-bottom) var(--oj-tab-bar-horizontal-item-border-width-left);
+            border-color: var(--oj-tab-bar-horizontal-item-border-color);
+            html:not([dir="rtl"]) & {
+              border-right-width: var(--oj-tab-bar-horizontal-item-border-width-right);
+              border-left-width: 0; }
+            html[dir="rtl"] & {
+              border-left-width: var(--oj-tab-bar-horizontal-item-border-width-left);
+              border-right-width: 0; }
+          } @else {
+            border-width: $tabBarHorizontalItemBorderWidth;
+            border-color: $tabBarHorizontalItemBorderColor;
+            @include oj-ltr() {
+              border-right-width: oj-shorthand-property-value-left($tabBarHorizontalItemBorderWidth);
+              border-left-width: 0;
+            }
+            @include oj-rtl() {
+              border-left-width: oj-shorthand-property-value-left($tabBarHorizontalItemBorderWidth);
+              border-right-width:0;
+            }
+          }
+        }
+
+
+        .oj-navigationlist-page-level.oj-navigationlist-horizontal:not(.oj-navigationlist-icon-only) .oj-navigationlist-item:first-of-type {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+          } @else {
+            @include oj-ltr() {
+              border-left-width: oj-shorthand-property-value-left($tabBarHorizontalItemBorderWidth);
+              border-top-left-radius: oj-shorthand-property-value-top($tabBarItemBorderRadius);
+              border-bottom-left-radius: oj-shorthand-property-value-left($tabBarItemBorderRadius);
+            }
+            @include oj-rtl() {
+              border-right-width: oj-shorthand-property-value-left($tabBarHorizontalItemBorderWidth);
+              border-top-right-radius: oj-shorthand-property-value-right($tabBarItemBorderRadius);
+              border-bottom-right-radius: oj-shorthand-property-value-bottom($tabBarItemBorderRadius);
+            }
+          }
+        }
+        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+          html:not([dir="rtl"]) .oj-navigationlist-page-level.oj-navigationlist-horizontal:not(.oj-navigationlist-icon-only) .oj-navigationlist-item:first-of-type {
+            border-left-width: var(--oj-tab-bar-horizontal-item-border-width-left);
+            border-top-left-radius: var(--oj-tab-bar-border-radius-top-left);
+            border-bottom-left-radius: var(--oj-tab-bar-border-radius-bottom-left); }
+          html[dir="rtl"] .oj-navigationlist-page-level.oj-navigationlist-horizontal:not(.oj-navigationlist-icon-only) .oj-navigationlist-item:first-of-type {
+            border-right-width: var(--oj-tab-bar-horizontal-item-border-width-right);
+            border-top-right-radius: var(--oj-tab-bar-border-radius-top-right);
+            border-bottom-right-radius: var(--oj-tab-bar-border-radius-bottom-right); }
+        }
+        //Add border to icon only horizontal list item
+        .oj-navigationlist-page-level.oj-navigationlist-horizontal.oj-navigationlist-icon-only .oj-navigationlist-item {
+          border-radius: 0;
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            border-width: var(--oj-tab-bar-horizontal-item-icon-only-border-width-top) var(--oj-tab-bar-horizontal-item-icon-only-border-width-right) var(--oj-tab-bar-horizontal-item-icon-only-border-width-bottom) var(--oj-tab-bar-horizontal-item-icon-only-border-width-left);
+            border-color: var(--oj-tab-bar-horizontal-item-border-color);
+            html:not([dir="rtl"]) & {
+              border-right-width:  var(--oj-tab-bar-horizontal-item-icon-only-border-width-right);
+              border-left-width: 0; }
+            html[dir="rtl"] & {
+              border-left-width: var(--oj-tab-bar-horizontal-item-icon-only-border-width-left);
+              border-right-width: 0; }
+          } @else {
+            border-width: $tabBarHorizontalIconOnlyItemBorderWidth;
+            border-color: $tabBarHorizontalItemBorderColor;
+            @include oj-ltr() {
+              border-right-width: oj-shorthand-property-value-left($tabBarHorizontalIconOnlyItemBorderWidth);
+              border-left-width: 0;
+            }
+            @include oj-rtl() {
+              border-left-width: oj-shorthand-property-value-left($tabBarHorizontalIconOnlyItemBorderWidth);
+              border-right-width:0;
+            }
+          }
+        }
+
+        .oj-navigationlist-page-level.oj-navigationlist-horizontal.oj-navigationlist-icon-only .oj-navigationlist-item:first-of-type {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+          } @else {
+            @include oj-ltr() {
+              border-left-width: oj-shorthand-property-value-left($tabBarHorizontalIconOnlyItemBorderWidth);
+              border-top-left-radius: oj-shorthand-property-value-top($tabBarItemBorderRadius);
+              border-bottom-left-radius: oj-shorthand-property-value-left($tabBarItemBorderRadius);
+            }
+            @include oj-rtl() {
+              border-right-width: oj-shorthand-property-value-left($tabBarHorizontalIconOnlyItemBorderWidth);
+              border-top-right-radius: oj-shorthand-property-value-right($tabBarItemBorderRadius);
+              border-bottom-right-radius: oj-shorthand-property-value-bottom($tabBarItemBorderRadius);
+            }
+          }
+        }
+        @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+          html:not([dir="rtl"]) .oj-navigationlist-page-level.oj-navigationlist-horizontal.oj-navigationlist-icon-only .oj-navigationlist-item:first-of-type {
+            border-left-width: var(--oj-tab-bar-horizontal-item-icon-only-border-width-left);
+            border-top-left-radius: var(--oj-tab-bar-border-radius-top-left);
+            border-bottom-left-radius: var(--oj-tab-bar-border-radius-bottom-left); }
+          html[dir="rtl"] .oj-navigationlist-page-level.oj-navigationlist-horizontal.oj-navigationlist-icon-only .oj-navigationlist-item:first-of-type {
+            border-right-width: var(--oj-tab-bar-horizontal-item-icon-only-border-width-right);
+            border-top-right-radius: var(--oj-tab-bar-border-radius-top-right);
+            border-bottom-right-radius: var(--oj-tab-bar-border-radius-bottom-right); }
+        }
+        .oj-navigationlist-page-level.oj-navigationlist-horizontal.oj-navigationlist-icon-only .oj-navigationlist-item.oj-navigationlist-item-last-child,
+        .oj-navigationlist-page-level.oj-navigationlist-horizontal:not(.oj-navigationlist-icon-only) .oj-navigationlist-item.oj-navigationlist-item-last-child {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            html:not([dir="rtl"]) & {
+              border-top-right-radius: var(--oj-tab-bar-border-radius-top-right);
+              border-bottom-right-radius: var(--oj-tab-bar-border-radius-bottom-right); }
+            html[dir="rtl"] & {
+              border-top-left-radius: var(--oj-tab-bar-border-radius-top-left);
+              border-bottom-left-radius: var(--oj-tab-bar-border-radius-bottom-left); }
+          } @else {
+            @include oj-ltr() {
+              border-top-right-radius: oj-shorthand-property-value-right($tabBarItemBorderRadius);
+              border-bottom-right-radius: oj-shorthand-property-value-bottom($tabBarItemBorderRadius);
+            }
+            @include oj-rtl() {
+              border-top-left-radius: oj-shorthand-property-value-top($tabBarItemBorderRadius);
+              border-bottom-left-radius: oj-shorthand-property-value-left($tabBarItemBorderRadius);
+            }
+          }
+        }
+
+        .oj-navigationlist-page-level.oj-navigationlist-horizontal.oj-navigationlist-icon-only .oj-navigationlist-item.oj-selected,
+        .oj-navigationlist-page-level.oj-navigationlist-horizontal:not(.oj-navigationlist-icon-only) .oj-navigationlist-item.oj-selected {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            border-color:  var(--oj-tab-bar-horizontal-item-border-color-selected);
+          } @else {
+            border-color:  $tabBarHorizontalItemBorderColorSelected;
+          }
+        }
+
+        .oj-navigationlist-page-level.oj-navigationlist-horizontal.oj-navigationlist-icon-only .oj-navigationlist-item.oj-hover:not(.oj-selected),
+        .oj-navigationlist-page-level.oj-navigationlist-horizontal:not(.oj-navigationlist-icon-only) .oj-navigationlist-item.oj-hover:not(.oj-selected) {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            border-color:  var(--oj-tab-bar-horizontal-item-border-color-hover);
+          } @else {
+            border-color:  $tabBarHorizontalItemBorderColorHover;
+          }
+        }
+
+        .oj-navigationlist-page-level.oj-navigationlist-horizontal:not(.oj-navigationlist-icon-only) .oj-navigationlist-item.oj-selected {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            background-color: var(--oj-tab-bar-horizontal-item-bg-color-selected);
+          } @else {
+            background-color: $tabBarHorizontalItemBgColorSelected;
+          }
+            .oj-contrast-marker & {
+              @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+                background-color: var(--oj-tab-bar-horizontal-item-contrast-bg-color-selected);
+              } @else {
+                background-color: $tabBarHorizontalItemContrastBgColorSelected;
+              }
+            }
+        }
+        .oj-navigationlist-page-level.oj-navigationlist-horizontal:not(.oj-navigationlist-icon-only)  .oj-navigationlist-item:not(.oj-disabled) a.oj-navigationlist-item-content  .oj-navigationlist-item-label {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            color: var(--oj-tab-bar-item-label-color-default);
+          } @else {
+            color: $tabBarItemLabelColorDefault;
+          }
+            .oj-contrast-marker & {
+            @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+              color: var(--oj-navigation-list-item-contrast-label-color-default);
+            } @else {
+              color: $navigationListItemContrastLabelColorDefault;
+              }
+            }
+        }
+
+        .oj-navigationlist-page-level.oj-navigationlist-horizontal .oj-navigationlist-item:not(.oj-disabled):not(.oj-hover):not(.oj-selected) .oj-navigationlist-item-icon
+        {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            color: var(--oj-tab-bar-item-icon-color-default);
+          } @else {
+            color: $tabBarItemIconColorDefault;
+          }
+            .oj-contrast-marker & {
+              @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+              color: var(--oj-navigation-list-item-contrast-label-color-default);
+              } @else {
+              color: $navigationListItemContrastLabelColorDefault;
+              }
+            }
+        }
+
+        .oj-navigationlist-page-level.oj-navigationlist-horizontal:not(.oj-navigationlist-icon-only) .oj-navigationlist-item.oj-selected a.oj-navigationlist-item-content .oj-navigationlist-item-label {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            color: var(--oj-tab-bar-horizontal-item-label-color-selected);
+            font-weight: var(--oj-tab-bar-item-font-weight-selected);
+          } @else {
+            color: $tabBarHorizontalItemLabelColorSelected;
+            font-weight: $tabBarItemFontWeightSelected;
+          }
+            .oj-contrast-marker & {
+              @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+                color: var(--oj-tab-bar-horizontal-item-contrast-label-color-selected);
+              } @else {
+                color: $tabBarHorizontalItemContrastLabelColorSelected;
+              }
+            }
+        }
+
+        .oj-navigationlist-page-level.oj-navigationlist-horizontal:not(.oj-navigationlist-icon-only) .oj-navigationlist-item.oj-selected:not(.oj-hover) .oj-navigationlist-item-icon
+        {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            color: var(--oj-tab-bar-horizontal-item-icon-color-selected);
+          } @else {
+            color: $tabBarHorizontalItemIconColorSelected;
+          }
+            .oj-contrast-marker & {
+              @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+                color: var(--oj-tab-bar-horizontal-item-contrast-label-color-selected);
+              } @else {
+                color: $tabBarHorizontalItemContrastLabelColorSelected;
+              }
+            }
+        }
+        .oj-navigationlist-page-level.oj-navigationlist-horizontal .oj-navigationlist-item.oj-hover:not(.oj-selected) a.oj-navigationlist-item-content > .oj-navigationlist-item-label{
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            color: var(--oj-tab-bar-horizontal-item-label-color-hover);
+          } @else {
+            color: $tabBarHorizontalItemLabelColorHover;
+          }
+        }
+        .oj-navigationlist-page-level.oj-navigationlist-horizontal .oj-navigationlist-item.oj-hover .oj-navigationlist-item-icon
+        {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            color: var(--oj-tab-bar-item-icon-color-hover);
+          } @else {
+            color: $tabBarItemIconColorHover;
+          }
+        }
+
+        .oj-navigationlist-page-level.oj-navigationlist-horizontal .oj-navigationlist-item.oj-active.oj-hover:not(.oj-selected),
+        .oj-navigationlist-page-level.oj-navigationlist-horizontal .oj-navigationlist-item.oj-active:not(.oj-selected){
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            background-color: var(--oj-tab-bar-item-bg-color-active);
+            .oj-contrast-marker & {
+                background-color: var(--oj-tab-bar-item-contrast-bg-color-active);
+            }
+          } @else {
+            background-color: $tabBarItemBgColorActive;
+            .oj-contrast-marker & {
+                background-color: $tabBarItemContrastBgColorActive;
+            }
+            
+          }
+        }
+        .oj-navigationlist-page-level.oj-navigationlist-horizontal:not(.oj-navigationlist-icon-only) .oj-navigationlist-item.oj-active.oj-hover:not(.oj-selected),
+        .oj-navigationlist-page-level.oj-navigationlist-horizontal:not(.oj-navigationlist-icon-only) .oj-navigationlist-item.oj-active:not(.oj-selected) {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            border-color: var(--oj-tab-bar-item-border-color-active);
+          } @else {
+            border-color: $tabBarItemBorderColorActive;
+          }
+        }
+        /*End of Page Level horizontal navlist styles*/
+
+        /*Start of sliding navlist*/
+            /*Hide siblings of parent node while showing the list*/
+        // Hide all first level items except the one which is expanded.
+        .oj-navigationlist-slider .oj-navigationlist-element:not(.oj-navigationlist-current) > .oj-navigationlist-item-element:not(.oj-expanded),
+         // Hide all sub lists which are collapsed
+        .oj-navigationlist-slider .oj-navigationlist-item-element:not(.oj-expanded) > .oj-navigationlist-group,
+         // Hide list items which are not parents of current opened list
+        .oj-navigationlist-slider .oj-navigationlist-item-element.oj-expanded:not(.oj-navigationlist-current) > .oj-navigationlist-group > .oj-navigationlist-item-element:not(.oj-expanded),
+         //Hide label when list item is open/expanded
+        .oj-navigationlist-slider .oj-navigationlist-item-element.oj-expanded > .oj-navigationlist-group-item
+        {
+            display:none;
+        }
+
+        /* Navlist header in case of sliding */
+        .oj-navigationlist-toolbar {
+            background-color: transparent;
+            .oj-contrast-marker & {
+                background-color: transparent;
+            }
+            display: flex;
+            line-height: 3.142rem;//44px
+            @include oj-ltr() {
+                padding-left: 0.714rem; //10px;
+            }
+
+            @include oj-rtl() {
+                padding-right: 0.714rem; //10px;
+            }
+        }
+
+        /* previous link */
+        .oj-navigationlist-previous-link {
+            align-self: center;
+            order: 0;
+            display: flex;
+            flex: 1 1 auto;
+            overflow:hidden;
+            text-overflow: ellipsis;
+        }
+
+        .oj-navigationlist-previous-button {
+            align-self: center;
+            margin-bottom: 0;
+        }
+
+        a.oj-navigationlist-previous-link:active{
+            background-color: transparent;
+        }
+
+        /* Override link style */
+        a.oj-navigationlist-previous-link {
+            text-decoration: none;
+            outline: none;
+            font-weight: normal;
+        }
+
+        /* Label for current displayed list */
+        .oj-navigationlist-current-header {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            color: var(--oj-header-text-color);
+            font-size: var(--oj-header-3-font-size);
+          } @else {
+            color: $headerTextColor;
+            font-size: $header3FontSize;
+          }
+            flex: 1 1 auto;
+            order: 1;
+            text-align: center;
+            text-overflow: ellipsis;
+            overflow:hidden;
+            white-space: nowrap;
+            .oj-contrast-marker & {
+              @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+                color: var(--oj-navigation-list-item-contrast-label-color-selected);
+              } @else {
+                color: $navigationListItemContrastLabelColorSelected;
+              }
+            }
+        }
+
+        .oj-navigationlist-toolbar-separator {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            border-left: 1px solid var(--oj-toolbar-border-color);
+          } @else {
+            border-left: 1px solid $toolbarBorderColor;
+          }
+            align-self: center;
+            order: 1;
+            display: inline-block;
+            height: 2.642rem;//37px
+            vertical-align: middle;
+            @include oj-ltr() {
+                margin: 0.214rem 0 0.214rem 0.714rem; // 3px 0 3px 10px
+            }
+            @include oj-rtl() {
+                margin: 0.214rem 0.714rem 0.214rem 0; // 3px 10px 3px 0
+            }
+        }
+
+
+        .oj-navigationlist-hierarchical-button {
+            align-self: center;
+            order: 2;
+            flex: 0 0 auto;
+        }
+
+        /* override oj-button margin for hierarchical menu button*/
+        .oj-button.oj-navigationlist-hierarchical-button {
+            margin: 0 5px; //0 5 0 5
+        }
+
+        //Overriding margin for button icon
+        .oj-navigationlist-hierarchical-button.oj-button-icons-only .oj-hier-icon.oj-button-icon.oj-start {
+
+            // Removing the padding set by menu button.
+            // different padding for both ltr/rtl and so we need to override like this
+            @include oj-ltr() {
+                margin-right: 0.5rem;
+            }
+
+            @include oj-rtl() {
+                margin-left: 0.5rem;
+            }
+        }
+
+        /* Multiple space elements will be added to dom to get tree style in hierarchical menu  popup*/
+        .oj-navigationlist-hvitem-space {
+            margin-left: 1.142rem;//16px
+        }
+
+
+        /* override menu css*/
+
+        .oj-menu-item-icon.oj-navigationlist-level-indicator {
+            align-self: baseline; //level indivator icon alignment
+            padding-bottom: 10px;
+            padding-left: 9px;
+            margin-bottom: 2px;
+            margin-top: 3px;
+            width:auto;
+            height:auto;
+        }
+
+        //Add padding and font size for menu. Here font is fixed irrespective of page font.
+        .oj-navigationlist-hierarchical-menu.oj-menu, .oj-navigationlist-hierarchical-menu .oj-menu {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+
+        //Height is fixed as 12px font need not to change wrt page font
+        .oj-navigationlist-hierarchical-menu .oj-menu-item a {
+            line-height: 12px;
+        }
+
+        .oj-navigationlist-hierarchical-menu .oj-menu-item.oj-focus>a,
+        .oj-navigationlist-hierarchical-menu .oj-menu-item.oj-focus-ancestor>a {
+            background: none;
+        }
+
+        //Add border for focused menu item
+        .oj-navigationlist-hierarchical-menu .oj-menu-item.oj-focus a > .oj-navigationlist-hierarchical-menu-label {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            //todo: tree is deprecated, used tree view vars instead
+            background-color: var(--oj-tree-view-item-bg-color-selected);
+            border : 1px solid var(--oj-tree-view-text-color);
+          } @else {
+            //todo: tree is deprecated, use tree view vars instead
+            background-color: $treeViewItemBgColorSelected;
+            border : 1px solid $treeViewTextColor;
+          }
+            padding: 1px;
+            margin-top: 6px;
+            margin-bottom: 6px;
+        }
+
+        //Add padding/margin on menu label
+        .oj-navigationlist-hierarchical-menu .oj-menu-item a > .oj-navigationlist-hierarchical-menu-label {
+            padding: 2px;
+            margin-top: 6px;
+            margin-bottom: 6px;
+        }
+        
+        .oj-navigationlist-hierarchical-menu .oj-menu-item a {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            color: var(--oj-tree-view-text-color);
+          } @else {
+            //todo: tree is deprecated, use tree view vars instead
+            color : $treeTextColor;            
+          }
+        }
+
+        //Remove padding
+        html:not([dir="rtl"]) .oj-navigationlist-hierarchical-menu .oj-menu-item a,
+        html:not([dir="ltr"]) .oj-navigationlist-hierarchical-menu .oj-menu-item a {
+            padding: 0;
+        }
+
+        //Hide down arrow icon
+        .oj-navigationlist-hierarchical-button .oj-button-menu-dropdown-icon {
+            display: none !important;
+        }
+
+        //Remove margin
+        html:not([dir="ltr"]) .oj-navigationlist-hierarchical-menu .oj-menu-item-icon,
+        html:not([dir="rtl"]) .oj-navigationlist-hierarchical-menu .oj-menu-item-icon {
+            margin-left: 4px;
+            margin-right: 2px;
+        }
+
+        .oj-navigationlist-hierarchical-menu .oj-menu-item-icon {
+            position: static;
+            transform: none;
+        }
+        /* end - override menu css*/
+
+        .oj-navigationlist-expanded.oj-navigationlist-icon-only .oj-navigationlist-item.oj-selected:not(.oj-hover) .oj-navigationlist-item-icon {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            color : var(--oj-navigation-list-icon-only-icon-color-selected);
+          } @else {
+            color: $navigationListIconOnlyIconColorSelected;
+          }
+            .oj-contrast-marker & {
+              @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+                color: var(--oj-navigation-list-item-contrast-label-color-selected);
+              } @else {
+                color: $navigationListItemContrastLabelColorSelected;
+              }
+            }
+        }
+
+        .oj-navigationlist-horizontal.oj-navigationlist-app-level.oj-navigationlist-expanded.oj-navigationlist-icon-only .oj-navigationlist-item.oj-selected:not(.oj-hover) .oj-navigationlist-item-icon {
+            .oj-contrast-marker & {
+              @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+                color: var(--oj-navigation-list-horizontal-item-contrast-label-color-selected);
+              } @else {
+                color: $navigationListHorizontalItemContrastLabelColorSelected;
+              }
+            }
+        }
+        .oj-navigationlist-horizontal.oj-navigationlist-page-level.oj-navigationlist-expanded.oj-navigationlist-icon-only .oj-navigationlist-item.oj-selected:not(.oj-hover) .oj-navigationlist-item-icon {
+            .oj-contrast-marker & {
+              @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+                color: var(--oj-tab-bar-horizontal-item-contrast-label-color-selected);
+              } @else {
+                color: $tabBarHorizontalItemContrastLabelColorSelected;
+              }
+            }
+        }
+
+        .oj-navigationlist-vertical.oj-navigationlist-page-level.oj-navigationlist-expanded.oj-navigationlist-icon-only .oj-navigationlist-item.oj-selected:not(.oj-hover) .oj-navigationlist-item-icon {
+            .oj-contrast-marker & {
+              @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+                color: var(--oj-tab-bar-item-contrast-label-color-selected);
+              } @else {
+                color: $tabBarItemContrastLabelColorSelected;
+              }
+            }
+        }
+
+        .oj-hier-icon {
+            @extend .oj-fwk-icon-folderhierarchy;
+        }
+
+        .oj-navigationlist-has-icons .oj-navigationlist-overflow-item-icon {
+            display: block;
+        }
+
+        .oj-navigationlist-overflow-item-icon {
+           display: none;
+           font-size: 24px;
+        }
+
+        .oj-menu-item-icon.oj-navigationlist-level-indicator {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            border-bottom: 1px solid var(--oj-menu-border-color);
+            html:not([dir="rtl"]) & {
+              border-left: 1px solid var(--oj-menu-border-color); }
+            html[dir="rtl"] & {
+              border-right: 1px solid var(--oj-menu-border-color); }
+          } @else {
+            border-bottom: 1px solid $menuBorderColor;
+            @include oj-ltr() {
+              border-left: 1px solid $menuBorderColor;
+            }
+            //Flip the border for rtl mode
+            @include oj-rtl() {
+              border-right: 1px solid $menuBorderColor;
+            }
+          }
+        }
+
+        .oj-navigationlist-no-data-message {
+          @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+            padding: var(--oj-panel-padding);
+            background-color: var(--oj-collection-cell-bg-color);
+            min-height: var(--oj-font-size);
+          } @else {
+            padding: $panelPadding;
+            background-color: $collectionCellBgColor;
+            min-height: $fontSize;
+          }
+        }
+
+        //todo
+        /* Override  default options*/
+        $navigationListDefaultOptions: ();
+        $navigationListAnimationDefaults: ();
+
+        @if ($navigationListHorizontalAddAnimation) {
+            $navigationListAnimationDefaults: map-merge($navigationListAnimationDefaults, (addHorizontalItem: $navigationListHorizontalAddAnimation));
+        }
+
+        @if ($navigationListHorizontalRemoveAnimation) {
+            $navigationListAnimationDefaults: map-merge($navigationListAnimationDefaults, (removeHorizontalItem: $navigationListHorizontalRemoveAnimation));
+        }
+
+        @if ($navigationListAddAnimation) {
+            $navigationListAnimationDefaults: map-merge($navigationListAnimationDefaults, (add: $navigationListAddAnimation));
+        }
+
+        @if ($navigationListRemoveAnimation) {
+            $navigationListAnimationDefaults: map-merge($navigationListAnimationDefaults, (remove: $navigationListRemoveAnimation));
+        }
+
+        @if ($navigationListUpdateAnimation) {
+            $navigationListAnimationDefaults: map-merge($navigationListAnimationDefaults, (update: $navigationListUpdateAnimation));
+        }
+
+        @if ($navigationListExpandAnimation) {
+            $navigationListAnimationDefaults: map-merge($navigationListAnimationDefaults, (expand: $navigationListExpandAnimation));
+        }
+
+        @if ($navigationListCollapseAnimation) {
+            $navigationListAnimationDefaults: map-merge($navigationListAnimationDefaults, (collapse: $navigationListCollapseAnimation));
+        }
+
+        @if ($navigationListSliderExpandAnimation) {
+            $navigationListAnimationDefaults: map-merge($navigationListAnimationDefaults, (sliderExpand: $navigationListSliderExpandAnimation));
+        }
+
+        @if ($navigationListSliderCollapseAnimation) {
+            $navigationListAnimationDefaults: map-merge($navigationListAnimationDefaults, (sliderCollapse: $navigationListSliderCollapseAnimation));
+        }
+
+        @if ($navigationListPointerUpAnimation) {
+            $navigationListAnimationDefaults: map-merge($navigationListAnimationDefaults, (pointerUp: $navigationListPointerUpAnimation));
+        }
+
+        @if ($navigationListAnimationDefaults) {
+            $navigationListDefaultOptions: map-merge($navigationListDefaultOptions, (animation: $navigationListAnimationDefaults));
+        }
+
+        @if ($navigationListHierarchyMenuThresholdOptionDefault)
+        {
+          $navigationListDefaultOptions: map-merge($navigationListDefaultOptions, (hierarchyMenuDisplayThresholdLevel: $navigationListHierarchyMenuThresholdOptionDefault));
+        }
+
+        .oj-navigationlist-option-defaults {
+           font-family: oj-json-from-map($navigationListDefaultOptions);
+        }
+    }
+}

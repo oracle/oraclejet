@@ -2432,7 +2432,8 @@ DvtLegendRenderer._createMarker = function(legend, cx, cy, symbolWidth, symbolHe
 
   // Find the style values
   var shape = item['markerShape'];
-  var color = item['markerColor'] ? item['markerColor'] : item['color'];
+  var isLineWithMarker = item['symbolType'] && item['symbolType'] == 'lineWithMarker';
+  var color = isLineWithMarker && item['markerColor'] ? item['markerColor'] : item['color'];
   var style = (item['markerStyle'] || item['markerSvgStyle']) ? (item['markerStyle'] || item['markerSvgStyle']) : (item['style'] || item['svgStyle']);
   var className = (item['markerClassName'] || item['markerSvgClassName']) ? (item['markerClassName'] || item['markerSvgClassName']) : (item['className'] || item['svgClassName']);
   var pattern = item['pattern'];

@@ -264,6 +264,7 @@ define(["./defaultCacheHandler", "./logger"], function (cacheHandler, logger) {
       var varyArray = varyValue.split(',');
       for (var index = 0; index < varyArray.length; index++) {
         var varyHeaderName = varyArray[index].toLowerCase();
+        varyHeaderName = varyHeaderName.trim();
         var requestVaryHeaderValue = requestHeaders.get(varyHeaderName);
         var cachedRequestVaryHeaderValue = cacheRequestHeaders[varyHeaderName];
         logger.log("Offline Persistence Toolkit OfflineCache: HTTP Vary header name: " + varyHeaderName);

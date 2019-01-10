@@ -1,0 +1,77 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+@import "../common/oj.common.cssvariables.palette";
+@import "variables/oj.alta.windows.general";
+
+
+@import "variables/oj.alta.windows.accordion";
+@import "variables/oj.alta.windows.avatar";
+@import "variables/oj.alta.windows.button";
+@import "variables/oj.alta.windows.buttonset";
+@import "variables/oj.alta.windows.collapsible";
+@import "variables/oj.alta.windows.conveyorbelt";
+@import "variables/oj.alta.windows.datagrid";
+@import "variables/oj.alta.windows.dialog";
+@import "variables/oj.alta.windows.filepicker";
+@import "variables/oj.alta.windows.filmstrip";
+@import "variables/oj.alta.windows.iconcircle";
+@import "variables/oj.alta.windows.indexer";
+@import "variables/oj.alta.windows.listview";
+@import "variables/oj.alta.windows.masonrylayout";
+@import "variables/oj.alta.windows.menu";
+@import "variables/oj.alta.windows.menuselectmany";
+@import "variables/oj.alta.windows.message";
+@import "variables/oj.alta.windows.messages";
+@import "variables/oj.alta.windows.navigationlist";
+@import "variables/oj.alta.windows.pagingcontrol";
+@import "variables/oj.alta.windows.panel";
+@import "variables/oj.alta.windows.popup";
+@import "variables/oj.alta.windows.progress";
+@import "variables/oj.alta.windows.progresslist";
+@import "variables/oj.alta.windows.refresher";
+@import "variables/oj.alta.windows.rowexpander";
+@import "variables/oj.alta.windows.swipeactions";
+@import "variables/oj.alta.windows.tabbar";
+@import "variables/oj.alta.windows.table";
+@import "variables/oj.alta.windows.toolbar";
+@import "variables/oj.alta.windows.train";
+@import "variables/oj.alta.windows.treeview";
+
+//forms
+@import "variables/oj.alta.windows.formcontrol.label";
+@import "variables/oj.alta.windows.formcontrol.checkboxset";
+@import "variables/oj.alta.windows.formcontrol.colorpalette";
+@import "variables/oj.alta.windows.formcontrol.colorspectrum";
+@import "variables/oj.alta.windows.formcontrol.combobox";
+@import "variables/oj.alta.windows.formcontrol.inputdatetime";
+@import "variables/oj.alta.windows.formcontrol.inputnumber";
+@import "variables/oj.alta.windows.formcontrol.inputtext";
+@import "variables/oj.alta.windows.formcontrol.radioset";
+@import "variables/oj.alta.windows.formcontrol.select";
+@import "variables/oj.alta.windows.formcontrol.slider";
+@import "variables/oj.alta.windows.formcontrol.switch";
+@import "variables/oj.alta.windows.formcontrol.textarea";
+@import "variables/oj.alta.windows.formlayout";
+
+//dvt
+@import "variables/oj.alta.windows.dvt.chart";
+@import "variables/oj.alta.windows.dvt.diagram";
+@import "variables/oj.alta.windows.dvt.gantt";
+@import "variables/oj.alta.windows.dvt.gauge";
+@import "variables/oj.alta.windows.dvt.nbox";
+@import "variables/oj.alta.windows.dvt.pictochart";
+@import "variables/oj.alta.windows.dvt.sunburst";
+@import "variables/oj.alta.windows.dvt.tagcloud";
+@import "variables/oj.alta.windows.dvt.thematicmap";
+@import "variables/oj.alta.windows.dvt.timeaxis";
+@import "variables/oj.alta.windows.dvt.timeline";
+@import "variables/oj.alta.windows.dvt.treemap";
+
+// preview components
+@import "variables/oj.alta.windows.applayout";
+@import "variables/oj.alta.windows.applayout.hybrid";
+@import "variables/oj.alta.windows.applayout.web";
+
+// deprecated components
+@import "variables/oj.deprecated.alta.windows.formcontrol.inputsearch";
+@import "variables/oj.deprecated.alta.windows.tabs";
+@import "variables/oj.deprecated.alta.windows.tree";

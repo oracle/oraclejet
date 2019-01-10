@@ -1,7 +1,7 @@
 {
   "name": "oj-buttonset-one",
-  "version": "6.0.0",
-  "jetVersion": "6.0.0",
+  "version": "6.1.0",
+  "jetVersion": "6.1.0",
   "displayName": "Buttonset One",
   "type": "core",
   "styleClasses": [
@@ -19,7 +19,7 @@
     }
   ],
   "description": "A grouping of related buttons where only one button may be selected.",
-  "help": "https://docs.oracle.com/en/middleware/jet/6/reference-api/oj.ojButtonsetOne.html",
+  "help": "https://docs.oracle.com/en/middleware/jet/6.1/reference-api/oj.ojButtonsetOne.html",
   "properties": {
     "chroming": {
       "description": "Indicates in what states the buttonset has chrome (background and border).",

@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright (c) 2014, 2018, Oracle and/or its affiliates.
+ * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
@@ -138,9 +138,7 @@ var __oj_label_metadata =
    * (oj-radioset, oj-checkboxset, oj-color-palette, and oj-color-spectrum)
    * you associate the oj-label component to its JET form component using
    * the oj-label's <code class="prettyprint">id</code> attribute and the
-   * JET form component's <code class="prettyprint">labelled-by</code> attribute. For more examples,
-   * see the label demos which show all the JET form controls with oj-label or refer to the JET
-   * form component's API jsdoc.
+   * JET form component's <code class="prettyprint">labelled-by</code> attribute.
    * <pre class="prettyprint">
    * <code>
    * &lt;oj-label for="inputtextid" show-required="[[isRequired]]"
@@ -185,8 +183,7 @@ var __oj_label_metadata =
    * JET form component. For most JET form components you do this
    * using the oj-label's <code class="prettyprint">for</code> attribute and
    * the JET form component's <code class="prettyprint">id</code> attribute. For more examples,
-   * see the label demos which show all the JET form controls with oj-label or refer to the JET
-   * form component's API jsdoc.
+   * refer to the JET form component's API jsdoc.
    * </p>
    * {@ojinclude "name":"stylingDoc"}
    * @ojstatus preview
@@ -216,7 +213,7 @@ var __oj_label_metadata =
          * with JET's form element's <code class="prettyprint">labelled-by</code> attribute.
          * </p>
          * <p>
-         * Refer to the JET's form element's documentation/demos for more examples showing the
+         * Refer to the JET's form element's documentation for more examples showing the
          * use of <code class="prettyprint">for</code>/<code class="prettyprint">id</code>
          * and the use of <code class="prettyprint">id</code>/<code class="prettyprint">labelled-by</code>.
          * </p>
@@ -1795,7 +1792,8 @@ var __oj_label_metadata =
        *     </tr>
        *     <tr>
        *       <td>oj-label-inline-top</td>
-       *       <td>place on a label element or oj-label element to inline the label with the
+       *       <td>place on the oj-label element together with oj-label-inline
+       *       to inline the label with the
        *       sibling dom element and have zero margin-top.</td>
        *     </tr>
        *   </tbody>
