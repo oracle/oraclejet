@@ -44,7 +44,13 @@
       width: 100%;
 
     }
-    
+    // .oj-form-control-full-width is an override to set max-width to 100% if on the
+    // element or an ancestor element
+    .oj-form-control-full-width.oj-combobox,
+    .oj-form-control-full-width .oj-combobox {
+      max-width: 100%;
+    }
+   
     /* single-select */
     /* 
      * Applied to the single-select box which includes the input field and the dropdown open icon

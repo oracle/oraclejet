@@ -297,9 +297,51 @@ define(['./logger'], function (logger) {
     return returnValue;
   };
 
+  /**
+   * Helper function that constructs an object out from value
+   * based on fields.
+   * @method
+   * @name assembleObject
+   * @param {object} value The original object to construct the return object
+   *                       from.
+   * @param {Array} fields An array of property names whose values
+   *                       should be included in the final contructed
+   *                       return object.
+   * @returns {object} the object that contains all the properties defined
+   *                   in fields array, the corresponding property
+   *                   value is obtained from value.
+   */
+  function assembleObject (value, fields) {
+    var returnObject;
+    if (!fields) {
+      returnObject = value;
+    } else {
+      returnObject = {};
+      for (var index = 0; index < fields.length; index++) {
+        var currentObject = returnObject;
+        var currentItemDataValue = value;
+        var field = fields[index];
+        var paths = field.split('.');
+        for (var pathIndex = 0; pathIndex < paths.length; pathIndex++) {
+          currentItemDataValue = currentItemDataValue[paths[pathIndex]];
+          if (!currentObject[paths[pathIndex]] && pathIndex < paths.length - 1) {
+            currentObject[paths[pathIndex]] = {};
+          }
+          if (pathIndex === paths.length - 1) {
+            currentObject[paths[pathIndex]] = currentItemDataValue;
+          } else {
+            currentObject = currentObject[paths[pathIndex]];
+          }
+        }
+      }
+    }
+    return returnObject;
+  };
+  
   return {
     satisfy: satisfy,
-    getValue: getValue
+    getValue: getValue,
+    assembleObject: assembleObject
   };
 });
 

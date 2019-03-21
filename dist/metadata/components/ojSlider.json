@@ -1,19 +1,30 @@
 {
   "name": "oj-slider",
-  "version": "6.1.0",
-  "jetVersion": "6.1.0",
+  "version": "6.2.0",
+  "jetVersion": "6.2.0",
   "displayName": "Slider",
   "type": "core",
+  "extension": {
+    "vbdt": {
+      "module": "ojs/ojslider"
+    }
+  },
   "styleClasses": [
     {
       "styleGroup": [
         "oj-focus-highlight"
       ],
       "description": "Under normal circumstances this class is applied automatically. It is documented here for the rare cases that an app developer needs per-instance control.\nThe \"oj-focus-highlight\" class applies focus styling that may not be desirable when the focus results from pointer interaction (touch or mouse), but which is needed for accessibility when the focus occurs by a non-pointer mechanism, for example keyboard or initial page load.\nThe application-level behavior for this component is controlled in the theme by the \"$focusHighlightPolicy\" SASS variable; however, note that this same variable controls the focus highlight policy of many components and patterns. The values for the variable are:\n\"nonPointer\": \"oj-focus-highlight\" is applied only when focus is not the result of pointer interaction. Most themes default to this value.\n\"all\": \"oj-focus-highlight\" is applied regardless of the focus mechanism.\n\"none\": \"oj-focus-highlight\" is never applied. This behavior is not accessible, and is intended for use when the application wishes to use its own event listener to precisely control when the class is applied (see below). The application must ensure the accessibility of the result.\nTo change the behavior on a per-instance basis, the application can set the SASS variable as desired and then use event listeners to toggle this class as needed."
+    },
+    {
+      "styleGroup": [
+        "oj-form-control-full-width"
+      ],
+      "description": "Changes the max-width to 100% so that form components will occupy all the available horizontal space"
     }
   ],
   "description": "Displays an interactive slider element.",
-  "help": "https://docs.oracle.com/en/middleware/jet/6.1/reference-api/oj.ojSlider.html",
+  "help": "https://docs.oracle.com/en/middleware/jet/6.2/reference-api/oj.ojSlider.html",
   "properties": {
     "describedBy": {
       "description": "described the relationship between this component and another element.",

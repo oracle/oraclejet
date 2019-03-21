@@ -285,9 +285,11 @@ define('persist/persistenceUtils',['./impl/logger'], function (logger) {
 
     var contentType = headers.get('Content-Type');
 
+    // the response is considered text type when contentType value is of
+    // pattern text/ or application/*json .
     if (contentType &&
-      (contentType.indexOf('text/') !== -1 ||
-       contentType.indexOf('application/json') !== -1)) {
+        (contentType.match(/.*text\/.*/) ||
+         contentType.match(/.*application\/.*json.*/))) {
       return true;
     }
     return false;
@@ -507,7 +509,7 @@ define('persist/persistenceUtils',['./impl/logger'], function (logger) {
       var formData = new FormData();
       var formPairs = body.formData;
       Object.keys(formPairs).forEach(function (pairkey) {
-        formData.append(pairkey, formPairs[pairkey]);
+        formData.append(pairkey, formPairs[pairkey]); // @XSSFalsePositive
       });
       targetObj.body = formData;
     }
@@ -520,7 +522,7 @@ define('persist/persistenceUtils',['./impl/logger'], function (logger) {
     Object.keys(data.headers).forEach(function (key) {
       if (key !== 'content-type' ||
         (!skipContentType && key === 'content-type')) {
-        headers.append(key, data.headers[key]);
+        headers.append(key, data.headers[key]); // @XSSFalsePositive
       }
     });
 
@@ -584,13 +586,13 @@ define('persist/persistenceUtils',['./impl/logger'], function (logger) {
     logger.log("Offline Persistence Toolkit persistenceUtils: setResponsePayload()");
     return responseToJSON(response).then(function (responseObject) {
       var body = responseObject.body;
-
-      if (body.arrayBuffer) {
-        if (payload instanceof ArrayBuffer) {
-          body.arrayBuffer = payload;
-        } else {
-          throw new Error({message: 'unexpected payload'});
-        }
+      
+      body.arrayBuffer = null;
+      body.blob = null;
+      body.text = null;
+      
+      if (payload instanceof ArrayBuffer) {
+        body.arrayBuffer = payload;
       } else if (payload instanceof Blob) { 
         body.blob = payload;
       } else {
@@ -1251,7 +1253,7 @@ define('persist/impl/PersistenceXMLHttpRequest',['../persistenceUtils', './logge
   function _getRequestHeaders(self) {
     var requestHeaders = new Headers();
     function appendRequestHeader(requestHeader) {
-      requestHeaders.append(requestHeader, self._requestHeaders[requestHeader]);
+      requestHeaders.append(requestHeader, self._requestHeaders[requestHeader]); // @XSSFalsePositive
     }
     Object.keys(self._requestHeaders).forEach(appendRequestHeader);
 
@@ -2088,6 +2090,11 @@ define('persist/impl/defaultCacheHandler',['../persistenceUtils', '../persistenc
       response.headers.get('x-oracle-jscpt-response-url') == null) {
       response.headers.set('x-oracle-jscpt-response-url', request.url);
     }
+    if (bodyAbstract && bodyAbstract.length === 1) {
+      if (bodyAbstract[0].resourceType === 'single') {
+        response.headers.set('x-oracle-jscpt-resource-type', 'single');
+      }
+    }
     var unshredder = this._getUnshredder(request);
     var shredder = this._getShredder(request);
     if (!unshredder || !shredder || !response || !bodyAbstract || !bodyAbstract.length) {
@@ -2687,7 +2694,7 @@ define('persist/impl/PersistenceSyncManager',['require', '../persistenceUtils', 
  * All rights reserved.
  */
 
-define('persist/impl/OfflineCache',["./defaultCacheHandler", "./logger"], function (cacheHandler, logger) {
+define('persist/impl/OfflineCache',["./defaultCacheHandler", "../persistenceStoreManager", "./logger"], function (cacheHandler, persistenceStoreManager, logger) {
   'use strict';
 
   /**
@@ -2707,18 +2714,19 @@ define('persist/impl/OfflineCache',["./defaultCacheHandler", "./logger"], functi
    * {@link https://developer.mozilla.org/en-US/docs/Web/API/Cache|Cache API}.
    * @constructor
    * @param {String} name name of the cache
-   * @param {Object} persistencestore instance for cache storage
+   * @param {String} store name for cache storage
    */
-  function OfflineCache (name, persistencestore) {
+  function OfflineCache (name, storeName) {
     if (!name) {
       throw TypeError("A name must be provided to create an OfflineCache!");
     }
-    if (!persistencestore) {
+    if (!storeName) {
       throw TypeError("A persistence store must be provided to create an OfflineCache!");
     }
 
     this._name = name;
-    this._store = persistencestore;
+    this._storeName = storeName;
+    this._store = null;
   }
 
   /**
@@ -2805,8 +2813,10 @@ define('persist/impl/OfflineCache',["./defaultCacheHandler", "./logger"], functi
 
     var searchCriteria = cacheHandler.constructSearchCriteria(request, options);
     var ignoreVary = (options && options.ignoreVary);
-
-    return self._store.find(searchCriteria).then(function (cacheEntries) {
+    
+    return self._getStore().then(function(store) {
+      return store.find(searchCriteria);
+    }).then(function (cacheEntries) {
       var matchEntry = _applyVaryForSingleMatch(ignoreVary, request, cacheEntries);
       return _cacheEntryToResponse(matchEntry);
     }).then(function (results) {
@@ -2855,7 +2865,9 @@ define('persist/impl/OfflineCache',["./defaultCacheHandler", "./logger"], functi
     var searchCriteria = cacheHandler.constructSearchCriteria(request, options);
     var ignoreVary = (options && options.ignoreVary);
 
-    return  self._store.find(searchCriteria).then(function (cacheEntries) {
+    return self._getStore().then(function(store) {
+      return store.find(searchCriteria);
+    }).then(function (cacheEntries) {
       var responseDataArray = _applyVaryForAllMatches(ignoreVary, request, cacheEntries);
       return _cacheEntriesToResponses(responseDataArray);
     }).then(function (responseArray) {
@@ -2871,6 +2883,21 @@ define('persist/impl/OfflineCache',["./defaultCacheHandler", "./logger"], functi
       }
     });
   };
+  
+  /**
+   * Return the persistent store.
+   * @returns {Object} The persistent store.
+   */
+  OfflineCache.prototype._getStore = function () {
+    var self = this;
+    if (!self._store) {
+      return persistenceStoreManager.openStore(self._storeName).then(function (store) {
+        self._store = store;
+        return self._store;
+      });
+    }
+    return Promise.resolve(self._store);
+  }
 
   /**
    * Perform vary header check and return the first match among all the
@@ -3022,22 +3049,24 @@ define('persist/impl/OfflineCache',["./defaultCacheHandler", "./logger"], functi
     promises.push(cacheHandler.shredResponse(request, response));
 
     return Promise.all(promises).then(function (results) {
-      var requestResponsePair = results[0];
-      var shreddedPayload = results[1];
-      if (!shreddedPayload) {
-        // this is the case where no shredder/unshredder is specified.
-        return self._store.upsert(requestResponsePair.key,
-                                  requestResponsePair.metadata,
-                                  requestResponsePair.value);
-      } else {
-        var storePromises = [];
-        requestResponsePair.value.responseData.bodyAbstract = _buildBodyAbstract(shreddedPayload);
-        storePromises.push(self._store.upsert(requestResponsePair.key,
-                                              requestResponsePair.metadata,
-                                              requestResponsePair.value));
-        storePromises.push(cacheHandler.cacheShreddedData(shreddedPayload));
-        return Promise.all(storePromises);
-      }
+      return self._getStore().then(function(store) {
+        var requestResponsePair = results[0];
+        var shreddedPayload = results[1];
+        if (!shreddedPayload) {
+          // this is the case where no shredder/unshredder is specified.
+          return store.upsert(requestResponsePair.key,
+                                    requestResponsePair.metadata,
+                                    requestResponsePair.value);
+        } else {
+          var storePromises = [];
+          requestResponsePair.value.responseData.bodyAbstract = _buildBodyAbstract(shreddedPayload);
+          storePromises.push(store.upsert(requestResponsePair.key,
+                                                requestResponsePair.metadata,
+                                                requestResponsePair.value));
+          storePromises.push(cacheHandler.cacheShreddedData(shreddedPayload));
+          return Promise.all(storePromises);
+        }
+      });
     });
   };
 
@@ -3091,12 +3120,14 @@ define('persist/impl/OfflineCache',["./defaultCacheHandler", "./logger"], functi
     var self = this;
 
     return self.keys(request, options).then(function (keysArray) {
-      if (keysArray && keysArray.length) {
-        var promisesArray = keysArray.map(self._store.removeByKey, self._store);
-        return Promise.all(promisesArray);
-      } else {
-        return false;
-      }
+      return self._getStore().then(function(store) {
+        if (keysArray && keysArray.length) {
+          var promisesArray = keysArray.map(store.removeByKey, store);
+          return Promise.all(promisesArray);
+        } else {
+          return false;
+        }
+      });
     }).then(function (result) {
       if (result && result.length) {
         return true;
@@ -3139,28 +3170,30 @@ define('persist/impl/OfflineCache',["./defaultCacheHandler", "./logger"], functi
       logger.log("Offline Persistence Toolkit OfflineCache: keys()");
     }
     var self = this;
+    
+    return self._getStore().then(function(store) {
+      if (request) {
+        // need to match with the passed-in request.
+        var searchCriteria = cacheHandler.constructSearchCriteria(request, options);
+        searchCriteria.fields = ['key', 'value'];
 
-    if (request) {
-      // need to match with the passed-in request.
-      var searchCriteria = cacheHandler.constructSearchCriteria(request, options);
-      searchCriteria.fields = ['key', 'value'];
+        var ignoreVary = (options && options.ignoreVary);
 
-      var ignoreVary = (options && options.ignoreVary);
-
-      return self._store.find(searchCriteria).then(function (dataArray) {
-        if (dataArray && dataArray.length) {
-          var filteredEntries = dataArray.filter(_filterByVary(ignoreVary, request, 'value'));
-          var keysArray = filteredEntries.map(function (entry) { return entry.key;});
-          return keysArray;
-        } else {
-          return [];
-        }
-      });
-    } else {
-      // no passed-in request to match, so returns ALL requests objects in
-      // the persistence store.
-      return self._store.keys();
-    }
+        return store.find(searchCriteria).then(function (dataArray) {
+          if (dataArray && dataArray.length) {
+            var filteredEntries = dataArray.filter(_filterByVary(ignoreVary, request, 'value'));
+            var keysArray = filteredEntries.map(function (entry) { return entry.key;});
+            return keysArray;
+          } else {
+            return [];
+          }
+        });
+      } else {
+        // no passed-in request to match, so returns ALL requests objects in
+        // the persistence store.
+        return store.keys();
+      }
+    });
   };
 
   /**
@@ -3197,10 +3230,12 @@ define('persist/impl/OfflineCache',["./defaultCacheHandler", "./logger"], functi
     var self = this;
     var searchCriteria = cacheHandler.constructSearchCriteria(request, options);
     var ignoreVary = (options && options.ignoreVary);
-
-    return self._store.find(searchCriteria).then(function (cacheEntries) {
-      var matchEntry = _applyVaryForSingleMatch(ignoreVary, request, cacheEntries);
-      return matchEntry !== null;
+    
+    return self._getStore().then(function(store) {
+      return store.find(searchCriteria).then(function (cacheEntries) {
+        var matchEntry = _applyVaryForSingleMatch(ignoreVary, request, cacheEntries);
+        return matchEntry !== null;
+      });
     });
   };
 
@@ -3211,8 +3246,8 @@ define('persist/impl/OfflineCache',["./defaultCacheHandler", "./logger"], functi
  * All rights reserved.
  */
 
-define('persist/impl/offlineCacheManager',['../persistenceStoreManager', './OfflineCache', './logger'],
-  function (persistenceStoreManager, OfflineCache, logger) {
+define('persist/impl/offlineCacheManager',['./OfflineCache', './logger'],
+  function (OfflineCache, logger) {
     'use strict';
 
     /**
@@ -3241,24 +3276,19 @@ define('persist/impl/offlineCacheManager',['../persistenceStoreManager', './Offl
      * @memberof! OfflineCacheManager
      * @instance
      * @param {string} cacheName Name of the cache.
-     * @return {Promise} Returns a promise that resolves to the cache that is ready to
+     * @return {OfflineCache} Returns a cache that is ready to
      *                           use for offline support.
      */
     OfflineCacheManager.prototype.open = function (cacheName) {
       logger.log("Offline Persistence Toolkit OfflineCacheManager: open() with name: " + cacheName);
-      var self = this;
 
-      var cache = self._caches[cacheName];
-      if (cache) {
-        return Promise.resolve(cache);
-      } else {
-        return persistenceStoreManager.openStore(self._prefix + cacheName).then(function (store) {
-          cache = new OfflineCache(cacheName, store);
-          self._caches[cacheName] = cache;
-          self._cachesArray.push(cache);
-          return cache;
-        });
+      var cache = this._caches[cacheName];
+      if (!cache) {
+        cache = new OfflineCache(cacheName, this._prefix + cacheName);
+        this._caches[cacheName] = cache;
+        this._cachesArray.push(cache);
       }
+      return cache;
     };
 
     /**
@@ -3482,15 +3512,15 @@ define('persist/impl/offlineCacheManager',['../persistenceStoreManager', './Offl
 
     if (headers instanceof Headers) {
       headers.forEach(function(value, name) {
-        this.append(name, value)
+        this.append(name, value) // @XSSFalsePositive
       }, this)
     } else if (Array.isArray(headers)) {
       headers.forEach(function(header) {
-        this.append(header[0], header[1])
+        this.append(header[0], header[1]) // @XSSFalsePositive
       }, this)
     } else if (headers) {
       Object.getOwnPropertyNames(headers).forEach(function(name) {
-        this.append(name, headers[name])
+        this.append(name, headers[name]) // @XSSFalsePositive
       }, this)
     }
   }
@@ -3754,7 +3784,7 @@ define('persist/impl/offlineCacheManager',['../persistenceStoreManager', './Offl
         var split = bytes.split('=')
         var name = split.shift().replace(/\+/g, ' ')
         var value = split.join('=').replace(/\+/g, ' ')
-        form.append(decodeURIComponent(name), decodeURIComponent(value))
+        form.append(decodeURIComponent(name), decodeURIComponent(value)) // @XSSFalsePositive
       }
     })
     return form
@@ -3770,7 +3800,7 @@ define('persist/impl/offlineCacheManager',['../persistenceStoreManager', './Offl
       var key = parts.shift().trim()
       if (key) {
         var value = parts.join(':').trim()
-        headers.append(key, value)
+        headers.append(key, value) // @XSSFalsePositive
       }
     })
     return headers
@@ -3921,8 +3951,9 @@ define('persist/persistenceManager',['./impl/PersistenceXMLHttpRequest', './impl
     PersistenceManager.prototype.init = function () {
       _replaceBrowserApis(this);
       _addBrowserEventListeners(this);
-
-      return _openOfflineCache(this);
+      _openOfflineCache(this);
+      
+      return Promise.resolve();
     };
 
     /**
@@ -4168,11 +4199,7 @@ define('persist/persistenceManager',['./impl/PersistenceXMLHttpRequest', './impl
 
     function _openOfflineCache(persistenceManager) {
       var self = persistenceManager;
-
-      return offlineCacheManager.open('systemCache').then(function (cache) {
-        self._cache = cache;
-        return Promise.resolve();
-      });
+      self._cache = offlineCacheManager.open('systemCache');
     };
 
     function _replaceBrowserApis(persistenceManager) {

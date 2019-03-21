@@ -1,11 +1,16 @@
 {
   "name": "oj-menu",
-  "version": "6.1.0",
-  "jetVersion": "6.1.0",
+  "version": "6.2.0",
+  "jetVersion": "6.2.0",
   "displayName": "Menu",
   "type": "core",
+  "extension": {
+    "vbdt": {
+      "module": "ojs/ojmenu"
+    }
+  },
   "description": "Displays a popup menu with support for touch, mouse, and keyboard interactions.",
-  "help": "https://docs.oracle.com/en/middleware/jet/6.1/reference-api/oj.ojMenu.html",
+  "help": "https://docs.oracle.com/en/middleware/jet/6.2/reference-api/oj.ojMenu.html",
   "properties": {
     "disabled": {
       "description": "Disables the menu if set to true.",
@@ -308,6 +313,11 @@
       "help": "refresh",
       "return": "void"
     },
+    "close": {
+      "description": "Closes the menu. This method does not accept any arguments.",
+      "help": "close",
+      "return": "void"
+    },
     "open": {
       "description": "Launches this menu after firing the ojBeforeOpen event. Listeners to that event can cancel the launch via event.preventDefault(). If the launch is not canceled, then the the open event is fired after the launch. This method's optional openOptionsparam can be used to specify per-launch values for the settings in the corresponding component options, without altering those options. Those per-launch values can be further customized by a ojBeforeOpen listener. Menus launched manually (as opposed to those launched by built-in functionality such as the [menu button]ojButton#menu and [context menu]baseComponent#contextMenu functionality) must be launched via this API, not by simply unhiding the Menu DOM (such as via jQuery's show() API.",
       "help": "open",
@@ -315,7 +325,7 @@
         {
           "name": "event",
           "description": "What triggered the menu launch. May be null. May be omitted if subsequent params are omitted.",
-          "type": "object"
+          "type": "Event"
         },
         {
           "name": "openOptions",

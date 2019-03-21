@@ -413,6 +413,7 @@ oj.__registerWidget('oj.ojLegend', $.oj.dvtBaseComponent,
      * @instance
      * @type {string}
      * @default ""
+     * @ojdeprecated {since: '6.2.0', description: 'Set the alias directly on the template element using the data-oj-as attribute instead.'}
      */
       as: '',
 
@@ -1127,7 +1128,9 @@ oj.__registerWidget('oj.ojLegend', $.oj.dvtBaseComponent,
 
     //* * @inheritdoc */
     _GetComponentNoClonePaths: function () {
-      return { sections: { items: true }, data: true };
+      var noClonePaths = this._super();
+      noClonePaths.sections = { items: true };
+      return noClonePaths;
     }
   });
 

@@ -1,11 +1,16 @@
 {
   "name": "oj-picto-chart-item",
-  "version": "6.1.0",
-  "jetVersion": "6.1.0",
+  "version": "6.2.0",
+  "jetVersion": "6.2.0",
   "displayName": "Picto Chart Item",
   "type": "core",
+  "extension": {
+    "vbdt": {
+      "module": "ojs/ojpictochart"
+    }
+  },
   "description": "ojPictoChartItem",
-  "help": "https://docs.oracle.com/en/middleware/jet/6.1/reference-api/oj.ojPictoChartItem.html",
+  "help": "https://docs.oracle.com/en/middleware/jet/6.2/reference-api/oj.ojPictoChartItem.html",
   "properties": {
     "borderColor": {
       "description": "The border color of the item. Does not apply if custom image is specified.",

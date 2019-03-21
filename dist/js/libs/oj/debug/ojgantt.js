@@ -1113,6 +1113,7 @@ oj.__registerWidget('oj.ojGantt', $.oj.dvtTimeComponent,
        * @instance
        * @type {string}
        * @default ""
+       * @ojdeprecated {since: '6.2.0', description: 'Set the alias directly on the template element using the data-oj-as attribute instead.'}
        *
        * @example <caption>Initialize the Gantt with the <code class="prettyprint">as</code> attribute specified:</caption>
        * &lt;oj-gantt as="item">

@@ -654,6 +654,29 @@ var __oj_message_metadata =
  *
  */
 
+// Slots
+// //////
+
+  /**
+   * <p>The <code class="prettyprint">detail</code> slot is for the message's detail area.
+   * The <code class="prettyprint">&lt;oj-message></code> element accepts DOM nodes as children
+   * with the detail slot. This slot is useful to add links or buttons to the detail area. The
+   * default template will just display the text value of 'message.detail' property for any message.
+   *
+   * @ojstatus preview
+   * @ojslot detail
+   * @ojmaxitems 1
+   * @memberof oj.ojMessage
+   * @since 6.2.0
+   *
+   * @example <caption>Initialize the message with detail content:</caption>
+   * &lt;oj-message>
+   *   &lt;div slot="detail">Message detail.
+   *     &lt;a href="#">Click here for more info...&lt;/a>
+   *   &lt;/div>
+   * &lt;/oj-message>
+   */
+
 // Events
 // ///////
 
@@ -862,12 +885,11 @@ var _MESSAGE_VIEW =
   '    <div class="oj-message-leading-header" :title="[[computedCategory]]">' +
   '      <oj-bind-if test="[[computedIconStyle]]">' +
   '        <div class="oj-component-icon oj-message-status-icon oj-message-custom-icon" role="img" ' +
-  '         :style.background="[[computedIconStyle]]">' +
+  '         :title="[[computedCategory]]" :style.background="[[computedIconStyle]]">' +
   '        </div>' +
   '      </oj-bind-if>' +
   '      <oj-bind-if test="[[computedIconClass]]">' +
-  '        <div role="img" ' +
-  '          :class="[[computedIconClass]]"> ' +
+  '        <div role="img" :title="[[computedCategory]]" :class="[[computedIconClass]]"> ' +
   '        </div>' +
   '      </oj-bind-if>' +
   '      <oj-bind-if test="[[computedCategory]]">' +
@@ -908,7 +930,9 @@ var _MESSAGE_VIEW =
   '      </div>' +
   '    </oj-bind-if>' +
   '    <div class="oj-message-detail">' +
-  '      <oj-bind-text value="[[computedDetail]]"></oj-bind-text>' +
+  '      <oj-bind-slot name="detail">' +
+  '        <oj-bind-text value="[[computedDetail]]"></oj-bind-text>' +
+  '      </oj-bind-slot>' +
   '    </div>' +
   '  <div>' +
   '</div>';

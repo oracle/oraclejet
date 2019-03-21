@@ -710,13 +710,15 @@ var __oj_menu_button_metadata =
         // If app set the option, then that wins over the DOM, in which case _ComponentCreate() will later set that value on the DOM.
         // Else DOM wins, in which case we set the option from the DOM here, with any remaining tasks done later in _ComponentCreate().
 
-        if (!('disabled' in constructorOptions)) { // if app didn't set option, then set the option from the DOM
-          // For anchors, this line always sets disabled option to false.  (Neither JQUI nor JET look for the .oj-disabled class for anchors,
-          // so the only way to disable an anchor button at create time is via the API.  At refresh time, JQUI did look
-          // for the .oj-disabled class, but our refresh doesn't handle disabled.)
-          this.option('disabled',
-                      !!this.element[0].disabled,
-                      { _context: { internalSet: true } }); // writeback not needed since "not in constructorOptions" means "not bound"
+        if (!this._IsCustomElement()) {
+          if (!('disabled' in constructorOptions)) { // if app didn't set option, then set the option from the DOM
+            // For anchors, this line always sets disabled option to false.  (Neither JQUI nor JET look for the .oj-disabled class for anchors,
+            // so the only way to disable an anchor button at create time is via the API.  At refresh time, JQUI did look
+            // for the .oj-disabled class, but our refresh doesn't handle disabled.)
+            this.option('disabled',
+                        !!this.element[0].disabled,
+                        { _context: { internalSet: true } }); // writeback not needed since "not in constructorOptions" means "not bound"
+          }
         }
 
         if (!('label' in constructorOptions)) { // if app didn't set option, then set the option from the DOM
@@ -726,8 +728,8 @@ var __oj_menu_button_metadata =
                         { _context: { internalSet: true } }); // writeback not needed since "not in constructorOptions" means "not bound"
         }
 
-        // if this is a menuButton and app didn't set icons.end to its own icon or to null to suppress the icon, then default to built-in menuButton dropdown icon
         if (!this._IsCustomElement()) {
+          // if this is a menuButton and app didn't set icons.end to its own icon or to null to suppress the icon, then default to built-in menuButton dropdown icon
           if (this.options.menu
               && (!constructorOptions.icons || constructorOptions.icons.end === undefined)) {
             this.option('icons.end',
@@ -1242,7 +1244,7 @@ var __oj_menu_button_metadata =
                 if (slots.endIcon === undefined) {
                   var dropDownElem = document.createElement('span');
                   dropDownElem.className = 'oj-button-icon oj-end oj-component-icon oj-button-menu-dropdown-icon';
-                  dropDownElem.slot = 'endIcon';
+                  dropDownElem.setAttribute('slot', 'endIcon');
                   elem.insertBefore(dropDownElem, node);  // @HTMLUpdateOK
                 }
               }
@@ -1492,6 +1494,15 @@ var __oj_menu_button_metadata =
 
                 // must call this *after* _super(), as discussed in callee
             this._updateEffectivelyDisabled();
+            // If this button is inside a toolbar, the toolbar needs to be refreshed for new disabled setting
+            var $toolbarElem = this._getEnclosingContainerElement('toolbar');
+            if ($toolbarElem.length) {
+              if (this._IsCustomElement()) {
+                $toolbarElem[0].refresh();
+              } else {
+                $toolbarElem.ojToolbar('refresh');
+              }
+            }
             break;
           case 'label':
             this._setLabelOption();
@@ -2854,7 +2865,7 @@ var __oj_menu_button_metadata =
          * @instance
          * @type {string}
          * @ojvalue {string} "full" In typical themes, full-chrome buttons always have chrome.
-         * @ojvalue {string} "half" In typical themes, half-chrome buttons acquire chrome only in their hover, active, and selected states. Half-chroming is recommended for buttons in a toolbar.
+         * @ojvalue {string} "half" In typical themes, half-chrome buttons acquire chrome only in their hover, active, and selected states. A buttonset with half-chroming will be styled to have normal button spacing. Half-chroming is recommended for buttons in a toolbar.
          *     (This is the toolbar default in most themes.)
          * @ojvalue {string} "outlined" In typical themes, outlined buttons are similar to half-chrome buttons, but have a border in the default state.
          * @ojshortdesc Indicates in what states the buttonset has chrome (background and border).
@@ -2880,7 +2891,7 @@ var __oj_menu_button_metadata =
          * @instance
          * @type {string}
          * @ojvalue {string} "full" In typical themes, full-chrome buttons always have chrome.
-         * @ojvalue {string} "half" In typical themes, half-chrome buttons acquire chrome only in their hover, active, and selected states. Half-chroming is recommended for buttons in a toolbar.
+         * @ojvalue {string} "half" In typical themes, half-chrome buttons acquire chrome only in their hover, active, and selected states. A buttonset with half-chroming will be styled to have normal button spacing. Half-chroming is recommended for buttons in a toolbar.
          *     (This is the toolbar default in most themes.)
          * @ojvalue {string} "outlined" In typical themes, outlined buttons are similar to half-chrome buttons, but have a border in the default state.
          * @ojshortdesc Indicates in what states the buttonset has chrome (background and border).

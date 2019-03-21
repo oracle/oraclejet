@@ -1,4 +1,6 @@
+/// <reference types="signals" />
 /// <reference types="knockout" />
+/// <reference types='signals'/>
 /// <reference types='knockout'/>
 declare class Router {
     readonly currentState: (() => RouterState | undefined);
@@ -19,7 +21,7 @@ declare class Router {
             };
         };
         lifecycleListener: {
-            attached: ((param0: string) => void);
+            attached: ((param0: any) => void);
         };
     };
     readonly name: string;
@@ -28,13 +30,13 @@ declare class Router {
     static readonly rootInstance: Router;
     readonly stateId: ((param0?: string) => string);
     readonly states: RouterState[] | null;
-    static readonly transitionedToState: object;
+    static readonly transitionedToState: signals.Signal;
     static sync(): Promise<{
         hasChanged: boolean;
     }>;
     configure(option: {
         [key: string]: RouterState.ConfigOptions;
-    } | ((id: string) => RouterState | undefined | null)): any;
+    } | ((id: string) => RouterState | undefined | null)): Router;
     createChildRouter(name: string, parentStateId?: string): Router;
     dispose(): undefined;
     getChildRouter(name: string): Router | undefined;
@@ -45,8 +47,12 @@ declare class Router {
     }): Promise<{
         hasChanged: boolean;
     }>;
-    retrieve(): any;
-    store(data: object): undefined;
+    retrieve(): {
+        [key: string]: any;
+    };
+    store(data: {
+        [key: string]: any;
+    }): undefined;
 }
 declare namespace Router {
     // tslint:disable-next-line interface-over-type-literal
@@ -56,11 +62,13 @@ declare namespace Router {
             ojRouter: {
                 parentRouter: Router;
                 direction: string;
-                parameters: object;
+                parameters: {
+                    [key: string]: any;
+                };
             };
         };
         lifecycleListener: {
-            attached: ((param0: object) => void);
+            attached: ((param0: any) => void);
         };
     };
     // tslint:disable-next-line no-unnecessary-class
@@ -78,9 +86,11 @@ declare namespace Router {
         exit: (() => void) | (() => Promise<void>);
         readonly id: string;
         label: string | undefined;
-        parameters: object;
+        parameters: {
+            [key: string]: any;
+        };
         title: string | (() => string | undefined);
-        value: any;
+        value: string;
         // constructor(id: string, options?: RouterState.ConfigOptions, router?: Router);
         go(): Promise<{
             hasChanged: boolean;
@@ -108,9 +118,11 @@ declare class RouterState {
     exit: (() => void) | (() => Promise<void>);
     readonly id: string;
     label: string | undefined;
-    parameters: object;
+    parameters: {
+        [key: string]: any;
+    };
     title: string | (() => string | undefined);
-    value: any;
+    value: string;
     constructor(id: string, options?: RouterState.ConfigOptions, router?: Router);
     go(): Promise<{
         hasChanged: boolean;

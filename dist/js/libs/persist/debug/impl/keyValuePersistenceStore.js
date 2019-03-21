@@ -197,24 +197,7 @@ define(["../PersistenceStore", "./storageUtils", "./logger"],
       if (!fieldsExpression) {
         returnObject = itemData.value;
       } else {
-        returnObject = {};
-        for (var index = 0; index < fieldsExpression.length; index++) {
-          var currentObject = returnObject;
-          var currentItemDataValue = itemData;
-          var field = fieldsExpression[index];
-          var paths = field.split('.');
-          for (var pathIndex = 0; pathIndex < paths.length; pathIndex++) {
-            currentItemDataValue = currentItemDataValue[paths[pathIndex]];
-            if (!currentObject[paths[pathIndex]] && pathIndex < paths.length - 1) {
-              currentObject[paths[pathIndex]] = {};
-            }
-            if (pathIndex === paths.length - 1) {
-              currentObject[paths[pathIndex]] = currentItemDataValue;
-            } else {
-              currentObject = currentObject[paths[pathIndex]];
-            }
-          }
-        }
+        returnObject = storageUtils.assembleObject(itemData, fieldsExpression);
       }
       return returnObject;
     };

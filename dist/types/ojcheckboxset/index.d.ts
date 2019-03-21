@@ -7,9 +7,11 @@ export interface ojCheckboxset<K, D> extends editableValue<any[], ojCheckboxsetS
     optionRenderer?: ((param0: ojCheckboxset.OptionContext<D>) => Element) | null;
     options: DataProvider<K, D> | null;
     optionsKeys?: ojCheckboxset.OptionsKeys;
+    readOnly: boolean | null;
     required: boolean;
     value: any[];
     translations: {
+        readonlyNoValue?: string;
         required?: {
             hint?: string;
             messageDetail?: string;
@@ -21,6 +23,7 @@ export interface ojCheckboxset<K, D> extends editableValue<any[], ojCheckboxsetS
     onOptionRendererChanged: ((event: JetElementCustomEvent<ojCheckboxset<K, D>["optionRenderer"]>) => any) | null;
     onOptionsChanged: ((event: JetElementCustomEvent<ojCheckboxset<K, D>["options"]>) => any) | null;
     onOptionsKeysChanged: ((event: JetElementCustomEvent<ojCheckboxset<K, D>["optionsKeys"]>) => any) | null;
+    onReadOnlyChanged: ((event: JetElementCustomEvent<ojCheckboxset<K, D>["readOnly"]>) => any) | null;
     onRequiredChanged: ((event: JetElementCustomEvent<ojCheckboxset<K, D>["required"]>) => any) | null;
     onValueChanged: ((event: JetElementCustomEvent<ojCheckboxset<K, D>["value"]>) => any) | null;
     onOjAnimateEnd: ((event: ojCheckboxset.ojAnimateEnd) => any) | null;
@@ -75,6 +78,7 @@ export interface ojCheckboxsetEventMap<K, D> extends editableValueEventMap<any[]
     'optionRendererChanged': JetElementCustomEvent<ojCheckboxset<K, D>["optionRenderer"]>;
     'optionsChanged': JetElementCustomEvent<ojCheckboxset<K, D>["options"]>;
     'optionsKeysChanged': JetElementCustomEvent<ojCheckboxset<K, D>["optionsKeys"]>;
+    'readOnlyChanged': JetElementCustomEvent<ojCheckboxset<K, D>["readOnly"]>;
     'requiredChanged': JetElementCustomEvent<ojCheckboxset<K, D>["required"]>;
     'valueChanged': JetElementCustomEvent<ojCheckboxset<K, D>["value"]>;
 }
@@ -84,9 +88,11 @@ export interface ojCheckboxsetSettableProperties<K, D> extends editableValueSett
     optionRenderer?: ((param0: ojCheckboxset.OptionContext<D>) => Element) | null;
     options: DataProvider<K, D> | null;
     optionsKeys?: ojCheckboxset.OptionsKeys;
+    readOnly: boolean | null;
     required: boolean;
     value: any[];
     translations: {
+        readonlyNoValue?: string;
         required?: {
             hint?: string;
             messageDetail?: string;

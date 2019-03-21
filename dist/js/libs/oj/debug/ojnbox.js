@@ -833,6 +833,7 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
       * @instance
       * @type {string}
       * @default ''
+      * @ojdeprecated {since: '6.2.0', description: 'Set the alias directly on the template element using the data-oj-as attribute instead.'}
       **/
       as: '',
 
@@ -2724,7 +2725,7 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
  *
  * <pre class="prettyprint">
  * <code>
- * &lt;oj-n-box data='[[dataProvider]]' as='node'>
+ * &lt;oj-n-box data='[[dataProvider]]'>
  *  &lt;template slot='nodeTemplate'>
  *    &lt;oj-n-box-node row='[[$current.data.potential]]'
  *      column='[[$current.data.performance]]'
@@ -2748,8 +2749,8 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
  *
  * @example <caption>Initialize NBox node with the
  * <code class="prettyprint">borderColor</code> attribute specified:</caption>
- * &lt;oj-n-box data='[[dataProvider]]' as='node'>
- *  &lt;template slot='nodeTemplate'>
+ * &lt;oj-n-box data='[[dataProvider]]'>
+ *  &lt;template slot='nodeTemplate' data-oj-as='node'>
  *    &lt;oj-n-box-node border-color='[[node.data.borderColor]]'>&lt;/oj-n-box-node>
  *  &lt;/template>
  * &lt;/oj-n-box>
@@ -2765,8 +2766,8 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
  *
  * @example <caption>Initialize NBox node with the
  * <code class="prettyprint">borderWidth</code> attribute specified:</caption>
- * &lt;oj-n-box data='[[dataProvider]]' as='node'>
- *  &lt;template slot='nodeTemplate'>
+ * &lt;oj-n-box data='[[dataProvider]]'>
+ *  &lt;template slot='nodeTemplate' data-oj-as='node'>
  *    &lt;oj-n-box-node border-width='[[node.data.borderWidth]]'>&lt;/oj-n-box-node>
  *  &lt;/template>
  * &lt;/oj-n-box>
@@ -2783,8 +2784,8 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
  *
  * @example <caption>Initialize NBox node with the
  * <code class="prettyprint">categories</code> attribute specified:</caption>
- * &lt;oj-n-box data='[[dataProvider]]' as='node'>
- *  &lt;template slot='nodeTemplate'>
+ * &lt;oj-n-box data='[[dataProvider]]'>
+ *  &lt;template slot='nodeTemplate' data-oj-as='node'>
  *    &lt;oj-n-box-node categories='[[node.data.categories]]'>&lt;/oj-n-box-node>
  *  &lt;/template>
  * &lt;/oj-n-box>
@@ -2800,8 +2801,8 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
  *
  * @example <caption>Initialize NBox node with the
  * <code class="prettyprint">color</code> attribute specified:</caption>
- * &lt;oj-n-box data='[[dataProvider]]' as='node'>
- *  &lt;template slot='nodeTemplate'>
+ * &lt;oj-n-box data='[[dataProvider]]'>
+ *  &lt;template slot='nodeTemplate' data-oj-as='node'>
  *    &lt;oj-n-box-node color='[[node.data.color]]'>&lt;/oj-n-box-node>
  *  &lt;/template>
  * &lt;/oj-n-box>
@@ -2817,8 +2818,8 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
  *
  * @example <caption>Initialize NBox node with the
  * <code class="prettyprint">column</code> attribute specified:</caption>
- * &lt;oj-n-box data='[[dataProvider]]' as='node'>
- *  &lt;template slot='nodeTemplate'>
+ * &lt;oj-n-box data='[[dataProvider]]'>
+ *  &lt;template slot='nodeTemplate' data-oj-as='node'>
  *    &lt;oj-n-box-node column='[[node.data.column]]'>&lt;/oj-n-box-node>
  *  &lt;/template>
  * &lt;/oj-n-box>
@@ -2834,8 +2835,8 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
  *
  * @example <caption>Initialize NBox node with the
  * <code class="prettyprint">groupCategory</code> attribute specified:</caption>
- * &lt;oj-n-box data='[[dataProvider]]' as='node'>
- *  &lt;template slot='nodeTemplate'>
+ * &lt;oj-n-box data='[[dataProvider]]'>
+ *  &lt;template slot='nodeTemplate' data-oj-as='node'>
  *    &lt;oj-n-box-node group-category='[[node.data.groupCategory]]'>&lt;/oj-n-box-node>
  *  &lt;/template>
  * &lt;/oj-n-box>
@@ -2851,8 +2852,8 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
  *
  * @example <caption>Initialize NBox node with the
  * <code class="prettyprint">icon</code> attribute specified:</caption>
- * &lt;oj-n-box data='[[dataProvider]]' as='node'>
- *  &lt;template slot='nodeTemplate'>
+ * &lt;oj-n-box data='[[dataProvider]]'>
+ *  &lt;template slot='nodeTemplate' data-oj-as='node'>
  *    &lt;oj-n-box-node icon='[[node.data.icon]]'>&lt;/oj-n-box-node>
  *  &lt;/template>
  * &lt;/oj-n-box>
@@ -2867,8 +2868,8 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
  *
  * @example <caption>Initialize NBox node with the
  * <code class="prettyprint">icon.borderColor</code> attribute specified:</caption>
- * &lt;oj-n-box data='[[dataProvider]]' as='node'>
- *  &lt;template slot='nodeTemplate'>
+ * &lt;oj-n-box data='[[dataProvider]]'>
+ *  &lt;template slot='nodeTemplate' data-oj-as='node'>
  *    &lt;oj-n-box-node icon.border-color='[[node.data.icon.borderColor]]'>&lt;/oj-n-box-node>
  *  &lt;/template>
  * &lt;/oj-n-box>
@@ -2883,8 +2884,8 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
  *
  * @example <caption>Initialize NBox node with the
  * <code class="prettyprint">icon.borderRadius</code> attribute specified:</caption>
- * &lt;oj-n-box data='[[dataProvider]]' as='node'>
- *  &lt;template slot='nodeTemplate'>
+ * &lt;oj-n-box data='[[dataProvider]]'>
+ *  &lt;template slot='nodeTemplate' data-oj-as='node'>
  *    &lt;oj-n-box-node icon.border-radius='[[node.data.icon.borderRadius]]'>&lt;/oj-n-box-node>
  *  &lt;/template>
  * &lt;/oj-n-box>
@@ -2899,8 +2900,8 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
  *
  * @example <caption>Initialize NBox node with the
  * <code class="prettyprint">icon.borderWidth</code> attribute specified:</caption>
- * &lt;oj-n-box data='[[dataProvider]]' as='node'>
- *  &lt;template slot='nodeTemplate'>
+ * &lt;oj-n-box data='[[dataProvider]]'>
+ *  &lt;template slot='nodeTemplate' data-oj-as='node'>
  *    &lt;oj-n-box-node icon.border-width='[[node.data.icon.borderWidth]]'>&lt;/oj-n-box-node>
  *  &lt;/template>
  * &lt;/oj-n-box>
@@ -2915,8 +2916,8 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
  *
  * @example <caption>Initialize NBox node with the
  * <code class="prettyprint">icon.color</code> attribute specified:</caption>
- * &lt;oj-n-box data='[[dataProvider]]' as='node'>
- *  &lt;template slot='nodeTemplate'>
+ * &lt;oj-n-box data='[[dataProvider]]'>
+ *  &lt;template slot='nodeTemplate' data-oj-as='node'>
  *    &lt;oj-n-box-node icon.color='[[node.data.icon.color]]'>&lt;/oj-n-box-node>
  *  &lt;/template>
  * &lt;/oj-n-box>
@@ -2931,8 +2932,8 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
  *
  * @example <caption>Initialize NBox node with the
  * <code class="prettyprint">icon.height</code> attribute specified:</caption>
- * &lt;oj-n-box data='[[dataProvider]]' as='node'>
- *  &lt;template slot='nodeTemplate'>
+ * &lt;oj-n-box data='[[dataProvider]]'>
+ *  &lt;template slot='nodeTemplate' data-oj-as='node'>
  *    &lt;oj-n-box-node icon.height='[[node.data.icon.height]]'>&lt;/oj-n-box-node>
  *  &lt;/template>
  * &lt;/oj-n-box>
@@ -2947,8 +2948,8 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
  *
  * @example <caption>Initialize NBox node with the
  * <code class="prettyprint">icon.opacity</code> attribute specified:</caption>
- * &lt;oj-n-box data='[[dataProvider]]' as='node'>
- *  &lt;template slot='nodeTemplate'>
+ * &lt;oj-n-box data='[[dataProvider]]'>
+ *  &lt;template slot='nodeTemplate' data-oj-as='node'>
  *    &lt;oj-n-box-node icon.opacity='[[node.data.icon.opacity]]'>&lt;/oj-n-box-node>
  *  &lt;/template>
  * &lt;/oj-n-box>
@@ -2977,8 +2978,8 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
  *
  * @example <caption>Initialize NBox node with the
  * <code class="prettyprint">icon.pattern</code> attribute specified:</caption>
- * &lt;oj-n-box data='[[dataProvider]]' as='node'>
- *  &lt;template slot='nodeTemplate'>
+ * &lt;oj-n-box data='[[dataProvider]]'>
+ *  &lt;template slot='nodeTemplate' data-oj-as='node'>
  *    &lt;oj-n-box-node icon.pattern='[[node.data.icon.pattern]]'>&lt;/oj-n-box-node>
  *  &lt;/template>
  * &lt;/oj-n-box>
@@ -2993,8 +2994,8 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
  *
  * @example <caption>Initialize NBox node with the
  * <code class="prettyprint">icon.shape</code> attribute specified:</caption>
- * &lt;oj-n-box data='[[dataProvider]]' as='node'>
- *  &lt;template slot='nodeTemplate'>
+ * &lt;oj-n-box data='[[dataProvider]]'>
+ *  &lt;template slot='nodeTemplate' data-oj-as='node'>
  *    &lt;oj-n-box-node icon.shape='[[node.data.icon.shape]]'>&lt;/oj-n-box-node>
  *  &lt;/template>
  * &lt;/oj-n-box>
@@ -3009,8 +3010,8 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
  *
  * @example <caption>Initialize NBox node with the
  * <code class="prettyprint">icon.source</code> attribute specified:</caption>
- * &lt;oj-n-box data='[[dataProvider]]' as='node'>
- *  &lt;template slot='nodeTemplate'>
+ * &lt;oj-n-box data='[[dataProvider]]'>
+ *  &lt;template slot='nodeTemplate' data-oj-as='node'>
  *    &lt;oj-n-box-node icon.source='[[node.data.icon.source]]'>&lt;/oj-n-box-node>
  *  &lt;/template>
  * &lt;/oj-n-box>
@@ -3026,8 +3027,8 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
  *
  * @example <caption>Initialize NBox node with the
  * <code class="prettyprint">icon.svgClassName</code> attribute specified:</caption>
- * &lt;oj-n-box data='[[dataProvider]]' as='node'>
- *  &lt;template slot='nodeTemplate'>
+ * &lt;oj-n-box data='[[dataProvider]]'>
+ *  &lt;template slot='nodeTemplate' data-oj-as='node'>
  *    &lt;oj-n-box-node icon.svg-class-name='[[node.data.icon.svgClassName]]'>&lt;/oj-n-box-node>
  *  &lt;/template>
  * &lt;/oj-n-box>
@@ -3042,8 +3043,8 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
  *
  * @example <caption>Initialize NBox node with the
  * <code class="prettyprint">icon.svgStyle</code> attribute specified:</caption>
- * &lt;oj-n-box data='[[dataProvider]]' as='node'>
- *  &lt;template slot='nodeTemplate'>
+ * &lt;oj-n-box data='[[dataProvider]]'>
+ *  &lt;template slot='nodeTemplate' data-oj-as='node'>
  *    &lt;oj-n-box-node icon.svg-style='[[node.data.icon.svgStyle]]'>&lt;/oj-n-box-node>
  *  &lt;/template>
  * &lt;/oj-n-box>
@@ -3058,8 +3059,8 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
  *
  * @example <caption>Initialize NBox node with the
  * <code class="prettyprint">icon.width</code> attribute specified:</caption>
- * &lt;oj-n-box data='[[dataProvider]]' as='node'>
- *  &lt;template slot='nodeTemplate'>
+ * &lt;oj-n-box data='[[dataProvider]]'>
+ *  &lt;template slot='nodeTemplate' data-oj-as='node'>
  *    &lt;oj-n-box-node icon.width='[[node.data.icon.width]]'>&lt;/oj-n-box-node>
  *  &lt;/template>
  * &lt;/oj-n-box>
@@ -3075,8 +3076,8 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
  *
  * @example <caption>Initialize NBox node with the
  * <code class="prettyprint">indicatorColor</code> attribute specified:</caption>
- * &lt;oj-n-box data='[[dataProvider]]' as='node'>
- *  &lt;template slot='nodeTemplate'>
+ * &lt;oj-n-box data='[[dataProvider]]'>
+ *  &lt;template slot='nodeTemplate' data-oj-as='node'>
  *    &lt;oj-n-box-node indicator-color='[[node.data.indicatorColor]]'>&lt;/oj-n-box-node>
  *  &lt;/template>
  * &lt;/oj-n-box>
@@ -3092,8 +3093,8 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
  *
  * @example <caption>Initialize NBox node with the
  * <code class="prettyprint">indicatorIcon</code> attribute specified:</caption>
- * &lt;oj-n-box data='[[dataProvider]]' as='node'>
- *  &lt;template slot='nodeTemplate'>
+ * &lt;oj-n-box data='[[dataProvider]]'>
+ *  &lt;template slot='nodeTemplate' data-oj-as='node'>
  *    &lt;oj-n-box-node indicator-icon='[[node.data.indicatorIcon]]'>&lt;/oj-n-box-node>
  *  &lt;/template>
  * &lt;/oj-n-box>
@@ -3108,8 +3109,8 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
  *
  * @example <caption>Initialize NBox node with the
  * <code class="prettyprint">indicatorIcon.borderColor</code> attribute specified:</caption>
- * &lt;oj-n-box data='[[dataProvider]]' as='node'>
- *  &lt;template slot='nodeTemplate'>
+ * &lt;oj-n-box data='[[dataProvider]]'>
+ *  &lt;template slot='nodeTemplate' data-oj-as='node'>
  *    &lt;oj-n-box-node indicator-icon.border-color='[[node.data.indicatorIcon.borderColor]]'>&lt;/oj-n-box-node>
  *  &lt;/template>
  * &lt;/oj-n-box>
@@ -3124,8 +3125,8 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
  *
  * @example <caption>Initialize NBox node with the
  * <code class="prettyprint">indicatorIcon.borderRadius</code> attribute specified:</caption>
- * &lt;oj-n-box data='[[dataProvider]]' as='node'>
- *  &lt;template slot='nodeTemplate'>
+ * &lt;oj-n-box data='[[dataProvider]]'>
+ *  &lt;template slot='nodeTemplate' data-oj-as='node'>
  *    &lt;oj-n-box-node indicator-icon.border-radius='[[node.data.indicatorIcon.borderRadius]]'>&lt;/oj-n-box-node>
  *  &lt;/template>
  * &lt;/oj-n-box>
@@ -3140,8 +3141,8 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
  *
  * @example <caption>Initialize NBox node with the
  * <code class="prettyprint">indicatorIcon.borderWidth</code> attribute specified:</caption>
- * &lt;oj-n-box data='[[dataProvider]]' as='node'>
- *  &lt;template slot='nodeTemplate'>
+ * &lt;oj-n-box data='[[dataProvider]]'>
+ *  &lt;template slot='nodeTemplate' data-oj-as='node'>
  *    &lt;oj-n-box-node indicator-icon.border-width='[[node.data.indicatorIcon.borderWidth]]'>&lt;/oj-n-box-node>
  *  &lt;/template>
  * &lt;/oj-n-box>
@@ -3156,8 +3157,8 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
  *
  * @example <caption>Initialize NBox node with the
  * <code class="prettyprint">indicatorIcon.color</code> attribute specified:</caption>
- * &lt;oj-n-box data='[[dataProvider]]' as='node'>
- *  &lt;template slot='nodeTemplate'>
+ * &lt;oj-n-box data='[[dataProvider]]'>
+ *  &lt;template slot='nodeTemplate' data-oj-as='node'>
  *    &lt;oj-n-box-node indicator-icon.color='[[node.data.indicatorIcon.color]]'>&lt;/oj-n-box-node>
  *  &lt;/template>
  * &lt;/oj-n-box>
@@ -3172,8 +3173,8 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
  *
  * @example <caption>Initialize NBox node with the
  * <code class="prettyprint">indicatorIcon.height</code> attribute specified:</caption>
- * &lt;oj-n-box data='[[dataProvider]]' as='node'>
- *  &lt;template slot='nodeTemplate'>
+ * &lt;oj-n-box data='[[dataProvider]]'>
+ *  &lt;template slot='nodeTemplate' data-oj-as='node'>
  *    &lt;oj-n-box-node indicator-icon.height='[[node.data.indicatorIcon.height]]'>&lt;/oj-n-box-node>
  *  &lt;/template>
  * &lt;/oj-n-box>
@@ -3188,8 +3189,8 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
  *
  * @example <caption>Initialize NBox node with the
  * <code class="prettyprint">indicatorIcon.opacity</code> attribute specified:</caption>
- * &lt;oj-n-box data='[[dataProvider]]' as='node'>
- *  &lt;template slot='nodeTemplate'>
+ * &lt;oj-n-box data='[[dataProvider]]'>
+ *  &lt;template slot='nodeTemplate' data-oj-as='node'>
  *    &lt;oj-n-box-node indicator-icon.opacity='[[node.data.indicatorIcon.opacity]]'>&lt;/oj-n-box-node>
  *  &lt;/template>
  * &lt;/oj-n-box>
@@ -3217,8 +3218,8 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
  *
  * @example <caption>Initialize NBox node with the
  * <code class="prettyprint">indicatorIcon.pattern</code> attribute specified:</caption>
- * &lt;oj-n-box data='[[dataProvider]]' as='node'>
- *  &lt;template slot='nodeTemplate'>
+ * &lt;oj-n-box data='[[dataProvider]]'>
+ *  &lt;template slot='nodeTemplate' data-oj-as='node'>
  *    &lt;oj-n-box-node indicator-icon.pattern='[[node.data.indicatorIcon.pattern]]'>&lt;/oj-n-box-node>
  *  &lt;/template>
  * &lt;/oj-n-box>
@@ -3233,8 +3234,8 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
  *
  * @example <caption>Initialize NBox node with the
  * <code class="prettyprint">indicatorIcon.shape</code> attribute specified:</caption>
- * &lt;oj-n-box data='[[dataProvider]]' as='node'>
- *  &lt;template slot='nodeTemplate'>
+ * &lt;oj-n-box data='[[dataProvider]]'>
+ *  &lt;template slot='nodeTemplate' data-oj-as='node'>
  *    &lt;oj-n-box-node indicator-icon.shape='[[node.data.indicatorIcon.shape]]'>&lt;/oj-n-box-node>
  *  &lt;/template>
  * &lt;/oj-n-box>
@@ -3249,8 +3250,8 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
  *
  * @example <caption>Initialize NBox node with the
  * <code class="prettyprint">indicatorIcon.source</code> attribute specified:</caption>
- * &lt;oj-n-box data='[[dataProvider]]' as='node'>
- *  &lt;template slot='nodeTemplate'>
+ * &lt;oj-n-box data='[[dataProvider]]'>
+ *  &lt;template slot='nodeTemplate' data-oj-as='node'>
  *    &lt;oj-n-box-node indicator-icon.source='[[node.data.indicatorIcon.source]]'>&lt;/oj-n-box-node>
  *  &lt;/template>
  * &lt;/oj-n-box>
@@ -3265,8 +3266,8 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
  *
  * @example <caption>Initialize NBox node with the
  * <code class="prettyprint">indicatorIcon.svgClassName</code> attribute specified:</caption>
- * &lt;oj-n-box data='[[dataProvider]]' as='node'>
- *  &lt;template slot='nodeTemplate'>
+ * &lt;oj-n-box data='[[dataProvider]]'>
+ *  &lt;template slot='nodeTemplate' data-oj-as='node'>
  *    &lt;oj-n-box-node indicator-icon.svg-class-name='[[node.data.indicatorIcon.svgClassName]]'>&lt;/oj-n-box-node>
  *  &lt;/template>
  * &lt;/oj-n-box>
@@ -3281,8 +3282,8 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
  *
  * @example <caption>Initialize NBox node with the
  * <code class="prettyprint">indicatorIcon.svgStyle</code> attribute specified:</caption>
- * &lt;oj-n-box data='[[dataProvider]]' as='node'>
- *  &lt;template slot='nodeTemplate'>
+ * &lt;oj-n-box data='[[dataProvider]]'>
+ *  &lt;template slot='nodeTemplate' data-oj-as='node'>
  *    &lt;oj-n-box-node indicator-icon.svg-style='[[node.data.indicatorIcon.svgStyle]]'>&lt;/oj-n-box-node>
  *  &lt;/template>
  * &lt;/oj-n-box>
@@ -3297,8 +3298,8 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
  *
  * @example <caption>Initialize NBox node with the
  * <code class="prettyprint">indicatorIcon.width</code> attribute specified:</caption>
- * &lt;oj-n-box data='[[dataProvider]]' as='node'>
- *  &lt;template slot='nodeTemplate'>
+ * &lt;oj-n-box data='[[dataProvider]]'>
+ *  &lt;template slot='nodeTemplate' data-oj-as='node'>
  *    &lt;oj-n-box-node indicator-icon.width='[[node.data.indicatorIcon.width]]'>&lt;/oj-n-box-node>
  *  &lt;/template>
  * &lt;/oj-n-box>
@@ -3314,8 +3315,8 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
  *
  * @example <caption>Initialize NBox node with the
  * <code class="prettyprint">label</code> attribute specified:</caption>
- * &lt;oj-n-box data='[[dataProvider]]' as='node'>
- *  &lt;template slot='nodeTemplate'>
+ * &lt;oj-n-box data='[[dataProvider]]'>
+ *  &lt;template slot='nodeTemplate' data-oj-as='node'>
  *    &lt;oj-n-box-node label='[[node.data.label]]'>&lt;/oj-n-box-node>
  *  &lt;/template>
  * &lt;/oj-n-box>
@@ -3331,8 +3332,8 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
  *
  * @example <caption>Initialize NBox node with the
  * <code class="prettyprint">row</code> attribute specified:</caption>
- * &lt;oj-n-box data='[[dataProvider]]' as='node'>
- *  &lt;template slot='nodeTemplate'>
+ * &lt;oj-n-box data='[[dataProvider]]'>
+ *  &lt;template slot='nodeTemplate' data-oj-as='node'>
  *    &lt;oj-n-box-node row='[[node.data.row]]'>&lt;/oj-n-box-node>
  *  &lt;/template>
  * &lt;/oj-n-box>
@@ -3348,8 +3349,8 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
  *
  * @example <caption>Initialize NBox node with the
  * <code class="prettyprint">secondaryLabel</code> attribute specified:</caption>
- * &lt;oj-n-box data='[[dataProvider]]' as='node'>
- *  &lt;template slot='nodeTemplate'>
+ * &lt;oj-n-box data='[[dataProvider]]'>
+ *  &lt;template slot='nodeTemplate' data-oj-as='node'>
  *    &lt;oj-n-box-node secondary-label='[[node.data.secondaryLabel]]'>&lt;/oj-n-box-node>
  *  &lt;/template>
  * &lt;/oj-n-box>
@@ -3365,8 +3366,8 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
  *
  * @example <caption>Initialize NBox node with the
  * <code class="prettyprint">short-desc</code> attribute specified:</caption>
- * &lt;oj-n-box data='[[dataProvider]]' as='node'>
- *  &lt;template slot='nodeTemplate'>
+ * &lt;oj-n-box data='[[dataProvider]]'>
+ *  &lt;template slot='nodeTemplate' data-oj-as='node'>
  *    &lt;oj-n-box-node short-desc='[[node.data.id + ":"" + node.data.total + "% of respondents"]]' label='[[node.data.id]]'>&lt;/oj-n-box-node>
  *  &lt;/template>
  * &lt;/oj-n-box>
@@ -3382,8 +3383,8 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
  *
  * @example <caption>Initialize NBox node with the
  * <code class="prettyprint">svg-style</code> attribute specified:</caption>
- * &lt;oj-n-box data='[[dataProvider]]' as='node'>
- *  &lt;template slot='nodeTemplate'>
+ * &lt;oj-n-box data='[[dataProvider]]'>
+ *  &lt;template slot='nodeTemplate' data-oj-as='node'>
  *    &lt;oj-n-box-node svg-style='[[node.data.svgStyle]]' label='[[node.data.id]]'>&lt;/oj-n-box-node>
  *  &lt;/template>
  * &lt;/oj-n-box>
@@ -3399,8 +3400,8 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
  *
  * @example <caption>Initialize NBox node with the
  * <code class="prettyprint">svg-class-name</code> attribute specified:</caption>
- * &lt;oj-n-box data='[[dataProvider]]'  as='node'>
- *  &lt;template slot='nodeTemplate'>
+ * &lt;oj-n-box data='[[dataProvider]]'  data-oj-as='node'>
+ *  &lt;template slot='nodeTemplate' data-oj-as='node'>
  *    &lt;oj-n-box-node svg-class-name='[[node.data.svgClassName]]' label='[[node.data.id]]'>&lt;/oj-n-box-node>
  *  &lt;/template>
  * &lt;/oj-n-box>
@@ -3416,8 +3417,8 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
  *
  * @example <caption>Initialize NBox node with the
  * <code class="prettyprint">xPercentage</code> attribute specified:</caption>
- * &lt;oj-n-box data='[[dataProvider]]' as='node'>
- *  &lt;template slot='nodeTemplate'>
+ * &lt;oj-n-box data='[[dataProvider]]'>
+ *  &lt;template slot='nodeTemplate' data-oj-as='node'>
  *    &lt;oj-n-box-node x-percentage='[[node.data.xPercentage]]' label='[[node.data.id]]'>&lt;/oj-n-box-node>
  *  &lt;/template>
  * &lt;/oj-n-box>
@@ -3433,8 +3434,8 @@ oj.__registerWidget('oj.ojNBox', $.oj.dvtBaseComponent,
  *
  * @example <caption>Initialize NBox node with the
  * <code class="prettyprint">xPercentage</code> attribute specified:</caption>
- * &lt;oj-n-box data='[[dataProvider]]' as='node'>
- *  &lt;template slot='nodeTemplate'>
+ * &lt;oj-n-box data='[[dataProvider]]'>
+ *  &lt;template slot='nodeTemplate' data-oj-as='node'>
  *    &lt;oj-n-box-node y-percentage='[[node.data.yPercentage]]' label='[[node.data.id]]'>&lt;/oj-n-box-node>
  *  &lt;/template>
  * &lt;/oj-n-box>

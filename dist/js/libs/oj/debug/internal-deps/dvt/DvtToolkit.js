@@ -27931,9 +27931,11 @@ dvt.BaseComponentDefaults._SKINS = [dvt.CSSStyle.SKIN_FUSION, dvt.CSSStyle.SKIN_
 
 /**
  * @param {object} defaultsMap A map of the skin names to the JSON of defaults.
+ * @param {dvt.Context} context The rendering context.
  */
-dvt.BaseComponentDefaults.prototype.Init = function(defaultsMap) {
+dvt.BaseComponentDefaults.prototype.Init = function(defaultsMap, context) {
   this._defaults = defaultsMap ? defaultsMap : {};
+  this._context = context;
 
   // Initialize the defaults cache on the class if it doesn't already exist. This is used to prevent excess cloning and
   // merging of the defaults layers.
@@ -27966,8 +27968,16 @@ dvt.BaseComponentDefaults.prototype.calcOptions = function(userOptions) {
   if (!userOptions)
     return defaults;
 
+  // Get component noclone options and add data provider properties
+  var noClone = this.getNoCloneObject();
+  if (this._context && this._context.dataProviderProps) {
+    var dpProps = this._context.dataProviderProps;
+    for (var i = 0; i < dpProps.length; i++) {
+      noClone[dpProps[i]] = true;
+    }
+  }
   // Merge the options object with the defaults
-  var options =  dvt.JsonUtils.merge(userOptions, defaults, this.getNoCloneObject());
+  var options =  dvt.JsonUtils.merge(userOptions, defaults, noClone);
 
   //  - short circuit animation if animation duration is 0
   if (this.getAnimationDuration(options) == 0) {

@@ -1,11 +1,16 @@
 {
   "name": "oj-form-layout",
-  "version": "6.1.0",
-  "jetVersion": "6.1.0",
+  "version": "6.2.0",
+  "jetVersion": "6.2.0",
   "displayName": "Form Layout",
   "type": "core",
+  "extension": {
+    "vbdt": {
+      "module": "ojs/ojformlayout"
+    }
+  },
   "description": "Used to group child elements in an organized layout that can be optimized for multiple display sizes.",
-  "help": "https://docs.oracle.com/en/middleware/jet/6.1/reference-api/oj.ojFormLayout.html",
+  "help": "https://docs.oracle.com/en/middleware/jet/6.2/reference-api/oj.ojFormLayout.html",
   "properties": {
     "direction": {
       "description": "Specifies the layout direction of the form layout children.",
@@ -132,6 +137,12 @@
       "description": "Refreshes the visual state of the component.",
       "help": "refresh",
       "return": "void"
+    }
+  },
+  "slots": {
+    "Default": {
+      "description": "The <oj-form-layout> element only accepts element children in the Default slot. Content in <oj-form-layout>'s Default slot will be laid out in a row/column style form layout.",
+      "help": "Default"
     }
   }
 }

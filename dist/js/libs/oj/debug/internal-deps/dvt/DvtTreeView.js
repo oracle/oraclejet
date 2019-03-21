@@ -1021,6 +1021,14 @@ DvtTreeView.prototype.UpdateAriaNavigation = function(root) {
   }
 };
 
+/**
+ * Check if nodes data came from data provider
+ * @return {boolean} return true for data provider mode
+ */
+DvtTreeView.prototype.hasDataProvider = function() {
+  return !!this.getOptions()['data'];
+};
+
 // APIs called by the ADF Faces drag source for DvtTreeView
 
 
@@ -1756,8 +1764,7 @@ DvtTreeNode.prototype.getCategories = function() {
 
   // Implements function in DvtCategoricalObject
   var categories = this.getOptions()['categories'];
-  var hasDataProvider = this.getView().getOptions()['data'] != null;
-  if (!categories && !hasDataProvider) {
+  if (!categories && !this.getView().hasDataProvider()) {
     // Default categories include the id of this node, appended to the categories of its ancestors
     var parent = this.GetParent();
     var parentCategories = parent ? parent.getCategories() : null;
@@ -2277,6 +2284,19 @@ DvtTreeNode.prototype.animateDelete = function(handler, container) {
  */
 DvtTreeNode.prototype.hasChildren = function() {
   return (this._children != null && this._children.length > 0);
+};
+
+/**
+ * Returns true if the component is using a data provider and this node has children.
+ * @return {boolean} true if this node has children.
+ */
+DvtTreeNode.prototype.hasDPChildren = function() {
+  var dataProvider = this.getView().getOptions().data;
+  if (dataProvider) {
+    var childDP = dataProvider.getChildDataProvider(this.getId());
+    return childDP ? childDP.isEmpty() !== 'yes' : false;
+  }
+  return false;
 };
 
 /**
@@ -3522,7 +3542,7 @@ dvt.Treemap.prototype.Init = function(context, callback, callbackObj) {
   dvt.Treemap.superclass.Init.call(this, context, callback, callbackObj);
 
   // Create the defaults object
-  this.Defaults = new DvtTreemapDefaults();
+  this.Defaults = new DvtTreemapDefaults(context);
 
   this._nodeContent = {};
 
@@ -6065,10 +6085,11 @@ dvt.Bundle.addDefaultStrings(dvt.Bundle.TREEMAP_PREFIX, {
  * Default values and utility functions for component versioning.
  * @class
  * @constructor
+ * @param {dvt.Context} context The rendering context.
  * @extends {DvtTreeDefaults}
  */
-var DvtTreemapDefaults = function() {
-  this.Init({'skyros': DvtTreemapDefaults.VERSION_1, 'alta': {}, 'next': DvtTreemapDefaults.SKIN_NEXT});
+var DvtTreemapDefaults = function(context) {
+  this.Init({'skyros': DvtTreemapDefaults.VERSION_1, 'alta': {}, 'next': DvtTreemapDefaults.SKIN_NEXT}, context);
 };
 
 dvt.Obj.createSubclass(DvtTreemapDefaults, DvtTreeDefaults);
@@ -6177,7 +6198,7 @@ dvt.Sunburst.prototype.Init = function(context, callback, callbackObj) {
   dvt.Sunburst.superclass.Init.call(this, context, callback, callbackObj);
 
   // Create the defaults object
-  this.Defaults = new DvtSunburstDefaults();
+  this.Defaults = new DvtSunburstDefaults(context);
 
   // Initialize the angle extent, which may be changed during animation
   this._angleExtent = 2 * Math.PI;
@@ -7467,7 +7488,7 @@ DvtSunburstNode.prototype._createPathCmd = function() {
  */
 DvtSunburstNode.prototype._createExpandCollapseButton = function(container) {
   var bDisclosed = this.isDisclosed();
-  if (!container || !this.isExpandCollapseEnabled() || (!this.hasChildren() && bDisclosed))
+  if (!container || !this.isExpandCollapseEnabled() || (!this.hasChildren() && bDisclosed) || (this.getView().hasDataProvider() && !this.hasDPChildren()))
     return null;
 
   // Create the button and add to the container
@@ -8310,10 +8331,11 @@ dvt.Bundle.addDefaultStrings(dvt.Bundle.SUNBURST_PREFIX, {
  * Default values and utility functions for component versioning.
  * @class
  * @constructor
+ * @param {dvt.Context} context The rendering context.
  * @extends {DvtTreeDefaults}
  */
-var DvtSunburstDefaults = function() {
-  this.Init({'skyros': DvtSunburstDefaults.VERSION_1, 'alta': {}, 'next': {}});
+var DvtSunburstDefaults = function(context) {
+  this.Init({'skyros': DvtSunburstDefaults.VERSION_1, 'alta': {}, 'next': {}}, context);
 };
 
 dvt.Obj.createSubclass(DvtSunburstDefaults, DvtTreeDefaults);

@@ -21,7 +21,8 @@ export interface ojMenu extends baseComponent<ojMenuSettableProperties> {
     setProperty<T extends keyof ojMenuSettableProperties>(property: T, value: ojMenuSettableProperties[T]): void;
     setProperty<T extends string>(property: T, value: JetSetPropertyType<T, ojMenuSettableProperties>): void;
     setProperties(properties: ojMenuSettablePropertiesLenient): void;
-    open(event?: object, openOptions?: ojMenu.OpenOptions): void;
+    close(): void;
+    open(event?: Event, openOptions?: ojMenu.OpenOptions): void;
     refresh(): void;
 }
 export namespace ojMenu {

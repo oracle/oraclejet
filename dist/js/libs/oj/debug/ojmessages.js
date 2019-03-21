@@ -723,6 +723,65 @@ var __oj_messages_metadata =
  * @since 5.0.0
  **/
 
+// Slots
+// //////
+
+/**
+ * <p>The <code class="prettyprint">&lt;oj-messages></code> element accepts only
+ * <code class="prettyprint">&lt;oj-message></code> element as children for the default slot. The
+ * default slot contents are rendered only if the 'messages' attribute on
+ * <code class="prettyprint">&lt;oj-messages></code> is not set. If the 'messages' attribute is set
+ * <code class="prettyprint">&lt;oj-message></code> children are automatically stamped for each
+ * message data in the collection.
+ *
+ * @ojslot Default
+ * @memberof oj.ojMessages
+ * @since 5.0.0
+ *
+ * @example <caption>Initialize <code class="prettyprint">&lt;oj-messages></code> with explicitly
+ * defined <code class="prettyprint">&lt;oj-message></code> children:</caption>
+ * &lt;oj-messages id="inlineMessages">
+ *   &lt;oj-message message='{"summary": "Some summary", "detail": "Some detail", "autoTimeout": 5000}'>&lt;/oj-message>
+ *   &lt;oj-message message="[[surveyInstructions]]">&lt;/oj-message>
+ *   &lt;oj-message message="[[surveySubmitConfirmation]]">&lt;/oj-message>
+ * &lt;/oj-messages>
+ */
+
+/**
+ * <p>The <code class="prettyprint">messageTemplate</code> slot is used to specify the template
+ * for rendering each message in the <code class="prettyprint">oj-messages</code>. The slot
+ * <b>must</b> be a &lt;template> element. The default template will display the
+ * <code class="prettyprint">oj-message</code> children to best suit the display type of the
+ * <code class="prettyprint">oj-messages</code>. This template slot will be applied only if the
+ * 'messages' attribute on <code class="prettyprint">oj-messages</code>> is set.
+ * The content of the template <b>must</b> be an <code class="prettyprint">oj-message</code>
+ * element.</p>
+ * <p>When the template is executed for each message, it will have access to the binding context
+ * containing the following properties:</p>
+ * <ul>
+ *   <li>$current - an object that contains information for the current message. (See the table
+ *       below for a list of properties available on $current)</li>
+ *  <li>alias - if 'data-oj-as' attribute was specified on the &lt;template> element, the value
+ *      will be used to provide an application-named alias for $current.</li>
+ * </ul>
+ *
+ * @ojstatus preview
+ * @ojslot messageTemplate
+ * @ojmaxitems 1
+ * @memberof oj.ojMessages
+ * @since 6.2.0
+ *
+ * @property {Element} componentElement The &lt;oj-messages> custom element.
+ * @property {Object} data The data for the current message being rendered.
+ * @ojsignature {target:"Type", value:"oj.ojMessage.Message", for:"data", jsdocOverride: true}
+ *
+ * @example <caption>Initialize oj-messages with an inline message template specified:</caption>
+ * &lt;oj-messages messages="[[dataProvider]]">
+ *   &lt;template slot="messageTemplate">
+ *     &lt;oj-message message="[[$current.data]]">&lt;/oj-message>
+ *   &lt;template>
+ * &lt;/oj-messages>
+ */
 
 // Methods
 // ////////
@@ -889,15 +948,20 @@ var _MESSAGES_VIEW =
   '<div role="presentation" :id="[[containerId]]" :class="[[containerSelectors]]" ' +
   '     on-oj-open="[[handleOpen]]" on-oj-close="[[handleClose]]" ' +
   '     on-oj-animate-start="[[handleAnimateStart]]">' +
-  '  <oj-bind-if test="[[!$props.messages]]">' +
+  '  <oj-bind-if test="[[!$properties.messages]]">' +
   '    <oj-bind-slot>' +
   '    </oj-bind-slot>' +
   '  </oj-bind-if>' +
-  '  <oj-bind-if test="[[$props.messages]]">' +
-  '    <oj-bind-for-each data="[[$props.messages]]" >' +
+  '  <oj-bind-if test="[[$properties.messages]]">' +
+  '    <oj-bind-for-each data="[[$properties.messages]]" >' +
   '      <template>' +
-  '        <oj-message message="[[$current.data]]" display-options="[[$props.displayOptions]]">' +
-  '        </oj-message>' +
+  '        <oj-bind-template-slot name="messageTemplate" ' +
+  '          data="[[{data:$current.data, componentElement:_composite}]]">' +
+  '          <template>' +
+  '            <oj-message message="[[$current.data]]" display-options="[[$props.displayOptions]]">' +
+  '            </oj-message>' +
+  '          </template>' +
+  '        </oj-bind-template-slot>' +
   '      </template>' +
   '    </oj-bind-for-each>' +
   '  </oj-bind-if>' +
@@ -1375,7 +1439,7 @@ MessagesViewModel.prototype._openOverlay = function () {
   var composite = $(this._composite);
   var psOptions = {};
   psOptions[oj.PopupService.OPTION.POPUP] = composite;
-  psOptions[oj.PopupService.OPTION.LAUNCHER] = composite;
+  psOptions[oj.PopupService.OPTION.LAUNCHER] = this._getLauncher();
   psOptions[oj.PopupService.OPTION.POSITION] = this._getPositionAsJqUi();
   psOptions[oj.PopupService.OPTION.EVENTS] = this._getPopupServiceEvents();
 
@@ -1390,6 +1454,18 @@ MessagesViewModel.prototype._openOverlay = function () {
 
   // snap on tab key handler
   composite[0].addEventListener('keydown', this._overlayEventsCallback, false);
+};
+
+MessagesViewModel.prototype._getLauncher = function () {
+  var launcher = this._composite.parentElement;
+
+  if (this._composite.previousElementSibling) {
+    launcher = this._composite.previousElementSibling;
+  } else if (this._composite.nextElementSibling) {
+    launcher = this._composite.nextElementSibling;
+  }
+
+  return $(launcher);
 };
 
 MessagesViewModel.prototype._closeOverlay = function () {

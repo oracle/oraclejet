@@ -258,6 +258,7 @@ var __oj_toolbar_metadata =
       elem.classList.add('oj-toolbar');
       elem.classList.add('oj-component');
       elem.setAttribute('role', 'toolbar');
+      this._hasInitialFocusHandler = false;
 
       this._setup();
     },
@@ -307,7 +308,6 @@ var __oj_toolbar_metadata =
      * <p>A <code class="prettyprint">refresh()</code> is required in the following circumstances:
      * <ul>
      *   <li>After buttons or buttonsets are added to, removed from, or reordered within the toolbar.</li>
-     *   <li>After a change to the [disabled]{@link oj.ojButton#disabled} status of any of the buttons in the toolbar.</li>
      *   <li>After a programmatic change to the <code class="prettyprint">checked</code> status of a radio button in the toolbar
      *       (which should be done via Buttonset's [checked]{@link oj.ojButtonset#checked} option).  This applies only to radios,
      *       not to checkboxes or push buttons.</li>
@@ -325,6 +325,7 @@ var __oj_toolbar_metadata =
     refresh: function () {
       this._super();
       this._setup();
+      this._refreshTabindex();
     },
 
     _setup: function () { // Private, not an override (not in base class).  Method name unquoted so will be safely optimized (renamed) by GCC as desired.
@@ -346,11 +347,14 @@ var __oj_toolbar_metadata =
         // - Both of these problems still happen when using the delegation / selector overload of .on(); there is no special JQ bubbling magic.
 
       if (this._IsCustomElement()) {
-            // defer setting up button-specific event handling until the first focusin event is triggered
-        this._focusinListener = function (event) {  // eslint-disable-line no-unused-vars
-          self._handleInitialFocus();
-        };
-        elem.addEventListener('focusin', this._focusinListener, true);
+        if (!this._hasInitialFocusHandler) { // Don't add more than one initial focus handler (for the case where toolbar is refreshed but not yet focused)
+              // defer setting up button-specific event handling until the first focusin event is triggered
+          this._focusinListener = function (event) {  // eslint-disable-line no-unused-vars
+            self._handleInitialFocus();
+          };
+          elem.addEventListener('focusin', this._focusinListener, true);
+          this._hasInitialFocusHandler = true;
+        }
 
             // find any current supported children to refresh in case they were already initialized and need to update their 'chroming' values
         this.topLevelChildren = elem.querySelectorAll('oj-button, oj-menu-button, oj-buttonset-one, oj-buttonset-many');
@@ -416,6 +420,7 @@ var __oj_toolbar_metadata =
 
       // remove this event handling as we only want to run this setup logic on the first focusin event
       elem.removeEventListener('focusin', this._focusinListener, true);
+      this._hasInitialFocusHandler = false;
 
       this.topLevelChildren = elem.querySelectorAll('oj-button, oj-menu-button, oj-buttonset-one, oj-buttonset-many');
       var buttons = elem.querySelectorAll('oj-button, oj-menu-button, oj-buttonset-one .oj-button, oj-buttonset-many .oj-button');
@@ -442,20 +447,45 @@ var __oj_toolbar_metadata =
               self._handleFocus($button);
             });
 
-            // the subset of Toolbar buttons that are enabled.  Disabled buttons are not tabbable.
-      this.$enabledButtons = this.$buttons.filter(function () {
-        return !($(this).hasClass('oj-disabled'));
-      });
+      // the subset of Toolbar buttons that are enabled.  Disabled buttons are not tabbable.
+      if (this._IsCustomElement()) {
+        this.$enabledButtons = this.$buttons.filter(function () {
+          return !($(this).hasClass('oj-disabled'));
+        });
+      } else {
+        this.$enabledButtons = this.$buttons.filter(function () {
+          return !$(this).ojButton('option', 'disabled');
+        });
+      }
 
       this._initTabindexes(this._lastTabStop == null);
       this._getButtonFocusElem(this.$enabledButtons[0]).focus();
+    },
+
+    // Update list of enabled buttons and refresh tabindex settings
+    _refreshTabindex: function () {
+      // Private, not an override (not in base class).  Method name unquoted so will be safely optimized (renamed) by GCC as desired.
+      if (this.$buttons !== undefined) {
+        // the subset of Toolbar buttons that are enabled.  Disabled buttons are not tabbable.
+        if (this._IsCustomElement()) {
+          this.$enabledButtons = this.$buttons.filter(function () {
+            return !($(this).hasClass('oj-disabled'));
+          });
+        } else {
+          this.$enabledButtons = this.$buttons.filter(function () {
+            return !$(this).ojButton('option', 'disabled');
+          });
+        }
+
+        this._initTabindexes(this._lastTabStop == null);
+      }
     },
 
     // Returns the focusable inner element of the button.
     _getButtonFocusElem: function (button) {
       // Private, not an override (not in base class).  Method name unquoted so will be safely optimized (renamed) by GCC as desired.
       var focusElem = button; // Set to button by default
-      if (this._IsCustomElement()) {
+      if (button !== undefined && this._IsCustomElement()) {
         var expectedTag = 'button';
         if (button.classList.contains('oj-button-toggle')) {
                 // the underlying input element is one of the button's children

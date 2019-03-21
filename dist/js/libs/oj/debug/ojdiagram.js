@@ -3598,6 +3598,7 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
       * @instance
       * @type {string}
       * @default ""
+      * @ojdeprecated {since: '6.2.0', description: 'Set the alias directly on the template element using the data-oj-as attribute instead.'}
       **/
       as: '',
       /**
@@ -4326,7 +4327,7 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
         this.options._contextHandler = this._getContextHandler();
       }
       if (this.options.nodeData) {
-        this.options._fetchDataHandler = this._getFetchDataHandler();
+        this.options._fetchDataHandler = this._GetFetchDataHandler('nodeData');
       }
       // convert nodes, links and childNodes options to DiagramDataSource
       if (this.options.nodes) {
@@ -4598,19 +4599,6 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
     },
 
     //* * @inheritdoc */
-    // eslint-disable-next-line no-unused-vars
-    _setOptions: function (options, flags) {
-      var hasProperty = function (property) {
-        return Object.prototype.hasOwnProperty.call(options, property);
-      };
-      if (hasProperty('expanded') || hasProperty('data')) {
-        this._component.clearDisclosedState();
-      }
-      // Call the super to update the property values
-      this._superApply(arguments);
-    },
-
-    //* * @inheritdoc */
     _GetTranslationMap: function () {
       // The translations are stored on the options object.
       var translations = this.options.translations;
@@ -4705,8 +4693,6 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
     _GetComponentNoClonePaths: function () {
       var noClonePaths = this._super();
       noClonePaths.data = true;
-      noClonePaths.nodeData = true;
-      noClonePaths.linkData = true;
       noClonePaths.nodes = true;
       noClonePaths.links = true;
       return noClonePaths;
@@ -4725,53 +4711,18 @@ oj.__registerWidget('oj.ojDiagram', $.oj.dvtBaseComponent,
       };
     },
 
-    /**
-     * Creates a callback function that will be used to fetch additional data , nodes and links, from data provider
-     * @return {Function} fetch data callback that uses root data provider, expanded key set, node data and node key
-     * to retrieve child nodes for the specified parent node
-     * @private
-     * @instance
-     * @memberof oj.ojDiagram
-     */
-    _getFetchDataHandler: function () {
-      var self = this;
-      var fetchDataHandlerFunc = function (rootDataProvider, expandedKeySet, nodeData, nodeKey) {
-        var treeDPPostProcessor = function (row) {
-          var data = { value: row.data };
-          var key = { value: row.key };
-          if (expandedKeySet && expandedKeySet.has(key.value)) {
-            var childDataProvider = rootDataProvider.getChildDataProvider(key.value);
-            if (childDataProvider) {
-              return self._FetchCollection(childDataProvider, treeDPPostProcessor, key.value).then(
-                function (children) {
-                  data.children = children.data;
-                  key.children = children.keys;
-                  return { data: data, key: key };
-                }
-              );
-            }
-          }
-          return Promise.resolve({ data: data, key: key });
-        };
+    //* * @inheritdoc */
+    _OptionChangeHandler: function (options) {
+      var hasProperty = Object.prototype.hasOwnProperty.bind(options);
+      if (hasProperty('expanded') || hasProperty('data')) {
+        this._component.clearDisclosedState();
+      }
 
-        var childDataProvider = rootDataProvider.getChildDataProvider(nodeKey);
-        var childInfoPromise = self._FetchCollection(childDataProvider,
-          treeDPPostProcessor, nodeKey);
-        var templateEnginePromise = self._getTemplateEngine();
-        return Promise
-                .all([templateEnginePromise, childInfoPromise])
-                .then(function (values) {
-                  var templateEngine = values[0];
-                  var childrenData = values[1].data;
-                  var childrenKeys = values[1].keys;
-                  var processedTemplates = self._ProcessTemplates('nodeData',
-                    { data: childrenData, keys: childrenKeys }, templateEngine, true);
-                  // eslint-disable-next-line no-param-reassign
-                  nodeData.nodes = processedTemplates.values[0]; // amend parent data and return parent
-                  return { nodes: processedTemplates.values[0] };
-                });
-      };
-      return fetchDataHandlerFunc;
+      if (hasProperty('expanded')) {
+        this._ClearDataProviderState('nodeData');
+      }
+
+      this._super(options);
     },
 
     /**

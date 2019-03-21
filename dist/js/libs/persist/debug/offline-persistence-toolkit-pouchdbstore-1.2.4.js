@@ -495,9 +495,51 @@ define('persist/impl/storageUtils',['./logger'], function (logger) {
     return returnValue;
   };
 
+  /**
+   * Helper function that constructs an object out from value
+   * based on fields.
+   * @method
+   * @name assembleObject
+   * @param {object} value The original object to construct the return object
+   *                       from.
+   * @param {Array} fields An array of property names whose values
+   *                       should be included in the final contructed
+   *                       return object.
+   * @returns {object} the object that contains all the properties defined
+   *                   in fields array, the corresponding property
+   *                   value is obtained from value.
+   */
+  function assembleObject (value, fields) {
+    var returnObject;
+    if (!fields) {
+      returnObject = value;
+    } else {
+      returnObject = {};
+      for (var index = 0; index < fields.length; index++) {
+        var currentObject = returnObject;
+        var currentItemDataValue = value;
+        var field = fields[index];
+        var paths = field.split('.');
+        for (var pathIndex = 0; pathIndex < paths.length; pathIndex++) {
+          currentItemDataValue = currentItemDataValue[paths[pathIndex]];
+          if (!currentObject[paths[pathIndex]] && pathIndex < paths.length - 1) {
+            currentObject[paths[pathIndex]] = {};
+          }
+          if (pathIndex === paths.length - 1) {
+            currentObject[paths[pathIndex]] = currentItemDataValue;
+          } else {
+            currentObject = currentObject[paths[pathIndex]];
+          }
+        }
+      }
+    }
+    return returnObject;
+  };
+  
   return {
     satisfy: satisfy,
-    getValue: getValue
+    getValue: getValue,
+    assembleObject: assembleObject
   };
 });
 
@@ -15399,46 +15441,62 @@ define('persist/impl/pouchDBPersistenceStore',["../PersistenceStore", "../impl/s
   PouchDBPersistenceStore.prototype.find = function (findExpression) {
     logger.log("Offline Persistence Toolkit pouchDBPersistenceStore: find() for expression: " +  JSON.stringify(findExpression));
     var self = this;
-    var modifiedFind = self._prepareFind(findExpression);
     
+    findExpression = findExpression || {};
+
     // if the find plugin is installed
     if (self._db.find) {
+      var modifiedFind = self._prepareFind(findExpression);
       return self._db.find(modifiedFind).then(function (result) {
         if (result && result.docs && result.docs.length) {
           var promises = result.docs.map(self._findResultCallback(modifiedFind.fields), self);
           return Promise.all(promises);
         } else {
-          return Promise.resolve([]);
+          return [];
         }
       }).catch(function (finderr) {
         if (finderr.status === 404 && finderr.message === 'missing') {
-          return Promise.resolve([]);
+          return [];
         } else {
-          return Promise.reject(finderr);
+          throw finderr;
         }
       });
     } else {
       // get all rows and use our own find logic
       return self._db.allDocs({include_docs: true}).then(function (result) {
         if (result && result.rows && result.rows.length) {
-          var fixedDocPromises = result.rows.map(function(row) {
-            return self._fixValue(row.doc);
-          });
-          return Promise.all(fixedDocPromises).then(function(docs) {
-            var satisfiedRows = result.rows.filter(function(row) {
-              if (storageUtils.satisfy(findExpression.selector, row.doc)) {
-                return true;
-              }
-              return false;
+          // filter on the rows first before _fixBinaryValue which adds binary
+          // back to the document. This assumes the search criteria should
+          // not have any operator against the binary data. 
+          var satisfiedRows = result.rows.filter(function(row) {
+            var doc = row.doc;
+            self._fixKey(doc);
+            if (storageUtils.satisfy(findExpression.selector, doc)) {
+              return true;
+            }
+            return false;
+           });
+
+          if (satisfiedRows.length) {
+            var fixDocPromises = satisfiedRows.map(function(row) {
+              return self._fixBinaryValue(row.doc).then(function(fixedDoc){
+                if (findExpression.fields) {
+                  return storageUtils.assembleObject(fixedDoc, findExpression.fields);
+                } else {
+                  return fixedDoc.value;
+                }
+              });
             });
-            var promises = satisfiedRows.map(function(row) {
-              return self._findResultCallback(modifiedFind.fields).bind(self)(row.doc);
-            });
-            return Promise.all(promises);
-          });
+            return Promise.all(fixDocPromises);
+          } else {
+            return [];
+          }
         } else {
-          return Promise.resolve([]);
+          return [];
         }
+      }).catch(function(err) {
+        logger.log("error retrieving all documents from pouch db, returns empty list as find operation.", err);
+        return [];
       });
     }
   };
@@ -15456,16 +15514,18 @@ define('persist/impl/pouchDBPersistenceStore',["../PersistenceStore", "../impl/s
     };
   };
 
-  // invoked after document is retrieved. If the original value
-  // has binary data in it, we need to retrieve it back as attachments
-  // and add it back to the value part.
+  // invoked after document is retrieved. Fix the key and binary
+  // part of the value.
   PouchDBPersistenceStore.prototype._fixValue = function (doc) {
+    this._fixKey(doc);
+    return this._fixBinaryValue(doc);
+  };
+
+  // If the original value has binary data in it,
+  // we need to retrieve it back as attachments
+  // and add it back to the value part.
+  PouchDBPersistenceStore.prototype._fixBinaryValue = function (doc) {
     var docId = doc._id || doc.id || doc.key;
-
-    if (docId) {
-      doc.key = docId;
-    }
-
     var attachments = doc._attachments;
     if (!attachments) {
       return Promise.resolve(doc);
@@ -15481,6 +15541,14 @@ define('persist/impl/pouchDBPersistenceStore',["../PersistenceStore", "../impl/s
         targetValue[paths[paths.length - 1]] = blob;
         return doc;
       });
+    }
+  };
+
+  PouchDBPersistenceStore.prototype._fixKey = function (doc) {
+    var docId = doc._id || doc.id || doc.key;
+
+    if (docId) {
+      doc.key = docId;
     }
   };
 
@@ -15565,27 +15633,26 @@ define('persist/impl/pouchDBPersistenceStore',["../PersistenceStore", "../impl/s
   // understood by pouchdb find plugin.
   PouchDBPersistenceStore.prototype._prepareFind = function (findExpression) {
 
-    var modifiedExpression = findExpression || {};
+    var modifiedExpression = {};
 
     // ideally we should allow sort, but PouchDB-find-plugin
-    // has bug on that, so disable sorting at this time.
-    var sortFieldsArray = modifiedExpression.sort;
-    if (sortFieldsArray !== undefined) {
-      delete modifiedExpression.sort;
-    }
+    // has bug on that, so disable sorting at this time by
+    // not copy sort from original expression.
 
     // selector is required from pouchdb.find plugin, thus create a selector
     // property if no selector is explicitely defined in findExpression. The
     // default selector is {'_id': {$gt: null}} which selects everything.
-    var selector = modifiedExpression.selector;
+    var selector = findExpression.selector;
     if (!selector) {
       modifiedExpression.selector = {
         '_id': {'$gt': null}
       };
+    } else {
+      modifiedExpression.selector = selector;
     }
 
     // our key attribute maps to pouchdb documents' _id field.
-    var fields = modifiedExpression.fields;
+    var fields = findExpression.fields;
     if (fields && fields.length) {
       var modifiedFields = fields.map(function (x) {
         if (x === 'key') {

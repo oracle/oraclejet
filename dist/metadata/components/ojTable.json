@@ -1,9 +1,14 @@
 {
   "name": "oj-table",
-  "version": "6.1.0",
-  "jetVersion": "6.1.0",
+  "version": "6.2.0",
+  "jetVersion": "6.2.0",
   "displayName": "Table",
   "type": "core",
+  "extension": {
+    "vbdt": {
+      "module": "ojs/ojtable"
+    }
+  },
   "styleClasses": [
     {
       "styleGroup": [
@@ -25,7 +30,7 @@
     }
   ],
   "description": "Displays data items in a tabular format with highly interactive features.",
-  "help": "https://docs.oracle.com/en/middleware/jet/6.1/reference-api/oj.ojTable.html",
+  "help": "https://docs.oracle.com/en/middleware/jet/6.2/reference-api/oj.ojTable.html",
   "properties": {
     "accessibility": {
       "description": "Accessibility attributes.",
@@ -99,10 +104,14 @@
               "displayName": "Footer Template",
               "value": null,
               "help": "columns[].footerTemplate",
-              "properties": {
-                "componentElement": {
-                  "description": "The <oj-table> custom element.",
-                  "type": "Element"
+              "extension": {
+                "vbdt": {
+                  "slotData": {
+                    "componentElement": {
+                      "description": "The <oj-table> custom element.",
+                      "type": "Element"
+                    }
+                  }
                 }
               }
             },
@@ -133,14 +142,18 @@
               "displayName": "Header Template",
               "value": null,
               "help": "columns[].headerTemplate",
-              "properties": {
-                "componentElement": {
-                  "description": "The <oj-table> custom element",
-                  "type": "Element"
-                },
-                "data": {
-                  "description": "The data object for the current header",
-                  "type": "object"
+              "extension": {
+                "vbdt": {
+                  "slotData": {
+                    "componentElement": {
+                      "description": "The <oj-table> custom element",
+                      "type": "Element"
+                    },
+                    "data": {
+                      "description": "The data object for the current header",
+                      "type": "object"
+                    }
+                  }
                 }
               }
             },
@@ -231,34 +244,38 @@
               "displayName": "Template",
               "value": null,
               "help": "columns[].template",
-              "properties": {
-                "componentElement": {
-                  "description": "The <oj-table> custom element",
-                  "type": "Element"
-                },
-                "data": {
-                  "description": "The data for the current cell being rendered",
-                  "type": "object"
-                },
-                "row": {
-                  "description": "The data for the row contained the current cell being rendered",
-                  "type": "object"
-                },
-                "index": {
-                  "description": "The zero-based index of the current row being rendered",
-                  "type": "number"
-                },
-                "columnIndex": {
-                  "description": "The zero-based index of the current column being rendered.",
-                  "type": "number"
-                },
-                "key": {
-                  "description": "The key of the current cell being rendered.",
-                  "type": "any"
-                },
-                "mode": {
-                  "description": "The mode of the row containing the cell. It can be \"edit\" or \"navigation\".",
-                  "type": "string"
+              "extension": {
+                "vbdt": {
+                  "slotData": {
+                    "componentElement": {
+                      "description": "The <oj-table> custom element",
+                      "type": "Element"
+                    },
+                    "data": {
+                      "description": "The data for the current cell being rendered",
+                      "type": "object"
+                    },
+                    "row": {
+                      "description": "The data for the row contained the current cell being rendered",
+                      "type": "object"
+                    },
+                    "index": {
+                      "description": "The zero-based index of the current row being rendered",
+                      "type": "number"
+                    },
+                    "columnIndex": {
+                      "description": "The zero-based index of the current column being rendered.",
+                      "type": "number"
+                    },
+                    "key": {
+                      "description": "The key of the current cell being rendered.",
+                      "type": "any"
+                    },
+                    "mode": {
+                      "description": "The mode of the row containing the cell. It can be \"edit\" or \"navigation\".",
+                      "type": "string"
+                    }
+                  }
                 }
               }
             },
@@ -320,10 +337,14 @@
           "displayName": "Footer Template",
           "value": null,
           "help": "columnsDefault.footerTemplate",
-          "properties": {
-            "componentElement": {
-              "description": "The <oj-table> custom element.",
-              "type": "Element"
+          "extension": {
+            "vbdt": {
+              "slotData": {
+                "componentElement": {
+                  "description": "The <oj-table> custom element.",
+                  "type": "Element"
+                }
+              }
             }
           }
         },
@@ -354,14 +375,18 @@
           "displayName": "Header Template",
           "value": null,
           "help": "columnsDefault.headerTemplate",
-          "properties": {
-            "componentElement": {
-              "description": "The <oj-table> custom element",
-              "type": "Element"
-            },
-            "data": {
-              "description": "The data object for the current header",
-              "type": "object"
+          "extension": {
+            "vbdt": {
+              "slotData": {
+                "componentElement": {
+                  "description": "The <oj-table> custom element",
+                  "type": "Element"
+                },
+                "data": {
+                  "description": "The data object for the current header",
+                  "type": "object"
+                }
+              }
             }
           }
         },
@@ -445,34 +470,38 @@
           "displayName": "Template",
           "value": null,
           "help": "columnsDefault.template",
-          "properties": {
-            "componentElement": {
-              "description": "The <oj-table> custom element",
-              "type": "Element"
-            },
-            "data": {
-              "description": "The data for the current cell being rendered",
-              "type": "object"
-            },
-            "row": {
-              "description": "The data for the row contained the current cell being rendered",
-              "type": "object"
-            },
-            "index": {
-              "description": "The zero-based index of the current row being rendered",
-              "type": "number"
-            },
-            "columnIndex": {
-              "description": "The zero-based index of the current column being rendered.",
-              "type": "number"
-            },
-            "key": {
-              "description": "The key of the current cell being rendered.",
-              "type": "any"
-            },
-            "mode": {
-              "description": "The mode of the row containing the cell. It can be \"edit\" or \"navigation\".",
-              "type": "string"
+          "extension": {
+            "vbdt": {
+              "slotData": {
+                "componentElement": {
+                  "description": "The <oj-table> custom element",
+                  "type": "Element"
+                },
+                "data": {
+                  "description": "The data for the current cell being rendered",
+                  "type": "object"
+                },
+                "row": {
+                  "description": "The data for the row contained the current cell being rendered",
+                  "type": "object"
+                },
+                "index": {
+                  "description": "The zero-based index of the current row being rendered",
+                  "type": "number"
+                },
+                "columnIndex": {
+                  "description": "The zero-based index of the current column being rendered.",
+                  "type": "number"
+                },
+                "key": {
+                  "description": "The key of the current cell being rendered.",
+                  "type": "any"
+                },
+                "mode": {
+                  "description": "The mode of the row containing the cell. It can be \"edit\" or \"navigation\".",
+                  "type": "string"
+                }
+              }
             }
           }
         },

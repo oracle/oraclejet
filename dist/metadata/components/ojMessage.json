@@ -1,11 +1,16 @@
 {
   "name": "oj-message",
-  "version": "6.1.0",
-  "jetVersion": "6.1.0",
+  "version": "6.2.0",
+  "jetVersion": "6.2.0",
   "displayName": "Message",
   "type": "core",
+  "extension": {
+    "vbdt": {
+      "module": "ojs/ojmessage"
+    }
+  },
   "description": "Displays a message",
-  "help": "https://docs.oracle.com/en/middleware/jet/6.1/reference-api/oj.ojMessage.html",
+  "help": "https://docs.oracle.com/en/middleware/jet/6.2/reference-api/oj.ojMessage.html",
   "properties": {
     "displayOptions": {
       "description": "Specifies the display options for contents of the message.",
@@ -300,6 +305,13 @@
           "type": "\"open\"|\"close\""
         }
       }
+    }
+  },
+  "slots": {
+    "detail": {
+      "description": "The detail slot is for the message's detail area.\nThe <oj-message> element accepts DOM nodes as children\nwith the detail slot. This slot is useful to add links or buttons to the detail area. The\ndefault template will just display the text value of 'message.detail' property for any message.",
+      "maxItems": 1,
+      "help": "detail"
     }
   }
 }

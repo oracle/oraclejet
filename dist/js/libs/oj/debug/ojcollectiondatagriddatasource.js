@@ -886,7 +886,7 @@ oj.CollectionDataGridDataSource.prototype.indexes = function (keys) {
     self.collection
       .indexOf(rowKey, { deferred: true })
       .then(function (rowIndex) {
-        var columnIndex;
+        var columnIndex = -1;
         // if the row exists but columns not yet set
         if (rowIndex !== -1 && self.columns == null) {
           self.collection.at(rowIndex, { deferred: true }).then(function (model) {
@@ -896,7 +896,11 @@ oj.CollectionDataGridDataSource.prototype.indexes = function (keys) {
           });
         } else {
           // if the row exists or not and columns set
-          columnIndex = self.columns.indexOf(columnKey);
+          // can have a case where columns not set yet, and model doesn't exist
+          // should return -1, -1 in that case
+          if (self.columns != null) {
+            columnIndex = self.columns.indexOf(columnKey);
+          }
           resolve({ row: rowIndex, column: columnIndex });
         }
       });

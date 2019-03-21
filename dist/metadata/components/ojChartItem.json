@@ -1,11 +1,16 @@
 {
   "name": "oj-chart-item",
-  "version": "6.1.0",
-  "jetVersion": "6.1.0",
+  "version": "6.2.0",
+  "jetVersion": "6.2.0",
   "displayName": "Chart Item",
   "type": "core",
+  "extension": {
+    "vbdt": {
+      "module": "ojs/ojchart"
+    }
+  },
   "description": "ojChartItem",
-  "help": "https://docs.oracle.com/en/middleware/jet/6.1/reference-api/oj.ojChartItem.html",
+  "help": "https://docs.oracle.com/en/middleware/jet/6.2/reference-api/oj.ojChartItem.html",
   "properties": {
     "borderColor": {
       "description": "The border color of the data item. For funnel and pyramid charts, it is used for the slice border.",
@@ -174,7 +179,6 @@
       "description": "The position of the data label. For range series, if an array of two values are provided, the first and second value will apply to the low and high point respectively. The 'outsideSlice' value only applies to pie charts. The 'aboveMarker', 'belowMarker', 'beforeMarker', and 'afterMarker' values only apply to line, area, scatter, and bubble series. The 'insideBarEdge' and 'outsideBarEdge' values only apply to non-polar bar series. Stacked bars do not support 'outsideBarEdge'. The chart does not currently adjust layout to fit labels within the plot area or deal with any overlaps between labels.",
       "type": "string|Array<string>",
       "displayName": "Label Position",
-      "value": "auto",
       "help": "labelPosition",
       "enumValues": [
         "aboveMarker",
@@ -237,7 +241,6 @@
       "description": "Defines whether the data marker is displayed. Only applies to line, area, scatter, and bubble series. If auto, the markers will be displayed whenever the data points are not connected by a line.",
       "type": "string",
       "displayName": "Marker Displayed",
-      "value": "auto",
       "help": "markerDisplayed",
       "enumValues": [
         "auto",
@@ -260,7 +263,6 @@
       "description": "The shape of the data markers. In addition to the built-in shapes, it may also take SVG path commands to specify a custom shape. The chart will style the custom shapes the same way as built-in shapes, supporting properties like color and borderColor and applying hover and selection effects. Only 'auto' is supported for range series.",
       "type": "\"circle\"|\"diamond\"|\"human\"|\"plus\"|\"square\"|\"star\"|\"triangleDown\"|\"triangleUp\"|\"auto\"|string",
       "displayName": "Marker Shape",
-      "value": "auto",
       "help": "markerShape"
     },
     "markerSize": {

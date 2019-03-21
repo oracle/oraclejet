@@ -3609,6 +3609,8 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
      * @param {boolean=} options.doNotClearMessages - if set method will not clear all messages. This
      * is provided for callers that may want to clear only some of the messages. E.g., when required
      * option changes, it clears only component messages, not custom.
+     * @param {Array<string>=} options.targetOptions - if specified, only the options specified in
+     * this array will be set. If not specified, the "value" option will be set.
      * @param {number=} options.validationMode - accepted values (defined in _VALIDATION_MODE) are:
      * <ul>
      *   <li>FULL - the default and runs both the converter and all validators. </li>
@@ -3878,7 +3880,7 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
           }
           // update value option and then format the value and update display value.
           this._updateValueOption(
-            fulfilledNewValue, event, options && options.validationContext, updateContext);
+            fulfilledNewValue, event, options && options.validationContext, updateContext, options);
           resolvedState = true;
         }
       }
@@ -4443,7 +4445,7 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
             });
           if (labelElements.length === 0) {
             // a sibling label is not found, so look for it from the document level.
-            labelElement = document.querySelector("[for='" + this.element.id + "']");
+            labelElement = document.querySelector("[for='" + widgetId + "']");
           } else {
             labelElement = labelElements[0]; // return the first match
           }
@@ -4711,6 +4713,7 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
      * @param {number=} validationContext the context in which validation was run that resulted in
      * value being updated.
      * @param {Object=} updateContext the context for updating the value option.
+     * @param {Object=} options options for updating the value.
      *
      * @private
      * @memberof oj.editableValue
@@ -4718,7 +4721,7 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
      * @see #_setOption
      * @see #_AfterSetOptionValue
      */
-    _updateValueOption: function (newValue, event, validationContext, updateContext) {
+    _updateValueOption: function (newValue, event, validationContext, updateContext, options) {
       var context = updateContext || {};
 
       // set dom event
@@ -4754,11 +4757,30 @@ oj.__registerWidget('oj.editableValue', $.oj.baseComponent,
       }
 
       context.internalSet = true;
-      this.option({ value: newValue }, { _context: context });
-      // When internalSet is true _setOption->_AfterSetOptionValue->_Refresh isn't called.
-      // We still need the converter to run and the displayValue to be refreshed, so we
-      // call this._AfterSetOptionValue ourselves
-      this._AfterSetOptionValue('value', { _context: context });
+
+      var valueMap;
+      var isValueChanged;
+      if (options && options.targetOptions) {
+        // If targetOptions is specified, update all options in the array
+        valueMap = {};
+        isValueChanged = false;
+        for (var i = 0; i < options.targetOptions.length; i++) {
+          valueMap[options.targetOptions[i]] = newValue;
+          isValueChanged = isValueChanged || (options.targetOptions[i] === 'value');
+        }
+      } else {
+        // If no targetOptions is specified, just update the "value" option
+        valueMap = { value: newValue };
+        isValueChanged = true;
+      }
+      this.option(valueMap, { _context: context });
+
+      if (isValueChanged) {
+        // When internalSet is true _setOption->_AfterSetOptionValue->_Refresh isn't called.
+        // We still need the converter to run and the displayValue to be refreshed, so we
+        // call this._AfterSetOptionValue ourselves
+        this._AfterSetOptionValue('value', { _context: context });
+      }
     },
 
     /**

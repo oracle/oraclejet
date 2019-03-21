@@ -3,8 +3,8 @@
  * All rights reserved.
  */
 
-define(['./persistenceManager', './persistenceStoreManager', './persistenceUtils', './impl/logger'],
-  function (persistenceManager, persistenceStoreManager, persistenceUtils, logger) {
+define(['./persistenceManager', './persistenceStoreManager', './persistenceUtils', './impl/logger', './impl/sql-where-parser.min'],
+  function (persistenceManager, persistenceStoreManager, persistenceUtils, logger, sqlWhereParser) {
     'use strict';
   
     /**
@@ -128,8 +128,16 @@ define(['./persistenceManager', './persistenceStoreManager', './persistenceUtils
       return persistenceManager.getCache().hasMatch(request, {ignoreSearch: true}).then(function (hasMatch) {
         return persistenceStoreManager.openStore(storeName).then(function (store) {
           if (hasMatch) {
-            // query in the shredded data
-            return store.find(findQuery);
+            // check if it's a single row query. If so then we don't need to
+            // do a find.
+            return persistenceManager.getCache().match(request, {ignoreSearch: true}).then(function (response) {
+              if (response.headers.get('x-oracle-jscpt-resource-type') === 'single') {
+                return Promise.resolve();
+              } else {
+                // query in the shredded data
+                return store.find(findQuery);
+              }
+            });
           } else {
             // this might be a single row query so we need to parse the URL for an id based query
             var id = _getRequestUrlId(request);
@@ -142,7 +150,9 @@ define(['./persistenceManager', './persistenceStoreManager', './persistenceUtils
           return persistenceManager.getCache().match(request, {ignoreSearch: true}).then(function (response) {
             if (response) {
               var hasMore = false;
+              var totalResults = 0;
               if (results) {
+                totalResults = results.length;
                 if (offset
                   && offset > 0) {
                   if (offset < results.length)
@@ -172,7 +182,7 @@ define(['./persistenceManager', './persistenceStoreManager', './persistenceUtils
                 var resourceType = dataArray[0].resourceType;
                 var transformedResults = {
                   name: storeName,
-                  data: results,
+                  data: results != null ? results : dataArray[0].data,
                   resourceType: resourceType
                 };
                 return unshredder([transformedResults], response).then(function (response) {
@@ -191,6 +201,7 @@ define(['./persistenceManager', './persistenceStoreManager', './persistenceUtils
                             payloadJson.offset = parseInt(offset, 10);
                           }
                           payloadJson.hasMore = hasMore;
+                          payloadJson.totalResults = totalResults;
                         }
                         return persistenceUtils.setResponsePayload(response, payloadJson);
                       } catch (err) {
@@ -235,23 +246,89 @@ define(['./persistenceManager', './persistenceStoreManager', './persistenceUtils
       var findQuery = {};
 
       if (value) {
+        var parser = new sqlWhereParser();
         var queryExpArray = value.split(';');
         var i;
-        var queryKey;
         var selectorQuery = {};
-        for (i = 0; i < queryExpArray.length; i++) {
-          queryKey = queryExpArray[i].split('=')[0];
-
-          if (queryKey) {
-            var queryVal = queryExpArray[i].split('=')[1].replace(/^"|'(.*)'|"$/, '$1');
-            selectorQuery["value." + queryKey] = queryVal;
+        
+          for (i = 0; i < queryExpArray.length; i++) {
+            
+            selectorQuery = parser.parse(queryExpArray[i], function(operatorValue, operands)
+              {
+                operatorValue = operatorValue.toUpperCase();
+                // the LHS operand is always a value operand
+                if (operatorValue != 'AND' &&
+                  operatorValue != 'OR') {
+                  operands[0] = 'value.' + operands[0];
+                }
+                var lhsOp = operands[0];
+                var rhsOp = operands[1];
+                var returnExp = {};
+                switch (operatorValue) {
+                  case '>':
+                    returnExp[lhsOp] = {
+                      $gt: rhsOp
+                    };
+                    break;
+                  case '<':
+                    returnExp[lhsOp] = {
+                      $lt: rhsOp
+                    };
+                    break;
+                  case '>=':
+                    returnExp[lhsOp] = {
+                      $gte: rhsOp
+                    };
+                    break;
+                  case '<=':
+                    returnExp[lhsOp] = {
+                      $lte: rhsOp
+                    };
+                    break;
+                  case '=':
+                    returnExp[lhsOp] = {
+                      $eq: rhsOp
+                    };
+                    break;
+                  case '!=':
+                    returnExp[lhsOp] = {
+                      $ne: rhsOp
+                    };
+                    break;
+                  case 'AND':
+                    returnExp = {
+                      $and: operands
+                    };
+                    break;
+                  case 'OR':
+                    returnExp = {
+                      $or: operands
+                    };
+                    break;
+                  case 'LIKE':
+                    rhsOp = rhsOp.replace('%', '.+');
+                    returnExp[lhsOp] = {
+                      $regex: rhsOp
+                    };
+                    break;
+                  case 'BETWEEN':
+                    var betweenOperands = [];
+                    betweenOperands[0] = {};
+                    betweenOperands[1] = {};
+                    betweenOperands[0][lhsOp] = {$gte: operands[1]};
+                    betweenOperands[1][lhsOp] = {$lte: operands[2]};
+                    returnExp = {
+                      $and: betweenOperands
+                    };
+                    break;
+                }
+                return returnExp;
+              });
+          }
+          if (Object.keys(selectorQuery).length > 0) {
+            findQuery.selector = selectorQuery;
           }
         }
-
-        if (Object.keys(selectorQuery).length > 0) {
-          findQuery.selector = selectorQuery;
-        }
-      }
       return findQuery;
     };
   
@@ -384,7 +461,7 @@ define(['./persistenceManager', './persistenceStoreManager', './persistenceUtils
     function _getRequestUrlId(request) {
       var urlTokens = request.url.split('/');
       if (urlTokens.length > 1) {
-        return urlTokens[urlTokens.length - 1];
+        return urlTokens[urlTokens.length - 1].split('?')[0];
       }
       return null;
     };
@@ -392,8 +469,8 @@ define(['./persistenceManager', './persistenceStoreManager', './persistenceUtils
     function _getRequestCollectionUrl(request) {
       var urlTokens = request.url.split('/');
       if (urlTokens.length > 1) {
-        var id = _getRequestUrlId(request);
-        return request.url.substring(0, request.url.length - id.length - 1);
+        urlTokens.pop();
+        return urlTokens.join('/');
       }
       return null;
     };

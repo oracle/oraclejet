@@ -3825,6 +3825,8 @@ oj.__registerWidget('oj.ojStatusMeterGauge', $.oj.dvtBaseGauge,
  * @typedef {Object} oj.ojStatusMeterGauge.ReferenceLine
  * @property {string} [color]  The color of the reference line.
  * @property {number} [value] The value of the reference line.
+ * @property {number=} lineWidth  The width of the reference line.
+ * @property {("dashed"|"dotted"|"solid")=} lineStyle="solid" The line style of the reference line.
  */
 /**
  * @typedef {Object} oj.ojStatusMeterGauge.Threshold

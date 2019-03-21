@@ -1,11 +1,16 @@
 {
   "name": "oj-bind-dom",
-  "version": "6.1.0",
-  "jetVersion": "6.1.0",
+  "version": "6.2.0",
+  "jetVersion": "6.2.0",
   "displayName": "Bind Dom",
   "type": "core",
+  "extension": {
+    "vbdt": {
+      "module": "ojs/ojbinddom"
+    }
+  },
   "description": "Renders HTML content with access to passed in data properties.",
-  "help": "https://docs.oracle.com/en/middleware/jet/6.1/reference-api/oj.ojBindDom.html",
+  "help": "https://docs.oracle.com/en/middleware/jet/6.2/reference-api/oj.ojBindDom.html",
   "properties": {
     "config": {
       "description": "Configuration object that defines a view and a data available to the oj-bind-dom element.\nSee details for each attribute. The configuration object can be specified\neither directly or via a Promise.",

@@ -2342,7 +2342,9 @@ DvtDataGrid.prototype._shouldInitialize = function () {
 DvtDataGrid.prototype._handleInitialization = function (hasData) {
   if (hasData === true) {
     this.resizeGrid();
-    this.fillViewport();
+    if (this.m_startRow === 0 && this.m_startCol === 0) {
+      this.fillViewport();
+    }
 
     if (this.isFetchComplete()) {
       this._updateActive(this.m_options.getCurrentCell(), false, false);
@@ -2861,10 +2863,12 @@ DvtDataGrid.prototype._sizeDatabodyScroller = function () {
   this.setElementWidth(scroller, Math.min(maxWidth, totalWidth));
 
   if (this.m_initialized) {
-    this.m_scrollWidth = (this.getElementWidth(scroller) - this.getElementWidth(databody)) +
-      (this.m_hasVerticalScroller ? this.m_utils.getScrollbarSize() : 0);
-    this.m_scrollHeight = (this.getElementHeight(scroller) - this.getElementHeight(databody)) +
-      (this.m_hasHorizontalScroller ? this.m_utils.getScrollbarSize() : 0);
+    this.m_scrollWidth = (this.getElementWidth(scroller) - Math.min(this.getElementWidth(scroller),
+      this.getElementWidth(databody) -
+      (this.m_hasVerticalScroller ? this.m_utils.getScrollbarSize() : 0)));
+    this.m_scrollHeight = (this.getElementHeight(scroller) - Math.min(
+      this.getElementHeight(scroller), this.getElementHeight(databody) -
+      (this.m_hasHorizontalScroller ? this.m_utils.getScrollbarSize() : 0)));
   }
 };
 
@@ -3454,18 +3458,18 @@ DvtDataGrid.prototype._scrollToScrollPositionObject = function (scrollPositionOb
   });
 
   indexFromKeyPromise.then(function (returnObj) {
-    var newScrollX = self._getPositionEstimate('column', dir, columnKey,
+    var newScrollX = Math.floor(self._getPositionEstimate('column', dir, columnKey,
                                                returnObj.columnIndexFromKey,
                                                columnIndex,
                                                x, offsetX,
                                                self.m_currentScrollLeft, self._getMaxRightPixel(),
-                                               self.m_avgColWidth);
-    var newScrollY = self._getPositionEstimate('row', 'top', rowKey,
+                                               self.m_avgColWidth));
+    var newScrollY = Math.floor(self._getPositionEstimate('row', 'top', rowKey,
                                                returnObj.rowIndexFromKey,
                                                rowIndex,
                                                y, offsetY,
                                                self.m_currentScrollTop, self._getMaxBottomPixel(),
-                                               self.m_avgRowHeight);
+                                               self.m_avgRowHeight));
 
     // make sure scroll is not the same, and that we aren't trying to scroll
     // out of bounds if we are at the boundry.
@@ -3475,9 +3479,15 @@ DvtDataGrid.prototype._scrollToScrollPositionObject = function (scrollPositionOb
       (newScrollY !== self.m_currentScrollTop &&
       (self.m_currentScrollTop !== self.m_scrollHeight ||
         newScrollY < self.m_currentScrollTop))) {
+      if (self.m_desiredScrollPositionObject == null) {
+        self._signalTaskStart('begin scrolling to new desired location');
+      }
       self.m_desiredScrollPositionObject = scrollPositionObject;
       self._initiateScroll(newScrollX, newScrollY);
     } else {
+      if (self.m_desiredScrollPositionObject != null) {
+        self._signalTaskEnd('reached desired location');
+      }
       self.m_desiredScrollPositionObject = null;
       self._setScrollPosition();
     }
@@ -3973,7 +3983,26 @@ DvtDataGrid.prototype.buildHeaders = function (axis, styleClass, endStyleClass) 
     this.m_rowEndHeader = endRoot;
   }
 
-  this.fetchHeaders(axis, 0, root, endRoot, null, null);
+  if (!this._isHighWatermarkScrolling()) {
+    var self = this;
+    var scrollPosition = this.m_options.getScrollPosition();
+    this._getIndexesFromScrollPosition(scrollPosition).then(function (fetchIndexes) {
+      var index = fetchIndexes[axis];
+      if (axis === 'column') {
+        self.m_startColHeader = index;
+        self.m_startColEndHeader = index;
+      } else if (axis === 'row') {
+        self.m_startRowHeader = index;
+        self.m_startRowEndHeader = index;
+      }
+      self.m_fetching[axis] = false;
+      self.fetchHeaders(axis, index, root, endRoot, null, null);
+    });
+    this.m_fetching[axis] = true;
+  } else {
+    var index = 0;
+    this.fetchHeaders(axis, index, root, endRoot, null, null);
+  }
 
   return { root: root, endRoot: endRoot };
 };
@@ -4128,6 +4157,7 @@ DvtDataGrid.prototype.handleHeadersFetchSuccess =
       if (this.m_endColHeader < 0) {
         this._hideHeader(root);
         this.m_stopColumnHeaderFetch = true;
+        this.m_startColHeader = 0;
       } else {
         this.m_hasColHeader = true;
         this._buildHeaderLabels(axis, startResults);
@@ -4144,6 +4174,7 @@ DvtDataGrid.prototype.handleHeadersFetchSuccess =
       if (this.m_endColEndHeader < 0) {
         this._hideHeader(endRoot);
         this.m_stopColumnEndHeaderFetch = true;
+        this.m_startColEndHeader = 0;
       } else {
         this.m_hasColEndHeader = true;
         this._buildHeaderLabels('columnEnd', endResults);
@@ -4160,6 +4191,7 @@ DvtDataGrid.prototype.handleHeadersFetchSuccess =
       if (this.m_endRowHeader < 0) {
         this._hideHeader(root);
         this.m_stopRowHeaderFetch = true;
+        this.m_startRowHeader = 0;
       } else {
         this.m_hasRowHeader = true;
         this._buildHeaderLabels(axis, startResults);
@@ -4176,6 +4208,7 @@ DvtDataGrid.prototype.handleHeadersFetchSuccess =
       if (this.m_endRowEndHeader < 0) {
         this._hideHeader(endRoot);
         this.m_stopRowEndHeaderFetch = true;
+        this.m_startRowEndHeader = 0;
       } else {
         this.m_hasRowEndHeader = true;
         this._buildHeaderLabels('rowEnd', endResults);
@@ -4453,6 +4486,16 @@ DvtDataGrid.prototype.buildColumnHeaders =
       this.m_startColHeaderPixel = 0;
     }
 
+    if (!this.m_initialized && this.m_startColHeader > 0) {
+      var newStartEstimate = Math.round(this.m_avgColWidth * this.m_startColHeader);
+      this._shiftHeadersAlongAxisInContainer(headerRoot.firstChild, this.m_startColHeader,
+        newStartEstimate - this.m_startColHeaderPixel,
+        this.getResources().isRTLMode() ? 'right' : 'left',
+        this.getMappedStyle('colheadercell'));
+      this.m_endColHeaderPixel = newStartEstimate + totalColumnWidth;
+      this.m_startColHeaderPixel = newStartEstimate;
+    }
+
     return undefined;
   };
 
@@ -4544,6 +4587,16 @@ DvtDataGrid.prototype.buildColumnEndHeaders =
                                              this.getResources().isRTLMode() ? 'right' : 'left',
                                              this.getMappedStyle('colendheadercell'));
       this.m_startColEndHeaderPixel = 0;
+    }
+
+    if (!this.m_initialized && this.m_startColEndHeader > 0) {
+      var newStartEstimate = Math.round(this.m_avgColWidth * this.m_startColEndHeader);
+      this._shiftHeadersAlongAxisInContainer(headerRoot.firstChild, this.m_startColEndHeader,
+        newStartEstimate - this.m_startColEndHeaderPixel,
+        this.getResources().isRTLMode() ? 'right' : 'left',
+        this.getMappedStyle('colendheadercell'));
+      this.m_endColEndHeaderPixel = newStartEstimate + totalColumnWidth;
+      this.m_startColEndHeaderPixel = newStartEstimate;
     }
 
     return undefined;
@@ -4658,6 +4711,15 @@ DvtDataGrid.prototype.buildRowHeaders =
                                              this.m_startRowHeaderPixel * -1, 'top',
                                              this.getMappedStyle('rowheadercell'));
       this.m_startRowHeaderPixel = 0;
+    }
+
+    if (!this.m_initialized && this.m_startRowHeader > 0) {
+      var newStartEstimate = Math.round(this.m_avgRowHeight * this.m_startRowHeader);
+      this._shiftHeadersAlongAxisInContainer(headerRoot.firstChild, this.m_startRowHeader,
+        newStartEstimate - this.m_startRowHeaderPixel, 'top',
+        this.getMappedStyle('rowheadercell'));
+      this.m_endRowHeaderPixel = newStartEstimate + totalRowHeight;
+      this.m_startRowHeaderPixel = newStartEstimate;
     }
 
     return undefined;
@@ -4777,6 +4839,16 @@ DvtDataGrid.prototype.buildRowEndHeaders =
                                              this.getMappedStyle('rowendheadercell'));
       this.m_startRowEndHeaderPixel = 0;
     }
+
+    if (!this.m_initialized && this.m_startRowEndHeader > 0) {
+      var newStartEstimate = Math.round(this.m_avgRowHeight * this.m_startRowEndHeader);
+      this._shiftHeadersAlongAxisInContainer(headerRoot.firstChild, this.m_startRowEndHeader,
+        newStartEstimate - this.m_startRowEndHeaderPixel, 'top',
+        this.getMappedStyle('rowendheadercell'));
+      this.m_endRowEndHeaderPixel = newStartEstimate + totalRowHeight;
+      this.m_startRowEndHeaderPixel = newStartEstimate;
+    }
+
     return undefined;
   };
 
@@ -5457,9 +5529,69 @@ DvtDataGrid.prototype.buildDatabody = function () {
     (this.m_utils.isTouchDevice() ? ' ' + this.getMappedStyle('scroller-mobile') : '');
   root.appendChild(scroller); // @HTMLUpdateOK
 
-  this.fetchCells(root, 0, 0);
+  if (!this._isHighWatermarkScrolling()) {
+    var self = this;
+    var scrollPosition = this.m_options.getScrollPosition();
+    this._getIndexesFromScrollPosition(scrollPosition).then(function (fetchIndexes) {
+      var rowIndex = fetchIndexes.row;
+      var columnIndex = fetchIndexes.column;
+
+      self.m_startRow = rowIndex;
+      self.m_startCol = columnIndex;
+
+      self.m_fetching.cells = false;
+
+      self.fetchCells(root, rowIndex, columnIndex);
+    });
+    this.m_fetching.cells = true;
+  } else {
+    var rowIndex = 0;
+    var columnIndex = 0;
+    this.fetchCells(root, rowIndex, columnIndex);
+  }
 
   return root;
+};
+
+DvtDataGrid.prototype._getIndexesFromScrollPosition = function (scrollPosition) {
+  var self = this;
+  var rowKey = scrollPosition.rowKey;
+  var columnKey = scrollPosition.columnKey;
+
+  var indexFromKeyPromise = new Promise(function (resolve) {
+    if (rowKey != null || columnKey != null) {
+      self._indexes({ row: rowKey, column: columnKey }, function (indexes) {
+        resolve({ rowIndexFromKey: indexes.row, columnIndexFromKey: indexes.column });
+      });
+    } else {
+      resolve({ rowIndexFromKey: null, columnIndexFromKey: null });
+    }
+  });
+
+  return indexFromKeyPromise.then(function (indexesFromKey) {
+    var returnObj = {};
+    if (indexesFromKey.rowIndexFromKey != null && indexesFromKey.rowIndexFromKey > 0) {
+      returnObj.row = indexesFromKey.rowIndexFromKey;
+    } else if (scrollPosition.rowIndex) {
+      returnObj.row = scrollPosition.rowIndex;
+    } else if (scrollPosition.y) {
+      returnObj.row = Math.round(scrollPosition.y / self.getDefaultRowHeight());
+    } else {
+      returnObj.row = 0;
+    }
+
+    if (indexesFromKey.columnIndexFromKey != null && indexesFromKey.columnIndexFromKey > 0) {
+      returnObj.column = indexesFromKey.columnIndexFromKey;
+    } else if (scrollPosition.columnIndex) {
+      returnObj.column = scrollPosition.columnIndex;
+    } else if (scrollPosition.x) {
+      returnObj.column = Math.round(scrollPosition.x / self.getDefaultColumnWidth());
+    } else {
+      returnObj.column = 0;
+    }
+
+    return returnObj;
+  });
 };
 
 /**
@@ -5803,16 +5935,35 @@ DvtDataGrid.prototype.handleCellsFetchSuccess = function (cellSet, cellRange, ro
 
   if (this.m_endCol >= 0 && this.m_endRow >= 0) {
     this.m_hasCells = true;
+  } else {
+    this.m_startCol = 0;
+    this.m_startRow = 0;
   }
 
   // if virtual scrolling we may need to adjust when the user hits the beginning
   if (this.m_startCol === 0 && this.m_startColPixel !== 0) {
     this._shiftCellsAlongAxis('column', -this.m_startColPixel, 0, true);
+    this.m_endColPixel += this.m_startColPixel;
     this.m_startColPixel = 0;
   }
   if (this.m_startRow === 0 && this.m_startRowPixel !== 0) {
-    this.pushRowsDown(0, -this.m_startRowPixel);
+    this._shiftCellsAlongAxis('row', -this.m_startRowPixel, 0, true);
+    this.m_endRowPixel += this.m_startRowPixel;
     this.m_startRowPixel = 0;
+  }
+
+  var newStartEstimate;
+  if (!this.m_initialized && this.m_startCol > 0) {
+    newStartEstimate = Math.round(this.m_avgColWidth * this.m_startCol);
+    this._shiftCellsAlongAxis('column', newStartEstimate - this.m_startColPixel, this.m_startCol, true);
+    this.m_endColPixel = newStartEstimate + totalColumnWidth;
+    this.m_startColPixel = newStartEstimate;
+  }
+  if (!this.m_initialized && this.m_startRow > 0) {
+    newStartEstimate = Math.round(this.m_avgRowHeight * this.m_startRow);
+    this._shiftCellsAlongAxis('row', newStartEstimate - this.m_startRowPixel, this.m_startRow, true);
+    this.m_endRowPixel = newStartEstimate + totalRowHeight;
+    this.m_startRowPixel = newStartEstimate;
   }
 
   // fetch is done
@@ -7731,7 +7882,8 @@ DvtDataGrid.prototype.fillViewport = function () {
       }
     }
 
-    if (this._getMaxTopPixel() > viewportTop) {
+    if (this._getMaxTopPixel() > viewportTop ||
+      (this.m_currentScrollTop === 0 && this._getMaxTop() > 0)) {
       fetchStart = Math.max(0, this._getMaxTop() - this.getFetchSize('row'));
       fetchSize = Math.max(0, this._getMaxTop() - fetchStart);
       this.fetchHeaders('row', fetchStart, this.m_rowHeader, this.m_rowEndHeader, fetchSize);
@@ -7753,7 +7905,8 @@ DvtDataGrid.prototype.fillViewport = function () {
       }
     }
 
-    if (this._getMaxLeftPixel() > viewportLeft) {
+    if (this._getMaxLeftPixel() > viewportLeft ||
+      (this.m_currentScrollLeft === 0 && this._getMaxLeft() > 0)) {
       fetchStart = Math.max(0, this._getMaxLeft() - this.getFetchSize('column'));
       fetchSize = Math.max(0, this._getMaxLeft() - fetchStart);
       this.fetchHeaders('column', fetchStart, this.m_colHeader, this.m_colEndHeader, fetchSize);

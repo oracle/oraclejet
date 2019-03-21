@@ -204,9 +204,13 @@ oj.CollectionTableDataSource.prototype.get = function (id, options) {
   return new Promise(function (resolve, reject) {
     if (model != null) {
       model.then(function (resolvedModel) {
-        var wrappedRow = self._wrapWritableValue(resolvedModel, resolvedModel.attributes);
-        var row = { data: wrappedRow, index: resolvedModel.index, key: resolvedModel.id };
-        resolve(row);
+        if (resolvedModel) {
+          var wrappedRow = self._wrapWritableValue(resolvedModel, resolvedModel.attributes);
+          var row = { data: wrappedRow, index: resolvedModel.index, key: resolvedModel.id };
+          resolve(row);
+        } else {
+          resolve(null);
+        }
       },
       function (e) {
         oj.TableDataSource.superclass.handleEvent.call(self, oj.TableDataSource.EventType.ERROR, e);

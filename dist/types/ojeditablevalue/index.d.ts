@@ -91,6 +91,6 @@ export interface editableValueSettableProperties<V, SV = V, RV = V> extends base
     readonly valid: 'valid' | 'pending' | 'invalidHidden' | 'invalidShown';
     value: SV;
 }
-export interface editableValueSettablePropertiesLenient<V, SV, RV> extends Partial<editableValueSettableProperties<V, SV, RV>> {
+export interface editableValueSettablePropertiesLenient<V, SV = V, RV = V> extends Partial<editableValueSettableProperties<V, SV, RV>> {
     [key: string]: any;
 }

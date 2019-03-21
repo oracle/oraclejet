@@ -3242,32 +3242,41 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
     var busyStateCallback = this.registerBusyState();
     var iterator = this.data.fetchFirst({ size: -1 })[Symbol.asyncIterator]();
 
-    // function passed to iterator.next() promise, until result.done is set to true
-    var getProcessResultsFunc = function (changeSet, onArrayChangeCallback, callbackObj) {
+    // function passed to iterator.next() promise on success, until result.done is set to true
+    var getProcessResultsFunc = function (changeSet, onArrayChangeCallback,
+      callbackObj, dataPromise) {
       return function (result) {
-        var value = result.value;
-        var entryIndex = changeSet.length;
-        for (var i = 0; i < value.metadata.length && i < value.data.length; i++) {
-          changeSet.push(valueToChangeAddItem(value.data[i], entryIndex, value.metadata[i].key));
-          entryIndex += 1;
-        }
-        if (result.done) {
-          onArrayChangeCallback.call(callbackObj, changeSet);
-          busyStateCallback();
+        if (callbackObj.dataPromise === dataPromise) {
+          var value = result.value;
+          var entryIndex = changeSet.length;
+          for (var i = 0; i < value.metadata.length && i < value.data.length; i++) {
+            changeSet.push(valueToChangeAddItem(value.data[i], entryIndex, value.metadata[i].key));
+            entryIndex += 1;
+          }
+          if (result.done) {
+            onArrayChangeCallback.call(callbackObj, changeSet);
+            busyStateCallback();
+          } else {
+            var dataPromiseLocal = iterator.next();
+            // eslint-disable-next-line no-param-reassign
+            callbackObj.dataPromise = dataPromiseLocal;
+            dataPromiseLocal.then(
+              getProcessResultsFunc(changeSet, onArrayChangeCallback,
+                                    callbackObj, dataPromiseLocal),
+              function () {
+                busyStateCallback();
+              });
+          }
         } else {
-          var successFunc = getProcessResultsFunc(changeSet, onArrayChangeCallback, callbackObj);
-          iterator.next().then(
-            successFunc,
-            function () {
-              busyStateCallback();
-            });
+          busyStateCallback();
         }
       };
     };
 
-    var successFunc = getProcessResultsFunc([], this.onArrayChange, this);
-    iterator.next().then(
-      successFunc,
+    var dataPromiseLocal = iterator.next();
+    this.dataPromise = dataPromiseLocal;
+    dataPromiseLocal.then(
+      getProcessResultsFunc([], this.onArrayChange, this, dataPromiseLocal),
       function () {
         busyStateCallback();
       });
@@ -3983,8 +3992,8 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
  *  &lt;/oj-bind-for-each>
  *
  * @example <caption>Initialize the oj-bind-for-each - access data using alias:</caption>
- *  &lt;oj-bind-for-each data="[[fruits]]" as="fruit">
- *    &lt;template>
+ *  &lt;oj-bind-for-each data="[[fruits]]">
+ *    &lt;template data-oj-as="fruit">
  *      &lt;p>&lt;oj-bind-text value="[[fruit.data.type]]">&lt;/oj-bind-text>&lt;/p>
  *    &lt;/template>
  *  &lt;/oj-bind-for-each>
@@ -4011,6 +4020,7 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
  * @memberof oj.ojBindForEach
  * @instance
  * @type {string}
+ * @ojdeprecated {since: '6.2.0', description: 'Set the alias directly on the template element using the data-oj-as attribute instead.'}
  */
 // default slot
 /**
@@ -4073,6 +4083,17 @@ oj.ComponentBinding.getDefaultInstance().setupManagedAttributes({
  * &lt;oj-bind-if test='[[myTest]]'>
  *   &lt;div>My Contents&lt;/div>
  * &lt;/oj-bind-if>
+ */
+
+/**
+ * <p>The <code class="prettyprint">oj-bind-if</code> default slot is used to
+ * specify content that will be rendered when the test condition evaluates to
+ * true.
+ * @ojstatus preview
+ * @ojchild Default
+ * @memberof oj.ojBindIf
+ * @instance
+ * @expose
  */
 
 /**

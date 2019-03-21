@@ -1473,10 +1473,7 @@ var __oj_dialog_metadata =
 
       this._setWhenReady('none');
 
-      if (this._resizableComponent && this._resizableComponent('instance')) {
-        this._resizableComponent('destroy');
-        this._resizableComponent = null;
-      }
+      this._destroyResizable();
 
       if (this.element.hasClass(OJ_DRAGGABLE)) {
         this.element.draggable('destroy');
@@ -1604,7 +1601,7 @@ var __oj_dialog_metadata =
      */
     _beforeCloseHandler: function (psOptions) {
       var rootElement = psOptions[oj.PopupService.OPTION.POPUP];
-
+      this._destroyResizable();
       var animationOptions = (ThemeUtils.parseJSONFromFontFamily(OJD_OPTION_DEFAULTS)
         || {}).animation;
       if (!this._ignoreBeforeCloseResultant && animationOptions && animationOptions.close) {
@@ -1731,10 +1728,6 @@ var __oj_dialog_metadata =
       if (this.options.dragAffordance === 'title-bar' && $.fn.draggable) {
         this._makeDraggable();
       }
-      if (this.options.resizeBehavior === 'resizable') {
-        this._makeResizable();
-      }
-
       // normalize alignments, so that start and end keywords work as expected.
       var isRtl = this._GetReadingDirection() === 'rtl';
       var position = oj.PositionUtils.coerceToJqUi(this.options.position);
@@ -1813,6 +1806,7 @@ var __oj_dialog_metadata =
     _afterOpenHandler: function (psOptions) {
       var rootElement = psOptions[oj.PopupService.OPTION.POPUP];
       rootElement.parent().removeClass('oj-animate-open');
+      this._makeResizable();
       this._trigger('open');
       this._focusTabbable();
     },
@@ -2158,7 +2152,17 @@ var __oj_dialog_metadata =
 
       this.element.addClass(OJ_DRAGGABLE);
     },
+    _destroyResizable: function () {
+      if (this._resizableComponent && this._resizableComponent('instance')) {
+        this._resizableComponent('destroy');
+        delete this._resizableComponent;
+      }
+    },
     _makeResizable: function () {
+      this._destroyResizable();
+      if (this.options.resizeBehavior !== 'resizable') {
+        return;
+      }
       var that = this;
       var resizeHandles = 'n,e,s,w,se,sw,ne,nw';
 
@@ -2214,7 +2218,6 @@ var __oj_dialog_metadata =
     _setOption: function (key, value, flags) {
       /* jshint maxcomplexity:15*/
       var isDraggable;
-      var isResizable;
 
       // don't allow a dialog to be disabled.
       if (key === 'disabled') {
@@ -2250,26 +2253,9 @@ var __oj_dialog_metadata =
           return;
 
         case 'resizeBehavior':
-
-          isResizable = false;
-          if (this._resizableComponent) {
-            isResizable = true;
-          }
-
-        // currently resizable, becoming non-resizable
-          if (isResizable && value !== 'resizable') {
-          // uiDialog._resizableComponent("destroy");
-            if (this._resizableComponent('instance')) {
-              this._resizableComponent('destroy');
-            }
-            this._resizableComponent = null;
-          }
-
-        // currently non-resizable, becoming resizable
-          if (!isResizable && value === 'resizable') {
+          if (oj.ZOrderUtils.getStatus(this.element) === oj.ZOrderUtils.STATUS.OPEN) {
             this._makeResizable();
           }
-
           break;
 
         case 'title':
@@ -2692,26 +2678,8 @@ var __oj_dialog_metadata =
      *   </thead>
      *   <tbody>
      *     <tr>
-     *       <td>oj-dialog-header</td>
-     *       <td><p> Class automatically generated on the header slot.</td>
-     *       </td>
-     *     </tr>
-     *     <tr>
      *       <td>oj-dialog-title</td>
      *       <td><p> Class used to format the title. Automatically created headers use <code class="prettyprint"> oj-dialog-title </code> to format the title. For user-defined headers, you may want to use the <code class="prettyprint"> oj-dialog-title </code> so that the title in your user-defined header is stylistically similar to a default title. </td>
-     *     </tr>
-     *     <tr>
-     *       <td>oj-dialog-body</td>
-     *       <td><p> Class automatically generated on the default (body) slot.</td>
-     *     </tr>
-     *     <tr>
-     *       <td>oj-dialog-content</td>
-     *       <td><p> Class automatically generated that wraps body content. Applications can use this class to apply style properties to body content.</td>
-     *       </td>
-     *     </tr>
-     *     <tr>
-     *       <td>oj-dialog-footer</td>
-     *       <td><p> Class automatically generated on the footer slot.</td>
      *     </tr>
      *     <tr>
      *       <td>oj-dialog-footer-separator</td>

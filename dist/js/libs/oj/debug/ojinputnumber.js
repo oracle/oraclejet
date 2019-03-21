@@ -146,6 +146,11 @@ var __oj_input_number_metadata =
       "type": "number",
       "value": 1
     },
+    "transientValue": {
+      "type": "number",
+      "writeback": true,
+      "readOnly": true
+    },
     "translations": {
       "type": "object",
       "value": {},
@@ -963,6 +968,29 @@ var __oj_input_number_metadata =
          * */
         step: 1,
         /**
+         * <p>The <code class="prettyprint">transientValue</code> is the read-only attribute for
+         * retrieving the transient value from the component.</p>
+         * <p>
+         * The <code class="prettyprint">transientValue</code> updates to display the transient
+         * changes from pressing the up or down arrow (subject to the step constraints). The difference
+         * in behavior is <code class="prettyprint">transientValue</code> will be updated
+         * as the up or down arrow is pressed, whereas <code class="prettyprint">value</code>
+         * is updated only after the up or down arrow is released.
+         * </p>
+         * <p>This is a read-only attribute so page authors cannot set or change it directly.</p>
+         * @expose
+         * @access public
+         * @instance
+         * @memberof oj.ojInputNumber
+         * @type {number}
+         * @ojsignature {target:"Type", value:"number"}
+         * @since 6.2.0
+         * @readonly
+         * @ojwriteback
+         * @ojstatus preview
+         */
+        transientValue: undefined,
+        /**
          * List of synchronous validators used by component along with asynchronous validators
          * and the implicit component validators when performing validation. Each item is either an
          * instance that duck types {@link oj.Validator}, or is an Object literal containing the
@@ -1403,6 +1431,11 @@ var __oj_input_number_metadata =
        */
       _AfterCreate: function () {
         this._super();
+
+        // Initialize transientValue to be the same as value upon component creation
+        var context = { writeback: true, internalSet: true, readOnly: true };
+        this.option({ transientValue: this.options.value }, { _context: context });
+
         this._refreshAriaMinMax();
         // buttons and aria-valuenow and aria-valuetext are updated in _Refresh for value which
         // is called from EditableValue's _AfterCreate.
@@ -1698,6 +1731,10 @@ var __oj_input_number_metadata =
           coercedValue = this._parse(key, value);
         } else if (key === 'step') {
           coercedValue = this._parseStep(value);
+        } else if (key === 'transientValue') {
+          // transientValue is readOnly, so throw an error and return.
+          Logger.error(key + ' option cannot be set');
+          return;
         } else {
           coercedValue = value;
         }
@@ -1707,6 +1744,12 @@ var __oj_input_number_metadata =
         // and refreshes aria-valuenow/valuetext/valuemin/valuemax
         // call _super with the newly coerced 'value' property.
         this._super(key, coercedValue, flags);
+
+        if (key === 'value') {
+          // Set transientValue to be the same if value is set programmatically
+          var context = { writeback: true, internalSet: true, readOnly: true };
+          this.option({ transientValue: this.options.value }, { _context: context });
+        }
 
         if (key === 'max' || key === 'min') {
           // since validators are immutable, they will contain min + max as local values.
@@ -1971,10 +2014,10 @@ var __oj_input_number_metadata =
           switch (event.keyCode) {
             case keyCode.UP:
             case keyCode.DOWN:
-              this._stop();
+              this._stop(event);
               break;
             default:
-              this._stop();
+              this._stop(event);
               break;
           }
         },
@@ -2270,7 +2313,7 @@ var __oj_input_number_metadata =
             // holds down the up. When he lets up, the number shouldn't keep going up just
             // because the stepQueue isn't empty yet.
             this.stepQueue = [];
-            this._spin(direction * stepOpt, event);
+            this._spin(direction * stepOpt, event, true);
           }
         }
       },
@@ -2282,9 +2325,10 @@ var __oj_input_number_metadata =
        * @memberof oj.ojInputNumber
        * @param {Number} step - Number of steps to increment.
        * Negative steps means we are decrementing.
-       * @param {Object=} event an optional event if this was a result of ui interaction.
+       * @param {Object|null} event an event if this was a result of ui interaction. null otherwise.
+       * @param {boolean} transientOnly true to update transientValue only. false to update both transientValue and value.
        */
-      _spin: function (step, event) {
+      _spin: function (step, event, transientOnly) {
         var adjustedValue;
         var currentDisplayValue = this._GetDisplayValue();
         var displayValue = currentDisplayValue || 0;
@@ -2293,8 +2337,10 @@ var __oj_input_number_metadata =
         // parsing is synchronous, but _SetValue could be async if we have async-validators.
         if (value !== undefined) {
           adjustedValue = this._adjustParsedValueOnSpinAndUpdateDisplay(value, step);
+          this._valuePending = transientOnly;
           return this._SetValue(adjustedValue, event,
-            { validationMode: this._VALIDATION_MODE.VALIDATORS_ONLY });
+            { validationMode: this._VALIDATION_MODE.VALIDATORS_ONLY,
+              targetOptions: transientOnly ? ['transientValue'] : ['transientValue', 'value'] });
         }
         // parsing failed if I get here. It is showing the error message, so I can return.
         this._updateButtonsAria(value);
@@ -2519,9 +2565,19 @@ var __oj_input_number_metadata =
        * @private
        * @memberof oj.ojInputNumber
        */
-      _stop: function () {
+      _stop: function (event) {
         if (!this.spinning) {
           return;
+        }
+        if (this._valuePending) {
+          // transientValue would have been validated, so simply set value to it.
+          // Normally when the value is updated, EditableValue._AfterSetOptionValue checks if it
+          // needs to run deferred validation and refresh UI display value.  Since we
+          // get here only from UI event, neither of those are necessary, so there is no
+          // need to call _AfterSetOptionValue.
+          var context = { originalEvent: event, internalSet: true };
+          this.option({ value: this.options.transientValue }, { _context: context });
+          this._valuePending = false;
         }
         clearTimeout(this.timer);
         this.spinning = false;
@@ -2645,14 +2701,15 @@ var __oj_input_number_metadata =
         var self = this;
         var currentCounter;
 
-        this._stop();
+        this._stop(event);
         // clear step queue
         this.stepQueue = [];
         // used to ignore if we get newer blurs
         this._blurEnterSetValueCounter += 1;
         currentCounter = this._blurEnterSetValueCounter;
 
-        setValueReturn = this._SetValue(val, event);
+        this._valuePending = false;
+        setValueReturn = this._SetValue(val, event, { targetOptions: ['transientValue', 'value'] });
 
         if (setValueReturn instanceof Promise) {
           // We already set BusyContext in _SetValue
@@ -2962,7 +3019,7 @@ var __oj_input_number_metadata =
           currentEvent = event;
         }
 
-        spinPromise = this._spin(currentSpinStep, currentEvent);
+        spinPromise = this._spin(currentSpinStep, currentEvent, false);
         if (spinPromise instanceof Promise) {
           this.stepQueue.push({ step: currentSpinStep, event: currentEvent });
           spinPromise.then(function () {
@@ -2985,7 +3042,7 @@ var __oj_input_number_metadata =
       _step: function (step, event) {
         this._start();
         this._stepNoStartStop(step, event);
-        this._stop();
+        this._stop(event);
       },
 
       /**
@@ -3093,8 +3150,8 @@ var __oj_input_number_metadata =
        */
       /**
        * {@ojinclude "name":"ojStylingDocIntro"}
-       * <p>The form control text align style classes can be applied to the component, or an ancestor element. When
-       * applied to an ancestor element, all form components that support the text align style classes will be affected.
+       * <p>The form control style classes can be applied to the component, or an ancestor element. When
+       * applied to an ancestor element, all form components that support the style classes will be affected.
        *
        * <table class="generic-table styling-table">
        *   <thead>
@@ -3104,6 +3161,12 @@ var __oj_input_number_metadata =
        *     </tr>
        *   </thead>
        *   <tbody>
+       *     <tr>
+       *       <td>oj-form-control-full-width</td>
+       *       <td>Changes the max-width to 100% so that form components will occupy
+       *           all the available horizontal space
+       *       </td>
+       *     </tr>
        *     <tr>
        *       <td>oj-form-control-text-align-right</td>
        *       <td>Aligns the text to the right regardless of the reading direction.

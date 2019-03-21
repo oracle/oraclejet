@@ -137,6 +137,7 @@ var __oj_menu_metadata =
   },
   "methods": {
     "refresh": {},
+    "close": {},
     "open": {},
     "setProperty": {},
     "getProperty": {},
@@ -2514,6 +2515,23 @@ var __oj_menu_metadata =
       this.__dismiss(event, selectUi);
     },
 
+    /**
+     * Closes the menu. This method does not accept any arguments.
+     *
+     * @expose
+     * @method
+     * @name oj.ojMenu#close
+     * @memberof oj.ojMenu
+     * @instance
+     * @return {void}
+     *
+     * @example <caption>Invoke the <code class="prettyprint">close</code> method:</caption>
+     * myMenu.close();
+     */
+    close: function () {
+      this.__dismiss();
+    },
+
     /*
      * Internal method, e.g. called by Button for MenuButton functionality.
      * Could make it public if ever needed.
@@ -2522,6 +2540,12 @@ var __oj_menu_metadata =
      */
     __dismiss: function (event, selectUi) { // Internal visibility; called by Button's MenuButton functionality.  Not an override (not in base class).  Method name unquoted so will be safely optimized (renamed) by GCC as desired.
       if (this._isOperationPending('close', '__dismiss', [event, selectUi])) {
+        return;
+      }
+
+      // no-op for a closed menu
+      var status = oj.ZOrderUtils.getStatus(this.element);
+      if (!(status === oj.ZOrderUtils.STATUS.OPEN)) {
         return;
       }
 
@@ -2795,7 +2819,7 @@ var __oj_menu_metadata =
      * @fires oj.ojMenu#ojAnimationEnd
      * @fires oj.ojMenu#ojOpen
      *
-     * @param {Object=} event What triggered the menu launch.  May be <code class="prettyprint">null</code>.  May be omitted if subsequent params are omitted.
+     * @param {Event=} event What triggered the menu launch.  May be <code class="prettyprint">null</code>.  May be omitted if subsequent params are omitted.
      * @param {Object=} openOptions Options to merge with the <code class="prettyprint">openOptions</code> option.  May be <code class="prettyprint">null</code>.  May be omitted if subsequent params are omitted.
      *
      * @example <caption>Invoke the <code class="prettyprint">open</code> method:</caption>

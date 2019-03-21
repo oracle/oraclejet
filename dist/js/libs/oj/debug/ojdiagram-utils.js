@@ -14,9 +14,11 @@ define(['ojs/ojmap'], function(ojMap)
 /* global ojMap:false */
 
 /**
- * @class
+ * @namespace
  * @name oj.DiagramUtils
  * @ojtsmodule
+ * @ojtsimport {module: "ojdiagram", type: "AMD", imported: ["DvtDiagramLayoutContext", "DvtDiagramLayoutContextNode",
+ *              "DvtDiagramLayoutContextLink"]}
  *
  * @classdesc
  * <h3>Diagram Layout Utilities</h3>
@@ -50,7 +52,6 @@ define(['ojs/ojmap'], function(ojMap)
  * </code></pre>
  * @export
  * @hideconstructor
- * @constructor
  * @since 3.0
  */
 var DiagramUtils = function () {
@@ -62,11 +63,11 @@ var DiagramUtils = function () {
  * @typedef {Object} oj.DiagramUtils.LabelLayout
  * @property {number} x x-coordinate for the label
  * @property {number} y y-coordinate for the label
- * @property {number} rotationPointX x-coordinate for label rotation point
- * @property {number} rotationPointY y-coordinate for label rotation point
- * @property {number} angle rotation angle for the label
- * @property {string} halign horizontal alignment for the label. Valid values are "left", "right" or "center"
- * @property {string} valign vertical alignment for the label. Valid values are "top", "middle", "bottom" or "baseline".
+ * @property {number=} rotationPointX x-coordinate for label rotation point
+ * @property {number=} rotationPointY y-coordinate for label rotation point
+ * @property {number=} angle rotation angle for the label
+ * @property {string=} halign horizontal alignment for the label. Valid values are "left", "right" or "center"
+ * @property {string=} valign vertical alignment for the label. Valid values are "top", "middle", "bottom" or "baseline".
  *                           The default value is <code class="prettyprint">"top"</code>
  */
 
@@ -77,16 +78,16 @@ var DiagramUtils = function () {
  * @property {any} obj.nodes.id id for the node
  * @property {number} obj.nodes.x x-coordinate for the node
  * @property {number} obj.nodes.y y-coordinate for the node
- * @property {Object} obj.nodes.labelLayout An object that defines label layout for the node. See {@link oj.DiagramUtils.LabelLayout} object.
+ * @property {Object=} obj.nodes.labelLayout An object that defines label layout for the node. See {@link oj.DiagramUtils.LabelLayout} object.
  *                                          The object defines absolute coordinates for label position.
- * @property {Array<Object>} obj.links An array of objects with the following properties that describe a path for the diagram link and a layout for the link's label.
+ * @property {Array<Object>=} obj.links An array of objects with the following properties that describe a path for the diagram link and a layout for the link's label.
  * @property {any} obj.links.id id for the link
- * @property {string} obj.links.path A string that represents an SVG path for the link.
- * @property {any} obj.links.coordinateSpace The coordinate container id for the link. If specified the link points will be applied relative to that container.
+ * @property {string=} obj.links.path A string that represents an SVG path for the link.
+ * @property {any=} obj.links.coordinateSpace The coordinate container id for the link. If specified the link points will be applied relative to that container.
  *                                              If the value is not set, the link points are in the global coordinate space.
- * @property {Object} obj.links.labelLayout An object that defines label layout for the link. See {@link oj.DiagramUtils.LabelLayout} object.
+ * @property {Object=} obj.links.labelLayout An object that defines label layout for the link. See {@link oj.DiagramUtils.LabelLayout} object.
  *
- * @property {Object} obj.nodeDefaults An object that defines the default layout of the node label
+ * @property {Object=} obj.nodeDefaults An object that defines the default layout of the node label
  * @property {Object|Function} obj.nodeDefaults.labelLayout An object that defines default label layout for diagram nodes.
  *                         See {@link oj.DiagramUtils.LabelLayout} object. The object defines relative coordinates for label position.
  *                         E.g. if all the node labels should be positioned with a certain offset relative to the node,
@@ -99,20 +100,20 @@ var DiagramUtils = function () {
  *                           The return value of the function is a label object with the following properties : {@link oj.DiagramUtils.LabelLayout}.
  *                           The object defines absolute coordinates for label position.
  *                          </p>
- * @property {Object} obj.linkDefaults An object that defines a function for generating a link path and a default layout for the link label
- * @property {Function} obj.linkDefaults.path a callback function that will be used to generate a link path. The function will receive the following parameters:
+ * @property {Object=} obj.linkDefaults An object that defines a function for generating a link path and a default layout for the link label
+ * @property {Function=} obj.linkDefaults.path a callback function that will be used to generate a link path. The function will receive the following parameters:
  *                      <ul>
  *                        <li>{DvtDiagramLayoutContext} - layout context for the diagram</li>
  *                        <li>{DvtDiagramLayoutContextLink} - layout context for the current link</li>
  *                      </ul>
  *                      The return value of the function is a string that represents an SVG path for the link
- * @property {Function} obj.linkDefaults.labelLayout a function that defines default label layout for diagram links. The function will receive the following parameters:
+ * @property {Function=} obj.linkDefaults.labelLayout a function that defines default label layout for diagram links. The function will receive the following parameters:
  *                      <ul>
  *                        <li>{DvtDiagramLayoutContext} - layout context for the diagram</li>
  *                        <li>{DvtDiagramLayoutContextLink} - layout context for the current link</li>
  *                      </ul>
  *                      The return value of the function is a label object with the following properties {@link oj.DiagramUtils.LabelLayout}
- * @property {Object|Function} obj.viewport An object with the following properties that defines diagram viewport.
+ * @property {(Object|Function)=} obj.viewport An object with the following properties that defines diagram viewport.
  *                         <p>Alternatively a viewport can be defined with a function. The function will receive the following parameters:
  *                           <ul>
  *                             <li>{DvtDiagramLayoutContext} - layout context for the diagram</li>
@@ -126,10 +127,11 @@ var DiagramUtils = function () {
  * @returns {Function} layout callback function
  * @ojsignature {target: "Type", value: "oj.DiagramUtils.LabelLayout", for: "obj.nodes.labelLayout"}
  * @ojsignature {target: "Type", value: "oj.DiagramUtils.LabelLayout", for: "obj.links.labelLayout"}
- * @ojsignature {target: "Type", value: "oj.DiagramUtils.LabelLayout|function(DvtDiagramLayoutContext,DvtDiagramLayoutContextNode):oj.DiagramUtils.LabelLayout", for: "obj.nodeDefaults.labelLayout"}
- * @ojsignature {target: "Type", value: "function(DvtDiagramLayoutContext,DvtDiagramLayoutContextLink):string", for: "obj.linkDefaults.path"}
- * @ojsignature {target: "Type", value: "function(DvtDiagramLayoutContext,DvtDiagramLayoutContextLink):oj.DiagramUtils.LabelLayout", for: "obj.linkDefaults.labelLayout"}
- * @ojsignature {target: "Type", value: "function(DvtDiagramLayoutContext):void", for: "returns"}
+ * @ojsignature {target: "Type", value: "oj.DiagramUtils.LabelLayout|((context: DvtDiagramLayoutContext, node: DvtDiagramLayoutContextNode) => oj.DiagramUtils.LabelLayout)", for: "obj.nodeDefaults.labelLayout"}
+ * @ojsignature {target: "Type", value: "(context: DvtDiagramLayoutContext, link: DvtDiagramLayoutContextLink) => string", for: "obj.linkDefaults.path"}
+ * @ojsignature {target: "Type", value: "(context: DvtDiagramLayoutContext, link: DvtDiagramLayoutContextLink) => oj.DiagramUtils.LabelLayout", for: "obj.linkDefaults.labelLayout"}
+ * @ojsignature {target: "Type", value: "{x: number, y: number, w: number, h: number} |((context: DvtDiagramLayoutContext) => {x: number, y: number, w: number, h: number})", for: "obj.viewport"}
+ * @ojsignature {target: "Type", value: "(context: DvtDiagramLayoutContext) => void", for: "returns"}
  * @export
  * @method getLayout
  * @memberof oj.DiagramUtils

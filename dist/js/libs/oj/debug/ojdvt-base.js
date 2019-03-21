@@ -514,8 +514,10 @@ oj.__registerWidget('oj.dvtBaseComponent', $.oj.baseComponent, {
     this._optionsCopy = null;
     this._templateMap = {};
     this._dataProviderState = {};
-    // eslint-disable-next-line new-cap
-    this._treeKeyDataMap = new ojMap();
+    this._treeKeyDataMap = {};
+    this._dpNodeContextData = {};
+    this._dpNodeValueData = {};
+    this._dataValuePromise = {};
 
     // Append the component style classes to the element
     var componentStyles = this._GetComponentStyleClasses();
@@ -540,6 +542,7 @@ oj.__registerWidget('oj.dvtBaseComponent', $.oj.baseComponent, {
     this._context.oj = oj;
     this._context.KeySetImpl = KeySetImpl;
     this._context.ojMap = ojMap;
+    this._context.dataProviderProps = Object.keys(this._GetSimpleDataProviderConfigs());
 
     // Set the reading direction on the context
     this._context.setReadingDirection(this._GetReadingDirection());
@@ -894,6 +897,10 @@ oj.__registerWidget('oj.dvtBaseComponent', $.oj.baseComponent, {
 
     // Clear data provider states
     this._dataProviderState = {};
+    this._treeKeyDataMap = {};
+    this._dpNodeContextData = {};
+    this._dpNodeValueData = {};
+    this._dataValuePromise = {};
 
     // Call super last for destroy
     this._super();
@@ -905,16 +912,7 @@ oj.__registerWidget('oj.dvtBaseComponent', $.oj.baseComponent, {
     // Call the super to update the property values
     this._superApply(arguments);
 
-    // If new data provider(s) were set, clear the corresponding data provider states.
-    // Note that the options argument contains only options deemed to be new by the framework,
-    // so any data provider values that are present in options are definitely new, and we don't need to check.
-    var dataProperties = Object.keys(this._dataProviderState);
-    for (var i = 0; i < dataProperties.length; i++) {
-      var dataProperty = dataProperties[i];
-      if (options[dataProperty]) {
-        this._dataProviderState[dataProperty] = {};
-      }
-    }
+    this._OptionChangeHandler(options);
 
     // Add or remove the resize tracking if changed.
     var trackResize = this.options.trackResize;
@@ -1428,7 +1426,7 @@ oj.__registerWidget('oj.dvtBaseComponent', $.oj.baseComponent, {
 
     if (optionValue && oj.DataProviderFeatureChecker.isDataProvider(optionValue)) {
       var isTreeDataProvider = oj.DataProviderFeatureChecker.isTreeDataProvider(optionValue);
-      optionValue = new Promise(function (resolve) {
+      optionValue = self._dataValuePromise[path] || new Promise(function (resolve) {
         var templateEnginePromise = self._getTemplateEngine();
         // Fetch the data, unless cached data exists
         var dataPathsValues = self._dataProviderState[path] || {};
@@ -1442,9 +1440,14 @@ oj.__registerWidget('oj.dvtBaseComponent', $.oj.baseComponent, {
           // If cached templates processing results exist, skip processing templates
           var pathsValuesMap = dataPathsValues.pathsValuesMap ? dataPathsValues.pathsValuesMap :
               self._ProcessTemplates(path, data, templateEngine, isTreeDataProvider);
+          self._dataValuePromise[path] = null;
           resolve(pathsValuesMap);
+        }, function () {
+          self._dataValuePromise[path] = null;
         });
       });
+
+      self._dataValuePromise[path] = optionValue;
     }
 
 
@@ -1495,20 +1498,61 @@ oj.__registerWidget('oj.dvtBaseComponent', $.oj.baseComponent, {
   },
 
   /**
-   * Returns a promise that resolves into the fully fetched data from the data provider.
-   * This handles the use case where fetch parameter -1 doesn't return all the data
-   * @param {object} dataProvider The data provider
-   * @param {object} postprocessor The call back functon that should return a promise that resolves into row data of the shape {data: , key: }
-   * @param {object} parentKey The parent key if the dataProvider is a child dataProvider
-   * @param {number} fetchDepth The current fetch depth
-   * @return {Promise} Returns a promise that resolves into the fully fetched data from the data provider.
+   * Clears the cache data provoder state for the given data property.
+   * @param {string} dataProperty The property name of the data API
    * @protected
    * @instance
    * @memberof oj.dvtBaseComponent
    */
-  _FetchCollection: function (dataProvider, postprocessor, parentKey, fetchDepth) {
+  _ClearDataProviderState: function (dataProperty) {
+    this._dataProviderState[dataProperty] = {};
+    this._dataValuePromise[dataProperty] = null;
+  },
+
+  /**
+   * This is called for user options changes.
+   * Any sub class that overrides this should call this._super
+   * @param {Object} options the options object
+   * @protected
+   * @instance
+   * @memberof oj.dvtBaseComponent
+   */
+  _OptionChangeHandler: function (options) {
+    // If new data provider(s) were set, clear the corresponding data provider states.
+    // Note that the options argument contains only options deemed to be new by the framework,
+    // so any data provider values that are present in options are definitely new, and we don't need to check.
+    var dataProperties = Object.keys(this._dataProviderState);
+    for (var i = 0; i < dataProperties.length; i++) {
+      var dataProperty = dataProperties[i];
+      if (Object.prototype.hasOwnProperty.call(options, dataProperty)) {
+        this._ClearDataProviderState(dataProperty);
+      }
+    }
+  },
+
+  /**
+   * Returns a promise that resolves into the fully fetched data from the data provider.
+   * This handles the use case where fetch parameter -1 doesn't return all the data
+   * @param {object} dataProvider The data provider
+   * @param {object} postprocessor The call back functon that should return a promise that resolves into row data of the shape {data: , key: }
+   * @param {string} dataProperty The property name of the data API
+   * @param {object} parentKey The parent key if the dataProvider is a child dataProvider
+   * @param {number} fetchDepth The current fetch depth
+   * @param {number} maxFetchDepth The maximum fetch depth
+   * @return {Promise} Returns a promise that resolves into the fully fetched data from the data provider.
+   * @private
+   * @instance
+   * @memberof oj.dvtBaseComponent
+   */
+  _fetchCollection: function (dataProvider, postprocessor, dataProperty, parentKey,
+    fetchDepth, maxFetchDepth) {
     var self = this;
     var finalData = { data: [], keys: [] };
+
+    if (maxFetchDepth <= -1) {
+      return Promise.resolve(finalData);
+    }
+
     var iterator = dataProvider.fetchFirst({ size: -1 })[Symbol.asyncIterator]();
     var isTreeDataProvider = oj.DataProviderFeatureChecker.isTreeDataProvider(dataProvider);
 
@@ -1526,7 +1570,7 @@ oj.__registerWidget('oj.dvtBaseComponent', $.oj.baseComponent, {
           var key = values[ii].key;
           finalData.data.push(data);
           finalData.keys.push(key);
-          self._treeKeyDataMap.set(isTreeDataProvider ? key.value : key,
+          self._treeKeyDataMap[dataProperty].set(isTreeDataProvider ? key.value : key,
             { data: data, key: key, parentKey: parentKey });
         }
       });
@@ -1544,35 +1588,31 @@ oj.__registerWidget('oj.dvtBaseComponent', $.oj.baseComponent, {
   },
 
   /**
-   * Returns a promise that resolves into all the fetched data from the data provider of the shape {data: [], keys: []}
-   * For non tree data providers, the data array will have all the data fetched in the shape that was returned by the data provider. This will be the same for the keys array.
-   * For tree data providers, the objects in the data and key arrays will have a value attribute and a childrenData/childrenKeys attribute. The value property will have the data returned by the data provider.
+   * Returns a function that returns a promise that resolves into row data of the shape {data: , key: }
+   * For tree data providers, data and keys will have children information
    * @param {object} dataProvider The data provider
    * @param {string} dataProperty The property name of the data API
-   * @return {Promise} Returns a promise that resolves into the results of the data fetch with the shape {data: [], keys: []}
+   * @param {oj.KeySet} expandedKeySet The key set with the expanded keys
+   * @param {number} maxFetchDepth The maximum fetch depth
+   * @return {object} Returns a function that returns a promise that resolves into row data of the shape {data: , key: }
    * @private
    * @instance
    * @memberof oj.dvtBaseComponent
    */
-  _fetchAllData: function (dataProvider, dataProperty) {
+  _getDPPostProcessor: function (dataProvider, dataProperty, expandedKeySet, maxFetchDepth) {
     var self = this;
-    var configs = self._GetSimpleDataProviderConfigs()[dataProperty];
-    var expandedKeySet = configs.expandedKeySet;
-    var maxFetchDepth = configs.maxFetchDepth == null ? Number.MAX_VALUE : configs.maxFetchDepth;
-
-    if (maxFetchDepth === -1) {
-      return Promise.resolve({ data: [], keys: [] });
-    }
-
     var isTreeDataProvider = oj.DataProviderFeatureChecker.isTreeDataProvider(dataProvider);
+    // eslint-disable-next-line no-param-reassign
+    maxFetchDepth = maxFetchDepth == null ? Number.MAX_VALUE : maxFetchDepth;
+
     var treeDPPostProcessor = function (row, fetchDepth) {
       var data = { value: row.data };
       var key = { value: row.key };
       if (fetchDepth < maxFetchDepth && expandedKeySet && expandedKeySet.has(key.value)) {
         var childDataProvider = dataProvider.getChildDataProvider(key.value);
         if (childDataProvider) {
-          return self._FetchCollection(childDataProvider, treeDPPostProcessor,
-            key.value, fetchDepth + 1).then(function (children) {
+          return self._fetchCollection(childDataProvider, treeDPPostProcessor,
+            dataProperty, key.value, fetchDepth + 1).then(function (children) {
               data.children = children.data;
               key.children = children.keys;
               return { data: data, key: key };
@@ -1585,8 +1625,33 @@ oj.__registerWidget('oj.dvtBaseComponent', $.oj.baseComponent, {
     var flatDPPostProcessor = function (value) {
       return Promise.resolve(value);
     };
-    return self._FetchCollection(dataProvider,
-      isTreeDataProvider ? treeDPPostProcessor : flatDPPostProcessor, null, 0);
+
+    return isTreeDataProvider ? treeDPPostProcessor : flatDPPostProcessor;
+  },
+
+  /**
+   * Returns a promise that resolves into all the fetched data from the data provider of the shape {data: [], keys: []}
+   * For non tree data providers, the data array will have all the data fetched in the shape that was returned by the data provider. This will be the same for the keys array.
+   * For tree data providers, the objects in the data and key arrays will have a value attribute and a childrenData/childrenKeys attribute. The value property will have the data returned by the data provider.
+   * @param {object} dataProvider The data provider
+   * @param {string} dataProperty The property name of the data API
+   * @return {Promise} Returns a promise that resolves into the results of the data fetch with the shape {data: [], keys: []}
+   * @private
+   * @instance
+   * @memberof oj.dvtBaseComponent
+   */
+  _fetchAllData: function (dataProvider, dataProperty) {
+    var configs = this._GetSimpleDataProviderConfigs()[dataProperty];
+    // eslint-disable-next-line new-cap
+    this._treeKeyDataMap[dataProperty] = this._treeKeyDataMap[dataProperty] || new ojMap();
+    // eslint-disable-next-line new-cap
+    this._dpNodeContextData[dataProperty] = this._dpNodeContextData[dataProperty] || new ojMap();
+    // eslint-disable-next-line new-cap
+    this._dpNodeValueData[dataProperty] = this._dpNodeValueData[dataProperty] || new ojMap();
+    return this._fetchCollection(dataProvider,
+      this._getDPPostProcessor(dataProvider, dataProperty, configs.expandedKeySet,
+        configs.maxFetchDepth),
+      dataProperty, null, 0, configs.maxFetchDepth);
   },
 
   /**
@@ -1693,19 +1758,20 @@ oj.__registerWidget('oj.dvtBaseComponent', $.oj.baseComponent, {
   /**
    * Processes the templates using the data provider's data and returns a map of values to options to be updated.
    * To use the default behaviour the component should override the _GetSimpleDataProviderConfigs.
-   * The returns data has a _itemData that has the data for that item from the data provider.
-   * Otherwise a component's class inheriting from this can override this function.
+   * Any sub class implementation of this should call this._super
+   * The return's data has a _itemData that has the data for that item from the data provider.
    * @param {string} dataProperty The property name of the data API to lookup templates for
    * @param {Object} data The fetch results of the data provider. Contains the data and keys
    * @param {Object} templateEngine The template engine to be used to process templates
-   * @param {boolean} isTreeData True is the data has a tree structure, false if otherwise
+   * @param {boolean=} isTreeData True is the data has a tree structure, false if otherwise
+   * @param {Object=} parentKey Parent key to be used for template context
    * @return {Object} An object with paths of components options to be updated and
    *                   their corresponding values.eg: {paths: [], values: []}
    * @protected
    * @instance
    * @memberof oj.dvtBaseComponent
    */
-  _ProcessTemplates: function (dataProperty, data, templateEngine, isTreeData) {
+  _ProcessTemplates: function (dataProperty, data, templateEngine, isTreeData, parentKey) {
     var config = this._GetSimpleDataProviderConfigs()[dataProperty];
     var self = this;
     var paths;
@@ -1724,6 +1790,7 @@ oj.__registerWidget('oj.dvtBaseComponent', $.oj.baseComponent, {
       var processOptionData = config.processOptionData ||
         function (optionData) { return optionData; };
       var dataValueValidatorMap = {};
+      var nodeContextData = self._dpNodeContextData[dataProperty];
 
       if (getTemplateName && getTemplateElementName && resultPath) {
         // read attributes off nodes corresponding to the nodeKey
@@ -1762,7 +1829,7 @@ oj.__registerWidget('oj.dvtBaseComponent', $.oj.baseComponent, {
           return processedDatum;
         };
 
-        var processData = function (collection, parentData, parentKey) {
+        var processData = function (collection, parentData, _parentKey) {
           var _data = collection.data;
           var _keys = collection.keys;
           var processedData = [];
@@ -1777,8 +1844,9 @@ oj.__registerWidget('oj.dvtBaseComponent', $.oj.baseComponent, {
             };
             if (isTreeData) {
               context.parentData = parentData;
-              context.parentKey = parentKey;
+              context.parentKey = _parentKey;
             }
+            nodeContextData.set(nodeKey, context);
 
             var templateName = getTemplateName(_data[i]);
             var templateElementName = getTemplateElementName(_data[i]);
@@ -1802,17 +1870,80 @@ oj.__registerWidget('oj.dvtBaseComponent', $.oj.baseComponent, {
                 processedDatum[resultPath] = processedChildren;
               }
             }
+            self._dpNodeValueData[dataProperty].set(nodeKey, processedDatum);
             processedData.push(processedDatum);
           }
           return processedData;
         };
 
         paths.push(resultPath);
-        var optionData = processData(data, [], undefined);
+
+        var parentData;
+        if (parentKey && nodeContextData.has(parentKey)) {
+          parentData = nodeContextData.get(parentKey).parentData
+            .concat(nodeContextData.get(parentKey).data);
+        }
+        var optionData = processData(data, parentData || [], parentKey);
         pathValues.push(processOptionData(optionData));
       }
     }
     return { paths: paths, values: pathValues };
+  },
+
+  /**
+   * Creates a callback function that will be used to fetch additional data from data provider
+   * Any sub class implementation of this should call this._super
+   * @param {string} dataProperty The property name of the data API
+   * @return {Function} fetch data callback that uses root data provider, expanded key set, node data and node key
+   * to retrieve child nodes for the specified parent node
+   * @protected
+   * @instance
+   * @memberof oj.dvtBaseComponent
+   */
+  _GetFetchDataHandler: function (dataProperty) {
+    var self = this;
+    var resultPath = self._GetSimpleDataProviderConfigs()[dataProperty].resultPath;
+
+    // Updates cached the data provider state
+    var updateDataProviderState = function (parentKey, data, key, value) {
+      self._treeKeyDataMap[dataProperty].get(parentKey).data.children = data;
+      self._treeKeyDataMap[dataProperty].get(parentKey).key.children = key;
+      self._dpNodeValueData[dataProperty].get(parentKey)[resultPath] = value;
+    };
+
+    var fetchDataHandlerFunc = function (rootDataProvider, expandedKeySet, nodeData, nodeKey) {
+      var childDataProvider = rootDataProvider.getChildDataProvider(nodeKey);
+      if (childDataProvider) {
+        var maxFetchDepth = self._GetSimpleDataProviderConfigs()[dataProperty].maxFetchDepth;
+        var fetchLevel = self._dpNodeContextData[dataProperty].get(nodeKey).parentData.length;
+        var treeDPPostProcessor = self._getDPPostProcessor(rootDataProvider, dataProperty,
+          expandedKeySet, maxFetchDepth);
+        var childInfoPromise = self._fetchCollection(childDataProvider,
+          treeDPPostProcessor, dataProperty, nodeKey, fetchLevel, maxFetchDepth);
+        var templateEnginePromise = self._getTemplateEngine();
+        return Promise
+                .all([templateEnginePromise, childInfoPromise])
+                .then(function (values) {
+                  var templateEngine = values[0];
+                  var childrenData = values[1].data;
+                  var childrenKeys = values[1].keys;
+                  var processedTemplates = self._ProcessTemplates(dataProperty,
+                    { data: childrenData, keys: childrenKeys }, templateEngine, true, nodeKey);
+                  var childrenNodes = processedTemplates.values[0];
+
+                  // update cached data provider state
+                  updateDataProviderState(nodeKey, childrenData, childrenKeys, childrenNodes);
+
+                  if (nodeData) { // update parent data
+                    // eslint-disable-next-line no-param-reassign
+                    nodeData[resultPath] = childrenNodes;
+                  }
+                  return childrenNodes;
+                });
+      }
+      return Promise.resolve();
+    };
+    return fetchDataHandlerFunc;
   },
 
   /**
@@ -1877,13 +2008,13 @@ oj.__registerWidget('oj.dvtBaseComponent', $.oj.baseComponent, {
   /**
    * Returns a function that will handle events triggered on the component's
    * dataProvider(s) and update the component
-   * @protected
+   * @private
    * @instance
    * @memberof oj.dvtBaseComponent
    * @return {function(Event):void} A function that takes an event and updates a component
    * using the data from the data provider it is binded to.
    */
-  _GetDataProviderEventHandler: function (component, optionPath) {
+  _getDataProviderEventHandler: function (component, optionPath) {
     var self = this;
     // Current use cases, data provider properties are always at the root (optionPath[0] is 'root', and optionPath[1] is the property)
     var dataProperty = optionPath[1];
@@ -1939,12 +2070,13 @@ oj.__registerWidget('oj.dvtBaseComponent', $.oj.baseComponent, {
       // create a Promise that will resolve to the newly modified data
       var dataProvider = this;
       var isTreeDataProvider = oj.DataProviderFeatureChecker.isTreeDataProvider(dataProvider);
+      var keyDataMap = self._treeKeyDataMap[dataProperty];
       if (event.type === 'refresh') {
         renderUpdatedData(self._fetchAllData(dataProvider, optionPath[1]));
       } else if (event.type === 'mutate') {
-        var addDetail = event.detail.add;
-        var removeDetail = event.detail.remove;
         var updateDetail = event.detail.update;
+        var removeDetail = event.detail.remove;
+        var addDetail = event.detail.add;
         var componentData = self._dataProviderState[optionPath[1]].data;
 
         // used by add, update and delete to update the component's data
@@ -1959,11 +2091,11 @@ oj.__registerWidget('oj.dvtBaseComponent', $.oj.baseComponent, {
             if (isTreeDataProvider) {
               if (isUpdate) {
                 // update operation
-                var mappedData = self._treeKeyDataMap.get(keyValue);
+                var mappedData = keyDataMap.get(keyValue);
                 if (mappedData) { // only update data that has been previously fetched
                   mappedData.data.value = dataValue;
                   dataPromise = Promise.resolve({ data: mappedData.data,
-                    key: self._treeKeyDataMap.get(keyValue).key });
+                    key: keyDataMap.get(keyValue).key });
                 }
               } else {
                 // add or delete operation
@@ -1984,27 +2116,28 @@ oj.__registerWidget('oj.dvtBaseComponent', $.oj.baseComponent, {
 
                 if (!isDelete) {
                   var parentKey = detail.parentKeys ? detail.parentKeys[index] : null;
-                  self._treeKeyDataMap.set(key.value,
+                  keyDataMap.set(key.value,
                     { data: data, key: key, parentKey: parentKey });
                 }
               }
             } else {
               dataPromise = Promise.resolve({ data: dataValue, key: keyValue });
-              self._treeKeyDataMap.set(keyValue, { data: dataValue, key: keyValue });
+              keyDataMap.set(keyValue, { data: dataValue, key: keyValue });
             }
 
             promises.push(dataPromise);
             index += 1;
           });
 
-          Promise.all(promises).then(function (values) {
-            for (var i = 0; i < values.length; i++) {
+          return Promise.all(promises).then(function (values) {
+            // Processing values backwards so operations don't shift indices of other operations yet to be done
+            for (var i = values.length - 1; i >= 0; i--) {
               var key = isTreeDataProvider ? values[i].key.value : values[i].key;
-              var parentKey = self._treeKeyDataMap.get(key).parentKey;
+              var parentKey = keyDataMap.get(key).parentKey;
               var data;
               var keys;
               if (parentKey) {
-                var mappedData = self._treeKeyDataMap.get(parentKey);
+                var mappedData = keyDataMap.get(parentKey);
                 // if node is a new parent
                 if (!mappedData.data.children && !isUpdate) {
                   mappedData.data.children = [];
@@ -2028,61 +2161,72 @@ oj.__registerWidget('oj.dvtBaseComponent', $.oj.baseComponent, {
                 keys.splice(_index, deleteCount, values[i].key);
               }
             }
-            renderUpdatedData(Promise.resolve(componentData));
+            return componentData;
+          });
+        };
+
+        var getData = function (keys) {
+          return dataProvider.fetchByKeys({ keys: keys }).then(function (keyResult) {
+            var fetchedData = [];
+            if (keyResult.results.size > 0) {
+              keys.forEach(function (keyValue) {
+                fetchedData.push(keyResult.results.get(keyValue).data);
+              });
+            }
+            return fetchedData;
           });
         };
 
         var indices;
-        if (addDetail) {
-          // afterKeys is deprecated, but continue to support it until we can remove it.
-          // keysToIndices can take either array or set as its argument.
-          indices = addDetail.indexes || keysToIndices(componentData,
-            addDetail.addBeforeKeys ? addDetail.addBeforeKeys : addDetail.afterKeys,
-            isTreeDataProvider);
-
-          if (!Array.isArray(addDetail.data)) { // data was not sent and should be fetched
-            dataProvider.fetchByKeys({ keys: addDetail.keys }).then(function (keyResult) {
-              if (keyResult.results.size > 0) {
-                var fetchedData = [];
-                addDetail.keys.forEach(function (keyValue) {
-                  fetchedData.push(keyResult.results.get(keyValue).data);
-                });
-
-                addDetail.data = fetchedData; // update details
-                updateComponentData(indices, addDetail, 0);
-              }
-            });
-          } else {
-            updateComponentData(indices, addDetail, 0);
-          }
-        } else if (removeDetail) {
-          indices = removeDetail.indexes || keysToIndices(componentData,
-            removeDetail.keys, isTreeDataProvider);
-          updateComponentData(indices, removeDetail, 1, true);
-        } else if (updateDetail) {
+        var updatePromise = Promise.resolve();
+        if (updateDetail) {
           indices = updateDetail.indexes || keysToIndices(componentData,
             updateDetail.keys, isTreeDataProvider);
 
           if (!Array.isArray(updateDetail.data)) { // data was not sent and should be fetched
-            dataProvider.fetchByKeys({ keys: updateDetail.keys }).then(function (keyResult) {
-              if (keyResult.results.size > 0) {
-                var fetchedData = [];
-                updateDetail.keys.forEach(function (keyValue) {
-                  fetchedData.push(keyResult.results.get(keyValue).data);
-                });
-
-                updateDetail.data = fetchedData; // update details
-                updateComponentData(indices, updateDetail, 1);
-              }
+            updatePromise = getData(updateDetail.keys).then(function (fetchedData) {
+              var detail = Object.create(updateDetail, { data: { value: fetchedData } }); // add fetched data
+              return updateComponentData(indices, detail, 1);
             });
           } else {
-            updateComponentData(indices, updateDetail, 1);
+            updatePromise = updateComponentData(indices, updateDetail, 1);
           }
         }
+
+        var removePromise = updatePromise.then(function () {
+          if (removeDetail) {
+            indices = removeDetail.indexes || keysToIndices(componentData,
+              removeDetail.keys, isTreeDataProvider);
+            return updateComponentData(indices, removeDetail, 1, true);
+          }
+          return Promise.resolve();
+        });
+
+        var addPromise = removePromise.then(function () {
+          if (addDetail) {
+            // afterKeys is deprecated, but continue to support it until we can remove it.
+            // keysToIndices can take either array or set as its argument.
+            indices = addDetail.indexes || keysToIndices(componentData,
+              addDetail.addBeforeKeys ? addDetail.addBeforeKeys : addDetail.afterKeys,
+              isTreeDataProvider);
+
+            if (!Array.isArray(addDetail.data)) { // data was not sent and should be fetched
+              return getData(addDetail.keys).then(function (fetchedData) {
+                var detail = Object.create(addDetail, { data: { value: fetchedData } }); // add fetched data
+                return updateComponentData(indices, detail, 0);
+              });
+            }
+            return updateComponentData(indices, addDetail, 0);
+          }
+          return Promise.resolve();
+        });
+
+        addPromise.then(function () {
+          renderUpdatedData(Promise.resolve(componentData));
+        });
       }
     };
   },
-
 
   /**
    * Checks for all potential dataProviders on the component and attaches event listeners
@@ -2111,7 +2255,7 @@ oj.__registerWidget('oj.dvtBaseComponent', $.oj.baseComponent, {
 
         if (optionValue && oj.DataProviderFeatureChecker.isDataProvider(optionValue)) {
           var dataProviderEventHandler =
-              component._GetDataProviderEventHandler(component, [path, subpath]);
+              component._getDataProviderEventHandler(component, [path, subpath]);
           optionValue.addEventListener('mutate', dataProviderEventHandler);
           optionValue.addEventListener('refresh', dataProviderEventHandler);
 

@@ -13,6 +13,7 @@ export interface ojInputNumber extends editableValue<number | null, ojInputNumbe
     readonly: boolean | null;
     required: boolean;
     step: number | null;
+    readonly transientValue: number;
     validators: Array<Validator<number> | Validation.RegisteredValidator>;
     value: number | null;
     virtualKeyboard: 'auto' | 'number' | 'text';
@@ -53,6 +54,7 @@ export interface ojInputNumber extends editableValue<number | null, ojInputNumbe
     onReadonlyChanged: ((event: JetElementCustomEvent<ojInputNumber["readonly"]>) => any) | null;
     onRequiredChanged: ((event: JetElementCustomEvent<ojInputNumber["required"]>) => any) | null;
     onStepChanged: ((event: JetElementCustomEvent<ojInputNumber["step"]>) => any) | null;
+    onTransientValueChanged: ((event: JetElementCustomEvent<ojInputNumber["transientValue"]>) => any) | null;
     onValidatorsChanged: ((event: JetElementCustomEvent<ojInputNumber["validators"]>) => any) | null;
     onValueChanged: ((event: JetElementCustomEvent<ojInputNumber["value"]>) => any) | null;
     onVirtualKeyboardChanged: ((event: JetElementCustomEvent<ojInputNumber["virtualKeyboard"]>) => any) | null;
@@ -99,6 +101,7 @@ export interface ojInputNumberEventMap extends editableValueEventMap<number | nu
     'readonlyChanged': JetElementCustomEvent<ojInputNumber["readonly"]>;
     'requiredChanged': JetElementCustomEvent<ojInputNumber["required"]>;
     'stepChanged': JetElementCustomEvent<ojInputNumber["step"]>;
+    'transientValueChanged': JetElementCustomEvent<ojInputNumber["transientValue"]>;
     'validatorsChanged': JetElementCustomEvent<ojInputNumber["validators"]>;
     'valueChanged': JetElementCustomEvent<ojInputNumber["value"]>;
     'virtualKeyboardChanged': JetElementCustomEvent<ojInputNumber["virtualKeyboard"]>;
@@ -115,6 +118,7 @@ export interface ojInputNumberSettableProperties extends editableValueSettablePr
     readonly: boolean | null;
     required: boolean;
     step: number | null;
+    readonly transientValue: number;
     validators: Array<Validator<number> | Validation.RegisteredValidator>;
     value: number | null;
     virtualKeyboard: 'auto' | 'number' | 'text';

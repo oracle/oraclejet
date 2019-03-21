@@ -1,9 +1,14 @@
 {
   "name": "oj-buttonset-one",
-  "version": "6.1.0",
-  "jetVersion": "6.1.0",
+  "version": "6.2.0",
+  "jetVersion": "6.2.0",
   "displayName": "Buttonset One",
   "type": "core",
+  "extension": {
+    "vbdt": {
+      "module": "ojs/ojbutton"
+    }
+  },
   "styleClasses": [
     {
       "styleGroup": [
@@ -19,7 +24,7 @@
     }
   ],
   "description": "A grouping of related buttons where only one button may be selected.",
-  "help": "https://docs.oracle.com/en/middleware/jet/6.1/reference-api/oj.ojButtonsetOne.html",
+  "help": "https://docs.oracle.com/en/middleware/jet/6.2/reference-api/oj.ojButtonsetOne.html",
   "properties": {
     "chroming": {
       "description": "Indicates in what states the buttonset has chrome (background and border).",
@@ -37,7 +42,7 @@
           "displayName": "Full"
         },
         "half": {
-          "description": "In typical themes, half-chrome buttons acquire chrome only in their hover, active, and selected states. Half-chroming is recommended for buttons in a toolbar. (This is the toolbar default in most themes.)",
+          "description": "In typical themes, half-chrome buttons acquire chrome only in their hover, active, and selected states. A buttonset with half-chroming will be styled to have normal button spacing. Half-chroming is recommended for buttons in a toolbar. (This is the toolbar default in most themes.)",
           "displayName": "Half"
         },
         "outlined": {

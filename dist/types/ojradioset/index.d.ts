@@ -7,9 +7,11 @@ export interface ojRadioset<K, D> extends editableValue<any, ojRadiosetSettableP
     optionRenderer?: ((param0: ojRadioset.OptionContext<D>) => Element) | null;
     options: DataProvider<K, D> | null;
     optionsKeys?: ojRadioset.OptionsKeys;
+    readOnly: boolean | null;
     required: boolean;
     value: any;
     translations: {
+        readonlyNoValue?: string;
         required?: {
             hint?: string;
             messageDetail?: string;
@@ -21,6 +23,7 @@ export interface ojRadioset<K, D> extends editableValue<any, ojRadiosetSettableP
     onOptionRendererChanged: ((event: JetElementCustomEvent<ojRadioset<K, D>["optionRenderer"]>) => any) | null;
     onOptionsChanged: ((event: JetElementCustomEvent<ojRadioset<K, D>["options"]>) => any) | null;
     onOptionsKeysChanged: ((event: JetElementCustomEvent<ojRadioset<K, D>["optionsKeys"]>) => any) | null;
+    onReadOnlyChanged: ((event: JetElementCustomEvent<ojRadioset<K, D>["readOnly"]>) => any) | null;
     onRequiredChanged: ((event: JetElementCustomEvent<ojRadioset<K, D>["required"]>) => any) | null;
     onValueChanged: ((event: JetElementCustomEvent<ojRadioset<K, D>["value"]>) => any) | null;
     onOjAnimateEnd: ((event: ojRadioset.ojAnimateEnd) => any) | null;
@@ -75,6 +78,7 @@ export interface ojRadiosetEventMap<K, D> extends editableValueEventMap<any, ojR
     'optionRendererChanged': JetElementCustomEvent<ojRadioset<K, D>["optionRenderer"]>;
     'optionsChanged': JetElementCustomEvent<ojRadioset<K, D>["options"]>;
     'optionsKeysChanged': JetElementCustomEvent<ojRadioset<K, D>["optionsKeys"]>;
+    'readOnlyChanged': JetElementCustomEvent<ojRadioset<K, D>["readOnly"]>;
     'requiredChanged': JetElementCustomEvent<ojRadioset<K, D>["required"]>;
     'valueChanged': JetElementCustomEvent<ojRadioset<K, D>["value"]>;
 }
@@ -84,9 +88,11 @@ export interface ojRadiosetSettableProperties<K, D> extends editableValueSettabl
     optionRenderer?: ((param0: ojRadioset.OptionContext<D>) => Element) | null;
     options: DataProvider<K, D> | null;
     optionsKeys?: ojRadioset.OptionsKeys;
+    readOnly: boolean | null;
     required: boolean;
     value: any;
     translations: {
+        readonlyNoValue?: string;
         required?: {
             hint?: string;
             messageDetail?: string;

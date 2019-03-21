@@ -169,6 +169,11 @@
        }
     }
 
+    /* In high contrast mode the border will show up even when transparent, so remove the border in high contrast mode*/
+    .oj-hicontrast .oj-tree-title {
+      border-width: 0;
+    }
+
     /*  Active node text  */
     .oj-hover .oj-tree-title {
       @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true)

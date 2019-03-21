@@ -473,6 +473,7 @@ oj.__registerWidget('oj.ojPictoChart', $.oj.dvtBaseComponent,
        * @instance
        * @type {string}
        * @default ""
+       * @ojdeprecated {since: '6.2.0', description: 'Set the alias directly on the template element using the data-oj-as attribute instead.'}
       */
       as: '',
       /**
@@ -1132,8 +1133,8 @@ oj.__registerWidget('oj.ojPictoChart', $.oj.dvtBaseComponent,
  *
  * <pre class="prettyprint">
  * <code>
- * &lt;oj-picto-chart as='item' data='[[dataProvider]]'>
- *  &lt;template slot='itemTemplate'>
+ * &lt;oj-picto-chart data='[[dataProvider]]'>
+ *  &lt;template slot='itemTemplate' data-oj-as='item'>
  *    &lt;oj-picto-chart-item count='[[item.data.count]]' name='[[item.data.name]]'>
  *    &lt;/oj-picto-chart-item>
  *  &lt;/template>
@@ -1154,8 +1155,8 @@ oj.__registerWidget('oj.ojPictoChart', $.oj.dvtBaseComponent,
  *
  * @example <caption>Initialize the picto chart item with the
  * <code class="prettyprint">border-color</code> attribute specified:</caption>
- * &lt;oj-picto-chart data='[[dataProvider]]' as='item'>
- *  &lt;template slot='itemTemplate'>
+ * &lt;oj-picto-chart data='[[dataProvider]]'>
+ *  &lt;template slot='itemTemplate' data-oj-as='item'>
  *    &lt;oj-picto-chart-item border-color='[[item.data.borderColor]]'> &lt;/oj-picto-chart-item>
  *  &lt;/template>
  * &lt;/oj-picto-chart>
@@ -1171,8 +1172,8 @@ oj.__registerWidget('oj.ojPictoChart', $.oj.dvtBaseComponent,
  *
  * @example <caption>Initialize the picto chart item with the
  * <code class="prettyprint">border-width</code> attribute specified:</caption>
- * &lt;oj-picto-chart data='[[dataProvider]]' as='item'>
- *  &lt;template slot='itemTemplate'>
+ * &lt;oj-picto-chart data='[[dataProvider]]'>
+ *  &lt;template slot='itemTemplate' data-oj-as='item'>
  *    &lt;oj-picto-chart-item border-width='[[item.data.borderWidth]]'> &lt;/oj-picto-chart-item>
  *  &lt;/template>
  * &lt;/oj-picto-chart>
@@ -1188,8 +1189,8 @@ oj.__registerWidget('oj.ojPictoChart', $.oj.dvtBaseComponent,
  *
  * @example <caption>Initialize the picto chart item with the
  * <code class="prettyprint">categories</code> attribute specified:</caption>
- * &lt;oj-picto-chart data='[[dataProvider]]' as='item'>
- *  &lt;template slot='itemTemplate'>
+ * &lt;oj-picto-chart data='[[dataProvider]]'>
+ *  &lt;template slot='itemTemplate' data-oj-as='item'>
  *    &lt;oj-picto-chart-item categories='[[item.data.categories]]'> &lt;/oj-picto-chart-item>
  *  &lt;/template>
  * &lt;/oj-picto-chart>
@@ -1206,8 +1207,8 @@ oj.__registerWidget('oj.ojPictoChart', $.oj.dvtBaseComponent,
  *
  * @example <caption>Initialize the picto chart item with the
  * <code class="prettyprint">color</code> attribute specified:</caption>
- * &lt;oj-picto-chart data='[[dataProvider]]' as='item'>
- *  &lt;template slot='itemTemplate'>
+ * &lt;oj-picto-chart data='[[dataProvider]]'>
+ *  &lt;template slot='itemTemplate' data-oj-as='item'>
  *    &lt;oj-picto-chart-item color='[[item.data.color]]'> &lt;/oj-picto-chart-item>
  *  &lt;/template>
  * &lt;/oj-picto-chart>
@@ -1224,8 +1225,8 @@ oj.__registerWidget('oj.ojPictoChart', $.oj.dvtBaseComponent,
  *
  * @example <caption>Initialize the picto chart item with the
  * <code class="prettyprint">column-span</code> attribute specified:</caption>
- * &lt;oj-picto-chart data='[[dataProvider]]' as='item'>
- *  &lt;template slot='itemTemplate'>
+ * &lt;oj-picto-chart data='[[dataProvider]]'>
+ *  &lt;template slot='itemTemplate' data-oj-as='item'>
  *    &lt;oj-picto-chart-item column-span='[[item.data.columnSpan]]'> &lt;/oj-picto-chart-item>
  *  &lt;/template>
  * &lt;/oj-picto-chart>
@@ -1241,8 +1242,8 @@ oj.__registerWidget('oj.ojPictoChart', $.oj.dvtBaseComponent,
  *
  * @example <caption>Initialize the picto chart item with the
  * <code class="prettyprint">count</code> attribute specified:</caption>
- * &lt;oj-picto-chart data='[[dataProvider]]' as='item'>
- *  &lt;template slot='itemTemplate'>
+ * &lt;oj-picto-chart data='[[dataProvider]]'>
+ *  &lt;template slot='itemTemplate' data-oj-as='item'>
  *    &lt;oj-picto-chart-item count='[[item.data.count]]'> &lt;/oj-picto-chart-item>
  *  &lt;/template>
  * &lt;/oj-picto-chart>
@@ -1261,8 +1262,8 @@ oj.__registerWidget('oj.ojPictoChart', $.oj.dvtBaseComponent,
  *
  * @example <caption>Initialize the picto chart item with the
  * <code class="prettyprint">drilling</code> attribute specified:</caption>
- * &lt;oj-picto-chart data='[[dataProvider]]' as='item'>
- *  &lt;template slot='itemTemplate'>
+ * &lt;oj-picto-chart data='[[dataProvider]]'>
+ *  &lt;template slot='itemTemplate' data-oj-as='item'>
  *    &lt;oj-picto-chart-item drilling='[[item.data.drilling]]'> &lt;/oj-picto-chart-item>
  *  &lt;/template>
  * &lt;/oj-picto-chart>
@@ -1279,8 +1280,8 @@ oj.__registerWidget('oj.ojPictoChart', $.oj.dvtBaseComponent,
  *
  * @example <caption>Initialize the picto chart item with the
  * <code class="prettyprint">name</code> attribute specified:</caption>
- * &lt;oj-picto-chart data='[[dataProvider]]' as='item'>
- *  &lt;template slot='itemTemplate'>
+ * &lt;oj-picto-chart data='[[dataProvider]]'>
+ *  &lt;template slot='itemTemplate' data-oj-as='item'>
  *    &lt;oj-picto-chart-item name='[[item.data.name]]'> &lt;/oj-picto-chart-item>
  *  &lt;/template>
  * &lt;/oj-picto-chart>
@@ -1296,8 +1297,8 @@ oj.__registerWidget('oj.ojPictoChart', $.oj.dvtBaseComponent,
  *
  * @example <caption>Initialize the picto chart item with the
  * <code class="prettyprint">row-span</code> attribute specified:</caption>
- * &lt;oj-picto-chart data='[[dataProvider]]' as='item'>
- *  &lt;template slot='itemTemplate'>
+ * &lt;oj-picto-chart data='[[dataProvider]]'>
+ *  &lt;template slot='itemTemplate' data-oj-as='item'>
  *    &lt;oj-picto-chart-item row-span='[[item.data.rowSpan]]'> &lt;/oj-picto-chart-item>
  *  &lt;/template>
  * &lt;/oj-picto-chart>
@@ -1314,8 +1315,8 @@ oj.__registerWidget('oj.ojPictoChart', $.oj.dvtBaseComponent,
  *
  * @example <caption>Initialize the picto chart item with the
  * <code class="prettyprint">shape</code> attribute specified:</caption>
- * &lt;oj-picto-chart data='[[dataProvider]]' as='item'>
- *  &lt;template slot='itemTemplate'>
+ * &lt;oj-picto-chart data='[[dataProvider]]'>
+ *  &lt;template slot='itemTemplate' data-oj-as='item'>
  *    &lt;oj-picto-chart-item shape='[[item.data.shape]]'> &lt;/oj-picto-chart-item>
  *  &lt;/template>
  * &lt;/oj-picto-chart>
@@ -1331,8 +1332,8 @@ oj.__registerWidget('oj.ojPictoChart', $.oj.dvtBaseComponent,
  *
  * @example <caption>Initialize the picto chart item with the
  * <code class="prettyprint">short-desc</code> attribute specified:</caption>
- * &lt;oj-picto-chart data='[[dataProvider]]' as='item'>
- *  &lt;template slot='itemTemplate'>
+ * &lt;oj-picto-chart data='[[dataProvider]]'>
+ *  &lt;template slot='itemTemplate' data-oj-as='item'>
  *    &lt;oj-picto-chart-item short-desc='[[item.data.shortDesc]]'> &lt;/oj-picto-chart-item>
  *  &lt;/template>
  * &lt;/oj-picto-chart>
@@ -1348,8 +1349,8 @@ oj.__registerWidget('oj.ojPictoChart', $.oj.dvtBaseComponent,
  *
  * @example <caption>Initialize the picto chart item with the
  * <code class="prettyprint">source</code> attribute specified:</caption>
- * &lt;oj-picto-chart data='[[dataProvider]]' as='item'>
- *  &lt;template slot='itemTemplate'>
+ * &lt;oj-picto-chart data='[[dataProvider]]'>
+ *  &lt;template slot='itemTemplate' data-oj-as='item'>
  *    &lt;oj-picto-chart-item source='[[item.data.source]]'> &lt;/oj-picto-chart-item>
  *  &lt;/template>
  * &lt;/oj-picto-chart>
@@ -1365,8 +1366,8 @@ oj.__registerWidget('oj.ojPictoChart', $.oj.dvtBaseComponent,
  *
  * @example <caption>Initialize the picto chart item with the
  * <code class="prettyprint">source-hover</code> attribute specified:</caption>
- * &lt;oj-picto-chart data='[[dataProvider]]' as='item'>
- *  &lt;template slot='itemTemplate'>
+ * &lt;oj-picto-chart data='[[dataProvider]]'>
+ *  &lt;template slot='itemTemplate' data-oj-as='item'>
  *    &lt;oj-picto-chart-item source-hover='[[item.data.sourceHover]]'> &lt;/oj-picto-chart-item>
  *  &lt;/template>
  * &lt;/oj-picto-chart>
@@ -1382,8 +1383,8 @@ oj.__registerWidget('oj.ojPictoChart', $.oj.dvtBaseComponent,
  *
  * @example <caption>Initialize the picto chart item with the
  * <code class="prettyprint">source-hover-selected</code> attribute specified:</caption>
- * &lt;oj-picto-chart data='[[dataProvider]]' as='item'>
- *  &lt;template slot='itemTemplate'>
+ * &lt;oj-picto-chart data='[[dataProvider]]'>
+ *  &lt;template slot='itemTemplate' data-oj-as='item'>
  *    &lt;oj-picto-chart-item source-hover-selected='[[item.data.sourceHoverSelected]]'> &lt;/oj-picto-chart-item>
  *  &lt;/template>
  * &lt;/oj-picto-chart>
@@ -1399,8 +1400,8 @@ oj.__registerWidget('oj.ojPictoChart', $.oj.dvtBaseComponent,
  *
  * @example <caption>Initialize the picto chart item with the
  * <code class="prettyprint">source-selected</code> attribute specified:</caption>
- * &lt;oj-picto-chart data='[[dataProvider]]' as='item'>
- *  &lt;template slot='itemTemplate'>
+ * &lt;oj-picto-chart data='[[dataProvider]]'>
+ *  &lt;template slot='itemTemplate' data-oj-as='item'>
  *    &lt;oj-picto-chart-item source-selected='[[item.data.sourceSelected]]'> &lt;/oj-picto-chart-item>
  *  &lt;/template>
  * &lt;/oj-picto-chart>
@@ -1416,8 +1417,8 @@ oj.__registerWidget('oj.ojPictoChart', $.oj.dvtBaseComponent,
  *
  * @example <caption>Initialize the picto chart item with the
  * <code class="prettyprint">svg-style</code> attribute specified:</caption>
- * &lt;oj-picto-chart data='[[dataProvider]]' as='item'>
- *  &lt;template slot='itemTemplate'>
+ * &lt;oj-picto-chart data='[[dataProvider]]'>
+ *  &lt;template slot='itemTemplate' data-oj-as='item'>
  *    &lt;oj-picto-chart-item svg-style='[[item.data.svgStyle]]'> &lt;/oj-picto-chart-item>
  *  &lt;/template>
  * &lt;/oj-picto-chart>
@@ -1433,8 +1434,8 @@ oj.__registerWidget('oj.ojPictoChart', $.oj.dvtBaseComponent,
  *
  * @example <caption>Initialize the picto chart item with the
  * <code class="prettyprint">svg-class-name</code> attribute specified:</caption>
- * &lt;oj-picto-chart data='[[dataProvider]]' as='item'>
- *  &lt;template slot='itemTemplate'>
+ * &lt;oj-picto-chart data='[[dataProvider]]'>
+ *  &lt;template slot='itemTemplate' data-oj-as='item'>
  *    &lt;oj-picto-chart-item svg-class-name='[[item.data.svgClassName]]'> &lt;/oj-picto-chart-item>
  *  &lt;/template>
  * &lt;/oj-picto-chart>

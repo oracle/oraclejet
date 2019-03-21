@@ -3421,7 +3421,7 @@ dvt.Gantt.prototype.Init = function(context, callback, callbackObj)
   dvt.Gantt.superclass.Init.call(this, context, callback, callbackObj);
 
   // Create the defaults object
-  this.Defaults = new DvtGanttDefaults();
+  this.Defaults = new DvtGanttDefaults(context);
 
   // Create the event handler and add event listeners
   this.EventManager = new DvtGanttEventManager(this, context, callback, callbackObj);
@@ -5163,11 +5163,12 @@ DvtGanttAutomation.prototype.getDomElementForSubId = function(subId)
  * Default values and utility functions for component versioning.
  * @class
  * @constructor
+ * @param {dvt.Context} context The rendering context.
  * @extends {dvt.BaseComponentDefaults}
  */
-var DvtGanttDefaults = function()
+var DvtGanttDefaults = function(context)
 {
-  this.Init({'alta': DvtGanttDefaults.VERSION_1});
+  this.Init({'alta': DvtGanttDefaults.VERSION_1}, context);
 };
 
 dvt.Obj.createSubclass(DvtGanttDefaults, dvt.BaseComponentDefaults);
@@ -12027,6 +12028,7 @@ DvtGanttTaskShape.prototype.Init = function(context, x, y, w, h, r, task, type, 
 {
   var cmds;
 
+  this._context = context;
   this._x = x;
   this._y = y;
   this._w = w;
@@ -12045,7 +12047,6 @@ DvtGanttTaskShape.prototype.Init = function(context, x, y, w, h, r, task, type, 
     'baselineSelect': this._generateRepShapeCmd,
     'baselineHover': this._generateRepShapeCmd
   };
-  this._isRTL = dvt.Agent.isRightToLeft(context);
 
   cmds = this._typeCmdGeneratorMap[this._type].call(this, this._x, this._y, this._w, this._h, this._r);
   DvtGanttTaskShape.superclass.Init.call(this, context, cmds, id);
@@ -12077,6 +12078,7 @@ DvtGanttTaskShape.prototype.Init = function(context, x, y, w, h, r, task, type, 
  */
 DvtGanttTaskShape.prototype._generateRepShapeCmd = function(x, y, w, h, r)
 {
+  var isRTL = dvt.Agent.isRightToLeft(this._context);
   var margin = (DvtGanttTaskShape.MAIN_EFFECT_TYPES.indexOf(this._type) > -1 ||
                 DvtGanttTaskShape.BASELINE_EFFECT_TYPES.indexOf(this._type) > -1) * DvtGanttStyleUtils.getTaskEffectMargin(),
       diamondMargin;
@@ -12093,7 +12095,7 @@ DvtGanttTaskShape.prototype._generateRepShapeCmd = function(x, y, w, h, r)
   }
   else // bar shape otherwise
   {
-    return this._generateRectCmd(!this._isRTL ? x - margin : x + margin, y - margin, w + 2 * margin, h + 2 * margin, r);
+    return this._generateRectCmd(!isRTL ? x - margin : x + margin, y - margin, w + 2 * margin, h + 2 * margin, r);
   }
 };
 
@@ -12110,6 +12112,8 @@ DvtGanttTaskShape.prototype._generateRepShapeCmd = function(x, y, w, h, r)
  */
 DvtGanttTaskShape.prototype._generateRectCmd = function(x, y, w, h, r)
 {
+  var isRTL = dvt.Agent.isRightToLeft(this._context);
+
   // dvt.PathUtils.rectangleWithBorderRadius is expensive (mostly due to parsing
   // border radius string). For our default 0px border radius case, skip the parsing and
   // generate the path.
@@ -12117,12 +12121,12 @@ DvtGanttTaskShape.prototype._generateRectCmd = function(x, y, w, h, r)
   {
     // In LTR, reference point is at top left corner; top right in RTL
     return dvt.PathUtils.moveTo(x, y) +
-           dvt.PathUtils.horizontalLineTo(this._isRTL ? x - w : x + w) +
+           dvt.PathUtils.horizontalLineTo(isRTL ? x - w : x + w) +
            dvt.PathUtils.verticalLineTo(y + h) +
            dvt.PathUtils.horizontalLineTo(x) +
            dvt.PathUtils.closePath();
   }
-  return dvt.PathUtils.rectangleWithBorderRadius(x - this._isRTL * w, y, w, h, r, Math.min(w, h), '0');
+  return dvt.PathUtils.rectangleWithBorderRadius(x - isRTL * w, y, w, h, r, Math.min(w, h), '0');
 };
 
 /**
@@ -12138,6 +12142,8 @@ DvtGanttTaskShape.prototype._generateRectCmd = function(x, y, w, h, r)
  */
 DvtGanttTaskShape.prototype._generateSummaryCmd = function(x, y, w, h, r)
 {
+  var isRTL = dvt.Agent.isRightToLeft(this._context);
+
   // For our default 0px border radius case, skip the parsing and generate the path.
   var thickness = DvtGanttStyleUtils.getSummaryThickness();
   if (r === '0' || r === '0px')
@@ -12147,11 +12153,11 @@ DvtGanttTaskShape.prototype._generateSummaryCmd = function(x, y, w, h, r)
       // In LTR, reference is at top left corner, top right in RTL
       return dvt.PathUtils.moveTo(x, y + h) +
              dvt.PathUtils.verticalLineTo(y) +
-             dvt.PathUtils.horizontalLineTo(this._isRTL ? x - w : x + w) +
+             dvt.PathUtils.horizontalLineTo(isRTL ? x - w : x + w) +
              dvt.PathUtils.verticalLineTo(y + h) +
-             dvt.PathUtils.horizontalLineTo(this._isRTL ? x - w + thickness : x + w - thickness) +
+             dvt.PathUtils.horizontalLineTo(isRTL ? x - w + thickness : x + w - thickness) +
              dvt.PathUtils.verticalLineTo(y + thickness) +
-             dvt.PathUtils.horizontalLineTo(this._isRTL ? x - thickness : x + thickness) +
+             dvt.PathUtils.horizontalLineTo(isRTL ? x - thickness : x + thickness) +
              dvt.PathUtils.verticalLineTo(y + h) +
              dvt.PathUtils.closePath();
     }
@@ -12166,19 +12172,19 @@ DvtGanttTaskShape.prototype._generateSummaryCmd = function(x, y, w, h, r)
     // In LTR, reference is at top left corner, top right in RTL
     return dvt.PathUtils.moveTo(x, y + h) +
            dvt.PathUtils.verticalLineTo(y + outerBr) +
-           dvt.PathUtils.arcTo(outerBr, outerBr, Math.PI / 2, this._isRTL ? 0 : 1, this._isRTL ? x - outerBr : x + outerBr, y) +
-           dvt.PathUtils.horizontalLineTo(this._isRTL ? x - w + outerBr : x + w - outerBr) +
-           dvt.PathUtils.arcTo(outerBr, outerBr, Math.PI / 2, this._isRTL ? 0 : 1, this._isRTL ? x - w : x + w, y + outerBr) +
+           dvt.PathUtils.arcTo(outerBr, outerBr, Math.PI / 2, isRTL ? 0 : 1, isRTL ? x - outerBr : x + outerBr, y) +
+           dvt.PathUtils.horizontalLineTo(isRTL ? x - w + outerBr : x + w - outerBr) +
+           dvt.PathUtils.arcTo(outerBr, outerBr, Math.PI / 2, isRTL ? 0 : 1, isRTL ? x - w : x + w, y + outerBr) +
            dvt.PathUtils.verticalLineTo(y + h) +
-           dvt.PathUtils.horizontalLineTo(this._isRTL ? x - w + thickness : x + w - thickness) +
+           dvt.PathUtils.horizontalLineTo(isRTL ? x - w + thickness : x + w - thickness) +
            dvt.PathUtils.verticalLineTo(y + thickness + innerBr) +
-           dvt.PathUtils.arcTo(innerBr, innerBr, Math.PI / 2, this._isRTL ? 1 : 0, this._isRTL ? x - w + thickness + innerBr : x + w - thickness - innerBr, y + thickness) +
-           dvt.PathUtils.horizontalLineTo(this._isRTL ? x - thickness - innerBr : x + thickness + innerBr) +
-           dvt.PathUtils.arcTo(innerBr, innerBr, Math.PI / 2, this._isRTL ? 1 : 0, this._isRTL ? x - thickness : x + thickness, y + thickness + innerBr) +
+           dvt.PathUtils.arcTo(innerBr, innerBr, Math.PI / 2, isRTL ? 1 : 0, isRTL ? x - w + thickness + innerBr : x + w - thickness - innerBr, y + thickness) +
+           dvt.PathUtils.horizontalLineTo(isRTL ? x - thickness - innerBr : x + thickness + innerBr) +
+           dvt.PathUtils.arcTo(innerBr, innerBr, Math.PI / 2, isRTL ? 1 : 0, isRTL ? x - thickness : x + thickness, y + thickness + innerBr) +
            dvt.PathUtils.verticalLineTo(y + h) +
            dvt.PathUtils.closePath();
   }
-  return dvt.PathUtils.rectangleWithBorderRadius(x - this._isRTL * w, y, w, h, outerBr + 'px ' + outerBr + 'px 0px 0px', Math.min(w, h), '0');
+  return dvt.PathUtils.rectangleWithBorderRadius(x - isRTL * w, y, w, h, outerBr + 'px ' + outerBr + 'px 0px 0px', Math.min(w, h), '0');
 };
 
 /**

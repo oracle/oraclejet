@@ -1,11 +1,16 @@
 {
   "name": "oj-validation-group",
-  "version": "6.1.0",
-  "jetVersion": "6.1.0",
+  "version": "6.2.0",
+  "jetVersion": "6.2.0",
   "displayName": "Validation Group",
   "type": "core",
+  "extension": {
+    "vbdt": {
+      "module": "ojs/ojvalidationgroup"
+    }
+  },
   "description": "ojValidationGroup",
-  "help": "https://docs.oracle.com/en/middleware/jet/6.1/reference-api/oj.ojValidationGroup.html",
+  "help": "https://docs.oracle.com/en/middleware/jet/6.2/reference-api/oj.ojValidationGroup.html",
   "properties": {
     "valid": {
       "description": "The current validity state of the\noj-validation-group element.\n\nThe oj-validation-group's\nvalid property value is calculated from all the\nenabled components it tracks. The most 'invalid' component's\nvalid property value will be\noj-validation-group's valid property value.\nFor example,\nif all the components are valid except one is \"invalidShown\", then oj-validation-group's\nvalid value will be \"invalidShown\". If one is \"invalidShown\" and one is \"invalidHidden\",\nthen oj-validation-group's valid value will be \"invalidShown\" since \"invalidShown\" is more\ninvalid than \"invalidHidden\".\n\n\nWhen any of the enabled tracked component's valid value changes, oj-validation-group will\nbe notified and will update its own valid value if it has changed.\nThere is no default value for the valid property\nsince it is a read-only property that is calculated on initialization\nand kept updated if any of its tracked component's valid value changes.\n\n\nThe oj-validation-group does not filter out components that are hidden.\nHidden components will be considered\nin oj-validation-group's valid calculation as long as they are enabled.\nA hidden enabled component's valid state is no different\nthan a visible enabled component; if there\nis an error that isn't a deferred error, its valid value is \"invalidShown\".\nYou can disable any components you do not want\nconsidered in oj-validation-group's valid value. Note: New valid states may be added to the list of valid values in future releases. If so, we will keep the convention where if it is valid, it will start with \"valid\". If it is invalid, it will start with \"invalid\". If it is pending, it will start with \"pending\".\n",

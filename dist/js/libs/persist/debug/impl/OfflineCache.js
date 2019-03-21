@@ -3,7 +3,7 @@
  * All rights reserved.
  */
 
-define(["./defaultCacheHandler", "./logger"], function (cacheHandler, logger) {
+define(["./defaultCacheHandler", "../persistenceStoreManager", "./logger"], function (cacheHandler, persistenceStoreManager, logger) {
   'use strict';
 
   /**
@@ -23,18 +23,19 @@ define(["./defaultCacheHandler", "./logger"], function (cacheHandler, logger) {
    * {@link https://developer.mozilla.org/en-US/docs/Web/API/Cache|Cache API}.
    * @constructor
    * @param {String} name name of the cache
-   * @param {Object} persistencestore instance for cache storage
+   * @param {String} store name for cache storage
    */
-  function OfflineCache (name, persistencestore) {
+  function OfflineCache (name, storeName) {
     if (!name) {
       throw TypeError("A name must be provided to create an OfflineCache!");
     }
-    if (!persistencestore) {
+    if (!storeName) {
       throw TypeError("A persistence store must be provided to create an OfflineCache!");
     }
 
     this._name = name;
-    this._store = persistencestore;
+    this._storeName = storeName;
+    this._store = null;
   }
 
   /**
@@ -121,8 +122,10 @@ define(["./defaultCacheHandler", "./logger"], function (cacheHandler, logger) {
 
     var searchCriteria = cacheHandler.constructSearchCriteria(request, options);
     var ignoreVary = (options && options.ignoreVary);
-
-    return self._store.find(searchCriteria).then(function (cacheEntries) {
+    
+    return self._getStore().then(function(store) {
+      return store.find(searchCriteria);
+    }).then(function (cacheEntries) {
       var matchEntry = _applyVaryForSingleMatch(ignoreVary, request, cacheEntries);
       return _cacheEntryToResponse(matchEntry);
     }).then(function (results) {
@@ -171,7 +174,9 @@ define(["./defaultCacheHandler", "./logger"], function (cacheHandler, logger) {
     var searchCriteria = cacheHandler.constructSearchCriteria(request, options);
     var ignoreVary = (options && options.ignoreVary);
 
-    return  self._store.find(searchCriteria).then(function (cacheEntries) {
+    return self._getStore().then(function(store) {
+      return store.find(searchCriteria);
+    }).then(function (cacheEntries) {
       var responseDataArray = _applyVaryForAllMatches(ignoreVary, request, cacheEntries);
       return _cacheEntriesToResponses(responseDataArray);
     }).then(function (responseArray) {
@@ -187,6 +192,21 @@ define(["./defaultCacheHandler", "./logger"], function (cacheHandler, logger) {
       }
     });
   };
+  
+  /**
+   * Return the persistent store.
+   * @returns {Object} The persistent store.
+   */
+  OfflineCache.prototype._getStore = function () {
+    var self = this;
+    if (!self._store) {
+      return persistenceStoreManager.openStore(self._storeName).then(function (store) {
+        self._store = store;
+        return self._store;
+      });
+    }
+    return Promise.resolve(self._store);
+  }
 
   /**
    * Perform vary header check and return the first match among all the
@@ -338,22 +358,24 @@ define(["./defaultCacheHandler", "./logger"], function (cacheHandler, logger) {
     promises.push(cacheHandler.shredResponse(request, response));
 
     return Promise.all(promises).then(function (results) {
-      var requestResponsePair = results[0];
-      var shreddedPayload = results[1];
-      if (!shreddedPayload) {
-        // this is the case where no shredder/unshredder is specified.
-        return self._store.upsert(requestResponsePair.key,
-                                  requestResponsePair.metadata,
-                                  requestResponsePair.value);
-      } else {
-        var storePromises = [];
-        requestResponsePair.value.responseData.bodyAbstract = _buildBodyAbstract(shreddedPayload);
-        storePromises.push(self._store.upsert(requestResponsePair.key,
-                                              requestResponsePair.metadata,
-                                              requestResponsePair.value));
-        storePromises.push(cacheHandler.cacheShreddedData(shreddedPayload));
-        return Promise.all(storePromises);
-      }
+      return self._getStore().then(function(store) {
+        var requestResponsePair = results[0];
+        var shreddedPayload = results[1];
+        if (!shreddedPayload) {
+          // this is the case where no shredder/unshredder is specified.
+          return store.upsert(requestResponsePair.key,
+                                    requestResponsePair.metadata,
+                                    requestResponsePair.value);
+        } else {
+          var storePromises = [];
+          requestResponsePair.value.responseData.bodyAbstract = _buildBodyAbstract(shreddedPayload);
+          storePromises.push(store.upsert(requestResponsePair.key,
+                                                requestResponsePair.metadata,
+                                                requestResponsePair.value));
+          storePromises.push(cacheHandler.cacheShreddedData(shreddedPayload));
+          return Promise.all(storePromises);
+        }
+      });
     });
   };
 
@@ -407,12 +429,14 @@ define(["./defaultCacheHandler", "./logger"], function (cacheHandler, logger) {
     var self = this;
 
     return self.keys(request, options).then(function (keysArray) {
-      if (keysArray && keysArray.length) {
-        var promisesArray = keysArray.map(self._store.removeByKey, self._store);
-        return Promise.all(promisesArray);
-      } else {
-        return false;
-      }
+      return self._getStore().then(function(store) {
+        if (keysArray && keysArray.length) {
+          var promisesArray = keysArray.map(store.removeByKey, store);
+          return Promise.all(promisesArray);
+        } else {
+          return false;
+        }
+      });
     }).then(function (result) {
       if (result && result.length) {
         return true;
@@ -455,28 +479,30 @@ define(["./defaultCacheHandler", "./logger"], function (cacheHandler, logger) {
       logger.log("Offline Persistence Toolkit OfflineCache: keys()");
     }
     var self = this;
+    
+    return self._getStore().then(function(store) {
+      if (request) {
+        // need to match with the passed-in request.
+        var searchCriteria = cacheHandler.constructSearchCriteria(request, options);
+        searchCriteria.fields = ['key', 'value'];
 
-    if (request) {
-      // need to match with the passed-in request.
-      var searchCriteria = cacheHandler.constructSearchCriteria(request, options);
-      searchCriteria.fields = ['key', 'value'];
+        var ignoreVary = (options && options.ignoreVary);
 
-      var ignoreVary = (options && options.ignoreVary);
-
-      return self._store.find(searchCriteria).then(function (dataArray) {
-        if (dataArray && dataArray.length) {
-          var filteredEntries = dataArray.filter(_filterByVary(ignoreVary, request, 'value'));
-          var keysArray = filteredEntries.map(function (entry) { return entry.key;});
-          return keysArray;
-        } else {
-          return [];
-        }
-      });
-    } else {
-      // no passed-in request to match, so returns ALL requests objects in
-      // the persistence store.
-      return self._store.keys();
-    }
+        return store.find(searchCriteria).then(function (dataArray) {
+          if (dataArray && dataArray.length) {
+            var filteredEntries = dataArray.filter(_filterByVary(ignoreVary, request, 'value'));
+            var keysArray = filteredEntries.map(function (entry) { return entry.key;});
+            return keysArray;
+          } else {
+            return [];
+          }
+        });
+      } else {
+        // no passed-in request to match, so returns ALL requests objects in
+        // the persistence store.
+        return store.keys();
+      }
+    });
   };
 
   /**
@@ -513,10 +539,12 @@ define(["./defaultCacheHandler", "./logger"], function (cacheHandler, logger) {
     var self = this;
     var searchCriteria = cacheHandler.constructSearchCriteria(request, options);
     var ignoreVary = (options && options.ignoreVary);
-
-    return self._store.find(searchCriteria).then(function (cacheEntries) {
-      var matchEntry = _applyVaryForSingleMatch(ignoreVary, request, cacheEntries);
-      return matchEntry !== null;
+    
+    return self._getStore().then(function(store) {
+      return store.find(searchCriteria).then(function (cacheEntries) {
+        var matchEntry = _applyVaryForSingleMatch(ignoreVary, request, cacheEntries);
+        return matchEntry !== null;
+      });
     });
   };
 

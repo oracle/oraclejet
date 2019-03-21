@@ -1,9 +1,11 @@
 export function getComponentMetadata(name: string): Metadata | null;
-export function register(name: string, descriptor: {
+export function register<P extends PropertiesType = PropertiesType>(name: string, descriptor: {
     metadata: Metadata;
     view: string;
-    viewModel: ((param0: ViewModelContext) => void | object);
-    parseFunction: ((value: string, name: string, meta: object, defaultParseFunction: (value: string) => any) => any);
+    viewModel?: {
+        new (context: ViewModelContext<P>): ViewModel<P>;
+    };
+    parseFunction?: ((value: string, name: string, meta: object, defaultParseFunction?: (value: string) => any) => any);
 }): void;
 // tslint:disable-next-line interface-over-type-literal
 export type Metadata = {
@@ -16,10 +18,14 @@ export type Metadata = {
     slots?: object;
 };
 // tslint:disable-next-line interface-over-type-literal
-export type PropertyChangedContext = {
-    property: string;
-    value: any;
-    previousValue: any;
+export type PropertiesType = {
+    [key: string]: any;
+};
+// tslint:disable-next-line interface-over-type-literal
+export type PropertyChangedContext<P extends PropertiesType = PropertiesType> = {
+    property: keyof P;
+    value: P[keyof P];
+    previousValue: P[keyof P];
     updatedFrom: 'external' | 'internal';
     subproperty?: {
         path: string;
@@ -28,17 +34,17 @@ export type PropertyChangedContext = {
     };
 };
 // tslint:disable-next-line interface-over-type-literal
-export type ViewModel = {
-    activated: ((param0: ViewModelContext) => Promise<any> | void);
-    connected: ((param0: ViewModelContext) => void);
-    bindingsApplied: ((param0: ViewModelContext) => void);
-    propertyChanged: ((param0: PropertyChangedContext) => void);
-    disconnected: ((param0: Element) => void);
+export type ViewModel<P extends PropertiesType = PropertiesType> = {
+    activated?: ((context: ViewModelContext<P>) => Promise<any> | void);
+    connected?: ((context: ViewModelContext<P>) => void);
+    bindingsApplied?: ((context: ViewModelContext<P>) => void);
+    propertyChanged?: ((context: PropertyChangedContext<P>) => void);
+    disconnected?: ((element: Element) => void);
 };
 // tslint:disable-next-line interface-over-type-literal
-export type ViewModelContext = {
+export type ViewModelContext<P extends PropertiesType = PropertiesType> = {
     element: Element;
-    properties: object;
+    properties: P;
     slotCounts: object;
     unique: string;
     uniqueId: string;

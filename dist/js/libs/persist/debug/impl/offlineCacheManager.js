@@ -3,8 +3,8 @@
  * All rights reserved.
  */
 
-define(['../persistenceStoreManager', './OfflineCache', './logger'],
-  function (persistenceStoreManager, OfflineCache, logger) {
+define(['./OfflineCache', './logger'],
+  function (OfflineCache, logger) {
     'use strict';
 
     /**
@@ -33,24 +33,19 @@ define(['../persistenceStoreManager', './OfflineCache', './logger'],
      * @memberof! OfflineCacheManager
      * @instance
      * @param {string} cacheName Name of the cache.
-     * @return {Promise} Returns a promise that resolves to the cache that is ready to
+     * @return {OfflineCache} Returns a cache that is ready to
      *                           use for offline support.
      */
     OfflineCacheManager.prototype.open = function (cacheName) {
       logger.log("Offline Persistence Toolkit OfflineCacheManager: open() with name: " + cacheName);
-      var self = this;
 
-      var cache = self._caches[cacheName];
-      if (cache) {
-        return Promise.resolve(cache);
-      } else {
-        return persistenceStoreManager.openStore(self._prefix + cacheName).then(function (store) {
-          cache = new OfflineCache(cacheName, store);
-          self._caches[cacheName] = cache;
-          self._cachesArray.push(cache);
-          return cache;
-        });
+      var cache = this._caches[cacheName];
+      if (!cache) {
+        cache = new OfflineCache(cacheName, this._prefix + cacheName);
+        this._caches[cacheName] = cache;
+        this._cachesArray.push(cache);
       }
+      return cache;
     };
 
     /**

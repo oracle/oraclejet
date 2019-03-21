@@ -1,11 +1,16 @@
 {
   "name": "oj-time-axis",
-  "version": "6.1.0",
-  "jetVersion": "6.1.0",
+  "version": "6.2.0",
+  "jetVersion": "6.2.0",
   "displayName": "Time Axis",
   "type": "core",
+  "extension": {
+    "vbdt": {
+      "module": "ojs/ojtimeaxis"
+    }
+  },
   "description": "Displays a range of dates based on specified start and end dates and a time scale.",
-  "help": "https://docs.oracle.com/en/middleware/jet/6.1/reference-api/oj.ojTimeAxis.html",
+  "help": "https://docs.oracle.com/en/middleware/jet/6.2/reference-api/oj.ojTimeAxis.html",
   "properties": {
     "converter": {
       "description": "A converter (an object literal or instance that duck types Converter) used to format the labels of the time axis for all 'scale' values, or an object literal whose keys are 'scale' values that map specific converters for scale specific formatting. See DateTimeConverterFactory for details on creating built-in datetime converters.",

@@ -1,9 +1,14 @@
 {
   "name": "oj-checkboxset",
-  "version": "6.1.0",
-  "jetVersion": "6.1.0",
+  "version": "6.2.0",
+  "jetVersion": "6.2.0",
   "displayName": "Checkbox Set",
   "type": "core",
+  "extension": {
+    "vbdt": {
+      "module": "ojs/ojcheckboxset"
+    }
+  },
   "styleClasses": [
     {
       "styleGroup": [
@@ -37,7 +42,7 @@
     }
   ],
   "description": "A grouping of related checkboxes where any number of boxes may be checked.",
-  "help": "https://docs.oracle.com/en/middleware/jet/6.1/reference-api/oj.ojCheckboxset.html",
+  "help": "https://docs.oracle.com/en/middleware/jet/6.2/reference-api/oj.ojCheckboxset.html",
   "properties": {
     "describedBy": {
       "description": "described the relationship between this component and another element.",
@@ -205,6 +210,13 @@
         }
       }
     },
+    "readonly": {
+      "description": "Whether the component is readonly. The readOnly property sets or returns whether an element is readOnly, or not. A readOnly element cannot be modified. However, a user can tab to it, highlight it, focus on it, and copy the text from it. If you want to prevent the user from interacting with the element, use the disabled property instead.",
+      "type": "boolean",
+      "displayName": "Read Only",
+      "value": false,
+      "help": "readOnly"
+    },
     "required": {
       "description": "Whether the component is required or optional. When required is set to true, an implicit required validator is created using the validator factory - oj.Validation.validatorFactory(oj.ValidatorFactory.VALIDATOR_TYPE_REQUIRED).createValidator(). Translations specified using the translations.required attribute and the label associated with the component, are passed through to the options parameter of the createValidator method. When required property changes due to programmatic intervention, the component may clears message and run validation, based on the current state it's in. Running Validation if component is valid when required is set to true, then it runs deferred validation on the value property. This is to ensure errors are not flagged unnecessarily. if component is invalid and has deferred messages when required is set to false, then component messages are cleared but no deferred validation is run. if component is invalid and currently showing invalid messages when required is set, then component messages are cleared and normal validation is run using the current display value. if there are validation errors, then value property is not updated and the error is shown. if no errors result from the validation, the value property is updated; page author can listen to the onValueChanged event to clear custom errors. Clearing Messages Only messages created by the component are cleared. messagesCustom property is not cleared. This property set to false implies that a value is not required to be provided by the user. This is the default. This property set to true implies that a value is required to be provided by user and the input's label will render a required icon. Additionally a required validator - RequiredValidator - is implicitly used if no explicit required validator is set. An explicit required validator can be set by page authors using the validators option. when the option is not set, the element's required property is used as its initial value if it exists.",
       "type": "boolean",
@@ -220,6 +232,12 @@
       "translatable": true,
       "help": "translations",
       "properties": {
+        "readonlyNoValue": {
+          "description": "Used for the readonly checkboxset when no option is selected.\n\nSee the translations attribute for usage examples.",
+          "type": "string",
+          "displayName": "Readonly No Value",
+          "help": "translations.readonlyNoValue"
+        },
         "required": {
           "description": "Provides properties to customize the summary, detail and hint text used by the\nimplicit required validator associated to any editable component that supports the\nrequired option.\n\nSee the translations attribute and\nrequired option for usage examples.",
           "type": "object",

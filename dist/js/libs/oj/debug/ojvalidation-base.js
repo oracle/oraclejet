@@ -1775,8 +1775,7 @@ oj.Validator.prototype.Init = function (options) {
 
 /**
  * Validates the value.
- * The function typically returns true if the validation passes and throws an error if it fails.
- * However some of the implementations (like LengthValidator) returns the original input if the validation is successful.
+ * The function typically returns if the validation passes and throws an error if it fails.
  *
  * @example <caption>Create a Validator and implement the validate method. Bind it to the
  * JET form component which will call this 'validate' to validate the user's input.</caption>
@@ -1797,7 +1796,10 @@ oj.Validator.prototype.Init = function (options) {
  *  &lt;oj-input-date id="nextday" value="{{endDate}}"
  *  validators="{{[weekendDateValidator, endDateValidator]}}">&lt;/oj-input-date>
  * @param {any} value to be validated
- * @return {any} a boolean true or the original value if validation passes.
+ * @return {void}
+ * @ojdeprecated {since: '6.2.0', description: 'This currently returns any type
+ * if successful, like boolean, original value, or nothing.
+ * In v8.0 it will return nothing if successful.'}
  * @throws {Error} if validation fails
  * @method validate
  * @ojsignature [{target: "Type",
@@ -1850,7 +1852,7 @@ oj.Validator.prototype.Init = function (options) {
  *    {
  *      throw new oj.ValidatorError("Invalid value", "You cannot enter a value that is 'junk'!!");
  *    }
- *    return true;
+ *    return;
  *    }
  *  };
  * @constructor
@@ -2012,7 +2014,9 @@ oj.RegExpValidator.prototype.Init = function (options) {
  * then the application should chain in the required validator (e.g., set required on the input).
  *
  * @param {string|number} value that is being validated
- * @returns {boolean} true if validation was successful
+ * @ojdeprecated {since: '6.2.0', description: 'This currently returns true
+ * if successful. In v8.0 it will return nothing if successful.'}
+ * @returns {void}
  * @ojsignature {target: "Type", for: "returns",
  *                value: "void"}
  *
@@ -2174,8 +2178,9 @@ oj.RequiredValidator.prototype.Init = function (options) {
  * Validates value to be non-empty
  *
  * @param {Object|string|number} value that is being validated
- * @returns {boolean} true if validation was was successful the value is non-empty
- *
+ * @returns {void}
+ * @ojdeprecated {since: '6.2.0', description: 'This currently returns true
+ * if successful. In v8.0 it will return nothing if successful.'}
  * @throws {Error} when fails required-ness check
  * @ojsignature {target: "Type", for: "returns",
  *                value: "void"}
@@ -2263,7 +2268,7 @@ oj.RequiredValidator.prototype._getDetailKey = function () {
  *      return new Promise(function(resolve, reject) {
  *        var successful = someBackendMethod();
  *        if (successful) {
- *          resolve(true);
+ *          resolve();
  *        } else {
  *          reject(new Error('The amount of purchase is too high. It is ' + value));
  *        }
@@ -2289,7 +2294,7 @@ oj.RequiredValidator.prototype._getDetailKey = function () {
 
 /**
  * <p>A method that validates the value.
- * The function returns a Promise that resolves to true
+ * The function returns a Promise that resolves to void
  * if the validation passes or a Promise that rejects with an error if it fails. The error will
  * be shown on the component.
  * </p>
@@ -2311,7 +2316,7 @@ oj.RequiredValidator.prototype._getDetailKey = function () {
  *      return new Promise(function(resolve, reject) {
  *        var successful = someBackendMethod();
  *        if (successful) {
- *          resolve(true);
+ *          resolve();
  *        } else {
  *          //NOTE: if you need to format the value using a converter, you can call
  *          // oj.IntlConverterUtils.getConverterInstance(converterOption); to get the
@@ -2325,12 +2330,14 @@ oj.RequiredValidator.prototype._getDetailKey = function () {
  *  &lt;oj-input-text value="{{value}}"
  *  async-validators="[[[asyncValidator1]]]">&lt;/oj-input-text>
  * @param {any} value to be validated
- * @return {Promise<boolean>} A Promise that evaluates to boolean true if validation passes or
+ * @return {Promise<void>} A Promise that resolves to nothing if validation passes or
  *  rejects with an Error if validation fails.
+ * @ojdeprecated {since: '6.2.0', description: 'This currently resolves to a boolean
+ * if successful. In v8.0 it will resolve to nothing.'}
  * @method validate
  * @export
  * @expose
- * @ojsignature { target: "Type", value: "(value: V): Promise<boolean>" }
+ * @ojsignature { target: "Type", value: "(value: V): Promise<void>" }
  * @memberof oj.AsyncValidator
  * @instance
  * @ojstatus preview
@@ -2348,7 +2355,7 @@ oj.RequiredValidator.prototype._getDetailKey = function () {
  *      return new Promise(function(resolve, reject) {
  *        var successful = someBackendMethod();
  *        if (successful) {
- *          resolve(true);
+ *          resolve();
  *        } else {
  *          reject(new Error('The amount of purchase ' + value +' is too high.'));
  *        }
@@ -3435,9 +3442,10 @@ oj.LengthValidator.prototype.getHint = function () {
 
 /**
  * Validates the length of value is greater than minimum and/or less than maximum.
- *
+ * @ojdeprecated {since: '6.2.0', description: 'This currently returns the original value
+ * in string form if successful. In v8.0 it will return nothing if successful.'}
  * @param {string|number} value that is being validated
- * @returns {string} original if validation was successful
+ * @returns {void}
  * @ojsignature {target: "Type", for: "returns",
  *                value: "void"}
  * @throws {Error} when the length is out of range.

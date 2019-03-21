@@ -1,9 +1,14 @@
 {
   "name": "oj-train",
-  "version": "6.1.0",
-  "jetVersion": "6.1.0",
+  "version": "6.2.0",
+  "jetVersion": "6.2.0",
   "displayName": "Train",
   "type": "core",
+  "extension": {
+    "vbdt": {
+      "module": "ojs/ojtrain"
+    }
+  },
   "styleClasses": [
     {
       "styleGroup": [
@@ -13,7 +18,7 @@
     }
   ],
   "description": "Displays a navigation visual element that allows an application user to go between different steps of a process.",
-  "help": "https://docs.oracle.com/en/middleware/jet/6.1/reference-api/oj.ojTrain.html",
+  "help": "https://docs.oracle.com/en/middleware/jet/6.2/reference-api/oj.ojTrain.html",
   "properties": {
     "selectedStep": {
       "description": "Indicates the id of the current selected step.",
@@ -99,34 +104,7 @@
         {
           "name": "stepProperties",
           "description": "The set of step properties to update. Will overwrite any previously set values.",
-          "type": "object",
-          "properties": [
-            {
-              "name": "id",
-              "description": "id of step",
-              "type": "string"
-            },
-            {
-              "name": "label",
-              "description": "label of step",
-              "type": "string"
-            },
-            {
-              "name": "disabled",
-              "description": "whether step is disabled",
-              "type": "boolean"
-            },
-            {
-              "name": "visited",
-              "description": "whether step has been visited",
-              "type": "boolean"
-            },
-            {
-              "name": "messageType",
-              "description": "type of message displayed",
-              "type": "\"info\"|\"error\"|\"fatal\"|\"warning\""
-            }
-          ]
+          "type": "object"
         }
       ],
       "return": "void"

@@ -1,11 +1,16 @@
 {
   "name": "oj-paging-control",
-  "version": "6.1.0",
-  "jetVersion": "6.1.0",
+  "version": "6.2.0",
+  "jetVersion": "6.2.0",
   "displayName": "Paging Control",
   "type": "core",
+  "extension": {
+    "vbdt": {
+      "module": "ojs/ojpagingcontrol"
+    }
+  },
   "description": "Provides paging functionality for data collections.",
-  "help": "https://docs.oracle.com/en/middleware/jet/6.1/reference-api/oj.ojPagingControl.html",
+  "help": "https://docs.oracle.com/en/middleware/jet/6.2/reference-api/oj.ojPagingControl.html",
   "properties": {
     "data": {
       "description": "The data to bind to the PagingControl.\n\nMust implement the oj.PagingModel interface PagingModel",

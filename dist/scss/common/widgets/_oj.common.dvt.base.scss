@@ -25,6 +25,10 @@
       }
     }
 
+    .oj-dvtbase svg {
+      overflow: hidden;
+    }
+
     .oj-dvtbase:focus {
       outline:none;
     }

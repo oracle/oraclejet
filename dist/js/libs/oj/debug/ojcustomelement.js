@@ -260,6 +260,13 @@ oj.BaseCustomElementBridge.proto =
       }
 
       if (!oj.BaseCustomElementBridge.__CompareOptionValues(prop, meta, value, previousValue)) {
+        var isSubprop = prop.indexOf('.') !== -1;
+        if (isSubprop) {
+          // Set a flag for the case a subproperty results in a set of the top level property
+          // which was not instantiated to an empty object to avoid firing two events.
+          this._SKIP_PROP_CHANGE_EVENT = true;
+        }
+
         if (bOuter) {
           // This ultimately triggers our element defined property setter
           this.ValidateAndSetProperty(this.GetAliasForProperty.bind(this),
@@ -270,8 +277,8 @@ oj.BaseCustomElementBridge.proto =
                                                    props, prop, value);
         }
 
+        this._SKIP_PROP_CHANGE_EVENT = false;
         // Property change events for top level properties will be triggered by ValidateAndSetProperty so avoid firing twice
-        var isSubprop = prop.indexOf('.') !== -1;
         if (isSubprop) {
           var subprop = {};
           subprop.path = prop;
@@ -754,34 +761,42 @@ oj.BaseCustomElementBridge.getRegistered = function (tagName) {
  * If the given element has no children, this method returns an empty object.
  * Note that the default slot name is mapped to the empty string.
  * @param  {Element} element The custom element
- * @param {boolean} isComposite True if we are returning the slot map for a composite
  * @return {Object} A map of the child elements for a given custom element.
  * @ignore
  */
-oj.BaseCustomElementBridge.getSlotMap = function (element, isComposite) {
+oj.BaseCustomElementBridge.getSlotMap = function (element) {
   var slotMap = {};
   var childNodeList = element.childNodes;
   for (var i = 0; i < childNodeList.length; i++) {
     var child = childNodeList[i];
     // Only assign Text and Element nodes to a slot
     if (oj.BaseCustomElementBridge.isSlotAssignable(child)) {
-      // Ignore text nodes that only contain whitespace
-      if (child.nodeType !== 3 || child.nodeValue.trim()) {
-        // Text nodes and elements with no slot attribute map to the default slot
-        var savedSlot = isComposite ? child.__oj_slots : null;
-        var slot = savedSlot != null ? savedSlot : child.getAttribute && child.getAttribute('slot');
-        if (!slot) {
-          slot = '';
-        }
-
-        if (!slotMap[slot]) {
-          slotMap[slot] = [];
-        }
-        slotMap[slot].push(child);
+      var slot = oj.BaseCustomElementBridge.getSlotAssignment(child);
+      if (!slotMap[slot]) {
+        slotMap[slot] = [];
       }
+      slotMap[slot].push(child);
     }
   }
   return slotMap;
+};
+
+/**
+ * Returns the slot that the node should get assigned to.
+ * Note that the default slot name is mapped to the empty string.
+ * @param  {Node} node The custom element
+ * @return {string} The slot name of the element
+ * @ignore
+ */
+oj.BaseCustomElementBridge.getSlotAssignment = function (node) {
+  // Text nodes and elements with no slot attribute map to the default slot.
+  // __oj_slots is the slot attribute saved from an oj-bind-slot or oj-bind-template-slot element
+  // Remember that the slot name can be the empty string so we should do a null check instead of just using || directly
+  var slot = node.__oj_slots != null ? node.__oj_slots : (node.getAttribute && node.getAttribute('slot'));
+  if (!slot) {
+    slot = '';
+  }
+  return slot;
 };
 
 /**
@@ -808,7 +823,8 @@ oj.BaseCustomElementBridge.isPromiseType = function (element, propName) {
  * @ignore
  */
 oj.BaseCustomElementBridge.isSlotAssignable = function (node) {
-  return node.nodeType === 1 || node.nodeType === 3;
+  // Ignore text nodes that only contain whitespace
+  return node.nodeType === 1 || (node.nodeType === 3 && node.nodeValue.trim());
 };
 
 /** ***************************/
@@ -1109,6 +1125,11 @@ function _createResolvablePromise() {
 }
 
 /**
+ * @param {function} propNameFun A function that returns the actual property name to use, e.g. an alias
+ * @param {Object} componentProps The object to set the new property value on which is the
+ *                                element for outer property sets and the property bag for inner sets.
+ * @param {string} property The property name
+ * @param {Object} value The value to set for the property
  * @ignore
  */
 oj.BaseCustomElementBridge.__SetProperty = function (propNameFun, componentProps, property, value) {
@@ -1251,25 +1272,30 @@ oj.BaseCustomElementBridge.__Register = function (tagName, descriptor, bridgePro
 oj.BaseCustomElementBridge.__FirePropertyChangeEvent =
   function (element, name, value, previousValue, updatedFrom, subprop) {
     var bridge = oj.BaseCustomElementBridge.getInstance(element);
+    // There are cases where a subproperty set can trigger a top level property set
+    // if the top level property was not instantiated to an empty object. We don't want
+    // to fire two events for that case. The BaseCustomElementBridge has logic to fire
+    // the subproperty change event there.
+    if (!bridge._SKIP_PROP_CHANGE_EVENT) {
+      var detail = {};
+      if (subprop) {
+        detail.subproperty = subprop;
+      }
+      detail.value = value;
+      detail.previousValue = previousValue;
+      detail.updatedFrom = updatedFrom;
 
-    var detail = {};
-    if (subprop) {
-      detail.subproperty = subprop;
-    }
-    detail.value = value;
-    detail.previousValue = previousValue;
-    detail.updatedFrom = updatedFrom;
-
-    // Check if the subclass needs to do anything before we fire the property change event,
-    // e.g. composites that need to call the propertyChanged ViewModel callback.
-    if (bridge.beforePropertyChangedEvent) {
-      bridge.beforePropertyChangedEvent(element, name, detail);
-    }
-    // The bridge sets the ready to fire flag after the component has been instantiated.
-    // We shouldn't fire property changed events before then unless the update comes from internally
-    // for cases like readOnly property updates.
-    if (updatedFrom !== 'external' || bridge.__READY_TO_FIRE) {
-      element.dispatchEvent(new CustomEvent(name + 'Changed', { detail: detail }));
+      // Check if the subclass needs to do anything before we fire the property change event,
+      // e.g. composites that need to call the propertyChanged ViewModel callback.
+      if (bridge.beforePropertyChangedEvent) {
+        bridge.beforePropertyChangedEvent(element, name, detail);
+      }
+      // The bridge sets the ready to fire flag after the component has been instantiated.
+      // We shouldn't fire property changed events before then unless the update comes from internally
+      // for cases like readOnly property updates.
+      if (updatedFrom !== 'external' || bridge.__READY_TO_FIRE) {
+        element.dispatchEvent(new CustomEvent(name + 'Changed', { detail: detail }));
+      }
     }
   };
 

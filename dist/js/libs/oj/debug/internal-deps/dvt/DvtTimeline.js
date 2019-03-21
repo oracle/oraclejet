@@ -2455,7 +2455,7 @@ dvt.Timeline.prototype.Init = function(context, callback, callbackObj)
   dvt.Timeline.superclass.Init.call(this, context, callback, callbackObj);
 
   // Create the defaults object
-  this.Defaults = new DvtTimelineDefaults();
+  this.Defaults = new DvtTimelineDefaults(context);
 
   // Create the event handler and add event listeners
   this.EventManager = new DvtTimelineEventManager(this, context, callback, callbackObj);
@@ -3969,11 +3969,12 @@ DvtTimelineAutomation.prototype.getDomElementForSubId = function(subId)
  * Default values and utility functions for component versioning.
  * @class
  * @constructor
+ * @param {dvt.Context} context The rendering context.
  * @extends {dvt.BaseComponentDefaults}
  */
-var DvtTimelineDefaults = function()
+var DvtTimelineDefaults = function(context)
 {
-  this.Init({'alta': DvtTimelineDefaults.VERSION_1});
+  this.Init({'alta': DvtTimelineDefaults.VERSION_1}, context);
 };
 
 dvt.Obj.createSubclass(DvtTimelineDefaults, dvt.BaseComponentDefaults);

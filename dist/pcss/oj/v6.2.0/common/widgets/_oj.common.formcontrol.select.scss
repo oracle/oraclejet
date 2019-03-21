@@ -44,6 +44,12 @@
       width: 100%;
       box-sizing: border-box; 
     }
+    // .oj-form-control-full-width is an override to set max-width to 100% if on the
+    // element or an ancestor element
+    .oj-form-control-full-width.oj-select,
+    .oj-form-control-full-width .oj-select {
+      max-width: 100%;
+    }
 
     /* 
      * Suppress focus ring around the select box 

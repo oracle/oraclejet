@@ -245,6 +245,7 @@ ko.bindingHandlers._ojBindSlot_ =
     var values = valueAccessor();
     var unwrap = ko.utils.unwrapObservable;
     var slotName = unwrap(values.name) || '';
+    var slotAttr = unwrap(values.slot) || '';
     var index = unwrap(values.index);
     var assignedNodes = index != null ? [slots[slotName][index]] : slots[slotName];
 
@@ -255,7 +256,7 @@ ko.bindingHandlers._ojBindSlot_ =
         var node = assignedNodes[i];
         // Get the slot value of this oj-bind-slot element so we can assign it to its
         // assigned nodes for downstream slotting
-        node.__oj_slots = unwrap(values.slot) || '';
+        node.__oj_slots = slotAttr;
       }
       ko.virtualElements.setDomNodeChildren(element, assignedNodes);
 
@@ -266,13 +267,25 @@ ko.bindingHandlers._ojBindSlot_ =
           oj.Components.subtreeShown(assignedNodes[i]);
         }
       }
-
-      // If no assigned nodes, let ko apply bindings to default slot content
       return { controlsDescendantBindings: true };
     }
+
+    // If no assigned nodes, then pass the slot value to default content
+    var virtualChildren = ko.virtualElements.childNodes(element);
+    virtualChildren.forEach(function (child) {
+      if (isNodeSlotable(child)) {
+        // eslint-disable-next-line no-param-reassign
+        child.__oj_slots = slotAttr;
+      }
+    });
+    // If no assigned nodes, let ko apply bindings to default slot content
     return undefined;
   }
 };
+
+function isNodeSlotable(node) {
+  return node.nodeType === 1 || (node.nodeType === 3 && node.nodeValue.trim());
+}
 
 // Allow _ojBindSlot_ binding on virtual elements (comment nodes) which is done during knockout's preprocessNode method
 ko.virtualElements.allowedBindings._ojBindSlot_ = true;
@@ -306,7 +319,7 @@ SlotUtils.cleanup = function (element, bindingContext) {
         nodeStorage.appendChild(node); // @HTMLUpdateOK
         // Notifies JET components in node that they have been hidden
         // For upstream or indirect dependency we will still rely components being registered on the oj namespace.
-        if (oj.Components) {
+        if (oj.Components && node.nodeType === 1) {
           oj.Components.subtreeHidden(node);
         }
       }
@@ -665,6 +678,19 @@ ko.virtualElements.allowedBindings._ojBindTemplateSlot_ = true;
  */
 
 /**
+ * <p>The <code class="prettyprint">oj-bind-slot</code> default slot is used to
+ * specify fallback content which will be used in the DOM if the slot has no
+ * assigned nodes.  As with assigned nodes, the fallback content will inherit
+ * the slot attribute of the oj-bind-slot itself.
+ *
+ * @ojstatus preview
+ * @ojchild Default
+ * @memberof oj.ojBindSlot
+ * @instance
+ * @expose
+ */
+
+/**
  * @ojstatus preview
  * @ojcomponent oj.ojBindTemplateSlot
  * @ojshortdesc A placeholder for stamped child DOM to appear in a specified slot.
@@ -768,9 +794,9 @@ ko.virtualElements.allowedBindings._ojBindTemplateSlot_ = true;
  *         &lt;tr>
  *           &lt;td>
  *             &lt;!-- Template slot for list items with default template and alias -->
- *             &lt;oj-bind-template-slot name="item" data={{$current.data}} as="listItem">
+ *             &lt;oj-bind-template-slot name="item" data={{$current.data}}>
  *               &lt;!-- Default template -->
- *               &lt;template>
+ *               &lt;template data-oj-as="listItem">
  *                 &lt;span>&lt;oj-bind-text value='[[listItem.value]]'>&lt;/oj-bind-text>&lt;/span>
  *               &lt;/template>
  *             &lt;/oj-bind-template-slot>
@@ -795,6 +821,7 @@ ko.virtualElements.allowedBindings._ojBindTemplateSlot_ = true;
  * @memberof oj.ojBindTemplateSlot
  * @instance
  * @type {string}
+ * @ojdeprecated {since: '6.2.0', description: 'Set the alias directly on the template element using the data-oj-as attribute instead.'}
  * @example <caption>Define a slot within a composite View with the name "foo":</caption>
  * &lt;oj-bind-template-slot name="foo" data="[[extraProperties]]" as="listItem">
  *   &lt;!-- optional default template content -->
@@ -839,6 +866,24 @@ ko.virtualElements.allowedBindings._ojBindTemplateSlot_ = true;
  *     ...
  *   &lt;/template>
  * &lt;/oj-bind-template-slot>
+ */
+
+ /**
+ * <p>The <code class="prettyprint">oj-bind-template-slot</code> default slot
+ * is used to specify a fallback template that will be used to stamp child
+ * DOM if the slot has no assigned template nodes.  While assigned template
+ * nodes are executed in an extension of the composite element's binding
+ * context, the fallback template is executed in an extension of its own
+ * binding context (commonly the binding context of the composite view).  As
+ * with assigned templated nodes, the extension makes the value of the
+ * data attribute available through $current and alias keys.  The fallback
+ * content also inherits the slot attribute of the oj-bind-template-slot itself.
+ * @ojstatus preview
+ * @ojchild Default
+ * @ojmaxitems 1
+ * @memberof oj.ojBindTemplateSlot
+ * @instance
+ * @expose
  */
 
 });

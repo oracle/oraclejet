@@ -4,7 +4,7 @@
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
-define(['ojs/ojcore', 'jquery', 'require', 'ojs/ojcontext', 'ojs/ojconfig', 'ojs/ojthemeutils', 'ojs/ojkeysetimpl', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojs/ojlogger', 'ojs/ojdomscroller', 'promise', 'ojs/ojdataprovideradapter', 'ojs/ojkeyset'], function(oj, $, require, Context, Config, ThemeUtils, KeySetImpl, Components, AnimationUtils, Logger){
+define(['ojs/ojcore', 'jquery', 'require', 'ojs/ojcontext', 'ojs/ojconfig', 'ojs/ojthemeutils', 'ojs/ojkeysetimpl', 'ojs/ojmap', 'ojs/ojcomponentcore', 'ojs/ojanimation', 'ojs/ojlogger', 'ojs/ojdomscroller', 'promise', 'ojs/ojdataprovideradapter', 'ojs/ojkeyset'], function(oj, $, require, Context, Config, ThemeUtils, KeySetImpl, KeyMap, Components, AnimationUtils, Logger, KeySet){
   
 
 var __oj_list_view_metadata = 
@@ -375,7 +375,7 @@ var __oj_list_view_metadata =
   },
   "extension": {}
 };
-/* global Promise:false, Config:false */
+/* global Promise:false, KeyMap:false, KeySet:false, Config:false */
 
 /**
  * Base class for TableDataSourceContentHandler and TreeDataSourceContentHandler
@@ -850,6 +850,21 @@ oj.DataSourceContentHandler.prototype.signalTaskEnd = function () {
   }
 };
 
+oj.DataSourceContentHandler.prototype.createKeyMap = function (initialMap) {
+  var map = new KeyMap();
+  if (initialMap) {
+    initialMap.forEach(function (value, key) {
+      map.set(key, value);
+    });
+    return map;
+  }
+  return map;
+};
+
+oj.DataSourceContentHandler.prototype.createKeySet = function (initialSet) {
+  return new KeySet(initialSet);
+};
+
 /* global Logger:false, Context:false */
 /**
  * Handler for TreeDataSource generated content
@@ -1142,6 +1157,8 @@ oj.TreeDataSourceContentHandler.prototype.Collapse = function (item) {
   // remove all children nodes
   item.empty(); // @HTMLUpdateOK
 };
+
+/* global Context:false, KeyMap:false, KeySet:false */
 
 /**
  * Handler for static HTML content
@@ -1586,6 +1603,21 @@ oj.StaticContentHandler.prototype.isCardLayout = function () {
 
 oj.StaticContentHandler.prototype.shouldUseGridRole = function () {
   return this.m_widget.ShouldUseGridRole();
+};
+
+oj.StaticContentHandler.prototype.createKeyMap = function (initialMap) {
+  var map = new KeyMap();
+  if (initialMap) {
+    initialMap.forEach(function (value, key) {
+      map.set(key, value);
+    });
+    return map;
+  }
+  return map;
+};
+
+oj.StaticContentHandler.prototype.createKeySet = function (initialSet) {
+  return new KeySet(initialSet);
 };
 
 /* global Context:false, ThemeUtils:false, Promise:false, KeySetImpl:false, Set:false, Components:false, Logger:false  */
@@ -3115,7 +3147,7 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
 
     // disassociate element from key map
     if (elem != null && elem.id && this.m_keyElemMap != null) {
-      this.m_keyElemMap.deleteValue(elem.id);
+      this.m_keyElemMap.delete(elem.id);
     }
   },
 
@@ -5752,7 +5784,7 @@ oj._ojListView = _ListViewUtils.clazz(Object, /** @lends oj._ojListView.prototyp
   _applySelection: function (element, key) {
     // update map that keeps track of key->element
     if (this.m_keyElemMap == null) {
-      this.m_keyElemMap = new oj.KeyMap();
+      this.m_keyElemMap = this.m_contentHandler.createKeyMap();
     }
     this.m_keyElemMap.set(key, $(element).attr('id'));
 
@@ -7685,6 +7717,7 @@ oj.__registerWidget('oj.ojListView', $.oj.baseComponent, {
      * @memberof! oj.ojListView
      * @type {string}
      * @default ''
+     * @ojdeprecated {since: '6.2.0', description: 'Set the alias directly on the template element using the data-oj-as attribute instead.'}
      *
      * @example <caption>Initialize the ListView with the <code class="prettyprint">as</code> attribute specified:</caption>
      * &lt;oj-list-view as='item'>
@@ -9349,7 +9382,7 @@ oj.__registerWidget('oj.ojListView', $.oj.baseComponent, {
  *                value: "?"}
  */
 
-/* global Promise:false, Symbol:false, Logger:false, Context:false */
+/* global Promise:false, Symbol:false, Logger:false, Context:false, KeyMap:false, KeySet:false */
 
 /**
  * Handler for IteratingDataProvider generated content
@@ -10502,6 +10535,27 @@ oj.IteratingDataProviderContentHandler.prototype.getMetadata = function (index, 
   }
 
   return context;
+};
+
+oj.IteratingDataProviderContentHandler.prototype.createKeyMap = function (initialMap) {
+  if (this.getDataSource().createOptimizedKeyMap) {
+    return this.getDataSource().createOptimizedKeyMap(initialMap);
+  }
+  var map = new KeyMap();
+  if (initialMap) {
+    initialMap.forEach(function (value, key) {
+      map.set(key, value);
+    });
+    return map;
+  }
+  return map;
+};
+
+oj.IteratingDataProviderContentHandler.prototype.createKeySet = function (initialSet) {
+  if (this.getDataSource().createOptimizedKeySet) {
+    return this.getDataSource().createOptimizedKeySet(initialSet);
+  }
+  return new KeySet(initialSet);
 };
 
 /* global __oj_list_view_metadata:false */

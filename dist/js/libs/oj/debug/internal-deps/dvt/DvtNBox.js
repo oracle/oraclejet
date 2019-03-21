@@ -57,7 +57,7 @@ dvt.NBox.prototype.Init = function(context, callback, callbackObj) {
   dvt.NBox.superclass.Init.call(this, context, callback, callbackObj);
 
   // Create the defaults object
-  this.Defaults = new DvtNBoxDefaults();
+  this.Defaults = new DvtNBoxDefaults(context);
 
   // Create the event handler and add event listeners
   this.EventManager = new DvtNBoxEventManager(this);
@@ -1366,10 +1366,11 @@ dvt.Bundle.addDefaultStrings(dvt.Bundle.NBOX_PREFIX, {
  * Default values and utility functions for component versioning.
  * @class
  * @constructor
+ * @param {dvt.Context} context The rendering context.
  * @extends {dvt.BaseComponentDefaults}
  */
-var DvtNBoxDefaults = function() {
-  this.Init({'skyros': DvtNBoxDefaults.VERSION_1, 'alta': DvtNBoxDefaults.SKIN_ALTA});
+var DvtNBoxDefaults = function(context) {
+  this.Init({'skyros': DvtNBoxDefaults.VERSION_1, 'alta': DvtNBoxDefaults.SKIN_ALTA}, context);
 };
 
 dvt.Obj.createSubclass(DvtNBoxDefaults, dvt.BaseComponentDefaults);

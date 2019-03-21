@@ -41,6 +41,12 @@
       }
       width: 100%;
     }
+    // .oj-form-control-full-width is an override to set max-width to 100% if on the
+    // element or an ancestor element
+    .oj-form-control-full-width.oj-inputsearch,
+    .oj-form-control-full-width .oj-inputsearch {
+      max-width: 100%;
+    }
 
     /* 
      * Applied to the InputSearch box which includes the input field and the search icon

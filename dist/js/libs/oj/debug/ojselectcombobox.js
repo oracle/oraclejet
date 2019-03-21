@@ -4,7 +4,7 @@
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
-define(['ojs/ojcore', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeutils', 'ojs/ojtimerutils', 'ojs/ojcomponentcore', 'ojs/ojlogger', 'ojs/ojeditablevalue', 'ojs/ojoptgroup', 'ojs/ojoption', 'promise', 'ojs/ojlistdataproviderview'], 
+define(['ojs/ojcore', 'jquery', 'ojs/ojcontext', 'ojs/ojthemeutils', 'ojs/ojtimerutils', 'ojs/ojcomponentcore', 'ojs/ojlogger', 'ojs/ojeditablevalue', 'ojs/ojoptgroup', 'ojs/ojoption', 'promise', 'ojs/ojlistdataproviderview', 'ojs/ojtreedataproviderview'], 
        function(oj, $, Context, ThemeUtils, TimerUtils, Components, Logger)
 {
 
@@ -1141,6 +1141,11 @@ var __oj_select_one_metadata =
     DEFAULT_FETCH_SIZE: 15,
 
     /*
+     * The fetch size from the data provider for local filtering
+     */
+    FILTERING_FETCH_SIZE: 100,
+
+    /*
      * The default delay in milliseconds between when a keystroke occurs
      * and when a search is performed to get the filtered options.
      */
@@ -1597,6 +1602,11 @@ var __oj_select_one_metadata =
         oj.DataProviderFeatureChecker.isDataProvider(data) : false;
     },
 
+    isTreeDataProvider: function (data) {
+      return (data && oj.DataProviderFeatureChecker) ?
+        oj.DataProviderFeatureChecker.isTreeDataProvider(data) : false;
+    },
+
     getDataProvider: function (options) {
       if (options) {
         var dataProvider = options._dataProvider || options.options;
@@ -1992,9 +2002,9 @@ var __oj_select_one_metadata =
     },
 
     /*
-     * When dataProvider is used, wrap a ListViewDataProviderView around it
-     * if optionsKeys is specified or the fetchByKeys method is not available
-     * save the new wrapper or the original data provider
+     * If dataProvider is used and optionsKeys is specified,
+     * wrap a ListViewDataProviderView or TreeViewDataProviderView around it
+     * and save the wrapper
      */
     wrapDataProviderIfNeeded: function (widget, opts) {
       var wOptions = widget.options;
@@ -2005,7 +2015,10 @@ var __oj_select_one_metadata =
         var optionsKeys = wOptions.optionsKeys;
 
         if (optionsKeys && (optionsKeys.label != null || optionsKeys.value != null)) {
-          if (!(dataProvider instanceof oj.ListDataProviderView)) {
+          var isTree = _ComboUtils.isTreeDataProvider(dataProvider);
+
+          if ((isTree && !(dataProvider instanceof oj.TreeDataProviderView)) ||
+              (!isTree && !(dataProvider instanceof oj.ListDataProviderView))) {
             var mapFields = function (item) {
               var data = item.data;
               var mappedItem = {};
@@ -2031,8 +2044,11 @@ var __oj_select_one_metadata =
 
               return mappedItem;
             };
-            // create ListDataProviderView with dataMapping
-            wrapper = new oj.ListDataProviderView(dataProvider,
+            // create ListDataProviderView or TreeDataProviderView with dataMapping
+            wrapper = isTree ?
+              new oj.TreeDataProviderView(dataProvider,
+                                          { dataMapping: { mapFields: mapFields } }) :
+              new oj.ListDataProviderView(dataProvider,
                                                   { dataMapping: { mapFields: mapFields } });
           }
         }
@@ -2209,15 +2225,152 @@ var __oj_select_one_metadata =
       }
     },
 
+    fetchFlatData: function (context, dataProvider, fetchListParms, query, dropdown, maxItems) {
+      var results = [];
+      var asyncIterator = dataProvider.fetchFirst(fetchListParms)[Symbol.asyncIterator]();
+
+      function filterData(fetchResults) {
+        if (fetchResults) {
+          var data = fetchResults.value.data;
+          if (data) {
+            // skip filter locally if it is already done thru data provider
+            if (fetchListParms.filterCriterion) {
+              results = data;
+            } else {
+              for (var item, i = 0; i < data.length && results.length < maxItems; i++) {
+                item = data[i];
+                if (!query || !query.matcher ||
+                    query.matcher(query.term, _ComboUtils.getLabel(item), item)) {
+                  results.push(item);
+                }
+              }
+            }
+          }
+          // clear message
+          if (dropdown) {
+            _ComboUtils.removeDropdownMessage(dropdown);
+          }
+
+          // not all results are fetched, display mesage for filtering further
+          if (dropdown && !fetchResults.done && results.length >= maxItems) {
+            _ComboUtils.addDropdownMessage(dropdown, context,
+                                           context.getTranslatedString('filterFurther'));
+            // eslint-disable-next-line no-param-reassign
+            context._hasMore = true;
+          } else {
+            // fetch more
+            if (!fetchResults.done && results.length < maxItems) {
+              return asyncIterator.next().then(filterData);
+            }
+            // eslint-disable-next-line no-param-reassign
+            context._hasMore = false;
+          }
+        }
+        return Promise.resolve(results);
+      }
+
+      return asyncIterator.next().then(filterData);
+    },
+
+    fetchTreeData: function (context, rootDataProvider, fetchListParms, query, dropdown) {
+      var remaining = fetchListParms.size;
+
+      // eslint-disable-next-line no-param-reassign
+      context._hasMore = false;
+      if (dropdown) {
+        _ComboUtils.removeDropdownMessage(dropdown);
+      }
+
+      function fetchLayer(dataProvider) {
+        // eslint-disable-next-line no-param-reassign
+        fetchListParms.size = remaining;
+
+        var results = [];
+        var iterator = dataProvider.fetchFirst(fetchListParms)[Symbol.asyncIterator]();
+        return iterator.next().then(processChunk);
+
+        function processChunk(fetchResult) {
+          var data = fetchResult.value.data;
+          var childrenPromise = fetchChildren(0);
+
+          return childrenPromise.then(function () {
+            if (fetchResult.done || remaining <= 0) {
+              if (!fetchResult.done) {
+                // eslint-disable-next-line no-param-reassign
+                context._hasMore = true;
+              }
+              return Promise.resolve(results);
+            }
+            return iterator.next().then(processChunk);
+          });
+
+          function processItem(item, children) {
+            var match = !query || !query.matcher || fetchListParms.filterCriterion ||
+                query.matcher(query.term, _ComboUtils.getLabel(item), item);
+
+            var selectable = (dataProvider.getChildDataProvider(item.value) == null);
+            if (!selectable) {
+              match = false;
+            }
+            if (match && children.length === 0) {
+              remaining -= 1;
+            }
+
+            if (match || children.length > 0) {
+              // keep a reference to the original row data in "data"
+              var result = { label: item.label, value: item.value, data: item };
+              if (item.disabled) {
+                result.disabled = true;
+              }
+              if (!selectable || result.disabled) {
+                result._jetUnSelectable = true;
+              }
+              if (children.length > 0) {
+                result.children = children;
+              }
+              results.push(result);
+            }
+          }
+
+          function fetchChildren(i) {
+            if (i < data.length) {
+              if (remaining > 0) {
+                var item = data[i];
+                var childDataProvider = dataProvider.getChildDataProvider(item.value);
+                if (childDataProvider) {
+                  return fetchLayer(childDataProvider).then(function (childResults) {
+                    processItem(item, childResults);
+                    return fetchChildren(i + 1);
+                  });
+                }
+                processItem(item, []);
+                return fetchChildren(i + 1);
+              }
+              // eslint-disable-next-line no-param-reassign
+              context._hasMore = true;
+            }
+            return Promise.resolve(results);
+          }
+        }
+      }
+
+      return fetchLayer(rootDataProvider).then(function (results) {
+        if (context._hasMore && dropdown) {
+          _ComboUtils.addDropdownMessage(dropdown, context,
+                                         context.getTranslatedString('filterFurther'));
+        }
+
+        return results;
+      });
+    },
+
     // _ComboUtils
     // Fetch from the data provider and filter the data locally until
     // the end of data or fetch size has reached
-    fetchFilteredData: function (_context, fetchSize, query, dropdown) {
-      var context = _context;
+    fetchFilteredData: function (context, maxItems, query, dropdown) {
       var dataProvider = _ComboUtils.getDataProvider(context.options);
-      var results = [];
       var fetchListParms = {
-        size: fetchSize
+        size: maxItems
       };
 
       // check if data provider support filtering?
@@ -2237,65 +2390,34 @@ var __oj_select_one_metadata =
           }
         }
       }
+      var isTree = _ComboUtils.isTreeDataProvider(dataProvider);
 
-      // use dataprovider filtering if supported
-      if (filterThruDataProvider && query && query.term) {
-        // TODO test in the data mapping case to see if "label" works
-        // Note: revisit when tree dataProvider is supported
-        // for now if optionsKey is used, 'label' must specify in optionsKeys
-        var optKeys = context.options.optionsKeys;
-        var attrName;
-        if (optKeys && optKeys.label) {
-          attrName = optKeys.label;
-        } else {
-          attrName = 'label';
-        }
-
-        fetchListParms.filterCriterion =
-          { op: $co, attribute: attrName, value: query.term };
-      }
-
-      var asyncIterator = dataProvider.fetchFirst(fetchListParms)[Symbol.asyncIterator]();
-
-      function filterData(fetchResults) {
-        if (fetchResults) {
-          var data = fetchResults.value.data;
-          if (data) {
-            // skip filter locally if it is already done thru data provider
-            if (filterThruDataProvider) {
-              results = data;
-            } else {
-              for (var item, i = 0; i < data.length; i++) {
-                item = data[i];
-                if (!query || !query.matcher ||
-                    query.matcher(query.term, _ComboUtils.getLabel(item), item)) {
-                  results.push(item);
-                }
-              }
-            }
-          }
-          // clear message
-          if (dropdown) {
-            _ComboUtils.removeDropdownMessage(dropdown);
-          }
-
-          // not all results are fetched, display mesage for filtering further
-          if (dropdown && !fetchResults.done && results.length >= fetchListParms.size) {
-            _ComboUtils.addDropdownMessage(dropdown, context,
-                                           context.getTranslatedString('filterFurther'));
-            context._hasMore = true;
+      // have to filter
+      if (query && query.term) {
+        // use dataprovider filtering if supported
+        if (filterThruDataProvider) {
+          // TODO test in the data mapping case to see if "label" works
+          // Note: revisit when tree dataProvider is supported
+          // for now if optionsKey is used, 'label' must specify in optionsKeys
+          var optKeys = context.options.optionsKeys;
+          var attrName;
+          if (optKeys && optKeys.label) {
+            attrName = optKeys.label;
           } else {
-            // fetch more
-            if (!fetchResults.done && results.length < fetchListParms.size) {
-              return asyncIterator.next().then(filterData);
-            }
-            context._hasMore = false;
+            attrName = 'label';
           }
+
+          fetchListParms.filterCriterion =
+            { op: $co, attribute: attrName, value: query.term };
+        } else if (!isTree) {
+          // for local filtering increase the fetch size
+          fetchListParms.size = _ComboUtils.FILTERING_FETCH_SIZE;
         }
-        return Promise.resolve(results);
       }
 
-      return asyncIterator.next().then(filterData);
+      return isTree ?
+        _ComboUtils.fetchTreeData(context, dataProvider, fetchListParms, query, dropdown) :
+        _ComboUtils.fetchFlatData(context, dataProvider, fetchListParms, query, dropdown, maxItems);
     },
 
     // used as rejected error in the fetchFromDataProvider method
@@ -2309,7 +2431,6 @@ var __oj_select_one_metadata =
     // if multiple queries are in progress, discard all but the last query
     fetchFromDataProvider: function (widget, options, query, fetchSize) {
       var context = widget.ojContext;
-      var spinnerContainer;
 
       // add busy context
       if (!context._fetchResolveFunc) {
@@ -2327,10 +2448,10 @@ var __oj_select_one_metadata =
       });
 
       // display spinning icon only for the initial fetch
-      if (widget.selection && options.fetchType === 'init') {
-        spinnerContainer = widget.selection;
+      if (widget.selection && options.fetchType === 'init' && !context._spinnerContainer) {
+        context._spinnerContainer = widget.selection;
 
-        _ComboUtils.addLoadingIndicator(spinnerContainer);
+        _ComboUtils.addLoadingIndicator(context._spinnerContainer);
         // eslint-disable-next-line no-param-reassign
         options.fetchType = null;
       }
@@ -2350,8 +2471,9 @@ var __oj_select_one_metadata =
         // clear the reject function
         context._saveRejectFunc = null;
 
-        if (spinnerContainer) {
-          _ComboUtils.removeLoadingIndicator(spinnerContainer);
+        if (context._spinnerContainer) {
+          _ComboUtils.removeLoadingIndicator(context._spinnerContainer);
+          context._spinnerContainer = undefined;
         }
 
         //  - search not shown before typing a character
@@ -2390,6 +2512,28 @@ var __oj_select_one_metadata =
       var fetchListParms = {
         size: (fetchSize || _ComboUtils.DEFAULT_FETCH_SIZE)
       };
+
+      if (_ComboUtils.isTreeDataProvider(dataProvider)) {
+        return _ComboUtils.fetchTreeData({}, dataProvider, fetchListParms, null, null).then(
+          function (fetchResults) {
+            // return the leaf node data
+            if (fetchSize === 1 && fetchResults && fetchResults.length > 0) {
+              var selval = fetchResults[0];
+              for (; selval.children;) {
+                selval = selval.children[0];
+              }
+              // eslint-disable-next-line no-param-reassign
+              fetchResults = [selval];
+            }
+            _ComboUtils._clearBusyState(fetchResolveFunc);
+            return fetchResults;
+          },
+          function () {
+            _ComboUtils._clearBusyState(fetchResolveFunc);
+            return null;
+          });
+      }
+
       var asyncIterator = dataProvider.fetchFirst(fetchListParms)[Symbol.asyncIterator]();
       return asyncIterator.next().then(
         function (fetchResults) {
@@ -2415,11 +2559,10 @@ var __oj_select_one_metadata =
       var fetchResolveFunc = _ComboUtils._addBusyState(container, 'fetching selected data');
 
       //  - display loading indicator when fetching label for initial value is slow
-      var spinnerContainer;
       if (widget && widget.selection) {
-        if (widget.opts.fetchType === 'init') {
-          spinnerContainer = widget.selection;
-          _ComboUtils.addLoadingIndicator(spinnerContainer);
+        if (widget.opts.fetchType === 'init' && !container._spinnerContainer) {
+          container._spinnerContainer = widget.selection;
+          _ComboUtils.addLoadingIndicator(container._spinnerContainer);
         }
       }
 
@@ -2447,8 +2590,9 @@ var __oj_select_one_metadata =
         // eslint-disable-next-line no-param-reassign
         container._fetchByKeys = undefined;
 
-        if (spinnerContainer) {
-          _ComboUtils.removeLoadingIndicator(spinnerContainer);
+        if (container._spinnerContainer) {
+          _ComboUtils.removeLoadingIndicator(container._spinnerContainer);
+          container._spinnerContainer = undefined;
         }
 
         var values = [];
@@ -3165,6 +3309,8 @@ var __oj_select_one_metadata =
             populateResults: function (_container, _results, query, _showPlaceholder) {
               var populate;
               var id = this.opts.id;
+              var isTreeDataProvider =
+                _ComboUtils.isTreeDataProvider(_ComboUtils.getDataProvider(this.opts));
 
               var optionRenderer = this.opts.optionRenderer;
               if (typeof optionRenderer !== 'function') {
@@ -3278,12 +3424,16 @@ var __oj_select_one_metadata =
                 var createLabelContent = function (labelNode, _result) {
                   var contentNode;
                   if (optionRenderer) {
+                    // For treeDataProvider, we store the whole original data item on the result wrapper
+                    // object instead of copying all the fields, now we need to pass the stored original
+                    // data to an option-renderer
+                    var contextData = isTreeDataProvider ? _result.data : _result;
                     var context = {
                       index: i,
                       depth: depth,
                       leaf: !_result.children,
                       parent: resultsParent,
-                      data: _result,
+                      data: contextData,
                       component: opts.ojContext,
                       componentElement: self.container[0],
                       parentElement: labelNode.get(0)
@@ -3355,7 +3505,8 @@ var __oj_select_one_metadata =
                 for (i = 0, l = results.length; i < l; i++) {
                   result = results[i];
                   disabled = (result.disabled === true);
-                  selectable = (!disabled) && (id(result) !== undefined);
+                  selectable = isTreeDataProvider ? !result._jetUnSelectable :
+                    ((!disabled) && (id(result) !== undefined));
 
                   var isList = result.element && $(result.element[0]).is('li');
                   node = isList ? $(result.element[0]) : $('<li></li>');
@@ -5800,6 +5951,9 @@ var _OjSingleSelect = _ComboUtils.clazz(_AbstractSingleChoice,
     _opening: function (event, dontUpdateResults) {
       _OjSingleSelect.superclass._opening.apply(this, arguments);
 
+      //  - select input gets stuck with sdp fetchchain delay
+      // show drop down in order to show the searchBox
+      this._showDropDown();
       var searchText = _ComboUtils.getSearchText(event);
 
       // select: focus still stay on the selectBox if open dropdown by mouse click
@@ -6018,6 +6172,10 @@ var _OjSingleSelect = _ComboUtils.clazz(_AbstractSingleChoice,
 
 
       if (this._userTyping) {
+        //  - select input gets stuck with sdp fetchchain delay
+        // force opening the dropdown to show seach text in the searchbox
+        this.open(e);
+
         //  - ojselect search box does not appear when i start typing
         if (this._opened()) {
           var searchBox = this.dropdown.find('.oj-listbox-search');
@@ -6028,8 +6186,6 @@ var _OjSingleSelect = _ComboUtils.clazz(_AbstractSingleChoice,
               this._updateResults();
             }
           }
-        } else {
-          this.open(e);
         }
       }
     },
@@ -6475,7 +6631,10 @@ var _AbstractMultiChoice = _ComboUtils.clazz(_AbstractOjChoice,
         this.search.removeClass(this._classNm + '-focused');
         this.container.removeClass('oj-focus');
         this._selectChoice(null);
-        if (!this._opened() && this._classNm !== 'oj-select') {
+        // : component oj-combobox-many displays validation error message even when no value is entered in the component
+        // do not clear search if the input text is invalid
+        // this will allow users to correct any invalid input text
+        if (!this._opened() && this._classNm !== 'oj-select' && this.ojContext.isValid()) {
           this._clearSearch();
         }
         e.stopImmediatePropagation();
@@ -6731,12 +6890,14 @@ var _AbstractMultiChoice = _ComboUtils.clazz(_AbstractOjChoice,
       var id = this.id(data);
       // Clone the value before invoking setVal(), otherwise it will not trigger change event.
       var val = this.getVal() ? this.getVal().slice(0) : [];
-      var valOpts = this.getValOpts() ? this.getValOpts().slice(0) : [];
+      // Initial Value options
+      var valOptsInit = this.getValOpts() ? this.getValOpts().slice(0) : [];
+      var valOpts = valOptsInit.slice(0);
       var isSelectCombobox = (this._classNm === 'oj-combobox' || this._classNm === 'oj-select');
 
       // If the component is invalid, we will not get all the values matching the displayed value
       if (!this.ojContext.isValid()) {
-        val = this.currentValue;
+        val = this.currentValue.slice(0);
       }
 
       var self = this;
@@ -6761,6 +6922,11 @@ var _AbstractMultiChoice = _ComboUtils.clazz(_AbstractOjChoice,
         this.setValOpts(valOpts);
       }
       this.setVal(val, event, context);
+      // : component oj-combobox-many displays the list of the values - does not exclude the invalid values
+      // If the input text is invalid, restore to initial value options
+      if (isSelectCombobox && !this.ojContext.isValid()) {
+        this.setValOpts(valOptsInit);
+      }
       this._skipSetValueOptions = false;
 
       if (this.select || !this.opts.closeOnSelect) {
@@ -6768,7 +6934,11 @@ var _AbstractMultiChoice = _ComboUtils.clazz(_AbstractOjChoice,
       }
       if (this.opts.closeOnSelect) {
         this.close(event);
-        this._resetSearchWidth();
+        // do not reset search width if the input text is invalid
+        // this will allow users to correct any invalid input text
+        if (this.ojContext.isValid()) {
+          this._resetSearchWidth();
+        }
       }
 
       if ((!options || !options.noFocus) && this._elemNm === 'ojcombobox') {
@@ -7221,6 +7391,10 @@ var _OjMultiSelect = _ComboUtils.clazz(_AbstractMultiChoice,
       // if beforeExpand is not cancelled
       // beforeExpand event will be triggered in base class _shouldOpen method
       _OjMultiSelect.superclass._opening.apply(this, arguments);
+
+      //  - select input gets stuck with sdp fetchchain delay
+      // show drop down in order to show the searchBox
+      this._showDropDown();
 
       var searchText = _ComboUtils.getSearchText(event);
 
@@ -8321,6 +8495,7 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
        * <p>Depending on options-keys means that the signature of the data does not match what is supported by the options attribute. When using Typescript, this would result in a compilation error.</p>
        * <p>Best practice is to use a <a href="oj.ListDataProviderView.html">oj.ListDataProviderView</a> with data mapping as a replacement.</p>
        * <p>However, for the app that must fetch data from a REST endpoint where the data fields do not match those that are supported by the options attribute, you may use the options-keys with any dataProvider that implements <a href="oj.DataProvider.html">oj.DataProvider</a> interface.</p>
+       * <p>Note: <code class="prettyprint">child-keys</code> and <code class="prettyprint">children</code> properties in <code class="prettyprint">options-keys</code> are ignored when using a <a href="oj.TreeDataProvider.html">oj.TreeDataProvider</a>.</p>
        *
        * @expose
        * @access public
@@ -8384,7 +8559,7 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
          */
 
         /**
-         * The key name for the children.
+         * The key name for the children. It is ignored when using a <a href="oj.TreeDataProvider.html">oj.TreeDataProvider</a>.
          *
          * @name optionsKeys.children
          * @expose
@@ -8397,7 +8572,7 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
          * @default null
          */
         /**
-         * The key name for the children.
+         * The key name for the children. It is ignored when using a <a href="oj.TreeDataProvider.html">oj.TreeDataProvider</a>.
          *
          * @name optionsKeys.children
          * @expose
@@ -8411,7 +8586,7 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
          */
 
         /**
-         * The object for the child keys.
+         * The object for the child keys. It is ignored when using a <a href="oj.TreeDataProvider.html">oj.TreeDataProvider</a>.
          *
          * @name optionsKeys.childKeys
          * @expose
@@ -8426,7 +8601,7 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
          * @property {?oj.ojCombobox.OptionsKeys=} childKeys The object for the child keys.
          */
         /**
-         * The object for the child keys.
+         * The object for the child keys. It is ignored when using a <a href="oj.TreeDataProvider.html">oj.TreeDataProvider</a>.
          *
          * @name optionsKeys.childKeys
          * @expose
@@ -10313,10 +10488,10 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
    */
   /**
    * {@ojinclude "name":"ojStylingDocIntro"}
-   * <p>The form control text align style classes can be applied to the component, or an ancestor element. When
-   * applied to an ancestor element, all form components that support the text align style classes will be affected.
+   * <p>The form control style classes can be applied to the component, or an ancestor element. When
+   * applied to an ancestor element, all form components that support the style classes will be affected.
    *
-   * <table class="generic-table styling-table">
+   *  <table class="generic-table styling-table">
    *   <thead>
    *     <tr>
    *       <th>{@ojinclude "name":"ojStylingDocClassHeader"}</th>
@@ -10324,6 +10499,12 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
    *     </tr>
    *   </thead>
    *   <tbody>
+   *     <tr>
+   *       <td>oj-form-control-full-width</td>
+   *       <td>Changes the max-width to 100% so that form components will occupy
+   *           all the available horizontal space
+   *       </td>
+   *     </tr>
    *     <tr>
    *       <td>oj-form-control-text-align-right</td>
    *       <td>Aligns the text to the right regardless of the reading direction.
@@ -12331,6 +12512,7 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
        * <p>Depending on options-keys means that the signature of the data does not match what is supported by the options attribute. When using Typescript, this would result in a compilation error.</p>
        * <p>Best practice is to use a <a href="oj.ListDataProviderView.html">oj.ListDataProviderView</a> with data mapping as a replacement.</p>
        * <p>However, for the app that must fetch data from a REST endpoint where the data fields do not match those that are supported by the options attribute, you may use the options-keys with any dataProvider that implements <a href="oj.DataProvider.html">oj.DataProvider</a> interface.</p>
+       * <p>Note: <code class="prettyprint">child-keys</code> and <code class="prettyprint">children</code> properties in <code class="prettyprint">options-keys</code> are ignored when using a <a href="oj.TreeDataProvider.html">oj.TreeDataProvider</a>.</p>
        *
        * @expose
        * @access public
@@ -12394,7 +12576,7 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
          */
 
         /**
-         * The key name for the children.
+         * The key name for the children. It is ignored when using a <a href="oj.TreeDataProvider.html">oj.TreeDataProvider</a>.
          *
          * @name optionsKeys.children
          * @expose
@@ -12407,7 +12589,7 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
          * @default null
          */
         /**
-         * The key name for the children.
+         * The key name for the children. It is ignored when using a <a href="oj.TreeDataProvider.html">oj.TreeDataProvider</a>.
          *
          * @name optionsKeys.children
          * @expose
@@ -12421,7 +12603,7 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
          */
 
         /**
-         * The object for the child keys.
+         * The object for the child keys. It is ignored when using a <a href="oj.TreeDataProvider.html">oj.TreeDataProvider</a>.
          *
          * @name optionsKeys.childKeys
          * @expose
@@ -12438,7 +12620,7 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
          * @property {?oj.ojSelect.OptionsKeys=} childKeys The object for the child keys.
          */
         /**
-         * The object for the child keys.
+         * The object for the child keys. It is ignored when using a <a href="oj.TreeDataProvider.html">oj.TreeDataProvider</a>.
          *
          * @name optionsKeys.childKeys
          * @expose
@@ -13060,7 +13242,10 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
 
           // default to the first enabled option
           if (selected === null) {
-            selected = this._nativeFindFirstEnabledOptionValue();
+            var option = this._nativeFindFirstEnabledOption();
+            selected = this._nativeFindFirstEnabledOptionValue(option);
+            _ComboUtils.setValueOptions(this,
+                                        { value: selected, label: option.text() });
           }
         }
         this._setInitialSelectedValue(selected);
@@ -13447,7 +13632,6 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
      * @memberof! oj.ojSelect
      */
       _SetDisplayValue: function (displayValue) {
-      // native renderMode
         if (this.select) {
         //  - need to be able to specify the initial value of select components bound to dprv
           if (!_ComboUtils.applyValueOptions(this.select, this.options)) {
@@ -13472,22 +13656,33 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
             }
           } else {
             //  - oj-select-one throws exception for mobile when selectedindex = -1 on refresh
-            var label = this._nativeFindLabel(displayValue);
-            if (label === null && !this.multiple) {
-              Logger.warn('JET select: selected value not found');
-              // default to 1st option if exists
-              if (this.element[0].options && this.element[0].options.length > 0) {
-                this.element[0].selectedIndex = 0;
-                // eslint-disable-next-line no-param-reassign
-                displayValue = this.element[0].value;
-                label = this.element[0].text;
-              } else {
-                label = String(displayValue);
-                this.element.val(displayValue);
+            var valSet = false;
+            var selectedVal = displayValue;
+            var label;
+            if (!this.multiple) {
+              if (Array.isArray(displayValue)) {
+                selectedVal = displayValue[0];
               }
-            } else {
+              label = this._nativeFindLabel(selectedVal);
+              if (label === null) {
+                Logger.warn('JET select: selected value not found');
+                // default to 1st option if exists
+                if (this.element[0].options && this.element[0].options.length > 0) {
+                  this.element[0].selectedIndex = 0;
+                  selectedVal = this.element[0].value;
+                  label = this.element[0].text;
+                  valSet = true;
+                } else {
+                  label = String(displayValue);
+                }
+              }
+            }
+            if (!valSet) {
               this.element.val(displayValue);
             }
+            // eslint-disable-next-line no-param-reassign
+            displayValue = selectedVal;
+
             // update valueOptions
             if (this._resolveValueOptionsLater) {
               if (this.multiple) {
@@ -13600,17 +13795,33 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
         return this._super();
       },
 
+      // return 1st enabled option jquery object
+      _nativeFindFirstEnabledOption: function () {
+        // treeDataProvider
+        var enaOptions;
+        if (_ComboUtils.isTreeDataProvider(this.options.options)) {
+          enaOptions = this.element.find('option:not(:disabled)');
+        } else {
+          enaOptions = this.element.children('option:not(:disabled)');
+        }
+
+        return (enaOptions.length > 0) ? $(enaOptions[0]) : null;
+      },
+
       // native renderMode
-      _nativeFindFirstEnabledOptionValue: function () {
-        var enaOptions = this.element.children('option:not(:disabled)');
-        if (enaOptions.length > 0) {
+      _nativeFindFirstEnabledOptionValue: function (enaOption) {
+        if (!enaOption) {
+          // eslint-disable-next-line no-param-reassign
+          enaOption = this._nativeFindFirstEnabledOption();
+        }
+        if (enaOption) {
           if (this._IsCustomElement()) {
             // send the value as it is for custom element
             //  - oj-select-one writes initial value as array in native rendering mode
-            return $(enaOptions[0]).attr('value');
+            return enaOption.attr('value');
           }
           // send the value in an array for widget
-          return [$(enaOptions[0]).attr('value')];
+          return [enaOption.attr('value')];
         }
 
         return null;
@@ -13802,9 +14013,13 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
             //  - can't remove last selected value in multi-select ojselect
             // multi select allows empty array
             if (newArr.length > 0 || multi) {
-              this._super(key, newArr, flags);
-              //  - need to be able to specify the initial value of select components bound to dprv
-              _ComboUtils.updateValueOptions(this.select);
+              if (this._isNative()) {
+                this._nativeSetSelected(newArr);
+              } else {
+                this._super(key, newArr, flags);
+                //  - need to be able to specify the initial value of select components bound to dprv
+                _ComboUtils.updateValueOptions(this.select);
+              }
             }
             return;
           }
@@ -13961,6 +14176,8 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
           // hide placeholder when required is true
             this._hidePlaceholder(placeholder, value);
           }
+        } else if (key === 'multiple' && !this._IsCustomElement()) {
+          this.multiple = value;
         }
       },
 
@@ -14550,8 +14767,8 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
      */
     /**
      * {@ojinclude "name":"ojStylingDocIntro"}
-     * <p>The form control text align style classes can be applied to the component, or an ancestor element. When
-     * applied to an ancestor element, all form components that support the text align style classes will be affected.
+     * <p>The form control style classes can be applied to the component, or an ancestor element. When
+     * applied to an ancestor element, all form components that support the style classes will be affected.
      *
      * <table class="generic-table styling-table">
      *   <thead>
@@ -14561,6 +14778,12 @@ var _OjInputSeachContainer = _ComboUtils.clazz(_OjSingleCombobox,
      *     </tr>
      *   </thead>
      *   <tbody>
+     *     <tr>
+     *       <td>oj-form-control-full-width</td>
+     *       <td>Changes the max-width to 100% so that form components will occupy
+     *           all the available horizontal space
+     *       </td>
+     *     </tr>
      *     <tr>
      *       <td>oj-form-control-text-align-right</td>
      *       <td>Aligns the text to the right regardless of the reading direction or default text alignment.

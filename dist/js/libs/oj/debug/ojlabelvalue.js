@@ -14,6 +14,10 @@ define(['ojs/ojcore', 'ojs/ojcomponentcore', 'ojs/ojlabel'],
 var __oj_label_value_metadata = 
 {
   "properties": {
+    "colspan": {
+      "type": "number",
+      "value": 1
+    },
     "labelEdge": {
       "type": "string",
       "enumValues": [
@@ -82,6 +86,33 @@ var __oj_label_value_metadata =
  * <p>Any slot child elements not in either a 'label' or 'value' slot will be removed from the DOM.
  * This includes the default slot.
  * </p>
+ */
+
+/**
+ * @member
+ * @name colspan
+ * @expose
+ * @memberof oj.ojLabelValue
+ * @instance
+ * @type {number}
+ * @default 1
+ * @since 6.2.0
+ * @desc Specifies how many columns this label/value pair will occupy in the parent oj-form-layout.
+ * <p>This attribute only has an effect if the parent oj-form-layout has direction="row".</p>
+ * <p>If there are fewer columns left in the current row than the colspan value specified, then the remaining available columns will be used.</p>
+ * <p>By default, the label portion will occupy the same location and width as the label portion of any other label-value pairs, and the value portion will extend over the remaining columns. The default location and width can be changed with the label-edge and label-width attributes on the oj-label-value, respectively.</p>
+ * <p>If a percentage is specified for label-width, it is relative to all columns the element occupy. For example, if colspan is 2 and label-width is set to 50%, the label portion will occupy 1 column, and the value portion will occupy 1 column.</p>
+ * @example <caption>Initialize the oj-label-value with the <code class="prettyprint">colspan</code> attribute specified:</caption>
+ * &lt;oj-label-value colspan="2">
+ *   &lt;oj-input-text id="inputcontrol" required value="text" label-hint="input 1">&lt;/oj-input-text>
+ * &lt;/oj-label-value>
+ *
+ * @example <caption>Get or set the <code class="prettyprint">colspan</code> property after initialization:</caption>
+ * // getter
+ * var cols = myLabelValue.colspan;
+ *
+ * // setter
+ * myLabelValue.colspan = 3;
  */
 
 /**
@@ -281,11 +312,20 @@ function ojLabelValue(context) {
 
     var labelEdge = _getLabelEdge(customElementAncestor);
     var labelWidth = labelEdge === 'start' ? _getLabelWidth(customElementAncestor) : '100%';
+    var direction = _getParentFormLayoutDirection(customElementAncestor);
 
     if (labelEdge === 'start') {
       element.classList.add('oj-formlayout-labels-inline');
     } else {
       element.classList.remove('oj-formlayout-labels-inline');
+    }
+
+    // To pick up the correct styles, we need to add the form layout class name that
+    // is used for direction = 'row'
+    if (direction === 'row') {
+      element.classList.add('oj-formlayout-form-across');
+    } else {
+      element.classList.remove('oj-formlayout-form-across');
     }
 
     labelOjFlexItem.style.webkitFlex = '0 1 ' + labelWidth;
@@ -311,6 +351,16 @@ function ojLabelValue(context) {
     return labelEdge;
   }
 
+  function _getParentFormLayoutDirection(customElementAncestor) {
+    var direction = 'column'; // default value of oj-form-layout
+
+    if (customElementAncestor && 'direction' in customElementAncestor) {
+      direction = customElementAncestor.direction;
+    }
+
+    return direction;
+  }
+
   function _getLabelWidth(customElementAncestor) {
     var labelWidth = '33%'; // default value if "inherit" and ancestor doesn't support labelWidth
 
@@ -318,6 +368,21 @@ function ojLabelValue(context) {
       // We will inherit from custom element if it supports labelWidth
       if (customElementAncestor && 'labelWidth' in customElementAncestor) {
         labelWidth = customElementAncestor.labelWidth;
+        // for '%' labelWidth, we need to devide the value by the number of columns this component
+        // is spanning (which can be less that the colspan property value);
+        var CssUnitsRegex = /^([+-]?(?:\d+|\d*\.\d+))([a-z]*|%)$/;
+        var parts = labelWidth.match(CssUnitsRegex);
+
+        if (parts[2] === '%') {
+          // find the actual colspan for this element and divide the percentage by the number of cols.
+          // This is only done for the "inherit" case.  If a specific value is set on the oj-label-value,
+          // then we use that value without modifying it.
+          var colspan = Number(element.getAttribute('data-oj-colspan'));
+          // if it is 0, then the parent component didn't update this and we use the default.
+          if (colspan > 0) {
+            labelWidth = (parts[1] / colspan) + parts[2];
+          }
+        }
       }
     } else {
       labelWidth = element.labelWidth;

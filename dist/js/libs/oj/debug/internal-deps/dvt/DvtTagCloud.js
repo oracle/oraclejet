@@ -55,7 +55,7 @@ dvt.TagCloud.prototype.Init = function(context, callback, callbackObj) {
     this.EventManager.setKeyboardHandler(new DvtTagCloudKeyboardHandler(this.EventManager));
 
   // Create the defaults object
-  this.Defaults = new DvtTagCloudDefaults();
+  this.Defaults = new DvtTagCloudDefaults(context);
 
   this._items = [];
   this._peers = [];
@@ -1154,10 +1154,11 @@ DvtTagCloudObjPeer.prototype.getDragFeedback = function(mouseX, mouseY) {
  * Default values and utility functions for component versioning.
  * @class
  * @constructor
+ * @param {dvt.Context} context The rendering context.
  * @extends {dvt.BaseComponentDefaults}
  */
-var DvtTagCloudDefaults = function() {
-  this.Init({'alta': DvtTagCloudDefaults.VERSION_1});
+var DvtTagCloudDefaults = function(context) {
+  this.Init({'alta': DvtTagCloudDefaults.VERSION_1}, context);
 };
 
 dvt.Obj.createSubclass(DvtTagCloudDefaults, dvt.BaseComponentDefaults);

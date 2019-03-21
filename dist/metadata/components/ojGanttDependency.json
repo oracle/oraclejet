@@ -1,11 +1,16 @@
 {
   "name": "oj-gantt-dependency",
-  "version": "6.1.0",
-  "jetVersion": "6.1.0",
+  "version": "6.2.0",
+  "jetVersion": "6.2.0",
   "displayName": "Gantt Dependency",
   "type": "core",
+  "extension": {
+    "vbdt": {
+      "module": "ojs/ojgantt"
+    }
+  },
   "description": "ojGanttDependency",
-  "help": "https://docs.oracle.com/en/middleware/jet/6.1/reference-api/oj.ojGanttDependency.html",
+  "help": "https://docs.oracle.com/en/middleware/jet/6.2/reference-api/oj.ojGanttDependency.html",
   "properties": {
     "predecessorTaskId": {
       "description": "The identifier for the predecessor task. This must reference a task in Gantt.",

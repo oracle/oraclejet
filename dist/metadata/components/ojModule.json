@@ -1,11 +1,16 @@
 {
   "name": "oj-module",
-  "version": "6.1.0",
-  "jetVersion": "6.1.0",
+  "version": "6.2.0",
+  "jetVersion": "6.2.0",
   "displayName": "ojModule Element",
   "type": "core",
+  "extension": {
+    "vbdt": {
+      "module": "ojs/ojmodule-element"
+    }
+  },
   "description": "Navigational element that manages content replacement within a particular region of the page.",
-  "help": "https://docs.oracle.com/en/middleware/jet/6.1/reference-api/oj.ojModule.html",
+  "help": "https://docs.oracle.com/en/middleware/jet/6.2/reference-api/oj.ojModule.html",
   "properties": {
     "animation": {
       "description": "Defines animation object used for view transitions.",

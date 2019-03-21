@@ -408,6 +408,7 @@ oj.__registerWidget('oj.ojTagCloud', $.oj.dvtBaseComponent,
       * @instance
       * @type {string}
       * @default ''
+      * @ojdeprecated {since: '6.2.0', description: 'Set the alias directly on the template element using the data-oj-as attribute instead.'}
       **/
       as: '',
       /**
@@ -1230,8 +1231,8 @@ Components.setDefaultOptions({
  *
  * <pre class="prettyprint">
  * <code>
- * &lt;oj-tag-cloud data='[[dataProvider]]' as='item'>
- *  &lt;template slot='itemTemplate'>
+ * &lt;oj-tag-cloud data='[[dataProvider]]'>
+ *  &lt;template slot='itemTemplate' data-oj-as='item'>
  *    &lt;oj-tag-cloud-item  label='[[item.data.id]]' value='[[item.data.total]]'>&lt;/oj-tag-cloud-item>
  *  &lt;/template>
  * &lt;/oj-tag-cloud>
@@ -1249,8 +1250,8 @@ Components.setDefaultOptions({
  *
  * @example <caption>Initialize tag cloud item with the
  * <code class="prettyprint">categories</code> attribute specified:</caption>
- * &lt;oj-tag-cloud data='[[dataProvider]]' as='item'>
- *  &lt;template slot='itemTemplate'>
+ * &lt;oj-tag-cloud data='[[dataProvider]]'>
+ *  &lt;template slot='itemTemplate' data-oj-as='item'>
  *    &lt;oj-tag-cloud-item categories='[[item.data.categories]]'>&lt;/oj-tag-cloud-item>
  *  &lt;/template>
  * &lt;/oj-tag-cloud>
@@ -1267,8 +1268,8 @@ Components.setDefaultOptions({
   *
   * @example <caption>Initialize tag cloud item with the
   * <code class="prettyprint">color</code> attribute specified:</caption>
-  * &lt;oj-tag-cloud data='[[dataProvider]]' as='item'>
-  *  &lt;template slot='itemTemplate'>
+  * &lt;oj-tag-cloud data='[[dataProvider]]'>
+  *  &lt;template slot='itemTemplate' data-oj-as='item'>
   *    &lt;oj-tag-cloud-item color='[[item.data.color]]'>&lt;/oj-tag-cloud-item>
   *  &lt;/template>
   * &lt;/oj-tag-cloud>
@@ -1285,8 +1286,8 @@ Components.setDefaultOptions({
  *
  * @example <caption>Initialize tag cloud item with the
  * <code class="prettyprint">label</code> attribute specified:</caption>
- * &lt;oj-tag-cloud data='[[dataProvider]]' as='item'>
- *  &lt;template slot='itemTemplate'>
+ * &lt;oj-tag-cloud data='[[dataProvider]]'>
+ *  &lt;template slot='itemTemplate' data-oj-as='item'>
  *    &lt;oj-tag-cloud-item label='[[item.data.id]]'>&lt;/oj-tag-cloud-item>
  *  &lt;/template>
  * &lt;/oj-tag-cloud>
@@ -1302,8 +1303,8 @@ Components.setDefaultOptions({
  *
  * @example <caption>Initialize tag cloud item with the
  * <code class="prettyprint">short-desc</code> attribute specified:</caption>
- * &lt;oj-tag-cloud data='[[dataProvider]]' as='item'>
- *  &lt;template slot='itemTemplate'>
+ * &lt;oj-tag-cloud data='[[dataProvider]]'>
+ *  &lt;template slot='itemTemplate' data-oj-as='item'>
  *    &lt;oj-tag-cloud-item short-desc='[[item.data.id + ":"" + item.data.total + "% of respondents"]]' label='[[item.data.id]]'>&lt;/oj-tag-cloud-item>
  *  &lt;/template>
  * &lt;/oj-tag-cloud>
@@ -1319,8 +1320,8 @@ Components.setDefaultOptions({
  *
  * @example <caption>Initialize tag cloud item with the
  * <code class="prettyprint">svg-style</code> attribute specified:</caption>
- * &lt;oj-tag-cloud data='[[dataProvider]]' as='item'>
- *  &lt;template slot='itemTemplate'>
+ * &lt;oj-tag-cloud data='[[dataProvider]]'>
+ *  &lt;template slot='itemTemplate' data-oj-as='item'>
  *    &lt;oj-tag-cloud-item svg-style='[[item.data.svgStyle]]' label='[[item.data.id]]'>&lt;/oj-tag-cloud-item>
  *  &lt;/template>
  * &lt;/oj-tag-cloud>
@@ -1336,8 +1337,8 @@ Components.setDefaultOptions({
  *
  * @example <caption>Initialize tag cloud item with the
  * <code class="prettyprint">svg-class-name</code> attribute specified:</caption>
- * &lt;oj-tag-cloud data='[[dataProvider]]'  as='item'>
- *  &lt;template slot='itemTemplate'>
+ * &lt;oj-tag-cloud data='[[dataProvider]]'  data-oj-as='item'>
+ *  &lt;template slot='itemTemplate' data-oj-as='item'>
  *    &lt;oj-tag-cloud-item svg-class-name='[[item.data.svgClassName]]' label='[[item.data.id]]'>&lt;/oj-tag-cloud-item>
  *  &lt;/template>
  * &lt;/oj-tag-cloud>
@@ -1353,8 +1354,8 @@ Components.setDefaultOptions({
  *
  * @example <caption>Initialize tag cloud item with the
  * <code class="prettyprint">url</code> attribute specified:</caption>
- * &lt;oj-tag-cloud data='[[dataProvider]]' as='item'>
- *  &lt;template slot='itemTemplate'>
+ * &lt;oj-tag-cloud data='[[dataProvider]]'>
+ *  &lt;template slot='itemTemplate' data-oj-as='item'>
  *    &lt;oj-tag-cloud-item url='[[item.data.url]]' label='[[item.data.id]]'>&lt;/oj-tag-cloud-item>
  *  &lt;/template>
  * &lt;/oj-tag-cloud>
@@ -1370,8 +1371,8 @@ Components.setDefaultOptions({
  *
  * @example <caption>Initialize tag cloud item with the
  * <code class="prettyprint">value</code> attribute specified:</caption>
- * &lt;oj-tag-cloud data='[[dataProvider]]' as='item'>
- *  &lt;template slot='itemTemplate'>
+ * &lt;oj-tag-cloud data='[[dataProvider]]'>
+ *  &lt;template slot='itemTemplate' data-oj-as='item'>
  *    &lt;oj-tag-cloud-item value='[[item.data.total]]' label='[[item.data.id]]'>&lt;/oj-tag-cloud-item>
  *  &lt;/template>
  * &lt;/oj-tag-cloud>

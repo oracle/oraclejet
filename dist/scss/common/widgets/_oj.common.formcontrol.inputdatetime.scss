@@ -72,6 +72,18 @@
       display: inline-block;
       position: relative;
     }
+    // .oj-form-control-full-width is an override to set max-width to 100% if on the
+    // element or an ancestor element
+    .oj-form-control-full-width.oj-inputdatetime,
+    .oj-form-control-full-width.oj-inputdatetime-date-time,
+    .oj-form-control-full-width.oj-inputdatetime-date-only,
+    .oj-form-control-full-width.oj-inputdatetime-time-only,
+    .oj-form-control-full-width .oj-inputdatetime,
+    .oj-form-control-full-width .oj-inputdatetime-date-time,
+    .oj-form-control-full-width .oj-inputdatetime-date-only,
+    .oj-form-control-full-width .oj-inputdatetime-time-only {
+      max-width: 100%;
+    }
 
     //added to root for ojInputDateTime and ojInputDate when of inline, since div need to restrict the size due to
     //messaging

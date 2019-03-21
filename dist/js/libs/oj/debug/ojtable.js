@@ -51,12 +51,7 @@ var __oj_table_metadata =
           "type": "string"
         },
         "footerTemplate": {
-          "type": "string",
-          "properties": {
-            "componentElement": {
-              "type": "Element"
-            }
-          }
+          "type": "string"
         },
         "headerClassName": {
           "type": "string"
@@ -68,15 +63,7 @@ var __oj_table_metadata =
           "type": "string"
         },
         "headerTemplate": {
-          "type": "string",
-          "properties": {
-            "componentElement": {
-              "type": "Element"
-            },
-            "data": {
-              "type": "object"
-            }
-          }
+          "type": "string"
         },
         "headerText": {
           "type": "string"
@@ -108,30 +95,7 @@ var __oj_table_metadata =
           "type": "string"
         },
         "template": {
-          "type": "string",
-          "properties": {
-            "componentElement": {
-              "type": "Element"
-            },
-            "data": {
-              "type": "object"
-            },
-            "row": {
-              "type": "object"
-            },
-            "index": {
-              "type": "number"
-            },
-            "columnIndex": {
-              "type": "number"
-            },
-            "key": {
-              "type": "any"
-            },
-            "mode": {
-              "type": "string"
-            }
-          }
+          "type": "string"
         },
         "width": {
           "type": "number"
@@ -668,6 +632,7 @@ var __oj_table_metadata =
        * @memberof! oj.ojTable
        * @type {string}
        * @default ''
+       * @ojdeprecated {since: '6.2.0', description: 'Set the alias directly on the template element using the data-oj-as attribute instead.'}
        *
        * @example <caption>Initialize the Table with the <code class="prettyprint">as</code> attribute specified:</caption>
        * &lt;oj-table as='cell' columns='[{"headerText": "Department Id",
@@ -1675,6 +1640,7 @@ var __oj_table_metadata =
          * @type {string|null}
          * @ojsignature {target:"Type", value:"?"}
          * @default null
+         * @ojtemplateslotname
          */
         footerTemplate: null,
 
@@ -1799,6 +1765,7 @@ var __oj_table_metadata =
          * @type {string|null}
          * @ojsignature {target:"Type", value:"?"}
          * @default null
+         * @ojtemplateslotname
          */
         headerTemplate: null,
 
@@ -1938,6 +1905,7 @@ var __oj_table_metadata =
          * @type {string|null}
          * @ojsignature {target:"Type", value:"?"}
          * @default null
+         * @ojtemplateslotname
          */
         template: null,
 
@@ -2205,6 +2173,7 @@ var __oj_table_metadata =
          * @type {string|null}
          * @ojsignature {target:"Type", value:"?"}
          * @default null
+         * @ojtemplateslotname
          */
         footerTemplate: null,
 
@@ -2306,6 +2275,7 @@ var __oj_table_metadata =
          * @type {string|null}
          * @ojsignature {target:"Type", value:"?"}
          * @default null
+         * @ojtemplateslotname
          */
         headerTemplate: null,
 
@@ -2429,6 +2399,7 @@ var __oj_table_metadata =
          * @type {string|null}
          * @ojsignature {target:"Type", value:"?"}
          * @default null
+         * @ojtemplateslotname
          */
         template: null,
 
@@ -16871,6 +16842,7 @@ oj.TableResizeUtils.CSS_CLASSES =
 
 (function () {
   __oj_table_metadata.extension._WIDGET_NAME = 'ojTable';
+  __oj_table_metadata.extension._GLOBAL_TRANSFER_ATTRS = ['aria-label'];
   __oj_table_metadata.extension._INNER_ELEM = 'table';
   oj.CustomElementBridge.register('oj-table', { metadata: __oj_table_metadata });
 }());

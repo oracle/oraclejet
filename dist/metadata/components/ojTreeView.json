@@ -1,9 +1,14 @@
 {
   "name": "oj-tree-view",
-  "version": "6.1.0",
-  "jetVersion": "6.1.0",
+  "version": "6.2.0",
+  "jetVersion": "6.2.0",
   "displayName": "Tree View",
   "type": "core",
+  "extension": {
+    "vbdt": {
+      "module": "ojs/ojtreeview"
+    }
+  },
   "styleClasses": [
     {
       "styleGroup": [
@@ -19,7 +24,7 @@
     }
   ],
   "description": "Displays hierarchical relationships between the items in a tree.",
-  "help": "https://docs.oracle.com/en/middleware/jet/6.1/reference-api/oj.ojTreeView.html",
+  "help": "https://docs.oracle.com/en/middleware/jet/6.2/reference-api/oj.ojTreeView.html",
   "properties": {
     "currentItem": {
       "description": "The key of the item that has the browser focus.\nThis is a read-only attribute so page authors cannot set or change it directly.",

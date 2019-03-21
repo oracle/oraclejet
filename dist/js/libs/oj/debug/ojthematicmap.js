@@ -1162,6 +1162,7 @@ oj.__registerWidget('oj.ojThematicMap', $.oj.dvtBaseComponent,
        * @instance
        * @type {string}
        * @default ""
+       * @ojdeprecated {since: '6.2.0', description: 'Set the alias directly on the template element using the data-oj-as attribute instead.'}
        */
       as: '',
       /**
@@ -2979,7 +2980,9 @@ oj.__registerWidget('oj.ojThematicMap', $.oj.dvtBaseComponent,
       // For custom elements we want to skip cloning for data and also the mapProvider object so we can
       // internally do === checks and perform animations when the mapProvider changes
       if (this._IsCustomElement()) {
-        return { areas: true, markers: true, links: true, mapProvider: true };
+        var noClonePaths = this._super();
+        noClonePaths.mapProvider = true;
+        return noClonePaths;
       }
       return {
         mapProvider: true,

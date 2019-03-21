@@ -5317,6 +5317,20 @@ DvtDiagramOverviewUtils.CreateOverviewNode = function(diagram, overview, node, c
 
 /**
  * @protected
+ * Removes the overview window from the diagram.
+ * @param {dvt.Diagram} diagram the parent diagram component
+ * @param {DvtDiagramOverview} overview the overview component
+ */
+DvtDiagramOverviewUtils.RemoveOverviewWindow = function(diagram, overview) {
+  if (overview) {
+    overview.setClipPath(null);
+    var ovContainer = overview.getParent();
+    diagram.removeChild(ovContainer);
+  }
+};
+
+/**
+ * @protected
  * Updates the overview window instance for the diagram:
  *           window position, nodes positions, clip path
  * @param {dvt.Diagram} diagram the parent diagram component
@@ -5976,7 +5990,7 @@ dvt.Obj.createSubclass(dvt.Diagram, dvt.BaseDiagram);
 dvt.Diagram.prototype.Init = function(context, callback, callbackObj) {
   dvt.Diagram.superclass.Init.call(this, context, callback, callbackObj);
   // Create the defaults object
-  this.Defaults = new DvtDiagramDefaults();
+  this.Defaults = new DvtDiagramDefaults(context);
 
   // Create the event handler and add event listeners
   this.EventManager = new DvtDiagramEventManager(context, this.processEvent, this);
@@ -6061,10 +6075,8 @@ dvt.Diagram.prototype.ResetNodesAndLinks = function() {
   }
   this._allNodeIdsMap = new context.ojMap();
   this._unresolvedNodeIds = [];
-  if (this.Overview) {
-    this.removeChild(this.Overview);
-    this.Overview = null;
-  }
+  DvtDiagramOverviewUtils.RemoveOverviewWindow(this, this.Overview);
+  this.Overview = null;
 };
 
 /**
@@ -6306,9 +6318,7 @@ dvt.Diagram.prototype._fetchDataProviderData = function(rootDataProvider, nodesA
         // prepare for another round of collapsed containers search
         nodesArray = [];
 
-        values.forEach(function(value){
-          var childData = value.nodes;
-
+        values.forEach(function(childData){
           if (Array.isArray(childData)) {
             childData.forEach(function(childNode){
               thisRef._allNodeIdsMap.set(childNode.id, true);
@@ -8211,10 +8221,11 @@ DvtDiagramCategoryRolloverHandler.prototype.GetRolloutCallback = function(event,
  * Default values and utility functions for component versioning.
  * @class
  * @constructor
+ * @param {dvt.Context} context The rendering context.
  * @extends {dvt.BaseComponentDefaults}
  */
-var DvtDiagramDefaults = function() {
-  this.Init({'skyros': DvtDiagramDefaults.VERSION_1, 'alta': DvtDiagramDefaults.SKIN_ALTA});
+var DvtDiagramDefaults = function(context) {
+  this.Init({'skyros': DvtDiagramDefaults.VERSION_1, 'alta': DvtDiagramDefaults.SKIN_ALTA}, context);
 };
 
 dvt.Obj.createSubclass(DvtDiagramDefaults, dvt.BaseComponentDefaults, 'DvtDiagramDefaults');

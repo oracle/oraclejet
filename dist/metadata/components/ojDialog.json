@@ -1,39 +1,20 @@
 {
   "name": "oj-dialog",
-  "version": "6.1.0",
-  "jetVersion": "6.1.0",
+  "version": "6.2.0",
+  "jetVersion": "6.2.0",
   "displayName": "Dialog",
   "type": "core",
+  "extension": {
+    "vbdt": {
+      "module": "ojs/ojdialog"
+    }
+  },
   "styleClasses": [
-    {
-      "styleGroup": [
-        "oj-dialog-header"
-      ],
-      "description": "Class automatically generated on the header slot."
-    },
     {
       "styleGroup": [
         "oj-dialog-title"
       ],
       "description": "Class used to format the title. Automatically created headers use \" oj-dialog-title \" to format the title. For user-defined headers, you may want to use the \" oj-dialog-title \" so that the title in your user-defined header is stylistically similar to a default title."
-    },
-    {
-      "styleGroup": [
-        "oj-dialog-body"
-      ],
-      "description": "Class automatically generated on the default (body) slot."
-    },
-    {
-      "styleGroup": [
-        "oj-dialog-content"
-      ],
-      "description": "Class automatically generated that wraps body content. Applications can use this class to apply style properties to body content."
-    },
-    {
-      "styleGroup": [
-        "oj-dialog-footer"
-      ],
-      "description": "Class automatically generated on the footer slot."
     },
     {
       "styleGroup": [
@@ -55,7 +36,7 @@
     }
   ],
   "description": "Displays a popup window that provides information and gathers input from the application user.",
-  "help": "https://docs.oracle.com/en/middleware/jet/6.1/reference-api/oj.ojDialog.html",
+  "help": "https://docs.oracle.com/en/middleware/jet/6.2/reference-api/oj.ojDialog.html",
   "properties": {
     "cancelBehavior": {
       "description": "Specifies the cancel behavior of the dialog.\nThe default value depends on the theme.\nIn the alta-web theme, the default is \"icon\",\nand in alta-android, alta-ios and alta-windows themes, the\ndefault is \"none\". Note that the cancelBehavior applies to both automatic and user-defined headers.\nSo by default, a user-defined header in the alta-web theme will have a system generated close icon.",

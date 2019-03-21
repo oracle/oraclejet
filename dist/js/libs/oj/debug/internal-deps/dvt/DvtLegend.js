@@ -53,7 +53,7 @@ dvt.Legend.prototype.Init = function(context, callback, callbackObj) {
   this.setId('legend' + 1000 + Math.floor(Math.random() * 1000000000));//@RandomNumberOk
 
   // Create the defaults object
-  this.Defaults = new DvtLegendDefaults();
+  this.Defaults = new DvtLegendDefaults(context);
 
   // Create the event handler and add event listeners
   this.EventManager = new DvtLegendEventManager(this);
@@ -726,10 +726,11 @@ DvtLegendAutomation.prototype._generateSectionObjects = function(sections) {
  * Default values and utility functions for component versioning.
  * @class
  * @constructor
+ * @param {dvt.Context} context The rendering context.
  * @extends {dvt.BaseComponentDefaults}
  */
-var DvtLegendDefaults = function() {
-  this.Init({'skyros': DvtLegendDefaults.VERSION_1, 'alta': DvtLegendDefaults.SKIN_ALTA, 'next': DvtLegendDefaults.SKIN_NEXT});
+var DvtLegendDefaults = function(context) {
+  this.Init({'skyros': DvtLegendDefaults.VERSION_1, 'alta': DvtLegendDefaults.SKIN_ALTA, 'next': DvtLegendDefaults.SKIN_NEXT}, context);
 };
 
 dvt.Obj.createSubclass(DvtLegendDefaults, dvt.BaseComponentDefaults);

@@ -1,11 +1,16 @@
 {
   "name": "oj-diagram",
-  "version": "6.1.0",
-  "jetVersion": "6.1.0",
+  "version": "6.2.0",
+  "jetVersion": "6.2.0",
   "displayName": "Diagram",
   "type": "core",
+  "extension": {
+    "vbdt": {
+      "module": "ojs/ojdiagram"
+    }
+  },
   "description": "Displays a set of nodes and the links between them. The node positions and link paths are specified by an application-provided layout function.",
-  "help": "https://docs.oracle.com/en/middleware/jet/6.1/reference-api/oj.ojDiagram.html",
+  "help": "https://docs.oracle.com/en/middleware/jet/6.2/reference-api/oj.ojDiagram.html",
   "properties": {
     "animationOnDataChange": {
       "description": "Specifies the animation that is applied on data changes.",

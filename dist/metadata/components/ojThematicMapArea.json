@@ -1,11 +1,16 @@
 {
   "name": "oj-thematic-map-area",
-  "version": "6.1.0",
-  "jetVersion": "6.1.0",
+  "version": "6.2.0",
+  "jetVersion": "6.2.0",
   "displayName": "Thematic Map Area",
   "type": "core",
+  "extension": {
+    "vbdt": {
+      "module": "ojs/ojthematicmap"
+    }
+  },
   "description": "ojThematicMapArea",
-  "help": "https://docs.oracle.com/en/middleware/jet/6.1/reference-api/oj.ojThematicMapArea.html",
+  "help": "https://docs.oracle.com/en/middleware/jet/6.2/reference-api/oj.ojThematicMapArea.html",
   "properties": {
     "categories": {
       "description": "An array of category strings corresponding to this area. This allows highlighting and filtering of areas.\nBy default, the label is used as the area category.",

@@ -22,7 +22,7 @@ define(['./persistenceUtils', './impl/logger'], function (persistenceUtils, logg
    * @name getShredder
    * @memberof simpleJsonShredding
    * @param {string} storeName Name of the Persistent Store into which the shredded data should be stored
-   * @param {string} idAttr The id field in the JSON data
+   * @param {string|Array} idAttr The id field or array of fields in the JSON data
    * @return {Function} shredder The shredder function takes a Response object as
    * parameter and returns a Promise which resolves to an array of objects which have the following
    * structure:
@@ -49,11 +49,27 @@ define(['./persistenceUtils', './impl/logger'], function (persistenceUtils, logg
             var payloadJson = JSON.parse(payload);
             if (Array.isArray(payloadJson)) {
               idArray = payloadJson.map(function (jsonEntry) {
-                return jsonEntry[idAttr];
+                if (idAttr instanceof Array) {
+                  var key = [];
+                  idAttr.forEach(function(keyAttr) {
+                    key.push(jsonEntry[keyAttr])
+                  });
+                  return key;
+                } else {
+                  return jsonEntry[idAttr];
+                }
               });
               dataArray = payloadJson;
             } else {
-              idArray[0] = payloadJson[idAttr];
+              if (idAttr instanceof Array) {
+                var key = [];
+                idAttr.forEach(function(keyAttr) {
+                  key.push(payloadJson[keyAttr])
+                });
+                idArray[0] = key;
+              } else {
+                idArray[0] = payloadJson[idAttr];
+              }
               dataArray[0] = payloadJson;
               resourceType = 'single';
             }

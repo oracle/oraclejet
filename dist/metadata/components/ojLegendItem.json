@@ -1,11 +1,16 @@
 {
   "name": "oj-legend-item",
-  "version": "6.1.0",
-  "jetVersion": "6.1.0",
+  "version": "6.2.0",
+  "jetVersion": "6.2.0",
   "displayName": "Legend Item",
   "type": "core",
+  "extension": {
+    "vbdt": {
+      "module": "ojs/ojlegend"
+    }
+  },
   "description": "ojLegendItem",
-  "help": "https://docs.oracle.com/en/middleware/jet/6.1/reference-api/oj.ojLegendItem.html",
+  "help": "https://docs.oracle.com/en/middleware/jet/6.2/reference-api/oj.ojLegendItem.html",
   "properties": {
     "borderColor": {
       "description": "The border color of the marker. Only applies if symbolType is \"marker\" or \"lineWithMarker\".",

@@ -4,12 +4,13 @@
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
-define(['ojs/ojcore', 'ojs/ojcontext', 'ojs/ojcomponentcore', 'ojs/ojlabel'], 
-       /*
-        * @param {Object} oj 
-        */
-       function(oj, Context)
+define(['ojs/ojcore', 'ojs/ojcontext', 'ojs/ojcomponentcore', 'ojs/ojlabel', 'ojs/ojlogger'], 
+/*
+* @param {Object} oj 
+*/
+function(oj, Context, ComponentCore, Label, Logger)
 {
+  "use strict";
 var __oj_form_layout_metadata = 
 {
   "properties": {
@@ -60,7 +61,7 @@ var __oj_form_layout_metadata =
  * Copyright (c) 2017, Oracle and/or its affiliates.
  * All rights reserved.
  */
-/* global Context:false */
+/* global Context:false, Logger:false */
 /**
  * @ojcomponent oj.ojFormLayout
  * @since 4.1.0
@@ -85,6 +86,17 @@ var __oj_form_layout_metadata =
  * and the next element will be in the value area<br>
  * - An oj-label-value child component allows the developer to place elements in the label and/or value area as 'label' and 'value' slot chilren.<br>
  * - All other elements will span the entire width of a single label/value pair.
+ *
+ * To have a form element span multiple columns, add an oj-label-value component as a child of the oj-form-layout
+ * add the component that you want to span multiple columns as a child of the oj-label-value. The colspan attribute
+ * on the oj-label-value is used to specify the number of columns to span, and the direction attribute on the
+ * oj-form-layout must be set to "row".
+ * NOTE: To minimize the need for adding a style attribute to achieve a max-width of 100% on the column spanning
+ * component and to facilitate start and end field alignment, the default max-width for form controls is changed
+ * to 100% when all of the following conditions are met:
+ * - direction == "row"
+ * - max-columns > 1
+ * - there is at least one oj-label-value child with a colspan attribute specified.
  *
  * <p>For example:
  * <pre class="prettyprint">
@@ -299,6 +311,27 @@ var __oj_form_layout_metadata =
  * @instance
  */
 
+// Slots
+// //////
+
+/**
+ * <p>The <code class="prettyprint">&lt;oj-form-layout></code> element only accepts element children
+ * in the Default slot.  Content in <code class="prettyprint">&lt;oj-form-layout></code>'s Default
+ * slot will be laid out in a row/column style form layout.
+ *
+ * @ojslot Default
+ * @memberof oj.ojFormLayout
+ * @since 4.1.0
+ *
+ * @example <caption>Initialize <code class="prettyprint">&lt;oj-form-layout></code> with children in the
+ * Default slot.</caption>
+ * &lt;oj-form-layout id="AddressormLayout">
+ *   &lt;oj-input-text id="firstname" label-hint="First Name" value="{{firstname}}">&lt;/oj-oj-input-text>
+ *   &lt;oj-input-text id="lastname" label-hint="Last Name" value="{{lastname}}">&lt;/oj-oj-input-text>
+ *   &lt;oj-input-text id="address" label-hint="Address" value="{{address}}">&lt;/oj-oj-input-text>
+ * &lt;/oj-form-layout>
+ */
+
 /* global __oj_form_layout_metadata */
 Object.freeze(__oj_form_layout_metadata);
 
@@ -346,10 +379,6 @@ function ojFormLayout(context) {
     // no need to remove event listeners or refresh.  Just disconnect the observer.
     // This can happen when you press apply in the cookbook demo.
     if (document.body.contains(element)) {
-      // Check attribute mutations to see if any of our unresolved children have finish upgrading.
-      // If so, add the associated oj-label and then add the bonus dom around the oj-label/component
-      // pair.
-      _processUnresolvedChildren(mutations);
       // Move any added direct children to the ojForm div.
       _moveNewDirectChildrenToOjFormDiv(mutations);
       // Ignore mutations that aren't direct children of bonus dom div elements as those
@@ -865,33 +894,6 @@ function ojFormLayout(context) {
   }
 
   /**
-   * Process any component that has been upgraded and was placed on the unresolved children list
-   * during a previous render adding the label and flex divs.
-   * @param {Array.<MutationRecord>} mutations the mustation list passed in to the mutation observer function
-   * @returns {undefined}
-   */
-  function _processUnresolvedChildren(mutations) {
-    var mutationsLength = mutations.length;
-
-    for (var i = 0; i < mutationsLength; i++) {
-      var mutation = mutations[i];
-
-      if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
-        var index = unresolvedChildren.indexOf(mutation.target);
-        if (index !== -1 && mutation.target.classList.contains('oj-complete')) {
-          unresolvedChildren.splice(index, 1);
-          var ojLabel = _addLabelFromHint(mutation.target);
-          // If a label was created, add the flex divs
-          if (ojLabel) {
-            _addFlexDivs(ojLabel, mutation.target,
-                         mutation.target.hasAttribute('data-oj-needs-oj-flex-div'));
-          }
-        }
-      }
-    }
-  }
-
-  /**
    * if the removed child nodes have event listeners we've added, remove them
    * Only the component events bubble and not the property change events,
    * so it doesn't work to listen on the oj-form-layout
@@ -1000,10 +1002,16 @@ function ojFormLayout(context) {
     _appendChildrenToArray(ojForm.children, childArray);
 
     var currentRow;
+    var maxCols = element.maxColumns;
+    var curCol = 0;
+    var colspan;
+    var directionColspanError = false;
+    var needsFullWidthClass = false;
 
     // each iteration should process a label/input pair
     while (j < arrayLength) {
       var label = childArray[j];
+      colspan = 1;
 
       // if the current child element is on the unresolvedChildren list, skip it
       if (unresolvedChildren.indexOf(label) === -1) {
@@ -1014,26 +1022,65 @@ function ojFormLayout(context) {
 
           // for direction === "row", we only render the oj-flex div once per row.
           currentRow = _addFlexDivs(label, elem,
-                                    directionIsColumn || pairCnt % element.maxColumns === 0);
+                                    directionIsColumn || pairCnt % maxCols === 0);
         } else {
-          // handle oj-label-value child
+          // handle the non oj-label child, which includes oj-label-value
+          // if the child element supports colspan, we need to calculate that actual
+          // colspan based on the available columns left in this row.
+          // Issue a warning if colspan is used, but direction is not set to row
+          if ('colspan' in label && label.colspan) {
+            if (directionIsColumn) {
+              // We only need to issue this error once
+              if (!directionColspanError) {
+                Logger.error('Colspan attribute is ignored unless direction is set to "row"');
+                directionColspanError = true;
+              }
+            } else {
+              // force integer colspan values, don't exceed availableCols
+              colspan = Math.min(Math.floor(label.colspan), maxCols - curCol);
+
+              if (!needsFullWidthClass && maxCols > 1) {
+                needsFullWidthClass = true;
+              }
+            }
+          }
 
           currentRow = _addFlexDivs(label, null,
-                                    directionIsColumn || pairCnt % element.maxColumns === 0);
+                                    directionIsColumn || pairCnt % maxCols === 0,
+                                    colspan);
         }
       }
-      pairCnt += 1;
+      pairCnt += colspan;
+      curCol = pairCnt % maxCols;
       j += 1;
     }
+
+    // if we need the full width class, put it on the ojForm element so that if this class was
+    // specified on the oj-form-layout, we don't accidentally remove it.
+    if (needsFullWidthClass && !directionIsColumn) {
+      ojForm.classList.add('oj-form-control-full-width');
+    } else {
+      ojForm.classList.remove('oj-form-control-full-width');
+    }
+
     _addMissingFlexItems(currentRow, pairCnt);
   }
 
-  function _getFullFlexItemWidth() {
+  // The elem passed in is the elem that will be that child element for this flex item that we
+  // are calculation the width for.
+  function _getFullFlexItemWidth(elem, availableCols) {
+    var colspan = 1;
     // For direction === 'column', we want the width to be 100%.  For 'row', we want it to be
     // the 100% divided by the number of columns.
     if (element.direction === 'column') { return '100%'; }
 
-    return (Math.floor(100000 / element.maxColumns) / 1000) + '%';
+    // If elem has a colspan property, then
+    if (elem && 'colspan' in elem && elem.colspan) {
+      colspan = Math.min(Math.floor(elem.colspan), availableCols); // force integer colspan values,
+                                                                   // don't exceed availableCols
+    }
+
+    return ((Math.floor(100000 / element.maxColumns) / 1000) * colspan) + '%';
   }
 
   // for direction=='row' && labelEdge=='start', use labelWidth/max-columns for any relative units,
@@ -1091,7 +1138,7 @@ function ojFormLayout(context) {
     }
   }
 
-  function _addFlexDivs(label, elem, createOjFlex) {
+  function _addFlexDivs(label, elem, createOjFlex, colspan) {
     var ojFlex;
     var emptyLabelFlexItem;
 
@@ -1101,7 +1148,7 @@ function ojFormLayout(context) {
       ojFlex = label.previousElementSibling;
     } // This will be the oj-flex div for a row
 
-    var slotWidth = elem ? _getLabelFlexItemWidth() : _getFullFlexItemWidth();
+    var slotWidth = elem ? _getLabelFlexItemWidth() : _getFullFlexItemWidth(label, colspan);
 
     if (!elem) {
       // We need this zero width flex-item because we need to have pairs of flex-items
@@ -1127,15 +1174,15 @@ function ojFormLayout(context) {
 
       if (element.direction === 'row' && element.labelEdge === 'top') {
         // For the direction row case when labels are on top, we move the label into the value part,
-        // and make the label flex item 0px width and add the 'oj-formlayout-no-label-flex-item class
+        // and make the label flex item 0px width and add the 'oj-formlayout-label-comp-flex-item class
         // to get the correct padding
         elementOjFlexItem.appendChild(label);
         labelOjFlexItem.style.webkitFlex = '0 1 0px';
         labelOjFlexItem.style.flex = '0 1 0px';
         labelOjFlexItem.style.maxWidth = '0px';
         labelOjFlexItem.style.width = '0px';
-        labelOjFlexItem.classList.add('oj-formlayout-no-label-flex-item');
-        elementOjFlexItem.classList.add('oj-formlayout-no-label-flex-item');
+        labelOjFlexItem.classList.add('oj-formlayout-label-comp-flex-item');
+        elementOjFlexItem.classList.add('oj-formlayout-label-comp-flex-item');
       }
       elementOjFlexItem.appendChild(elem); // @HTMLUpdateOK append element containing trusted content.
 
@@ -1149,6 +1196,11 @@ function ojFormLayout(context) {
       // so that we get the correct padding on the flex items
       emptyLabelFlexItem.classList.add('oj-formlayout-no-label-flex-item');
       labelOjFlexItem.classList.add('oj-formlayout-no-label-flex-item'); // This is actually the element
+      // we need to tell the oj-label-value child how many actual columns are being spanned.
+      if (label.tagName === 'OJ-LABEL-VALUE') {
+        label.setAttribute('data-oj-colspan', colspan);
+        label.refresh();
+      }
     }
 
     return ojFlex;
@@ -1213,6 +1265,11 @@ function ojFormLayout(context) {
 
       if (mutation.type === 'childList' && _isBonusDomDivOrSelf(mutation.target)
                                         && _isNodeOfThisFormLayout(mutation.target)) {
+        ignore = false;
+        break;
+      }
+      // If the colspan changes on a child, we don't ignore the mutation
+      if (mutation.type === 'attributes' && mutation.attributeName === 'colspan') {
         ignore = false;
         break;
       }

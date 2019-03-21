@@ -3,12 +3,11 @@
  * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
  * The Universal Permissive License (UPL), Version 1.0
  */
-"use strict";
-define(['knockout', 'ojs/ojcore', 'ojs/ojkoshared', 'ojs/ojhtmlutils'],
-       function(ko, oj, BindingProviderImpl, HtmlUtils)
+define(['knockout', 'ojs/ojcore', 'ojs/ojkoshared', 'ojs/ojhtmlutils', 'ojs/ojlogger'],
+       function(ko, oj, BindingProviderImpl, HtmlUtils, Logger)
 {
 
-/* global ko:false, oj:false, BindingProviderImpl: false, WeakMap: false, Map: false, HtmlUtils:false */
+/* global ko:false, oj:false, BindingProviderImpl: false, WeakMap: false, Map: false, HtmlUtils:false, Logger: false*/
 
 /**
  * Default JET Template engine iumplementation
@@ -31,8 +30,8 @@ function JetTemplateEngine() {
     // Check to see if data-oj-as was defined on the template element as an additional
     // alias to provide to the template children
     var templateAlias = node.getAttribute('data-oj-as');
-    ko.applyBindingsToDescendants(_getContext(componentElement, properties, alias, templateAlias),
-      tmpContainer);
+    ko.applyBindingsToDescendants(_getContext(componentElement, node, properties, alias,
+      templateAlias), tmpContainer);
 
     return Array.prototype.slice.call(tmpContainer.childNodes, 0);
   };
@@ -67,7 +66,7 @@ function JetTemplateEngine() {
     data, alias, propertyValidator, alternateParent) {
     var templateAlias = node.getAttribute('data-oj-as');
 
-    var context = _getContext(componentElement, data, alias, templateAlias);
+    var context = _getContext(componentElement, node, data, alias, templateAlias);
 
     var contribs = _getPropertyContributorsViaCache(node, context, elementTagName,
       propertySet, alternateParent || componentElement);
@@ -177,8 +176,15 @@ function JetTemplateEngine() {
     return div;
   }
 
-  function _getContext(componentElement, properties, alias, templateAlias) {
-    var bindingContext = ko.contextFor(componentElement);
+  function _getContext(componentElement, node, properties, alias, templateAlias) {
+    // Always use the binding context for the template  element
+    var bindingContext = ko.contextFor(node);
+    // In the rare case it's not defined, check the componentElement and log a message
+    if (!bindingContext) {
+      Logger.info('Binding context not found when processing template for element with id: ' +
+        componentElement.id + '. Using binding context for element instead.');
+      bindingContext = ko.contextFor(componentElement);
+    }
     return BindingProviderImpl.extendBindingContext(bindingContext, properties,
       alias, templateAlias, componentElement);
   }

@@ -105,15 +105,15 @@
 
     if (headers instanceof Headers) {
       headers.forEach(function(value, name) {
-        this.append(name, value)
+        this.append(name, value) // @XSSFalsePositive
       }, this)
     } else if (Array.isArray(headers)) {
       headers.forEach(function(header) {
-        this.append(header[0], header[1])
+        this.append(header[0], header[1]) // @XSSFalsePositive
       }, this)
     } else if (headers) {
       Object.getOwnPropertyNames(headers).forEach(function(name) {
-        this.append(name, headers[name])
+        this.append(name, headers[name]) // @XSSFalsePositive
       }, this)
     }
   }
@@ -377,7 +377,7 @@
         var split = bytes.split('=')
         var name = split.shift().replace(/\+/g, ' ')
         var value = split.join('=').replace(/\+/g, ' ')
-        form.append(decodeURIComponent(name), decodeURIComponent(value))
+        form.append(decodeURIComponent(name), decodeURIComponent(value)) // @XSSFalsePositive
       }
     })
     return form
@@ -393,7 +393,7 @@
       var key = parts.shift().trim()
       if (key) {
         var value = parts.join(':').trim()
-        headers.append(key, value)
+        headers.append(key, value) // @XSSFalsePositive
       }
     })
     return headers

@@ -1,11 +1,16 @@
 {
   "name": "oj-legend-section",
-  "version": "6.1.0",
-  "jetVersion": "6.1.0",
+  "version": "6.2.0",
+  "jetVersion": "6.2.0",
   "displayName": "Legend Section",
   "type": "core",
+  "extension": {
+    "vbdt": {
+      "module": "ojs/ojlegend"
+    }
+  },
   "description": "ojLegendSection",
-  "help": "https://docs.oracle.com/en/middleware/jet/6.1/reference-api/oj.ojLegendSection.html",
+  "help": "https://docs.oracle.com/en/middleware/jet/6.2/reference-api/oj.ojLegendSection.html",
   "properties": {
     "collapsible": {
       "description": "Whether the section is collapsible. Only applies if the legend orientation is vertical.",

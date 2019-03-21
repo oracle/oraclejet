@@ -477,7 +477,7 @@ define(['../persistenceUtils', './logger'], function (persistenceUtils, logger) 
   function _getRequestHeaders(self) {
     var requestHeaders = new Headers();
     function appendRequestHeader(requestHeader) {
-      requestHeaders.append(requestHeader, self._requestHeaders[requestHeader]);
+      requestHeaders.append(requestHeader, self._requestHeaders[requestHeader]); // @XSSFalsePositive
     }
     Object.keys(self._requestHeaders).forEach(appendRequestHeader);
 

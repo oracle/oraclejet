@@ -1,11 +1,16 @@
 {
   "name": "oj-bind-slot",
-  "version": "6.1.0",
-  "jetVersion": "6.1.0",
+  "version": "6.2.0",
+  "jetVersion": "6.2.0",
   "displayName": "Bind Slot",
   "type": "core",
+  "extension": {
+    "vbdt": {
+      "module": "ojs/ojcomposite"
+    }
+  },
   "description": "A placeholder for child DOM to appear in a specified slot.",
-  "help": "https://docs.oracle.com/en/middleware/jet/6.1/reference-api/oj.ojBindSlot.html",
+  "help": "https://docs.oracle.com/en/middleware/jet/6.2/reference-api/oj.ojBindSlot.html",
   "properties": {
     "index": {
       "description": "An index value allowing the slot children to be individually slotted. This is useful when the composite needs to add additional DOM around slotted children.",
@@ -18,6 +23,13 @@
       "type": "string",
       "displayName": "Name",
       "help": "name"
+    }
+  },
+  "slots": {
+    "": {
+      "description": "The oj-bind-slot default slot is used to specify fallback content which will be used in the DOM if the slot has no assigned nodes. As with assigned nodes, the fallback content will inherit the slot attribute of the oj-bind-slot itself.",
+      "displayName": "default",
+      "help": "Default"
     }
   }
 }

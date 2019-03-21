@@ -1,11 +1,16 @@
 {
   "name": "oj-thematic-map-marker",
-  "version": "6.1.0",
-  "jetVersion": "6.1.0",
+  "version": "6.2.0",
+  "jetVersion": "6.2.0",
   "displayName": "Thematic Map Marker",
   "type": "core",
+  "extension": {
+    "vbdt": {
+      "module": "ojs/ojthematicmap"
+    }
+  },
   "description": "ojThematicMapMarker",
-  "help": "https://docs.oracle.com/en/middleware/jet/6.1/reference-api/oj.ojThematicMapMarker.html",
+  "help": "https://docs.oracle.com/en/middleware/jet/6.2/reference-api/oj.ojThematicMapMarker.html",
   "properties": {
     "borderColor": {
       "description": "The marker border color.",

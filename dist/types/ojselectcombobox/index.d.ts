@@ -67,7 +67,7 @@ export interface ojComboboxEventMap<V, SP extends ojComboboxSettableProperties<V
 // tslint:disable-next-line no-empty-interface
 export interface ojComboboxSettableProperties<V, SV = V, RV = V> extends editableValueSettableProperties<V, SV, RV> {
 }
-export interface ojComboboxSettablePropertiesLenient<V, SV, RV> extends Partial<ojComboboxSettableProperties<V, SV, RV>> {
+export interface ojComboboxSettablePropertiesLenient<V, SV = V, RV = V> extends Partial<ojComboboxSettableProperties<V, SV, RV>> {
     [key: string]: any;
 }
 export interface ojComboboxMany<K, D> extends ojCombobox<any[] | null, ojComboboxManySettableProperties<K, D>, any[] | null, string> {
@@ -429,7 +429,7 @@ export interface ojSelectEventMap<V, SP extends ojSelectSettableProperties<V, SV
 // tslint:disable-next-line no-empty-interface
 export interface ojSelectSettableProperties<V, SV = V> extends editableValueSettableProperties<V, SV> {
 }
-export interface ojSelectSettablePropertiesLenient<V, SV> extends Partial<ojSelectSettableProperties<V, SV>> {
+export interface ojSelectSettablePropertiesLenient<V, SV = V> extends Partial<ojSelectSettableProperties<V, SV>> {
     [key: string]: any;
 }
 export interface ojSelectMany<K, D> extends ojSelect<any[] | null, ojSelectManySettableProperties<K, D>> {

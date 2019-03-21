@@ -1,7 +1,9 @@
 import { JetElement, JetSettableProperties, JetElementCustomEvent, JetSetPropertyType } from '..';
 export interface ojLabelValue extends JetElement<ojLabelValueSettableProperties> {
+    colspan: number;
     labelEdge: 'start' | 'top' | 'inherit';
     labelWidth: string;
+    onColspanChanged: ((event: JetElementCustomEvent<ojLabelValue["colspan"]>) => any) | null;
     onLabelEdgeChanged: ((event: JetElementCustomEvent<ojLabelValue["labelEdge"]>) => any) | null;
     onLabelWidthChanged: ((event: JetElementCustomEvent<ojLabelValue["labelWidth"]>) => any) | null;
     addEventListener<T extends keyof ojLabelValueEventMap>(type: T, listener: (this: HTMLElement, ev: ojLabelValueEventMap[T]) => any, useCapture?: boolean): void;
@@ -14,10 +16,12 @@ export interface ojLabelValue extends JetElement<ojLabelValueSettableProperties>
     refresh(): void;
 }
 export interface ojLabelValueEventMap extends HTMLElementEventMap {
+    'colspanChanged': JetElementCustomEvent<ojLabelValue["colspan"]>;
     'labelEdgeChanged': JetElementCustomEvent<ojLabelValue["labelEdge"]>;
     'labelWidthChanged': JetElementCustomEvent<ojLabelValue["labelWidth"]>;
 }
 export interface ojLabelValueSettableProperties extends JetSettableProperties {
+    colspan: number;
     labelEdge: 'start' | 'top' | 'inherit';
     labelWidth: string;
 }

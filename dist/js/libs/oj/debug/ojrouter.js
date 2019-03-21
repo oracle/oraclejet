@@ -1198,7 +1198,6 @@ define(['ojs/ojcore', 'knockout', 'signals', 'ojs/ojlogger', 'promise'], functio
   /**
    * @class
    * @requires ojs/ojcore
-   * @requires knockout
    * @since 1.1.0
    * @ojtsmodule
    * @classdesc
@@ -1261,6 +1260,7 @@ define(['ojs/ojcore', 'knockout', 'signals', 'ojs/ojlogger', 'promise'], functio
    * @hideconstructor
    * @export
    * @ojtsimport knockout
+   * @ojtsimport signals
    */
   oj.Router = function (key, parentRouter, parentState) {
     var router = this;
@@ -1515,7 +1515,7 @@ define(['ojs/ojcore', 'knockout', 'signals', 'ojs/ojlogger', 'promise'], functio
      * @property {oj.Router} params.ojRouter.parentRouter
      * @property {string} params.ojRouter.direction
      * @property {Object} lifecycleListener
-     * @property {function(string):void} lifecycleListener.attached
+     * @property {function(any):void} lifecycleListener.attached
      *
      * @example <caption>Configure an ojModule binding with a router</caption>
      * &lt;!-- This is where your main page content will be loaded --&gt;
@@ -1605,7 +1605,8 @@ define(['ojs/ojcore', 'knockout', 'signals', 'ojs/ojlogger', 'promise'], functio
      * @property {string} params.ojRouter.direction The animation direction of the module, if defined.
      * @property {Object} params.ojRouter.parameters An object containing the observable parameters of the current router state.
      * @property {Object} lifecycleListener
-     * @property {function(Object):void} lifecycleListener.attached The 'attached' listener for the module
+     * @property {function(any):void} lifecycleListener.attached The 'attached' listener for the module
+     * @ojsignature [{ target: "Type", value: "{[key:string]:any}", for: "params.ojRouter.parameters" }]
      */
 
     /**
@@ -2012,6 +2013,7 @@ define(['ojs/ojcore', 'knockout', 'signals', 'ojs/ojlogger', 'promise'], functio
    *      </td>
    *   </tbody>
    * </table>
+   * @return {Router}
    * @export
    * @see oj.RouterState
    * @ojsignature { target:'Type',
@@ -2339,6 +2341,7 @@ define(['ojs/ojcore', 'knockout', 'signals', 'ojs/ojlogger', 'promise'], functio
    * @throws An error if the bookmarkable state is too big.
    * @return {undefined}
    * @export
+   * @ojsignature [{ target: "Type", for: "data", value: "{[key:string]:any}" }]
    * @example <caption>Store a color in the URL:</caption>
    * try {
    *    var color = '#99CCFF';
@@ -2388,6 +2391,7 @@ define(['ojs/ojcore', 'knockout', 'signals', 'ojs/ojlogger', 'promise'], functio
   /**
    * Retrieve the additional data stored in the URL.
    * @return {any} the content stored in the URL
+   * @ojsignature [{ target: "Type", for: "returns", value: "{[key:string]:any}" }]
    * @export
    * @example <caption>Retrieve the value of the background color stored in the URL:</caption>
    *  oj.Router.sync().then(
@@ -2496,7 +2500,7 @@ define(['ojs/ojcore', 'knockout', 'signals', 'ojs/ojlogger', 'promise'], functio
        * The parameter of the event handler is a boolean true when the state has changed.<br>
        * This is usefull when some post processing is needed or to test the result after a state change.
        * @name oj.Router.transitionedToState
-       * @type {Object}
+       * @type {signals.Signal}
        * @readonly
        * @example <caption>Creates promise that resolve when the state transition is complete.</caption>
        * var promise = new Promise(function(resolve, reject) {
@@ -3569,7 +3573,7 @@ var Router = oj.Router;
      *    var empId = params['empId'];
      *    var edit = params['edit'];
      * }
-     * @type {Object}
+     * @ojsignature [{ target: "Type", value: "{[key:string]:any}" }]
      * @ojstatus preview
      * @since 4.2.0
      */
@@ -3661,7 +3665,7 @@ var Router = oj.Router;
      * The value associated with this state. When this state is the current state of the
      * router, it is the value returned by the observable {@link oj.Router#currentValue}.
      * @name oj.RouterState#value
-     * @type {any}
+     * @type {string}
      */
     this._value = options.value;
 

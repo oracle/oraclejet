@@ -15,7 +15,7 @@ export interface ojChart<K, D> extends dvtBaseComponent<ojChartSettablePropertie
         y2: number;
     };
     dataLabel: ((context: ojChart.DataLabelContext) => ({
-        insert: Element | string;
+        insert: Element | string[] | string;
     } | {
         preventDefault: boolean;
     }));
@@ -729,6 +729,10 @@ export namespace ojChart {
         itemData: object | null;
         seriesData: object | null;
         groupData: object | null;
+        dimensions: {
+            width: number;
+            height: number;
+        };
         componentElement: Element;
     };
     // tslint:disable-next-line interface-over-type-literal
@@ -860,7 +864,7 @@ export interface ojChartSettableProperties<K, D> extends dvtBaseComponentSettabl
         y2: number;
     };
     dataLabel: ((context: ojChart.DataLabelContext) => ({
-        insert: Element | string;
+        insert: Element | string[] | string;
     } | {
         preventDefault: boolean;
     }));

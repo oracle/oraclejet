@@ -6990,7 +6990,8 @@ oj-message:not(.oj-complete) {
   color: var(--oj-message-detail-text-color);
   font-size: var(--oj-message-detail-font-size);
   line-height: var(--oj-message-detail-line-height);
-  word-wrap: break-word; }
+  word-wrap: break-word;
+  width: 100%; }
 
 .oj-message-timestamp {
   color: var(--oj-message-time-text-color);
@@ -9035,6 +9036,10 @@ html[dir="rtl"] .oj-tree-list > .oj-tree-node {
   html[dir="rtl"] .oj-tree-title {
     margin-right: 0.250em; }
 
+/* In high contrast mode the border will show up even when transparent, so remove the border in high contrast mode*/
+.oj-hicontrast .oj-tree-title {
+  border-width: 0; }
+
 /*  Active node text  */
 .oj-hover .oj-tree-title {
   border: 1px dashed var(--oj-tree-node-border-color-hover);
@@ -10398,6 +10403,9 @@ oj-indexer:not(.oj-complete) {
   -webkit-tap-highlight-color: transparent;
   font-family: var(--oj-font-family);
   animation-duration: var(--oj-dvt-animation-duration); }
+
+.oj-dvtbase svg {
+  overflow: hidden; }
 
 .oj-dvtbase:focus {
   outline: none; }
@@ -11988,17 +11996,48 @@ html[dir="rtl"] .oj-form.oj-formlayout-form-across > .oj-flex {
 .oj-formlayout-labels-inline > .oj-flex {
   flex-wrap: nowrap; }
 
-html:not([dir="rtl"]) .oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item.oj-flex-item:nth-child(odd) {
+html:not([dir="rtl"]) .oj-formlayout-form-across > .oj-flex > .oj-formlayout-label-comp-flex-item.oj-flex-item:nth-child(odd) {
   padding-left: 0px; }
 
-html[dir="rtl"] .oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item.oj-flex-item:nth-child(odd) {
+html[dir="rtl"] .oj-formlayout-form-across > .oj-flex > .oj-formlayout-label-comp-flex-item.oj-flex-item:nth-child(odd) {
   padding-right: 0px; }
 
-html:not([dir="rtl"]) .oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item.oj-flex-item:nth-child(even) {
+html:not([dir="rtl"]) .oj-formlayout-form-across > .oj-flex > .oj-formlayout-label-comp-flex-item.oj-flex-item {
   padding-left: var(--oj-form-layout-label-inline-gutter-padding); }
 
-html[dir="rtl"] .oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item.oj-flex-item:nth-child(even) {
+html[dir="rtl"] .oj-formlayout-form-across > .oj-flex > .oj-formlayout-label-comp-flex-item.oj-flex-item {
   padding-right: var(--oj-form-layout-label-inline-gutter-padding); }
+
+.oj-form-layout > .oj-form.oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item.oj-flex-item {
+  padding-left: 0px;
+  padding-right: 0px; }
+
+html:not([dir="rtl"]) .oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item > .oj-label-value > .oj-flex > .oj-flex-item:nth-child(odd) {
+  padding-left: var(--oj-form-layout-label-inline-gutter-padding); }
+
+html[dir="rtl"] .oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item > .oj-label-value > .oj-flex > .oj-flex-item:nth-child(odd) {
+  padding-right: var(--oj-form-layout-label-inline-gutter-padding); }
+
+html:not([dir="rtl"]) .oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item > .oj-label-value > .oj-flex > .oj-flex-item:nth-child(even) {
+  padding-right: var(--oj-form-layout-label-inline-gutter-padding); }
+
+html[dir="rtl"] .oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item > .oj-label-value > .oj-flex > .oj-flex-item:nth-child(even) {
+  padding-left: var(--oj-form-layout-label-inline-gutter-padding); }
+
+html:not([dir="rtl"]) .oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item > .oj-label-value:not(.oj-formlayout-labels-inline) > .oj-flex > .oj-flex-item:nth-child(odd) {
+  padding-right: var(--oj-form-layout-label-inline-gutter-padding); }
+
+html[dir="rtl"] .oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item > .oj-label-value:not(.oj-formlayout-labels-inline) > .oj-flex > .oj-flex-item:nth-child(odd) {
+  padding-left: var(--oj-form-layout-label-inline-gutter-padding); }
+
+html:not([dir="rtl"]) .oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item > .oj-label-value:not(.oj-formlayout-labels-inline) > .oj-flex > .oj-flex-item:nth-child(even) {
+  padding-left: var(--oj-form-layout-label-inline-gutter-padding); }
+
+html[dir="rtl"] .oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item > .oj-label-value:not(.oj-formlayout-labels-inline) > .oj-flex > .oj-flex-item:nth-child(even) {
+  padding-right: var(--oj-form-layout-label-inline-gutter-padding); }
+
+.oj-label-value.oj-form > .oj-flex {
+  padding-top: 0; }
 
 oj-form-layout:not(.oj-complete) {
   visibility: hidden; }
@@ -12047,6 +12086,20 @@ oj-text-area:not(.oj-complete) {
     .oj-inputpassword-nocomp,
     .oj-textarea-nocomp {
       -webkit-text-size-adjust: var(--oj-form-control-trigger-font-size-adjust); } }
+
+.oj-form-control-full-width.oj-inputtext,
+.oj-form-control-full-width.oj-inputpassword,
+.oj-form-control-full-width.oj-textarea,
+.oj-form-control-full-width.oj-inputtext-nocomp,
+.oj-form-control-full-width.oj-inputpassword-nocomp,
+.oj-form-control-full-width.oj-textarea-nocomp,
+.oj-form-control-full-width .oj-inputtext,
+.oj-form-control-full-width .oj-inputpassword,
+.oj-form-control-full-width .oj-textarea,
+.oj-form-control-full-width .oj-inputtext-nocomp,
+.oj-form-control-full-width .oj-inputpassword-nocomp,
+.oj-form-control-full-width .oj-textarea-nocomp {
+  max-width: 100%; }
 
 .oj-inputtext {
   position: relative; }
@@ -12320,6 +12373,10 @@ oj-input-number:not(.oj-complete) {
   @media screen and (max-width: 767px) {
     .oj-inputnumber {
       -webkit-text-size-adjust: var(--oj-form-control-trigger-font-size-adjust); } }
+
+.oj-form-control-full-width.oj-inputnumber,
+.oj-form-control-full-width .oj-inputnumber {
+  max-width: 100%; }
 
 .oj-inputnumber-wrapper {
   width: 100%;
@@ -12979,6 +13036,16 @@ oj-calendar:not(.oj-complete) {
     .oj-inputdatetime-date-only,
     .oj-inputdatetime-time-only {
       -webkit-text-size-adjust: var(--oj-form-control-trigger-font-size-adjust); } }
+
+.oj-form-control-full-width.oj-inputdatetime,
+.oj-form-control-full-width.oj-inputdatetime-date-time,
+.oj-form-control-full-width.oj-inputdatetime-date-only,
+.oj-form-control-full-width.oj-inputdatetime-time-only,
+.oj-form-control-full-width .oj-inputdatetime,
+.oj-form-control-full-width .oj-inputdatetime-date-time,
+.oj-form-control-full-width .oj-inputdatetime-date-only,
+.oj-form-control-full-width .oj-inputdatetime-time-only {
+  max-width: 100%; }
 
 .oj-inputdatetime-inline {
   /* use a width of 100% and then max and min width so that when
@@ -14107,6 +14174,10 @@ oj-combobox:not(.oj-complete) {
     .oj-combobox {
       -webkit-text-size-adjust: var(--oj-form-control-trigger-font-size-adjust); } }
 
+.oj-form-control-full-width.oj-combobox,
+.oj-form-control-full-width .oj-combobox {
+  max-width: 100%; }
+
 /* single-select */
 /* 
      * Applied to the single-select box which includes the input field and the dropdown open icon
@@ -14520,6 +14591,10 @@ oj-select:not(.oj-complete) {
   @media screen and (max-width: 767px) {
     .oj-select {
       -webkit-text-size-adjust: var(--oj-form-control-trigger-font-size-adjust); } }
+
+.oj-form-control-full-width.oj-select,
+.oj-form-control-full-width .oj-select {
+  max-width: 100%; }
 
 /* 
      * Suppress focus ring around the select box 
@@ -15046,6 +15121,10 @@ oj-input-search:not(.oj-complete) {
     .oj-inputsearch {
       -webkit-text-size-adjust: var(--oj-form-control-trigger-font-size-adjust); } }
 
+.oj-form-control-full-width.oj-inputsearch,
+.oj-form-control-full-width .oj-inputsearch {
+  max-width: 100%; }
+
 /* 
      * Applied to the InputSearch box which includes the input field and the search icon
      */
@@ -15503,6 +15582,10 @@ oj-slider:not(.oj-complete) {
   max-width: var(--oj-form-control-lg-max-width);
   min-width: var(--oj-form-control-min-width);
   width: 100%; }
+
+.oj-form-control-full-width.oj-slider.oj-slider-horizontal,
+.oj-form-control-full-width .oj-slider.oj-slider-horizontal {
+  max-width: 100%; }
 
 .oj-slider.oj-slider-horizontal {
   /* This ensures that the slider bounding box will include

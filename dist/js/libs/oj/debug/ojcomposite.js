@@ -80,11 +80,11 @@ oj.Composite.getComponentMetadata = function (name) {
  *                                 <b>The array of DOM nodes and document fragment types are deprecated in 5.0.0.</b>
  * @param {string} descriptor.css (Deprecated) A string containing the composite CSS. <b>Note that this key should not be used if the composite
  *                                styles contain references to any external resources.</b>
- * @param {function(oj.Composite.ViewModelContext):void|Object} descriptor.viewModel This option is only applicable to composites hosting a Knockout template
+ * @param {function(oj.Composite.ViewModelContext):void|Object} [descriptor.viewModel] This option is only applicable to composites hosting a Knockout template
  *                                      with a ViewModel and ultimately resolves to a constructor function or object instance.
  *                                      If the initial ViewModel resolves to an object instance, the initialize lifecycle listener
  *                                      will be called. See the <a href="CompositeOverview.html#ViewModel">initialize documentation</a> for more information.
- * @param {function(string, string, Object, function(string):any):any} descriptor.parseFunction The function that will be called to parse attribute values.
+ * @param {function(string, string, Object, function(string):any):any} [descriptor.parseFunction] The function that will be called to parse attribute values.
  *                                                              Note that this function is only called for non bound attributes. The parseFunction will take the following parameters:
  * <ul>
  *  <li>{string} value: The value to parse.</li>
@@ -95,8 +95,13 @@ oj.Composite.getComponentMetadata = function (name) {
  *      type which is used when a custom parse function isn't provided and takes as its parameter
  *      the value to parse.</li>
  * </ul>
- * @ojsignature [{target: "Type", value: "((value: string, name: string, meta: object,  defaultParseFunction: (value: string)=> any)=>any)", for: "descriptor.parseFunction"},
- *               {target: "Type", value: "string", for: "descriptor.view"}]
+ * @ojsignature [
+ *               {target: "Type",
+ *                value: "<P extends PropertiesType= PropertiesType>(name: string, descriptor: {
+ *                metadata: Metadata;
+ *                view: string;
+ *                viewModel?: {new(context: ViewModelContext<P>): ViewModel<P>};
+ *                parseFunction?: ((value: string, name: string, meta: object, defaultParseFunction?: (value: string) => any) => any);}): void"}]
  * @return {void}
  *
  *
@@ -179,18 +184,18 @@ oj.Composite.__BINDING_PROVIDER = '__oj_binding_prvdr';
 
 /**
  * @typedef {Object} oj.Composite.ViewModel
- * @property {function(oj.Composite.ViewModelContext):(Promise|void)=} activated Invoked after the ViewModel is initialized.
+ * @property {function(oj.Composite.ViewModelContext):(Promise|void)=} [activated] Invoked after the ViewModel is initialized.
  *                                                                               This method can return a Promise which will delay additional
  *                                                                               lifecycle phases until it is resolved and can be used as a
  *                                                                               hook for data fetching.
- * @property {function(oj.Composite.ViewModelContext):void=} connected Invoked after the View is first inserted into the DOM and then each
+ * @property {function(oj.Composite.ViewModelContext):void=} [connected] Invoked after the View is first inserted into the DOM and then each
  *                                                                     time the composite is reconnected to the DOM after being disconnected.
  *                                                                     Note that if the composite needs to add/remove event listeners, we
  *                                                                     recommend using this and the disconnected methods.
- * @property {function(oj.Composite.ViewModelContext):void=} bindingsApplied Invoked after the bindings are applied on this View.
- * @property {function(oj.Composite.PropertyChangedContext):void=} propertyChanged Invoked when properties are updated and before the
+ * @property {function(oj.Composite.ViewModelContext):void=} [bindingsApplied] Invoked after the bindings are applied on this View.
+ * @property {function(oj.Composite.PropertyChangedContext):void=} [propertyChanged] Invoked when properties are updated and before the
  *                                                                                 [property]Changed event is fired.
- * @property {function(Element):void=} disconnected Invoked when this composite component is disconnected from the DOM.
+ * @property {function(Element):void=} [disconnected] Invoked when this composite component is disconnected from the DOM.
  *
  * @property {function(oj.Composite.ViewModelContext):void=} initialize Invoked only if the ViewModel specified during registration is
  *                                                                      an object instance as opposed to a constructor function. If the registered
@@ -207,6 +212,12 @@ oj.Composite.__BINDING_PROVIDER = '__oj_binding_prvdr';
  * @ojdeprecated [{target: "property", for: "initialize", since: "5.0.0", description: "Please pass a constructor function to Composite.register() instead."},
  *               {target: "property", for: "attached", since: "4.2.0", description: "Please use the connected method instead."},
  *               {target: "property", for: "detached", since: "4.2.0", description: "Please use the disconnected method instead."}]
+ * @ojsignature [{target:"Type", value:"<P extends PropertiesType= PropertiesType>", for: "genericTypeParameters"},
+ *               {target: "Type", value: "((context: ViewModelContext<P>) => Promise<any> | void)", for: "activated"},
+ *               {target: "Type", value: "((context: ViewModelContext<P>) => void)", for: "connected"},
+ *               {target: "Type", value: "((context: ViewModelContext<P>) => void)", for: "bindingsApplied"},
+ *               {target: "Type", value: "((context: PropertyChangedContext<P>) => void)", for: "propertyChanged"},
+ *               {target: "Type", value: "((element: Element) => void)", for: "disconnected"}]
  */
 
 /**
@@ -221,6 +232,8 @@ oj.Composite.__BINDING_PROVIDER = '__oj_binding_prvdr';
  * @property {Object} slotNodeCounts A Promise evaluating to a map of slot name to assigned nodes count for the View.
  * @ojdeprecated [{target: "property", for: "props", since: "5.0.0", description: "Please use the 'properties' property instead."},
  *               {target: "property", for: "slotNodeCounts", since: "5.0.0", description: "Please use the 'slotCounts' property instead."}]
+ * @ojsignature [{target:"Type", value:"<P extends PropertiesType= PropertiesType>", for: "genericTypeParameters"},
+ *               {target: "Type", value: "P", for: "properties"}]
  */
 
 /**
@@ -236,6 +249,37 @@ oj.Composite.__BINDING_PROVIDER = '__oj_binding_prvdr';
  * @property {string} subproperty.path The subproperty path that changed, starting from the top level property with subproperties delimited by '.'.
  * @property {any} subproperty.value The current value of the subproperty that changed.
  * @property {any} subproperty.previousValue The previous value of the subproperty that changed.
+ * @ojsignature [{target:"Type", value:"<P extends PropertiesType= PropertiesType>", for: "genericTypeParameters"},
+ *               {target: "Type", value: "keyof P", for: "property"},
+ *               {target: "Type", value: "P[keyof P]", for: "value"},
+ *               {target: "Type", value: "P[keyof P]", for: "previousValue"}]
+ */
+
+/**
+ * If you are writing your composite in TypeScript and wish to have stricter type checking done for your composite properties,
+ * you can optionally define a type in your ViewModel which lists all component properties, their types, and parameterize your composite ViewModel
+ * and methods based that type.
+ * <p>
+ * For example, if you are writing a composite with two properties customTitle and help,
+ * <pre class="prettyprint"><code>
+ * // Create a type representing all the properties of your composite
+ * type ExampleComponentProperties = {
+ *   'customTitle': string,
+ *   'help' : {
+ *      definition: string
+ *    }
+ * }
+ * // Parameterize your ViewModel and methods on this type
+ * class ExampleComponentModel implements ViewModel&lt;ExampleComponentProperties>{
+ *   activated = (context: ViewModelContext&lt;ExampleComponentProperties>) => {
+ *     let title = context.properties.customTitle; //guranteed to be string
+ *     let helpDef = context.properties.help.definition; //guranteed to be string
+ *   }
+ * }
+ * </code></pre>
+ * If no type is provided, this default type will be used and you need not parameterize your ViewModel.
+ * @typedef {Object} oj.Composite.PropertiesType
+ * @ojsignature [{target:"Type", value:"{[key:string] : any;}"}]
  */
 
 /* global Promise:false, HtmlUtils:false, Logger:false */
@@ -332,7 +376,7 @@ oj.CollectionUtils.copyInto(oj.CompositeElementBridge.proto,
       // Setup the ViewModel context to pass to lifecycle listeners
       var slotNodeCounts = {};
       // Generate slot map before we update DOM with view nodes
-      var slotMap = oj.BaseCustomElementBridge.getSlotMap(element, true);
+      var slotMap = oj.BaseCustomElementBridge.getSlotMap(element);
       var slots = Object.keys(slotMap);
       for (var i = 0; i < slots.length; i++) {
         var slot = slots[i];
@@ -444,10 +488,7 @@ oj.CollectionUtils.copyInto(oj.CompositeElementBridge.proto,
             if (!propertyMeta._derived) {
               var updatedFrom = bOuterSet ? 'external' : 'internal';
               oj.BaseCustomElementBridge.__FirePropertyChangeEvent(this._ELEMENT,
-                                                                   property,
-                                                                   value,
-                                                                   previousValue,
-                                                                   updatedFrom);
+                property, value, previousValue, updatedFrom);
             }
           } else {
             Logger.info(oj.BaseCustomElementBridge.getElementInfo(this._ELEMENT) + ": Ignoring property set for property '" +
@@ -2452,8 +2493,11 @@ oj.CompositeElementBridge._isDocumentFragment = function (content) {
  *               <td class="name"><code>propertyEditorValues</code></td>
  *               <td>no</td>
  *               <td>{Object}</td>
- *               <td>Additional design time metadata that enhances the <code>enumValues</code> run time metadata.
- *                   The value is an Object with properties matching the values in the <code>enumValues</code> array.
+ *               <td>Design time metadata that lists suggested property values, and optional information about each suggested value.
+ *                   <p>Each key represents a suggested property value – if <code>enumValues</code> runtime metadata is specified, then
+ *                   it is expected that some or all of the keys will match the values in the <code>enumValues</code> array.  Conversely,
+ *                   the absence of <code>enumValues</code> runtime metadata indicates that the property can accept values in addition
+ *                   to those suggested by its <code>propertyEditorValues</code> metadata.</p>
  *                   The corresponding value for each key is an Object with the following properties:
  *                   <h6>Properties</h6>
  *                   <table class="params">
@@ -2510,6 +2554,7 @@ oj.CompositeElementBridge._isDocumentFragment = function (content) {
  *                       </tr>
  *                     </tbody>
  *                   </table>
+ *               </td>
  *             </tr>
  *             <tr>
  *               <td class="name"><code>propertyGroup</code></td>

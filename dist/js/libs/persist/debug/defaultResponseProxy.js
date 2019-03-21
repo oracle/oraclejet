@@ -500,16 +500,12 @@ define(['./persistenceManager', './persistenceUtils', './fetchStrategies',
     function _cacheShreddedData(request, response) {
       if (request.method == 'GET' ||
         request.method == 'HEAD') {
-        return persistenceManager.getCache().hasMatch(request, {ignoreSearch: true}).then(function (matchExist) {
-          if (matchExist) {
-            // the cache strategy would have cached the response unless
-            // response is not to be stored, e.g. no-store. In that case we don't want
-            // to shred
-            return _processShreddedData(request, response);
-          } else {
-            return Promise.resolve();
-          }
-        });
+        // the cache strategy would have cached the response unless
+        // response is not to be stored, e.g. no-store. In that case we don't want
+        // to shred. Either way, we do not need to shred again here
+        // since the cache strategy should have shredded it unless it should not
+        // be stored.
+        return Promise.resolve();
       } else {
         return _processShreddedData(request, response);
       }

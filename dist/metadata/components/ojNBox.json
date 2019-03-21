@@ -1,11 +1,16 @@
 {
   "name": "oj-n-box",
-  "version": "6.1.0",
-  "jetVersion": "6.1.0",
+  "version": "6.2.0",
+  "jetVersion": "6.2.0",
   "displayName": "N Box",
   "type": "core",
+  "extension": {
+    "vbdt": {
+      "module": "ojs/ojnbox"
+    }
+  },
   "description": "An interactive data visualization (typically found in Human Capital Management applications) in which employees are grouped and compared across two dimensions.  Each dimension can be split into multiple ranges.",
-  "help": "https://docs.oracle.com/en/middleware/jet/6.1/reference-api/oj.ojNBox.html",
+  "help": "https://docs.oracle.com/en/middleware/jet/6.2/reference-api/oj.ojNBox.html",
   "properties": {
     "animationOnDataChange": {
       "description": "Specifies the animation that is applied on data changes.",

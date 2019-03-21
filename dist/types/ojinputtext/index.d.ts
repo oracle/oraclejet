@@ -89,7 +89,7 @@ export interface inputBaseSettableProperties<V, SV = V, RV = V> extends editable
         };
     };
 }
-export interface inputBaseSettablePropertiesLenient<V, SV, RV> extends Partial<inputBaseSettableProperties<V, SV, RV>> {
+export interface inputBaseSettablePropertiesLenient<V, SV = V, RV = V> extends Partial<inputBaseSettableProperties<V, SV, RV>> {
     [key: string]: any;
 }
 export interface ojInputPassword extends inputBase<string | null, ojInputPasswordSettableProperties> {
@@ -206,8 +206,10 @@ export interface ojInputTextSettablePropertiesLenient extends Partial<ojInputTex
 }
 export interface ojTextArea extends inputBase<any, ojTextAreaSettableProperties> {
     converter: Converter<any> | Validation.RegisteredConverter | null;
+    resizeBehavior: 'both' | 'horizontal' | 'vertical' | 'none';
     rows: number;
     onConverterChanged: ((event: JetElementCustomEvent<ojTextArea["converter"]>) => any) | null;
+    onResizeBehaviorChanged: ((event: JetElementCustomEvent<ojTextArea["resizeBehavior"]>) => any) | null;
     onRowsChanged: ((event: JetElementCustomEvent<ojTextArea["rows"]>) => any) | null;
     onOjAnimateEnd: ((event: ojTextArea.ojAnimateEnd) => any) | null;
     onOjAnimateStart: ((event: ojTextArea.ojAnimateStart) => any) | null;
@@ -238,10 +240,12 @@ export interface ojTextAreaEventMap extends inputBaseEventMap<any, ojTextAreaSet
     'ojAnimateEnd': ojTextArea.ojAnimateEnd;
     'ojAnimateStart': ojTextArea.ojAnimateStart;
     'converterChanged': JetElementCustomEvent<ojTextArea["converter"]>;
+    'resizeBehaviorChanged': JetElementCustomEvent<ojTextArea["resizeBehavior"]>;
     'rowsChanged': JetElementCustomEvent<ojTextArea["rows"]>;
 }
 export interface ojTextAreaSettableProperties extends inputBaseSettableProperties<any> {
     converter: Converter<any> | Validation.RegisteredConverter | null;
+    resizeBehavior: 'both' | 'horizontal' | 'vertical' | 'none';
     rows: number;
 }
 export interface ojTextAreaSettablePropertiesLenient extends Partial<ojTextAreaSettableProperties> {

@@ -119,6 +119,7 @@
         "ojtrain/index.d.ts",
         "ojtranslation/index.d.ts",
         "ojtreedataprovider/index.d.ts",
+        "ojtreedataproviderview/index.d.ts",
         "ojtreemap/index.d.ts",
         "ojvalidation-base/index.d.ts",
         "ojvalidation-datetime/index.d.ts",

@@ -1,9 +1,14 @@
 {
   "name": "oj-popup",
-  "version": "6.1.0",
-  "jetVersion": "6.1.0",
+  "version": "6.2.0",
+  "jetVersion": "6.2.0",
   "displayName": "Popup",
   "type": "core",
+  "extension": {
+    "vbdt": {
+      "module": "ojs/ojpopup"
+    }
+  },
   "styleClasses": [
     {
       "styleGroup": [
@@ -13,7 +18,7 @@
     }
   ],
   "description": "Displays a popup window that can display arbitrary content.",
-  "help": "https://docs.oracle.com/en/middleware/jet/6.1/reference-api/oj.ojPopup.html",
+  "help": "https://docs.oracle.com/en/middleware/jet/6.2/reference-api/oj.ojPopup.html",
   "properties": {
     "autoDismiss": {
       "description": "Defines conditions that will cause an open popup to auto close dismiss. A value of\nfocusLoss defines the dismissal condition where focus\nhas left the content of the popup or from the associated launcher or if what the popup\nis aligned to is not fully visible within an overflow area.",

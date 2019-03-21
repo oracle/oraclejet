@@ -1,11 +1,16 @@
 {
   "name": "oj-thematic-map",
-  "version": "6.1.0",
-  "jetVersion": "6.1.0",
+  "version": "6.2.0",
+  "jetVersion": "6.2.0",
   "displayName": "Thematic Map",
   "type": "core",
+  "extension": {
+    "vbdt": {
+      "module": "ojs/ojthematicmap"
+    }
+  },
   "description": "An interactive data visualization that displays data corresponding to geographic locations or regions.\r             Applications are required to supply a mapProvider for a valid thematic map.",
-  "help": "https://docs.oracle.com/en/middleware/jet/6.1/reference-api/oj.ojThematicMap.html",
+  "help": "https://docs.oracle.com/en/middleware/jet/6.2/reference-api/oj.ojThematicMap.html",
   "properties": {
     "animationDuration": {
       "description": "We recommend using the component CSS classes to set component wide styling. This API should be used only for styling a specific instance of the component. The default values come from the CSS classess and varies based on theme. The duration of the animations in milliseconds.",

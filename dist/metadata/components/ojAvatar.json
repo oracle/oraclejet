@@ -1,9 +1,14 @@
 {
   "name": "oj-avatar",
-  "version": "6.1.0",
-  "jetVersion": "6.1.0",
+  "version": "6.2.0",
+  "jetVersion": "6.2.0",
   "displayName": "Avatar",
   "type": "core",
+  "extension": {
+    "vbdt": {
+      "module": "ojs/ojavatar"
+    }
+  },
   "styleClasses": [
     {
       "styleGroup": [
@@ -13,7 +18,7 @@
     }
   ],
   "description": "An icon capable of displaying a custom image, initials, or a placeholder image.",
-  "help": "https://docs.oracle.com/en/middleware/jet/6.1/reference-api/oj.ojAvatar.html",
+  "help": "https://docs.oracle.com/en/middleware/jet/6.2/reference-api/oj.ojAvatar.html",
   "properties": {
     "initials": {
       "description": "Specifies the initials of the avatar.",

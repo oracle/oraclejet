@@ -1,11 +1,16 @@
 {
   "name": "oj-menu-select-many",
-  "version": "6.1.0",
-  "jetVersion": "6.1.0",
+  "version": "6.2.0",
+  "jetVersion": "6.2.0",
   "displayName": "Menu Multi Select",
   "type": "core",
+  "extension": {
+    "vbdt": {
+      "module": "ojs/ojmenuselectmany"
+    }
+  },
   "description": "Checkable menu items supporting multiple selections",
-  "help": "https://docs.oracle.com/en/middleware/jet/6.1/reference-api/oj.ojMenuSelectMany.html",
+  "help": "https://docs.oracle.com/en/middleware/jet/6.2/reference-api/oj.ojMenuSelectMany.html",
   "properties": {
     "disabled": {
       "description": "Disables all the checkable menu items if set to true.",

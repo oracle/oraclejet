@@ -1,9 +1,14 @@
 {
   "name": "oj-masonry-layout",
-  "version": "6.1.0",
-  "jetVersion": "6.1.0",
+  "version": "6.2.0",
+  "jetVersion": "6.2.0",
   "displayName": "Masonry Layout",
   "type": "core",
+  "extension": {
+    "vbdt": {
+      "module": "ojs/ojmasonrylayout"
+    }
+  },
   "styleClasses": [
     {
       "styleGroup": [
@@ -55,7 +60,7 @@
     }
   ],
   "description": "Container element that lays out its children in a grid of tiles.",
-  "help": "https://docs.oracle.com/en/middleware/jet/6.1/reference-api/oj.ojMasonryLayout.html",
+  "help": "https://docs.oracle.com/en/middleware/jet/6.2/reference-api/oj.ojMasonryLayout.html",
   "properties": {
     "reorderHandle": {
       "description": "Specifies the selector of the child DOM element that can be used to reorder the child.",

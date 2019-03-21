@@ -54,7 +54,7 @@ dvt.Chart.prototype.Init = function(context, callback, callbackObj) {
   dvt.Chart.superclass.Init.call(this, context, callback, callbackObj);
 
   // Create the defaults object
-  this.Defaults = new DvtChartDefaults();
+  this.Defaults = new DvtChartDefaults(context);
 
   // Create the event handler and add event listeners
   this.EventManager = new DvtChartEventManager(this);
@@ -4405,10 +4405,11 @@ DvtChartDataItem.prototype.valueOf = function() {
  * Default values and utility functions for component versioning.
  * @class
  * @constructor
+ * @param {dvt.Context} context The rendering context.
  * @extends {dvt.BaseComponentDefaults}
  */
-var DvtChartDefaults = function() {
-  this.Init({'skyros': DvtChartDefaults.VERSION_1, 'alta': DvtChartDefaults.SKIN_ALTA, 'next': DvtChartDefaults.SKIN_NEXT});
+var DvtChartDefaults = function(context) {
+  this.Init({'skyros': DvtChartDefaults.VERSION_1, 'alta': DvtChartDefaults.SKIN_ALTA, 'next': DvtChartDefaults.SKIN_NEXT}, context);
 };
 
 dvt.Obj.createSubclass(DvtChartDefaults, dvt.BaseComponentDefaults);
@@ -14293,7 +14294,7 @@ DvtChartDataUtils.getGroupLabel = function(chart, groupIndex) {
     if (group) {
       if (group['name'] != null)
         return group['name'];
-      else if (group['id'] != null) // Empty or null group name allowed if id is specified
+      else if (group['id'] != null || typeof(group) !== "string") // Empty or null group name allowed if id is specified
         return '';
       else
         return group;
@@ -15559,6 +15560,10 @@ DvtChartDataUtils.getDataContext = function(chart, seriesIndex, groupIndex, item
 
     if (DvtChartTypeUtils.isPie(chart) && chart.pieChart)
       dataContext['totalValue'] = chart.pieChart.getTotalValue();
+
+    var barDimensions = chart.getOptionsCache().getFromCachedMap2D('barDims', seriesIndex, groupIndex);
+    if (barDimensions)
+      dataContext['dimensions'] = barDimensions;
   }
 
   return dataContext || {};
@@ -24262,15 +24267,21 @@ DvtChartPlotAreaRenderer._renderForegroundObjects = function(chart, container, a
  * @param {Color} dataColor The color of the data item this label is associated with.
  * @param {number} type (optional) Data label type: low, high, or value.
  * @param {boolean} isStackLabel true if label for stack cummulative, false otherwise
- * @param {number=} originalBarSize The non rounded width(horizontal) or height(vertical) of the bar
+ * @param {number=} originalBarSize The non rounded width(vertical) or height(horizontal) of the bar
  * @private
  */
 DvtChartPlotAreaRenderer._renderDataLabel = function(chart, container, dataItemBounds, seriesIndex, groupIndex, itemIndex, dataColor, type, isStackLabel, originalBarSize) {
   if (DvtChartTypeUtils.isOverview(chart)) // no data label in overview
     return;
 
-  var labelString = DvtChartDataUtils.getDataLabel(chart, seriesIndex, groupIndex, itemIndex, type, isStackLabel);
+  var isBar = DvtChartStyleUtils.getSeriesType(chart, seriesIndex) == 'bar';
+  var bHoriz = DvtChartTypeUtils.isHorizontal(chart);
+  var barDataItemDims = {width: bHoriz ? dataItemBounds.w : originalBarSize, height: bHoriz ? originalBarSize : dataItemBounds.h};
 
+  if (isBar)
+    chart.getOptionsCache().putToCachedMap2D('barDims', seriesIndex, groupIndex, barDataItemDims);
+  
+  var labelString = DvtChartDataUtils.getDataLabel(chart, seriesIndex, groupIndex, itemIndex, type, isStackLabel);
   if (labelString == null)
     return;
 
@@ -24303,11 +24314,8 @@ DvtChartPlotAreaRenderer._renderDataLabel = function(chart, container, dataItemB
     label.setY(dataItemBounds.y + dataItemBounds.h + textDim.h / 2 + DvtChartPlotAreaRenderer._MARKER_DATA_LABEL_GAP / 2);
   }
   else { // inside label
-    if (DvtChartStyleUtils.getSeriesType(chart, seriesIndex) == 'bar') {
-      var bHoriz = DvtChartTypeUtils.isHorizontal(chart);
-      var fitDataItemWidth = bHoriz ? dataItemBounds.w : originalBarSize;
-      var fitDataItemHeight = bHoriz ? originalBarSize : dataItemBounds.h;
-      if (textDim.w > fitDataItemWidth || textDim.h > fitDataItemHeight)
+    if (isBar) {
+      if (textDim.w > barDataItemDims.width || textDim.h > barDataItemDims.height)
         return; //dropping text if doesn't fit.
 
       if (position == 'inLeft') {
@@ -26522,7 +26530,7 @@ dvt.SparkChart.prototype.Init = function(context, callback, callbackObj) {
   dvt.SparkChart.superclass.Init.call(this, context, callback, callbackObj);
 
   // Create the defaults object
-  this.Defaults = new DvtSparkChartDefaults();
+  this.Defaults = new DvtSparkChartDefaults(context);
 
   // Create the event handler and add event listeners
   this.EventManager = new DvtSparkChartEventManager(this);
@@ -26747,10 +26755,11 @@ DvtSparkChartAutomation.prototype.getDataItem = function(itemIndex) {
  * Default values and utility functions for chart versioning.
  * @class
  * @constructor
+ * @param {dvt.Context} context The rendering context.
  * @extends {dvt.BaseComponentDefaults}
  */
-var DvtSparkChartDefaults = function() {
-  this.Init({'skyros': DvtSparkChartDefaults.VERSION_1, 'alta': DvtSparkChartDefaults.SKIN_ALTA});
+var DvtSparkChartDefaults = function(context) {
+  this.Init({'skyros': DvtSparkChartDefaults.VERSION_1, 'alta': DvtSparkChartDefaults.SKIN_ALTA}, context);
 };
 
 dvt.Obj.createSubclass(DvtSparkChartDefaults, dvt.BaseComponentDefaults);

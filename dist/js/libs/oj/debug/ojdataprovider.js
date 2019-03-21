@@ -257,7 +257,7 @@ define(['ojs/ojcore', 'ojs/ojeventtarget'], function(oj)
  * @name mapFilterCriterion
  * @type {Function}
  * @ojsignature {target: "Type",
- *               value: "?(filterCriterion: Array<FilterOperator<D>>) => Array<FilterOperator<Din>>"}
+ *               value: "?(filterCriterion: FilterOperator<D>) => FilterOperator<Din>"}
  */
 
 /**
@@ -1917,6 +1917,64 @@ oj.DataProvider = function () {
  */
 
 /**
+ * Return an empty Set which is optimized to store keys
+ * <p>
+ * Optionally provided by certain DataProvider implementations for storing
+ * keys from the DataProvider in a performant fashion. Sometimes components will
+ * need to temporarily store a Set of keys provided by the DataProvider, for
+ * example, in the case of maintaining a Set of selected keys. Only the DataProvider
+ * is aware of the internal structure of keys such as whether they are primitives, Strings,
+ * or objects and how to do identity comparisons. Therefore, the DataProvider can optionally
+ * provide a Set implementation which can performantly store keys surfaced by the
+ * DataProvider.
+ * </p>
+ *
+ * @ojstatus preview
+ * @since 6.2.0
+ * @param {Set.<any>=} Optionally specify an initial set of keys for the Set. If not specified, then return an empty Set.
+ * @return {Set.<any>} Returns a Set optimized for handling keys from the DataProvider.
+ * @export
+ * @expose
+ * @memberof oj.DataProvider
+ * @instance
+ * @method
+ * @name createOptimizedKeySet
+ * @ojsignature {target: "Type",
+ *               value: "?(initialSet?: Set<K>): Set<K>"}
+ * @example <caption>create empty key Set</caption>
+ * var keySet = dataprovider.createOptimizedKeySet();
+ */
+
+/**
+ * Return an empty Map which is optimized to store key value pairs
+ * <p>
+ * Optionally provided by certain DataProvider implementations for storing
+ * key/value pairs from the DataProvider in a performant fashion. Sometimes components will
+ * need to temporarily store a Map of keys provided by the DataProvider, for
+ * example, in the case of maintaining a Map of selected keys. Only the DataProvider
+ * is aware of the internal structure of keys such as whether they are primitives, Strings,
+ * or objects and how to do identity comparisons. Therefore, the DataProvider can optionally
+ * provide a Map implementation which can performantly store key/value pairs surfaced by the
+ * DataProvider.
+ * </p>
+ *
+ * @ojstatus preview
+ * @since 6.2.0
+ * @param {Map.<any>=} Optionally specify an initial map of key/values for the Map. If not specified, then return an empty Map.
+ * @return {Map.<any>} Returns a Map optimized for handling keys from the DataProvider.
+ * @export
+ * @expose
+ * @memberof oj.DataProvider
+ * @instance
+ * @method
+ * @name createOptimizedKeyMap
+ * @ojsignature {target: "Type",
+ *               value: "?(initialMap?: Map<K, D>): Map<K, D>"}
+ * @example <caption>create empty key Map</caption>
+ * var keyMap = dataprovider.createOptimizedKeyMap();
+ */
+
+/**
  * End of jsdoc
  */
 
@@ -1965,9 +2023,13 @@ oj.DataProvider = function () {
 
 /**
  * Optional attributes property which specifies at least which attributes of the value we want to include. If not specified then the default attributes are included. If the value
- * is a primitive then this is ignored. Expressions like "!" and "@default" are also supported. e.g. ['!lastName', '@default'] for everything except 'lastName'. For only
+ * is a primitive then this is ignored. Expressions like "!" and "@default" are also supported. @default indicates the default attributes the implementation chooses to include in the result, by default.
+ * e.g. ['!lastName', '@default'] for everything except 'lastName'. For only
  * 'firstName' and 'lastName' we'd have ['firstName', 'lastName']. Order does not matter when @default is used with field exclusions "!".
- * This can be nested. e.g. ['!lastName', '@default', {name: 'location', attributes: ['address line 1', 'address line 2']}]
+ * This can be nested. e.g. ['!lastName', '@default', {name: 'location', attributes: ['address line 1', 'address line 2']}].
+ * When specified attributes, exclusions and @default are all present as in  [�id�, �firstName�, �!lastName�, �@default�, �email�], this means that
+ * all default attributes (including 'id', 'firstName', and 'email') except for 'lastName' will be included.
+ * Also, a string value for attribute is equivalent to an object value with only name. e.g.  ['lastName', 'firstName'] is the same as [{name: 'lastName'}, {name: 'firstName'}]
  *
  * @ojstatus preview
  * @since 6.1.0
@@ -2574,6 +2636,99 @@ oj['FetchByOffsetMixin']['applyMixin'] = FetchByOffsetMixin.applyMixin;
 /**
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
+ */
+
+/**
+ * Copyright (c) 2014, Oracle and/or its affiliates.
+ * All rights reserved.
+ */
+
+/**
+ * @preserve Copyright 2013 jQuery Foundation and other contributors
+ * Released under the MIT license.
+ * http://jquery.org/license
+ */
+
+/* jslint browser: true,devel:true*/
+
+/**
+ * The interface for oj.FetchCapability
+ *
+ * @ojstatus preview
+ * @export
+ * @interface oj.FetchCapability
+ * @since 6.1.0
+ * @ojsignature {target: "Type",
+ *               value: "interface FetchCapability"}
+ */
+
+/**
+ * Optional detailed attribute filter capability information
+ *
+ * @ojstatus preview
+ * @since 6.1.0
+ * @export
+ * @expose
+ * @memberof oj.FetchCapability
+ * @instance
+ * @name attributeFilter
+ * @type {oj.AttributeFilterCapability}
+ * @ojsignature {target: "Type",
+ *               value: "AttributeFilterCapability"}
+ */
+
+/**
+ * The interface for oj.AttributeFilterCapability
+ *
+ * @ojstatus preview
+ * @export
+ * @interface oj.AttributeFilterCapability
+ * @since 6.1.0
+ * @ojsignature {target: "Type",
+ *               value: "interface AttributeFilterCapability"}
+ */
+
+/**
+ * Optional attribute expansion filter capability information
+ *
+ * @ojstatus preview
+ * @since 6.1.0
+ * @export
+ * @expose
+ * @memberof oj.AttributeFilterCapability
+ * @instance
+ * @name expansion
+ * @type {object=}
+ */
+
+/**
+ * Optional attribute ordering filter capability information
+ *
+ * @ojstatus preview
+ * @since 6.1.0
+ * @export
+ * @expose
+ * @memberof oj.AttributeFilterCapability
+ * @instance
+ * @name ordering
+ * @type {object=}
+ */
+
+/**
+ * Optional attribute defaultShape filter capability information
+ *
+ * @ojstatus preview
+ * @since 6.1.0
+ * @export
+ * @expose
+ * @memberof oj.AttributeFilterCapability
+ * @instance
+ * @name defaultShape
+ * @type {object=}
+ */
+
+/**
+ * End of jsdoc
  */
 
 /**

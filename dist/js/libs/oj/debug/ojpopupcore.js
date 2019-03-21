@@ -378,6 +378,7 @@ oj.PopupServiceImpl.prototype.open = function (options) {
     } catch (e) {
       Logger.error('Error opening popup:\n%o', e);
     } finally {
+      oj.ZOrderUtils.setStatus(popup, oj.ZOrderUtils.STATUS.OPEN);
       // invoke the after open callback if one is provided.
       if (afterOpenCallback) {
         afterOpenCallback(options);
@@ -388,7 +389,6 @@ oj.PopupServiceImpl.prototype.open = function (options) {
       var layer = oj.ZOrderUtils.getFirstAncestorLayer(popup);
       oj.Assert.assertPrototype(layer, $);
       oj.ZOrderUtils.applyEvents(layer, events);
-      oj.ZOrderUtils.setStatus(popup, oj.ZOrderUtils.STATUS.OPEN);
 
       // if the originating subtree where the popup was defined is removed during
       // open animation, invoke the popup remove event callback.  It's registered
@@ -509,11 +509,10 @@ oj.PopupServiceImpl.prototype.close = function (options) {
     } catch (e) {
       Logger.error('Error closing popup:\n%o', e);
     } finally {
+      oj.ZOrderUtils.setStatus(popup, oj.ZOrderUtils.STATUS.CLOSE);
       if (afterCloseCallback && $.isFunction(afterCloseCallback)) {
         afterCloseCallback(options);
       }
-
-      oj.ZOrderUtils.setStatus(popup, oj.ZOrderUtils.STATUS.CLOSE);
     }
   };
   _finalize = _finalize.bind(this);

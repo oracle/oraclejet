@@ -556,6 +556,8 @@ export namespace ojStatusMeterGauge {
     type ReferenceLine = {
         color?: string;
         value?: number;
+        lineWidth?: number;
+        lineStyle?: 'dashed' | 'dotted' | 'solid';
     };
     // tslint:disable-next-line interface-over-type-literal
     type Threshold = {

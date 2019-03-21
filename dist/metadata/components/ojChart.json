@@ -1,11 +1,16 @@
 {
   "name": "oj-chart",
-  "version": "6.1.0",
-  "jetVersion": "6.1.0",
+  "version": "6.2.0",
+  "jetVersion": "6.2.0",
   "displayName": "Chart",
   "type": "core",
+  "extension": {
+    "vbdt": {
+      "module": "ojs/ojchart"
+    }
+  },
   "description": "Displays information graphically, making relationships among the data easier to understand.",
-  "help": "https://docs.oracle.com/en/middleware/jet/6.1/reference-api/oj.ojChart.html",
+  "help": "https://docs.oracle.com/en/middleware/jet/6.2/reference-api/oj.ojChart.html",
   "properties": {
     "animationOnDataChange": {
       "description": "Defines the animation that is applied on data changes. Animation is automatically disabled when there are a large number of data items.",
@@ -252,6 +257,20 @@
         "groupData": {
           "description": "An array of data for the group the data item belongs to. For hierarchical groups, it will be an array of outermost to innermost group data related to the data item.",
           "type": "object|null"
+        },
+        "dimensions": {
+          "description": "The height and width of the data item. This will only be set for bar series types.",
+          "type": "object|null",
+          "properties": {
+            "width": {
+              "description": "The width of the data item.",
+              "type": "number"
+            },
+            "height": {
+              "description": "The height of the data item.",
+              "type": "number"
+            }
+          }
         },
         "componentElement": {
           "description": "The chart element.",

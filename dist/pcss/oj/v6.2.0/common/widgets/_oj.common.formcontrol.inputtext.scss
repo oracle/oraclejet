@@ -79,6 +79,22 @@
       }
       width: 100%;
     }
+    // .oj-form-control-full-width is an override to set max-width to 100% if on the
+    // element or an ancestor element
+    .oj-form-control-full-width.oj-inputtext,
+    .oj-form-control-full-width.oj-inputpassword,
+    .oj-form-control-full-width.oj-textarea,
+    .oj-form-control-full-width.oj-inputtext-nocomp,
+    .oj-form-control-full-width.oj-inputpassword-nocomp,
+    .oj-form-control-full-width.oj-textarea-nocomp,
+    .oj-form-control-full-width .oj-inputtext,
+    .oj-form-control-full-width .oj-inputpassword,
+    .oj-form-control-full-width .oj-textarea,
+    .oj-form-control-full-width .oj-inputtext-nocomp,
+    .oj-form-control-full-width .oj-inputpassword-nocomp,
+    .oj-form-control-full-width .oj-textarea-nocomp {
+      max-width: 100%;
+    }
 
     // oj-input-text specific
     // We need to make the wrapper position relative so that we can make the

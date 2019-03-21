@@ -156,7 +156,7 @@ dvt.TimeAxis.prototype.Init = function(context, callback, callbackObj)
   };
 
   // Create the defaults object
-  this.Defaults = new DvtTimeAxisDefaults();
+  this.Defaults = new DvtTimeAxisDefaults(context);
 };
 
 /**
@@ -1142,9 +1142,9 @@ DvtTimeAxisCalendar.prototype.getAdjacentDate = function(time, scale, direction)
   return _adjacentDate;
 };
 
-var DvtTimeAxisDefaults = function()
+var DvtTimeAxisDefaults = function(context)
 {
-  this.Init({'alta': DvtTimeAxisDefaults.VERSION_1});
+  this.Init({'alta': DvtTimeAxisDefaults.VERSION_1}, context);
 };
 
 dvt.Obj.createSubclass(DvtTimeAxisDefaults, dvt.BaseComponentDefaults, 'DvtTimeAxisDefaults');

@@ -330,8 +330,9 @@ oj.DateRestrictionValidator.prototype._inDisabled = function (valueDateParam) {
  * Validates whether the date provided is part of disabled date
  *
  * @param {string} value that is being validated
- * @returns {string} original if validation was successful
- *
+ * @returns {void}
+ * @ojdeprecated {since: '6.2.0', description: 'This currently returns the original value
+ * if successful. In v8.0 it will return nothing if successful.'}
  * @throws {Error} when there is no match
  * @ojsignature {target: "Type", for: "returns",
  *                value: "void"}
@@ -519,7 +520,9 @@ oj.DateTimeRangeValidator.prototype.Init = function (options) {
  * Validates the minimum + maximum conditions
  *
  * @param {string} value that is being validated
- * @returns {string|null} original if validation was successful
+ * @returns {void}
+ * @ojdeprecated {since: '6.2.0', description: 'This currently returns the original value
+ * if successful. In v8.0 it will return nothing if successful.'}
  * @ojsignature {target: "Type", for: "returns",
  *                value: "void"}
  * @throws {Error} when there is no match

@@ -110,6 +110,10 @@ var __oj_radioset_metadata =
         }
       }
     },
+    "readonly": {
+      "type": "boolean",
+      "value": false
+    },
     "required": {
       "type": "boolean",
       "value": false
@@ -118,6 +122,9 @@ var __oj_radioset_metadata =
       "type": "object",
       "value": {},
       "properties": {
+        "readonlyNoValue": {
+          "type": "string"
+        },
         "required": {
           "type": "object",
           "properties": {
@@ -228,8 +235,8 @@ var __oj_radioset_metadata =
  *  which will enable and disable all contained radios.
  * </p>
  * <p>
- *  oj-radioset does not have a readonly attribute since HTML does not support
- *  readonly on radios and checkboxes.
+ *  You can set an oj-radioset to readonly,
+ *  which will make the options readonly and only selected option's label will be displayed.
  * </p>
  * <p>
  * The oj-label element is not required. If you don't use an oj-label element,
@@ -352,6 +359,31 @@ var __oj_radioset_metadata =
          * @memberof oj.ojRadioset
          */
         disabled: false,
+        /**
+         * Whether the component is readonly. The readOnly property sets or returns whether an element is readOnly, or not.
+         * A readOnly element cannot be modified. However, a user can tab to it, highlight it, focus on it, and copy the text from it.
+         * If you want to prevent the user from interacting with the element, use the disabled property instead.
+         *
+         * @example <caption>Initialize component with <code class="prettyprint">readonly</code> attribute:</caption>
+         * &lt;oj-radioset readonly>&lt;/oj-radioset>
+         *
+         * @example <caption>Get or set the <code class="prettyprint">readonly</code> property after initialization:</caption>
+         * // Getter
+         * var readonly = myComponent.readonly;
+         *
+         * // Setter
+         * myComponent.readonly = false;
+         *
+         * @default false
+         * @name readOnly
+         * @access public
+         * @expose
+         * @type {?boolean}
+         * @alias readonly
+         * @instance
+         * @memberof oj.ojRadioset
+        */
+        readOnly: false,
         /**
          * It is used to establish a relationship between this component and another element.
          * A common use is to tie the oj-label and the oj-radioset together.
@@ -809,6 +841,7 @@ var __oj_radioset_metadata =
         var checkedRadio;
         var domValue;
         var props = [{ attribute: 'disabled', validateOption: true },
+                     { attribute: 'readonly', option: 'readOnly', validateOption: true },
                      { attribute: 'required', coerceDomValue: true, validateOption: true },
                      { attribute: 'title' }
                      // {attribute: "value"} // code below sets value
@@ -1007,7 +1040,11 @@ var __oj_radioset_metadata =
 
           for (i = 0, len = options.length; i < len; i++) {
             options[i].customOptionRenderer = renderer;
-            this._initInputLabelFromOjOption(options[i]);
+            if (this.options.readOnly) {
+              this._processReadonlyOptions(options[i], false);
+            } else {
+              this._initInputLabelFromOjOption(options[i]);
+            }
           }
 
           // for oj-option that are inside the wrapper (after refresh)
@@ -1015,9 +1052,41 @@ var __oj_radioset_metadata =
           if (options.length > 0) {
             for (i = 0, len = options.length; i < len; i++) {
               options[i].customOptionRenderer = renderer;
-              this._initInputLabelFromOjOption(options[i]);
+              if (this.options.readOnly) {
+                this._processReadonlyOptions(options[i], true);
+              } else {
+                this._initInputLabelFromOjOption(options[i]);
+              }
             }
           }
+        }
+      },
+      _processReadonlyOptions: function (elem, isAlreadyProcessed) {
+        var selectedOption = this.options.value;
+        var optionValue = elem.value;
+        var parentSpan;
+        if (!isAlreadyProcessed) {
+          elem.classList.add('oj-helper-hidden');
+        } else {
+          parentSpan = elem;
+          do {
+            parentSpan = parentSpan.parentElement;
+          }
+          while (parentSpan && !(parentSpan.classList.contains('oj-choice-item')));
+          if (parentSpan && parentSpan.classList.contains('oj-choice-item') && (parentSpan.tagName === 'SPAN')) {
+            parentSpan.classList.add('oj-helper-hidden');
+          }
+        }
+        if (!selectedOption) {
+          var span = document.createElement('span');
+          var noRadioSelected = this.getTranslatedString('readonlyNoValue');
+          if (noRadioSelected !== null) {
+            span.textContent = noRadioSelected;
+          }
+          elem.parentElement.insertBefore(span, elem);
+        } else if (selectedOption === optionValue) {
+          elem.classList.remove('oj-helper-hidden');
+          this._initReadonlyLabelFromOjOption(elem, parentSpan);
         }
       },
 
@@ -1067,8 +1136,22 @@ var __oj_radioset_metadata =
           label.appendChild(ojoption); // append the oj-option as a child of label
           span.appendChild(radio);
           span.appendChild(label);
+        } else {
+          var parentSpan = ojoption;
+          do {
+            parentSpan = parentSpan.parentElement;
+          } while (parentSpan && !(parentSpan.classList.contains('oj-choice-item')));
+          if (parentSpan && parentSpan.classList.contains('oj-helper-hidden') &&
+                parentSpan.classList.contains('oj-choice-item') && (parentSpan.tagName === 'SPAN')) {
+            parentSpan.classList.remove('oj-helper-hidden');
+          }
+          if (ojoption && ojoption.classList.contains('oj-helper-hidden')) {
+            ojoption.classList.remove('oj-helper-hidden');
+          }
+          if (radio && radio.parentElement.classList.contains('oj-helper-hidden')) {
+            radio.parentElement.classList.remove('oj-helper-hidden');
+          }
         }
-
         var name = this.element[0].id; // Use the id of the ojradioset as the name for the oj-options.
         var ariaLabel = ojoption.getAttribute('aria-label');
         var ariaLabelledBy = ojoption.getAttribute('aria-labelledby');
@@ -1099,6 +1182,33 @@ var __oj_radioset_metadata =
           radio.setAttribute('disabled', true);
         } else {
           radio.removeAttribute('disabled');
+        }
+      },
+      _initReadonlyLabelFromOjOption: function (elem, parentSpan) {
+        var ojoption = elem;
+        var span;
+        var label;
+        if (parentSpan) {
+          // we do not render the input when the radioset is readonly,
+          // input is only rendered with non readonly case
+          // if the input exists and it is readonly case we need to hide it.
+          $(ojoption).uniqueId();
+
+          var id = ojoption.getAttribute('id');
+          var radioId = id + '|rb';
+          var radio = document.getElementById(radioId);
+          var radioInputExists = (radio !== null);
+          if (radioInputExists) {
+            radio.parentElement.classList.add('oj-helper-hidden');
+          }
+          parentSpan.classList.remove('oj-helper-hidden');
+        } else {
+          span = document.createElement('span');
+          label = document.createElement('label');
+          span.setAttribute('class', 'oj-choice-item');
+          ojoption.parentElement.insertBefore(span, ojoption);// @HTMLUpdateOK
+          label.appendChild(ojoption); // append the oj-option as a child of label
+          span.appendChild(label);
         }
       },
 
@@ -1470,6 +1580,12 @@ var __oj_radioset_metadata =
           case 'disabled':
             this._propagateDisabled(value);
             break;
+          case 'readOnly':
+            this._processOjOptions();
+            break;
+          case 'value':
+            this._processOjOptions();
+            break;
           case 'labelledBy':
             // remove the old one and add the new one
             this._updateLabelledBy(originalValue, value, this.widget());
@@ -1808,6 +1924,7 @@ var __oj_radioset_metadata =
 /* global __oj_radioset_metadata:false */
 (function () {
   __oj_radioset_metadata.extension._WIDGET_NAME = 'ojRadioset';
+  __oj_radioset_metadata.extension._ALIASED_PROPS = { readonly: 'readOnly' };
   oj.CustomElementBridge.register('oj-radioset', { metadata: __oj_radioset_metadata });
 }());
 

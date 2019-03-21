@@ -4284,6 +4284,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
        * @memberof! oj.ojNavigationList
        * @type {string}
        * @default ''
+       * @ojdeprecated {since: '6.2.0', description: 'Set the alias directly on the template element using the data-oj-as attribute instead.'}
        *
        * @example <caption>Initialize the NavigationList with the <code class="prettyprint">as</code> attribute specified:</caption>
        * &lt;oj-navigation-list as='item'>
@@ -5211,8 +5212,8 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
      * @property {any} parentkey The key of the parent item (available when hierarchical data is provided). The parent key is null for root nodes.
      *
      * @example <caption>Initialize the ListView with an inline item template specified:</caption>
-     * &lt;oj-navigation-list as='item'>
-     *   &lt;template slot='itemTemplate'>
+     * &lt;oj-navigation-list>
+     *   &lt;template slot='itemTemplate' data-oj-as='item'>
      *     &lt;li>&lt;a href="#">&lt;oj-bind-text value='[[item.data.name]]'>&lt;/oj-bind-text>&lt;/a>&lt;/li>
      *   &lt;/template>
      * &lt;/oj-navigation-list>
@@ -5901,6 +5902,7 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
    * @memberof! oj.ojTabBar
    * @type {string}
    * @default ''
+   * @ojdeprecated {since: '6.2.0', description: 'Set the alias directly on the template element using the data-oj-as attribute instead.'}
    *
    * @example <caption>Initialize the Tabbar with the <code class="prettyprint">as</code> attribute specified:</caption>
    * &lt;oj-tab-bar as='item'>
@@ -6391,8 +6393,8 @@ var _ojNavigationListView = _NavigationListUtils.clazz(oj._ojListView,
      * @property {any} key The key of the current item being rendered
      *
      * @example <caption>Initialize the ListView with an inline item template specified:</caption>
-     * &lt;oj-tab-bar as='item'>
-     *   &lt;template slot='itemTemplate'>
+     * &lt;oj-tab-bar>
+     *   &lt;template slot='itemTemplate' data-oj-as='item'>
      *     &lt;li>&lt;a href="#">&lt;oj-bind-text value='[[item.data.name]]'>&lt;/oj-bind-text>&lt;/a>&lt;/li>
      *   &lt;/template>
      * &lt;/oj-tab-bar>

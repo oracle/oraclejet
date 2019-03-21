@@ -2727,9 +2727,8 @@ var __oj_slider_metadata =
      */
 
     /**
-     * The following CSS class can be applied by the page author as needed.
+     * {@ojinclude "name":"ojStylingDocIntro"}
      *
-     * <p>
      * <table class="generic-table styling-table">
      *   <thead>
      *     <tr>
@@ -2741,6 +2740,26 @@ var __oj_slider_metadata =
      *     <tr>
      *       <td>oj-focus-highlight</td>
      *       <td>{@ojinclude "name":"ojFocusHighlightDoc"}</td>
+     *     </tr>
+     *   </tbody>
+     * </table>
+
+     * <p>The form control style classes can be applied to the component, or an ancestor element. When
+     * applied to an ancestor element, all form components that support the style classes will be affected.
+     *
+     * <table class="generic-table styling-table">
+     *   <thead>
+     *     <tr>
+     *       <th>{@ojinclude "name":"ojStylingDocClassHeader"}</th>
+     *       <th>{@ojinclude "name":"ojStylingDocDescriptionHeader"}</th>
+     *     </tr>
+     *   </thead>
+     *   <tbody>
+     *     <tr>
+     *       <td>oj-form-control-full-width</td>
+     *       <td>Changes the max-width to 100% so that form components will occupy
+     *           all the available horizontal space
+     *       </td>
      *     </tr>
      *   </tbody>
      * </table>

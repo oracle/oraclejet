@@ -1,11 +1,16 @@
 {
   "name": "oj-row-expander",
-  "version": "6.1.0",
-  "jetVersion": "6.1.0",
+  "version": "6.2.0",
+  "jetVersion": "6.2.0",
   "displayName": "Row Expander",
   "type": "core",
+  "extension": {
+    "vbdt": {
+      "module": "ojs/ojrowexpander"
+    }
+  },
   "description": "Enable hierarchical data to be displayed in a JET Table and JET DataGrid.",
-  "help": "https://docs.oracle.com/en/middleware/jet/6.1/reference-api/oj.ojRowExpander.html",
+  "help": "https://docs.oracle.com/en/middleware/jet/6.2/reference-api/oj.ojRowExpander.html",
   "properties": {
     "context": {
       "description": "The context object obtained from the column renderer (Table) or cell renderer (DataGrid)",

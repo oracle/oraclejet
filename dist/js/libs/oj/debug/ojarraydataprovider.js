@@ -9,7 +9,7 @@
  * Copyright (c) 2015, Oracle and/or its affiliates.
  * All rights reserved.
  */
-define(['ojs/ojcore', 'jquery', 'knockout', 'ojs/ojeventtarget', 'ojs/ojdataprovider'], function(oj, $, ko)
+define(['ojs/ojcore', 'jquery', 'knockout', 'ojs/ojset', 'ojs/ojmap', 'ojs/ojeventtarget', 'ojs/ojdataprovider'], function(oj, $, ko, ojSet, ojMap)
 {
 var ArrayDataProvider = /** @class */ (function () {
     function ArrayDataProvider(data, options) {
@@ -47,6 +47,7 @@ var ArrayDataProvider = /** @class */ (function () {
         this._DETAIL = 'detail';
         this._FETCHLISTRESULT = 'fetchListResult';
         this._ATDEFAULT = '@default';
+        this._MUTATIONSEQUENCENUM = 'mutationSequenceNum';
         this.Item = /** @class */ (function () {
             function class_1(_parent, metadata, data) {
                 this._parent = _parent;
@@ -138,9 +139,11 @@ var ArrayDataProvider = /** @class */ (function () {
                 this._params = _params;
                 this._offset = _offset;
                 this._cachedOffset = _offset;
+                this._cacheObj = {};
+                this._cacheObj[_parent._MUTATIONSEQUENCENUM] = _parent._mutationSequenceNum;
             }
             class_9.prototype['next'] = function () {
-                var result = this._nextFunc(this._params, this._cachedOffset);
+                var result = this._nextFunc(this._params, this._cachedOffset, this._cacheObj);
                 this._cachedOffset = this._cachedOffset + result.value[this._parent._DATA].length;
                 return Promise.resolve(result);
             };
@@ -202,6 +205,7 @@ var ArrayDataProvider = /** @class */ (function () {
         }());
         this._cachedIndexMap = [];
         this._sequenceNum = 0;
+        this._mutationSequenceNum = 0;
         this._subscribeObservableArray(data);
         if (options != null && options[this._KEYS] != null) {
             this._keysSpecified = true;
@@ -211,7 +215,7 @@ var ArrayDataProvider = /** @class */ (function () {
     ArrayDataProvider.prototype.containsKeys = function (params) {
         var self = this;
         return this.fetchByKeys(params).then(function (fetchByKeysResult) {
-            var results = new Set();
+            var results = new ojSet();
             params[self._KEYS].forEach(function (key) {
                 if (fetchByKeysResult[self._RESULTS].get(key) != null) {
                     results.add(key);
@@ -223,7 +227,7 @@ var ArrayDataProvider = /** @class */ (function () {
     ArrayDataProvider.prototype.fetchByKeys = function (params) {
         var self = this;
         this._generateKeysIfNeeded();
-        var results = new Map();
+        var results = new ojMap();
         var keys = this._getKeys();
         var fetchAttributes = params != null ? params[this._ATTRIBUTES] : null;
         var findKeyIndex, i = 0;
@@ -311,6 +315,25 @@ var ArrayDataProvider = /** @class */ (function () {
         return this._getRowData().length > 0 ? 'no' : 'yes';
     };
     /**
+     * Return an empty Set which is optimized to store keys
+     */
+    ArrayDataProvider.prototype.createOptimizedKeySet = function (initialSet) {
+        return new ojSet(initialSet);
+    };
+    /**
+     * Returns an empty Map which will efficiently store Keys returned by the DataProvider
+     */
+    ArrayDataProvider.prototype.createOptimizedKeyMap = function (initialMap) {
+        if (initialMap) {
+            var map_1 = new ojMap();
+            initialMap.forEach(function (value, key) {
+                map_1.set(key, value);
+            });
+            return map_1;
+        }
+        return new ojMap();
+    };
+    /**
      * Get the rows data, unwrapping observableArray if needed.
      */
     ArrayDataProvider.prototype._getRowData = function () {
@@ -356,134 +379,217 @@ var ArrayDataProvider = /** @class */ (function () {
             var self = this;
             data['subscribe'](function (changes) {
                 var i, j, id, index, status, dataArray = [], keyArray = [], indexArray = [], metadataArray = [], afterKeyArray = [];
+                self._mutationSequenceNum++;
+                // first check if we only have adds or only have deletes
+                var onlyAdds = true;
+                var onlyDeletes = true;
+                changes.forEach(function (change) {
+                    if (change['status'] === 'deleted') {
+                        onlyAdds = false;
+                    }
+                    else if (change['status'] === 'added') {
+                        onlyDeletes = false;
+                    }
+                });
                 var updatedIndexes = [];
+                var removeDuplicate = [];
                 var operationUpdateEventDetail = null;
                 var operationAddEventDetail = null;
                 var operationRemoveEventDetail = null;
-                // squash deletes and adds into updates
-                var removeDuplicate = [];
-                for (i = 0; i < changes.length; i++) {
-                    index = changes[i].index;
-                    status = changes[i].status;
-                    var iKey = self._getId(changes[i].value);
-                    for (j = 0; j < changes.length; j++) {
-                        if (j != i &&
-                            index === changes[j].index &&
-                            status !== changes[j]['status'] &&
-                            updatedIndexes.indexOf(i) < 0 &&
-                            removeDuplicate.indexOf(i) < 0) {
-                            // Squash delete and add only if they have the same index and either no key or same key
-                            if (iKey == null || oj.Object.compareValues(iKey, self._getId(changes[j].value))) {
-                                if (status === 'deleted') {
-                                    removeDuplicate.push(i);
-                                    updatedIndexes.push(j);
-                                }
-                                else {
-                                    removeDuplicate.push(j);
-                                    updatedIndexes.push(i);
+                if (!onlyAdds && !onlyDeletes) {
+                    // squash deletes and adds into updates
+                    for (i = 0; i < changes.length; i++) {
+                        index = changes[i].index;
+                        status = changes[i].status;
+                        var iKey = self._getId(changes[i].value);
+                        for (j = 0; j < changes.length; j++) {
+                            if (j != i &&
+                                index === changes[j].index &&
+                                status !== changes[j]['status'] &&
+                                updatedIndexes.indexOf(i) < 0 &&
+                                removeDuplicate.indexOf(i) < 0) {
+                                // Squash delete and add only if they have the same index and either no key or same key
+                                if (iKey == null || oj.Object.compareValues(iKey, self._getId(changes[j].value))) {
+                                    if (status === 'deleted') {
+                                        removeDuplicate.push(i);
+                                        updatedIndexes.push(j);
+                                    }
+                                    else {
+                                        removeDuplicate.push(j);
+                                        updatedIndexes.push(i);
+                                    }
                                 }
                             }
                         }
                     }
-                }
-                for (i = 0; i < changes.length; i++) {
-                    if (updatedIndexes.indexOf(i) >= 0) {
-                        var key = self._getKeys()[changes[i].index];
-                        // By this time, updatedIndexes contains indexes of "added" entries in "changes" array that
-                        // have matching "deleted" entries with same keys, which should be the same as the old keys.
-                        keyArray.push(key);
-                        dataArray.push(changes[i].value);
-                        indexArray.push(changes[i].index);
+                    for (i = 0; i < changes.length; i++) {
+                        if (updatedIndexes.indexOf(i) >= 0) {
+                            var key = self._getKeys()[changes[i].index];
+                            // By this time, updatedIndexes contains indexes of "added" entries in "changes" array that
+                            // have matching "deleted" entries with same keys, which should be the same as the old keys.
+                            keyArray.push(key);
+                            dataArray.push(changes[i].value);
+                            indexArray.push(changes[i].index);
+                        }
                     }
-                }
-                if (keyArray.length > 0) {
-                    metadataArray = keyArray.map(function (value) {
-                        return new self.ItemMetadata(self, value);
-                    });
-                    var keySet_1 = new Set();
-                    keyArray.map(function (key) {
-                        keySet_1.add(key);
-                    });
-                    operationUpdateEventDetail = new self.DataProviderOperationEventDetail(self, keySet_1, metadataArray, dataArray, indexArray);
+                    if (keyArray.length > 0) {
+                        metadataArray = keyArray.map(function (value) {
+                            return new self.ItemMetadata(self, value);
+                        });
+                        var keySet_1 = new ojSet();
+                        keyArray.map(function (key) {
+                            keySet_1.add(key);
+                        });
+                        operationUpdateEventDetail = new self.DataProviderOperationEventDetail(self, keySet_1, metadataArray, dataArray, indexArray);
+                    }
                 }
                 dataArray = [], keyArray = [], indexArray = [];
-                for (i = 0; i < changes.length; i++) {
-                    if (changes[i]['status'] === 'deleted' &&
-                        updatedIndexes.indexOf(i) < 0 &&
-                        removeDuplicate.indexOf(i) < 0) {
-                        keyArray.push(self._getKeys()[changes[i].index]);
-                        dataArray.push(changes[i].value);
-                        indexArray.push(changes[i].index);
+                if (!onlyAdds) {
+                    for (i = 0; i < changes.length; i++) {
+                        if (changes[i]['status'] === 'deleted' &&
+                            updatedIndexes.indexOf(i) < 0 &&
+                            removeDuplicate.indexOf(i) < 0) {
+                            keyArray.push(self._getKeys()[changes[i].index]);
+                            dataArray.push(changes[i].value);
+                            indexArray.push(changes[i].index);
+                        }
                     }
-                }
-                if (keyArray.length > 0) {
-                    keyArray.map(function (key) {
-                        var keyIndex = self._indexOfKey(key);
-                        self._keys.splice(keyIndex, 1);
-                    });
-                }
-                if (keyArray.length > 0) {
-                    metadataArray = keyArray.map(function (value) {
-                        return new self.ItemMetadata(self, value);
-                    });
-                    var keySet_2 = new Set();
-                    keyArray.map(function (key) {
-                        keySet_2.add(key);
-                    });
-                    operationRemoveEventDetail = new self.DataProviderOperationEventDetail(self, keySet_2, metadataArray, dataArray, indexArray);
+                    if (keyArray.length > 0) {
+                        keyArray.map(function (key) {
+                            var keyIndex = self._indexOfKey(key);
+                            self._keys.splice(keyIndex, 1);
+                        });
+                    }
+                    if (keyArray.length > 0) {
+                        metadataArray = keyArray.map(function (value) {
+                            return new self.ItemMetadata(self, value);
+                        });
+                        var keySet_2 = new ojSet();
+                        keyArray.map(function (key) {
+                            keySet_2.add(key);
+                        });
+                        operationRemoveEventDetail = new self.DataProviderOperationEventDetail(self, keySet_2, metadataArray, dataArray, indexArray);
+                    }
                 }
                 dataArray = [], keyArray = [], indexArray = [];
-                var generatedKeys = self._generateKeysIfNeeded();
-                for (i = 0; i < changes.length; i++) {
-                    if (changes[i]['status'] === 'added' &&
-                        updatedIndexes.indexOf(i) < 0 &&
-                        removeDuplicate.indexOf(i) < 0) {
-                        id = self._getId(changes[i].value);
-                        if (id == null && (generatedKeys || self._keysSpecified)) {
-                            id = self._getKeys()[changes[i].index];
+                if (!onlyDeletes) {
+                    var generatedKeys = self._generateKeysIfNeeded();
+                    var isInitiallyEmpty = self._getKeys() != null ? self._getKeys().length > 0 ? false : true : true;
+                    for (i = 0; i < changes.length; i++) {
+                        if (changes[i]['status'] === 'added' &&
+                            updatedIndexes.indexOf(i) < 0 &&
+                            removeDuplicate.indexOf(i) < 0) {
+                            id = self._getId(changes[i].value);
+                            if (id == null && (generatedKeys || self._keysSpecified)) {
+                                id = self._getKeys()[changes[i].index];
+                            }
+                            if (id == null) {
+                                id = self._sequenceNum++;
+                                self._keys.splice(changes[i].index, 0, id);
+                            }
+                            if (isInitiallyEmpty || self._indexOfKey(id) == -1) {
+                                self._keys.splice(changes[i].index, 0, id);
+                            }
+                            keyArray.push(id);
+                            var afterKey = self._getKeys()[changes[i].index + 1];
+                            afterKey = afterKey == null ? null : afterKey;
+                            afterKeyArray.push(afterKey);
+                            dataArray.push(changes[i].value);
+                            indexArray.push(changes[i].index);
                         }
-                        if (id == null) {
-                            id = self._sequenceNum++;
-                            self._keys.splice(changes[i].index, 0, id);
-                        }
-                        if (self._indexOfKey(id) == -1) {
-                            self._keys.splice(changes[i].index, 0, id);
-                        }
-                        keyArray.push(id);
-                        var afterKey = self._getKeys()[changes[i].index + 1];
-                        afterKey = afterKey == null ? '' : afterKey;
-                        afterKeyArray.push(afterKey);
-                        dataArray.push(changes[i].value);
-                        indexArray.push(changes[i].index);
+                    }
+                    if (keyArray.length > 0) {
+                        metadataArray = keyArray.map(function (value) {
+                            return new self.ItemMetadata(self, value);
+                        });
+                        var keySet_3 = new ojSet();
+                        keyArray.map(function (key) {
+                            keySet_3.add(key);
+                        });
+                        var afterKeySet_1 = new ojSet();
+                        afterKeyArray.map(function (key) {
+                            afterKeySet_1.add(key);
+                        });
+                        operationAddEventDetail = new self.DataProviderAddOperationEventDetail(self, keySet_3, afterKeySet_1, afterKeyArray, metadataArray, dataArray, indexArray);
                     }
                 }
-                if (keyArray.length > 0) {
-                    metadataArray = keyArray.map(function (value) {
-                        return new self.ItemMetadata(self, value);
-                    });
-                    var keySet_3 = new Set();
-                    keyArray.map(function (key) {
-                        keySet_3.add(key);
-                    });
-                    var afterKeySet_1 = new Set();
-                    afterKeyArray.map(function (key) {
-                        afterKeySet_1.add(key);
-                    });
-                    operationAddEventDetail = new self.DataProviderAddOperationEventDetail(self, keySet_3, afterKeySet_1, afterKeyArray, metadataArray, dataArray, indexArray);
-                }
-                var mutationEventDetail = new self.DataProviderMutationEventDetail(self, operationAddEventDetail, operationRemoveEventDetail, operationUpdateEventDetail);
-                self._mutationEvent = new oj.DataProviderMutationEvent(mutationEventDetail);
+                self._fireMutationEvent(operationAddEventDetail, operationRemoveEventDetail, operationUpdateEventDetail);
             }, null, 'arrayChange');
             data['subscribe'](function (changes) {
                 if (self._mutationEvent) {
                     self.dispatchEvent(self._mutationEvent);
                 }
+                else if (self._mutationRemoveEvent ||
+                    self._mutationAddEvent ||
+                    self._mutationUpdateEvent) {
+                    if (self._mutationRemoveEvent) {
+                        self.dispatchEvent(self._mutationRemoveEvent);
+                    }
+                    if (self._mutationAddEvent) {
+                        self.dispatchEvent(self._mutationAddEvent);
+                    }
+                    if (self._mutationUpdateEvent) {
+                        self.dispatchEvent(self._mutationUpdateEvent);
+                    }
+                }
                 else {
                     self.dispatchEvent(new oj.DataProviderRefreshEvent());
                 }
                 self._mutationEvent = null;
+                self._mutationRemoveEvent = null;
+                self._mutationAddEvent = null;
+                self._mutationUpdateEvent = null;
             }, null, 'change');
         }
+    };
+    ArrayDataProvider.prototype._fireMutationEvent = function (operationAddEventDetail, operationRemoveEventDetail, operationUpdateEventDetail) {
+        // the keys and indexes must all be disjoint in the same mutation event. So if there are any keys/indexes which are in different mutations, then fire separate mutation events
+        var self = this;
+        var fireMutipleEvents = false;
+        var checkProps = ['keys', 'indexes'];
+        checkProps.forEach(function (prop) {
+            if (!fireMutipleEvents) {
+                fireMutipleEvents = self._hasSamePropValue(operationRemoveEventDetail, operationAddEventDetail, prop) ||
+                    self._hasSamePropValue(operationRemoveEventDetail, operationUpdateEventDetail, prop) ||
+                    self._hasSamePropValue(operationAddEventDetail, operationUpdateEventDetail, prop);
+            }
+        });
+        if (fireMutipleEvents) {
+            if (operationRemoveEventDetail) {
+                var mutationRemoveEventDetail = new this.DataProviderMutationEventDetail(this, null, operationRemoveEventDetail, null);
+                this._mutationRemoveEvent = new oj.DataProviderMutationEvent(mutationRemoveEventDetail);
+            }
+            if (operationAddEventDetail) {
+                var mutationAddEventDetail = new this.DataProviderMutationEventDetail(this, operationAddEventDetail, null, null);
+                this._mutationAddEvent = new oj.DataProviderMutationEvent(mutationAddEventDetail);
+            }
+            if (operationUpdateEventDetail) {
+                var mutationUpdateEventDetail = new this.DataProviderMutationEventDetail(this, null, null, operationUpdateEventDetail);
+                this._mutationUpdateEvent = new oj.DataProviderMutationEvent(mutationUpdateEventDetail);
+            }
+        }
+        else {
+            var mutationEventDetail = new this.DataProviderMutationEventDetail(this, operationAddEventDetail, operationRemoveEventDetail, operationUpdateEventDetail);
+            this._mutationEvent = new oj.DataProviderMutationEvent(mutationEventDetail);
+        }
+    };
+    ArrayDataProvider.prototype._hasSamePropValue = function (operationEventDetail1, operationEventDetail2, prop) {
+        var hasSameValue = false;
+        if (operationEventDetail1 && operationEventDetail1[prop]) {
+            operationEventDetail1[prop].forEach(function (prop1) {
+                if (!hasSameValue &&
+                    operationEventDetail2 &&
+                    operationEventDetail2[prop]) {
+                    operationEventDetail2[prop].forEach(function (prop2) {
+                        if (!hasSameValue &&
+                            oj.Object.compareValues(prop1, prop2)) {
+                            hasSameValue = true;
+                        }
+                    });
+                }
+            });
+        }
+        return hasSameValue;
     };
     /**
      * Check if observableArray
@@ -561,12 +667,12 @@ var ArrayDataProvider = /** @class */ (function () {
     /**
      * Fetch from offset
      */
-    ArrayDataProvider.prototype._fetchFrom = function (params, offset) {
+    ArrayDataProvider.prototype._fetchFrom = function (params, offset, cacheObj) {
         var self = this;
         var fetchAttributes = params != null ? params[this._ATTRIBUTES] : null;
         this._generateKeysIfNeeded();
         var sortCriteria = params != null ? params[this._SORTCRITERIA] : null;
-        var indexMap = this._getCachedIndexMap(sortCriteria);
+        var indexMap = this._getCachedIndexMap(sortCriteria, cacheObj);
         var mappedData = indexMap.map(function (index) {
             var rowData = self._getRowData()[index];
             if (fetchAttributes && fetchAttributes.length > 0) {
@@ -595,11 +701,18 @@ var ArrayDataProvider = /** @class */ (function () {
     /**
      * Get cached index map
      */
-    ArrayDataProvider.prototype._getCachedIndexMap = function (sortCriteria) {
+    ArrayDataProvider.prototype._getCachedIndexMap = function (sortCriteria, cacheObj) {
+        if (cacheObj && cacheObj['indexMap'] && cacheObj[this._MUTATIONSEQUENCENUM] === this._mutationSequenceNum) {
+            return cacheObj['indexMap'];
+        }
         var dataIndexes = this._getRowData().map(function (value, index) {
             return index;
         });
         var indexMap = this._sortData(dataIndexes, sortCriteria);
+        if (cacheObj) {
+            cacheObj['indexMap'] = indexMap;
+            cacheObj[this._MUTATIONSEQUENCENUM] = this._mutationSequenceNum;
+        }
         return indexMap;
     };
     /**

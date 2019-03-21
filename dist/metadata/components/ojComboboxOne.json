@@ -1,10 +1,21 @@
 {
   "name": "oj-combobox-one",
-  "version": "6.1.0",
-  "jetVersion": "6.1.0",
+  "version": "6.2.0",
+  "jetVersion": "6.2.0",
   "displayName": "Single-select Combobox",
   "type": "core",
+  "extension": {
+    "vbdt": {
+      "module": "ojs/ojselectcombobox"
+    }
+  },
   "styleClasses": [
+    {
+      "styleGroup": [
+        "oj-form-control-full-width"
+      ],
+      "description": "Changes the max-width to 100% so that form components will occupy all the available horizontal space"
+    },
     {
       "styleGroup": [
         "oj-form-control-text-align-right"
@@ -25,7 +36,7 @@
     }
   ],
   "description": "A dropdown list that supports single selection, text input, and search filtering.",
-  "help": "https://docs.oracle.com/en/middleware/jet/6.1/reference-api/oj.ojComboboxOne.html",
+  "help": "https://docs.oracle.com/en/middleware/jet/6.2/reference-api/oj.ojComboboxOne.html",
   "properties": {
     "asyncValidators": {
       "description": "Specifies a list of async validators for performing async validation by the element.",
@@ -259,7 +270,7 @@
       "help": "optionsKeys",
       "properties": {
         "childKeys": {
-          "description": "The object for the child keys.",
+          "description": "The object for the child keys. It is ignored when using a oj.TreeDataProvider.",
           "type": "oj.ojCombobox.OptionsKeys",
           "displayName": "Child Keys",
           "value": null,
@@ -302,7 +313,7 @@
           }
         },
         "children": {
-          "description": "The key name for the children.",
+          "description": "The key name for the children. It is ignored when using a oj.TreeDataProvider.",
           "type": "string",
           "displayName": "Children",
           "value": null,

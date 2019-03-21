@@ -1,11 +1,16 @@
 {
   "name": "oj-switcher",
-  "version": "6.1.0",
-  "jetVersion": "6.1.0",
+  "version": "6.2.0",
+  "jetVersion": "6.2.0",
   "displayName": "Switcher",
   "type": "core",
+  "extension": {
+    "vbdt": {
+      "module": "ojs/ojswitcher"
+    }
+  },
   "description": "Dynamically decides which child element should be made visible.",
-  "help": "https://docs.oracle.com/en/middleware/jet/6.1/reference-api/oj.ojSwitcher.html",
+  "help": "https://docs.oracle.com/en/middleware/jet/6.2/reference-api/oj.ojSwitcher.html",
   "properties": {
     "value": {
       "description": "Gets and Sets value for this switcher.",

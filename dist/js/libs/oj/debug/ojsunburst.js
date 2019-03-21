@@ -509,7 +509,7 @@ var __oj_sunburst_node_metadata =
  * All rights reserved.
  */
 
-/* global dvt:false, KeySet:false, Config:false */
+/* global dvt:false, KeySet:false, Config:false, Promise:false */
 /**
  * @ojcomponent oj.ojSunburst
  * @augments oj.dvtBaseComponent
@@ -658,6 +658,7 @@ oj.__registerWidget('oj.ojSunburst', $.oj.dvtBaseComponent,
      * @instance
      * @type {string}
      * @default ""
+     * @ojdeprecated {since: '6.2.0', description: 'Set the alias directly on the template element using the data-oj-as attribute instead.'}
      */
       as: '',
 
@@ -1194,10 +1195,20 @@ oj.__registerWidget('oj.ojSunburst', $.oj.dvtBaseComponent,
           templateName: 'nodeTemplate',
           templateElementName: 'oj-sunburst-node',
           resultPath: 'nodes',
-          expandedKeySet: new KeySet.ExpandAllKeySet(),
+          expandedKeySet: this.options.expanded,
           maxFetchDepth: this.options.displayLevels - 1
         }
       };
+    },
+
+    //* * @inheritdoc */
+    _OptionChangeHandler: function (options) {
+      var hasProperty = Object.prototype.hasOwnProperty.bind(options);
+      // If there is a change in the expanded property, the data provider state needs to be cleared
+      if (hasProperty('expanded') || hasProperty('displayLevels')) {
+        this._ClearDataProviderState('data');
+      }
+      this._super(options);
     },
 
     //* * @inheritdoc */
@@ -1242,6 +1253,10 @@ oj.__registerWidget('oj.ojSunburst', $.oj.dvtBaseComponent,
       // if expanded not declared, pass default expandAll key set to the toolkit
       if (!this.options.expanded) {
         this.options.expanded = new oj.ExpandAllKeySet();
+      }
+
+      if (this.options.data) {
+        this._fetchDataHandler = this._GetFetchDataHandler('data');
       }
     },
 
@@ -1345,9 +1360,15 @@ oj.__registerWidget('oj.ojSunburst', $.oj.dvtBaseComponent,
         }
       } else if (type === 'expand') {
         if (event.id && this._trigger('beforeExpand', null, eventData)) {
-          this._UserOptionChange('expanded', event.expanded);
-          this._Render();
-          this._trigger('expand', null, eventData);
+          var self = this;
+          this._NotReady(); // Register busy state
+          var fetchDataPromise = this.options.data ? this._fetchDataHandler(this.options.data,
+            event.expanded, null, eventData.id) : Promise.resolve();
+          fetchDataPromise.then(function () {
+            self._UserOptionChange('expanded', event.expanded);
+            self._Render();
+            self._trigger('expand', null, eventData);
+          });
         }
       } else if (type === 'collapse') {
         if (event.id && this._trigger('beforeCollapse', null, eventData)) {
@@ -1421,11 +1442,6 @@ oj.__registerWidget('oj.ojSunburst', $.oj.dvtBaseComponent,
     //* * @inheritdoc */
     _GetComponentDeferredDataPaths: function () {
       return { root: ['nodes', 'data'] };
-    },
-
-    //* * @inheritdoc */
-    _GetComponentNoClonePaths: function () {
-      return { data: true };
     }
   });
 

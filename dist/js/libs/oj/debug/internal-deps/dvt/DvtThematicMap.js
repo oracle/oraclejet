@@ -38,7 +38,7 @@ dvt.ThematicMap.prototype.Init = function(context, callback, callbackObj) {
   this._layers = [];
   this._createLayers();
   this._bRendered = false;
-  this.Defaults = new DvtThematicMapDefaults();
+  this.Defaults = new DvtThematicMapDefaults(context);
 
   this._initialZooming = false;
   this._zooming = false;
@@ -1076,11 +1076,12 @@ dvt.ThematicMap.prototype._getAreaFromDataLayer = function(areaName, dataLayer) 
  * Default values and utility functions for thematic map component versioning.
  * @class
  * @constructor
+ * @param {dvt.Context} context The rendering context.
  * @extends {dvt.BaseComponentDefaults}
  */
-var DvtThematicMapDefaults = function() {
+var DvtThematicMapDefaults = function(context) {
   this.Init({'fusion': DvtThematicMapDefaults.DEFAULT,
-    'alta': DvtThematicMapDefaults.SKIN_ALTA});
+    'alta': DvtThematicMapDefaults.SKIN_ALTA}, context);
 };
 
 dvt.Obj.createSubclass(DvtThematicMapDefaults, dvt.BaseComponentDefaults);

@@ -1,9 +1,14 @@
 {
   "name": "oj-messages",
-  "version": "6.1.0",
-  "jetVersion": "6.1.0",
+  "version": "6.2.0",
+  "jetVersion": "6.2.0",
   "displayName": "Messages",
   "type": "core",
+  "extension": {
+    "vbdt": {
+      "module": "ojs/ojmessages"
+    }
+  },
   "styleClasses": [
     {
       "styleGroup": [
@@ -13,7 +18,7 @@
     }
   ],
   "description": "Manages layout and display of messages.",
-  "help": "https://docs.oracle.com/en/middleware/jet/6.1/reference-api/oj.ojMessages.html",
+  "help": "https://docs.oracle.com/en/middleware/jet/6.2/reference-api/oj.ojMessages.html",
   "properties": {
     "display": {
       "description": "Specifies the display purpose of messages. The valid values for display are\ngeneral and notification.\nGeneral messages are commonly rendered at the page level or section level, relating to the task\nthe user performed. Notification messages are typically used for reporting asynchronous events,\nor to communicate some background activity.\n\nThe presentation of the message is inline by default. However, when a\nojMessages#positionproperty is provided, the presentation will be an overlay.\nThe alignment of the overlay will default based on the display property. The\ndefaults are defined by the theme.",
@@ -421,6 +426,143 @@
         }
       ],
       "return": "void"
+    }
+  },
+  "slots": {
+    "Default": {
+      "description": "The <oj-messages> element accepts only\n<oj-message> element as children for the default slot. The\ndefault slot contents are rendered only if the 'messages' attribute on\n<oj-messages> is not set. If the 'messages' attribute is set\n<oj-message> children are automatically stamped for each\nmessage data in the collection.",
+      "help": "Default"
+    },
+    "messageTemplate": {
+      "description": "The messageTemplate slot is used to specify the template\nfor rendering each message in the oj-messages. The slot\nmust be a <template> element. The default template will display the\noj-message children to best suit the display type of the\noj-messages. This template slot will be applied only if the\n'messages' attribute on oj-messages> is set.\nThe content of the template must be an oj-message\nelement.\nWhen the template is executed for each message, it will have access to the binding context\ncontaining the following properties: $current - an object that contains information for the current message. (See the table below for a list of properties available on $current) alias - if 'data-oj-as' attribute was specified on the <template> element, the value will be used to provide an application-named alias for $current.\n",
+      "maxItems": 1,
+      "help": "messageTemplate",
+      "data": {
+        "componentElement": {
+          "description": "The <oj-messages> custom element.",
+          "type": "Element"
+        },
+        "data": {
+          "description": "The data for the current message being rendered.",
+          "type": "object",
+          "typedef": {
+            "id": "oj.ojMessage.Message",
+            "longname": "oj.ojMessage.Message",
+            "name": "Message",
+            "kind": "typedef",
+            "scope": "static",
+            "memberof": "oj.ojMessage",
+            "type": {
+              "names": [
+                "Object"
+              ]
+            },
+            "properties": [
+              {
+                "type": {
+                  "names": [
+                    "string"
+                  ]
+                },
+                "optional": true,
+                "description": "Defines the icon representing the message.",
+                "name": "icon"
+              },
+              {
+                "type": {
+                  "names": [
+                    "string"
+                  ]
+                },
+                "optional": true,
+                "description": "Defines category text of the message.",
+                "name": "category"
+              },
+              {
+                "type": {
+                  "names": [
+                    "\"error\"",
+                    "\"warning\"",
+                    "\"confirmation\"",
+                    "\"info\"",
+                    "\"none\""
+                  ]
+                },
+                "optional": true,
+                "description": "Defines severity of the message.",
+                "name": "severity"
+              },
+              {
+                "type": {
+                  "names": [
+                    "string"
+                  ]
+                },
+                "optional": true,
+                "description": "Defines timestamp of the message.",
+                "name": "timestamp"
+              },
+              {
+                "type": {
+                  "names": [
+                    "string"
+                  ]
+                },
+                "optional": true,
+                "description": "Defines summary text of the message.",
+                "name": "summary"
+              },
+              {
+                "type": {
+                  "names": [
+                    "string"
+                  ]
+                },
+                "optional": true,
+                "description": "Defines detail text of the message.",
+                "name": "detail"
+              },
+              {
+                "type": {
+                  "names": [
+                    "number"
+                  ]
+                },
+                "optional": true,
+                "description": "Defines the time after which the message is to be closed automatically.",
+                "name": "autoTimeout"
+              },
+              {
+                "type": {
+                  "names": [
+                    "\"none\"",
+                    "\"defaults\""
+                  ]
+                },
+                "optional": true,
+                "description": "Defines UI affordance provided to close the message.",
+                "name": "closeAffordance"
+              },
+              {
+                "type": {
+                  "names": [
+                    "string"
+                  ]
+                },
+                "optional": true,
+                "description": "Defines the sound to be played when message is open.",
+                "name": "sound"
+              }
+            ],
+            "meta": {
+              "lineno": 751,
+              "filename": "ojmessage.js"
+            },
+            "___id": "T000002R009623",
+            "___s": true
+          }
+        }
+      }
     }
   }
 }

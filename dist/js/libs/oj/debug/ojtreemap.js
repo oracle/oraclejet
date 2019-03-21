@@ -735,6 +735,7 @@ oj.__registerWidget('oj.ojTreemap', $.oj.dvtBaseComponent,
        * @instance
        * @type {string}
        * @default ""
+       * @ojdeprecated {since: '6.2.0', description: 'Set the alias directly on the template element using the data-oj-as attribute instead.'}
        */
       as: '',
 
@@ -1369,6 +1370,15 @@ oj.__registerWidget('oj.ojTreemap', $.oj.dvtBaseComponent,
     },
 
     //* * @inheritdoc */
+    _OptionChangeHandler: function (options) {
+      // If there is a change in the expanded property, the data provider state needs to be cleared
+      if (Object.prototype.hasOwnProperty.call(options, 'displayLevels')) {
+        this._ClearDataProviderState('data');
+      }
+      this._super(options);
+    },
+
+    //* * @inheritdoc */
     _ConvertLocatorToSubId: function (locator) {
       var subId = locator.subId;
 
@@ -1585,11 +1595,6 @@ oj.__registerWidget('oj.ojTreemap', $.oj.dvtBaseComponent,
     //* * @inheritdoc */
     _GetComponentDeferredDataPaths: function () {
       return { root: ['nodes', 'data'] };
-    },
-
-    //* * @inheritdoc */
-    _GetComponentNoClonePaths: function () {
-      return { data: true };
     }
   });
 

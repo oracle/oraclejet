@@ -4,7 +4,7 @@
  * The Universal Permissive License (UPL), Version 1.0
  */
 "use strict";
-define(['ojs/ojcore', 'jquery', 'ojs/ojconfig', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/internal-deps/dvt/DvtChart', 'ojs/ojattributegrouphandler', 'ojs/ojkeyset', 'ojs/ojlogger'], function(oj, $, Config, comp, DvtAttributeUtils, dvt, attributeGroupHandler, KeySet, Logger)
+define(['ojs/ojcore', 'jquery', 'ojs/ojconfig', 'ojs/ojcomponentcore', 'ojs/ojdvt-base', 'ojs/internal-deps/dvt/DvtChart', 'ojs/ojattributegrouphandler', 'ojs/ojkeyset', 'ojs/ojlogger', 'ojs/ojmap'], function(oj, $, Config, comp, DvtAttributeUtils, dvt, attributeGroupHandler, KeySet, Logger, ojMap)
 {
 var __oj_chart_metadata = 
 {
@@ -136,6 +136,17 @@ var __oj_chart_metadata =
         },
         "groupData": {
           "type": "object"
+        },
+        "dimensions": {
+          "type": "object",
+          "properties": {
+            "width": {
+              "type": "number"
+            },
+            "height": {
+              "type": "number"
+            }
+          }
         },
         "componentElement": {
           "type": "Element"
@@ -2503,8 +2514,7 @@ var __oj_chart_item_metadata =
         "none",
         "outsideBarEdge",
         "outsideSlice"
-      ],
-      "value": "auto"
+      ]
     },
     "labelStyle": {
       "type": "object|Array<Object>"
@@ -2518,12 +2528,10 @@ var __oj_chart_item_metadata =
         "auto",
         "off",
         "on"
-      ],
-      "value": "auto"
+      ]
     },
     "markerShape": {
-      "type": "\"circle\"|\"diamond\"|\"human\"|\"plus\"|\"square\"|\"star\"|\"triangleDown\"|\"triangleUp\"|\"auto\"|string",
-      "value": "auto"
+      "type": "\"circle\"|\"diamond\"|\"human\"|\"plus\"|\"square\"|\"star\"|\"triangleDown\"|\"triangleUp\"|\"auto\"|string"
     },
     "markerSize": {
       "type": "number"
@@ -3106,24 +3114,20 @@ var __oj_spark_chart_item_metadata =
  * All rights reserved.
  */
 
-/* global Logger:false, Map:false */
+/* global Logger:false, Map:false, ojMap:false */
 
  /**
  * Handler for DataProvider generated content for chart
  * @constructor
  * @ignore
  */
-oj.ChartDataProviderHandler = function (component, data, templateEngine) {
+oj.ChartDataProviderHandler = function (component, templateEngine, items) {
   this._component = component;
   this._templateEngine = templateEngine;
   this._templates = component.getTemplates();
-  this._data = data;
+  this._items = items;
 
-  if (!this._templates.itemTemplate) {
-    Logger.error('No itemTemplate slot specified.');
-  } else {
-    this.Init();
-  }
+  this.Init();
 };
 
 // Subclass from oj.Object
@@ -3136,7 +3140,6 @@ oj.Object.createSubclass(oj.ChartDataProviderHandler, oj.Object, 'oj.ChartDataPr
  */
 oj.ChartDataProviderHandler.prototype.Init = function () {
   this._parentElement = this._component.element[0];
-  this._itemTemplate = this._templates.itemTemplate[0];
   this._seriesTemplate = this._templates.seriesTemplate ? this._templates.seriesTemplate[0] : null;
   this._groupTemplate = this._templates.groupTemplate ? this._templates.groupTemplate[0] : null;
   this._alias = this._component.options.as;
@@ -3144,80 +3147,59 @@ oj.ChartDataProviderHandler.prototype.Init = function () {
   this._groupComparator = this._component.options.groupComparator;
 
   // item map. key: series+group ids, value: corresponding item
-  this._itemMap = {};
+  this._itemMap = new Map();
   // seriesContexts: conatins series context for each series
   this._seriesContexts = new Map();
   // groupContexts: contains the group context for a each level of each group
   this._groupContexts = new Map();
 
-  var rowData = this._data.data;
-  var rowKeys = this._data.keys;
-
   // Generate chart data
   var numSeries = 0;
   var numOuterGroups = 0;
 
-  // get top level chart item property names
-  var itemTagName = 'oj-chart-item';
-  var chartItemProperties = this._component.getElementPropertyNames(itemTagName);
-  var itemPropertyValidator = this._component.getPropertyValidator(this._itemTemplate, itemTagName);
-
   // stamp out chart item templates and collect chart item nodes
   var chartDataItems = [];
-  for (var i = 0; i < rowData.length; i++) {
-    var rowItem = rowData[i];
-    var rowKey = rowKeys[i];
-    var itemContext = { data: rowItem,
-      key: rowKey,
-      index: i,
-      componentElement: this._parentElement };
+  for (var i = 0; i < this._items.length; i++) {
+    var item = this._items[i];
+    // only process unique rows. ie item keys not seen yet
+    if (!this._itemMap.has(item.seriesId) ||
+      !this._itemMap.get(item.seriesId).has(item.groupId)) {
+      chartDataItems.push(item);
+      var itemContext = {
+        data: item._itemData,
+        key: item.id,
+        index: i
+      };
 
-    try {
-      var chartDataItem = this._templateEngine.resolveProperties(this._parentElement,
-        this._itemTemplate, itemTagName, chartItemProperties, itemContext, this._alias,
-        itemPropertyValidator);
-      chartDataItem.id = rowKey;
-      chartDataItem._itemData = rowItem;
-      // only process unique rows. ie item keys not seen yet
-      if (!this._itemMap[chartDataItem.seriesId] ||
-        !this._itemMap[chartDataItem.seriesId][chartDataItem.groupId]) {
-        chartDataItems.push(chartDataItem);
-
-        delete itemContext.componentElement;
-
-        // While processing each data row, pull out each seriesId and generate/update seriesContext for that series
-        var seriesId = chartDataItem.seriesId;
-        if (!this._seriesContexts.has(seriesId)) {
-          var seriesContext = {};
-          seriesContext = {
-            componentElement: this._parentElement,
-            id: seriesId,
-            items: [],
-            index: numSeries
-          };
-          this._seriesContexts.set(seriesId, seriesContext);
-          numSeries += 1;
-        }
-        this._seriesContexts.get(seriesId).items.push(itemContext);
-
-        // While processing each data row, pull out each groupId and generate/update groupContext for each group/nested group
-        var groupId = chartDataItem.groupId;
-        var count = numOuterGroups;
-        if (!this._groupContexts.has(groupId.slice(0, groupId.length - 1))) {
-          numOuterGroups += 1;
-        }
-        this._addToGroupContexts(itemContext, groupId, 1, count);
-
-        // make a map of series+group ids to their corresponding items
-        if (!this._itemMap[chartDataItem.seriesId]) {
-          this._itemMap[chartDataItem.seriesId] = {};
-        }
-        this._itemMap[chartDataItem.seriesId][chartDataItem.groupId] = chartDataItem;
+      // Pull out each seriesId and generate/update seriesContext for that series
+      var seriesId = item.seriesId;
+      if (!this._seriesContexts.has(seriesId)) {
+        var seriesContext = {};
+        seriesContext = {
+          componentElement: this._parentElement,
+          id: seriesId,
+          items: [],
+          index: numSeries
+        };
+        this._seriesContexts.set(seriesId, seriesContext);
+        numSeries += 1;
       }
-    } catch (error) {
-      Logger.error(error);
-      chartDataItems = [];
-      break;
+      this._seriesContexts.get(seriesId).items.push(itemContext);
+
+      // While processing each data row, pull out each groupId and generate/update groupContext for each group/nested group
+      var groupId = item.groupId;
+      var count = numOuterGroups;
+      if (!this._groupContexts.has(groupId.slice(0, groupId.length - 1))) {
+        numOuterGroups += 1;
+      }
+      this._addToGroupContexts(itemContext, groupId, 1, count);
+
+      // make a map of series+group ids to their corresponding items
+      if (!this._itemMap.has(item.seriesId)) {
+        // eslint-disable-next-line new-cap
+        this._itemMap.set(item.seriesId, new ojMap()); // ojMap will do an array content match when matching keys(groupId)
+      }
+      this._itemMap.get(item.seriesId).set(item.groupId, item);
     }
   }
 
@@ -3362,8 +3344,8 @@ oj.ChartDataProviderHandler.prototype._addItemsToSeries = function (
     var series = chartSeriesData[i];
     var seriesItems = [];
     for (var j = 0; j < groupKeys.length; j++) {
-      var groupId = groupKeys[j];
-      var item = this._itemMap[series.id][groupId] || null; // get corresponding item from map.
+      var groupId = Array.isArray(groupKeys[j]) ? groupKeys[j] : [groupKeys[j]];
+      var item = this._itemMap.get(series.id).get(groupId) || null; // get corresponding item from map.
       if (item) {
         delete item.groupId;
         delete item.seriesId;
@@ -3523,7 +3505,7 @@ oj.ChartDataProviderHandler.prototype._sortGroups = function (groupsArray) {
  * Copyright (c) 2014, Oracle and/or its affiliates.
  * All rights reserved.
  */
-/* global Promise:false, dvt:false, attributeGroupHandler:false, KeySet:false, Config:false */
+/* global Promise:false, dvt:false, attributeGroupHandler:false, KeySet:false, Config:false, Logger:false */
 
 /**
  * @ojcomponent oj.ojChart
@@ -4010,6 +3992,7 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
        * @instance
        * @type {string}
        * @default ""
+       * @ojdeprecated {since: '6.2.0', description: 'Set the alias directly on the template element using the data-oj-as attribute instead.'}
        */
       /**
        * A comparator function that determines the ordering of the chart series when using a DataProvider. If undefined, the series will follow the order in which they are found in the data. The series objects will have the same properties as the context for <a href="#seriesTemplate">seriesTemplate's $current</a>.
@@ -8170,7 +8153,7 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
        * @memberof oj.ojChart
        * @instance
        * @type {?(function(Object):Object)}
-       * @ojsignature {target: "Type", value: "((context: oj.ojChart.DataLabelContext) => ({insert: Element|string}|{preventDefault: boolean}))", jsdocOverride: true}
+       * @ojsignature {target: "Type", value: "((context: oj.ojChart.DataLabelContext) => ({insert: Element|Array<string>|string}|{preventDefault: boolean}))", jsdocOverride: true}
        * @default null
        */
       /**
@@ -8640,16 +8623,24 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
 
     //* * @inheritdoc */
     _ProcessTemplates: function (dataProperty, data, templateEngine) {
-      var self = this;
       // Support for dataprovider and chart templates
-      var chartOptions = new oj.ChartDataProviderHandler(self, data, templateEngine);
-      return { paths: ['series', 'groups', 'data'], values: [chartOptions.getSeries(), chartOptions.getGroups(), data] };
+      if (!this.getTemplates().itemTemplate) {
+        Logger.error('No itemTemplate slot specified.');
+        return { paths: ['series', 'groups'], values: [[], []] };
+      }
+
+      var items = this._super(dataProperty, data, templateEngine);
+      var chartOptions = new oj.ChartDataProviderHandler(this, templateEngine, items.values[0]);
+      return { paths: ['series', 'groups'], values: [chartOptions.getSeries(), chartOptions.getGroups()] };
     },
 
     //* * @inheritdoc */
     _GetSimpleDataProviderConfigs: function () {
       return {
-        data: { expandedKeySet: new KeySet.ExpandAllKeySet() }
+        data: {
+          templateName: 'itemTemplate',
+          templateElementName: 'oj-chart-item',
+          resultPath: '_item' }
       };
     },
 
@@ -9658,6 +9649,9 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
  * @property {Object|null} itemData The row data object for the data item. This will only be set if a DataProvider is being used.
  * @property {Object|null} seriesData The data for the series the data item belongs to.
  * @property {Object|null} groupData An array of data for the group the data item belongs to. For hierarchical groups, it will be an array of outermost to innermost group data related to the data item.
+ * @property {Object|null} dimensions The height and width of the data item. This will only be set for bar series types.
+ * @property {number} dimensions.width The width of the data item.
+ * @property {number} dimensions.height The height of the data item.
  * @property {Element} componentElement The chart element.
  */
 
@@ -10241,7 +10235,6 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
  * @ojvalue {string} "on"
  * @ojvalue {string} "off"
  * @ojvalue {string} "auto"
- * @default "auto"
  */
 /**
  * The shape of the data markers. In addition to the built-in shapes, it may also take SVG path commands to specify a custom shape. The chart will style the custom shapes the same way as built-in shapes, supporting properties like color and borderColor and applying hover and selection effects. Only 'auto' is supported for range series.
@@ -10250,7 +10243,6 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
  * @memberof! oj.ojChartItem
  * @instance
  * @type {("circle"|"diamond"|"human"|"plus"|"square"|"star"|"triangleDown"|"triangleUp"|"auto"|string)=}
- * @default "auto"
  */
 /**
  * The size of the data markers. Does not apply to bubble charts, which calculate marker size based on the z values.
@@ -10323,7 +10315,6 @@ oj.__registerWidget('oj.ojChart', $.oj.dvtBaseComponent,
  * @ojvalue {string} "outsideBarEdge"
  * @ojvalue {string} "none"
  * @ojvalue {string} "auto"
- * @default "auto"
  */
 /**
  * The CSS style object defining the style of the data label. For range series, if an array of two values are provided, the first and second value will apply to the low and high point respectively.
@@ -11027,6 +11018,7 @@ oj.__registerWidget('oj.ojSparkChart', $.oj.dvtBaseComponent,
      * @instance
      * @type {string}
      * @default ''
+     * @ojdeprecated {since: '6.2.0', description: 'Set the alias directly on the template element using the data-oj-as attribute instead.'}
      */
       as: '',
     /**
@@ -11910,8 +11902,8 @@ oj.__registerWidget('oj.ojSparkChart', $.oj.dvtBaseComponent,
  *
  * <pre class="prettyprint">
  * <code>
- * &lt;oj-spark-chart data='[[dataProvider]]' as='item'>
- *  &lt;template slot='itemTemplate'>
+ * &lt;oj-spark-chart data='[[dataProvider]]'>
+ *  &lt;template slot='itemTemplate' data-oj-as='item'>
  *    &lt;oj-spark-chart-item  high='[[item.data.high]]' value='[[item.data.total]]'> &lt;/oj-spark-chart-item>
  *  &lt;/template>
  * &lt;/oj-spark-chart>
@@ -11930,8 +11922,8 @@ oj.__registerWidget('oj.ojSparkChart', $.oj.dvtBaseComponent,
  *
  * @example <caption>Initialize the spark chart item with the
  * <code class="prettyprint">border-color</code> attribute specified:</caption>
- * &lt;oj-spark-chart data='[[dataProvider]]' as='item'>
- *  &lt;template slot='itemTemplate'>
+ * &lt;oj-spark-chart data='[[dataProvider]]'>
+ *  &lt;template slot='itemTemplate' data-oj-as='item'>
  *    &lt;oj-spark-chart-item border-color='[[item.data.borderColor]]'> &lt;/oj-spark-chart-item>
  *  &lt;/template>
  * &lt;/oj-spark-chart>
@@ -11948,8 +11940,8 @@ oj.__registerWidget('oj.ojSparkChart', $.oj.dvtBaseComponent,
  *
  * @example <caption>Initialize the spark chart item with the
  * <code class="prettyprint">color</code> attribute specified:</caption>
- * &lt;oj-spark-chart data='[[dataProvider]]' as='item'>
- *  &lt;template slot='itemTemplate'>
+ * &lt;oj-spark-chart data='[[dataProvider]]'>
+ *  &lt;template slot='itemTemplate' data-oj-as='item'>
  *    &lt;oj-spark-chart-item color='[[item.data.color]]'> &lt;/oj-spark-chart-item>
  *  &lt;/template>
  * &lt;/oj-spark-chart>
@@ -11965,8 +11957,8 @@ oj.__registerWidget('oj.ojSparkChart', $.oj.dvtBaseComponent,
  *
  * @example <caption>Initialize the spark chart item with the
  * <code class="prettyprint">date</code> attribute specified:</caption>
- * &lt;oj-spark-chart data='[[dataProvider]]' as='item'>
- *  &lt;template slot='itemTemplate'>
+ * &lt;oj-spark-chart data='[[dataProvider]]'>
+ *  &lt;template slot='itemTemplate' data-oj-as='item'>
  *    &lt;oj-spark-chart-item date='[[item.data.date]]'> &lt;/oj-spark-chart-item>
  *  &lt;/template>
  * &lt;/oj-spark-chart>
@@ -11982,8 +11974,8 @@ oj.__registerWidget('oj.ojSparkChart', $.oj.dvtBaseComponent,
  *
  * @example <caption>Initialize the spark chart item with the
  * <code class="prettyprint">high</code> attribute specified:</caption>
- * &lt;oj-spark-chart data='[[dataProvider]]' as='item'>
- *  &lt;template slot='itemTemplate'>
+ * &lt;oj-spark-chart data='[[dataProvider]]'>
+ *  &lt;template slot='itemTemplate' data-oj-as='item'>
  *    &lt;oj-spark-chart-item high='[[item.data.high]]' low='[[item.data.low]]'> &lt;/oj-spark-chart-item>
  *  &lt;/template>
  * &lt;/oj-spark-chart>
@@ -11999,8 +11991,8 @@ oj.__registerWidget('oj.ojSparkChart', $.oj.dvtBaseComponent,
  *
  * @example <caption>Initialize the spark chart item with the
  * <code class="prettyprint">low</code> attribute specified:</caption>
- * &lt;oj-spark-chart data='[[dataProvider]]' as='item'>
- *  &lt;template slot='itemTemplate'>
+ * &lt;oj-spark-chart data='[[dataProvider]]'>
+ *  &lt;template slot='itemTemplate' data-oj-as='item'>
  *    &lt;oj-spark-chart-item low='[[item.data.low]]' high='[[item.data.high]]'> &lt;/oj-spark-chart-item>
  *  &lt;/template>
  * &lt;/oj-spark-chart>
@@ -12018,8 +12010,8 @@ oj.__registerWidget('oj.ojSparkChart', $.oj.dvtBaseComponent,
  *
  * @example <caption>Initialize the spark chart item with the
  * <code class="prettyprint">marker-displayed</code> attribute specified:</caption>
- * &lt;oj-spark-chart data='[[dataProvider]]' as='item'>
- *  &lt;template slot='itemTemplate'>
+ * &lt;oj-spark-chart data='[[dataProvider]]'>
+ *  &lt;template slot='itemTemplate' data-oj-as='item'>
  *    &lt;oj-spark-chart-item marker-displayed='[[item.data.markerDisplayed]]'> &lt;/oj-spark-chart-item>
  *  &lt;/template>
  * &lt;/oj-spark-chart>
@@ -12035,8 +12027,8 @@ oj.__registerWidget('oj.ojSparkChart', $.oj.dvtBaseComponent,
  *
  * @example <caption>Initialize the spark chart item with the
  * <code class="prettyprint">marker-shape</code> attribute specified:</caption>
- * &lt;oj-spark-chart data='[[dataProvider]]' as='item'>
- *  &lt;template slot='itemTemplate'>
+ * &lt;oj-spark-chart data='[[dataProvider]]'>
+ *  &lt;template slot='itemTemplate' data-oj-as='item'>
  *    &lt;oj-spark-chart-item marker-shape='[[item.data.markerShape]]'> &lt;/oj-spark-chart-item>
  *  &lt;/template>
  * &lt;/oj-spark-chart>
@@ -12052,8 +12044,8 @@ oj.__registerWidget('oj.ojSparkChart', $.oj.dvtBaseComponent,
  *
  * @example <caption>Initialize the spark chart item with the
  * <code class="prettyprint">marker-size</code> attribute specified:</caption>
- * &lt;oj-spark-chart data='[[dataProvider]]' as='item'>
- *  &lt;template slot='itemTemplate'>
+ * &lt;oj-spark-chart data='[[dataProvider]]'>
+ *  &lt;template slot='itemTemplate' data-oj-as='item'>
  *    &lt;oj-spark-chart-item marker-size='[[item.data.markerSize]]'> &lt;/oj-spark-chart-item>
  *  &lt;/template>
  * &lt;/oj-spark-chart>
@@ -12069,8 +12061,8 @@ oj.__registerWidget('oj.ojSparkChart', $.oj.dvtBaseComponent,
  *
  * @example <caption>Initialize the spark chart item with the
  * <code class="prettyprint">svg-style</code> attribute specified:</caption>
- * &lt;oj-spark-chart data='[[dataProvider]]' as='item'>
- *  &lt;template slot='itemTemplate'>
+ * &lt;oj-spark-chart data='[[dataProvider]]'>
+ *  &lt;template slot='itemTemplate' data-oj-as='item'>
  *    &lt;oj-spark-chart-item svg-style='[[item.data.svgStyle]]'> &lt;/oj-spark-chart-item>
  *  &lt;/template>
  * &lt;/oj-spark-chart>
@@ -12086,8 +12078,8 @@ oj.__registerWidget('oj.ojSparkChart', $.oj.dvtBaseComponent,
  *
  * @example <caption>Initialize the spark chart item with the
  * <code class="prettyprint">svg-class-name</code> attribute specified:</caption>
- * &lt;oj-spark-chart data='[[dataProvider]]'  as='item'>
- *  &lt;template slot='itemTemplate'>
+ * &lt;oj-spark-chart data='[[dataProvider]]'>
+ *  &lt;template slot='itemTemplate' data-oj-as='item'>
  *    &lt;oj-spark-chart-item svg-class-name='[[item.data.svgClassName]]'> &lt;/oj-spark-chart-item>
  *  &lt;/template>
  * &lt;/oj-spark-chart>
@@ -12103,8 +12095,8 @@ oj.__registerWidget('oj.ojSparkChart', $.oj.dvtBaseComponent,
  *
  * @example <caption>Initialize the spark chart item with the
  * <code class="prettyprint">value</code> attribute specified:</caption>
- * &lt;oj-spark-chart data='[[dataProvider]]' as='item'>
- *  &lt;template slot='itemTemplate'>
+ * &lt;oj-spark-chart data='[[dataProvider]]'>
+ *  &lt;template slot='itemTemplate' data-oj-as='item'>
  *    &lt;oj-spark-chart-item value='[[item.data.value]]'> &lt;/oj-spark-chart-item>
  *  &lt;/template>
  * &lt;/oj-spark-chart>

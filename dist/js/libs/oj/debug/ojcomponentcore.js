@@ -5576,10 +5576,11 @@ oj.CustomElementBridge._getWidgetElement = function (element, innerTagName) {
       // the newly created inner <button> element.
       while (children.length) {
         var child = children.shift();
-        // do not move slot children to inner child element
-        // component should decide whether they should be moved to its inner child element
-        // for example, it does not make sense for <oj-list-view> to move contextMenu slot to its inner <ul> element.
-        if (!child.hasAttribute || !child.hasAttribute('slot')) {
+        // Only move default slot children to inner child element. Default slot children are those
+        // that do not explictly set a slot attribute (or have one passed from a composite) or have slot=''.
+        // The component will be responsible for moving all named slot children.
+        // For example, it does not make sense for <oj-list-view> to move contextMenu slot to its inner <ul> element.
+        if (!oj.BaseCustomElementBridge.getSlotAssignment(child)) {
           widgetElem.appendChild(child);
         }
       }

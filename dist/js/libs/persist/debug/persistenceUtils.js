@@ -44,9 +44,11 @@ define(['./impl/logger'], function (logger) {
 
     var contentType = headers.get('Content-Type');
 
+    // the response is considered text type when contentType value is of
+    // pattern text/ or application/*json .
     if (contentType &&
-      (contentType.indexOf('text/') !== -1 ||
-       contentType.indexOf('application/json') !== -1)) {
+        (contentType.match(/.*text\/.*/) ||
+         contentType.match(/.*application\/.*json.*/))) {
       return true;
     }
     return false;
@@ -266,7 +268,7 @@ define(['./impl/logger'], function (logger) {
       var formData = new FormData();
       var formPairs = body.formData;
       Object.keys(formPairs).forEach(function (pairkey) {
-        formData.append(pairkey, formPairs[pairkey]);
+        formData.append(pairkey, formPairs[pairkey]); // @XSSFalsePositive
       });
       targetObj.body = formData;
     }
@@ -279,7 +281,7 @@ define(['./impl/logger'], function (logger) {
     Object.keys(data.headers).forEach(function (key) {
       if (key !== 'content-type' ||
         (!skipContentType && key === 'content-type')) {
-        headers.append(key, data.headers[key]);
+        headers.append(key, data.headers[key]); // @XSSFalsePositive
       }
     });
 
@@ -343,13 +345,13 @@ define(['./impl/logger'], function (logger) {
     logger.log("Offline Persistence Toolkit persistenceUtils: setResponsePayload()");
     return responseToJSON(response).then(function (responseObject) {
       var body = responseObject.body;
-
-      if (body.arrayBuffer) {
-        if (payload instanceof ArrayBuffer) {
-          body.arrayBuffer = payload;
-        } else {
-          throw new Error({message: 'unexpected payload'});
-        }
+      
+      body.arrayBuffer = null;
+      body.blob = null;
+      body.text = null;
+      
+      if (payload instanceof ArrayBuffer) {
+        body.arrayBuffer = payload;
       } else if (payload instanceof Blob) { 
         body.blob = payload;
       } else {

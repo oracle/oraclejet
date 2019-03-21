@@ -113,6 +113,10 @@ var __oj_checkboxset_metadata =
         }
       }
     },
+    "readonly": {
+      "type": "boolean",
+      "value": false
+    },
     "required": {
       "type": "boolean",
       "value": false
@@ -121,6 +125,9 @@ var __oj_checkboxset_metadata =
       "type": "object",
       "value": {},
       "properties": {
+        "readonlyNoValue": {
+          "type": "string"
+        },
         "required": {
           "type": "object",
           "properties": {
@@ -186,7 +193,7 @@ var __oj_checkboxset_metadata =
    * do not do a value change check in _SetValue
    */
   var _sValueChangeCheckFalse = { doValueChangeCheck: false };
-/* global Logger:false */
+/* global Logger:false*/
 
 /**
  * @ojcomponent oj.ojCheckboxset
@@ -228,10 +235,6 @@ var __oj_checkboxset_metadata =
  * <p>
  *  You can enable and disable an oj-checkboxset,
  *  which will enable and disable all contained checkboxes.
- * </p>
- * <p>
- *  oj-checkboxset does not have a readonly attribute since HTML does not support
- *  readonly on radios and checkboxes.
  * </p>
  * <p>Use <code class="prettyprint">labelled-by</code> to associate an oj-label with
  * the checkboxset component. Doing this also makes the checkboxset accessible.
@@ -376,7 +379,31 @@ var __oj_checkboxset_metadata =
      * @memberof oj.ojCheckboxset
      */
         labelledBy: null,
-
+    /**
+     * Whether the component is readonly. The readOnly property sets or returns whether an element is readOnly, or not.
+     * A readOnly element cannot be modified. However, a user can tab to it, highlight it, focus on it, and copy the text from it.
+     * If you want to prevent the user from interacting with the element, use the disabled property instead.
+     *
+     * @example <caption>Initialize component with <code class="prettyprint">readonly</code> attribute:</caption>
+     * &lt;oj-checkboxset readonly>&lt;/oj-checkboxset>
+     *
+     * @example <caption>Get or set the <code class="prettyprint">readonly</code> property after initialization:</caption>
+     * // Getter
+     * var readonly = myComponent.readonly;
+     *
+     * // Setter
+     * myComponent.readonly = false;
+     *
+     * @default false
+     * @name readOnly
+     * @access public
+     * @expose
+     * @type {?boolean}
+     * @alias readonly
+     * @instance
+     * @memberof oj.ojCheckboxset
+     */
+        readOnly: false,
     /**
      * @typedef {Object} oj.ojCheckboxset.OptionContext
      * @property {Element} component A reference to the Checkboxset element.
@@ -807,6 +834,7 @@ var __oj_checkboxset_metadata =
         var domValue;
         var props = [
           { attribute: 'disabled', validateOption: true },
+          { attribute: 'readonly', option: 'readOnly', validateOption: true },
           { attribute: 'title' },
           // {attribute: "value", "defaultValue": null},  // code below sets value
           { attribute: 'required', coerceDomValue: true, validateOption: true
@@ -879,7 +907,6 @@ var __oj_checkboxset_metadata =
     // attribute of the rendered chekcboxes, let's make sure the checkboxset
     // has an ID
         element.uniqueId();
-
         // Async step that generates oj-option if DateProvider is used.
         // RadioCheckboxUtils will set this._optionsDataProvider, this._optionsDataListener
         // and this._optionsDataArray.
@@ -1013,12 +1040,23 @@ var __oj_checkboxset_metadata =
       // set the custom renderer on oj-option
           var i;
           var len;
+          var firstSelectedIndex = false;
+          var updatedFirstSelectedIndex = false;
           var renderer = this._customOptionRenderer.bind(this);
           var options = this.element.children('oj-option');
           if (options.length > 0) {
             for (i = 0, len = options.length; i < len; i++) {
               options[i].customOptionRenderer = renderer;
-              this._initInputLabelFromOjOption(options[i]);
+              this._needSeparator = true;
+              if (this.options.readOnly) {
+                if (!firstSelectedIndex) {
+                  firstSelectedIndex = this._isFirstSelectedOption(options[i]);
+                  this._needSeparator = false;
+                }
+                this._processReadonlyOptions(options[i], false);
+              } else {
+                this._initInputLabelFromOjOption(options[i]);
+              }
             }
           }
 
@@ -1027,12 +1065,67 @@ var __oj_checkboxset_metadata =
           if (options.length > 0) {
             for (i = 0, len = options.length; i < len; i++) {
               options[i].customOptionRenderer = renderer;
-              this._initInputLabelFromOjOption(options[i]);
+              if (this.options.readOnly) {
+                if (!updatedFirstSelectedIndex) {
+                  updatedFirstSelectedIndex = this._isFirstSelectedOption(options[i]);
+                  this._needSeparator = false;
+                }
+                this._processReadonlyOptions(options[i], true);
+              } else {
+                this._initInputLabelFromOjOption(options[i]);
+              }
             }
           }
         }
       },
-
+      _isFirstSelectedOption: function (elem) {
+        var optionValue = elem.value;
+        var selectedOptionsArray = this.options.value;
+        if (selectedOptionsArray.indexOf(optionValue) > -1) {
+          return true;
+        }
+        return false;
+      },
+    /**
+     * @memberof oj.ojCheckboxset
+     * @instance
+     * @private
+     */
+      _processReadonlyOptions: function (elem, isAlreadyProcessed) {
+        var selectedOptionsArray = this.options.value;
+        var parentSpan;
+        var optionValue = elem.value;
+        var selectedArrayLength = selectedOptionsArray.length;
+        // if span and label wrapper already exist then we need to hide the option
+        // and then process the options and unhide the checked options.
+        if (isAlreadyProcessed) {
+          // check if wrapper exists around an option.
+          // we need to hide the options
+          parentSpan = elem;
+          do {
+            parentSpan = parentSpan.parentElement;
+          }
+          while (parentSpan && !(parentSpan.classList.contains('oj-choice-item')));
+          if (parentSpan && parentSpan.classList.contains('oj-choice-item') && (parentSpan.tagName === 'SPAN')) {
+            parentSpan.classList.add('oj-helper-hidden');
+          }
+        } else {
+          // this is when span wrapper is not yet created around ojoption.
+          // the ojoption will be hidden first and then unhide the checked option
+          elem.classList.add('oj-helper-hidden');
+        }
+        // if element is readonly and there is no checked option then we do not need to process options,
+        if (!selectedOptionsArray || selectedArrayLength === 0) {
+          var span = document.createElement('span');
+          var noCheckboxSelected = this.getTranslatedString('readonlyNoValue');
+          if (noCheckboxSelected !== null) {
+            span.textContent = noCheckboxSelected;
+          }
+          elem.parentElement.insertBefore(span, elem);
+        } else if (selectedOptionsArray.indexOf(optionValue) > -1) {
+          this._initReadonlyLabelFromOjOption(elem, parentSpan);
+        }
+      },
    /**
    * Create the input type='checkbox'/label dom from attributes on oj-option element.
    * oj-checkboxset is made up of input/labels.
@@ -1106,6 +1199,24 @@ var __oj_checkboxset_metadata =
               label.classList.remove('oj-helper-hidden');
             }
           }
+          // if the element is already processed we need to check if the component has readonly classes, then we need to clear the
+          // classes when it is not readonly
+          if (!this.options.readOnly) {
+            var parentSpan = ojoption;
+            do {
+              parentSpan = parentSpan.parentElement;
+            } while (parentSpan && !(parentSpan.classList.contains('oj-choice-item')));
+            if (parentSpan && parentSpan.classList.contains('oj-helper-hidden') &&
+                    parentSpan.classList.contains('oj-choice-item') && (parentSpan.tagName === 'SPAN')) {
+              parentSpan.classList.remove('oj-helper-hidden');
+            }
+            if (ojoption && ojoption.classList.contains('oj-helper-hidden')) {
+              ojoption.classList.remove('oj-helper-hidden');
+            }
+            if (checkbox && checkbox.parentElement.classList.contains('oj-helper-hidden')) {
+              checkbox.parentElement.classList.remove('oj-helper-hidden');
+            }
+          }
         }
 
         var name = this.element[0].id; // Use the id of the ojcheckboxset as the name of the oj-options.
@@ -1129,17 +1240,71 @@ var __oj_checkboxset_metadata =
         } else {
           checkbox.removeAttribute('aria-label');
         }
-
         if (ariaLabelledBy && ariaLabelledBy !== '') {
           checkbox.setAttribute('aria-labelledby', ariaLabelledBy);
         } else {
           checkbox.removeAttribute('aria-labelledby');
         }
-
         if (ojoption.disabled) {
           checkbox.setAttribute('disabled', true);
         } else {
           checkbox.removeAttribute('disabled');
+        }
+      },
+    /**
+     * @memberof oj.ojCheckboxset
+     * @instance
+     * @private
+     */
+      _initReadonlyLabelFromOjOption: function (elem, parentSpan) {
+        var label;
+        var separator = ', ';
+        var ojoption = elem;
+        if (parentSpan) {
+          $(ojoption).uniqueId();
+
+          var id = ojoption.getAttribute('id');
+          var checkboxId = id + '|cb';
+          var checkbox = document.getElementById(checkboxId);
+          var checkboxExists = (checkbox !== null);
+          // we do not render the input when the checkboxset id readonly
+          // the checkboxset only exists in the update case where readonly is set using setAttribute
+          // so we would need to hide the input as we only show label in case of readonly and not input.
+          if (checkboxExists) {
+            checkbox.parentElement.classList.add('oj-helper-hidden');
+          }
+          parentSpan.classList.remove('oj-helper-hidden');
+
+          if (this.element.hasClass('oj-choice-direction-row')) {
+            if (!this._needSeparator) {
+              // if it is first selected element in update, we should remove the separator during update.
+              var labelWrapper = elem.parentElement;
+              var text = labelWrapper.innerText;
+              if (text && text.substring(0, 2) === separator) {
+                labelWrapper.innerText = text.substring(2);
+              }
+              this._needSeparator = true;
+            }
+          }
+        } else {
+          elem.classList.remove('oj-helper-hidden');
+          var span = document.createElement('span');
+          label = document.createElement('label');
+          ojoption.parentElement.insertBefore(span, ojoption);
+          span.setAttribute('class', 'oj-choice-item');
+          if (this.element.hasClass('oj-choice-direction-row')) {
+            if (this._needSeparator) {
+              var separatorNode = document.createTextNode(separator);
+              label.appendChild(separatorNode);
+            } else {
+              this._needSeparator = true;
+            }
+            label.appendChild(ojoption);
+          } else {
+            label.setAttribute('class', 'oj-checkbox-label');
+            label.appendChild(ojoption);
+          }
+          span.appendChild(label);
         }
       },
 
@@ -1580,6 +1745,13 @@ var __oj_checkboxset_metadata =
           case 'disabled':
             this._propagateDisabled(value);
             break;
+          case 'readOnly':
+            this.options.readOnly = !!value;
+            this._processOjOptions();
+            break;
+          case 'value':
+            this._processOjOptions();
+            break;
           case 'labelledBy':
         // remove the old one and add the new one
             this._updateLabelledBy(originalValue, value, this.widget());
@@ -1898,6 +2070,8 @@ var __oj_checkboxset_metadata =
 /* global __oj_checkboxset_metadata */
 (function () {
   __oj_checkboxset_metadata.extension._WIDGET_NAME = 'ojCheckboxset';
+  __oj_checkboxset_metadata.extension._ALIASED_PROPS = { readonly: 'readOnly' };
+
   oj.CustomElementBridge.register('oj-checkboxset', { metadata: __oj_checkboxset_metadata });
 }());
 

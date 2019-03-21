@@ -1,0 +1,181 @@
+// Copyright (c) 2014, 2019, Oracle and/or its affiliates. The Universal Permissive License (UPL), Version 1.0
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// WARNING: do not directly import this file, instead import the 
+//          version in your base theme's directory, 
+//          for example alta/widgets/_oj.alta.formcontrol.formlayout.scss
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+@import "../../utilities/oj.utilities";
+
+@import "oj.common.formlayout.mixins"; 
+
+@if $includeFormLayoutElementClasses != false {
+  @include module-include-once("common.formlayout.element") {
+    // default custom element to block
+    oj-form-layout {
+      display: block;
+    }
+    
+    @include common-formlayout-selectors();
+
+    // Generate the style classes for oj-form-layout custom element component.
+    // Currently, we only have the common cases, but in the future, we may add
+    // oj-form-layout element specific selectors here.
+    @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+      @include oj-form-layout-common($selectorPrefix: "oj-formlayout", 
+                                     $labelInlineMarginTop: '--oj-form-layout-label-inline-margin-top', 
+                                     $labelInlineGutter: '--oj-form-layout-label-inline-gutter-padding', 
+                                     $labelInlineAlign: '--oj-form-layout-label-inline-text-align', 
+                                     $fieldInlineAlign: '--oj-form-layout-field-inline-text-align');
+    }
+    @else {
+      @include oj-form-layout-common($selectorPrefix: "oj-formlayout");
+    }
+    
+    // When labels are inline, we shouldn't ever wrap as it produces difficult
+    // to understand layouts.
+    .oj-formlayout-labels-inline > .oj-flex  {
+      flex-wrap: nowrap;
+    }
+
+    // this is an oj-form-layout specific case, where the label flex item is set to 0px and the oj-label and
+    // the component share the same
+    // In this case, we need to apply the padding-left to the even (element/value) flex item (beyond the first)
+    // in the 'across' case where you have multiple fields in the same row you need padding between the first field and the second label
+    .oj-formlayout-form-across > .oj-flex > .oj-formlayout-label-comp-flex-item.oj-flex-item:nth-child(odd) {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+        html:not([dir="rtl"]) & {
+          padding-left: 0px;
+        }
+        html[dir="rtl"] & {
+          padding-right: 0px;
+        }
+      }
+      @else {
+        @include oj-ltr {
+          padding-left: 0px;
+        }
+        @include oj-rtl(){
+          padding-right: 0px;
+        }
+      }
+    }
+
+    .oj-formlayout-form-across > .oj-flex > .oj-formlayout-label-comp-flex-item.oj-flex-item {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+        html:not([dir="rtl"]) & {
+          padding-left: var(--oj-form-layout-label-inline-gutter-padding);
+        }
+        html[dir="rtl"] & {
+          padding-right: var(--oj-form-layout-label-inline-gutter-padding);
+        }
+      }
+      @else {
+        @include oj-ltr {
+          padding-left: $formControlLabelInlineGutter;
+        }
+        @include oj-rtl(){
+          padding-right: $formControlLabelInlineGutter;
+        }
+      }
+    }
+  
+    // This is the non-component child case (oj-form-layout, or some other random dom element)
+    // We need to remove the padding here, or oj-form-layout can't properly align its content
+    // to the parent oj-form-layout
+    .oj-form-layout > .oj-form.oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item.oj-flex-item {
+      padding-left: 0px;
+      padding-right: 0px;
+    }
+
+    // For this case, we need the padding applied to the appropriate oj-label-value elements
+    .oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item > .oj-label-value > .oj-flex > .oj-flex-item:nth-child(odd){
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+        html:not([dir="rtl"]) & {
+          padding-left: var(--oj-form-layout-label-inline-gutter-padding);
+        }
+        html[dir="rtl"] & {
+          padding-right: var(--oj-form-layout-label-inline-gutter-padding);
+        }
+      }
+      @else {
+        @include oj-ltr {
+          padding-left: $formControlLabelInlineGutter;
+        }
+        @include oj-rtl(){
+          padding-right: $formControlLabelInlineGutter;
+        }
+      }
+    }
+
+    .oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item > .oj-label-value > .oj-flex > .oj-flex-item:nth-child(even) {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+        html:not([dir="rtl"]) & {
+          padding-right: var(--oj-form-layout-label-inline-gutter-padding);
+        }
+        html[dir="rtl"] & {
+          padding-left: var(--oj-form-layout-label-inline-gutter-padding);
+        }
+      }
+      @else {
+        @include oj-ltr {
+          padding-right: $formControlLabelInlineGutter;
+        }
+        @include oj-rtl(){
+          padding-left: $formControlLabelInlineGutter;
+        }
+      }
+    }
+    // For labels on top and direction row, we need padding on both sides, so add padding to the other side here.
+    .oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item > .oj-label-value:not(.oj-formlayout-labels-inline) > .oj-flex > .oj-flex-item:nth-child(odd){
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+        html:not([dir="rtl"]) & {
+          padding-right: var(--oj-form-layout-label-inline-gutter-padding);
+        }
+        html[dir="rtl"] & {
+          padding-left: var(--oj-form-layout-label-inline-gutter-padding);
+        }
+      }
+      @else {
+        @include oj-ltr {
+          padding-right: $formControlLabelInlineGutter;
+        }
+        @include oj-rtl(){
+          padding-left: $formControlLabelInlineGutter;
+        }
+      }
+    }
+
+    .oj-formlayout-form-across > .oj-flex > .oj-formlayout-no-label-flex-item > .oj-label-value:not(.oj-formlayout-labels-inline) > .oj-flex > .oj-flex-item:nth-child(even) {
+      @if (variable-exists(outputOnlyCssVars) and $outputOnlyCssVars == true) {
+        html:not([dir="rtl"]) & {
+          padding-left: var(--oj-form-layout-label-inline-gutter-padding);
+        }
+        html[dir="rtl"] & {
+          padding-right: var(--oj-form-layout-label-inline-gutter-padding);
+        }
+      }
+      @else {
+        @include oj-ltr {
+          padding-left: $formControlLabelInlineGutter;
+        }
+        @include oj-rtl(){
+          padding-right: $formControlLabelInlineGutter;
+        }
+      }
+    }
+
+    // oj-label-value doesn't need the row divider margin, as it isn't a true row, so remove the padding
+    .oj-label-value.oj-form > .oj-flex {
+      padding-top: 0;
+    }
+  }
+
+// This is to prevent the flash of unstyled content before the html becomes JET components.
+  @if $initialVisibility == hidden {
+    oj-form-layout:not(.oj-complete) {
+      visibility: hidden;
+    }
+  }
+}
+    

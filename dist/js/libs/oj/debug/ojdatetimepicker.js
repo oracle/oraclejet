@@ -3252,12 +3252,6 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
         // The label should always have a generated ID, so no need to check here.
         this._inputContainer.attr('aria-labelledby', LId);
       }
-    } else if (this._inputContainer) {
-      var defaultLabelId = this.uuid + '_Label';
-      LId = oj.EditableValueUtils.getOjLabelId(this.widget(), defaultLabelId);
-      if (LId) {
-        this._inputContainer.attr('aria-labelledby', LId);
-      }
     }
 
 
@@ -3504,13 +3498,16 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
     window.removeEventListener('resize', resizeLargeScreenChange);
   },
   /**
+   * Per guidance from Curt and Don, changing this to be similar to oj-combobox where the container
+   * has a role of presentation and the input has a role of combobox.
    * @protected
    * @override
    * @ignore
    */
   _WrapElement: function () {
     this._inputContainer = this._superApply(arguments);
-    this._inputContainer.attr({ role: 'combobox', 'aria-haspopup': 'true', tabindex: '-1' });
+    this._inputContainer.attr({ role: 'presentation', tabindex: '-1' });
+    this.element.attr({ role: 'combobox', 'aria-haspopup': 'true' });
   },
 
   /**
@@ -3537,7 +3534,10 @@ oj.__registerWidget('oj.ojInputDate', $.oj.inputBase, {
    * @ignore
    * @protected
    */
-  _OnElementTouchStart: function () {
+  _OnElementTouchStart: function (event) {
+    // prevents the mousedown, mouseup and click from being generated on modal glass
+    // which will close the popup.
+    event.preventDefault();
     var showOn = this.options.datePicker.showOn;
 
     // If the focus is already on the text box and can't edit with keyboard
@@ -6279,8 +6279,8 @@ Components.setDefaultOptions(
 
 /**
  * {@ojinclude "name":"ojStylingDocIntro"}
- * <p>The form control text align style classes can be applied to the component, or an ancestor element. When
- * applied to an ancestor element, all form components that support the text align style classes will be affected.
+ * <p>The form control style classes can be applied to the component, or an ancestor element. When
+ * applied to an ancestor element, all form components that support the style classes will be affected.
  *
  * <table class="generic-table styling-table">
  *   <thead>
@@ -6290,6 +6290,12 @@ Components.setDefaultOptions(
  *     </tr>
  *   </thead>
  *   <tbody>
+ *     <tr>
+ *       <td>oj-form-control-full-width</td>
+ *       <td>Changes the max-width to 100% so that form components will occupy
+ *           all the available horizontal space
+ *       </td>
+ *     </tr>
  *     <tr>
  *       <td>oj-form-control-text-align-right</td>
  *       <td>Aligns the text to the right regardless of the reading direction.
@@ -7207,12 +7213,6 @@ oj.__registerWidget('oj.ojInputTime', $.oj.inputBase,
           // The label should always have a generated ID, so no need to check here.
             this._inputContainer.attr('aria-labelledby', LId);
           }
-        } else if (this._inputContainer) {
-          var defaultLabelId = this.uuid + '_Label';
-          LId = oj.EditableValueUtils.getOjLabelId(this.widget(), defaultLabelId);
-          if (LId) {
-            this._inputContainer.attr('aria-labelledby', LId);
-          }
         }
       }
 
@@ -7504,13 +7504,16 @@ oj.__registerWidget('oj.ojInputTime', $.oj.inputBase,
     },
 
   /**
+   * Per guidance from Curt and Don, changing this to be similar to oj-combobox where the container
+   * has a role of presentation and the input has a role of combobox.
    * @protected
    * @override
    * @ignore
    */
     _WrapElement: function () {
       this._inputContainer = this._superApply(arguments);
-      this._inputContainer.attr({ role: 'combobox', 'aria-haspopup': 'true', tabindex: '-1' });
+      this._inputContainer.attr({ role: 'presentation', tabindex: '-1' });
+      this.element.attr({ role: 'combobox', 'aria-haspopup': 'true' });
     },
 
   /**
@@ -7541,7 +7544,10 @@ oj.__registerWidget('oj.ojInputTime', $.oj.inputBase,
    * @ignore
    * @protected
    */
-    _OnElementTouchStart: function () {
+    _OnElementTouchStart: function (event) {
+      // prevents the mousedown, mouseup and click from being generated on modal glass
+      // which will close the popup.
+      event.preventDefault();
       var showOn = this.options.timePicker.showOn;
 
     // If the focus is already on the text box and can't edit with keyboard
@@ -8640,8 +8646,8 @@ Components.setDefaultOptions(
 
 /**
  * {@ojinclude "name":"ojStylingDocIntro"}
- * <p>The form control text align style classes can be applied to the component, or an ancestor element. When
- * applied to an ancestor element, all form components that support the text align style classes will be affected.
+ * <p>The form control style classes can be applied to the component, or an ancestor element. When
+ * applied to an ancestor element, all form components that support the style classes will be affected.
  *
  * <table class="generic-table styling-table">
  *   <thead>
@@ -8651,6 +8657,12 @@ Components.setDefaultOptions(
  *     </tr>
  *   </thead>
  *   <tbody>
+ *     <tr>
+ *       <td>oj-form-control-full-width</td>
+ *       <td>Changes the max-width to 100% so that form components will occupy
+ *           all the available horizontal space
+ *       </td>
+ *     </tr>
  *     <tr>
  *       <td>oj-form-control-text-align-right</td>
  *       <td>Aligns the text to the right regardless of the reading direction.
@@ -12081,8 +12093,8 @@ oj.__registerWidget('oj.ojInputDateTime', $.oj.ojInputDate, {
 
 /**
  * {@ojinclude "name":"ojStylingDocIntro"}
- * <p>The form control text align style classes can be applied to the component, or an ancestor element. When
- * applied to an ancestor element, all form components that support the text align style classes will be affected.
+ * <p>The form control style classes can be applied to the component, or an ancestor element. When
+ * applied to an ancestor element, all form components that support the style classes will be affected.
  *
  * <table class="generic-table styling-table">
  *   <thead>
@@ -12092,6 +12104,12 @@ oj.__registerWidget('oj.ojInputDateTime', $.oj.ojInputDate, {
  *     </tr>
  *   </thead>
  *   <tbody>
+ *     <tr>
+ *       <td>oj-form-control-full-width</td>
+ *       <td>Changes the max-width to 100% so that form components will occupy
+ *           all the available horizontal space
+ *       </td>
+ *     </tr>
  *     <tr>
  *       <td>oj-form-control-text-align-right</td>
  *       <td>Aligns the text to the right regardless of the reading direction.

@@ -1,0 +1,6 @@
+/**
+ * @license
+ * Copyright (c) 2014, 2019, Oracle and/or its affiliates.
+ * The Universal Permissive License (UPL), Version 1.0
+ */
+"use strict";define(["ojs/ojcore","ojs/ojkeysetimpl"],function(t,e){return function(){function t(t){this.initialKeys=t;var s=this;this._set=new Set,this._keyset=new e,t&&t.forEach(function(t){s.add(t)}),Object.defineProperty(this,"size",{get:function(){return this._set.size}}),this[Symbol.iterator]=function(){return this._set[Symbol.iterator]()}}return t.prototype.clear=function(){this._set.clear(),this._keyset._keys.clear()},t.prototype.delete=function(t){var e=this._keyset.get(t);return e!==this._keyset.NOT_A_KEY&&(this._keyset._keys.delete(e),this._set.delete(e))},t.prototype.forEach=function(t,e){this._set.forEach(t,e)},t.prototype.keys=function(){return this._set.keys()},t.prototype.values=function(){return this._set.values()},t.prototype.entries=function(){return this._set.entries()},t.prototype.has=function(t){return this._keyset.has(t)},t.prototype.add=function(t){return this._keyset.get(t)===this._keyset.NOT_A_KEY&&(this._keyset._keys.add(t),this._set.add(t)),this},Object.defineProperty(t.prototype,Symbol.toStringTag,{get:function(){return Set[Symbol.toStringTag]()},enumerable:!0,configurable:!0}),t}()});

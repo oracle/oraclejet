@@ -409,6 +409,11 @@ define(['../persistenceUtils', '../persistenceStoreManager', './logger'],
       response.headers.get('x-oracle-jscpt-response-url') == null) {
       response.headers.set('x-oracle-jscpt-response-url', request.url);
     }
+    if (bodyAbstract && bodyAbstract.length === 1) {
+      if (bodyAbstract[0].resourceType === 'single') {
+        response.headers.set('x-oracle-jscpt-resource-type', 'single');
+      }
+    }
     var unshredder = this._getUnshredder(request);
     var shredder = this._getShredder(request);
     if (!unshredder || !shredder || !response || !bodyAbstract || !bodyAbstract.length) {

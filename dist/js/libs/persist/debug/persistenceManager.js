@@ -50,8 +50,9 @@ define(['./impl/PersistenceXMLHttpRequest', './impl/PersistenceSyncManager', './
     PersistenceManager.prototype.init = function () {
       _replaceBrowserApis(this);
       _addBrowserEventListeners(this);
-
-      return _openOfflineCache(this);
+      _openOfflineCache(this);
+      
+      return Promise.resolve();
     };
 
     /**
@@ -297,11 +298,7 @@ define(['./impl/PersistenceXMLHttpRequest', './impl/PersistenceSyncManager', './
 
     function _openOfflineCache(persistenceManager) {
       var self = persistenceManager;
-
-      return offlineCacheManager.open('systemCache').then(function (cache) {
-        self._cache = cache;
-        return Promise.resolve();
-      });
+      self._cache = offlineCacheManager.open('systemCache');
     };
 
     function _replaceBrowserApis(persistenceManager) {

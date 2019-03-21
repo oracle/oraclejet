@@ -52,7 +52,7 @@ dvt.Axis.prototype.Init = function(context, callback, callbackObj) {
   dvt.Axis.superclass.Init.call(this, context, callback, callbackObj);
 
   // Create the defaults object
-  this.Defaults = new DvtAxisDefaults();
+  this.Defaults = new DvtAxisDefaults(context);
 
   // Create the event handler and add event listeners
   this.EventManager = new DvtAxisEventManager(this);
@@ -406,10 +406,11 @@ DvtAxisAutomation.prototype.getDomElementForSubId = function(subId) {
  * Default values and utility functions for component versioning.
  * @class
  * @constructor
+ * @param {dvt.Context} context The rendering context.
  * @extends {dvt.BaseComponentDefaults}
  */
-var DvtAxisDefaults = function() {
-  this.Init({'skyros': DvtAxisDefaults.VERSION_1, 'alta': DvtAxisDefaults.SKIN_ALTA, 'next': DvtAxisDefaults.SKIN_NEXT});
+var DvtAxisDefaults = function(context) {
+  this.Init({'skyros': DvtAxisDefaults.VERSION_1, 'alta': DvtAxisDefaults.SKIN_ALTA, 'next': DvtAxisDefaults.SKIN_NEXT}, context);
 };
 
 dvt.Obj.createSubclass(DvtAxisDefaults, dvt.BaseComponentDefaults);

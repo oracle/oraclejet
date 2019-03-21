@@ -51,7 +51,7 @@ dvt.PictoChart.prototype.Init = function(context, callback, callbackObj) {
     this.EventManager.setKeyboardHandler(new DvtPictoChartKeyboardHandler(this.EventManager));
 
   // Create the defaults object
-  this.Defaults = new DvtPictoChartDefaults();
+  this.Defaults = new DvtPictoChartDefaults(context);
 
   // Create array of logical objects for pictoChart items
   this._items = [];
@@ -636,10 +636,11 @@ DvtPictoChartEventManager.prototype.processActionEvent = function(obj) {
  * Default values and utility functions for component versioning.
  * @class
  * @constructor
+ * @param {dvt.Context} context The rendering context.
  * @extends {dvt.BaseComponentDefaults}
  */
-var DvtPictoChartDefaults = function() {
-  this.Init({'alta': DvtPictoChartDefaults.VERSION_1});
+var DvtPictoChartDefaults = function(context) {
+  this.Init({'alta': DvtPictoChartDefaults.VERSION_1}, context);
 };
 
 dvt.Obj.createSubclass(DvtPictoChartDefaults, dvt.BaseComponentDefaults);

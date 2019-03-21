@@ -531,6 +531,16 @@ var __oj_text_area_metadata =
       "type": "boolean",
       "value": false
     },
+    "resizeBehavior": {
+      "type": "string",
+      "enumValues": [
+        "both",
+        "horizontal",
+        "none",
+        "vertical"
+      ],
+      "value": "none"
+    },
     "rows": {
       "type": "number",
       "extension": {
@@ -1366,7 +1376,7 @@ oj.__registerWidget('oj.inputBase', $.oj.editableValue,
 
       $.each(options, function (index, ele) {
         if (self.options[ele]) {
-          self._processDisabledReadOnly(ele, self.options[ele]);
+          self._processOptions(ele, self.options[ele]);
         }
       });
 
@@ -1511,7 +1521,7 @@ oj.__registerWidget('oj.inputBase', $.oj.editableValue,
     _GetNormalizedAsyncValidatorsFromOption:
       oj.EditableValueUtils._GetNormalizedAsyncValidatorsFromOption,
 
-    _processDisabledReadOnly: function (key, value) {
+    _processOptions: function (key, value) {
       if (key === 'disabled') {
         this.element.prop('disabled', value);
       }
@@ -1537,7 +1547,7 @@ oj.__registerWidget('oj.inputBase', $.oj.editableValue,
       var retVal = this._superApply(arguments);
 
       if (key === 'disabled' || key === 'readOnly') {
-        this._processDisabledReadOnly(key, value);
+        this._processOptions(key, value);
       }
 
       if (key === 'pattern') {
@@ -3016,8 +3026,8 @@ oj.__registerWidget('oj.ojInputText', $.oj.inputBase,
  */
 /**
  * {@ojinclude "name":"ojStylingDocIntro"}
- * <p>The form control text align style classes can be applied to the component, or an ancestor element. When
- * applied to an ancestor element, all form components that support the text align style classes will be affected.
+ * <p>The form control style classes can be applied to the component, or an ancestor element. When
+ * applied to an ancestor element, all form components that support the style classes will be affected.
  *
  * <table class="generic-table styling-table">
  *   <thead>
@@ -3027,6 +3037,12 @@ oj.__registerWidget('oj.ojInputText', $.oj.inputBase,
  *     </tr>
  *   </thead>
  *   <tbody>
+ *     <tr>
+ *       <td>oj-form-control-full-width</td>
+ *       <td>Changes the max-width to 100% so that form components will occupy
+ *           all the available horizontal space
+ *       </td>
+ *     </tr>
  *     <tr>
  *       <td>oj-form-control-text-align-right</td>
  *       <td>Aligns the text to the right regardless of the reading direction.
@@ -3119,6 +3135,13 @@ oj.__registerWidget('oj.ojInputText', $.oj.inputBase,
  * {@ojinclude "name":"accessibilityPlaceholderEditableValue"}
  * {@ojinclude "name":"accessibilityDisabledEditableValue"}
  * </p>
+ *
+ * <h3 id="styling-section">
+ *   Styling
+ *   <a class="bookmarkable-link" title="Bookmarkable Link" href="#styling-section"></a>
+ * </h3>
+ *
+ * {@ojinclude "name":"stylingDoc"}
  *
  * <h3 id="label-section">
  *   Label and TextArea
@@ -3243,6 +3266,34 @@ oj.__registerWidget('oj.ojTextArea', $.oj.inputBase,
        */
       pattern: '',
       /**
+       *
+       * Defines the resizeBehavior of the textarea.
+       * Note that this is implemented via the native browser support for resize on the textarea element.
+       * If a browser doesn't support this (IE, Edge, iOS, Android), then this attribute has no effect.
+       *
+       * @expose
+       * @memberof oj.ojTextArea
+       * @instance
+       * @type {string}
+       * @ojvalue {string} "both" The textarea will be interactively resizable horizontally and vertically.
+       * @ojvalue {string} "horizontal" The textarea will be resizable in the horizontal direction only.
+       * @ojvalue {string} "vertical" The textarea will be resizable in the vertical direction only.
+       * @ojvalue {string} "none" The textarea will not be interactively resizable.
+       * @default "none"
+       *
+       * @example <caption>Initialize the textarea to a specific <code class="prettyprint">resizeBehavior</code></caption>
+       * &lt;oj-text-area resize-behavior="none" &gt;&lt;/oj-text-area&gt;
+       *
+       * @example <caption>Get or set the <code class="prettyprint">resizeBehavior</code> property, after initialization:</caption>
+       *
+       * // getter
+       * var resizeBehavior = myTextarea.resizeBehavior;
+       *
+       * // setter
+       * myTextarea.resizeBehavior = "none";
+       */
+      resizeBehavior: 'none',
+      /**
        * The number of visible text lines in the textarea. It can also be used to
        * give specific height to the textarea.
        *
@@ -3286,6 +3337,40 @@ oj.__registerWidget('oj.ojTextArea', $.oj.inputBase,
        * $( ".selector" ).on( "ojcreate", function( event, ui ) {} );
        */
       // create event declared in superclass, but we still want the above API doc
+    },
+
+    /**
+     * This function gets called on initial render,
+     * and when oj-text-area attributes are modified.
+     *
+     * @protected
+     * @override
+     * @instance
+     * @memberof! oj.ojTextArea
+     */
+    _AfterCreate: function () {
+      var ret = this._superApply(arguments);
+
+      this._GetContentElement()[0].style.resize = this.options.resizeBehavior;
+
+      return ret;
+    },
+
+    /**
+     * @ignore
+     * @protected
+     * @memberof! oj.ojTextArea
+     * @override
+     */
+    // eslint-disable-next-line no-unused-vars
+    _setOption: function (key, value, flags) {
+      var retVal = this._superApply(arguments);
+
+      if (key === 'resizeBehavior') {
+        this._GetContentElement()[0].style.resize = value;
+      }
+
+      return retVal;
     },
 
     getNodeBySubId: function (locator) {
@@ -3390,7 +3475,45 @@ oj.__registerWidget('oj.ojTextArea', $.oj.inputBase,
  * @ojfragment keyboardDoc - Used in keyboard section of classdesc, and standalone gesture doc
  * @memberof oj.ojTextArea
  */
-
+/**
+ * {@ojinclude "name":"ojStylingDocIntro"}
+ * <p>The form control style classes can be applied to the component, or an ancestor element. When
+ * applied to an ancestor element, all form components that support the style classes will be affected.
+ *
+ * <table class="generic-table styling-table">
+ *   <thead>
+ *     <tr>
+ *       <th>{@ojinclude "name":"ojStylingDocClassHeader"}</th>
+ *       <th>{@ojinclude "name":"ojStylingDocDescriptionHeader"}</th>
+ *     </tr>
+ *   </thead>
+ *   <tbody>
+ *     <tr>
+ *       <td>oj-form-control-full-width</td>
+ *       <td>Changes the max-width to 100% so that form components will occupy
+ *           all the available horizontal space
+ *       </td>
+ *     </tr>
+ *     <tr>
+ *       <td>oj-form-control-text-align-right</td>
+ *       <td>Aligns the text to the right regardless of the reading direction.
+ *           This is normally used for right aligning numbers
+ *       </td>
+ *     </tr>
+ *     <tr>
+ *       <td>oj-form-control-text-align-start</td>
+ *       <td>Aligns the text to the left in ltr and to the right in rtl</td>
+ *     </tr>
+ *     <tr>
+ *       <td>oj-form-control-text-align-end</td>
+ *       <td>Aligns the text to the right in ltr and to the left in rtl</td>
+ *     </tr>
+ *   </tbody>
+ * </table>
+ *
+ * @ojfragment stylingDoc - Used in Styling section of classdesc, and standalone Styling doc
+ * @memberof oj.ojTextArea
+ */
 
 // ////////////////     SUB-IDS     //////////////////
 /**

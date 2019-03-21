@@ -1702,7 +1702,7 @@ dvt.LedGauge.prototype.Init = function(context, callback, callbackObj, bStaticRe
   dvt.LedGauge.superclass.Init.call(this, context, callback, callbackObj, bStaticRendering);
 
   // Create the defaults object
-  this.Defaults = new DvtLedGaugeDefaults();
+  this.Defaults = new DvtLedGaugeDefaults(context);
 };
 
 
@@ -1744,10 +1744,11 @@ dvt.LedGauge.prototype.Render = function(container, width, height)
  * Default values and utility functions for component versioning.
  * @class
  * @constructor
+ * @param {dvt.Context} context The rendering context.
  * @extends {DvtGaugeDefaults}
  */
-var DvtLedGaugeDefaults = function() {
-  this.Init({'skyros': DvtLedGaugeDefaults.VERSION_1, 'alta': {}});
+var DvtLedGaugeDefaults = function(context) {
+  this.Init({'skyros': DvtLedGaugeDefaults.VERSION_1, 'alta': {}}, context);
 };
 
 dvt.Obj.createSubclass(DvtLedGaugeDefaults, DvtGaugeDefaults);
@@ -2355,7 +2356,7 @@ dvt.StatusMeterGauge.prototype.Init = function(context, callback, callbackObj) {
   dvt.StatusMeterGauge.superclass.Init.call(this, context, callback, callbackObj);
 
   // Create the defaults object
-  this.Defaults = new DvtStatusMeterGaugeDefaults();
+  this.Defaults = new DvtStatusMeterGaugeDefaults(context);
 
   /**
    * The axis info of the chart. This will be set during render time and is used for editing support.
@@ -2462,10 +2463,11 @@ dvt.StatusMeterGauge.prototype.GetValueAt = function(x, y) {
  * Default values and utility functions for component versioning.
  * @class
  * @constructor
+ * @param {dvt.Context} context The rendering context.
  * @extends {DvtGaugeDefaults}
  */
-var DvtStatusMeterGaugeDefaults = function() {
-  this.Init({'skyros': DvtStatusMeterGaugeDefaults.VERSION_1, 'alta': DvtStatusMeterGaugeDefaults.SKIN_ALTA});
+var DvtStatusMeterGaugeDefaults = function(context) {
+  this.Init({'skyros': DvtStatusMeterGaugeDefaults.VERSION_1, 'alta': DvtStatusMeterGaugeDefaults.SKIN_ALTA}, context);
 };
 
 dvt.Obj.createSubclass(DvtStatusMeterGaugeDefaults, DvtGaugeDefaults);
@@ -3860,7 +3862,7 @@ dvt.DialGauge.prototype.Init = function(context, callback, callbackObj) {
   dvt.DialGauge.superclass.Init.call(this, context, callback, callbackObj);
 
   // Create the defaults object
-  this.Defaults = new DvtDialGaugeDefaults();
+  this.Defaults = new DvtDialGaugeDefaults(context);
 
   /**
    * The anchor point of the indicator on the gauge. This will be set during render time and is used for editing support.
@@ -3996,10 +3998,11 @@ dvt.DialGauge.prototype.GetValueAt = function(x, y) {
  * Default values and utility functions for component versioning.
  * @class
  * @constructor
+ * @param {dvt.Context} context The rendering context.
  * @extends {DvtGaugeDefaults}
  */
-var DvtDialGaugeDefaults = function() {
-  this.Init({'skyros': DvtDialGaugeDefaults.VERSION_1, 'alta': {}});
+var DvtDialGaugeDefaults = function(context) {
+  this.Init({'skyros': DvtDialGaugeDefaults.VERSION_1, 'alta': {}}, context);
 };
 
 dvt.Obj.createSubclass(DvtDialGaugeDefaults, DvtGaugeDefaults);
@@ -4603,7 +4606,7 @@ dvt.RatingGauge.prototype.Init = function(context, callback, callbackObj) {
   dvt.RatingGauge.superclass.Init.call(this, context, callback, callbackObj);
 
   // Create the defaults object
-  this.Defaults = new DvtRatingGaugeDefaults();
+  this.Defaults = new DvtRatingGaugeDefaults(context);
 };
 
 
@@ -4908,10 +4911,11 @@ dvt.RatingGauge.prototype.CreateEventManager = function() {
  * Default values and utility functions for component versioning.
  * @class
  * @constructor
+ * @param {dvt.Context} context The rendering context.
  * @extends {DvtGaugeDefaults}
  */
-var DvtRatingGaugeDefaults = function() {
-  this.Init({'skyros': DvtRatingGaugeDefaults.VERSION_1, 'alta': DvtRatingGaugeDefaults.SKIN_ALTA});
+var DvtRatingGaugeDefaults = function(context) {
+  this.Init({'skyros': DvtRatingGaugeDefaults.VERSION_1, 'alta': DvtRatingGaugeDefaults.SKIN_ALTA}, context);
 };
 
 dvt.Obj.createSubclass(DvtRatingGaugeDefaults, DvtGaugeDefaults);
